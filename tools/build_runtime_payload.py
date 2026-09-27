@@ -337,6 +337,48 @@ def audit_pair_universe_binding(dashboard: dict) -> list[dict]:
         })
     return issues
 
+
+def audit_canonical_2y_freshness(dashboard: dict, all_series: dict) -> list[dict]:
+    """Do not publish a current Rates impulse from a canonical 2Y series older than 7 calendar days."""
+    from datetime import datetime
+    issues = []
+    as_of = str(dashboard.get("asOf") or "")
+    try:
+        ref = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+    except Exception:
+        return [{"type": "dashboard_asof_unparseable", "asOf": as_of}]
+    for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+        s = _find_canonical_2y_series(all_series.get(ccy, []))
+        if not s:
+            issues.append({"ccy": ccy, "type": "canonical_2y_series_missing"})
+            continue
+        last_date = str(s.get("last_date") or ((s.get("dates") or [None])[-1]) or "")
+        parsed = None
+        for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d/%m/%Y"):
+            try:
+                parsed = datetime.strptime(last_date, fmt)
+                break
+            except Exception:
+                pass
+        if parsed is None:
+            try:
+                parsed = datetime.fromisoformat(last_date.replace("Z", "+00:00")).replace(tzinfo=None)
+            except Exception:
+                issues.append({"ccy": ccy, "type": "canonical_2y_date_unparseable", "last_date": last_date})
+                continue
+        ref_naive = ref.replace(tzinfo=None)
+        age = (ref_naive - parsed).days
+        if age > 7:
+            issues.append({
+                "ccy": ccy,
+                "type": "canonical_2y_stale",
+                "last_date": last_date,
+                "dashboard_asof": as_of,
+                "age_days": age,
+                "series_id": s.get("id"),
+            })
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -447,6 +489,10 @@ def main() -> None:
     what_changed_rate_issues = audit_what_changed_rates(payload.get("what_changed") or [], all_series)
     if what_changed_rate_issues:
         raise ValueError("WHAT_CHANGED_RATES_SOURCE_MISMATCH: " + json.dumps(what_changed_rate_issues, ensure_ascii=False))
+
+    canonical_2y_freshness_issues = audit_canonical_2y_freshness(dashboard, all_series)
+    if canonical_2y_freshness_issues:
+        raise ValueError("CANONICAL_RATES_STALE: " + json.dumps(canonical_2y_freshness_issues, ensure_ascii=False))
 
     for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
         payload[f"series_{ccy}"] = all_series.get(ccy, [])
