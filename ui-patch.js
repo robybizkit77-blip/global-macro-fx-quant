@@ -1173,3 +1173,184 @@
     renderSimpleOverview=wrapped;
   }
 })();
+
+
+/* FX_CANONICAL_PRESENTATION_V277 */
+(()=>{
+  'use strict';
+
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const STATE_COPY={
+    FORTE:'Macro e tassi sostengono la valuta',
+    COSTRUTTIVA:'Supporto presente, ma non completo',
+    MISTA:'Macro e tassi danno segnali contrastanti',
+    DEBOLE:'Pressione negativa parziale',
+    FRAGILE:'Macro e tassi pesano sulla valuta'
+  };
+  const CHANGE_COPY={
+    MIGLIORA:'Supporto in aumento',
+    PEGGIORA:'Supporto in calo',
+    'EARLY SHIFT POSITIVO':'I tassi iniziano a migliorare; la macro non conferma ancora',
+    'EARLY SHIFT NEGATIVO':'I tassi iniziano a peggiorare; la macro non conferma ancora',
+    'TURNING POINT':'Possibile svolta, segnali ancora misti',
+    'NON DETERMINATO':'Dati non sufficienti per definire il cambiamento',
+    'STABILE / MISTA':'Nessun cambiamento chiaro'
+  };
+  const PRICE_COPY={
+    'PREZZO CONFERMA':'Il prezzo conferma',
+    'PREZZO DIVERGE':'Il prezzo diverge',
+    'PREZZO NON RISOLUTIVO':'Il prezzo non è ancora risolutivo',
+    'PREZZO SENZA STRUTTURA':'Il prezzo non definisce la struttura'
+  };
+
+  const frozen=c=>window.AUDIT_V275?.currency?.[c]||null;
+  const stateText=c=>STATE_COPY[frozen(c)?.base]||'Quadro non determinato';
+  const changeText=c=>CHANGE_COPY[frozen(c)?.change]||'Nessun cambiamento chiaro';
+  const priceText=c=>PRICE_COPY[frozen(c)?.confirmation]||'Prezzo non risolutivo';
+
+  function layerText(v,label){
+    if(v>0) return label+' favorevole';
+    if(v<0) return label+' sfavorevole';
+    return label+' misto / neutrale';
+  }
+
+  function replaceCanonicalCodes(root=document){
+    root.querySelectorAll('.soCcyState,.v276CanonicalNote,.v276CanonicalPairNote').forEach(el=>{
+      let t=el.innerHTML;
+      Object.entries(STATE_COPY).forEach(([k,v])=>{ t=t.replaceAll(k,v); });
+      Object.entries(CHANGE_COPY).forEach(([k,v])=>{ t=t.replaceAll(k,v); });
+      Object.entries(PRICE_COPY).forEach(([k,v])=>{ t=t.replaceAll(k,v); });
+      el.innerHTML=t;
+    });
+  }
+
+  function renderOverviewStructure(){
+    const A=window.AUDIT_V275; if(!A?.currency)return;
+    const groups={strong:[],partial:[],mixed:[],weak:[]};
+    CCYS.forEach(c=>{
+      const b=A.currency[c]?.base;
+      if(b==='FORTE')groups.strong.push(c);
+      else if(b==='COSTRUTTIVA')groups.partial.push(c);
+      else if(b==='MISTA')groups.mixed.push(c);
+      else groups.weak.push(c);
+    });
+
+    const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
+    const story=[];
+    if(groups.strong.length) story.push('Macro e tassi sostengono '+groups.strong.join(', '));
+    if(groups.partial.length) story.push('supporto presente ma non completo su '+groups.partial.join(', '));
+    if(groups.mixed.length) story.push(groups.mixed.join(', ')+' con segnali contrastanti');
+    if(groups.weak.length) story.push('pressione negativa su '+groups.weak.join(', '));
+    set('v254MainStory',story.join(' · ')+'.');
+
+    const changes=CCYS.map(c=>({c,t:changeText(c)})).filter(x=>x.t!=='Nessun cambiamento chiaro');
+    set('v254MainSub',changes.length
+      ? 'Cosa sta cambiando: '+changes.map(x=>x.c+' · '+x.t.toLowerCase()).join(' · ')+'.'
+      : 'Cosa sta cambiando: nessun cambiamento recente abbastanza chiaro.');
+
+    const pulse=document.querySelectorAll('.v256PulseGrid .v256Pulse');
+    if(pulse[0]){
+      pulse[0].querySelector('span').textContent='SOSTEGNO PIENO';
+      pulse[0].querySelector('b').textContent=groups.strong.join(' · ')||'—';
+      pulse[0].querySelector('small').textContent='Macro e tassi sostengono la valuta';
+    }
+    if(pulse[1]){
+      pulse[1].querySelector('span').textContent='SUPPORTO PARZIALE';
+      pulse[1].querySelector('b').textContent=groups.partial.join(' · ')||'—';
+      pulse[1].querySelector('small').textContent='Supporto presente, ma non completo';
+    }
+    if(pulse[2]){
+      pulse[2].querySelector('span').textContent='SEGNALI CONTRASTANTI';
+      pulse[2].querySelector('b').textContent=groups.mixed.join(' · ')||'—';
+      pulse[2].querySelector('small').textContent='Macro e tassi non sono allineati';
+    }
+    // fourth card remains Global Risk by design.
+  }
+
+  function selectedCurrencyFor(view){
+    if(view==='ratesdesk') return window.v233RatesCurrency||window.selectedCcy||'USD';
+    if(view==='cbdesk') return window.v234CbCurrency||window.selectedCcy||'USD';
+    if(view==='macro') return window.v232MacroCurrency||window.selectedCcy||'USD';
+    if(view==='cot') return window.v245CotSelected||window.selectedCcy||'USD';
+    return window.selectedCcy||'USD';
+  }
+
+  function canonicalDeskHeader(hostId,c,layer){
+    const host=document.getElementById(hostId); if(!host)return;
+    const x=frozen(c); if(!x)return;
+    let note=host.querySelector('.fxCanonicalReadable');
+    if(!note){
+      note=document.createElement('div');
+      note.className='sectionNote fxCanonicalReadable';
+      host.prepend(note);
+    }
+    const layerSentence =
+      layer==='Macro' ? layerText(x.macro,'Macro') :
+      layer==='Rates' ? layerText(x.policy,'Rates / front-end') :
+      layer==='Banca centrale' ? layerText(x.policy,'Policy / Rates-CB') :
+      layer==='COT' ? 'COT: posizionamento e rischio di squeeze; non assegna forza/debolezza strutturale' :
+      'Questo desk descrive il proprio layer senza cambiare lo stato della valuta';
+    note.innerHTML='<b>'+c+' · '+stateText(c)+'</b> · '+changeText(c)+'.<br><span>'+layerSentence+' · '+priceText(c)+'.</span>';
+  }
+
+  function installNarratives(){
+    if(typeof window.v232FxNarrative==='function'){
+      window.v232FxNarrative=function(c,snap){
+        const strong=snap?.strength?.label||'—', weak=snap?.weakness?.label||'—';
+        return c+': '+stateText(c)+'. Direzione recente: '+changeText(c).toLowerCase()+'. Nel solo layer Macro, '+strong.toLowerCase()+' sostiene il quadro mentre '+weak.toLowerCase()+' resta l’area più fragile. La Macro da sola non assegna forza o debolezza complessiva alla valuta.';
+      };
+      try{v232FxNarrative=window.v232FxNarrative}catch(e){}
+    }
+    if(typeof window.v233FxRead==='function'){
+      window.v233FxRead=function(c,d){
+        const x=frozen(c);
+        return c+': '+stateText(c)+'. Direzione recente: '+changeText(c).toLowerCase()+'. Nel solo desk Rates: '+layerText(x?.policy||0,'front-end / Rates')+'. Questo è supporto di policy, non una valutazione autonoma della forza della valuta. '+priceText(c)+'.';
+      };
+      try{v233FxRead=window.v233FxRead}catch(e){}
+    }
+    if(typeof window.v234FxRead==='function'){
+      window.v234FxRead=function(c,d){
+        const x=frozen(c);
+        return c+': '+stateText(c)+'. Direzione recente: '+changeText(c).toLowerCase()+'. Nel solo desk Banca centrale: '+layerText(x?.policy||0,'policy / Rates-CB')+'. La banca centrale contribuisce alla struttura, ma non crea una seconda valutazione della valuta. '+priceText(c)+'.';
+      };
+      try{v234FxRead=window.v234FxRead}catch(e){}
+    }
+  }
+
+  function refreshPresentation(){
+    installNarratives();
+    renderOverviewStructure();
+    canonicalDeskHeader('macro',selectedCurrencyFor('macro'),'Macro');
+    canonicalDeskHeader('ratesdesk',selectedCurrencyFor('ratesdesk'),'Rates');
+    canonicalDeskHeader('cbdesk',selectedCurrencyFor('cbdesk'),'Banca centrale');
+    canonicalDeskHeader('cot',selectedCurrencyFor('cot'),'COT');
+    replaceCanonicalCodes(document);
+  }
+
+  ['renderSimpleOverview','renderOperationalOverview','renderMacroLab','renderNativeRatesDesk','renderNativeCbDesk','renderCot','renderCurrency','renderCurrencyIntelligence'].forEach(name=>{
+    const old=window[name];
+    if(typeof old!=='function'||old.__fxCanonicalPresentation)return;
+    const wrapped=function(){const r=old.apply(this,arguments);setTimeout(refreshPresentation,0);return r;};
+    wrapped.__fxCanonicalPresentation=true;
+    window[name]=wrapped;
+    try{eval(name+'=window[name]')}catch(e){}
+  });
+
+  window.FX_CANONICAL_PRESENTATION_QA=function(){
+    const issues=[];
+    if(!window.AUDIT_V275?.currency)issues.push('freeze canonico assente');
+    CCYS.forEach(c=>{
+      if(!STATE_COPY[frozen(c)?.base])issues.push(c+': stato senza traduzione UI');
+      if(!CHANGE_COPY[frozen(c)?.change])issues.push(c+': cambiamento senza traduzione UI');
+    });
+    const forbidden=['COSTRUTTIVA','FRAGILE','PREZZO NON RISOLUTIVO','PREZZO SENZA STRUTTURA'];
+    document.querySelectorAll('.v276CanonicalNote,.fxCanonicalReadable,.soCcyState').forEach(el=>{
+      forbidden.forEach(w=>{if((el.textContent||'').includes(w))issues.push('codice visibile: '+w)});
+    });
+    return {ok:issues.length===0,issues};
+  };
+
+  setTimeout(refreshPresentation,0);
+  setTimeout(refreshPresentation,250);
+  setTimeout(refreshPresentation,900);
+})();
