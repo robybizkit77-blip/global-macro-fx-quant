@@ -1157,3 +1157,56 @@
     renderSimpleOverview=wrapped;
   }
 })();
+
+/* FX_G8_CURRENCY_STATE_BOARD */
+(()=>{
+  'use strict';
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const FLAG={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
+  const LAYERS=[['macro','Macro'],['rates','Rates'],['central_bank','CB'],['cot','COT'],['price','Price']];
+  const CSS='#fxG8StateBoard{margin:18px 0 4px}.fxG8StateHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:10px}.fxG8StateHead h3{margin:0;font-size:14px;letter-spacing:.02em;color:#eef7ff}.fxG8StateHead p{margin:3px 0 0;font-size:9.5px;line-height:1.45;color:#7898a7}.fxG8StateSource{font-size:8px;font-weight:800;letter-spacing:.08em;color:#55798a;text-transform:uppercase;white-space:nowrap}.fxG8StateGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.fxG8StateCard{border:1px solid #16394a;background:linear-gradient(180deg,#0b2130,#081b28);border-radius:13px;padding:11px;min-width:0;box-shadow:0 8px 22px rgba(0,0,0,.14)}.fxG8StateCard.strong{border-color:#245b4a}.fxG8StateCard.warn{border-color:#625028}.fxG8StateCard.weak{border-color:#523766}.fxG8StateTop{display:flex;justify-content:space-between;align-items:center;gap:8px}.fxG8StateCcy{font-size:14px;font-weight:900;color:#f0f7fb;letter-spacing:.03em}.fxG8StateBreadth{font-size:9px;font-weight:900;color:#91aebb}.fxG8StateBadge{display:inline-block;margin-top:8px;padding:4px 7px;border-radius:999px;font-size:7.5px;font-weight:900;letter-spacing:.055em;text-transform:uppercase}.fxG8StateBadge.strong{background:rgba(70,185,125,.13);color:#72dca8}.fxG8StateBadge.warn{background:rgba(224,181,74,.12);color:#efc966}.fxG8StateBadge.weak{background:rgba(177,100,220,.13);color:#d596f1}.fxG8StateNote{font-size:9px;line-height:1.45;color:#91aebb;margin-top:7px;min-height:38px}.fxG8StateLayers{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:9px;padding-top:8px;border-top:1px solid #123343}.fxG8Layer{text-align:center;min-width:0}.fxG8Layer i{display:block;font-style:normal;font-size:6.5px;font-weight:900;color:#5f8190;letter-spacing:.04em;text-transform:uppercase}.fxG8Layer b{display:block;margin-top:2px;font-size:8px}.fxG8Layer b.pos{color:#70d9a5}.fxG8Layer b.neg{color:#d38bff}.fxG8Layer b.neu{color:#e2bd63}@media(max-width:980px){.fxG8StateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.fxG8StateGrid{grid-template-columns:1fr}.fxG8StateHead{align-items:flex-start;flex-direction:column}.fxG8StateSource{white-space:normal}.fxG8StateNote{min-height:0}}';
+  function layerState(ccy,key){let win=0,loss=0,mixed=0;Object.entries(D?.pairStates||{}).forEach(([pair,st])=>{if(!pair.split('/').includes(ccy))return;const v=st.layers?.[key];if(!v||v==='MISTO'||v==='NON CONFRONTABILE'){mixed++;return}if(v===ccy)win++;else loss++});return {win,loss,mixed}}
+  function currencyState(ccy){
+    let fav=0,mix=0,opp=0;
+    Object.entries(D?.pairStates||{}).forEach(([pair,st])=>{if(!pair.split('/').includes(ccy))return;if(st.convergence_winner===ccy)fav++;else if(st.convergence_winner==='MISTA')mix++;else opp++});
+    const layer=Object.fromEntries(LAYERS.map(([k])=>[k,layerState(ccy,k)]));
+    const macro=layer.macro.win,rates=layer.rates.win,cb=layer.central_bank.win,cot=layer.cot.win,price=layer.price.win;
+    let label,cls,note;
+    if(fav>=5){
+      if(price>=5){label='FORTE CONFERMATA';cls='strong';if(rates<=2)note='Forza relativa ampia e Price coerente; i Rates restano il principale layer in ritardo.';else if(cot<=1)note='Macro, Rates e Price sono allineati; il COT resta la divergenza principale da monitorare.';else note='Forza relativa ampia con conferme distribuite tra i layer principali.'}
+      else{label='FORTE MA DIVERGENTE';cls='warn';note='La forza relativa è alta, ma Price/posizionamento non confermano ancora con la stessa ampiezza.'}
+    }else if(fav<=2){
+      if(fav===0&&macro<=1&&rates<=1&&price<=1){label='DEBOLE CONFERMATA';cls='weak';note='Debolezza diffusa: Macro, Rates e Price non offrono ancora una conferma di inversione.'}
+      else if(price===0&&(macro>=3||cb>=4)){label='DEBOLE · EARLY SHIFT';cls='warn';note='Alcuni layer interni migliorano, ma il Price non conferma ancora: possibile transizione, non inversione confermata.'}
+      else if(macro>=4&&rates===0){label='DEBOLE · MACRO MIGLIORE';cls='warn';note='La Macro relativa è migliore della forza FX, ma Rates/CB restano un freno importante.'}
+      else{label='DEBOLE / DIVERGENTE';cls='weak';note='Forza relativa bassa con segnali non uniformi tra i diversi layer.'}
+    }else{
+      label='INTERMEDIA · DIVERGENTE';cls='warn';
+      if(price>=5&&cot>=5&&rates===0)note='Price e COT sono più forti del blocco Rates/CB: divergenza da seguire come possibile transizione.';else if(macro===0&&(cb>=4||cot>=4))note='CB/COT sostengono la valuta, ma la Macro relativa non conferma ancora.';else note='Il quadro è intermedio: nessuna convergenza abbastanza ampia da parlare di forza o debolezza pulita.';
+    }
+    return {ccy,fav,mix,opp,layer,label,cls,note};
+  }
+  function ensureCss(){if(document.getElementById('fxG8StateCss'))return;const style=document.createElement('style');style.id='fxG8StateCss';style.textContent=CSS;document.head.appendChild(style)}
+  function layerClass(s){if(s.win>s.loss)return 'pos';if(s.loss>s.win)return 'neg';return 'neu'}
+  function ensureBoard(){
+    let board=document.getElementById('fxG8StateBoard');if(board)return board;
+    board=document.createElement('section');board.id='fxG8StateBoard';
+    const map=document.getElementById('v256LayerMap');const mapPanel=map?.closest('.v256Panel');
+    if(mapPanel?.parentElement)mapPanel.parentElement.insertBefore(board,mapPanel);
+    else{const main=document.getElementById('v254MainStory');const host=main?.closest('section,.panel,.v254Panel')||main?.parentElement?.parentElement||main?.parentElement;if(host?.parentElement)host.insertAdjacentElement('afterend',board);else return null}
+    return board;
+  }
+  function render(){
+    try{
+      if(!D?.pairStates||Object.keys(D.pairStates).length!==28)throw new Error('pairStates != 28');
+      ensureCss();const board=ensureBoard();if(!board)return;
+      const rows=CCYS.map(currencyState).sort((a,b)=>b.fav-a.fav||a.ccy.localeCompare(b.ccy));
+      let html='<div class="fxG8StateHead"><div><h3>Stato delle 8 valute</h3><p>Qualità della forza relativa: convergenza dei layer, non un nuovo score. Ogni valuta è confrontata con le altre 7.</p></div><div class="fxG8StateSource">PAIR ENGINE LIVE · 28 COPPIE</div></div><div class="fxG8StateGrid">';
+      rows.forEach(r=>{html+='<article class="fxG8StateCard '+r.cls+'"><div class="fxG8StateTop"><div class="fxG8StateCcy">'+(FLAG[r.ccy]||'')+' '+r.ccy+'</div><div class="fxG8StateBreadth">'+r.fav+'/7 favorevoli'+(r.mix?' · '+r.mix+' miste':'')+'</div></div><span class="fxG8StateBadge '+r.cls+'">'+r.label+'</span><div class="fxG8StateNote">'+r.note+'</div><div class="fxG8StateLayers">';LAYERS.forEach(([key,lab])=>{const s=r.layer[key];html+='<div class="fxG8Layer"><i>'+lab+'</i><b class="'+layerClass(s)+'">'+s.win+'/7</b></div>'});html+='</div></article>'});
+      html+='</div>';board.innerHTML=html;board.dataset.fxSource='D.pairStates';
+      window.FX_G8_STATE_BOARD_QA={status:'PASS',pairCount:Object.keys(D.pairStates).length,currencies:rows.map(r=>({ccy:r.ccy,label:r.label,fav:r.fav,mix:r.mix,opp:r.opp,layers:r.layer}))};
+    }catch(e){window.FX_G8_STATE_BOARD_QA={status:'FAIL',error:String(e)}}
+  }
+  setTimeout(render,180);setTimeout(render,720);
+  if(typeof renderSimpleOverview==='function'&&!renderSimpleOverview.__fxG8StateWrapped){const original=renderSimpleOverview;const wrapped=function(){const x=original.apply(this,arguments);setTimeout(render,0);return x};wrapped.__fxG8StateWrapped=true;renderSimpleOverview=wrapped}
+})();
