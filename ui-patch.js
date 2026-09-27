@@ -79,6 +79,8 @@
 
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns currency/pair truth
+
 
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const LABEL_TO_KEY={
@@ -494,6 +496,8 @@
 /* FX_RELATIVE_G8_CONTEXT */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   function runtimeRelativeG8(c){
     if(typeof D==='undefined' || !D.pairStates) return null;
@@ -567,6 +571,8 @@
 /* FX_PAIR_NARRATIVE_CLARITY */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   const LABEL_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro','Prezzo':'price' };
 
@@ -633,6 +639,8 @@
 /* FX_PAIR_CORE_VS_ENGINE_CLARITY */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   function clarifyPairDesk(){
     try{
@@ -704,6 +712,8 @@
 /* FX_PAIR_MONITOR_BY_LEAD */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   const LABEL_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro','Prezzo':'price' };
 
@@ -834,6 +844,8 @@
 /* FX_TOP_THEMES_SEMANTICS */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   function renderThemesSafely(){
     try{
@@ -869,6 +881,8 @@
 /* FX_OVERVIEW_RUNTIME_TRUTH */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   const LEAD_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro' };
 
@@ -956,6 +970,8 @@
 /* FX_G8_LAYER_MAP_RUNTIME_COLORS */
 (()=>{
   'use strict';
+  return; // CANONICAL_SINGLE_TRUTH_DISABLED: app.html owns interpretation
+
 
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const LAYERS=[
