@@ -489,3 +489,76 @@
 
   window.FX_RATES_SOURCE_QA={status:'PASS',rule:'official historical series never spliced with market-close cross-check'};
 })();
+
+
+/* FX_RELATIVE_G8_CONTEXT */
+(()=>{
+  'use strict';
+
+  function runtimeRelativeG8(c){
+    if(typeof D==='undefined' || !D.pairStates) return null;
+    const rows=Object.entries(D.pairStates).filter(([p])=>p.split('/').includes(c));
+    if(rows.length!==7) return null;
+    let wins=0, losses=0, mixed=0;
+    const layer={macro:{win:0,loss:0,mixed:0},rates:{win:0,loss:0,mixed:0},central_bank:{win:0,loss:0,mixed:0},cot:{win:0,loss:0,mixed:0},price:{win:0,loss:0,mixed:0}};
+    rows.forEach(([pair,st])=>{
+      const w=st.convergence_winner;
+      if(w===c) wins++;
+      else if(w==='MISTA') mixed++;
+      else losses++;
+      Object.keys(layer).forEach(k=>{
+        const v=st.layers?.[k];
+        if(v===c) layer[k].win++;
+        else if(v==='MISTO' || v==='NON CONFRONTABILE' || !v) layer[k].mixed++;
+        else layer[k].loss++;
+      });
+    });
+    return {c,wins,losses,mixed,total:rows.length,layer};
+  }
+
+  window.FX_RELATIVE_G8=runtimeRelativeG8;
+
+  if(typeof currencyRelativeContext==='function'){
+    currencyRelativeContext=function(c){
+      const r=runtimeRelativeG8(c);
+      if(!r) return 'Relazione G8 non determinata';
+      if(r.wins===7) return 'Forza relativa G8 molto ampia · favorita in 7/7 coppie';
+      if(r.wins>=5) return 'Forza relativa G8 elevata · favorita in '+r.wins+'/7 coppie';
+      if(r.wins>=3) return 'Forza relativa G8 intermedia · favorita in '+r.wins+'/7 coppie'+(r.mixed?' · '+r.mixed+' miste':'');
+      if(r.wins===0) return 'Forza relativa G8 debole · nessuna delle 7 coppie la favorisce';
+      return 'Forza relativa G8 debole/intermedia · favorita in '+r.wins+'/7 coppie'+(r.mixed?' · '+r.mixed+' miste':'');
+    };
+  }
+
+  function addRelativeCard(){
+    const box=document.getElementById('fxMacroRatesSplit');
+    if(!box) return;
+    const c=window.selectedCcy || document.querySelector('#v219CurrencyTitle')?.textContent?.trim().slice(-3) || 'USD';
+    const r=runtimeRelativeG8(c);
+    if(!r) return;
+    let card=document.getElementById('fxRelativeG8Card');
+    if(!card){
+      card=document.createElement('div');
+      card.id='fxRelativeG8Card';
+      card.className='fxMRCard neu';
+      card.style.gridColumn='1 / -1';
+      box.appendChild(card);
+    }
+    const macro=r.layer.macro, rates=r.layer.rates;
+    const cls=r.wins>=5?'pos':r.wins===0?'neg':r.wins>=3?'warn':'neu';
+    card.className='fxMRCard '+cls;
+    card.innerHTML='<span class="fxMRLabel">FORZA RELATIVA G8 · PAIR ENGINE LIVE</span>'+
+      '<b class="fxMRTrend">'+r.wins+'/7 coppie favorevoli'+(r.mixed?' · '+r.mixed+' miste':'')+'</b>'+
+      '<span class="fxMRText">Macro relativo: '+macro.win+'/7 favorevoli · Rates relativo: '+rates.win+'/7 favorevoli. Questo blocco è separato dal momentum della singola valuta.</span>';
+  }
+
+  const oldRefresh=typeof refresh==='function'?refresh:null;
+  setTimeout(addRelativeCard,50);
+  setTimeout(addRelativeCard,300);
+  if(typeof renderCurrency==='function' && !renderCurrency.__fxRelWrapped){
+    const original=renderCurrency;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(addRelativeCard,0);return r};
+    wrapped.__fxRelWrapped=true;
+    renderCurrency=wrapped;
+  }
+})();
