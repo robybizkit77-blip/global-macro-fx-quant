@@ -194,6 +194,23 @@ def audit_pair_semantics(dashboard: dict) -> list[dict]:
                 })
     return issues
 
+
+def audit_pair_monitor_guidance(dashboard: dict) -> list[dict]:
+    """Reject obviously stale boilerplate monitoring text across heterogeneous leads."""
+    pair_states = dashboard.get("pairStates") or {}
+    leads = {((s.get("lead") or [None])[0]) for s in pair_states.values()}
+    leads.discard(None)
+    monitors = {(s.get("monitor") or "").strip() for s in pair_states.values() if (s.get("monitor") or "").strip()}
+    issues = []
+    if len(leads) > 1 and len(monitors) == 1 and len(pair_states) >= 8:
+        issues.append({
+            "type": "uniform_monitor_text_with_multiple_leads",
+            "lead_count": len(leads),
+            "monitor_count": len(monitors),
+            "pair_count": len(pair_states),
+        })
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -259,6 +276,10 @@ def main() -> None:
     pair_semantic_issues = audit_pair_semantics(dashboard)
     if pair_semantic_issues:
         raise ValueError("PAIR_NARRATIVE_BINDING_MISMATCH: " + json.dumps(pair_semantic_issues, ensure_ascii=False))
+
+    pair_monitor_issues = audit_pair_monitor_guidance(dashboard)
+    if pair_monitor_issues:
+        raise ValueError("PAIR_MONITOR_STALE: " + json.dumps(pair_monitor_issues, ensure_ascii=False))
 
     payload = {"country_ctx": country_context, "dashboard": dashboard}
 
