@@ -864,3 +864,90 @@
     renderTopThemes=wrapped;
   }
 })();
+
+
+/* FX_OVERVIEW_RUNTIME_TRUTH */
+(()=>{
+  'use strict';
+
+  const LEAD_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro' };
+
+  function relativeStrength(){
+    const ccys=D?.currencies||['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    return ccys.map(c=>{
+      let fav=0,mix=0,opp=0;
+      Object.entries(D?.pairStates||{}).forEach(([pair,st])=>{
+        if(!pair.split('/').includes(c)) return;
+        if(st.convergence_winner===c) fav++;
+        else if(st.convergence_winner==='MISTA') mix++;
+        else opp++;
+      });
+      return {c,fav,mix,opp};
+    });
+  }
+
+  function liveConflicts(){
+    return Object.entries(D?.pairStates||{}).map(([pair,st])=>{
+      const lead=(st.lead||[])[0]||'';
+      const key=LEAD_KEY[lead];
+      const leadDir=key?st.layers?.[key]:null;
+      const winner=st.convergence_winner;
+      const parts=String(st.convergence_count||'0/0').split('/').map(Number);
+      const ratio=parts[1]?parts[0]/parts[1]:0;
+      return {pair,st,lead,leadDir,winner,ratio};
+    }).filter(x=>x.winner && x.winner!=='MISTA' && x.leadDir && x.leadDir!==x.winner)
+      .sort((a,b)=>b.ratio-a.ratio || a.pair.localeCompare(b.pair));
+  }
+
+  function refreshOverviewTruth(){
+    try{
+      const s=relativeStrength().sort((a,b)=>b.fav-a.fav || a.c.localeCompare(b.c));
+      if(!s.length) return;
+      const top=s.filter(x=>x.fav===s[0].fav);
+      const low=s.filter(x=>x.fav===s[s.length-1].fav);
+      const main=document.getElementById('v254MainStory');
+      const sub=document.getElementById('v254MainSub');
+      if(main){
+        const topTxt=top.map(x=>x.c+' '+x.fav+'/7').join(' · ');
+        const lowTxt=low.map(x=>x.c+' '+x.fav+'/7').join(' · ');
+        main.textContent='Forza relativa G8 live: '+topTxt+'. In coda: '+lowTxt+'.';
+        main.dataset.fxOverview='runtime-pairstates';
+      }
+      if(sub){
+        sub.textContent='Questa è forza relativa sulle 28 coppie. “Migliora / Peggiora / Turning point” resta invece momentum interno della singola valuta: i due concetti non vengono più confusi.';
+      }
+
+      const conflicts=liveConflicts();
+      const dh=document.getElementById('v254Divergences');
+      if(dh){
+        dh.innerHTML=conflicts.length?conflicts.slice(0,3).map(x=>
+          '<div class="v254Item warn"><b>'+x.pair+' · lead '+x.lead+' → '+x.leadDir+'</b><span>La prevalenza dei layer favorisce '+x.winner+' ('+(x.st.convergence_count||'—')+'). Divergenza reale da monitorare.</span></div>'
+        ).join(''):'<div class="v254Item"><b>Nessun conflitto lead/prevalenza</b><span>I driver principali non sono in opposizione alla prevalenza dei layer.</span></div>';
+      }
+
+      const ph=document.getElementById('v254Pairs');
+      if(ph){
+        ph.innerHTML=conflicts.length?conflicts.slice(0,3).map(x=>
+          '<div class="v254Item good" onclick="openPairDetail(\''+x.pair+'\')" style="cursor:pointer"><b>'+x.pair+'</b><span>Lead '+x.lead+' → '+x.leadDir+' · prevalenza → '+x.winner+' · '+(x.st.convergence_count||'—')+'</span></div>'
+        ).join(''):'<div class="v254Item"><b>Nessun contrasto forte</b><span>Nessun lead è in opposizione alla prevalenza dei layer.</span></div>';
+      }
+      window.FX_OVERVIEW_QA={
+        pairCount:Object.keys(D?.pairStates||{}).length,
+        relativeStrength:s,
+        leadPrevalenceConflicts:conflicts.map(x=>x.pair),
+        status:Object.keys(D?.pairStates||{}).length===28?'PASS':'FAIL'
+      };
+    }catch(e){
+      window.FX_OVERVIEW_QA={status:'FAIL',error:String(e)};
+    }
+  }
+
+  setTimeout(refreshOverviewTruth,140);
+  setTimeout(refreshOverviewTruth,650);
+  if(typeof renderSimpleOverview==='function' && !renderSimpleOverview.__fxRuntimeTruthWrapped){
+    const original=renderSimpleOverview;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(refreshOverviewTruth,0);return r};
+    wrapped.__fxRuntimeTruthWrapped=true;
+    renderSimpleOverview=wrapped;
+  }
+})();
