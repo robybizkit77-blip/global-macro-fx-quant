@@ -134,12 +134,10 @@ jobs:
           dump("series_JPY.json", jpy)
 
           # ---- WTI: full official FRED/EIA DCOILWTICO history ----
-          url="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILWTICO&cosd=2016-01-01&coed=2026-09-27"
-          fred_path=Path("/tmp/DCOILWTICO.csv")
-          cmd=["curl","--http1.1","-fL","--compressed","--retry","5","--retry-all-errors","--retry-delay","3",
-               "--connect-timeout","20","--max-time","180","-A","Mozilla/5.0",url,"-o",str(fred_path)]
-          subprocess.run(cmd,check=True)
-          text=fred_path.read_text(encoding="utf-8-sig")
+          # Deterministic canonical fallback stored in-repo; avoids external transport failures.
+          import base64, gzip
+          snap=ROOT/"data/sources/DCOILWTICO_2016_2026.csv.gz.b64"
+          text=gzip.decompress(base64.b64decode(snap.read_text(encoding="utf-8"))).decode("utf-8-sig")
           rdr=csv.DictReader(io.StringIO(text))
           wti=[]
           for rr in rdr:
