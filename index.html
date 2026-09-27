@@ -6,7 +6,16 @@
 </head><body><div id="loading">Caricamento GLOBAL MACRO FX QUANT…</div>
 <script>
 (async()=>{
- const files=["site/part-001.b64","site/part-002.b64","site/part-003.b64","site/part-004.b64","site/part-005.b64","site/part-006.b64","site/part-007.b64","site/part-008.b64","site/part-009.b64","site/part-010.b64","site/part-011.b64","site/part-012.b64"];
+ let files;
+ try{
+   const m=await fetch('site/current.json',{cache:'no-store'});
+   if(!m.ok) throw new Error('manifest '+m.status);
+   const j=await m.json();
+   if(!Array.isArray(j.files)||!j.files.length) throw new Error('manifest non valido');
+   files=j.files;
+ }catch(_){
+   files=["site/part-001.b64","site/part-002.b64","site/part-003.b64","site/part-004.b64","site/part-005.b64","site/part-006.b64","site/part-007.b64","site/part-008.b64","site/part-009.b64","site/part-010.b64","site/part-011.b64","site/part-012.b64"];
+ }
  const chunks=[];
  for(const f of files){
    const r=await fetch(f,{cache:'no-store'});
@@ -20,8 +29,8 @@
  const total=chunks.reduce((n,a)=>n+a.length,0);
  const all=new Uint8Array(total); let off=0;
  for(const a of chunks){all.set(a,off);off+=a.length;}
- const html=new TextDecoder('utf-8').decode(all);
- document.open();document.write(html);document.close();
+ const dash=new TextDecoder('utf-8').decode(all);
+ document.open();document.write(dash);document.close();
 })().catch(e=>{
  document.body.innerHTML='<div style="padding:24px;font:16px Arial;color:#fff;background:#06131f">Errore nel caricamento della dashboard. Riprova tra poco.<br><small>'+String(e)+'</small></div>';
 });
