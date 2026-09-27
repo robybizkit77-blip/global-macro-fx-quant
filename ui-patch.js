@@ -398,3 +398,94 @@
   if(report.status==='PASS') console.info('FX full runtime hydration PASS',report);
   else console.warn('FX full runtime hydration fallback',report);
 })();
+
+
+/* FX_RATES_SOURCE_SAFETY */
+(()=>{
+  'use strict';
+
+  function canonicalRateSeries(ccy, tenor){
+    try{
+      const rows=(typeof S!=='undefined' && S[ccy]) ? S[ccy].filter(x=>x.category==='Rates') : [];
+      const patterns = tenor==='2Y'
+        ? [/\b2Y\b/i,/2D$/i]
+        : [/\b10Y\b/i,/10D$/i];
+      for(const re of patterns){
+        const hit=rows.find(x=>re.test(x.label||''));
+        if(hit && Array.isArray(hit.dates) && Array.isArray(hit.values) && hit.values.length) return hit;
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function canonicalLast(ccy,tenor){
+    const s=canonicalRateSeries(ccy,tenor);
+    if(!s) return null;
+    return {date:s.dates.at(-1),value:Number(s.values.at(-1)),series:s};
+  }
+
+  function marketCrossCheck(ccy,tenor){
+    try{
+      const x=NATIVE_RATES_DATA?.[ccy];
+      const v=x?.[tenor];
+      if(v==null) return null;
+      return {date:x.date||'—',value:Number(v),source:x.source||'',quality:x.quality||''};
+    }catch(e){return null}
+  }
+
+  // Never splice a market-close cross-check into an official historical curve.
+  if(typeof v233ChartSeries==='function'){
+    v233ChartSeries=function(d,key){
+      const c=typeof v233RatesCurrency!=='undefined'?v233RatesCurrency:'USD';
+      if(key==='2Y'){
+        const s=canonicalRateSeries(c,'2Y');
+        return s?[{name:'2Y · serie canonica',series:s}]:[];
+      }
+      if(key==='10Y'){
+        const s=canonicalRateSeries(c,'10Y');
+        return s?[{name:'10Y · serie canonica',series:s}]:[];
+      }
+      if(key==='CURVE'){
+        const s2=canonicalRateSeries(c,'2Y'), s10=canonicalRateSeries(c,'10Y');
+        if(!s2||!s10) return [];
+        const map10=new Map(s10.dates.map((z,i)=>[z,s10.values[i]]));
+        const dates=[],values=[];
+        s2.dates.forEach((z,i)=>{
+          if(map10.has(z)){
+            dates.push(z);
+            values.push((Number(map10.get(z))-Number(s2.values[i]))*100);
+          }
+        });
+        return dates.length?[{name:'10Y−2Y · serie canonica',series:{dates,values,label:'Curva 10Y−2Y'}}]:[];
+      }
+      if(key==='REAL') return d?.real?[{name:'Real yield',series:d.real}]:[];
+      if(key==='BE') return d?.breakeven?[{name:'Breakeven',series:d.breakeven}]:[];
+      return [];
+    };
+  }
+
+  // Currency Rates detail: canonical official series first, separate market-close cross-check second.
+  if(typeof v219RatesDetail==='function'){
+    v219RatesDetail=function(c){
+      const d=typeof currencyIntelData!=='undefined'?currencyIntelData[c]:null;
+      const c2=canonicalLast(c,'2Y'), c10=canonicalLast(c,'10Y');
+      const m2=marketCrossCheck(c,'2Y'), m10=marketCrossCheck(c,'10Y');
+      const dyn=typeof currencyDynamics==='function'?currencyDynamics(c)?.rates:null;
+      const curve=(c2&&c10)?(c10.value-c2.value)*100:null;
+      const sourceNote=(m2 && c2 && m2.date!==c2.date)
+        ? '<br><b>Cross-check mercato:</b> '+c+' 2Y '+fmt(m2.value,2)+'% al '+m2.date+' · non inserito nella serie storica canonica.'
+        : '';
+      return '<div class="v219DetailGrid">'+
+        '<div class="neu"><span>TASSO 2 ANNI · CANONICO</span><b>'+(c2?fmt(c2.value,2)+'%':'—')+'</b><small>'+(c2?'as of '+c2.date:'serie non disponibile')+'</small></div>'+
+        '<div class="neu"><span>TASSO 10 ANNI · CANONICO</span><b>'+(c10?fmt(c10.value,2)+'%':'—')+'</b><small>'+(c10?'as of '+c10.date:'serie non disponibile')+'</small></div>'+
+        '<div class="neu"><span>CURVA 2Y-10Y</span><b>'+(curve==null?'—':fmt(curve,0)+' bp')+'</b><small>calcolata sulla stessa famiglia di serie</small></div>'+
+        '</div><p class="v219DetailText"><b>Tassi:</b> '+(d?.rates?.[2]||'—')+
+        '<br><b>Banca centrale:</b> '+(d?.cb?.[2]||'—')+
+        (dyn?.turn?'<br><b>Attenzione:</b> possibile svolta recente nei tassi a breve.':'')+
+        sourceNote+
+        '</p><button class="v220InlineLink" type="button" onclick="showView(\'rates\')">Apri i grafici Rates</button>';
+    };
+  }
+
+  window.FX_RATES_SOURCE_QA={status:'PASS',rule:'official historical series never spliced with market-close cross-check'};
+})();
