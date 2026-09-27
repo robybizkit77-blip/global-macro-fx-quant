@@ -1191,9 +1191,9 @@
   function ensureBoard(){
     let board=document.getElementById('fxG8StateBoard');if(board)return board;
     board=document.createElement('section');board.id='fxG8StateBoard';
-    const map=document.getElementById('v256LayerMap');const mapPanel=map?.closest('.v256Panel');
-    if(mapPanel?.parentElement)mapPanel.parentElement.insertBefore(board,mapPanel);
-    else{const main=document.getElementById('v254MainStory');const host=main?.closest('section,.panel,.v254Panel')||main?.parentElement?.parentElement||main?.parentElement;const mount=document.getElementById('fxG8StateMount');if(host?.parentElement)host.insertAdjacentElement('afterend',board);else if(mount)mount.appendChild(board);else document.body.appendChild(board)}
+    const mount=document.getElementById('fxG8StateMount');
+    if(mount)mount.appendChild(board);
+    else document.body.prepend(board)
     return board;
   }
   function render(){
