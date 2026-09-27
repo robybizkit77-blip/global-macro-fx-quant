@@ -699,3 +699,62 @@
     renderPair=wrapped;
   }
 })();
+
+
+/* FX_PAIR_MONITOR_BY_LEAD */
+(()=>{
+  'use strict';
+
+  const LABEL_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro','Prezzo':'price' };
+
+  function buildPairMonitor(pair){
+    try{
+      const st=D?.pairStates?.[pair];
+      if(!st) return null;
+      const lead=(st.lead||[])[0]||'';
+      const lk=LABEL_KEY[lead];
+      const leadDir=lk?st.layers?.[lk]:null;
+      const winner=st.convergence_winner;
+      let base='';
+
+      if(lead==='Rates'){
+        base='Guarda il front-end: il livello 2Y e l’impulso 1W devono restare coerenti; poi verifica se Price e gli altri layer seguono.';
+      } else if(lead==='Banca centrale'){
+        base='Guarda la prossima comunicazione/azione della banca centrale e soprattutto se Rates/front-end iniziano a confermare il differenziale di policy.';
+      } else if(lead==='COT'){
+        base='Guarda se il positioning continua nella stessa direzione e se il Prezzo lo conferma: il COT da solo resta un early warning, non una conferma finale.';
+      } else if(lead==='Macro'){
+        base='Guarda i prossimi dati Growth, Labour e Inflation e verifica se Rates e Prezzo iniziano a tradurre il vantaggio macro in forza relativa.';
+      } else {
+        base='Guarda quale layer diventa per primo direzionale e se gli altri iniziano a convergere.';
+      }
+
+      if(winner==='MISTA'){
+        base+=' I layer sono divisi: la priorità è vedere quale blocco rompe l’equilibrio.';
+      } else if(leadDir && winner && leadDir!==winner){
+        base+=' Attenzione: il lead punta a '+leadDir+' mentre la prevalenza dei layer favorisce '+winner+'; serve una risoluzione di questa divergenza.';
+      }
+      return base;
+    }catch(e){return null}
+  }
+
+  window.FX_PAIR_MONITOR=buildPairMonitor;
+
+  function hydratePairMonitors(){
+    try{
+      Object.keys(D?.pairStates||{}).forEach(pair=>{
+        const m=buildPairMonitor(pair);
+        if(m) D.pairStates[pair].monitor=m;
+      });
+    }catch(e){}
+  }
+
+  hydratePairMonitors();
+
+  if(typeof renderPair==='function' && !renderPair.__fxMonitorWrapped){
+    const original=renderPair;
+    const wrapped=function(){hydratePairMonitors(); return original.apply(this,arguments)};
+    wrapped.__fxMonitorWrapped=true;
+    renderPair=wrapped;
+  }
+})();
