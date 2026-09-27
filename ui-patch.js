@@ -758,3 +758,74 @@
     renderPair=wrapped;
   }
 })();
+
+
+/* FX_MARKET_PRICING_QUALITY_GUARD */
+(()=>{
+  'use strict';
+
+  function numericForwardCount(cb){
+    return ['market_3m','market_6m','market_12m']
+      .map(k=>cb?.[k])
+      .filter(v=>typeof v==='number' || (typeof v==='string' && /^-?\d+(?:\.\d+)?%?$/.test(v.trim())))
+      .length;
+  }
+
+  function safeMarketNarrative(ccy){
+    const cb=(typeof NATIVE_CB_DATA!=='undefined' && NATIVE_CB_DATA[ccy]) || null;
+    if(!cb) return {
+      headline:'Pricing forward non disponibile',
+      detail:'Nessun dato forward omogeneo e riproducibile nel payload corrente.'
+    };
+    const n=numericForwardCount(cb);
+    const tier=String(cb.pricing_tier||'').toUpperCase();
+    const status=String(cb.pricing_status||'').trim();
+
+    if(n>=2){
+      return {
+        headline:'Pricing forward numerico disponibile',
+        detail:status || 'La curva forward è presente con valori numerici utilizzabili.'
+      };
+    }
+    if(status.includes('%')){
+      return {
+        headline:'Pricing parziale disponibile',
+        detail:status+' È un dato puntuale; non viene trasformato automaticamente in una curva G8 confrontabile.'
+      };
+    }
+    if(tier==='COMPLETO'){
+      return {
+        headline:'Curva disponibile, ma non numerica nel payload corrente',
+        detail:(status?status+'. ':'')+'Non attribuiamo una direzione al mercato finché i forward non sono numerici e confrontabili.'
+      };
+    }
+    return {
+      headline:'Pricing forward non confrontabile',
+      detail:(status?status+'. ':'')+'Overnight e sovereign yields restano separati e non vengono usati come sostituti del forward pricing.'
+    };
+  }
+
+  function hydrateSafeMarketNarrative(){
+    try{
+      if(typeof V241_PLAIN_MARKET==='undefined') return;
+      for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+        const s=safeMarketNarrative(ccy);
+        if(V241_PLAIN_MARKET[ccy]){
+          V241_PLAIN_MARKET[ccy].headline=s.headline;
+          V241_PLAIN_MARKET[ccy].detail=s.detail;
+        }
+      }
+    }catch(e){}
+  }
+
+  window.FX_SAFE_MARKET_NARRATIVE=safeMarketNarrative;
+  hydrateSafeMarketNarrative();
+  setTimeout(hydrateSafeMarketNarrative,100);
+  setTimeout(hydrateSafeMarketNarrative,500);
+  if(typeof renderNativeCbDesk==='function' && !renderNativeCbDesk.__fxPricingGuardWrapped){
+    const original=renderNativeCbDesk;
+    const wrapped=function(){hydrateSafeMarketNarrative();return original.apply(this,arguments)};
+    wrapped.__fxPricingGuardWrapped=true;
+    renderNativeCbDesk=wrapped;
+  }
+})();
