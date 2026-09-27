@@ -1491,3 +1491,40 @@
   setTimeout(refresh,300);
   setTimeout(refresh,1000);
 })();
+
+
+/* FX_REMOVE_TECHNICAL_CANONICAL_NOTES_AT_SOURCE_V279 */
+(()=>{
+  'use strict';
+
+  function removeTechnicalCanonicalNotes(){
+    document.querySelectorAll('.v276CanonicalNote,.v276CanonicalPairNote').forEach(el=>el.remove());
+    [...document.querySelectorAll('body *')].forEach(el=>{
+      const t=(el.textContent||'').trim();
+      if(
+        t.startsWith('Catena canonica:') ||
+        t.startsWith('Pair state canonico:')
+      ){
+        // Remove only the small technical note node, never a whole desk/panel.
+        const cls=String(el.className||'');
+        const isSmallNote=cls.includes('sectionNote') || cls.includes('Canonical') || el.children.length<=3;
+        if(isSmallNote) el.remove();
+      }
+    });
+  }
+
+  // Neutralise the legacy producer so future renders cannot recreate the technical banner.
+  try{
+    if(typeof window.addGovernanceNote==='function') window.addGovernanceNote=function(){};
+  }catch(e){}
+  try{
+    if(typeof window.addPairNote==='function') window.addPairNote=function(){};
+  }catch(e){}
+
+  const mo=new MutationObserver(removeTechnicalCanonicalNotes);
+  mo.observe(document.body,{childList:true,subtree:true,characterData:true});
+  removeTechnicalCanonicalNotes();
+  setTimeout(removeTechnicalCanonicalNotes,50);
+  setTimeout(removeTechnicalCanonicalNotes,300);
+  setTimeout(removeTechnicalCanonicalNotes,1000);
+})();
