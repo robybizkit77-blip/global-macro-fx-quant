@@ -1158,3 +1158,94 @@
   }
 })();
 
+
+
+/* FX_OVERVIEW_COHERENCE_V276 */
+(()=>{
+  'use strict';
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+
+  function breadth(){
+    return CCYS.map(c=>{
+      let fav=0,mix=0,opp=0;
+      const layer={macro:0,rates:0,central_bank:0,cot:0,price:0};
+      Object.entries(D?.pairStates||{}).forEach(([pair,st])=>{
+        if(!pair.split('/').includes(c)) return;
+        if(st.convergence_winner===c) fav++;
+        else if(st.convergence_winner==='MISTA') mix++;
+        else opp++;
+        Object.keys(layer).forEach(k=>{if(st.layers?.[k]===c) layer[k]++});
+      });
+      return {c,fav,mix,opp,layer};
+    }).sort((a,b)=>b.fav-a.fav||a.c.localeCompare(b.c));
+  }
+
+  function divergent(rows){
+    return rows.map(r=>{
+      const spread=Math.max(...Object.values(r.layer))-Math.min(...Object.values(r.layer));
+      const priceGap=Math.abs(r.layer.rates-r.layer.price);
+      const cotGap=Math.abs(r.layer.rates-r.layer.cot);
+      return {...r,score:spread+priceGap+cotGap};
+    }).filter(r=>r.score>=5).sort((a,b)=>b.score-a.score||b.fav-a.fav);
+  }
+
+  function setText(id,t){
+    const e=document.getElementById(id); if(e)e.textContent=t;
+  }
+
+  function setCardLabel(id,label,small){
+    const value=document.getElementById(id); if(!value)return;
+    const card=value.closest('.v256Pulse'); if(!card)return;
+    const lab=card.querySelector('span'); const sm=card.querySelector('small');
+    if(lab)lab.textContent=label;
+    if(sm)sm.textContent=small;
+  }
+
+  function refresh(){
+    try{
+      if(!D?.pairStates || Object.keys(D.pairStates).length!==28) return;
+      const rows=breadth();
+      const top=rows.filter(r=>r.fav>=5);
+      const weak=rows.filter(r=>r.fav<=2).sort((a,b)=>a.fav-b.fav||a.c.localeCompare(b.c));
+      const div=divergent(rows).slice(0,3);
+
+      setCardLabel('v254Improve','FORZA RELATIVA','Ampiezza sui 7 cross');
+      setCardLabel('v254Worsen','DEBOLEZZA RELATIVA','Ampiezza sui 7 cross');
+      setCardLabel('v254Turn','DIVERGENZE','Layer non ancora allineati');
+
+      setText('v254Improve', top.length?top.map(x=>x.c+' '+x.fav+'/7').join(' · '):'Nessuna');
+      setText('v254Worsen', weak.length?weak.map(x=>x.c+' '+x.fav+'/7').join(' · '):'Nessuna');
+      setText('v254Turn', div.length?div.map(x=>x.c).join(' · '):'Nessuna rilevante');
+
+      const strongest=rows[0], weakest=rows.at(-1);
+      setText('v254MainStory','Forza relativa G8: '+strongest.c+' '+strongest.fav+'/7. In coda: '+weakest.c+' '+weakest.fav+'/7.');
+      const sub=document.getElementById('v254MainSub');
+      if(sub) sub.textContent='Questa Panoramica descrive lo stato relativo attuale sui 28 cross. Il momentum di breve periodo resta separato nella sezione “Cosa è cambiato”.';
+
+      const head=document.querySelector('#overview .v256Eyebrow');
+      if(head) head.textContent='GLOBAL MACRO FX QUANT · STATO RELATIVO ATTUALE';
+
+      window.FX_OVERVIEW_COHERENCE_QA={
+        status:'PASS',
+        source:'D.pairStates',
+        pairCount:Object.keys(D.pairStates).length,
+        strongest,
+        weakest,
+        top,
+        weak,
+        divergences:div
+      };
+    }catch(e){
+      window.FX_OVERVIEW_COHERENCE_QA={status:'FAIL',error:String(e)};
+    }
+  }
+
+  setTimeout(refresh,220);
+  setTimeout(refresh,900);
+  if(typeof renderSimpleOverview==='function' && !renderSimpleOverview.__fxCoherenceV276Wrapped){
+    const original=renderSimpleOverview;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(refresh,0);return r};
+    wrapped.__fxCoherenceV276Wrapped=true;
+    renderSimpleOverview=wrapped;
+  }
+})();
