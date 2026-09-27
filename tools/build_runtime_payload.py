@@ -132,6 +132,68 @@ def audit_price_pair_binding(dashboard: dict) -> list[dict]:
             issues.append({"pair": pair, "error": str(exc)})
     return issues
 
+
+def audit_pair_semantics(dashboard: dict) -> list[dict]:
+    """Validate lead priority, confirms/diverges semantics and convergence counts."""
+    pair_states = dashboard.get("pairStates") or {}
+    issues = []
+    label_to_key = {
+        "Rates": "rates",
+        "Banca centrale": "central_bank",
+        "COT": "cot",
+        "Macro": "macro",
+        "Prezzo": "price",
+    }
+    priority = [("rates", "Rates"), ("central_bank", "Banca centrale"), ("cot", "COT"), ("macro", "Macro")]
+    for pair, state in pair_states.items():
+        layers = state.get("layers") or {}
+        expected_lead = None
+        for key, label in priority:
+            value = layers.get(key)
+            if value not in (None, "MISTO", "NON CONFRONTABILE"):
+                expected_lead = label
+                break
+        actual_lead = ((state.get("lead") or [None])[0])
+        if actual_lead != expected_lead:
+            issues.append({"pair": pair, "type": "lead_priority", "stored": actual_lead, "expected": expected_lead})
+
+        lead_key = label_to_key.get(actual_lead)
+        lead_dir = layers.get(lead_key) if lead_key else None
+        if actual_lead in ("Prezzo", "Price"):
+            issues.append({"pair": pair, "type": "price_cannot_lead"})
+
+        for label in state.get("confirms") or []:
+            key = label_to_key.get(label)
+            if key and layers.get(key) != lead_dir:
+                issues.append({"pair": pair, "type": "confirm_semantics", "layer": label, "lead": actual_lead})
+        for label in state.get("diverges") or []:
+            key = label_to_key.get(label)
+            if key and layers.get(key) == lead_dir:
+                issues.append({"pair": pair, "type": "diverge_semantics", "layer": label, "lead": actual_lead})
+
+        comparable = [
+            layers.get(k) for k in ("macro", "rates", "central_bank", "cot", "price")
+            if layers.get(k) not in (None, "MISTO", "NON CONFRONTABILE")
+        ]
+        winner = state.get("convergence_winner")
+        if comparable:
+            if winner == "MISTA":
+                counts = {}
+                for value in comparable:
+                    counts[value] = counts.get(value, 0) + 1
+                numerator = max(counts.values())
+            else:
+                numerator = sum(1 for value in comparable if value == winner)
+            expected_count = f"{numerator}/{len(comparable)}"
+            if state.get("convergence_count") != expected_count:
+                issues.append({
+                    "pair": pair,
+                    "type": "convergence_count",
+                    "stored": state.get("convergence_count"),
+                    "expected": expected_count,
+                })
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -193,6 +255,10 @@ def main() -> None:
     price_pair_binding_issues = audit_price_pair_binding(dashboard)
     if price_pair_binding_issues:
         raise ValueError("PRICE_PAIR_BINDING_MISMATCH: " + json.dumps(price_pair_binding_issues, ensure_ascii=False))
+
+    pair_semantic_issues = audit_pair_semantics(dashboard)
+    if pair_semantic_issues:
+        raise ValueError("PAIR_NARRATIVE_BINDING_MISMATCH: " + json.dumps(pair_semantic_issues, ensure_ascii=False))
 
     payload = {"country_ctx": country_context, "dashboard": dashboard}
 
