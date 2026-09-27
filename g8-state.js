@@ -69,30 +69,22 @@
   }
 
   function locateDashboardHost(){
-    const overview=document.getElementById('overview');
-    if(overview) return overview;
-    const candidates=[
-      document.querySelector('[data-tab="overview"]'),
-      document.querySelector('.overview'),
-      document.querySelector('main'),
-      document.querySelector('#app'),
-      document.querySelector('.dashboard')
-    ].filter(Boolean);
-    return candidates[0]||document.body;
+    return document.getElementById('overview');
   }
 
   function ensureMountInsideDashboard(){
     cleanLegacyCopies();
+    const host=locateDashboardHost();
+    if(!host) return null;
     let mount=document.getElementById('fxG8StateMount');
     if(!mount){
       mount=document.createElement('div');
       mount.id='fxG8StateMount';
     }
-    const host=locateDashboardHost();
     if(mount.parentElement!==host){
       if(mount.parentElement) mount.remove();
-      const first=host.firstElementChild;
-      if(first && first.nextSibling) host.insertBefore(mount,first.nextSibling);
+      const hero=host.querySelector('.v256Hero');
+      if(hero) hero.insertAdjacentElement('afterend',mount);
       else host.prepend(mount);
     }
     return mount;
@@ -100,6 +92,7 @@
 
   function render(D){
     const mount=ensureMountInsideDashboard();
+    if(!mount) throw new Error('#overview non disponibile');
     if(Object.keys(D.pairStates||{}).length!==28) throw new Error('pairStates != 28');
 
     if(!document.getElementById('fxG8StandaloneCss')){
@@ -141,16 +134,25 @@
     setTimeout(()=>{ensureMountInsideDashboard();cleanLegacyCopies()},900);
   }
 
+  async function waitForOverview(maxMs=8000){
+    const started=Date.now();
+    while(Date.now()-started<maxMs){
+      const host=document.getElementById('overview');
+      if(host) return host;
+      await new Promise(r=>setTimeout(r,50));
+    }
+    throw new Error('#overview timeout');
+  }
+
   async function boot(){
     try{
+      await waitForOverview();
       const r=await fetch('data/sections/dashboard.json?fxg8='+Date.now(),{cache:'no-store'});
       if(!r.ok) throw new Error('dashboard '+r.status);
       render(await r.json());
     }catch(e){
-      const mount=ensureMountInsideDashboard();
-      if(mount) mount.innerHTML='<div style="padding:12px;color:#ffb4b4;font:12px Arial">FX G8 State: errore di caricamento · '+String(e)+'</div>';
       window.FX_G8_STANDALONE_QA={status:'FAIL',error:String(e)};
     }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
+  boot();
 })();
