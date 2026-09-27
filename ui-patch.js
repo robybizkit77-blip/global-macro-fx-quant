@@ -76,3 +76,252 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true}); else install();
 })();
+
+(()=>{
+  'use strict';
+
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const LABEL_TO_KEY={
+    'Macro':'macro',
+    'Rates':'rates',
+    'Banca centrale':'central_bank',
+    'COT':'cot',
+    'Prezzo':'price'
+  };
+
+  function reversePairLocal(pair){
+    const x=String(pair||'').split('/');
+    return x.length===2 ? x[1]+'/'+x[0] : pair;
+  }
+
+  function getRuntimePair(pair){
+    if(typeof D==='undefined' || !D.pairStates) return null;
+    if(D.pairStates[pair]) return {pair,state:D.pairStates[pair],reversed:false};
+    const rev=reversePairLocal(pair);
+    if(D.pairStates[rev]) return {pair,state:D.pairStates[rev],reversed:true,sourcePair:rev};
+    return null;
+  }
+
+  function sideForCurrency(pair,value){
+    const [a,b]=String(pair||'').split('/');
+    if(value===a) return 'A';
+    if(value===b) return 'B';
+    if(value==='MISTO') return 'MIXED';
+    if(value==='NON CONFRONTABILE') return 'WITHHELD';
+    return value||'MIXED';
+  }
+
+  function runtimeLeadKey(label){
+    return LABEL_TO_KEY[label] || (
+      label==='Rates / aspettative CB' ? 'rates' :
+      label==='Banca centrale / aspettative policy' ? 'central_bank' :
+      null
+    );
+  }
+
+  function runtimeCertifiedAdapter(pair){
+    const hit=getRuntimePair(pair);
+    if(!hit) return null;
+
+    const st=hit.state;
+    const [a,b]=String(pair||'').split('/');
+    const layerDirs={};
+    for(const [k,v] of Object.entries(st.layers||{})){
+      layerDirs[k]=sideForCurrency(pair,v);
+    }
+
+    const leadLabel=(st.lead||[])[0]||null;
+    const leadKey=runtimeLeadKey(leadLabel);
+    const leadCurrency=leadKey ? st.layers?.[leadKey] : null;
+    const leadSide=sideForCurrency(pair,leadCurrency);
+    const priceSide=sideForCurrency(pair,st.layers?.price);
+
+    const driver =
+      leadLabel==='Rates' ? 'RATES' :
+      leadLabel==='Banca centrale' ? 'CENTRAL_BANK' :
+      leadLabel==='Macro' ? 'MACRO' :
+      leadLabel==='COT' ? 'COT' :
+      'UNCLEAR';
+
+    let priceConfirmation='PRICE_UNCLEAR';
+    if((leadSide==='A'||leadSide==='B') && (priceSide==='A'||priceSide==='B')){
+      priceConfirmation=leadSide===priceSide?'PRICE_CONFIRMED':'PRICE_DIVERGES';
+    }
+
+    return {
+      pair,
+      source:'RUNTIME_D_PAIR_STATES',
+      source_pair:hit.sourcePair||pair,
+      state:st.state,
+      state_label:st.state_label,
+      lead:(st.lead||[]).map(x=>String(x).toLowerCase()),
+      confirms:(st.confirms||[]).map(x=>String(x).toLowerCase().replace('banca centrale','central_bank')),
+      diverges:(st.diverges||[]).map(x=>String(x).toLowerCase().replace('banca centrale','central_bank')),
+      lags:(st.lags||[]).map(x=>String(x).toLowerCase().replace('banca centrale','central_bank')),
+      layer_directions:layerDirs,
+      cot_concentration_alert:st.cot_alert||'NONE',
+      market_pricing_relative:st.pricing_raw||'WITHHELD',
+      dominant_driver_current:{
+        driver,
+        direction:(leadSide==='A'||leadSide==='B')?leadSide:'MIXED',
+        label_it:leadLabel||'Non determinato',
+        price_confirmation:priceConfirmation
+      },
+      runtime_state:st
+    };
+  }
+
+  function runtimePairDriverStructure(pair){
+    const hit=getRuntimePair(pair);
+    if(!hit){
+      return {driver:'Non determinato',codriver:null,lead:'Non determinato',reason:'pair runtime non disponibile',side:null,source:'runtime'};
+    }
+    const st=hit.state;
+    const lead=(st.lead||[])[0]||'Non determinato';
+    const key=runtimeLeadKey(lead);
+    const leadCcy=key ? st.layers?.[key] : null;
+    const driver =
+      lead==='Rates' ? 'Rates / aspettative CB' :
+      lead==='Banca centrale' ? 'Banca centrale / aspettative policy' :
+      lead==='Macro' ? 'Macro' :
+      lead==='COT' ? 'COT / posizionamento' :
+      'Non determinato';
+
+    const coreConfirms=(st.confirms||[]).filter(x=>['Macro','Rates','Banca centrale'].includes(x) && x!==lead);
+    const codriver=coreConfirms.length ? (
+      coreConfirms[0]==='Rates'?'Rates / aspettative CB':
+      coreConfirms[0]==='Banca centrale'?'Banca centrale / aspettative policy':
+      coreConfirms[0]
+    ) : null;
+
+    return {
+      driver,
+      codriver,
+      lead,
+      reason:'Fonte corrente: D.pairStates runtime. Snapshot certificati storici esclusi dal percorso decisionale live.',
+      side:leadCcy,
+      certifiedDriver:lead,
+      source:'RUNTIME_D_PAIR_STATES'
+    };
+  }
+
+  function runtimeOverviewSync(){
+    if(typeof D==='undefined' || !D.pairStates) return;
+    const counts={rates:0,central_bank:0,macro:0,cot:0,unclear:0};
+    Object.values(D.pairStates).forEach(st=>{
+      const lead=(st.lead||[])[0]||'';
+      if(lead==='Rates') counts.rates++;
+      else if(lead==='Banca centrale') counts.central_bank++;
+      else if(lead==='Macro') counts.macro++;
+      else if(lead==='COT') counts.cot++;
+      else counts.unclear++;
+    });
+    const policyFamily=counts.rates+counts.central_bank;
+    const total=Math.max(1,policyFamily+counts.macro+counts.cot+counts.unclear);
+    const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val};
+    const bar=(id,val)=>{const e=document.getElementById(id);if(e)e.style.width=(val/total*100).toFixed(1)+'%'};
+    set('ovDriverRates',policyFamily);
+    set('ovDriverCb','inclusa nei Rates/CB');
+    set('ovDriverMacro',counts.macro);
+    bar('ovDriverRatesBar',policyFamily);
+    bar('ovDriverCbBar',0);
+    bar('ovDriverMacroBar',counts.macro);
+  }
+
+  function runRuntimeTruthQa(){
+    const result={
+      status:'PASS',
+      source:'RUNTIME_D_PAIR_STATES',
+      asOf:(typeof D!=='undefined'?D.asOf:null),
+      pairCount:0,
+      pairCountExpected:28,
+      leadConfirmDivergeIssues:[],
+      cotBindingIssues:[],
+      staticSnapshotExcluded:true
+    };
+    if(typeof D==='undefined' || !D.pairStates){
+      result.status='FAIL';
+      result.reason='D.pairStates non disponibile';
+      return result;
+    }
+
+    const pairs=Object.entries(D.pairStates);
+    result.pairCount=pairs.length;
+    if(pairs.length!==28) result.status='FAIL';
+
+    for(const [pair,st] of pairs){
+      const leadName=(st.lead||[])[0];
+      const leadKey=LABEL_TO_KEY[leadName];
+      const leadDir=leadKey?st.layers?.[leadKey]:null;
+      if(leadDir && leadDir!=='MISTO' && leadDir!=='NON CONFRONTABILE'){
+        for(const c of st.confirms||[]){
+          const k=LABEL_TO_KEY[c];
+          if(k && st.layers?.[k]!==leadDir){
+            result.leadConfirmDivergeIssues.push({pair,type:'confirm',layer:c,lead:leadName,leadDir,value:st.layers?.[k]});
+          }
+        }
+        for(const d of st.diverges||[]){
+          const k=LABEL_TO_KEY[d];
+          if(k && st.layers?.[k]===leadDir){
+            result.leadConfirmDivergeIssues.push({pair,type:'diverge',layer:d,lead:leadName,leadDir,value:st.layers?.[k]});
+          }
+        }
+      }
+
+      const [a,b]=pair.split('/');
+      const crowded=[a,b].filter(c=>{
+        const x=D.cot?.[c];
+        return x && Math.abs(Number(x.net_oi||0))>=30;
+      });
+      const alert=String(st.cot_alert||'');
+      const hasAlert=alert.includes('NET_OI_') && !alert.startsWith('NONE');
+      if(crowded.length && !hasAlert) result.cotBindingIssues.push({pair,type:'missing',crowded,alert});
+      if(!crowded.length && hasAlert) result.cotBindingIssues.push({pair,type:'unexpected',crowded,alert});
+    }
+
+    if(result.leadConfirmDivergeIssues.length || result.cotBindingIssues.length) result.status='FAIL';
+    return result;
+  }
+
+  function installRuntimeTruthBridge(){
+    try{
+      if(typeof certifiedPairForMarket==='function') certifiedPairForMarket=runtimeCertifiedAdapter;
+      if(typeof derivePairDriverStructure==='function') derivePairDriverStructure=runtimePairDriverStructure;
+      if(typeof syncOverviewFromV46==='function') syncOverviewFromV46=runtimeOverviewSync;
+
+      if(typeof rebuildCanonicalState==='function'){
+        const old=rebuildCanonicalState;
+        rebuildCanonicalState=function(){
+          const r=old.apply(this,arguments);
+          try{
+            if(typeof MODEL_STATE!=='undefined' && D?.pairStates){
+              MODEL_STATE.pairs={};
+              Object.keys(D.pairStates).forEach(p=>MODEL_STATE.pairs[p]=buildCanonicalPairState(p));
+              MODEL_STATE.updatedAt=new Date().toISOString();
+            }
+          }catch(e){}
+          return r;
+        };
+      }
+
+      window.FX_RUNTIME_TRUTH_QA=runRuntimeTruthQa();
+      document.documentElement.dataset.fxTruthSource='runtime';
+      if(window.FX_RUNTIME_TRUTH_QA.status!=='PASS'){
+        console.error('FX runtime truth QA failed',window.FX_RUNTIME_TRUTH_QA);
+      }else{
+        console.info('FX runtime truth QA PASS',window.FX_RUNTIME_TRUTH_QA);
+      }
+
+      try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+      try{ runtimeOverviewSync(); }catch(e){}
+      try{ if(typeof renderPair==='function') renderPair(); }catch(e){}
+    }catch(e){
+      console.error('Runtime truth bridge install failed',e);
+    }
+  }
+
+  setTimeout(installRuntimeTruthBridge,0);
+  setTimeout(()=>{
+    window.FX_RUNTIME_TRUTH_QA=runRuntimeTruthQa();
+  },250);
+})();
