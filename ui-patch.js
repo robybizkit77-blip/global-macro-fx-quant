@@ -1354,3 +1354,140 @@
   setTimeout(refreshPresentation,250);
   setTimeout(refreshPresentation,900);
 })();
+
+
+/* FX_FINAL_READABLE_DESK_BANNERS_V278 */
+(()=>{
+  'use strict';
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const STATE_COPY={
+    FORTE:'Macro e tassi sostengono la valuta',
+    COSTRUTTIVA:'Supporto presente, ma non completo',
+    MISTA:'Macro e tassi danno segnali contrastanti',
+    DEBOLE:'Pressione negativa parziale',
+    FRAGILE:'Macro e tassi pesano sulla valuta'
+  };
+  const CHANGE_COPY={
+    MIGLIORA:'Supporto in aumento',
+    PEGGIORA:'Supporto in calo',
+    'EARLY SHIFT POSITIVO':'Primo miglioramento dai tassi, macro non ancora allineata',
+    'EARLY SHIFT NEGATIVO':'Primo deterioramento dai tassi, macro non ancora allineata',
+    'TURNING POINT':'Possibile svolta, segnali ancora misti',
+    'NON DETERMINATO':'Cambiamento non ancora determinabile',
+    'STABILE / MISTA':'Nessun cambiamento chiaro'
+  };
+  const PRICE_COPY={
+    'PREZZO CONFERMA':'Prezzo in conferma',
+    'PREZZO DIVERGE':'Prezzo in divergenza',
+    'PREZZO NON RISOLUTIVO':'Prezzo non ancora risolutivo',
+    'PREZZO SENZA STRUTTURA':'Prezzo non ancora leggibile'
+  };
+
+  function frozen(c){ return window.AUDIT_V275?.currency?.[c]||null; }
+  function state(c){ const x=frozen(c); return STATE_COPY[x?.base]||'Quadro non determinato'; }
+  function change(c){ const x=frozen(c); return CHANGE_COPY[x?.change]||'Nessun cambiamento chiaro'; }
+  function price(c){ const x=frozen(c); return PRICE_COPY[x?.confirmation]||'Prezzo non ancora risolutivo'; }
+  function layerPol(v,pos,neu,neg){ return v>0?pos:v<0?neg:neu; }
+
+  function selected(view){
+    if(view==='macro') return window.v232MacroCurrency||window.selectedCcy||'USD';
+    if(view==='ratesdesk') return window.v233RatesCurrency||window.selectedCcy||'USD';
+    if(view==='cbdesk') return window.v234CbCurrency||window.selectedCcy||'USD';
+    if(view==='cot') return window.v245CotSelected||window.selectedCcy||'USD';
+    if(view==='currency') return window.selectedCcy||'USD';
+    return 'USD';
+  }
+
+  function removeOldTechnicalNotes(){
+    document.querySelectorAll('.v276CanonicalNote,.v276CanonicalPairNote').forEach(el=>el.remove());
+  }
+
+  function banner(hostId,c,layer){
+    const host=document.getElementById(hostId);
+    if(!host)return;
+    const x=frozen(c); if(!x)return;
+    let el=host.querySelector('.fxFinalReadableBanner');
+    if(!el){
+      el=document.createElement('div');
+      el.className='sectionNote fxFinalReadableBanner';
+      host.prepend(el);
+    }
+
+    let layerText='';
+    if(layer==='Macro'){
+      layerText=layerPol(x.macro,'Macro favorevole','Macro mista / neutrale','Macro sfavorevole');
+    }else if(layer==='Rates'){
+      layerText=layerPol(x.policy,'Rates / front-end favorevoli','Rates / front-end neutrali','Rates / front-end sfavorevoli');
+    }else if(layer==='Banca centrale'){
+      layerText=layerPol(x.policy,'Policy / Rates-CB favorevoli','Policy / Rates-CB neutrali','Policy / Rates-CB sfavorevoli');
+    }else if(layer==='COT'){
+      layerText='COT: solo posizionamento, affollamento e rischio squeeze';
+    }else if(layer==='Valuta'){
+      layerText='Sintesi complessiva della valuta';
+    }
+
+    el.innerHTML=
+      '<b>'+c+' · '+state(c)+'</b> · '+change(c)+
+      '<br><span>'+layerText+' · '+price(c)+'</span>';
+  }
+
+  function pairBanner(){
+    const host=document.getElementById('pairs'); if(!host)return;
+    const p=window.selectedPair||'';
+    const st=window.AUDIT_V275?.pairs?.[p]||D?.pairStates?.[p];
+    if(!st)return;
+    let el=host.querySelector('.fxFinalReadableBanner');
+    if(!el){ el=document.createElement('div'); el.className='sectionNote fxFinalReadableBanner'; host.prepend(el); }
+    const [a,b]=String(p).split('/');
+    const d=st.dominant_driver_current||{};
+    const winner=d.direction==='A'?a:d.direction==='B'?b:'nessuna valuta';
+    const pc=d.price_confirmation==='PRICE_CONFIRMED'?'Prezzo in conferma':
+             d.price_confirmation==='PRICE_DIVERGES'?'Prezzo in divergenza':'Prezzo non ancora risolutivo';
+    el.innerHTML='<b>'+p+' · vantaggio strutturale: '+winner+'</b><br><span>Driver: '+(d.label_it||'non determinato')+' · '+pc+' · COT usato solo come rischio/posizionamento</span>';
+  }
+
+  function cleanCodesEverywhere(){
+    const map={
+      'COSTRUTTIVA':'Supporto presente, ma non completo',
+      'FRAGILE':'Macro e tassi pesano sulla valuta',
+      'PREZZO NON RISOLUTIVO':'Prezzo non ancora risolutivo',
+      'PREZZO SENZA STRUTTURA':'Prezzo non ancora leggibile',
+      'MIGLIORA':'Supporto in aumento',
+      'PEGGIORA':'Supporto in calo'
+    };
+    document.querySelectorAll('.fxFinalReadableBanner,.fxCanonicalReadable,.soCcyState').forEach(el=>{
+      let h=el.innerHTML;
+      Object.entries(map).forEach(([k,v])=>h=h.replaceAll(k,v));
+      el.innerHTML=h;
+    });
+  }
+
+  function refresh(){
+    removeOldTechnicalNotes();
+    banner('macro',selected('macro'),'Macro');
+    banner('ratesdesk',selected('ratesdesk'),'Rates');
+    banner('cbdesk',selected('cbdesk'),'Banca centrale');
+    banner('cot',selected('cot'),'COT');
+    banner('currency',selected('currency'),'Valuta');
+    pairBanner();
+    cleanCodesEverywhere();
+  }
+
+  const names=['renderMacroLab','renderNativeRatesDesk','renderNativeCbDesk','renderCot','renderCurrency','renderCurrencyIntelligence','renderPair','renderPairGroups','renderSimpleOverview'];
+  names.forEach(name=>{
+    const old=window[name];
+    if(typeof old!=='function'||old.__fxFinalReadable)return;
+    const wrapped=function(){const r=old.apply(this,arguments);setTimeout(refresh,0);return r;};
+    wrapped.__fxFinalReadable=true;
+    window[name]=wrapped;
+    try{eval(name+'=window[name]')}catch(e){}
+  });
+
+  // Old app wrappers can recreate technical notes after a render; keep them out.
+  const obs=new MutationObserver(()=>{ removeOldTechnicalNotes(); cleanCodesEverywhere(); });
+  obs.observe(document.body,{childList:true,subtree:true});
+
+  setTimeout(refresh,0);
+  setTimeout(refresh,300);
+  setTimeout(refresh,1000);
+})();
