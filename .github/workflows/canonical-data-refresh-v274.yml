@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import csv, io, json, hashlib, urllib.request
+          import csv, io, json, hashlib, urllib.request, subprocess, time
           from pathlib import Path
           from datetime import datetime, timezone
 
@@ -134,9 +134,12 @@ jobs:
           dump("series_JPY.json", jpy)
 
           # ---- WTI: full official FRED/EIA DCOILWTICO history ----
-          url="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILWTICO&cosd=2016-01-01"
-          req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0"})
-          text=urllib.request.urlopen(req,timeout=30).read().decode("utf-8-sig")
+          url="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILWTICO&cosd=2016-01-01&coed=2026-09-27"
+          fred_path=Path("/tmp/DCOILWTICO.csv")
+          cmd=["curl","-fL","--compressed","--retry","5","--retry-all-errors","--retry-delay","3",
+               "--connect-timeout","20","--max-time","180","-A","Mozilla/5.0",url,"-o",str(fred_path)]
+          subprocess.run(cmd,check=True)
+          text=fred_path.read_text(encoding="utf-8-sig")
           rdr=csv.DictReader(io.StringIO(text))
           wti=[]
           for rr in rdr:
