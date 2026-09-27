@@ -1,0 +1,70 @@
+name: Apply validated FX dashboard audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/apply-audit-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Apply exact validated audit block
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip
+
+          app_path = Path("app.html")
+          payload_path = Path(".github/tmp/audit_patch.gz.b64")
+
+          app = app_path.read_text(encoding="utf-8")
+          raw = payload_path.read_text(encoding="utf-8").strip()
+          fragment = gzip.decompress(base64.b64decode(raw)).decode("utf-8")
+
+          marker = "v276 — CROSS-DESK CANONICAL GOVERNANCE"
+          if marker not in app:
+              closing = "</body></html>"
+              if closing not in app:
+                  raise RuntimeError("closing body/html marker not found")
+              head, tail = app.rsplit(closing, 1)
+              app = head.rstrip() + "\n\n" + fragment.rstrip() + "\n\n" + closing + tail
+              app_path.write_text(app, encoding="utf-8")
+
+          checks = [
+              "v275 — UNIFORM G8 AUDIT / CANONICAL PAIR REBUILD",
+              "v269 — END-TO-END EXECUTIVE RECOMPUTE",
+              "v276 — CROSS-DESK CANONICAL GOVERNANCE",
+              "GBP:'COSTRUTTIVA'",
+              "pairs.length!==28",
+              "COT = rischio",
+              "Price = conferma/divergenza"
+          ]
+          text = app_path.read_text(encoding="utf-8")
+          missing = [x for x in checks if x not in text]
+          if missing:
+              raise RuntimeError("audit validation failed: " + repr(missing))
+          print("Validated audit block applied")
+          PY
+
+      - name: Commit dashboard
+        shell: bash
+        run: |
+          git config user.name "fx-quant-runtime-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.html
+          if git diff --cached --quiet; then
+            echo "No app.html changes required"
+            exit 0
+          fi
+          git commit -m "Align canonical FX states across dashboard"
+          git push
