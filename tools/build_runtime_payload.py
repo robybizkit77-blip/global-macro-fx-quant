@@ -58,6 +58,44 @@ def extract_object_assignment(source: str, name: str) -> tuple[int, int, object]
     return start, semicolon, json.loads(source[cursor:end])
 
 
+
+def extract_json_assignment(source: str, name: str) -> object:
+    """Extract a JSON object or array from a top-level const assignment."""
+    match = re.search(rf"\\bconst\\s+{re.escape(name)}\\s*=\\s*", source)
+    if not match:
+        raise ValueError(f"Assignment not found: {name}")
+    cursor = match.end()
+    while cursor < len(source) and source[cursor].isspace():
+        cursor += 1
+    if cursor >= len(source) or source[cursor] not in "[{":
+        raise ValueError(f"{name} is not a JSON object/array literal")
+    opener = source[cursor]
+    closer = "}" if opener == "{" else "]"
+    depth, quote, escaped = 0, None, False
+    end = None
+    for pos in range(cursor, len(source)):
+        char = source[pos]
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in ('"', "'"):
+            quote = char
+        elif char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                end = pos + 1
+                break
+    if end is None:
+        raise ValueError(f"Unclosed JSON literal: {name}")
+    return json.loads(source[cursor:end])
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -117,9 +155,49 @@ def main() -> None:
         raise ValueError("Unexpected assignment order")
 
     payload = {"country_ctx": country_context, "dashboard": dashboard}
+
+    # Runtime data used by the stable frontend must travel with every refresh.
+    # These objects remain embedded in app.html as a safe fallback, but ui-patch.js
+    # hydrates them in place from the current payload so they cannot stay frozen.
+    extra_specs = [
+        ("NATIVE_RATES_DATA", "native_rates", "native_rates.json"),
+        ("NATIVE_CB_DATA", "native_cb", "native_cb.json"),
+        ("NATIVE_LIQ_DATA", "native_liq", "native_liq.json"),
+        ("CERT53", "cert53", "cert53.json"),
+        ("V250_COT_CHART_DATA", "cot_charts", "cot_charts.json"),
+        ("TOP_THEMES", "top_themes", "top_themes.json"),
+        ("WHAT_CHANGED", "what_changed", "what_changed.json"),
+        ("V247_COT_STORIES", "cot_stories", "cot_stories.json"),
+        ("V241_PLAIN_MARKET", "plain_market", "plain_market.json"),
+    ]
+    for source_name, key, _filename in extra_specs:
+        payload[key] = extract_json_assignment(source, source_name)
+
+    # S is by far the largest live dataset. Split it by currency so no single
+    # GitHub write is unnecessarily large.
+    all_series = extract_json_assignment(source, "S")
+    for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+        payload[f"series_{ccy}"] = all_series.get(ccy, [])
+
     sections = []
+    file_names = {
+        "country_ctx": "country_ctx.json",
+        "dashboard": "dashboard.json",
+        "native_rates": "native_rates.json",
+        "native_cb": "native_cb.json",
+        "native_liq": "native_liq.json",
+        "cert53": "cert53.json",
+        "cot_charts": "cot_charts.json",
+        "top_themes": "top_themes.json",
+        "what_changed": "what_changed.json",
+        "cot_stories": "cot_stories.json",
+        "plain_market": "plain_market.json",
+    }
+    for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+        file_names[f"series_{ccy}"] = f"series_{ccy}.json"
+
     for key, value in payload.items():
-        filename = f"{key}.json"
+        filename = file_names[key]
         digest = write_json(root / "data" / "sections" / filename, value)
         sections.append({"key": key, "file": filename, "sha256": digest, "bytes": (root / "data" / "sections" / filename).stat().st_size})
 
@@ -160,6 +238,12 @@ def main() -> None:
             "pair_count": pair_count,
             "loader_runtime_fetches_payload": True,
             "routine_refresh_is_payload_only": args.refresh_only,
+            "full_runtime_data_externalized": True,
+            "series_split_by_currency": True,
+            "rates_runtime_externalized": True,
+            "cb_runtime_externalized": True,
+            "liquidity_runtime_externalized": True,
+            "certified_pair_snapshot_runtime_externalized": True,
         },
         "sizes": {
             "source_html": len(source.encode("utf-8")),
