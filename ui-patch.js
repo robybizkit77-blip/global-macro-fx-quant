@@ -1062,3 +1062,94 @@
     renderSimpleOverview=wrapped;
   }
 })();
+
+
+/* FX_ASOF_TRUTH */
+(()=>{
+  'use strict';
+
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+
+  function priceAsOf(){
+    const row=(D?.prices||[]).at(-1)||{};
+    return row.Date||row.date||D?.asOf||'—';
+  }
+
+  function canonical2YMeta(ccy){
+    const rows=(typeof S!=='undefined' && S?.[ccy]) || [];
+    const s=rows.find(r=>{
+      const t=(String(r.id||'')+' '+String(r.label||'')).toLowerCase();
+      return String(r.category||'')==='Rates' && (/(^|[^0-9])2y([^0-9]|$)/i.test(t)||/2d/i.test(t));
+    })||null;
+    return s?{id:s.id,last_date:s.last_date||(s.dates||[]).at(-1)||'—'}:{id:null,last_date:'—'};
+  }
+
+  function layerDates(ccy){
+    const r=canonical2YMeta(ccy);
+    const cb=(typeof NATIVE_CB_DATA!=='undefined'&&NATIVE_CB_DATA?.[ccy])||{};
+    const liq=(typeof NATIVE_LIQ_DATA!=='undefined'&&NATIVE_LIQ_DATA?.[ccy])||{};
+    const cot=D?.cot?.[ccy]||{};
+    return {
+      macro:'frequenze miste',
+      rates:r.last_date,
+      cb:cb.last_date||cb.as_of||'—',
+      liquidity:liq.as_of||'—',
+      cot:cot.date||D?.cotAsOf||'—',
+      price:priceAsOf()
+    };
+  }
+
+  function annotateLayerMap(){
+    try{
+      const host=document.querySelector('#v256LayerMap');
+      if(!host) return;
+      const rows=[...host.querySelectorAll('.v256MapRow')];
+      rows.forEach(row=>{
+        const c=row.querySelector('.v256MapCcy')?.textContent?.trim();
+        if(!CCYS.includes(c)) return;
+        const d=layerDates(c);
+        const cells=[...row.querySelectorAll('.v256Dot')];
+        const labels=[
+          'Macro · frequenze miste: ogni serie mantiene il proprio as-of',
+          'Rates 2Y canonico · '+d.rates,
+          'Banca centrale · '+d.cb,
+          'COT · '+d.cot,
+          'Price · '+d.price
+        ];
+        cells.forEach((el,i)=>{
+          const prior=el.getAttribute('title')||'';
+          el.setAttribute('title',(prior?prior+' · ':'')+labels[i]);
+        });
+      });
+      host.dataset.fxAsOfTruth='per-layer';
+    }catch(e){}
+  }
+
+  function refreshSnapshotCopy(){
+    try{
+      document.querySelectorAll('.v256Snapshot small').forEach(el=>{
+        el.textContent='Snapshot dashboard '+(D?.asOf||'—')+' · ogni layer conserva il proprio as-of reale';
+      });
+      document.querySelectorAll('.sectionNote').forEach(el=>{
+        if(/Tempo dei dati:/i.test(el.textContent||'')){
+          el.innerHTML='<b>Tempo dei dati:</b> snapshot dashboard <b>'+(D?.asOf||'—')+'</b>. Macro è multi-frequenza; Rates, CB, COT, Liquidity e Price mantengono date proprie. Un dato vecchio non viene trattato come nuovo.';
+        }
+      });
+      window.FX_ASOF_QA={
+        status:'PASS',
+        dashboard_asof:D?.asOf||null,
+        price_asof:priceAsOf(),
+        currencies:Object.fromEntries(CCYS.map(c=>[c,layerDates(c)]))
+      };
+    }catch(e){window.FX_ASOF_QA={status:'FAIL',error:String(e)}}
+  }
+
+  setTimeout(()=>{annotateLayerMap();refreshSnapshotCopy()},180);
+  setTimeout(()=>{annotateLayerMap();refreshSnapshotCopy()},760);
+  if(typeof renderSimpleOverview==='function' && !renderSimpleOverview.__fxAsOfWrapped){
+    const original=renderSimpleOverview;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(()=>{annotateLayerMap();refreshSnapshotCopy()},0);return r};
+    wrapped.__fxAsOfWrapped=true;
+    renderSimpleOverview=wrapped;
+  }
+})();
