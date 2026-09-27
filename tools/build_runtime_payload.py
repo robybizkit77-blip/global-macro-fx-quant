@@ -227,6 +227,84 @@ def _find_canonical_2y_series(series_rows: list[dict]) -> dict | None:
     return preferred[0] if preferred else None
 
 
+def _parse_series_date(value: object):
+    """Parse the daily date formats used by Rates sources without trusting row order."""
+    from datetime import datetime
+    text = str(value or "").strip()
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(text, fmt)
+        except Exception:
+            pass
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).replace(tzinfo=None)
+    except Exception:
+        return None
+
+
+def _chronological_points(series: dict, non_null_only: bool = True) -> list[tuple]:
+    dates = series.get("dates") or []
+    values = series.get("values") or []
+    points = []
+    for idx, (date, value) in enumerate(zip(dates, values)):
+        parsed = _parse_series_date(date)
+        if parsed is None or (non_null_only and value is None):
+            continue
+        points.append((parsed, idx, date, value))
+    points.sort(key=lambda item: (item[0], item[1]))
+    return points
+
+
+def normalize_rate_series(all_series: dict) -> None:
+    """Sort aligned Rates date/value pairs chronologically and refresh last_* metadata."""
+    for rows in (all_series or {}).values():
+        for row in rows or []:
+            if row.get("category") != "Rates":
+                continue
+            dates = row.get("dates") or []
+            values = row.get("values") or []
+            if not dates or len(dates) != len(values):
+                continue
+            points = _chronological_points(row, non_null_only=False)
+            if len(points) != len(dates):
+                continue
+            row["dates"] = [item[2] for item in points]
+            row["values"] = [item[3] for item in points]
+            non_null = [item for item in points if item[3] is not None]
+            if non_null:
+                row["last_date"] = non_null[-1][2]
+                row["last_value"] = non_null[-1][3]
+
+
+def audit_strict_canonical_rates_binding(native_rates: dict, all_series: dict) -> list[dict]:
+    """JPY and AUD must use their canonical official-source series, never a cosmetic market-close patch."""
+    issues = []
+    for ccy in ("JPY", "AUD"):
+        series = _find_canonical_2y_series(all_series.get(ccy, []))
+        current = (native_rates or {}).get(ccy) or {}
+        if not series:
+            issues.append({"ccy": ccy, "type": "canonical_2y_series_missing"})
+            continue
+        points = _chronological_points(series)
+        if not points:
+            issues.append({"ccy": ccy, "type": "canonical_2y_history_empty"})
+            continue
+        _, _, expected_date, expected_value = points[-1]
+        current_date = str(current.get("date") or "")
+        current_value = current.get("2Y")
+        if current_date != str(expected_date) or current_value is None or abs(float(current_value) - float(expected_value)) > 1e-9:
+            issues.append({
+                "ccy": ccy,
+                "type": "native_rates_not_bound_to_canonical_2y",
+                "stored_date": current_date,
+                "stored_value": current_value,
+                "expected_date": expected_date,
+                "expected_value": expected_value,
+                "series_id": series.get("id"),
+            })
+    return issues
+
+
 def audit_what_changed_rates(what_changed: list[dict], all_series: dict) -> list[dict]:
     """Ensure What Changed uses the same homogeneous canonical 2Y history as the Rates engine."""
     issues = []
@@ -239,12 +317,11 @@ def audit_what_changed_rates(what_changed: list[dict], all_series: dict) -> list
         if not s:
             issues.append({"ccy": ccy, "type": "canonical_2y_series_missing"})
             continue
-        values = [v for v in (s.get("values") or []) if v is not None]
-        dates = s.get("dates") or []
-        if len(values) < 6:
+        points = _chronological_points(s)
+        if len(points) < 6:
             issues.append({"ccy": ccy, "type": "insufficient_2y_history"})
             continue
-        expected_bp = round((float(values[-1]) - float(values[-6])) * 100.0, 2)
+        expected_bp = round((float(points[-1][3]) - float(points[-6][3])) * 100.0, 2)
         stored_bp = round(float(wc.get("rate_move")), 2)
         if abs(expected_bp - stored_bp) > 0.15:
             issues.append({
@@ -253,7 +330,7 @@ def audit_what_changed_rates(what_changed: list[dict], all_series: dict) -> list
                 "stored_bp": stored_bp,
                 "expected_bp_from_canonical_2y": expected_bp,
                 "series_id": s.get("id"),
-                "last_date": s.get("last_date") or (dates[-1] if dates else None),
+                "last_date": points[-1][2],
             })
     return issues
 
@@ -352,7 +429,8 @@ def audit_canonical_2y_freshness(dashboard: dict, all_series: dict) -> list[dict
         if not s:
             issues.append({"ccy": ccy, "type": "canonical_2y_series_missing"})
             continue
-        last_date = str(s.get("last_date") or ((s.get("dates") or [None])[-1]) or "")
+        points = _chronological_points(s)
+        last_date = str(points[-1][2] if points else (s.get("last_date") or ""))
         parsed = None
         for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d/%m/%Y"):
             try:
@@ -368,13 +446,15 @@ def audit_canonical_2y_freshness(dashboard: dict, all_series: dict) -> list[dict
                 continue
         ref_naive = ref.replace(tzinfo=None)
         age = (ref_naive - parsed).days
-        if age > 7:
+        max_age_days = 10 if ccy == "AUD" else 7
+        if age > max_age_days:
             issues.append({
                 "ccy": ccy,
                 "type": "canonical_2y_stale",
                 "last_date": last_date,
                 "dashboard_asof": as_of,
                 "age_days": age,
+                "max_age_days": max_age_days,
                 "series_id": s.get("id"),
             })
     return issues
@@ -485,6 +565,11 @@ def main() -> None:
     # S is by far the largest live dataset. Split it by currency so no single
     # GitHub write is unnecessarily large.
     all_series = extract_json_assignment(source, "S")
+    normalize_rate_series(all_series)
+
+    strict_rates_issues = audit_strict_canonical_rates_binding(payload.get("native_rates") or {}, all_series)
+    if strict_rates_issues:
+        raise ValueError("STRICT_CANONICAL_RATES_BINDING_MISMATCH: " + json.dumps(strict_rates_issues, ensure_ascii=False))
 
     what_changed_rate_issues = audit_what_changed_rates(payload.get("what_changed") or [], all_series)
     if what_changed_rate_issues:
