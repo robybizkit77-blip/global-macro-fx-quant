@@ -1,0 +1,245 @@
+name: End-to-end payload sync v275
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/end-to-end-sync-v275.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Synchronize downstream payloads and validate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          ROOT=Path(".")
+          SEC=ROOT/"data"/"sections"
+          CCYS=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"]
+          RELEASE="GLOBAL_MACRO_FX_QUANT_DAILY_v275_2026-09-27"
+
+          def load(name):
+              return json.loads((SEC/name).read_text(encoding="utf-8"))
+
+          def dump(name,obj):
+              (SEC/name).write_text(json.dumps(obj,ensure_ascii=False,separators=(",",":"),sort_keys=True)+"\n",encoding="utf-8")
+
+          def parse_date(s):
+              from datetime import datetime
+              for fmt in ("%Y-%m-%d","%Y/%m/%d","%d %b %Y","%d/%m/%Y"):
+                  try:return datetime.strptime(str(s),fmt)
+                  except:pass
+              return None
+
+          def canonical_2y(rows):
+              for row in rows:
+                  ident=(str(row.get("id",""))+" "+str(row.get("label",""))).lower()
+                  if row.get("category")=="Rates" and ("2y" in ident or "2d" in ident):
+                      return row
+              raise RuntimeError("canonical 2Y missing")
+
+          def latest(row):
+              pts=[]
+              for i,(d,v) in enumerate(zip(row.get("dates",[]),row.get("values",[]))):
+                  p=parse_date(d)
+                  if p is not None and v is not None: pts.append((p,i,d,v))
+              pts.sort(key=lambda x:(x[0],x[1]))
+              if not pts: raise RuntimeError("empty canonical history")
+              return pts[-1]
+
+          dashboard=load("dashboard.json")
+          cert=load("cert53.json")
+          pairs=cert.get("pairs") or cert
+
+          # 1) Dashboard displayed 2Y must equal canonical history, not a cosmetic market close.
+          canonical={}
+          for ccy in CCYS:
+              rows=load(f"series_{ccy}.json")
+              last=latest(canonical_2y(rows))
+              canonical[ccy]={"date":last[2],"value":float(last[3])}
+              dashboard.setdefault("macro",{}).setdefault(ccy,{})["rate2y"]=float(last[3])
+
+          # Helpers for dashboard<->cert pair orientation.
+          def cert_pair_for(dp):
+              if dp in pairs: return dp
+              a,b=dp.split("/")
+              rev=f"{b}/{a}"
+              if rev in pairs: return rev
+              raise RuntimeError(f"cert pair missing for {dp}")
+
+          def to_cert_dir(cert_pair,winner):
+              a,b=cert_pair.split("/")
+              if winner in ("MISTO","MIXED",None): return "MIXED"
+              if winner in ("NON CONFRONTABILE","WITHHELD"): return "WITHHELD"
+              if winner==a:return "A"
+              if winner==b:return "B"
+              raise RuntimeError(f"winner {winner} not in {cert_pair}")
+
+          def move_membership(p,layer,new_dir):
+              lead=p.get("lead_direction")
+              for bucket in ("confirms","diverges","lags"):
+                  p[bucket]=[x for x in (p.get(bucket) or []) if x!=layer]
+              if new_dir=="MIXED":
+                  p.setdefault("lags",[]).append(layer)
+              elif lead in ("A","B") and new_dir==lead:
+                  p.setdefault("confirms",[]).append(layer)
+              elif lead in ("A","B") and new_dir in ("A","B") and new_dir!=lead:
+                  p.setdefault("diverges",[]).append(layer)
+
+          # 2) Certified pair snapshot must mirror the actual currency winner in dashboard.
+          layer_map={"macro":"macro","rates":"rates","central_bank":"central_bank","cot":"cot","price":"price","market_pricing":"market_pricing"}
+          changed=[]
+          for dp,ds in (dashboard.get("pairStates") or {}).items():
+              cp=cert_pair_for(dp)
+              p=pairs[cp]
+              for dlayer,clayer in layer_map.items():
+                  winner=(ds.get("layers") or {}).get(dlayer)
+                  new_dir=to_cert_dir(cp,winner)
+                  old=(p.get("layer_directions") or {}).get(clayer)
+                  if old!=new_dir:
+                      p.setdefault("layer_directions",{})[clayer]=new_dir
+                      changed.append({"dashboard_pair":dp,"cert_pair":cp,"layer":clayer,"old":old,"new":new_dir})
+                      if clayer in ("macro","price"):
+                          move_membership(p,clayer,new_dir)
+
+                      if clayer=="macro":
+                          p["fundamental_anchor_macro"]=new_dir
+                          drv=p.get("dominant_driver_current") or {}
+                          for bucket in ("confirms","diverges"):
+                              drv[bucket]=[x for x in (drv.get(bucket) or []) if x not in ("macro","macro_context")]
+                          if p.get("lead_direction") in ("A","B"):
+                              if new_dir==p["lead_direction"]: drv.setdefault("confirms",[]).append("macro")
+                              elif new_dir in ("A","B"): drv.setdefault("diverges",[]).append("macro")
+                      elif clayer=="price":
+                          lead=p.get("lead_direction")
+                          if new_dir=="MIXED":
+                              p["price_state"]="MIXED"
+                              status="PRICE_NOT_CLEAR"
+                          elif lead in ("A","B") and new_dir==lead:
+                              p["price_state"]="CONFIRM"
+                              status="PRICE_CONFIRMED"
+                          else:
+                              p["price_state"]="DIVERGENCE_RECENT"
+                              status="PRICE_DIVERGES"
+                          drv=p.get("dominant_driver_current") or {}
+                          drv["price_confirmation"]=status
+                          for bucket in ("confirms","diverges"):
+                              drv[bucket]=[x for x in (drv.get(bucket) or []) if x!="price"]
+                          if status=="PRICE_CONFIRMED": drv.setdefault("confirms",[]).append("price")
+                          elif status=="PRICE_DIVERGES": drv.setdefault("diverges",[]).append("price")
+
+              # Central-bank realized direction is a duplicate semantic field.
+              p["central_bank_realized_direction"]=(p.get("layer_directions") or {}).get("central_bank")
+
+              # Normalize missing-to-convergence price wording after a clear price vote.
+              missing=[x for x in (p.get("missing_to_convergence") or []) if x not in ("clear_price_confirmation","price_reconfirmation_after_recent_reversal")]
+              price_dir=(p.get("layer_directions") or {}).get("price")
+              lead=p.get("lead_direction")
+              if price_dir=="MIXED":
+                  missing.append("clear_price_confirmation")
+              elif lead in ("A","B") and price_dir!=lead:
+                  missing.append("price_reconfirmation_after_recent_reversal")
+              p["missing_to_convergence"]=list(dict.fromkeys(missing))
+
+          dump("dashboard.json",dashboard)
+          dump("cert53.json",cert)
+
+          # 3) End-to-end QA.
+          issues=[]
+          # Dashboard macro display rates vs canonical.
+          for ccy in CCYS:
+              got=float((dashboard.get("macro") or {}).get(ccy,{}).get("rate2y"))
+              exp=canonical[ccy]["value"]
+              if abs(got-exp)>1e-10:
+                  issues.append({"type":"dashboard_macro_rate2y_mismatch","ccy":ccy,"got":got,"expected":exp})
+
+          def cert_winner(cp,direction):
+              a,b=cp.split("/")
+              if direction=="A":return a
+              if direction=="B":return b
+              if direction=="MIXED":return "MISTO"
+              if direction=="WITHHELD":return "NON CONFRONTABILE"
+              return direction
+
+          for dp,ds in (dashboard.get("pairStates") or {}).items():
+              cp=cert_pair_for(dp)
+              p=pairs[cp]
+              for layer in layer_map:
+                  dw=(ds.get("layers") or {}).get(layer)
+                  cw=cert_winner(cp,(p.get("layer_directions") or {}).get(layer))
+                  if dw!=cw:
+                      issues.append({"type":"dashboard_cert_layer_mismatch","pair":dp,"cert_pair":cp,"layer":layer,"dashboard":dw,"cert":cw})
+
+          if len(dashboard.get("pairs") or [])!=28 or len(dashboard.get("pairStates") or {})!=28 or len(pairs)!=28:
+              issues.append({"type":"pair_universe_count","dashboard_pairs":len(dashboard.get("pairs") or []),"dashboard_states":len(dashboard.get("pairStates") or {}),"cert_pairs":len(pairs)})
+
+          # Existing WTI invariant must still hold.
+          wti=(dashboard.get("risk") or {}).get("WTI") or {}
+          if len(wti.get("dates") or [])<500 or wti.get("last_date")!="2026-09-22" or float(wti.get("last_value"))!=96.41:
+              issues.append({"type":"wti_regression"})
+
+          if issues:
+              raise RuntimeError("END_TO_END_QA_FAIL "+json.dumps(issues,ensure_ascii=False))
+
+          # 4) Rebuild exact manifest hashes.
+          mf=json.loads((ROOT/"data/manifest.json").read_text(encoding="utf-8"))
+          objs={}
+          sections=[]
+          for sec in mf["sections"]:
+              path=SEC/sec["file"]
+              obj=json.loads(path.read_text(encoding="utf-8"))
+              canon=json.dumps(obj,ensure_ascii=False,separators=(",",":"),sort_keys=True).encode("utf-8")
+              path.write_bytes(canon+b"\n")
+              objs[sec["key"]]=obj
+              sections.append({"key":sec["key"],"file":sec["file"],"sha256":hashlib.sha256(canon).hexdigest(),"bytes":path.stat().st_size})
+          payload=json.dumps(objs,ensure_ascii=False,separators=(",",":"),sort_keys=True).encode("utf-8")
+          mf.update({
+              "release":RELEASE,
+              "generated_at_utc":datetime.now(timezone.utc).isoformat(),
+              "payload_sha256":hashlib.sha256(payload).hexdigest(),
+              "sections":sections,
+              "architecture":"FULL_RUNTIME_DATA_V2"
+          })
+          (ROOT/"data/manifest.json").write_text(json.dumps(mf,ensure_ascii=False,separators=(",",":"),sort_keys=True)+"\n",encoding="utf-8")
+
+          report={
+              "status":"PASS",
+              "release":RELEASE,
+              "checks":{
+                  "dashboard_macro_2y_bound_to_canonical":True,
+                  "dashboard_cert53_layer_sync":True,
+                  "pair_universe_28_28_28":True,
+                  "wti_no_regression":True
+              },
+              "changed_bindings":changed,
+              "canonical_2y":canonical
+          }
+          (ROOT/"qa/end-to-end-consistency-report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
+
+      - name: Commit validated v275 payload
+        shell: bash
+        run: |
+          git config user.name "fx-quant-runtime-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/sections data/manifest.json qa/end-to-end-consistency-report.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Publish end-to-end consistent runtime payload v275"
+          git push
