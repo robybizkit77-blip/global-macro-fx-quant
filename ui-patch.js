@@ -1081,7 +1081,11 @@
       const t=(String(r.id||'')+' '+String(r.label||'')).toLowerCase();
       return String(r.category||'')==='Rates' && (/(^|[^0-9])2y([^0-9]|$)/i.test(t)||/2d/i.test(t));
     })||null;
-    return s?{id:s.id,last_date:s.last_date||(s.dates||[]).at(-1)||'—'}:{id:null,last_date:'—'};
+    if(!s) return {id:null,last_date:'—'};
+    const dates=(s.dates||[]).filter(Boolean);
+    const parsed=dates.map(d=>({raw:d,t:Date.parse(String(d).replaceAll('/','-'))})).filter(x=>Number.isFinite(x.t)).sort((a,b)=>a.t-b.t);
+    const trueLast=parsed.length?parsed.at(-1).raw:(s.last_date||dates.at(-1)||'—');
+    return {id:s.id,last_date:trueLast};
   }
 
   function layerDates(ccy){
