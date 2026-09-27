@@ -628,3 +628,74 @@
     renderPair=wrapped;
   }
 })();
+
+
+/* FX_PAIR_CORE_VS_ENGINE_CLARITY */
+(()=>{
+  'use strict';
+
+  function clarifyPairDesk(){
+    try{
+      const pair=window.selectedPair;
+      if(!pair || typeof D==='undefined' || !D.pairStates?.[pair] || typeof derivePairDecisionFrame!=='function') return;
+      const st=D.pairStates[pair];
+      const frame=derivePairDecisionFrame(pair);
+      const core=frame?.fav || '—';
+      const live=st.convergence_winner || 'MISTA';
+      const count=st.convergence_count || '—';
+      const lead=(st.lead||[])[0] || 'non determinato';
+      const leadKey={'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro','Prezzo':'price'}[lead];
+      const leadSide=leadKey?st.layers?.[leadKey]:null;
+
+      const head=document.querySelector('#v227Headline');
+      const fav=document.querySelector('#v227Fav');
+      const why=document.querySelector('#v227FavWhy');
+      const drv=document.querySelector('#v227Driver');
+      const drvWhy=document.querySelector('#v227DriverWhy');
+
+      if(head){
+        if(live==='MISTA'){
+          head.textContent = core==='—'
+            ? 'Core Macro+Rates non risolutivo. Pair Engine live diviso: nessuna direzione prevalente.'
+            : 'Core Macro+Rates: '+core+'. Pair Engine live diviso ('+count+'): quadro non convergente.';
+        }else if(core==='—'){
+          head.textContent='Core Macro+Rates non risolutivo. Pair Engine live: prevalenza '+live+' ('+count+').';
+        }else if(core!==live){
+          head.textContent='Core Macro+Rates: '+core+'. Pair Engine live: prevalenza '+live+' ('+count+'). Divergenza strutturale.';
+        }else{
+          head.textContent='Core Macro+Rates e Pair Engine live allineati su '+live+' ('+count+').';
+        }
+      }
+
+      if(fav){
+        fav.textContent = core==='—' ? 'Core: nessuno' : 'Core: '+core;
+      }
+      if(why){
+        if(live==='MISTA'){
+          why.textContent='Il riquadro sopra mostra il vantaggio del core Macro+Rates; il Pair Engine completo resta diviso tra i layer.';
+        }else if(core!==live && core!=='—'){
+          why.textContent='Il core Macro+Rates favorisce '+core+', mentre la prevalenza dei layer del Pair Engine favorisce '+live+'. Non vanno letti come la stessa cosa.';
+        }else{
+          why.textContent='Il vantaggio core Macro+Rates è coerente con la prevalenza dei layer del Pair Engine.';
+        }
+      }
+
+      if(drv && drvWhy && leadSide){
+        drv.textContent='Lead live: '+lead;
+        drvWhy.textContent = live!=='MISTA' && leadSide!==live
+          ? 'Il lead punta verso '+leadSide+', mentre la prevalenza dei layer favorisce '+live+': divergenza reale da monitorare.'
+          : 'Il lead punta verso '+leadSide+' e va letto separatamente dal semplice conteggio dei layer.';
+      }
+    }catch(e){}
+  }
+
+  window.FX_CLARIFY_PAIR_DESK=clarifyPairDesk;
+  setTimeout(clarifyPairDesk,120);
+  setTimeout(clarifyPairDesk,600);
+  if(typeof renderPair==='function' && !renderPair.__fxCoreEngineWrapped){
+    const original=renderPair;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(clarifyPairDesk,0);return r};
+    wrapped.__fxCoreEngineWrapped=true;
+    renderPair=wrapped;
+  }
+})();
