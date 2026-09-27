@@ -829,3 +829,38 @@
     renderNativeCbDesk=wrapped;
   }
 })();
+
+
+/* FX_TOP_THEMES_SEMANTICS */
+(()=>{
+  'use strict';
+
+  function renderThemesSafely(){
+    try{
+      if(typeof TOP_THEMES==='undefined') return;
+      const box=document.querySelector('#themesGrid');
+      if(!box) return;
+      box.innerHTML=TOP_THEMES.map(t=>`<div class="themeCard">
+        <div class="themeTitle">${t.title}</div>
+        <div class="themeState">${t.state}</div>
+        <div class="themeBody">${t.body}</div>
+        <div class="themeParts">
+          <div class="themePart"><div class="lab">Driver / contesto</div><div class="val">${t.lead}</div></div>
+          <div class="themePart"><div class="lab">Conferme da cercare</div><div class="val">${t.confirm}</div></div>
+          <div class="themePart"><div class="lab">Divergenze</div><div class="val">${t.diverge}</div></div>
+          <div class="themePart"><div class="lab">Invalidazione</div><div class="val">${t.invalidate}</div></div>
+        </div>
+      </div>`).join('');
+      box.dataset.fxThemeSemantics='context-not-pair-lead';
+    }catch(e){}
+  }
+
+  setTimeout(renderThemesSafely,120);
+  setTimeout(renderThemesSafely,600);
+  if(typeof renderTopThemes==='function' && !renderTopThemes.__fxSemanticsWrapped){
+    const original=renderTopThemes;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(renderThemesSafely,0);return r};
+    wrapped.__fxSemanticsWrapped=true;
+    renderTopThemes=wrapped;
+  }
+})();
