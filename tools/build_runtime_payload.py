@@ -319,6 +319,24 @@ def audit_global_risk_binding(dashboard: dict) -> list[dict]:
             issues.append({"pair": pair, "type": "global_risk_must_not_be_mechanical_pair_vote"})
     return issues
 
+
+def audit_pair_universe_binding(dashboard: dict) -> list[dict]:
+    """Ensure every executive/overview consumer sees the exact same 28-pair universe."""
+    issues = []
+    pairs = [row.get("pair") for row in (dashboard.get("pairs") or []) if row.get("pair")]
+    states = list((dashboard.get("pairStates") or {}).keys())
+    if len(pairs) != 28:
+        issues.append({"type": "pair_list_count", "count": len(pairs), "expected": 28})
+    if len(states) != 28:
+        issues.append({"type": "pair_state_count", "count": len(states), "expected": 28})
+    if set(pairs) != set(states):
+        issues.append({
+            "type": "pair_universe_mismatch",
+            "only_in_pairs": sorted(set(pairs) - set(states)),
+            "only_in_pairStates": sorted(set(states) - set(pairs)),
+        })
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -388,6 +406,10 @@ def main() -> None:
     pair_monitor_issues = audit_pair_monitor_guidance(dashboard)
     if pair_monitor_issues:
         raise ValueError("PAIR_MONITOR_STALE: " + json.dumps(pair_monitor_issues, ensure_ascii=False))
+
+    pair_universe_issues = audit_pair_universe_binding(dashboard)
+    if pair_universe_issues:
+        raise ValueError("OVERVIEW_PAIR_UNIVERSE_MISMATCH: " + json.dumps(pair_universe_issues, ensure_ascii=False))
 
     payload = {"country_ctx": country_context, "dashboard": dashboard}
 
