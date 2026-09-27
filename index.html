@@ -23,7 +23,8 @@
   const app=await appResponse.text();
   let hydrated=app.replace('<!-- FX_PAYLOAD_BOOTSTRAP -->','window.__FX_PAYLOAD__='+serialised+';');
   if(hydrated===app) throw new Error('frontend non compatibile con il payload');
-  const uiPatch='<div id="fxG8StateMount"></div><script src="ui-patch.js'+suffix+'"><\\/script>';
+  hydrated=hydrated.replace(/<body([^>]*)>/i,'<body$1><div id="fxG8StateMount"></div>');
+  const uiPatch='<script src="ui-patch.js'+suffix+'"><\\/script>';
   hydrated=hydrated.replace('</body>',uiPatch+'</body>');
   document.open(); document.write(hydrated); document.close();
 })().catch(e=>{document.body.innerHTML='<div style="padding:24px;font:16px Arial;color:#fff;background:#06131f">Errore nel caricamento della dashboard. Riprova tra poco.<br><small>'+String(e)+'</small></div>';});
