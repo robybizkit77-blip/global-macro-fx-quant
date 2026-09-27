@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "release": "GLOBAL_MACRO_FX_QUANT_DAILY_v274_2026-09-27",
+  "as_of": "2026-09-25",
+  "checks": {
+    "canonical_2y_freshness": true,
+    "aud_source_aware_freshness": true,
+    "jpy_official_source_binding": true,
+    "aud_official_source_binding": true,
+    "wti_full_history": true,
+    "what_changed_rates_canonical": true,
+    "price_pair_binding": true,
+    "pair_count_28": true
+  },
+  "evidence": {
+    "wti": {
+      "observations": 2682,
+      "first_date": "2016-01-04",
+      "last_date": "2026-09-22",
+      "last_value": 96.41
+    },
+    "jpy_2y": {
+      "last_date": "2026-09-18",
+      "last_value": 1.849
+    },
+    "aud_2y": {
+      "last_date": "2026-09-16",
+      "last_value": 4.999
+    },
+    "price_binding_changes": [
+      [
+        "AUD/CAD",
+        "MISTO",
+        "CAD",
+        -0.3319,
+        -0.2467
+      ],
+      [
+        "EUR/AUD",
+        "AUD",
+        "EUR",
+        0.7766,
+        0.2286
+      ]
+    ]
+  }
+}
