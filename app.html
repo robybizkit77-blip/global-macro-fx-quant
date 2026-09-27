@@ -13501,4 +13501,468 @@ renderNativeCbDesk=function(){
 })();
 </script>
 
+<script>
+/* v275 — UNIFORM G8 AUDIT / CANONICAL PAIR REBUILD
+   One source of truth for the September 25 snapshot.  This is model work only:
+   no view-specific overrides and no cosmetic UI changes.
+
+   Currency core = Macro + front-end/CB policy family.
+   Liquidity and global risk remain overlays; COT is positioning risk; Price is
+   confirmation/divergence only.  Pair states are rebuilt only after all eight
+   currency cores are frozen, so they cannot retain a prior certification. */
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const SIDE=(n,a,b)=>n>0?a:n<0?b:'MISTO';
+  const dir=(x)=>layerPolarity(x);
+
+  function stateFromCore(macro,policy){
+    if(macro>0 && policy>0) return 'FORTE';
+    if(macro<0 && policy<0) return 'FRAGILE';
+    if((macro>0 && policy===0)||(macro===0 && policy>0)) return 'COSTRUTTIVA';
+    if((macro<0 && policy===0)||(macro===0 && policy<0)) return 'DEBOLE';
+    return 'MISTA';
+  }
+
+  function freezeCurrency(c){
+    const d=currencyIntelData[c]||{};
+    const macro=dir(d.macro), policy=policyFamilyPolarity(d), liq=dir(d.liq), price=dir(d.price);
+    const change=currencyImprovementDiagnostic(c)||{};
+    const cot=D.cot?.[c]||{};
+    const base=stateFromCore(macro,policy);
+    const coreDirection=(base==='FORTE'||base==='COSTRUTTIVA')?1:(base==='FRAGILE'||base==='DEBOLE')?-1:0;
+    const confirmation=price===0 ? 'PREZZO NON RISOLUTIVO'
+      : coreDirection===0 ? 'PREZZO SENZA STRUTTURA'
+      : price===coreDirection ? 'PREZZO CONFERMA' : 'PREZZO DIVERGE';
+    return {
+      currency:c, base, macro, policy, liquidity:liq, price,
+      change:change.state||'NON DETERMINATO', confirmation,
+      cot:{pct:Number(cot.pct),netOi:Number(cot.net_oi),flow:cot.flow||'non disponibile'},
+      asOf:D.asOf||'—'
+    };
+  }
+
+  function pairFromFrozen(pair, frozen){
+    const [a,b]=pair.split('/'), A=frozen[a], B=frozen[b];
+    const macro=SIDE(A.macro-B.macro,a,b);
+    const rates=SIDE(A.policy-B.policy,a,b);
+    const centralBank=SIDE(dir(currencyIntelData[a]?.cb)-dir(currencyIntelData[b]?.cb),a,b);
+    const price=SIDE(A.price-B.price,a,b);
+    const aligned=macro!=='MISTO' && macro===rates;
+    const primary=aligned ? macro : rates!=='MISTO' ? rates : macro;
+    const primaryLayer=aligned ? 'MACRO_RATES' : rates!=='MISTO' ? 'RATES' : macro!=='MISTO' ? 'MACRO' : 'UNCLEAR';
+    const confirms=[];
+    if(aligned) confirms.push('macro','rates');
+    else if(primaryLayer==='RATES') confirms.push('rates');
+    else if(primaryLayer==='MACRO') confirms.push('macro');
+    if(primary!=='MISTO' && price===primary) confirms.push('price');
+    const diverges=[];
+    if(primary!=='MISTO' && macro!=='MISTO' && macro!==primary) diverges.push('macro');
+    if(primary!=='MISTO' && rates!=='MISTO' && rates!==primary) diverges.push('rates');
+    if(primary!=='MISTO' && price!=='MISTO' && price!==primary) diverges.push('price');
+    const winner=primary==='MISTO'?'MISTA':primary;
+    const state=aligned ? 'PARTIAL_CONVERGENCE' : 'DIVERGENT';
+    const priceConfirmation=primary==='MISTO'||price==='MISTO' ? 'PRICE_NOT_CLEAR'
+      : price===primary ? 'PRICE_CONFIRMED' : 'PRICE_DIVERGES';
+    const cotAlert=[A,B].filter(x=>Number.isFinite(x.cot.pct)&&(x.cot.pct>=70||x.cot.pct<=30))
+      .map(x=>`${x.currency}_P${Math.round(x.cot.pct)}`).join('__')||'NONE';
+    return {
+      pair, state, state_label:state==='PARTIAL_CONVERGENCE'?'Convergenza parziale':'Divergenza',
+      convergence:aligned?'MEDIA':'BASSA', convergence_count:`${confirms.length}/${primary==='MISTO'?0:3}`,
+      convergence_winner:winner,
+      layers:{macro,central_bank:centralBank,rates,cot:'CONTESTO',price,market_pricing:'NON CONFRONTABILE'},
+      layer_directions:{macro:macro===a?'A':macro===b?'B':'MIXED',central_bank:centralBank===a?'A':centralBank===b?'B':'MIXED',rates:rates===a?'A':rates===b?'B':'MIXED',cot:'CONTEXT',price:price===a?'A':price===b?'B':'MIXED',market_pricing:'WITHHELD'},
+      lead:primaryLayer==='RATES'?['Rates / aspettative CB']:primaryLayer==='MACRO'?['Macro']:aligned?['Macro + Rates / aspettative CB']:[],
+      confirms, diverges, lags:[],
+      missing:['Market pricing forward confrontabile'].concat(aligned?[]:['allineamento Macro / Rates']),
+      cot_alert:cotAlert,
+      price_state:priceConfirmation,
+      dominant_driver_current:{
+        driver:primaryLayer, label_it:primaryLayer==='MACRO_RATES'?'Macro + Rates / aspettative CB':primaryLayer==='RATES'?'Rates / riprezzamento front-end':primaryLayer==='MACRO'?'Macro':'Non determinato',
+        direction:primary===a?'A':primary===b?'B':'MIXED', price_confirmation:priceConfirmation,
+        confirms, diverges, rule:'Audit v275: Macro + Rates/CB core; COT contesto; Price sola conferma.'
+      },
+      audit_as_of:D.asOf||'—'
+    };
+  }
+
+  function rebuildV275Audit(){
+    const currency={}; CCYS.forEach(c=>currency[c]=freezeCurrency(c));
+    CCYS.forEach(c=>{
+      // Keep legacy currency cards as consumers of the frozen core, not owners
+      // of an independent state label.
+      currencyIntelData[c].state=currency[c].base;
+    });
+    const pairs={}; (D.pairs||[]).forEach(p=>pairs[p.pair]=pairFromFrozen(p.pair,currency));
+    window.AUDIT_V275=Object.freeze({asOf:D.asOf||'—',currency:Object.freeze(currency),pairs:Object.freeze(pairs)});
+    D.pairStates=pairs;
+    Object.keys(pairs).forEach(p=>{ CERT53.pairs[p]=pairs[p]; });
+    rebuildCanonicalState();
+    console.info('[v275 audit] frozen currencies',currency,'rebuilt pairs',Object.keys(pairs).length);
+  }
+
+  window.rebuildV275Audit=rebuildV275Audit;
+  rebuildV275Audit();
+})();
+</script>
+
+<script>
+/* v269 — END-TO-END EXECUTIVE RECOMPUTE
+   Canonical chain used for visible executive sections:
+   embedded data -> freshness -> layer states -> currency states -> pair states -> executive copy.
+   Layout/CSS untouched. No synthetic observations are created. */
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+  const latestAsOf=()=>String((typeof D!=='undefined'&&D.asOf)||'2026-09-25');
+  const prettyDate=(x)=>{
+    const m=String(x||'').match(/(\d{4})-(\d{2})-(\d{2})/); if(!m)return String(x||'—');
+    const mons=['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+    return `${Number(m[3])} ${mons[Number(m[2])-1]} ${m[1]}`;
+  };
+  const sign=(n)=>Number(n)>0?1:Number(n)<0?-1:0;
+  const dirTxt=(n)=>sign(n)>0?'in miglioramento':sign(n)<0?'in peggioramento':'stabile / misto';
+  const priceDate=()=>safe(()=>D.prices[D.prices.length-1].date,latestAsOf());
+
+  function currentLayerSnapshot(c){
+    const st=safe(()=>deriveCurrencyState(c),{})||{};
+    const imp=safe(()=>currencyImprovementDiagnostic(c),{})||{};
+    const drv=safe(()=>deriveCurrencyDriver(c),'Non determinato');
+    const cot=(typeof D!=='undefined'&&D.cot&&D.cot[c])||{};
+    const rates=(typeof NATIVE_RATES_DATA!=='undefined'&&NATIVE_RATES_DATA[c])||{};
+    const cb=(typeof NATIVE_CB_DATA!=='undefined'&&NATIVE_CB_DATA[c])||{};
+    const liq=(typeof NATIVE_LIQ_DATA!=='undefined'&&NATIVE_LIQ_DATA[c])||{};
+    const ctx=(typeof COUNTRY_CTX!=='undefined'&&COUNTRY_CTX[c])||{};
+    const macro=(typeof D!=='undefined'&&D.macro&&D.macro[c])||{};
+    return {c,st,imp,drv,cot,rates,cb,liq,ctx,macro};
+  }
+
+  function layerAsOf(c){
+    const x=currentLayerSnapshot(c);
+    return {
+      price:priceDate(),
+      rates:x.rates.as_of||x.rates.asOf||'—',
+      cb:x.cb.last_date||x.cb.as_of||'—',
+      liq:x.liq.as_of||'—',
+      cot:safe(()=>D.cotAsOf,'2026-09-22')||'2026-09-22',
+      macro:x.macro.as_of||x.ctx.as_of||'pubblicazioni correnti nel dataset'
+    };
+  }
+
+  function refreshSnapshotLabels(){
+    const pd=prettyDate(latestAsOf());
+    document.querySelectorAll('.v256Snapshot b').forEach(e=>e.textContent=pd);
+    document.querySelectorAll('.soSnapshot').forEach(e=>e.textContent=`Snapshot dati · ${pd}`);
+    document.querySelectorAll('.sectionNote').forEach(e=>{
+      if(/Tempo dei dati:/i.test(e.textContent||''))
+        e.innerHTML=`<b>Tempo dei dati:</b> dashboard ricalcolata sullo snapshot al <b>${pd}</b>. Ogni layer mantiene il proprio as-of reale; un dato mensile o settimanale non viene falsamente trasformato in giornaliero.`;
+    });
+  }
+
+  function refreshLegacyG8Cards(){
+    const cards=[...document.querySelectorAll('.g8Visual .ccyCard')];
+    cards.forEach((card,i)=>{
+      const c=CCYS[i]; if(!c)return;
+      const x=currentLayerSnapshot(c);
+      const state=x.st.base||'MISTA';
+      const sEl=card.querySelector('.ccyState'); if(sEl) sEl.textContent=state;
+      const dEl=card.querySelector('.ccyDriver'); if(dEl) dEl.textContent=`Driver: ${x.drv||'Non determinato'}`;
+      const mini=card.querySelectorAll('.ccyMini>div');
+      if(mini[0]) mini[0].lastElementChild.textContent=x.macro.cycle_it||x.ctx.cycle||'—';
+      if(mini[1]) mini[1].lastElementChild.textContent=Number.isFinite(Number(x.macro.rate2y))?`${Number(x.macro.rate2y).toFixed(2)}%`:'—';
+      if(mini[2]) mini[2].lastElementChild.textContent=Number.isFinite(Number(x.cot.pct))?Number(x.cot.pct).toFixed(0):'—';
+      const hook=card.querySelector('.ccyHook');
+      if(hook){
+        const ch=x.imp.state||'STABILE / MISTA';
+        const pr=x.st.confirmation||'Prezzo non risolutivo';
+        hook.textContent=`${ch} · ${pr}`;
+      }
+    });
+  }
+
+  function executiveNarrative(){
+    const xs=CCYS.map(currentLayerSnapshot);
+    const improve=xs.filter(x=>x.imp.state==='MIGLIORA'||x.imp.state==='EARLY SHIFT POSITIVO').map(x=>x.c);
+    const worsen=xs.filter(x=>x.imp.state==='PEGGIORA'||x.imp.state==='EARLY SHIFT NEGATIVO').map(x=>x.c);
+    const rates=xs.map(x=>({c:x.c,v:Number(x.rates.chg2_bp)})).filter(x=>Number.isFinite(x.v)).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+    const r0=rates[0];
+    const risk=safe(()=>deriveGlobalRiskState(),{state:'MISTO'})||{state:'MISTO'};
+    let main='Il quadro G8 resta misto: non c’è una singola narrativa valida per tutte le valute.';
+    const parts=[];
+    if(improve.length) parts.push(`${improve.join(' e ')} mostrano supporto in aumento`);
+    if(worsen.length) parts.push(`${worsen.join(' e ')} mostrano supporto in calo`);
+    if(r0) parts.push(`il movimento 2Y più ampio è ${r0.c} ${r0.v>=0?'+':''}${r0.v.toFixed(1)} bp`);
+    if(parts.length) main=parts.join(' · ')+'.';
+    const sub=`Ricalcolo completo al ${prettyDate(latestAsOf())}: Macro + Rates/CB definiscono la struttura; Liquidità e Risk sono overlay; COT modifica il rischio; Price conferma o diverge. Rischio globale: ${risk.state||'misto'}.`;
+    const a=document.getElementById('v254MainStory'); if(a)a.textContent=main;
+    const b=document.getElementById('v254MainSub'); if(b)b.textContent=sub;
+    const nm=document.getElementById('soNarrativeMain'); if(nm && (!nm.textContent||nm.textContent==='—'))nm.textContent=main;
+    const ns=document.getElementById('soNarrativeSub'); if(ns)ns.textContent=`Ogni sezione deriva dallo stesso snapshot canonico; Price è aggiornato al ${prettyDate(priceDate())}.`;
+  }
+
+  function makeTheme(c){
+    const x=currentLayerSnapshot(c), a=layerAsOf(c);
+    const imp=x.imp.state||'STABILE / MISTA';
+    const rate=Number(x.rates.chg2_bp);
+    const pct=Number(x.cot.pct), netoi=Number(x.cot.net_oi);
+    const macroSummary=x.ctx.summary_it||x.macro.simple_summary||'Quadro macro misto.';
+    const rateTxt=Number.isFinite(rate)?`${rate>=0?'+':''}${rate.toFixed(1)} bp sul 2Y nell’ultima settimana`:'front-end non disponibile';
+    const cotTxt=Number.isFinite(pct)?`COT P${pct.toFixed(0)}${Number.isFinite(netoi)?` · Net/OI ${netoi.toFixed(1)}%`:''}`:'COT non disponibile';
+    const priceTxt=x.st.confirmation||'Prezzo non risolutivo';
+    const title=`${c}: ${imp==='MIGLIORA'?'supporto in aumento':imp==='PEGGIORA'?'supporto in calo':imp.includes('POSITIVO')?'primo miglioramento':imp.includes('NEGATIVO')?'primo deterioramento':'quadro da confermare'}`;
+    const state=(imp==='MIGLIORA'||imp==='PEGGIORA')?'IN COSTRUZIONE':'DA SEGUIRE';
+    return {ccy:c,title,state,body:macroSummary,lead:`${x.drv||'Macro + tassi'} · ${rateTxt}`,confirm:`Price (${priceTxt}) + prossime release Macro/Rates`,diverge:`${cotTxt}; verificare se il posizionamento conferma o aumenta il rischio`,invalidate:`Un’inversione simultanea di Macro/front-end rispetto al cambiamento corrente`,_asOf:a};
+  }
+
+  function themePriority(c){
+    const x=currentLayerSnapshot(c); let p=0;
+    const imp=x.imp.state||'';
+    if(imp==='MIGLIORA'||imp==='PEGGIORA') p+=6;
+    else if(imp.includes('EARLY SHIFT')||imp==='TURNING POINT') p+=4;
+    const r=Math.abs(Number(x.rates.chg2_bp)); if(Number.isFinite(r))p+=Math.min(4,r/5);
+    const pct=Number(x.cot.pct),noi=Math.abs(Number(x.cot.net_oi));
+    if(Number.isFinite(pct)&&(pct>=80||pct<=20))p+=2;
+    if(Number.isFinite(noi)&&noi>=30)p+=2;
+    return p;
+  }
+
+  function dynamicThemes(){ return [...CCYS].sort((a,b)=>themePriority(b)-themePriority(a)).slice(0,7).map(makeTheme); }
+
+  // Override the old static TOP_THEMES renderer while preserving the exact visual card structure.
+  const oldRenderTopThemes=window.renderTopThemes;
+  window.renderTopThemes=function(){
+    const box=document.querySelector('#themesGrid'); if(!box)return;
+    const themes=dynamicThemes();
+    const stateMap=(state)=>state==='IN COSTRUZIONE'?{label:'CAMBIAMENTO ATTIVO',cls:'building'}:{label:'DA SEGUIRE',cls:'watch'};
+    box.innerHTML=themes.map(t=>{
+      const st=stateMap(t.state),x=currentLayerSnapshot(t.ccy),a=t._asOf;
+      const freshness=`Price ${prettyDate(a.price)} · Rates ${a.rates} · COT ${prettyDate(a.cot)}`;
+      return `<div class="thCard ${st.cls}">
+        <div class="thTop"><div class="thTitleWrap"><div class="thFlags">${flagSvg(t.ccy)}</div><div class="thName">${t.title}</div></div><div class="thState">${st.label}</div></div>
+        <div class="thStory">${t.body}</div>
+        <div class="thRows">
+          <div class="thRow driver"><span>Cosa lo sta guidando</span><b>${t.lead}</b></div>
+          <div class="thRow confirm"><span>Cosa deve confermarlo</span><b>${t.confirm}</b></div>
+          <div class="thRow"><span>Cosa non torna ancora</span><b>${t.diverge}</b></div>
+          <div class="thRow invalidate"><span>Cosa lo indebolisce</span><b>${t.invalidate}</b></div>
+        </div>
+        <div class="thWhy"><b>Lettura attuale:</b> ${x.imp.state||'STABILE / MISTA'} · ${x.st.confirmation||'Prezzo non risolutivo'}</div>
+        <div class="thWhy"><b>Aggiornamento dei layer:</b> ${freshness}</div>
+      </div>`;
+    }).join('');
+  };
+  // Also replace the lexical global function binding used by showView in classic scripts.
+  try{ renderTopThemes=window.renderTopThemes; }catch(e){}
+
+  function refreshPairFreshness(){
+    const host=document.querySelector('#pairs'); if(!host)return;
+    host.setAttribute('data-recomputed-asof',latestAsOf());
+    // Add one unobtrusive status line only if not already present.
+    let n=host.querySelector('.v269PairFreshness');
+    if(!n){
+      n=document.createElement('div'); n.className='sectionNote v269PairFreshness';
+      const first=host.querySelector('.panel,.pairHero,.pairHeader');
+      if(first) first.insertAdjacentElement('afterend',n); else host.prepend(n);
+    }
+    n.innerHTML=`<b>Ricalcolo coppie:</b> 28/28 coppie costruite sul Price al <b>${prettyDate(priceDate())}</b>; Macro/Rates/CB/COT mantengono il proprio as-of. Nessuna coppia viene lasciata con una lettura precedente se cambia uno dei layer canonici.`;
+  }
+
+  function endToEndRecompute(){
+    // Existing renderers already compute What Changed and most pair/currency panels dynamically.
+    // Re-run them after the canonical datasets are loaded, then hydrate legacy/static executive fragments.
+    // Re-freeze all eight currency states before any view reads a pair state.
+    safe(()=>window.rebuildV275Audit&&window.rebuildV275Audit());
+    refreshSnapshotLabels();
+    safe(()=>renderSimpleOverview());
+    safe(()=>renderOperationalOverview());
+    safe(()=>renderWhatChanged());
+    safe(()=>window.renderTopThemes());
+    safe(()=>renderPairGroups());
+    safe(()=>renderPair());
+    safe(()=>renderCurrency());
+    safe(()=>renderCurrencyIntelligence());
+    refreshLegacyG8Cards();
+    executiveNarrative();
+    refreshPairFreshness();
+  }
+
+  window.v269EndToEndRecompute=endToEndRecompute;
+  setTimeout(endToEndRecompute,50);
+  setTimeout(endToEndRecompute,350);
+})();
+</script>
+
+<script>
+/* v276 — CROSS-DESK CANONICAL GOVERNANCE
+   All executive views consume the frozen v275 state.  Layer desks retain their
+   own evidence, but may not publish an independent FX structural conclusion. */
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const canonicalCurrency=c=>window.AUDIT_V275?.currency?.[c]||null;
+  const canonicalPair=p=>window.AUDIT_V275?.pairs?.[p]||D.pairStates?.[p]||null;
+  const coreName=x=>x?.base||'MISTA';
+  const changeName=c=>canonicalCurrency(c)?.change||'NON DETERMINATO';
+  const priceName=c=>canonicalCurrency(c)?.confirmation||'PREZZO NON RISOLUTIVO';
+
+  /* Keep legacy consumers compatible, but make their structural fields read-only
+     projections of the frozen state rather than a fresh, view-specific verdict. */
+  const legacyCurrencyState=window.deriveCurrencyState;
+  window.deriveCurrencyState=function(c){
+    const legacy=legacyCurrencyState?legacyCurrencyState(c):{};
+    const x=canonicalCurrency(c);
+    if(!x)return legacy;
+    return Object.assign({},legacy,{
+      c,base:x.base,macro:x.macro,policy:x.policy,liq:x.liquidity,price:x.price,
+      confirmation:x.confirmation,change:x.change,
+      cotRisk:legacy.cotRisk||'',driver:legacy.driver||deriveCurrencyDriver(c)
+    });
+  };
+  try{deriveCurrencyState=window.deriveCurrencyState;}catch(e){}
+
+  /* Pair Desk previously rebuilt a separate frame from recent dynamics.  Dynamics
+     remain visible as timing diagnostics, but the structural winner now comes
+     exclusively from the already-frozen pair state. */
+  window.derivePairDecisionFrame=function(pair){
+    const s=canonicalPair(pair)||{};
+    const [a,b]=pair.split('/');
+    const d=s.dominant_driver_current||{};
+    const fav=d.direction==='A'?a:d.direction==='B'?b:'—';
+    const aligned=d.driver==='MACRO_RATES';
+    const priceReading=d.price_confirmation==='PRICE_CONFIRMED'?'MERCATO GIÀ ALLINEATO'
+      :d.price_confirmation==='PRICE_DIVERGES'?'DIVERGENZA DA MONITORARE':'PREZZO NON CHIARO';
+    return {
+      pair,fav,
+      quality:fav==='—'?'NESSUN CONTRASTO':aligned?'VANTAGGIO RELATIVO PARZIALE':'QUADRO MISTO',
+      state:s.state||'DIVERGENT',
+      driver:d.driver||'UNCLEAR',
+      priceReading,
+      priceNote:priceReading==='MERCATO GIÀ ALLINEATO'
+        ? `Il prezzo conferma il vantaggio strutturale di ${fav}.`
+        :priceReading==='DIVERGENZA DA MONITORARE'
+          ? `Il prezzo diverge dal vantaggio strutturale di ${fav}; non lo sostituisce.`
+          : 'Il prezzo non offre una conferma relativa sufficiente.',
+      rule:'v276: Macro + Rates/CB determinano il vantaggio; COT è rischio; Price è conferma/divergenza.'
+    };
+  };
+  try{derivePairDecisionFrame=window.derivePairDecisionFrame;}catch(e){}
+
+  /* The layer rows in Pair Desk are consumers of the frozen pair state as well.
+     Recent dynamics can explain timing elsewhere, but cannot relabel the driver. */
+  function pairLayerRow(pair,layer,label){
+    const s=canonicalPair(pair)||{}, d=s.dominant_driver_current||{};
+    const [a,b]=pair.split('/');
+    const fav=d.direction==='A'?a:d.direction==='B'?b:'—';
+    const side=s.layers?.[layer];
+    if(side===a || side===b){
+      const supports=side===fav;
+      return {side,text:`${label} favorisce ${side}${supports?' e sostiene il vantaggio strutturale':' e diverge dal vantaggio strutturale'}${fav==='—'?' non determinato':''}.`,cls:supports?'pos':'neg'};
+    }
+    return {side:'Misto',text:`${label} non separa le due valute: non assegna un vantaggio relativo autonomo.`,cls:'neu'};
+  }
+  window.v228MacroRow=(pair)=>pairLayerRow(pair,'macro','La Macro');
+  window.v228RatesRow=(pair)=>pairLayerRow(pair,'rates','Rates / aspettative CB');
+  window.v228MainDriver=function(frame){
+    const labels={MACRO:'Macro',RATES:'Rates / aspettative CB',MACRO_RATES:'Macro + Rates / aspettative CB'};
+    const driver=labels[frame.driver]||'Nessuno chiaro';
+    return {driver,why:frame.fav==='—'?'Macro e Rates/CB non separano le due valute in modo sufficiente.':`${driver} è il driver canonico del vantaggio strutturale di ${frame.fav}.`};
+  };
+  try{v228MacroRow=window.v228MacroRow;v228RatesRow=window.v228RatesRow;v228MainDriver=window.v228MainDriver;}catch(e){}
+
+  /* COT reports flows and crowding without assigning an FX direction. */
+  window.cotFlowDescription=function(d){
+    const L=Number(d?.chg_long_1w||0), S=Number(d?.chg_short_1w||0);
+    if(L>0 && S<0) return 'Nuovi long + short covering: flusso di posizionamento da monitorare, non un voto strutturale.';
+    if(L>0 && S>0) return L>S?'Aumentano long e short, con prevalenza long: contesto di positioning, non direzione FX.':'Aumentano long e short, con prevalenza short: contesto di positioning, non direzione FX.';
+    if(L<0 && S<0) return Math.abs(S)>Math.abs(L)?'Short covering prevalente: il Net cambia soprattutto per chiusura degli short; rischio di positioning, non direzione FX.':'Riduzione di entrambe le gambe: prevale liquidazione long; rischio di positioning, non direzione FX.';
+    if(L<0 && S>0) return 'Liquidazione long + nuovi short: flusso di positioning da monitorare, non un voto strutturale.';
+    return 'Flusso settimanale misto: nessuna anatomia dominante e nessun impatto sullo stato strutturale.';
+  };
+  try{cotFlowDescription=window.cotFlowDescription;}catch(e){}
+
+  /* Every country desk names the same structural state, then confines its own
+     evidence to its proper layer.  This prevents a macro/rates/CB headline from
+     being misread as a competing all-in FX rating. */
+  window.v232FxNarrative=function(c,snap){
+    const strong=snap.strength?.label||'—', weak=snap.weakness?.label||'—';
+    return `${c} è ${coreName(canonicalCurrency(c))} nello stato strutturale canonico; direzione recente: ${changeName(c).toLowerCase()}. Nel solo layer Macro, ${strong.toLowerCase()} sostiene il quadro mentre ${weak.toLowerCase()} è l’area fragile. La conclusione FX richiede Macro + Rates/CB; il prezzo è soltanto conferma/divergenza.`;
+  };
+  try{v232FxNarrative=window.v232FxNarrative;}catch(e){}
+
+  window.v233FxRead=function(c,d){
+    const x=canonicalCurrency(c);
+    return `${c}: Rates è evidenza di policy/front-end, non uno stato FX autonomo. Stato canonico ${coreName(x)} · direzione recente ${changeName(c).toLowerCase()}. La lettura strutturale resta Macro + Rates/CB; Price: ${priceName(c).toLowerCase()}.`;
+  };
+  try{v233FxRead=window.v233FxRead;}catch(e){}
+
+  window.v234FxRead=function(c,d){
+    const x=canonicalCurrency(c);
+    return `${c}: la Banca centrale spiega il contesto di policy e confluisce nella famiglia Rates/CB; non assegna una forza FX separata. Stato canonico ${coreName(x)} · direzione recente ${changeName(c).toLowerCase()} · Price ${priceName(c).toLowerCase()}.`;
+  };
+  try{v234FxRead=window.v234FxRead;}catch(e){}
+
+  function addGovernanceNote(hostSelector,c,layer){
+    const host=document.querySelector(hostSelector); if(!host)return;
+    let note=host.querySelector('.v276CanonicalNote');
+    if(!note){ note=document.createElement('div'); note.className='sectionNote v276CanonicalNote'; host.prepend(note); }
+    const x=canonicalCurrency(c);
+    if(!x)return;
+    note.innerHTML=`<b>Catena canonica:</b> ${c} è <b>${x.base}</b> (struttura Macro + Rates/CB) · direzione recente <b>${x.change}</b> · COT = rischio di posizionamento · Price = <b>${x.confirmation}</b>. <span style="opacity:.8">${layer}</span>`;
+  }
+  function addPairNote(){
+    const host=document.querySelector('#pairs'); if(!host)return;
+    let note=host.querySelector('.v276CanonicalPairNote');
+    if(!note){note=document.createElement('div');note.className='sectionNote v276CanonicalPairNote';host.prepend(note);}
+    const s=canonicalPair(selectedPair),d=s?.dominant_driver_current||{};
+    const [a,b]=String(selectedPair||'').split('/');
+    const winner=d.direction==='A'?a:d.direction==='B'?b:'nessuna valuta';
+    note.innerHTML=`<b>Pair state canonico:</b> ${selectedPair} · driver ${d.label_it||'non determinato'} · vantaggio strutturale ${winner} · Price ${d.price_confirmation||'non chiaro'} · COT solo contesto/rischio.`;
+  }
+
+  const wrap=(name,after)=>{
+    const old=window[name]; if(typeof old!=='function')return;
+    window[name]=function(){const r=old.apply(this,arguments); try{after();}catch(e){console.warn('[v276]',name,e);} return r;};
+    try{eval(`${name}=window[name]`);}catch(e){}
+  };
+  wrap('renderMacroLab',()=>addGovernanceNote('#macro',v232MacroCurrency,'Il desk Macro descrive soltanto l’evidenza macro.'));
+  wrap('renderNativeRatesDesk',()=>addGovernanceNote('#ratesdesk',v233RatesCurrency,'Il desk Rates descrive front-end, curva e pricing.'));
+  wrap('renderNativeCbDesk',()=>addGovernanceNote('#cbdesk',v234CbCurrency,'Il desk Central Bank descrive policy e pricing, senza doppio conteggio.'));
+  wrap('renderCot',()=>addGovernanceNote('#cot',v245CotSelected,'COT è sempre positioning risk / flow; non determina la direzione.'));
+  wrap('renderCurrency',()=>addGovernanceNote('#currency',selectedCcy,'Valute legge il freeze canonico.'));
+  wrap('renderCurrencyIntelligence',()=>addGovernanceNote('#currency',selectedCcy,'Diagnostiche e stato strutturale restano separati.'));
+  wrap('renderPair',addPairNote);
+  wrap('renderPairGroups',addPairNote);
+  wrap('renderWhatChanged',()=>addGovernanceNote('#whatChanged','GBP','What Changed mostra variazione recente, non sostituisce lo stato.'));
+  wrap('renderTopThemes',()=>addGovernanceNote('#themes','GBP','Top Themes usa i driver e gli stati canonici.'));
+  wrap('renderNewsPulse',()=>addGovernanceNote('#news','GBP','News Pulse è contesto: non modifica lo stato senza aggiornare i layer canonici.'));
+  wrap('renderEventRischio',()=>addGovernanceNote('#eventRisk','GBP','Event Risk mostra scenari condizionali, non una previsione né uno stato FX.'));
+
+  /* Deterministic audit: GBP first, then all 8 currencies and all 28 pairs. */
+  window.runV276CrossDeskAudit=function(){
+    const issues=[], frozen=window.AUDIT_V275;
+    const expected={USD:'FORTE',EUR:'COSTRUTTIVA',GBP:'COSTRUTTIVA',JPY:'FORTE',CHF:'MISTA',CAD:'COSTRUTTIVA',AUD:'FORTE',NZD:'COSTRUTTIVA'};
+    if(!frozen) issues.push('freeze v275 non disponibile');
+    CCYS.forEach(c=>{
+      const x=frozen?.currency?.[c];
+      if(!x) return issues.push(`${c}: stato canonico assente`);
+      if(x.base!==expected[c]) issues.push(`${c}: atteso ${expected[c]}, trovato ${x.base}`);
+      const visible=deriveCurrencyState(c);
+      if(visible.base!==x.base) issues.push(`${c}: consumer fuori sync (${visible.base}/${x.base})`);
+      if(!['PREZZO CONFERMA','PREZZO DIVERGE','PREZZO NON RISOLUTIVO','PREZZO SENZA STRUTTURA'].includes(x.confirmation)) issues.push(`${c}: price state non valido`);
+    });
+    const pairs=Object.keys(frozen?.pairs||{});
+    if(pairs.length!==28) issues.push(`pairStates ${pairs.length}/28`);
+    pairs.forEach(p=>{
+      const s=frozen.pairs[p],f=derivePairDecisionFrame(p);
+      if(s.layers?.cot!=='CONTESTO') issues.push(`${p}: COT non è contesto`);
+      if(!['PRICE_CONFIRMED','PRICE_DIVERGES','PRICE_NOT_CLEAR'].includes(s.price_state)) issues.push(`${p}: price state non valido`);
+      const expectedFav=s.dominant_driver_current?.direction==='A'?p.split('/')[0]:s.dominant_driver_current?.direction==='B'?p.split('/')[1]:'—';
+      if(f.fav!==expectedFav) issues.push(`${p}: pair consumer fuori sync (${f.fav}/${expectedFav})`);
+    });
+    const gbp=frozen?.currency?.GBP;
+    if(gbp?.base!=='COSTRUTTIVA') issues.push('GBP: test end-to-end fallito');
+    return {ok:issues.length===0,issues,gbp,pairs:pairs.length,currencies:CCYS.length,rule:'Macro + Rates/CB = struttura; change = diagnostica; COT = rischio; Price = conferma/divergenza.'};
+  };
+  setTimeout(()=>{ const q=window.runV276CrossDeskAudit(); console.info('[v276 cross-desk audit]',q); if(!q.ok)console.warn('[v276 issues]',q.issues); },700);
+})();
+</script>
+
 </body></html>
