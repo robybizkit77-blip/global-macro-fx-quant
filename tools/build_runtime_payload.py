@@ -226,7 +226,10 @@ def main() -> None:
     pair_count = len(dashboard.get("pairs", []))
     if pair_count != 28:
         raise ValueError(f"Expected 28 pairs, got {pair_count}")
-    reconstructed = {"country_ctx": country_context, "dashboard": dashboard}
+    reconstructed = {}
+    for section in sections:
+        path = root / "data" / "sections" / section["file"]
+        reconstructed[section["key"]] = json.loads(path.read_text(encoding="utf-8"))
     if canonical(payload) != canonical(reconstructed):
         raise ValueError("Payload reconstruction failed")
     qa = {
