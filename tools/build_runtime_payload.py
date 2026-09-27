@@ -211,6 +211,52 @@ def audit_pair_monitor_guidance(dashboard: dict) -> list[dict]:
         })
     return issues
 
+
+def _find_canonical_2y_series(series_rows: list[dict]) -> dict | None:
+    """Find the sovereign/front-end 2Y series, excluding mortgage/expectations proxies."""
+    preferred = []
+    for row in series_rows or []:
+        ident = f"{row.get('id','')} {row.get('label','')} {row.get('category','')}".lower()
+        if row.get("category") == "Rates" and ("2y" in ident or "2d" in ident or "rendimento 2y" in ident or "treasury 2y" in ident or "zc 2y" in ident or "spot 2y" in ident):
+            preferred.append(row)
+    if not preferred:
+        for row in series_rows or []:
+            ident = f"{row.get('id','')} {row.get('label','')}".lower()
+            if ("rates" in ident or "dgs2" in ident or "zc_2y" in ident or "spot_2y" in ident) and ("2y" in ident or "2d" in ident):
+                preferred.append(row)
+    return preferred[0] if preferred else None
+
+
+def audit_what_changed_rates(what_changed: list[dict], all_series: dict) -> list[dict]:
+    """Ensure What Changed uses the same homogeneous canonical 2Y history as the Rates engine."""
+    issues = []
+    by_ccy = {row.get("ccy"): row for row in (what_changed or [])}
+    for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+        wc = by_ccy.get(ccy)
+        if not wc or wc.get("rate_move") is None:
+            continue
+        s = _find_canonical_2y_series(all_series.get(ccy, []))
+        if not s:
+            issues.append({"ccy": ccy, "type": "canonical_2y_series_missing"})
+            continue
+        values = [v for v in (s.get("values") or []) if v is not None]
+        dates = s.get("dates") or []
+        if len(values) < 6:
+            issues.append({"ccy": ccy, "type": "insufficient_2y_history"})
+            continue
+        expected_bp = round((float(values[-1]) - float(values[-6])) * 100.0, 2)
+        stored_bp = round(float(wc.get("rate_move")), 2)
+        if abs(expected_bp - stored_bp) > 0.15:
+            issues.append({
+                "ccy": ccy,
+                "type": "what_changed_rate_move_source_mismatch",
+                "stored_bp": stored_bp,
+                "expected_bp_from_canonical_2y": expected_bp,
+                "series_id": s.get("id"),
+                "last_date": s.get("last_date") or (dates[-1] if dates else None),
+            })
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -303,6 +349,11 @@ def main() -> None:
     # S is by far the largest live dataset. Split it by currency so no single
     # GitHub write is unnecessarily large.
     all_series = extract_json_assignment(source, "S")
+
+    what_changed_rate_issues = audit_what_changed_rates(payload.get("what_changed") or [], all_series)
+    if what_changed_rate_issues:
+        raise ValueError("WHAT_CHANGED_RATES_SOURCE_MISMATCH: " + json.dumps(what_changed_rate_issues, ensure_ascii=False))
+
     for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
         payload[f"series_{ccy}"] = all_series.get(ccy, [])
 
