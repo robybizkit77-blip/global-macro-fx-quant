@@ -325,3 +325,76 @@
     window.FX_RUNTIME_TRUTH_QA=runRuntimeTruthQa();
   },250);
 })();
+
+
+/* FX_FULL_RUNTIME_HYDRATION */
+(()=>{
+  'use strict';
+
+  function replaceObjectContents(target, source){
+    if(!target || !source || typeof target!=='object' || typeof source!=='object') return false;
+    if(Array.isArray(target) && Array.isArray(source)){
+      target.splice(0,target.length,...source);
+      return true;
+    }
+    if(Array.isArray(target) || Array.isArray(source)) return false;
+    Object.keys(target).forEach(k=>delete target[k]);
+    Object.entries(source).forEach(([k,v])=>target[k]=v);
+    return true;
+  }
+
+  function hydrateRuntimeData(){
+    const p=window.__FX_PAYLOAD__||{};
+    const report={status:'PASS',hydrated:[],missing:[]};
+    const bind=(name,key,target)=>{
+      if(p[key] && target){
+        replaceObjectContents(target,p[key]);
+        report.hydrated.push(name);
+      }else{
+        report.missing.push(name);
+      }
+    };
+
+    try{ bind('NATIVE_RATES_DATA','native_rates',typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA:null); }catch(e){report.missing.push('NATIVE_RATES_DATA')}
+    try{ bind('NATIVE_CB_DATA','native_cb',typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA:null); }catch(e){report.missing.push('NATIVE_CB_DATA')}
+    try{ bind('NATIVE_LIQ_DATA','native_liq',typeof NATIVE_LIQ_DATA!=='undefined'?NATIVE_LIQ_DATA:null); }catch(e){report.missing.push('NATIVE_LIQ_DATA')}
+    try{ bind('CERT53','cert53',typeof CERT53!=='undefined'?CERT53:null); }catch(e){report.missing.push('CERT53')}
+    try{ bind('V250_COT_CHART_DATA','cot_charts',typeof V250_COT_CHART_DATA!=='undefined'?V250_COT_CHART_DATA:null); }catch(e){report.missing.push('V250_COT_CHART_DATA')}
+    try{ bind('TOP_THEMES','top_themes',typeof TOP_THEMES!=='undefined'?TOP_THEMES:null); }catch(e){report.missing.push('TOP_THEMES')}
+    try{ bind('WHAT_CHANGED','what_changed',typeof WHAT_CHANGED!=='undefined'?WHAT_CHANGED:null); }catch(e){report.missing.push('WHAT_CHANGED')}
+    try{ bind('V247_COT_STORIES','cot_stories',typeof V247_COT_STORIES!=='undefined'?V247_COT_STORIES:null); }catch(e){report.missing.push('V247_COT_STORIES')}
+    try{ bind('V241_PLAIN_MARKET','plain_market',typeof V241_PLAIN_MARKET!=='undefined'?V241_PLAIN_MARKET:null); }catch(e){report.missing.push('V241_PLAIN_MARKET')}
+
+    try{
+      if(typeof S!=='undefined'){
+        ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].forEach(ccy=>{
+          const k='series_'+ccy;
+          if(p[k]){
+            S[ccy]=p[k];
+            report.hydrated.push('S.'+ccy);
+          }else{
+            report.missing.push('S.'+ccy);
+          }
+        });
+      }
+    }catch(e){
+      report.missing.push('S');
+    }
+
+    if(report.missing.length) report.status='FALLBACK_PARTIAL';
+    window.FX_RUNTIME_HYDRATION_QA=report;
+
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof renderCurrency==='function') renderCurrency(); }catch(e){}
+    try{ if(typeof renderPair==='function') renderPair(); }catch(e){}
+    try{ if(typeof renderNativeRatesDesk==='function') renderNativeRatesDesk(); }catch(e){}
+    try{ if(typeof renderMacroLab==='function') renderMacroLab(); }catch(e){}
+    try{ if(typeof renderCot==='function') renderCot(); }catch(e){}
+
+    return report;
+  }
+
+  const report=hydrateRuntimeData();
+  if(report.status==='PASS') console.info('FX full runtime hydration PASS',report);
+  else console.warn('FX full runtime hydration fallback',report);
+})();
