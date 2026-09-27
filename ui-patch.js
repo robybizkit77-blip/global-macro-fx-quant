@@ -562,3 +562,69 @@
     renderCurrency=wrapped;
   }
 })();
+
+
+/* FX_PAIR_NARRATIVE_CLARITY */
+(()=>{
+  'use strict';
+
+  const LABEL_KEY={ 'Rates':'rates','Banca centrale':'central_bank','COT':'cot','Macro':'macro','Prezzo':'price' };
+
+  function cleanPairNarrative(pair){
+    try{
+      const st=D?.pairStates?.[pair];
+      if(!st) return null;
+      const lead=(st.lead||[])[0]||'Non determinato';
+      const lk=LABEL_KEY[lead];
+      const leadDir=lk?st.layers?.[lk]:null;
+      const winner=st.convergence_winner;
+      const conf=(st.confirms||[]);
+      const div=(st.diverges||[]);
+      const lag=(st.lags||[]);
+      let text='';
+
+      if(winner==='MISTA'){
+        text='I layer sono divisi: non c’è una direzione relativa prevalente. ';
+      } else if(leadDir && leadDir!==winner){
+        text='La prevalenza dei layer favorisce '+winner+' ('+(st.convergence_count||'—')+'), ma il lead '+lead+' punta verso '+leadDir+': il quadro è quindi realmente divergente. ';
+      } else {
+        text='La prevalenza dei layer favorisce '+winner+' ('+(st.convergence_count||'—')+'). ';
+        if(leadDir) text+='Il lead '+lead+' punta nella stessa direzione. ';
+      }
+
+      if(conf.length) text+='Confermano il lead: '+conf.join(', ')+'. ';
+      else text+='Nessun altro layer conferma ancora il lead. ';
+      if(div.length) text+='Divergono dal lead: '+div.join(', ')+'. ';
+      if(lag.length) text+='Non direzionali / in ritardo: '+lag.join(', ')+'. ';
+
+      return text.trim();
+    }catch(e){return null}
+  }
+
+  window.FX_PAIR_NARRATIVE=cleanPairNarrative;
+
+  // Keep the approved Pair Desk layout. Only replace ambiguous prose when the
+  // selected pair comment node can be identified safely.
+  function refreshPairNarrative(){
+    try{
+      const pair=(window.selectedPair||window.currentPair||'').replace('-', '/');
+      if(!pair) return;
+      const t=cleanPairNarrative(pair);
+      if(!t) return;
+      const selectors=['#pairComment','#pairNarrative','#pairDeskComment','#vPairComment','[data-role="pair-comment"]'];
+      for(const sel of selectors){
+        const el=document.querySelector(sel);
+        if(el){ el.textContent=t; el.dataset.fxNarrative='runtime-clear'; break; }
+      }
+    }catch(e){}
+  }
+
+  setTimeout(refreshPairNarrative,100);
+  setTimeout(refreshPairNarrative,500);
+  if(typeof renderPair==='function' && !renderPair.__fxNarrativeWrapped){
+    const original=renderPair;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(refreshPairNarrative,0);return r};
+    wrapped.__fxNarrativeWrapped=true;
+    renderPair=wrapped;
+  }
+})();
