@@ -257,6 +257,68 @@ def audit_what_changed_rates(what_changed: list[dict], all_series: dict) -> list
             })
     return issues
 
+
+def _numeric_forward_count(cb: dict) -> int:
+    import re as _re
+    count = 0
+    for key in ("market_3m", "market_6m", "market_12m"):
+        value = cb.get(key)
+        if isinstance(value, (int, float)):
+            count += 1
+        elif isinstance(value, str) and _re.fullmatch(r"-?\d+(?:\.\d+)?%?", value.strip()):
+            count += 1
+    return count
+
+
+def audit_market_pricing_prose(plain_market: dict, native_cb: dict) -> list[dict]:
+    """Do not let unsupported directional market-pricing prose survive the quality gate."""
+    issues = []
+    directional_terms = (
+        "sta prezzando", "orientato verso", "tassi più alti", "più restrittiv",
+        "più hawkish", "accomodante", "ulteriori rialzi", "rialzo", "taglio"
+    )
+    for ccy, prose in (plain_market or {}).items():
+        cb = (native_cb or {}).get(ccy) or {}
+        numeric = _numeric_forward_count(cb)
+        status = str(cb.get("pricing_status") or "")
+        has_point_probability = "%" in status
+        text = f"{prose.get('headline','')} {prose.get('detail','')}".lower()
+        if numeric < 2 and not has_point_probability:
+            matched = [term for term in directional_terms if term in text]
+            if matched:
+                issues.append({
+                    "ccy": ccy,
+                    "type": "unsupported_directional_market_pricing_prose",
+                    "matched": matched,
+                    "pricing_tier": cb.get("pricing_tier"),
+                    "pricing_status": status,
+                    "numeric_forward_points": numeric,
+                })
+    return issues
+
+
+def audit_global_risk_binding(dashboard: dict) -> list[dict]:
+    """Canonical WTI must retain its long history; Gold is intentionally context-only."""
+    issues = []
+    risk = dashboard.get("risk") or {}
+    wti = risk.get("WTI") or {}
+    dates = wti.get("dates") or []
+    values = wti.get("values") or []
+    if len(dates) != len(values):
+        issues.append({"type": "wti_length_mismatch", "dates": len(dates), "values": len(values)})
+    if len(dates) < 500:
+        issues.append({"type": "wti_canonical_history_missing", "observations": len(dates), "required_min": 500})
+    if dates and str(dates[0]) > "2016-01-31":
+        issues.append({"type": "wti_history_start_too_late", "first_date": dates[0]})
+    gold = risk.get("Gold") or {}
+    if len(gold.get("dates") or []) > 60:
+        issues.append({"type": "gold_should_remain_context_only", "observations": len(gold.get("dates") or [])})
+    for pair, state in (dashboard.get("pairStates") or {}).items():
+        layers = state.get("layers") or {}
+        if "global_risk" in layers:
+            issues.append({"pair": pair, "type": "global_risk_must_not_be_mechanical_pair_vote"})
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -345,6 +407,16 @@ def main() -> None:
     ]
     for source_name, key, _filename in extra_specs:
         payload[key] = extract_json_assignment(source, source_name)
+
+    market_pricing_prose_issues = audit_market_pricing_prose(
+        payload.get("plain_market") or {}, payload.get("native_cb") or {}
+    )
+    if market_pricing_prose_issues:
+        raise ValueError("MARKET_PRICING_PROSE_UNSUPPORTED: " + json.dumps(market_pricing_prose_issues, ensure_ascii=False))
+
+    global_risk_issues = audit_global_risk_binding(dashboard)
+    if global_risk_issues:
+        raise ValueError("GLOBAL_RISK_BINDING_MISMATCH: " + json.dumps(global_risk_issues, ensure_ascii=False))
 
     # S is by far the largest live dataset. Split it by currency so no single
     # GitHub write is unnecessarily large.
