@@ -96,6 +96,42 @@ def extract_json_assignment(source: str, name: str) -> object:
         raise ValueError(f"Unclosed JSON literal: {name}")
     return json.loads(source[cursor:end])
 
+
+def audit_price_pair_binding(dashboard: dict) -> list[dict]:
+    """Catch clear stale Price votes when 1W and 4W price direction agree."""
+    rows = dashboard.get("prices") or []
+    pair_states = dashboard.get("pairStates") or {}
+    if len(rows) < 21:
+        return [{"error": "insufficient_price_history"}]
+    last, w1, w4 = rows[-1], rows[-6], rows[-21]
+    issues = []
+    for pair, state in pair_states.items():
+        try:
+            a, b = pair.split("/")
+            def cross(row):
+                return float(row[b]) / float(row[a])
+            r1 = (cross(last) / cross(w1) - 1.0) * 100.0
+            r4 = (cross(last) / cross(w4) - 1.0) * 100.0
+            def direction(x):
+                if abs(x) < 0.20:
+                    return "FLAT"
+                return "UP" if x > 0 else "DOWN"
+            d1, d4 = direction(r1), direction(r4)
+            if d1 == d4 and d1 != "FLAT":
+                expected = a if d1 == "UP" else b
+                stored = ((state.get("layers") or {}).get("price"))
+                if stored != expected:
+                    issues.append({
+                        "pair": pair,
+                        "stored": stored,
+                        "expected": expected,
+                        "return_1w_pct": round(r1, 4),
+                        "return_4w_pct": round(r4, 4),
+                    })
+        except Exception as exc:
+            issues.append({"pair": pair, "error": str(exc)})
+    return issues
+
 def canonical(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
@@ -153,6 +189,10 @@ def main() -> None:
     d_start, d_end, dashboard = extract_object_assignment(source, "D")
     if d_start < c_end:
         raise ValueError("Unexpected assignment order")
+
+    price_pair_binding_issues = audit_price_pair_binding(dashboard)
+    if price_pair_binding_issues:
+        raise ValueError("PRICE_PAIR_BINDING_MISMATCH: " + json.dumps(price_pair_binding_issues, ensure_ascii=False))
 
     payload = {"country_ctx": country_context, "dashboard": dashboard}
 
