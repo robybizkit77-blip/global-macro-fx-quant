@@ -951,3 +951,114 @@
     renderSimpleOverview=wrapped;
   }
 })();
+
+
+/* FX_G8_LAYER_MAP_RUNTIME_COLORS */
+(()=>{
+  'use strict';
+
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const LAYERS=[
+    ['macro','MACRO'],
+    ['rates','RATES'],
+    ['central_bank','CB'],
+    ['cot','COT'],
+    ['price','PRICE']
+  ];
+
+  function relativeLayerState(ccy,key){
+    let win=0,loss=0,mixed=0;
+    Object.entries(D?.pairStates||{}).forEach(([pair,st])=>{
+      if(!pair.split('/').includes(ccy)) return;
+      const v=st.layers?.[key];
+      if(!v || v==='MISTO' || v==='NON CONFRONTABILE'){mixed++;return;}
+      if(v===ccy) win++; else loss++;
+    });
+    const cls=win>loss?'pos':loss>win?'neg':'neu';
+    return {win,loss,mixed,cls};
+  }
+
+  function renderRuntimeLayerMap(){
+    try{
+      const host=document.querySelector('#v256LayerMap');
+      if(!host) return;
+      const lab={pos:'+',neg:'−',neu:'·'};
+      host.innerHTML='<div class="v256MapHead"><span></span>'+LAYERS.map(x=>'<span>'+x[1]+'</span>').join('')+'</div>'+
+        CCYS.map(c=>{
+          const cells=LAYERS.map(([key])=>{
+            const s=relativeLayerState(c,key);
+            return '<div class="v256Dot '+s.cls+'" title="'+s.win+'/7 favorevoli · '+s.loss+'/7 contrari · '+s.mixed+' misti/non comparabili">'+lab[s.cls]+'</div>';
+          }).join('');
+          return '<div class="v256MapRow"><div class="v256MapCcy">'+c+'</div>'+cells+'</div>';
+        }).join('');
+      host.dataset.fxMapSource='D.pairStates-live-relative';
+      const head=host.closest('.v256Panel')?.querySelector('.v256SectionHead small');
+      if(head) head.textContent='Macro · Rates · CB · COT · Price · lettura relativa live sulle 7 coppie di ogni valuta';
+      window.FX_LAYER_MAP_QA={
+        status:Object.keys(D?.pairStates||{}).length===28?'PASS':'FAIL',
+        source:'D.pairStates',
+        currencies:Object.fromEntries(CCYS.map(c=>[c,Object.fromEntries(LAYERS.map(([k])=>[k,relativeLayerState(c,k)]))]))
+      };
+    }catch(e){window.FX_LAYER_MAP_QA={status:'FAIL',error:String(e)}}
+  }
+
+  function canonical2Y(ccy){
+    const rows=(typeof S!=='undefined' && S?.[ccy]) || [];
+    return rows.find(r=>{
+      const t=(String(r.id||'')+' '+String(r.label||'')).toLowerCase();
+      if(String(r.category||'')!=='Rates') return false;
+      return /(^|[^0-9])2y([^0-9]|$)/i.test(t) || /2d/i.test(t);
+    }) || null;
+  }
+
+  function daysBetween(a,b){
+    const aa=new Date(a),bb=new Date(b);
+    if(Number.isNaN(+aa)||Number.isNaN(+bb)) return null;
+    return Math.floor((bb-aa)/86400000);
+  }
+
+  function renderCanonicalRatesRank(){
+    try{
+      const host=document.querySelector('#v256RatesRank');
+      if(!host) return;
+      const asOf=String(D?.asOf||'');
+      const rows=CCYS.map(c=>{
+        const s=canonical2Y(c);
+        const vals=(s?.values||[]).filter(v=>v!=null).map(Number);
+        const lastDate=String(s?.last_date || (s?.dates||[]).at(-1) || '');
+        const age=daysBetween(lastDate,asOf);
+        const stale=age!=null && age>7;
+        const move=vals.length>=6 ? (vals.at(-1)-vals.at(-6))*100 : null;
+        return {c,s,move,lastDate,age,stale};
+      }).sort((a,b)=>{
+        if(a.stale!==b.stale) return a.stale?1:-1;
+        if(a.move==null!== (b.move==null)) return a.move==null?1:-1;
+        return (b.move??-999)-(a.move??-999);
+      });
+      const valid=rows.filter(r=>!r.stale && Number.isFinite(r.move));
+      const max=Math.max(1,...valid.map(r=>Math.abs(r.move)));
+      host.innerHTML=rows.map(r=>{
+        if(r.stale || !Number.isFinite(r.move)){
+          return '<div class="v256RankRow"><div class="v256RankCcy">'+r.c+'</div><div class="v256RankTrack"><div class="v256RankZero"></div></div><div class="v256RankVal neu">'+(r.stale?'STALE':'—')+'</div></div>';
+        }
+        const w=Math.max(2,Math.abs(r.move)/max*49);
+        const cls=r.move>0?'pos':r.move<0?'neg':'neu';
+        return '<div class="v256RankRow"><div class="v256RankCcy">'+r.c+'</div><div class="v256RankTrack"><div class="v256RankZero"></div><div class="v256RankBar '+cls+'" style="width:'+w+'%"></div></div><div class="v256RankVal '+cls+'">'+(r.move>=0?'+':'')+r.move.toFixed(1)+' bp</div></div>';
+      }).join('');
+      const head=host.closest('.v256Panel')?.querySelector('.v256SectionHead small');
+      if(head) head.textContent='Serie 2Y canonica omogenea · 1 settimana · stale >7 giorni = non mostrata come impulso corrente';
+      window.FX_RATES_RANK_QA={status:'PASS',rows:rows.map(r=>({ccy:r.c,move_bp:r.move,last_date:r.lastDate,age_days:r.age,stale:r.stale,series:r.s?.id||null}))};
+    }catch(e){window.FX_RATES_RANK_QA={status:'FAIL',error:String(e)}}
+  }
+
+  window.FX_RELATIVE_LAYER_STATE=relativeLayerState;
+  setTimeout(()=>{renderRuntimeLayerMap();renderCanonicalRatesRank()},160);
+  setTimeout(()=>{renderRuntimeLayerMap();renderCanonicalRatesRank()},700);
+
+  if(typeof renderSimpleOverview==='function' && !renderSimpleOverview.__fxLayerColorWrapped){
+    const original=renderSimpleOverview;
+    const wrapped=function(){const r=original.apply(this,arguments);setTimeout(()=>{renderRuntimeLayerMap();renderCanonicalRatesRank()},0);return r};
+    wrapped.__fxLayerColorWrapped=true;
+    renderSimpleOverview=wrapped;
+  }
+})();
