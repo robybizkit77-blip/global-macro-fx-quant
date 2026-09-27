@@ -26,12 +26,6 @@
   document.open(); document.write(hydrated); document.close();
 
   setTimeout(()=>{
-    let mount=document.getElementById('fxG8StateMount');
-    if(!mount){
-      mount=document.createElement('div');
-      mount.id='fxG8StateMount';
-      document.body.prepend(mount);
-    }
     const g8=document.createElement('script');
     g8.src='g8-state.js'+suffix;
     g8.onload=()=>{
@@ -39,7 +33,6 @@
       ui.src='ui-patch.js'+suffix;
       document.body.appendChild(ui);
     };
-    g8.onerror=()=>{mount.innerHTML='<div style="padding:12px;color:#ffb4b4;font:12px Arial">FX G8 State: script non caricato</div>';};
     document.body.appendChild(g8);
   },0);
 })().catch(e=>{document.body.innerHTML='<div style="padding:24px;font:16px Arial;color:#fff;background:#06131f">Errore nel caricamento della dashboard. Riprova tra poco.<br><small>'+String(e)+'</small></div>';});
