@@ -2176,5 +2176,40 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-jpy-tona-gate-20260930">
+(function(){
+  'use strict';
+  try{
+    window.GMFQ_JPY_TONA_AUDIT={
+      status:'PARTIAL_DIRECT_WITHHELD_FULL_CURVE',
+      source:'Tokyo Financial Exchange · Three-Month TONA Futures',
+      as_of:'2026-09-29',
+      quotation:'100 - implied TONA rate',
+      direct_contracts:{
+        'Sep-26':{settlement:98.752,implied_rate:1.248,volume:3650,open_interest:753},
+        'Dec-26':{settlement:98.445,implied_rate:1.555,volume:2970,open_interest:282},
+        'Mar-27':{settlement:98.245,implied_rate:1.755,volume:0,open_interest:1}
+      },
+      full_ois_status:'WITHHELD',
+      withheld_reason:'No validated 12M bucket and no complete same-grid 1D/1W history captured yet.',
+      no_interpolation:true,
+      no_2y_proxy:true
+    };
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.JPY){
+      window.GMFQ_OIS_FEED_PRIORITY.JPY.ready=false;
+      window.GMFQ_OIS_FEED_PRIORITY.JPY.label='TFX 3M TONA direct contracts captured · full OIS withheld';
+    }
+    document.documentElement.setAttribute('data-jpy-tona-direct','PARTIAL_PASS');
+    document.documentElement.setAttribute('data-jpy-ois-audit','WITHHELD');
+  }catch(e){
+    window.GMFQ_JPY_TONA_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-jpy-ois-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
 
