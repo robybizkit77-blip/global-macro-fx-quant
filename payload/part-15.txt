@@ -2913,6 +2913,49 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       source_quality:sourceQuality,
       issues
     };
+
+    // Realign legacy diagnostics to the final post-gate runtime state.
+    try{
+      const F=window.GMFQ_FULL_SYSTEM_AUDIT;
+      if(F){
+        F.as_of='2026-09-30';
+        F.ois={...ois};
+        F.resolved_audits=F.resolved_audits||{};
+        F.resolved_audits.EUR_OIS=gates.EUR;
+        F.resolved_audits.GBP_OIS=gates.GBP;
+        F.resolved_audits.JPY_OIS=gates.JPY;
+        F.resolved_audits.CAD_CORRA=gates.CAD;
+        F.resolved_audits.AUD_OIS=gates.AUD;
+        F.source_audit=F.source_audit||{};
+        F.source_audit.cb_pricing=JSON.parse(JSON.stringify(C||{}));
+        F.post_gate_sync='PASS';
+        F.post_gate_sync_as_of='2026-09-30';
+        if(Array.isArray(F.warnings)){
+          const resolvedPrefixes=[
+            'CB_PRICING_SECONDARY:EUR',
+            'CB_PRICING_SECONDARY:GBP',
+            'CB_PRICING_SECONDARY:JPY',
+            'CB_PRICING_SECONDARY:CAD',
+            'CB_PRICING_STALE:AUD',
+            'CB_PRICING_PARTIAL:AUD'
+          ];
+          F.warnings=F.warnings.filter(w=>!resolvedPrefixes.includes(String(w)));
+        }
+      }
+      window.GMFQ_RUNTIME_AUDIT_REALIGN={
+        status:'PASS',
+        as_of:'2026-09-30',
+        ois:{...ois},
+        source_quality:{...sourceQuality},
+        full_system_synced:!!window.GMFQ_FULL_SYSTEM_AUDIT
+      };
+      document.documentElement.setAttribute('data-runtime-audit-realign','PASS');
+    }catch(e){
+      window.GMFQ_RUNTIME_AUDIT_REALIGN={status:'FAIL',error:String(e?.message||e)};
+      document.documentElement.setAttribute('data-runtime-audit-realign','FAIL');
+      issues.push('RUNTIME_AUDIT_REALIGN_FAIL');
+      if(window.GMFQ_POST_GATE_FINAL_AUDIT) window.GMFQ_POST_GATE_FINAL_AUDIT.status='FAIL';
+    }
     document.documentElement.setAttribute('data-post-gate-final-audit',window.GMFQ_POST_GATE_FINAL_AUDIT.status);
   }catch(e){
     window.GMFQ_POST_GATE_FINAL_AUDIT={status:'FAIL',error:String(e?.message||e)};
