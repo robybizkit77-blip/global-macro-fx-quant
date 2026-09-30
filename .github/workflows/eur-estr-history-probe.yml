@@ -1,0 +1,130 @@
+name: EUR ESTR History Probe
+
+on:
+  push:
+    branches:
+      - staging-eur-estr-history-parse-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+          pip install pandas xlrd openpyxl
+
+      - name: Discover Eurex report links and download targets
+        run: |
+          cat > probe.js <<'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({acceptDownloads:true});
+            const url='https://www.eurex.com/dynamic/action/ex-en/data/trading-files/product-and-price-report/66/Product-and-Price-Report';
+            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
+
+            const rows = await page.locator('body').evaluate(() => {
+              const all=[...document.querySelectorAll('a')];
+              return all.map(a=>({text:(a.innerText||'').trim(),href:a.href||'',parent:(a.parentElement?.innerText||'').trim()}))
+                .filter(x=>/Download/i.test(x.text)||/CB00[12] Product and Price Report/i.test(x.parent));
+            });
+            console.log('LINK_SCAN='+JSON.stringify(rows.slice(0,300),null,2));
+
+            const targets = {};
+            for (const date of ['Sep 28, 2026','Sep 23, 2026']) {
+              const dateNode = page.getByText(date,{exact:true}).first();
+              if(await dateNode.count()){
+                const card = dateNode.locator('xpath=ancestor::*[self::div or self::li or self::article][.//a][1]');
+                const links = await card.locator('a').evaluateAll(as=>as.map(a=>({text:(a.innerText||'').trim(),href:a.href||''})));
+                targets[date]=links;
+              }
+            }
+            console.log('TARGETS='+JSON.stringify(targets,null,2));
+
+            for(const [date,links] of Object.entries(targets)){
+              let n=0;
+              for(const l of links){
+                if(!l.href) continue;
+                try{
+                  const resp=await page.request.get(l.href,{timeout:120000});
+                  const ct=resp.headers()['content-type']||'';
+                  const buf=await resp.body();
+                  const safe=date.replace(/[^0-9A-Za-z]+/g,'_')+'_'+(++n);
+                  const ext=ct.includes('sheet')||ct.includes('excel')?'xls':(ct.includes('zip')?'zip':'bin');
+                  fs.writeFileSync(`downloads/${safe}.${ext}`,buf);
+                  console.log('DOWNLOADED',date,l.text,l.href,ct,buf.length,`downloads/${safe}.${ext}`);
+                }catch(e){console.log('DOWNLOAD_FAIL',date,l.href,String(e));}
+              }
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          mkdir -p downloads
+          node probe.js
+
+      - name: Inspect downloaded files for FST3
+        run: |
+          python - <<'PY'
+          import os, zipfile, pandas as pd, json, traceback
+          root='downloads'
+          print('FILES', os.listdir(root))
+          hits=[]
+          for fn in os.listdir(root):
+              p=os.path.join(root,fn)
+              print('INSPECT',fn,os.path.getsize(p))
+              try:
+                  if zipfile.is_zipfile(p):
+                      with zipfile.ZipFile(p) as z:
+                          print('ZIP_NAMES', z.namelist()[:30])
+                          for name in z.namelist():
+                              if name.lower().endswith(('.xls','.xlsx','.csv','.txt')):
+                                  out=os.path.join(root,'unzipped_'+os.path.basename(name))
+                                  with open(out,'wb') as f:f.write(z.read(name))
+                  else:
+                      with open(p,'rb') as f:
+                          head=f.read(120)
+                      print('HEAD',head)
+              except Exception as e:
+                  print('BASIC_ERR',fn,e)
+
+          expanded=[os.path.join(root,x) for x in os.listdir(root)]
+          for p in expanded:
+              try:
+                  xl=pd.ExcelFile(p)
+                  print('EXCEL',os.path.basename(p),xl.sheet_names)
+                  for sh in xl.sheet_names:
+                      df=xl.parse(sh,header=None,dtype=str)
+                      mask=df.apply(lambda col: col.astype(str).str.contains('FST3',case=False,na=False)).any(axis=1)
+                      if mask.any():
+                          sub=df.loc[mask].copy()
+                          print('FST3_HIT',os.path.basename(p),sh)
+                          print(sub.to_string(index=False,header=False))
+                          hits.append({'file':os.path.basename(p),'sheet':sh,'rows':sub.fillna('').values.tolist()})
+              except Exception as e:
+                  pass
+          print('HITS_JSON='+json.dumps(hits,ensure_ascii=False))
+          PY
+
+      - name: Upload probe files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-estr-history-probe
+          path: downloads
