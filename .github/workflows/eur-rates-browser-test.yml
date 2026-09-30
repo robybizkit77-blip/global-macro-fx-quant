@@ -25,6 +25,8 @@ jobs:
       - name: Runtime integrity
         shell: bash
         run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
           cat > check.html <<'EOF'
           <html><body><iframe id="f" src="http://127.0.0.1:8000/" style="width:1200px;height:800px"></iframe>
           <script>
