@@ -1,4 +1,4 @@
-name: EUR ESTR Eurex API Probe
+name: EUR ESTR Official Curve Extract
 
 on:
   push:
@@ -7,43 +7,67 @@ on:
   workflow_dispatch:
 
 jobs:
-  probe:
+  extract:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 22
-      - name: Install browser
+          python-version: '3.12'
+      - name: Extract matched FST3 settlements
         run: |
-          npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
-          npx playwright install --with-deps chromium
-      - name: Capture Eurex API traffic
-        run: |
-          cat > probe.js <<'EOF'
-          const { chromium } = require('playwright');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage();
-            page.on('request',req=>{
-              const u=req.url();
-              if(/\/api\/v\d+\//i.test(u)) console.log('API_REQ',req.method(),u,'POST',req.postData()||'');
-            });
-            page.on('response',async res=>{
-              const u=res.url();
-              if(/\/api\/v\d+\//i.test(u)){
-                let body='';
-                try{body=(await res.text()).slice(0,50000)}catch(e){}
-                console.log('API_RESP',res.status(),u,'BODY',body);
+          pip install requests
+          python - <<'PY'
+          import requests, json
+          base='https://www.eurex.com/api/v1/overallstatistics/3402482'
+          dates=['20260929','20260928','20260923']
+          maturities=['20261216','20270317','20270915']
+          allv={}
+          for d in dates:
+              r=requests.get(base,params={'busdate':d,'filtertype':'overview'},timeout=120)
+              print('HTTP',d,r.status_code,r.url)
+              r.raise_for_status()
+              j=r.json()
+              rows={x['date']:x for x in j.get('dataRows',[])}
+              out={}
+              for m in maturities:
+                  x=rows.get(m)
+                  if not x: out[m]=None; continue
+                  settle=float(x['dSettle'])
+                  rate=100.0-settle
+                  out[m]={
+                    'dSettle':settle,
+                    'implied_rate':rate,
+                    'volume':x.get('volume'),
+                    'openInt':x.get('openInt'),
+                    'last':x.get('last'),
+                    'open':x.get('open'),
+                    'high':x.get('high'),
+                    'low':x.get('low'),
+                    'contractType':x.get('contractType')
+                  }
+              allv[d]=out
+              print('CURVE',d,json.dumps(out,sort_keys=True))
+          cur=allv['20260929']
+          d1=allv['20260928']
+          w1=allv['20260923']
+          result={}
+          labels={'3m':'20261216','6m':'20270317','12m':'20270915'}
+          for h,m in labels.items():
+              cr=cur[m]['implied_rate']; r1=d1[m]['implied_rate']; rw=w1[m]['implied_rate']
+              result[h]={
+                'contract':m,
+                'current_rate':cr,
+                'rate_1d':r1,
+                'rate_1w':rw,
+                'change_1d_bp':(cr-r1)*100,
+                'change_1w_bp':(cr-rw)*100,
+                'current_settlement':cur[m]['dSettle'],
+                'settlement_1d':d1[m]['dSettle'],
+                'settlement_1w':w1[m]['dSettle'],
+                'current_volume':cur[m]['volume'],
+                'current_open_interest':cur[m]['openInt']
               }
-            });
-            const url='https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480';
-            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
-            await page.waitForTimeout(5000);
-            console.log('PAGE_URL',page.url());
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
-          EOF
-          node probe.js
+          print('FINAL='+json.dumps(result,sort_keys=True))
+          PY
