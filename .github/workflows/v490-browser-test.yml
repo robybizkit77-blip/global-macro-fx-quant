@@ -1,0 +1,67 @@
+name: V490 staging browser test
+
+on:
+  push:
+    branches:
+      - test-v490-browser-2026-09-30
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+
+      - name: Verify clean payload structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          for i in $(seq -w 0 15); do test -f "payload/part-${i}.txt"; done
+          test "$(find payload -maxdepth 1 -type f -name 'part-*.txt' | wc -l)" -eq 16
+
+      - name: Start local web server
+        shell: bash
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
+          echo $! > /tmp/gmfq-server.pid
+          sleep 2
+          curl -fsS http://127.0.0.1:8000/index.html >/dev/null
+          curl -fsS http://127.0.0.1:8000/payload/part-00.txt >/dev/null
+          curl -fsS http://127.0.0.1:8000/payload/part-15.txt >/dev/null
+
+      - name: Render dashboard in headless Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME"             --headless=new             --no-sandbox             --disable-gpu             --disable-dev-shm-usage             --virtual-time-budget=15000             --dump-dom             http://127.0.0.1:8000/ > rendered.html 2> chrome.log
+
+          if grep -q "Errore caricamento dashboard" rendered.html; then
+            echo "FAIL: loader error detected"
+            cat rendered.html
+            exit 1
+          fi
+
+          if grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html; then
+            echo "FAIL: loader did not finish"
+            exit 1
+          fi
+
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" rendered.html
+          grep -qi "GLOBAL MACRO FX QUANT" rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+
+          echo "PASS: dashboard payload loaded and rendered"
+          echo "Rendered bytes: $(wc -c < rendered.html)"
+          echo "Payload files: $(find payload -maxdepth 1 -type f -name 'part-*.txt' | wc -l)"
+
+      - name: Save render diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v490-browser-test
+          path: |
+            rendered.html
+            chrome.log
+            /tmp/gmfq-server.log
