@@ -1,0 +1,49 @@
+name: USD price Fed Broad browser test
+
+on:
+  push:
+    branches:
+      - test-usd-price-fed-broad-2026-09-30
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify clean payload structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          for i in $(seq -w 0 15); do test -f "payload/part-${i}.txt"; done
+          test "$(find payload -maxdepth 1 -type f -name 'part-*.txt' | wc -l)" -eq 16
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-server.log 2>&1 &
+          sleep 2
+          curl -fsS http://127.0.0.1:8000/index.html >/dev/null
+      - name: Render and validate USD price
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > rendered.html 2> chrome.log
+          ! grep -q "Errore caricamento dashboard" rendered.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" rendered.html
+          grep -q "gmfq-usd-broad-dollar-price-20260930" rendered.html
+          grep -q "Fed Broad Dollar" rendered.html
+          grep -q "USD · prezzo finalmente collegato al paniere ufficiale Fed" rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+          echo "PASS: USD Fed Broad price layer rendered"
+          echo "Rendered bytes: $(wc -c < rendered.html)"
+      - name: Save diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usd-price-fed-broad-test
+          path: |
+            rendered.html
+            chrome.log
+            /tmp/gmfq-server.log
