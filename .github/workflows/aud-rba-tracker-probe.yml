@@ -7,24 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Probe ASX RBA tracker and public APIs
+      - name: Extract ASX RBA tracker API endpoint
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import requests,re,html,json
-          headers={"User-Agent":"Mozilla/5.0"}
-          urls=[
-            "https://www.asx.com.au/markets/trade-our-derivatives-market/futures-market/rba-rate-tracker.html",
-            "https://asx.cmfyapp.com/js/manifest.js",
-            "https://asx.cmfyapp.com/js/common.js"
-          ]
-          for u in urls:
-            r=requests.get(u,headers=headers,timeout=30)
-            print("\nURL",u,"STATUS",r.status_code,"LEN",len(r.text),"FINAL",r.url)
-            t=r.text
-            for line in t.splitlines():
-              if re.search(r'RBA|rate|cash|IB|futures|endpoint|api|cmfy|markit|oda|contract|probab',line,re.I):
-                s=re.sub(r'\s+',' ',line).strip()
-                if s: print(s[:3500])
+          import requests,re
+          u="https://asx.cmfyapp.com/js/common.js?v=9655bf40094111edacde7c3a16a8429a00187fe2"
+          t=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30).text
+          print("LEN",len(t))
+          needles=["RBA_Trgt_Cash_Rate","Mkt_Exptn_Rate","Crnt_Dy_Stlmnt_Price","rbaRateindicatorWidget","target-rate-indicator","Ftre_Cash_Rate"]
+          for n in needles:
+            print("\nNEEDLE",n)
+            pos=0
+            found=0
+            while True:
+              i=t.find(n,pos)
+              if i<0 or found>=8: break
+              print(t[max(0,i-1800):i+2600])
+              pos=i+len(n);found+=1
+          print("\nURL CANDIDATES")
+          for m in re.finditer(r'https?://[^"\' ]+|/[A-Za-z0-9_./?=&%-]{6,}',t):
+            s=m.group(0)
+            if re.search(r'rba|rate|future|cash|target|interest|indicator|deriv',s,re.I):
+              print(s[:1200])
           PY
