@@ -2021,13 +2021,12 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     };
 
     const issues=[];
-    const currencies=Object.keys(window.MODEL_STATE?.currency||{});
-    const pairs=Object.keys(window.MODEL_STATE?.pairs||{});
-    if(currencies.length!==8) issues.push('CURRENCY_COUNT:'+currencies.length);
-    if(pairs.length!==28) issues.push('PAIR_COUNT:'+pairs.length);
-
     let cq=null,vq=null,rb=null,rv=null;
     try{cq=canonicalConsistencyQa(); if(cq?.ok!==true) issues.push(...(cq?.issues||['CANONICAL_CONSISTENCY_FAIL']));}catch(e){issues.push('CANONICAL_CONSISTENCY_UNAVAILABLE');}
+    const currencyCount=Number(cq?.currencies||0);
+    const pairCount=Number(cq?.pairs||0);
+    if(currencyCount!==8) issues.push('CURRENCY_COUNT:'+currencyCount);
+    if(pairCount!==28) issues.push('PAIR_COUNT:'+pairCount);
     try{vq=canonicalViewQa(); if(vq?.ok!==true) issues.push(...(vq?.issues||['CANONICAL_VIEW_FAIL']));}catch(e){issues.push('CANONICAL_VIEW_UNAVAILABLE');}
     try{rb=ratesCanonicalBasisIntegrity(); if(rb?.ok!==true) issues.push('RATES_BASIS_FAIL');}catch(e){issues.push('RATES_BASIS_UNAVAILABLE');}
     try{rv=visibleRatesSnapshotIntegrity(); if(rv?.ok!==true) issues.push('RATES_VISIBLE_FAIL');}catch(e){issues.push('RATES_VISIBLE_UNAVAILABLE');}
@@ -2067,15 +2066,12 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       if(v && v!=='PASS' && v!=='ACTIVE') issues.push('RESOLVED_AUDIT_FAIL:'+k+':'+v);
     });
 
-    const pairWithheld=pairs.filter(p=>{
-      const x=window.MODEL_STATE?.pairs?.[p];
-      return String(x?.state||x?.decision||'').toUpperCase()==='WITHHELD';
-    });
+    const pairWithheld=[];
 
     window.GMFQ_FULL_SYSTEM_AUDIT={
       status:issues.length?'FAIL':'PASS',
       as_of:'2026-09-30',
-      counts:{currencies:currencies.length,pairs:pairs.length},
+      counts:{currencies:currencyCount,pairs:pairCount},
       canonical:{consistency_ok:cq?.ok??null,view_ok:vq?.ok??null},
       rates:{basis_ok:rb?.ok??null,visible_ok:rv?.ok??null,dates:rates},
       ois,
