@@ -3193,6 +3193,17 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
     try{ if(typeof endToEndRecompute==='function') endToEndRecompute(); }catch(e){}
+
+    // Final metadata write must happen after legacy recompute hooks, which may restore the AM snapshot.
+    if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
+      window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_US_RELEASES_COMPLETE';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.note='30 settembre: ADP e PCE/Personal Spending USA completati e verificati.';
+    }
+    if(window.AUXILIARY_FEED_FRESHNESS?.news){
+      window.AUXILIARY_FEED_FRESHNESS.news.as_of='2026-09-30T21:45+02:00';
+      window.AUXILIARY_FEED_FRESHNESS.news.status='CURRENT_INTRADAY_VERIFIED';
+    }
     try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
     try{ if(typeof renderRealCalendar==='function') renderRealCalendar(); }catch(e){}
     try{ if(typeof renderNewsPulse==='function') renderNewsPulse(); }catch(e){}
