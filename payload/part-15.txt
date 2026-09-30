@@ -1424,6 +1424,17 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     try{ if(typeof syncVisibleRatesSnapshots==='function') syncVisibleRatesSnapshots(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    window.GMFQ_EUR_RATES_RUNTIME={
+      date:d.date,
+      y2:d['2Y'],
+      y10:d['10Y'],
+      curve_bp:d.curve_bp,
+      weekly_end:d.weekly2_validation?.end_date||null,
+      weekly_value:d.weekly2_validation?.end_value??null,
+      basis_ok:(typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity().ok:null),
+      visible_ok:(typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity().ok:null),
+      health:(typeof productionHealthCheck==='function'?productionHealthCheck().status:null)
+    };
   }catch(e){
     window.GMFQ_EUR_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};
     document.documentElement.setAttribute('data-eur-rates-audit','FAIL');
