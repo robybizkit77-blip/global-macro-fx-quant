@@ -56,7 +56,7 @@ jobs:
                       d[colnum(ref)]=val
                   rows[rn]=d
               mats={int(k):float(v) for k,v in rows[4].items() if k>1 and v not in (None,'')}
-              wanted=[2,5,10,25,40]
+              wanted=[2,5,10,25,30,40]
               cmap={}
               for w in wanted:
                   best=min(mats.items(),key=lambda kv:abs(kv[1]-w))
