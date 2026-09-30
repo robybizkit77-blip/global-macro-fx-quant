@@ -46,7 +46,7 @@ jobs:
           },9000);
           </script></body></html>
           EOF
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=13000 --dump-dom file://$PWD/check.html > check-rendered.html 2>/tmp/check.log
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=13000 --dump-dom http://127.0.0.1:8000/check.html > check-rendered.html 2>/tmp/check.log
           grep -q '"date":"2026-09-29"' check-rendered.html
           grep -q '"basis_ok":true' check-rendered.html
           grep -q '"visible_ok":true' check-rendered.html
