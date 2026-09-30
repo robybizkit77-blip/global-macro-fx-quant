@@ -32,4 +32,22 @@ jobs:
                       line=re.sub(r'\s+',' ',line).strip()
                       if line:
                           print(line[:1500])
+          print("\nDATE MAP / CRA SNAPSHOTS")
+          j=requests.get("https://www.m-x.ca/files/json/market-reviews.json",timeout=30,headers={"User-Agent":"Mozilla/5.0"})
+          print("MAP_STATUS",j.status_code,"LEN",len(j.content))
+          mp=j.json()
+          for ds in ["2026-09-22","2026-09-28","2026-09-29"]:
+              ident=mp.get(ds)
+              print("DATE_ID",ds,ident)
+              if not ident: continue
+              u=f"https://www.m-x.ca/en/trading/data/market-review?id={ident}"
+              rr=requests.get(u,timeout=30,headers={"User-Agent":"Mozilla/5.0"})
+              tx=rr.content.decode("utf-8","ignore")
+              print("REVIEW",ds,"STATUS",rr.status_code,"LEN",len(tx))
+              # print only CRA table rows and nearby header
+              m=re.search(r'Three-Month CORRA Futures \(CRA\)(.*?)(?:Two-Year Government|</table>)',tx,re.S|re.I)
+              if m:
+                  block=re.sub(r'<[^>]+>','|',m.group(1))
+                  block=html.unescape(re.sub(r'\s+',' ',block))
+                  print("CRA_BLOCK",ds,block[:5000])
           PY
