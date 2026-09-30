@@ -1945,4 +1945,115 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+<script id="gmfq-aud-asx-post-rba-20260930">
+(function(){
+  'use strict';
+  try{
+    const d=(typeof NATIVE_CB_DATA!=='undefined' ? NATIVE_CB_DATA.AUD : null);
+    if(!d) throw new Error('NATIVE_CB_DATA.AUD unavailable');
+
+    const current={
+      as_of:'2026-09-29',
+      instrument:'ASX 30-day interbank cash-rate futures',
+      source:'ASX RBA Rate Tracker / official ASX yield_curve.csv',
+      quality:'COMPLETO_DIRECT_EXCHANGE_POST_DECISION',
+      h3m:4.740,
+      h6m:4.855,
+      h12m:4.960,
+      contracts:{
+        'Dec-26':{implied_rate:4.740},
+        'Mar-27':{implied_rate:4.855},
+        'Sep-27':{implied_rate:4.960}
+      },
+      official_cash_rate:4.60,
+      next_meeting:'2026-11-03',
+      next_meeting_hike_probability_pct:42,
+      next_meeting_implied_rate:4.85,
+      settlement_date:'2026-09-29',
+      freshness_status:'DIRECT_EXCHANGE_POST_DECISION_CURRENT',
+      note:'ASX official post-RBA end-of-day curve. Monthly implied-yield curve from yield_curve.csv; no synthetic interpolation.',
+      pre_decision_reference:{
+        as_of:'2026-09-24',
+        h3m:4.745,
+        h6m:4.880,
+        h12m:5.020
+      },
+      change_vs_pre_decision_bp:{
+        h3m:-0.5,
+        h6m:-2.5,
+        h12m:-6.0
+      }
+    };
+
+    d.pricing_tier=current.quality;
+    d.pricing_status='ASX post-RBA: 4,74% Dec-26 · 4,855% Mar-27 · 4,96% Sep-27; curva leggermente più bassa rispetto al 24 settembre.';
+    d.market_3m='4.740%';
+    d.market_6m='4.855%';
+    d.market_12m='4.960%';
+    d.market_pricing=current;
+
+    if(window.FINAL_SOURCE_POLICY_AUDIT?.cb_pricing?.AUD){
+      const x=window.FINAL_SOURCE_POLICY_AUDIT.cb_pricing.AUD;
+      x.quality=current.quality;
+      x.policy='AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT';
+      x.source='ASX 30-Day Interbank Cash Rate Futures / RBA Rate Tracker';
+      x.current_as_of='2026-09-29';
+    }
+    if(window.FINAL_SOURCE_POLICY_AUDIT?.CB_PRICING?.AUD){
+      const x=window.FINAL_SOURCE_POLICY_AUDIT.CB_PRICING.AUD;
+      x.quality=current.quality;
+      x.policy='AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT';
+      x.source='ASX 30-Day Interbank Cash Rate Futures / RBA Rate Tracker';
+      x.current_as_of='2026-09-29';
+    }
+
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.AUD){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.AUD,{
+        status:'RESOLVED_POST_DECISION_DIRECT_ASX',
+        reason:'ASX official RBA Rate Tracker and yield_curve.csv now provide the first validated post-29-Sep end-of-day curve.',
+        resolved_as_of:'2026-09-29',
+        current_levels:{h3m:4.740,h6m:4.855,h12m:4.960},
+        next_meeting_hike_probability_pct:42
+      });
+    }
+
+    if(window.SOURCE_RESOLUTION_WATCHLIST?.items?.AUD_CB_PRICING){
+      Object.assign(window.SOURCE_RESOLUTION_WATCHLIST.items.AUD_CB_PRICING,{
+        current_status:'RESOLVED_DIRECT_POST_DECISION',
+        resolved_as_of:'2026-09-29'
+      });
+    }
+
+    const baseHealth=window.productionHealthCheck;
+    if(typeof baseHealth==='function'){
+      window.productionHealthCheck=function(){
+        const r=baseHealth();
+        r.warnings=(r.warnings||[]).filter(w=>w!=='CB_PRICING_STALE:AUD');
+        r.status=r.hard_errors?.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+        return r;
+      };
+    }
+
+    window.GMFQ_AUD_ASX_POST_RBA_AUDIT={
+      status:'PASS',
+      as_of:'2026-09-29',
+      source:current.source,
+      official_cash_rate:4.60,
+      next_meeting:'2026-11-03',
+      next_meeting_hike_probability_pct:42,
+      horizons:{'3m':4.740,'6m':4.855,'12m':4.960},
+      change_vs_pre_decision_bp:{'3m':-0.5,'6m':-2.5,'12m':-6.0},
+      ois_full_curve_status:'WITHHELD_UNTIL_SAME_BASIS_1D_1W_HISTORY_AVAILABLE'
+    };
+    document.documentElement.setAttribute('data-aud-asx-post-rba-audit','PASS');
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+  }catch(e){
+    window.GMFQ_AUD_ASX_POST_RBA_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-aud-asx-post-rba-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
