@@ -1,0 +1,16 @@
+name: CAD rates runtime inspect
+on:
+  push:
+    branches: [inspect-cad-rates-2026-09-30]
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/s.log 2>&1 &
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=12000 --dump-dom http://127.0.0.1:8000/ > rendered.html 2>/tmp/c.log
+          grep 'cadRatesInspect' rendered.html > cad.txt
+          cat cad.txt
