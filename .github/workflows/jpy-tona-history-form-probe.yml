@@ -1,0 +1,26 @@
+name: JPY TONA history form probe
+on:
+  push:
+    branches: [test-jpy-tona-archive-2026-09-30]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          import requests,re
+          from bs4 import BeautifulSoup
+          u="https://port.jpx.co.jp/jpxhp/main/index.aspx?F=e_future&disptype=day_through"
+          r=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+          print("STATUS",r.status_code,"LEN",len(r.text),"FINAL",r.url)
+          s=BeautifulSoup(r.text,"html.parser")
+          f=s.find("form")
+          print("FORM",f.get("method") if f else None,f.get("action") if f else None)
+          for x in s.find_all(["input","select","button"]):
+              print("FIELD",x.name,x.get("name"),x.get("id"),x.get("value"),[o.get("value") for o in x.find_all("option")][:20] if x.name=="select" else "")
+          for a in s.find_all("a",href=True):
+              h=a["href"]
+              if "date" in h.lower() or "future" in h.lower() or "day" in h.lower():
+                  print("LINK",h)
+          PY
