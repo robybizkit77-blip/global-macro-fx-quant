@@ -1748,4 +1748,56 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-definitive-withheld-audit-20260930">
+(function(){
+  'use strict';
+  try{
+    window.GMFQ_DEFINITIVE_WITHHELD_AUDIT={
+      as_of:'2026-09-30',
+      status:'PASS',
+      items:{
+        JPY_OIS:{
+          status:'WITHHELD_VALIDATED_GAP',
+          reason:'Three-month TONA futures current settlements are public, but same-contract 1W settlement history has not been captured on the exact validated basis required by the OIS validator.',
+          source:'Tokyo Financial Exchange · Three-month TONA Futures',
+          resolution:'Capture exact same-contract 1D/1W settlements for 3M/6M/12M buckets; no interpolation.'
+        },
+        USD_CB_PRICING:{
+          status:'WITHHELD_PUBLIC_STRIP_INCOMPLETE',
+          reason:'CME public pages confirm the correct Fed Funds futures instrument, but the complete direct 3M/6M/12M settlement strip with 1D/1W changes is not exposed in a reproducible public feed.',
+          source:'CME 30-Day Fed Funds Futures',
+          resolution:'Direct same-day CME settlement strip with matched historical points.'
+        },
+        CHF_CB_PRICING:{
+          status:'WITHHELD_LIQUIDITY_BASIS',
+          reason:'Direct SARON futures/OIS references remain too partial or illiquid for a robust 3M/6M/12M path with comparable 1D/1W repricing.',
+          source:'Eurex 3M SARON / direct CHF OIS',
+          resolution:'Usable direct settlement strip with sufficient price discovery.'
+        },
+        NZD_CB_PRICING:{
+          status:'WITHHELD_NO_PUBLIC_FULL_OIS_CURVE',
+          reason:'RBNZ publishes OCR and wholesale rates, but not a full public 3M/6M/12M OIS curve with matched 1D/1W history.',
+          source:'RBNZ B2 Wholesale Interest Rates',
+          resolution:'Direct NZ OIS source or official public equivalent; swaps/bills must not be relabelled as OIS.'
+        }
+      }
+    };
+
+    if(window.SOURCE_RESOLUTION_WATCHLIST?.items){
+      const I=window.SOURCE_RESOLUTION_WATCHLIST.items;
+      if(I.JPY_CB_PRICING) I.JPY_CB_PRICING.current_status='WITHHELD_VALIDATED_GAP_1W';
+      if(I.USD_CB_PRICING) I.USD_CB_PRICING.current_status='WITHHELD_PUBLIC_STRIP_INCOMPLETE';
+      if(I.CHF_CB_PRICING) I.CHF_CB_PRICING.current_status='WITHHELD_LIQUIDITY_BASIS';
+      if(I.NZD_CB_PRICING) I.NZD_CB_PRICING.current_status='WITHHELD_NO_PUBLIC_FULL_OIS_CURVE';
+    }
+
+    document.documentElement.setAttribute('data-definitive-withheld-audit','PASS');
+  }catch(e){
+    window.GMFQ_DEFINITIVE_WITHHELD_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-definitive-withheld-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
