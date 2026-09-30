@@ -1953,6 +1953,20 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       return r;
     };
 
+    if(window.FINAL_CANONICAL_WRITER_REGISTRY?.productionHealthCheck){
+      const fn=window.productionHealthCheck;
+      window.FINAL_CANONICAL_WRITER_REGISTRY.productionHealthCheck.exists=typeof fn==='function';
+      window.FINAL_CANONICAL_WRITER_REGISTRY.productionHealthCheck.signature=
+        typeof fn==='function' ? (function(str){
+          let h=2166136261>>>0;
+          for(let i=0;i<str.length;i++){
+            h^=str.charCodeAt(i);
+            h=Math.imul(h,16777619)>>>0;
+          }
+          return ('00000000'+h.toString(16)).slice(-8);
+        })(Function.prototype.toString.call(fn)) : null;
+    }
+
     const h=window.productionHealthCheck();
     window.GMFQ_STALE_INTEGRITY_ERROR_CLEANUP={
       status:h.hard_errors?.some(x=>/^(RENDERER_CHANGED|FINAL_WRITER_CHANGED):/.test(String(x)))?'FAIL':'PASS',
