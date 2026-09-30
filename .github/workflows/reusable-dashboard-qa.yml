@@ -66,7 +66,8 @@ jobs:
               hard_errors:hard,
               unexpected_hard_errors:unexpected,
               audit_failures:Object.entries(audits).filter(([k,v])=>v?.status==='FAIL').map(([k])=>k),
-              audit_passes:Object.entries(audits).filter(([k,v])=>v?.status==='PASS').map(([k])=>k)
+              audit_passes:Object.entries(audits).filter(([k,v])=>v?.status==='PASS').map(([k])=>k),
+              full_system:w.GMFQ_FULL_SYSTEM_AUDIT||null
             };
             const p=document.createElement('pre');
             p.id='qaResult';
