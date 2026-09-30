@@ -882,4 +882,150 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 };
 </script>
 
+
+<script id="gmfq-usd-broad-dollar-price-20260930">
+(function(){
+  'use strict';
+
+  const USD_BROAD = {
+    series_id:'DTWEXBGS',
+    label:'Nominal Broad U.S. Dollar Index',
+    source:'Board of Governors of the Federal Reserve System · H.10 / FRED',
+    units:'Index Jan 2006=100',
+    frequency:'Daily',
+    as_of:'2026-09-25',
+    last_value:120.3300,
+    anchors:{
+      '1M':{date:'2026-08-25',value:118.2283},
+      '3M':{date:'2026-06-25',value:121.0559},
+      '6M':{date:'2026-03-25',value:120.1282}
+    },
+    recent:[
+      ['2026-09-14',118.6923],
+      ['2026-09-15',118.8822],
+      ['2026-09-16',118.9206],
+      ['2026-09-17',119.3489],
+      ['2026-09-18',119.5133],
+      ['2026-09-21',119.4014],
+      ['2026-09-22',119.5933],
+      ['2026-09-23',120.1169],
+      ['2026-09-24',120.5521],
+      ['2026-09-25',120.3300]
+    ]
+  };
+
+  const movePct=(from,to)=>((to/from)-1)*100;
+  USD_BROAD.moves={
+    m1:movePct(USD_BROAD.anchors['1M'].value,USD_BROAD.last_value),
+    m3:movePct(USD_BROAD.anchors['3M'].value,USD_BROAD.last_value),
+    m6:movePct(USD_BROAD.anchors['6M'].value,USD_BROAD.last_value)
+  };
+  window.GMFQ_USD_BROAD_PRICE=USD_BROAD;
+
+  try{
+    if(typeof pctMoveForCurrency==='function'){
+      const previousPctMoveForCurrency=pctMoveForCurrency;
+      pctMoveForCurrency=function(c,n){
+        if(c!=='USD') return previousPctMoveForCurrency(c,n);
+        if(n>=120) return USD_BROAD.moves.m6;
+        if(n>=60) return USD_BROAD.moves.m3;
+        return USD_BROAD.moves.m1;
+      };
+    }
+
+    if(typeof priceSeriesObjectForCurrency==='function'){
+      const previousPriceSeriesObjectForCurrency=priceSeriesObjectForCurrency;
+      priceSeriesObjectForCurrency=function(c){
+        if(c!=='USD') return previousPriceSeriesObjectForCurrency(c);
+        return {
+          dates:USD_BROAD.recent.map(x=>x[0]),
+          values:USD_BROAD.recent.map(x=>x[1]),
+          label:USD_BROAD.label,
+          source:USD_BROAD.source
+        };
+      };
+    }
+
+    if(typeof currencyIntelData!=='undefined' && currencyIntelData?.USD){
+      currencyIntelData.USD.price=[
+        'Neutrale',
+        'stateNeu',
+        'Fed Broad Dollar: +1,8% 1M · −0,6% 3M · +0,2% 6M. Momentum recente positivo, quadro multi-orizzonte ancora misto.'
+      ];
+      currencyIntelData.USD.lag='Prezzo';
+    }
+
+    if(window.GMFQ_RELEASE_MANIFEST){
+      window.GMFQ_RELEASE_MANIFEST.usd_price='ACTIVE_FED_NOMINAL_BROAD_DOLLAR_INDEX';
+      window.GMFQ_RELEASE_MANIFEST.usd_price_as_of='2026-09-25';
+    }
+
+    if(window.GMFQ_PRICE_TUTOR){
+      const baseModel=window.GMFQ_PRICE_TUTOR.model;
+      const baseEnsure=window.GMFQ_PRICE_TUTOR.ensureUi;
+      window.GMFQ_PRICE_TUTOR.model=function(c){
+        if(c!=='USD') return baseModel(c);
+        const d=(typeof currencyDynamics==='function'?currencyDynamics('USD')?.price:null);
+        const p1=USD_BROAD.moves.m1, p3=USD_BROAD.moves.m3, p6=USD_BROAD.moves.m6;
+        const dir=d?.dir>0
+          ? {txt:'MIGLIORA ↗',cls:'pos'}
+          : d?.dir<0
+            ? {txt:'PEGGIORA ↘',cls:'neg'}
+            : {txt:'STABILE →',cls:'neu'};
+        const cls=v=>v>0?'pos':v<0?'neg':'neu';
+        return {
+          status:{txt:'MISTO',cls:'neu'},
+          direction:dir,
+          title:'USD · prezzo finalmente collegato al paniere ufficiale Fed',
+          text:'Il Broad Dollar Index della Federal Reserve sostituisce il vecchio confronto USD contro se stesso. Nell’ultimo mese il dollaro è salito, mentre su 3 mesi resta sotto i livelli di fine giugno e su 6 mesi è quasi invariato.',
+          drivers:[
+            {label:'1 mese',txt:(p1>=0?'+':'')+p1.toFixed(1)+'%',cls:cls(p1)},
+            {label:'3 mesi',txt:(p3>=0?'+':'')+p3.toFixed(1)+'%',cls:cls(p3)},
+            {label:'6 mesi',txt:(p6>=0?'+':'')+p6.toFixed(1)+'%',cls:cls(p6)}
+          ],
+          confirm:'La lettura diventerebbe più forte se il recupero recente si estendesse anche all’orizzonte 3M.',
+          reverse:'Il recupero recente perderebbe qualità se il Broad Dollar tornasse a indebolirsi mentre Macro e front-end restano favorevoli.',
+          fx:'Per USD il layer Prezzo ora è utilizzabile: al momento dà momentum recente positivo, ma non una conferma multi-orizzonte piena.'
+        };
+      };
+      window.GMFQ_PRICE_TUTOR.render=function(c){
+        c=c||window.GMFQ_PRICE_TUTOR.selectedCurrency?.();
+        if(!c||!baseEnsure()) return;
+        const m=window.GMFQ_PRICE_TUTOR.model(c);
+        const s=document.getElementById('gmfqPriceStatus');
+        const d=document.getElementById('gmfqPriceDirection');
+        if(s){s.className='gmfqPriceTick '+m.status.cls;s.querySelector('.v').textContent=m.status.txt;}
+        if(d){d.className='gmfqPriceTick '+m.direction.cls;d.querySelector('.v').textContent=m.direction.txt;}
+        document.getElementById('gmfqPriceTitle').textContent=m.title;
+        document.getElementById('gmfqPriceText').textContent=m.text;
+        document.getElementById('gmfqPriceDrivers').innerHTML=m.drivers.map(x=>'<div class="driver"><b>'+x.label+'</b><span class="'+x.cls+'">'+x.txt+'</span></div>').join('');
+        document.getElementById('gmfqPriceConfirm').textContent=m.confirm;
+        document.getElementById('gmfqPriceReverse').textContent=m.reverse;
+        document.getElementById('gmfqPriceFx').textContent=m.fx;
+      };
+    }
+
+    if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+    if(typeof stableModelRefresh==='function') stableModelRefresh();
+    if(window.GMFQ_PRICE_TUTOR?.render) window.GMFQ_PRICE_TUTOR.render('USD');
+
+    window.GMFQ_USD_PRICE_AUDIT={
+      status:'ACTIVE',
+      source:'DTWEXBGS · Federal Reserve H.10',
+      as_of:'2026-09-25',
+      last:USD_BROAD.last_value,
+      moves:{
+        '1M':Number(USD_BROAD.moves.m1.toFixed(4)),
+        '3M':Number(USD_BROAD.moves.m3.toFixed(4)),
+        '6M':Number(USD_BROAD.moves.m6.toFixed(4))
+      },
+      no_self_usd_pair:true,
+      other_currencies_unchanged:true
+    };
+  }catch(e){
+    window.GMFQ_USD_PRICE_AUDIT={status:'ERROR',message:String(e?.message||e)};
+  }
+})();
+</script>
+
 </body></html>
