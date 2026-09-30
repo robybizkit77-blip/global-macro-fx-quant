@@ -45,16 +45,10 @@ jobs:
               print("SHEET",s,"rows",len(rows),"cols",max(len(x) for x in rows))
               for i,row in enumerate(rows[:8],1):
                   print("ROW",i,repr(row[:16]))
-              # find maturity row: positive numeric sequence
+              # BoE short-end sheets expose row 3 in months and row 4 in years.
               mat_i=None
               for i,row in enumerate(rows[:8]):
-                  nums=[]
-                  for v in row[1:]:
-                      try:
-                          fv=float(v)
-                          if fv>0: nums.append(fv)
-                      except: pass
-                  if len(nums)>=6 and all(nums[j] <= nums[j+1] for j in range(len(nums)-1)):
+                  if str(row[0]).strip().lower().startswith("years"):
                       mat_i=i; break
               print("MAT_ROW",mat_i+1 if mat_i is not None else None)
               if mat_i is None: continue
