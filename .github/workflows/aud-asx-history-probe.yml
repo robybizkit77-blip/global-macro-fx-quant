@@ -1,0 +1,46 @@
+name: AUD ASX History Probe
+
+on:
+  push:
+    branches:
+      - staging-aud-asx-history-probe-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract ASX IB settlement history
+        run: |
+          pip install requests beautifulsoup4 pandas lxml
+          python - <<'PY'
+          import requests, pandas as pd, io, json, re
+          dates=['260929','260928','260922']
+          out={}
+          for d in dates:
+              url=f'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{d}SFD.htm'
+              r=requests.get(url,timeout=120,headers={'User-Agent':'Mozilla/5.0'})
+              print('HTTP',d,r.status_code,len(r.content),url)
+              if r.status_code!=200:
+                  print('HEAD',r.text[:1000]); continue
+              text=r.text
+              print('TITLE',re.findall(r'<title[^>]*>(.*?)</title>',text,re.I|re.S)[:3])
+              try:
+                  tables=pd.read_html(io.StringIO(text))
+              except Exception as e:
+                  print('READ_HTML_FAIL',d,repr(e)); continue
+              print('TABLES',d,len(tables))
+              hits=[]
+              for ti,df in enumerate(tables):
+                  s=' '.join(map(str,df.astype(str).values.flatten()))
+                  if '30 Day Interbank Cash Rate' in s or re.search(r'\bIB\b',s):
+                      print('TABLE_HIT',d,ti,df.to_string(index=False))
+                      hits.append((ti,df))
+              out[d]=len(hits)
+          print('SUMMARY',json.dumps(out))
+          PY
