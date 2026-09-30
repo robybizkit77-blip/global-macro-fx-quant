@@ -1,4 +1,4 @@
-name: USD Macro Shape Probe
+name: USD Macro Data Probe
 
 on:
   push:
@@ -9,50 +9,27 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 22
-      - name: Install Playwright package
+          python-version: '3.12'
+      - name: Pull canonical USD BEA/FRED series
         run: |
-          npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
-      - name: Start local server
-        run: |
-          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-server.log 2>&1 &
-          sleep 2
-      - name: Inspect USD macro runtime
-        run: |
-          cat > probe.js <<'EOF'
-          const { chromium }=require('playwright');
-          const { execSync }=require('child_process');
-          (async()=>{
-            const chromePath=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
-            const browser=await chromium.launch({headless:true,executablePath:chromePath,args:['--no-sandbox']});
-            const page=await browser.newPage();
-            await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
-            const x=await page.evaluate(()=>{
-              const usd=(S?.USD||[]).map(z=>({
-                id:z.id,name:z.name||z.label||z.title||null,category:z.category||z.block||null,
-                last_date:z.last_date||z.dates?.at?.(-1)||null,
-                last_value:z.last_value??z.values?.at?.(-1)??null,
-                unit:z.unit||null
-              }));
-              const relevant=usd.filter(z=>/pce|spend|income|adp|employ|payroll|infl|consum|labour|labor/i.test(JSON.stringify(z)));
-              const today=(REAL_CALENDAR||[]).find(d=>d.key==='2026-09-30')||null;
-              return {
-                usdSeries:usd,
-                relevant,
-                todayEvents:today?.events||[],
-                classification:window.GMFQ_RELEASE_CLASSIFICATION||null,
-                macroSnapshot:D?.macro?.USD||null,
-                canonicalMacro:window.CANONICAL_LAYER_STATE?.USD?.macro||null
-              };
-            });
-            console.log('USD_MACRO_SHAPE='+JSON.stringify(x,null,2));
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
-          EOF
-          node probe.js
+          pip install requests pandas
+          python - <<'PY'
+          import requests,pandas as pd,io,json
+          ids=['PCEPI','PCEPILFE','PCEC96','DSPIC96','PI','PSAVERT']
+          out={}
+          for sid in ids:
+              url='https://fred.stlouisfed.org/graph/fredgraph.csv'
+              r=requests.get(url,params={'id':sid,'cosd':'2026-01-01','coed':'2026-09-30'},timeout=120)
+              print('HTTP',sid,r.status_code,r.url,len(r.content))
+              r.raise_for_status()
+              df=pd.read_csv(io.BytesIO(r.content))
+              print('SERIES',sid)
+              print(df.tail(12).to_string(index=False))
+              out[sid]=df.tail(12).to_dict('records')
+          print('FINAL='+json.dumps(out,default=str))
+          PY
