@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install parser dependency
+        shell: bash
+        run: pip install openpyxl requests
+
       - name: Download and inspect BoE OIS latest curve
         shell: bash
         run: |
