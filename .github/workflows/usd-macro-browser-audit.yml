@@ -38,7 +38,7 @@ jobs:
             page.on('response',r=>{if(r.status()>=400) httpErrors.push({status:r.status(),url:r.url()})});
             const res=await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
             if(!res?.ok()) throw new Error('HTTP load failed');
-            await page.waitForFunction(()=>document.documentElement.getAttribute('data-usd-bea-audit'),null,{timeout:120000});
+            await page.waitForFunction(()=>document.documentElement.getAttribute('data-usd-bea-audit')==='PASS',null,{timeout:120000});
             const x=await page.evaluate(()=>{
               const get=id=>(S.USD||[]).find(z=>z.id===id);
               const day=(REAL_CALENDAR||[]).find(d=>d.key==='2026-09-30');
