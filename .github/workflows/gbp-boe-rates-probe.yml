@@ -1,0 +1,20 @@
+name: GBP BoE rates probe
+on:
+  push:
+    branches: [test-gbp-rates-boe-2026-09-30]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download BoE latest yield curve
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -LfsS --retry 5 "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip" -o boe.zip
+          echo "ZIP bytes $(wc -c < boe.zip)"
+          unzip -l boe.zip | head -100
+          mkdir boe
+          unzip -q boe.zip -d boe
+          find boe -maxdepth 2 -type f -printf '%p\n'
+          file boe/* || true
