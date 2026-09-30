@@ -2402,37 +2402,61 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   try{
     window.GMFQ_NZD_OIS_AUDIT={
       status:'WITHHELD_NO_DIRECT_PUBLIC_STRIP',
-      source:'Reserve Bank of New Zealand · B2 wholesale rates / Monetary Policy Statement',
+      source:'NZFBF / NZFMA · Overnight Indexed Swap Closing mid-rate (NZOS) and RBNZ Meeting Date OIS (NZOR)',
       official_cash_rate:2.75,
       official_cash_rate_as_of:'2026-09-02',
-      direct_public_ois_strip:false,
-      public_context:{
-        wholesale_rates_available:true,
-        ois_path_referenced_in_mps:true,
-        ois_chart_source:'Bloomberg via RBNZ MPS',
-        full_3m_6m_12m_current_1d_1w_strip:false
+      direct_benchmark_exists:true,
+      benchmark_admin:'New Zealand Financial Benchmark Facility Limited (NZFBF)',
+      benchmark_codes:{
+        tenor_ois:'NZOS',
+        meeting_date_ois:'NZOR'
       },
-      withheld_reason:'Official public data provide OCR and wholesale/swap rates plus OIS context in the MPS, but not a directly reproducible public OCR/OIS strip with required 3m/6m/12m horizons and 1D/1W history.',
-      rule:'Keep NZD OIS withheld until a direct reproducible OCR/OIS market strip is available on the required same-basis history.',
+      public_access:{
+        methodology_public:true,
+        benchmark_description_public:true,
+        full_current_values_free_to_air:false,
+        matched_3m_6m_12m_1d_1w_strip_free_to_air:false,
+        nzfma_real_time_ois_fee_liable:true,
+        free_to_air_includes:['BKBM','1Y NZD swap','3Y NZD swap','OCR Compound Index'],
+        free_to_air_excludes_full_ois_strip:true
+      },
+      rbnz_context:{
+        official_mps_uses_ois_pricing:true,
+        latest_mps_market_path_approx:'around 3 percent by end-2026',
+        source_note:'RBNZ MPS market-pricing charts rely on market OIS pricing, but are not a reproducible daily 3m/6m/12m settlement strip.'
+      },
+      withheld_reason:'A direct official NZD OIS benchmark exists, but the required current and historical OIS closing values are not available as a free reproducible public strip. NZFMA lists Overnight Index Swaps and RBNZ Meeting Date OIS among fee-liable benchmark data.',
+      rule:'Keep NZD OIS withheld until the required NZOS/NZOR values are available through a permitted reproducible source on the same 3m/6m/12m + 1D/1W basis. Do not substitute ordinary swap rates, bills, OCR projections or chart digitisation.',
       no_swap_proxy:true,
       no_2y_proxy:true,
-      no_chart_digitisation:true
+      no_chart_digitisation:true,
+      no_paid_feed_used:true
     };
 
     if(window.GMFQ_OIS_FEED_PRIORITY?.NZD){
       window.GMFQ_OIS_FEED_PRIORITY.NZD.ready=false;
-      window.GMFQ_OIS_FEED_PRIORITY.NZD.label='RBNZ official rates available · direct OCR/OIS strip withheld';
+      window.GMFQ_OIS_FEED_PRIORITY.NZD.label='NZFBF NZOS/NZOR ufficiali · valori OIS completi non free-to-air';
     }
 
     if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.NZD){
       Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.NZD,{
-        status:'OFFICIAL_CONTEXT_AVAILABLE_FULL_OIS_STRIP_WITHHELD',
-        reason:'RBNZ publishes OCR, wholesale rates and OIS expectations context, but not a reproducible public full OCR/OIS strip for 3m/6m/12m plus 1D/1W history.',
-        resolution_rule:'Activate only when a direct same-basis NZD OCR/OIS strip with required horizons and history is available.'
+        status:'DIRECT_BENCHMARK_CONFIRMED_VALUES_NOT_PUBLIC_FREE_STRIP',
+        reason:'NZFBF administers direct NZD OIS benchmarks (NZOS/NZOR), but NZFMA classifies OIS closing data as fee-liable; the required 3m/6m/12m current + 1D/1W values are therefore not available through the permitted free public source set.',
+        resolution_rule:'Activate only when direct NZOS/NZOR values are available through a permitted reproducible source with required horizons and same-basis history.'
+      });
+    }
+
+    if(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items?.NZD_CB_PRICING){
+      Object.assign(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT.items.NZD_CB_PRICING,{
+        status:'WITHHELD_DIRECT_BENCHMARK_VALUES_NOT_FREE_PUBLIC',
+        reason:'NZFBF administers direct OIS benchmarks (NZOS/NZOR), but NZFMA lists Overnight Index Swaps and RBNZ Meeting Date OIS as fee-liable data. The free public set does not expose the complete 3M/6M/12M strip with matched 1D/1W history.',
+        source:'NZFBF NZOS / NZOR; NZFMA NZdata access policy',
+        resolution:'Permitted reproducible access to direct NZOS/NZOR values on the required same-basis history.'
       });
     }
 
     document.documentElement.setAttribute('data-nzd-ois-audit','WITHHELD');
+    document.documentElement.setAttribute('data-nzd-ois-benchmark','CONFIRMED_NZOS_NZOR');
   }catch(e){
     window.GMFQ_NZD_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
     document.documentElement.setAttribute('data-nzd-ois-audit','FAIL');
