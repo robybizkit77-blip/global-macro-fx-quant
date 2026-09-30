@@ -1,0 +1,29 @@
+name: EUR ECB rates probe
+on:
+  push:
+    branches: [test-eur-rates-ecb-2026-09-30]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch ECB YC
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import requests,csv,io
+          urls=[
+            "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_C.SV_C_YM.SR_2Y?format=csvdata&startPeriod=2026-09-22",
+            "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_C.SV_C_YM.SR_10Y?format=csvdata&startPeriod=2026-09-22"
+          ]
+          for u in urls:
+              r=requests.get(u,timeout=60,headers={"User-Agent":"Mozilla/5.0","Accept":"text/csv"})
+              print("URL",u,"STATUS",r.status_code,"LEN",len(r.content),r.headers.get("content-type"))
+              print(r.text[:500])
+              if r.status_code==200:
+                  rows=list(csv.DictReader(io.StringIO(r.text)))
+                  print("ROWS",len(rows))
+                  for row in rows[-10:]:
+                      print("OBS",row.get("TIME_PERIOD"),row.get("OBS_VALUE"),row.get("KEY") or row.get("SERIES_KEY"))
+          PY
