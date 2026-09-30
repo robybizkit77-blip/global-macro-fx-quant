@@ -2211,5 +2211,50 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-chf-saron-gate-20260930">
+(function(){
+  'use strict';
+  try{
+    window.GMFQ_CHF_SARON_AUDIT={
+      status:'WITHHELD_ILLIQUID',
+      source:'Eurex · 3M SARON Futures (FSR3)',
+      source_status:'DIRECT_CONTRACT_AVAILABLE',
+      liquidity_status:'REJECTED_FOR_CANONICAL_CURVE',
+      reason:'Visible SARON contracts show zero traded volume and zero open interest; settlement values are not promoted as reliable price discovery.',
+      examples:{
+        'Dec-26':{settlement:99.99,volume:0,open_interest:0},
+        'Mar-27':{settlement:99.86,volume:0,open_interest:0},
+        'Jun-27':{settlement:99.73,volume:0,open_interest:0},
+        'Sep-27':{settlement:99.615,volume:0,open_interest:0}
+      },
+      rule:'Keep CHF OIS withheld until SARON futures show usable liquidity/open interest or another validated direct CHF OIS source is available.',
+      no_interpolation:true,
+      no_2y_proxy:true,
+      no_settlement_without_liquidity:true
+    };
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.CHF){
+      window.GMFQ_OIS_FEED_PRIORITY.CHF.ready=false;
+      window.GMFQ_OIS_FEED_PRIORITY.CHF.label='Eurex 3M SARON direct contract · illiquid, OIS withheld';
+    }
+
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.CHF){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.CHF,{
+        status:'DIRECT_BUT_ILLIQUID_REJECTED',
+        reason:'Eurex 3M SARON contracts are available, but visible contracts show zero volume and zero open interest; settlement values are not treated as canonical price discovery.',
+        resolution_rule:'Promote only when direct SARON contracts show usable trading/open interest or another validated direct CHF OIS source is available.'
+      });
+    }
+
+    document.documentElement.setAttribute('data-chf-saron-audit','WITHHELD_ILLIQUID');
+  }catch(e){
+    window.GMFQ_CHF_SARON_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-chf-saron-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
 
