@@ -41,7 +41,7 @@ jobs:
                 const snap=safe(()=>v232CountrySnapshot(c));
                 const tutor=safe(()=>v475MacroTutorModel(c,snap));
                 const ois=safe(()=>window.GMFQ_OIS?.currency?.(c));
-                per[c]={snap,tutor,ois};
+                per[c]={snap,tutor,ois,derived:safe(()=>deriveCurrencyState(c)),improvement:safe(()=>currencyImprovementDiagnostic(c))};
               }
               return {
                 per,
@@ -67,7 +67,8 @@ jobs:
                   canonicalCurrency:safe(()=>window.GMFQ_CANONICAL_STATE?.currencies?.EUR),
                   improvement:safe(()=>currencyImprovementDiagnostic('EUR')),
                   derived:safe(()=>deriveCurrencyState('EUR')),
-                  pairFrames:safe(()=>[...(D?.pairs||[])].filter(x=>String(x.pair).includes('EUR')).map(x=>({p:x.pair,f:derivePairDecisionFrame(x.pair)}))),\n                  macroTutor:safe(()=>v475MacroTutorModel('EUR',v232CountrySnapshot('EUR')))
+                  pairFrames:safe(()=>[...(D?.pairs||[])].filter(x=>String(x.pair).includes('EUR')).map(x=>({p:x.pair,f:derivePairDecisionFrame(x.pair)}))),
+                  macroTutor:safe(()=>v475MacroTutorModel('EUR',v232CountrySnapshot('EUR')))
                 }
               };
             });
