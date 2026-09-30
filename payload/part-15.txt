@@ -2841,7 +2841,8 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
         source:'TFX Historical Database · Three-Month TONA Futures',
         current_as_of:'2026-09-29'
-      }
+      });
+    }
     if(C?.AUD){
       Object.assign(C.AUD,{
         quality:'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY',
@@ -2849,8 +2850,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         source:'ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data',
         current_as_of:'2026-09-29'
       });
-    }
-);
     }
 
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){issues.push('REBUILD_CANONICAL_FAIL');}
@@ -2899,6 +2898,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(sourceQuality.EUR!=='COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY') issues.push('EUR_SOURCE_REGISTRY:'+sourceQuality.EUR);
     if(!/^WITHHELD_/.test(sourceQuality.USD)) issues.push('USD_SOURCE_REGISTRY:'+sourceQuality.USD);
     if(sourceQuality.JPY!=='COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY') issues.push('JPY_SOURCE_REGISTRY:'+sourceQuality.JPY);
+    if(sourceQuality.AUD!=='COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY') issues.push('AUD_SOURCE_REGISTRY:'+sourceQuality.AUD);
     if(!/^WITHHELD_/.test(sourceQuality.CHF)) issues.push('CHF_SOURCE_REGISTRY:'+sourceQuality.CHF);
     if(!/^WITHHELD_/.test(sourceQuality.NZD)) issues.push('NZD_SOURCE_REGISTRY:'+sourceQuality.NZD);
 
