@@ -33,9 +33,10 @@ jobs:
             console.log('CHROME_PATH',chromePath);
             const browser=await chromium.launch({headless:true,executablePath:chromePath,args:['--no-sandbox']});
             const page=await browser.newPage({viewport:{width:1440,height:1200}});
-            const consoleErrors=[], pageErrors=[];
+            const consoleErrors=[], pageErrors=[], httpErrors=[];
             page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
             page.on('pageerror',e=>pageErrors.push(String(e)));
+            page.on('response',r=>{if(r.status()>=400) httpErrors.push({status:r.status(),url:r.url()})});
             const res=await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
             if(!res?.ok()) throw new Error('HTTP load failed');
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
@@ -49,19 +50,22 @@ jobs:
                 gbpStatus:window.GMFQ_OIS?.currency?.('GBP')?.status||null,
                 cadStatus:window.GMFQ_OIS?.currency?.('CAD')?.status||null,
                 eur,
-                nativePricing:window.NATIVE_CB_DATA?.EUR?.market_pricing||null,
+                nativePricing:(typeof NATIVE_CB_DATA!=='undefined' ? NATIVE_CB_DATA?.EUR?.market_pricing : null),
                 bodyTextLength:document.body?.innerText?.length||0
               };
             });
-            console.log(JSON.stringify({x,consoleErrors,pageErrors},null,2));
+            console.log(JSON.stringify({x,consoleErrors,pageErrors,httpErrors},null,2));
             if(x.finalAudit?.status!=='PASS') throw new Error('Final audit '+JSON.stringify(x.finalAudit));
             if(x.eurAudit?.status!=='PASS') throw new Error('EUR audit '+JSON.stringify(x.eurAudit));
             if(x.eurStatus!=='ACTIVE'||x.gbpStatus!=='ACTIVE'||x.cadStatus!=='ACTIVE') throw new Error('ACTIVE status mismatch');
             if(Math.abs(Number(x.eur?.horizons?.['3m']?.rate)-2.7975)>1e-9) throw new Error('EUR 3m mismatch');
             if(Math.abs(Number(x.eur?.horizons?.['6m']?.rate)-3.13)>1e-9) throw new Error('EUR 6m mismatch');
             if(Math.abs(Number(x.eur?.horizons?.['12m']?.rate)-3.3975)>1e-9) throw new Error('EUR 12m mismatch');
+            if(!x.nativePricing) throw new Error('Native pricing missing');
             if(Math.abs(Number(x.nativePricing?.h3m)-2.7975)>1e-9) throw new Error('Native pricing mismatch');
-            if(consoleErrors.length||pageErrors.length) throw new Error('Browser errors: '+consoleErrors.concat(pageErrors).join(' | '));
+            const nonBenignHttp=httpErrors.filter(e=>!String(e.url).endsWith('/favicon.ico'));
+            const nonBenignConsole=consoleErrors.filter(e=>!String(e).includes('404'));
+            if(nonBenignHttp.length||nonBenignConsole.length||pageErrors.length) throw new Error('Browser errors: '+JSON.stringify({nonBenignHttp,nonBenignConsole,pageErrors,httpErrors}));
             if(x.bodyTextLength<1000) throw new Error('Body too small');
             await page.screenshot({path:'eur-estr-browser-audit.png',fullPage:true});
             await browser.close();
