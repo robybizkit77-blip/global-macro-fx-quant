@@ -1,0 +1,34 @@
+name: GBP BoE OIS live check
+
+on:
+  push:
+    branches:
+      - test-gbp-boe-ois-browser-2026-09-30
+
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check public payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 8 --retry-delay 2 https://robybizkit77-blip.github.io/global-macro-fx-quant/ -o live-index.html
+          grep -q "payload/part-15.txt" live-index.html
+          curl -fsS --retry 8 --retry-delay 2 https://robybizkit77-blip.github.io/global-macro-fx-quant/payload/part-15.txt -o live-part15.txt
+          grep -q "gmfq-gbp-boe-ois-20260930" live-part15.txt
+          grep -q "Bank of England · Sterling OIS" live-part15.txt
+      - name: Render public dashboard
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom https://robybizkit77-blip.github.io/global-macro-fx-quant/ > rendered-live.html 2> chrome-live.log
+          ! grep -q "Errore caricamento dashboard" rendered-live.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered-live.html
+          grep -q 'data-gbp-ois-audit="PASS"' rendered-live.html
+          grep -q 'data-gbp-ois-asof="2026-09-29"' rendered-live.html
+          grep -q "4.865918765906023" rendered-live.html
+          test "$(wc -c < rendered-live.html)" -gt 500000
+          echo "PASS: public GBP BoE OIS live"
+          echo "Rendered bytes: $(wc -c < rendered-live.html)"
