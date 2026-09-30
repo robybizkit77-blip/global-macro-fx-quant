@@ -1247,4 +1247,4 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-</body></html>
+<script id="gmfq-cad-rates-inspect">(function(){function out(){try{const p=document.createElement('pre');p.id='cadRatesInspect';p.textContent=JSON.stringify({native:window.NATIVE_RATES_DATA?.CAD||null,macro:window.D?.macro?.CAD||null});document.body.appendChild(p);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1000));else setTimeout(out,1000);})();</script></body></html>
