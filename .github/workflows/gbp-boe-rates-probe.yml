@@ -7,14 +7,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download BoE latest yield curve
+      - name: Download and inspect BoE latest yield curve
         shell: bash
         run: |
           set -euo pipefail
           curl -LfsS --retry 5 "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip" -o boe.zip
-          echo "ZIP bytes $(wc -c < boe.zip)"
-          unzip -l boe.zip | head -100
           mkdir boe
           unzip -q boe.zip -d boe
-          find boe -maxdepth 2 -type f -printf '%p\n'
-          file boe/* || true
+          python - <<'PY'
+          import subprocess,sys
+          try:
+              import openpyxl
+          except Exception:
+              subprocess.check_call([sys.executable,"-m","pip","install","openpyxl","-q"])
+              import openpyxl
+          p="boe/GLC Nominal daily data current month.xlsx"
+          wb=openpyxl.load_workbook(p,data_only=True,read_only=True)
+          print("SHEETS",wb.sheetnames)
+          for ws in wb.worksheets:
+              print("\nSHEET",ws.title,"MAX",ws.max_row,ws.max_column)
+              rows=[]
+              for row in ws.iter_rows(values_only=True):
+                  if any(v is not None for v in row):
+                      rows.append(row)
+              for row in rows[:8]:
+                  print("HEAD",repr(row[:20]))
+              for row in rows[-8:]:
+                  print("TAIL",repr(row[:20]))
+          PY
