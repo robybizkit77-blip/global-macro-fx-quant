@@ -72,11 +72,11 @@ jobs:
           </script></body></html>
           EOF
           "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage             --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/qa-runtime.html             > qa-runtime-rendered.html 2> qa-runtime-chrome.log
+          grep 'id="qaResult"' qa-runtime-rendered.html || true
           grep -q '"basis_ok":true' qa-runtime-rendered.html
           grep -q '"visible_ok":true' qa-runtime-rendered.html
           grep -q '"unexpected_hard_errors":\[\]' qa-runtime-rendered.html
           grep -q '"audit_failures":\[\]' qa-runtime-rendered.html
-          grep 'id="qaResult"' qa-runtime-rendered.html
           echo "PASS: reusable dashboard QA"
 
       - name: Save diagnostics
