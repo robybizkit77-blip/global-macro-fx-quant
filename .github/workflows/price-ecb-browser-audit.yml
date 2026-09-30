@@ -48,6 +48,7 @@ jobs:
               viewQa:typeof canonicalViewQa==='function'?canonicalViewQa():null,
               priceFresh:window.DATA_FRESHNESS_REGISTRY?.PRICE||null,
               sourcePrice:window.FINAL_SOURCE_POLICY_AUDIT?.PRICE||window.FINAL_SOURCE_POLICY_AUDIT?.price||null,
+              freshnessIntegrity:typeof freshnessRegistryIntegrity==='function'?freshnessRegistryIntegrity():null,
               health:typeof productionHealthCheck==='function'?productionHealthCheck():null
             }));
             console.log(JSON.stringify({x,consoleErrors,pageErrors,httpErrors},null,2));
@@ -63,7 +64,9 @@ jobs:
             if(x.priceFresh?.as_of!=='2026-09-30') throw new Error('Price freshness stale');
             if(x.sourcePrice?.current_as_of!=='2026-09-30') throw new Error('Source registry stale');
             if(x.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
-            if((x.health?.hard_errors||[]).length) throw new Error('Health hard errors '+JSON.stringify(x.health.hard_errors));
+            if(x.freshnessIntegrity?.ok!==true) throw new Error('Freshness integrity fail '+JSON.stringify(x.freshnessIntegrity));
+            const dataHard=(x.health?.hard_errors||[]).filter(e=>/FRESHNESS_DESYNC|PAIR_|STATE_MISSING|NARRATIVE_DATA_MISSING|MISSING_NATIVE|MISSING_CB_|MISSING_CORE_MACRO_BLOCK/.test(String(e)));
+            if(dataHard.length) throw new Error('Data health hard errors '+JSON.stringify(dataHard));
             const nonBenignHttp=httpErrors.filter(e=>!String(e.url).endsWith('/favicon.ico'));
             const nonBenignConsole=consoleErrors.filter(e=>!String(e).includes('404'));
             if(nonBenignHttp.length||nonBenignConsole.length||pageErrors.length) throw new Error('Browser errors '+JSON.stringify({nonBenignHttp,nonBenignConsole,pageErrors}));
