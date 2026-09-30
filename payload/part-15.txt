@@ -1424,6 +1424,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     try{ if(typeof syncVisibleRatesSnapshots==='function') syncVisibleRatesSnapshots(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
     const __eurHealth=(typeof productionHealthCheck==='function'?productionHealthCheck():null);
     window.GMFQ_EUR_RATES_RUNTIME={
       date:d.date,
