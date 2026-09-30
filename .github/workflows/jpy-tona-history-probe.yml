@@ -15,23 +15,56 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Inspect TFX historical database form
+      - name: Inspect TFX history download logic
         run: |
           pip install requests beautifulsoup4
           python - <<'PY'
-          import requests, bs4, json, re
-          url='https://www.tfx.co.jp/en/historical/futures/'
+          import requests, bs4, re, urllib.parse
+          base='https://www.tfx.co.jp/en/historical/futures/'
           s=requests.Session()
-          r=s.get(url,timeout=120)
-          print('GET',r.status_code,r.url,len(r.text))
+          r=s.get(base,timeout=120)
+          print('PAGE',r.status_code,len(r.text))
           soup=bs4.BeautifulSoup(r.text,'html.parser')
-          for i,f in enumerate(soup.find_all('form')):
-              print('FORM',i,'action=',f.get('action'),'method=',f.get('method'))
-              for x in f.find_all(['input','select','button']):
-                  print('FIELD',x.name,x.get('name'),x.get('value'),x.get('type'),(x.get_text(' ',strip=True)[:300] if x.name=='select' else ''))
-          # Show nearby source around strings useful for summary-data endpoints.
-          for pat in ['Summary Data','CSV File download','Settlement price','Three-month TONA Futures','HistoricalData','y_download']:
-              m=re.search(re.escape(pat),r.text,re.I)
-              if m:
-                  print('CTX',pat,r.text[max(0,m.start()-3000):m.start()+9000])
+          scripts=[]
+          for sc in soup.find_all('script'):
+              src=sc.get('src')
+              if src:
+                  scripts.append(urllib.parse.urljoin(base,src))
+              elif sc.string:
+                  scripts.append(('INLINE',sc.string))
+          pats=['futures_csv_download_submit','HistoricalFuturesDataSubmitType','submit_type','historical_form']
+          for item in scripts:
+              if isinstance(item,tuple):
+                  text=item[1]; label='INLINE'
+              else:
+                  try:
+                      rr=s.get(item,timeout=120); text=rr.text; label=item
+                  except Exception:
+                      continue
+              for pat in pats:
+                  if pat.lower() in text.lower():
+                      print('SCRIPT_HIT',label,pat)
+                      for m in re.finditer(re.escape(pat),text,re.I):
+                          print(text[max(0,m.start()-2500):m.start()+7000])
+                          break
+
+          # Try likely submit_type values and report response metadata.
+          common={
+            'HistoricalFuturesData[period_start_type]':'date',
+            'HistoricalFuturesData[period_start][year]':'2026',
+            'HistoricalFuturesData[period_start][month]':'9',
+            'HistoricalFuturesData[period_start][day]':'23',
+            'HistoricalFuturesData[period_end_type]':'date',
+            'HistoricalFuturesData[period_end][year]':'2026',
+            'HistoricalFuturesData[period_end][month]':'9',
+            'HistoricalFuturesData[period_end][day]':'29',
+            'HistoricalFuturesData[product_type1][]':'無担保コールオーバーナイト３ヵ月金利先物',
+            'HistoricalFuturesData[product_type2]':'1',
+            'HistoricalFuturesData[get_preference_all][]':'all',
+          }
+          for st in ['csv','download','csv_download','list','display','file']:
+              q=dict(common); q['HistoricalFuturesData[submit_type]']=st
+              rr=s.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120,allow_redirects=True)
+              print('TRY',st,rr.status_code,rr.url,rr.headers.get('content-type'),rr.headers.get('content-disposition'),len(rr.content))
+              print('HEAD',rr.content[:500])
           PY
