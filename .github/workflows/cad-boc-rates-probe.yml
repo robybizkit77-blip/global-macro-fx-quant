@@ -1,0 +1,25 @@
+name: CAD BoC rates probe
+on:
+  push:
+    branches: [test-cad-rates-boc-2026-09-30]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Bank of Canada benchmark yields
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import requests,json
+          series=["V39051","V39053","V39055","V39056","V39057"]
+          u="https://www.bankofcanada.ca/valet/observations/"+",".join(series)+"/json?start_date=2026-09-22&end_date=2026-09-30"
+          r=requests.get(u,timeout=60,headers={"User-Agent":"Mozilla/5.0"})
+          print("STATUS",r.status_code,"LEN",len(r.content))
+          print("URL",r.url)
+          j=r.json()
+          print("SERIES",json.dumps(j.get("seriesDetail",{}),sort_keys=True))
+          for x in j.get("observations",[]):
+              print("OBS",x.get("d")," ".join(f"{s}={x.get(s,{}).get('v')}" for s in series))
+          PY
