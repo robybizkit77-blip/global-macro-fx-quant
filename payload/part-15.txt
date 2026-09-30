@@ -1424,6 +1424,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     try{ if(typeof syncVisibleRatesSnapshots==='function') syncVisibleRatesSnapshots(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    const __eurHealth=(typeof productionHealthCheck==='function'?productionHealthCheck():null);
     window.GMFQ_EUR_RATES_RUNTIME={
       date:d.date,
       y2:d['2Y'],
@@ -1433,7 +1434,8 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       weekly_value:d.weekly2_validation?.end_value??null,
       basis_ok:(typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity().ok:null),
       visible_ok:(typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity().ok:null),
-      health:(typeof productionHealthCheck==='function'?productionHealthCheck().status:null)
+      health:__eurHealth?.status||null,
+      hard_errors:Array.isArray(__eurHealth?.hard_errors)?__eurHealth.hard_errors.slice():[]
     };
   }catch(e){
     window.GMFQ_EUR_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};
