@@ -1,0 +1,26 @@
+name: GBP rates live site check
+on:
+  push:
+    branches: [test-gbp-rates-boe-runtime-2026-09-30]
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify public GBP rates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 8 --retry-delay 3 https://robybizkit77-blip.github.io/global-macro-fx-quant/payload/part-15.txt -o live-part15.txt
+          grep -q "gmfq-gbp-rates-boe-20260930" live-part15.txt
+          grep -q "4.684827469902199" live-part15.txt
+          grep -q "5.380692223244884" live-part15.txt
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom https://robybizkit77-blip.github.io/global-macro-fx-quant/ > live.html 2>/tmp/live.log
+          ! grep -q "Errore caricamento dashboard" live.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" live.html
+          grep -q 'data-gbp-rates-audit="PASS"' live.html
+          grep -q 'data-gbp-rates-asof="2026-09-29"' live.html
+          test "$(wc -c < live.html)" -gt 500000
+          echo "PASS: public GBP BoE rates live"
+          echo "Rendered bytes: $(wc -c < live.html)"
