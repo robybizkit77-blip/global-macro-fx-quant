@@ -7,15 +7,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch official ASX tracker data files
+      - name: Probe archived official ASX yield curve snapshots
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import requests
-          base="https://www.asx.com.au/content/dam/asx/data/"
-          for name in ["dynamic_text.csv","market_exp.csv","yield_curve.csv"]:
-            r=requests.get(base+name,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
-            print("\nFILE",name,"STATUS",r.status_code,"TYPE",r.headers.get("content-type"),"LEN",len(r.content))
-            print(r.content.decode("utf-8","ignore")[:20000])
+          import requests,json
+          target="https://www.asx.com.au/content/dam/asx/data/yield_curve.csv"
+          cdx="https://web.archive.org/cdx/search/cdx"
+          params={
+            "url":target,
+            "from":"20260921",
+            "to":"20260924",
+            "output":"json",
+            "filter":"statuscode:200",
+            "filter":"mimetype:text/csv",
+            "collapse":"digest"
+          }
+          r=requests.get(cdx,params=params,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+          print("CDX",r.status_code,r.url)
+          print(r.text[:10000])
+          if r.ok:
+            try:
+              rows=r.json()
+              for row in rows[1:]:
+                ts=row[1]
+                u=f"https://web.archive.org/web/{ts}id_/{target}"
+                rr=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+                print("\nSNAP",ts,rr.status_code,len(rr.content))
+                print(rr.content.decode("utf-8","ignore")[:5000])
+            except Exception as e:
+              print("PARSEERR",repr(e))
           PY
