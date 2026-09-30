@@ -1,0 +1,37 @@
+name: JPY TONA History Probe
+
+on:
+  push:
+    branches:
+      - staging-jpy-tona-history-probe-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect TFX historical database form
+        run: |
+          pip install requests beautifulsoup4
+          python - <<'PY'
+          import requests, bs4, json, re
+          url='https://www.tfx.co.jp/en/historical/futures/'
+          s=requests.Session()
+          r=s.get(url,timeout=120)
+          print('GET',r.status_code,r.url,len(r.text))
+          soup=bs4.BeautifulSoup(r.text,'html.parser')
+          for i,f in enumerate(soup.find_all('form')):
+              print('FORM',i,'action=',f.get('action'),'method=',f.get('method'))
+              for x in f.find_all(['input','select','button']):
+                  print('FIELD',x.name,x.get('name'),x.get('value'),x.get('type'),(x.get_text(' ',strip=True)[:300] if x.name=='select' else ''))
+          # Show nearby source around strings useful for summary-data endpoints.
+          for pat in ['Summary Data','CSV File download','Settlement price','Three-month TONA Futures','HistoricalData','y_download']:
+              m=re.search(re.escape(pat),r.text,re.I)
+              if m:
+                  print('CTX',pat,r.text[max(0,m.start()-3000):m.start()+9000])
+          PY
