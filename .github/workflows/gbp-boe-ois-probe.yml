@@ -76,4 +76,17 @@ jobs:
                       _,m,v=min(pairs)
                       out[label]={"maturity_years":m,"rate_pct":v}
               print("LATEST_POINTS",json.dumps(out,default=str,sort_keys=True))
+              if "fwd" in s.lower():
+                  for target_date in ["2026-09-22","2026-09-28","2026-09-29"]:
+                      rr=None
+                      for dd,vv in data_rows:
+                          ds=str(dd.date() if hasattr(dd,"date") else dd)[:10]
+                          if ds==target_date: rr=vv
+                      if rr is not None:
+                          pts={}
+                          for target,label in [(0.25,"3M"),(0.5,"6M"),(1.0,"12M")]:
+                              pairs=[(abs(m-target),m,v) for m,v in zip(mats,rr) if m is not None and v is not None]
+                              if pairs:
+                                  _,m,v=min(pairs); pts[label]=v
+                          print("FWD_DATE_POINTS",target_date,json.dumps(pts,sort_keys=True))
           PY
