@@ -653,9 +653,12 @@ function v474MacroSimpleModel(c,snap){
   const turning=sig.filter(x=>x.trend.cls==='warn').length;
 
   let change={label:'Stabile',cls:'neu'};
-  if(improving>worsening && improving>=1) change={label:'Migliora',cls:'pos'};
+  // A material turning signal must not be hidden by a simple positive-vs-negative count.
+  // Directional labels require a clean directional majority; otherwise keep the state mixed/turning.
+  if(turning>0) change={label:'Possibile svolta / quadro misto',cls:'warn'};
+  else if(improving>worsening && improving>=1) change={label:'Migliora',cls:'pos'};
   else if(worsening>improving && worsening>=1) change={label:'Peggiora',cls:'neg'};
-  else if(turning || sig.length) change={label:'Possibile svolta / quadro misto',cls:'warn'};
+  else if(sig.length) change={label:'Possibile svolta / quadro misto',cls:'warn'};
 
   const strong=snap.strength?.label||'un’area di tenuta';
   const weak=snap.weakness?.label||'un’area di fragilità';
@@ -698,9 +701,12 @@ function v475MacroTutorModel(c,snap){
   const sig=(snap.sectors||[]).filter(x=>x.trend&&x.trend.significant);
   const improving=sig.filter(x=>x.trend.cls==='pos').length;
   const worsening=sig.filter(x=>x.trend.cls==='neg').length;
+  const turning=sig.filter(x=>x.trend.cls==='warn').length;
 
   let change={txt:'È abbastanza stabile',cls:'v475Neu'};
-  if(improving>worsening && improving>0) change={txt:'Sta migliorando',cls:'v475Pos'};
+  // Preserve turning/transition information: it cannot be silently discarded by majority counting.
+  if(turning>0) change={txt:'Sta dando segnali misti / possibile svolta',cls:'v475Warn'};
+  else if(improving>worsening && improving>0) change={txt:'Sta migliorando',cls:'v475Pos'};
   else if(worsening>improving && worsening>0) change={txt:'Sta peggiorando',cls:'v475Neg'};
   else if(sig.length) change={txt:'Sta dando segnali misti / possibile svolta',cls:'v475Warn'};
 
