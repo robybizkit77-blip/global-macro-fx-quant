@@ -19,7 +19,6 @@ jobs:
         run: |
           npm init -y >/dev/null 2>&1
           npm install --save-dev playwright
-          npx playwright install --with-deps chromium
       - name: Start local server
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-server.log 2>&1 &
@@ -29,7 +28,10 @@ jobs:
           cat > browser-audit.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
-            const browser=await chromium.launch({headless:true});
+            const { execSync } = require('child_process');
+            const chromePath=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            console.log('CHROME_PATH',chromePath);
+            const browser=await chromium.launch({headless:true,executablePath:chromePath,args:['--no-sandbox']});
             const page=await browser.newPage({viewport:{width:1440,height:1200}});
             const consoleErrors=[], pageErrors=[];
             page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
