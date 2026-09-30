@@ -2007,4 +2007,88 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-full-system-audit-20260930">
+(function(){
+  'use strict';
+  try{
+    if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+
+    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    const expectedRates={
+      USD:'2026-09-28',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-09-28',
+      CHF:'2026-09-25',CAD:'2026-09-28',AUD:'2026-09-25',NZD:'2026-09-28'
+    };
+
+    const issues=[];
+    const currencies=Object.keys(window.MODEL_STATE?.currency||{});
+    const pairs=Object.keys(window.MODEL_STATE?.pairs||{});
+    if(currencies.length!==8) issues.push('CURRENCY_COUNT:'+currencies.length);
+    if(pairs.length!==28) issues.push('PAIR_COUNT:'+pairs.length);
+
+    let cq=null,vq=null,rb=null,rv=null;
+    try{cq=canonicalConsistencyQa(); if(cq?.ok!==true) issues.push(...(cq?.issues||['CANONICAL_CONSISTENCY_FAIL']));}catch(e){issues.push('CANONICAL_CONSISTENCY_UNAVAILABLE');}
+    try{vq=canonicalViewQa(); if(vq?.ok!==true) issues.push(...(vq?.issues||['CANONICAL_VIEW_FAIL']));}catch(e){issues.push('CANONICAL_VIEW_UNAVAILABLE');}
+    try{rb=ratesCanonicalBasisIntegrity(); if(rb?.ok!==true) issues.push('RATES_BASIS_FAIL');}catch(e){issues.push('RATES_BASIS_UNAVAILABLE');}
+    try{rv=visibleRatesSnapshotIntegrity(); if(rv?.ok!==true) issues.push('RATES_VISIBLE_FAIL');}catch(e){issues.push('RATES_VISIBLE_UNAVAILABLE');}
+
+    const rates={};
+    ccys.forEach(ccy=>{
+      const d=NATIVE_RATES_DATA?.[ccy]||{};
+      const src=(window.FINAL_SOURCE_POLICY_AUDIT?.RATES||window.FINAL_SOURCE_POLICY_AUDIT?.rates||{})?.[ccy]||{};
+      rates[ccy]={runtime:d.date||null,registry:src.current_as_of||null,expected:expectedRates[ccy]};
+      if((d.date||null)!==expectedRates[ccy]) issues.push('RATES_RUNTIME_DATE:'+ccy+':'+String(d.date));
+      if((src.current_as_of||null)!==expectedRates[ccy]) issues.push('RATES_REGISTRY_DATE:'+ccy+':'+String(src.current_as_of));
+    });
+
+    const ois={};
+    ccys.forEach(ccy=>{
+      const x=window.GMFQ_OIS?.currency?.(ccy);
+      ois[ccy]=x?.status||'WITHHELD';
+    });
+    if(ois.GBP!=='ACTIVE') issues.push('GBP_OIS_NOT_ACTIVE');
+    if(ois.CAD!=='ACTIVE') issues.push('CAD_OIS_NOT_ACTIVE');
+
+    const definitive=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items||{};
+    ['JPY_OIS','USD_CB_PRICING','CHF_CB_PRICING','NZD_CB_PRICING'].forEach(k=>{
+      if(!definitive[k] || !/^WITHHELD_/.test(String(definitive[k].status||''))) issues.push('WITHHELD_REASON_MISSING:'+k);
+    });
+
+    const resolvedAudits={
+      USD_PRICE:window.GMFQ_USD_PRICE_AUDIT?.status||null,
+      GBP_OIS:window.GMFQ_GBP_OIS_AUDIT?.status||null,
+      CAD_CORRA:window.GMFQ_CAD_CORRA_AUDIT?.status||null,
+      AUD_POST_RBA:window.GMFQ_AUD_POST_RBA_PRICING_AUDIT?.status||null,
+      EUR_RATES:window.GMFQ_EUR_RATES_AUDIT?.status||null,
+      GBP_RATES:window.GMFQ_GBP_RATES_AUDIT?.status||null,
+      CAD_RATES:window.GMFQ_CAD_RATES_AUDIT?.status||null
+    };
+    Object.entries(resolvedAudits).forEach(([k,v])=>{
+      if(v && v!=='PASS' && v!=='ACTIVE') issues.push('RESOLVED_AUDIT_FAIL:'+k+':'+v);
+    });
+
+    const pairWithheld=pairs.filter(p=>{
+      const x=window.MODEL_STATE?.pairs?.[p];
+      return String(x?.state||x?.decision||'').toUpperCase()==='WITHHELD';
+    });
+
+    window.GMFQ_FULL_SYSTEM_AUDIT={
+      status:issues.length?'FAIL':'PASS',
+      as_of:'2026-09-30',
+      counts:{currencies:currencies.length,pairs:pairs.length},
+      canonical:{consistency_ok:cq?.ok??null,view_ok:vq?.ok??null},
+      rates:{basis_ok:rb?.ok??null,visible_ok:rv?.ok??null,dates:rates},
+      ois,
+      resolved_audits:resolvedAudits,
+      pair_withheld:pairWithheld,
+      issues
+    };
+    document.documentElement.setAttribute('data-full-system-audit',window.GMFQ_FULL_SYSTEM_AUDIT.status);
+  }catch(e){
+    window.GMFQ_FULL_SYSTEM_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-full-system-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
