@@ -1344,4 +1344,4 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-</body></html>
+<script id="gmfq-eur-rates-inspect">(function(){function out(){try{const p=document.createElement('pre');p.id='eurRatesInspect';p.textContent=JSON.stringify({native:NATIVE_RATES_DATA?.EUR||null,macro:D?.macro?.EUR||null});document.body.appendChild(p);}catch(e){const p=document.createElement('pre');p.id='eurRatesInspect';p.textContent='ERR:'+e;document.body.appendChild(p);}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1000));else setTimeout(out,1000);})();</script></body></html>
