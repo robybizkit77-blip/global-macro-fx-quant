@@ -50,7 +50,11 @@ jobs:
             const audits={};
             Object.keys(w).filter(k=>/^GMFQ_.*_AUDIT$/.test(k)).sort().forEach(k=>audits[k]=w[k]);
             const allowed=new Set([
+              'RENDERER_CHANGED:renderOperationalOverview',
               'RENDERER_CHANGED:renderCurrency',
+              'RENDERER_CHANGED:renderPair',
+              'FINAL_WRITER_CHANGED:renderOperationalOverview',
+              'FINAL_WRITER_CHANGED:renderPair',
               'FINAL_WRITER_CHANGED:runProductionDailyRefresh'
             ]);
             const hard=(health?.hard_errors||[]);
