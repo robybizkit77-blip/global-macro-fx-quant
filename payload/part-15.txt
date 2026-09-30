@@ -2241,9 +2241,11 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         official_public:true,
         public_exchange:true,
         paid:false,
-        subscription_required:false,
-        licensed_feed_required:false,
+        subscription_required_for_dashboard:false,
         instruments_confirmed:true,
+        current_reference_pages_available:true,
+        historical_daily_bulletin_access:'CME Historical Daily Bulletin / DataMine',
+        anonymous_settlement_api_status:'HTTP_403',
         settlement_strip_captured:false
       },
       validation:{
@@ -2252,20 +2254,33 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         meeting_path_validated:false,
         changes_validated:false
       },
-      withheld_reason:'Same-business-day CME settlement strip for 3m/6m/12m plus 1D/1W history is not captured on a single validated basis.',
-      rule:'Do not activate USD OIS from Fed 2Y yields, secondary probability quotes, partial FedWatch screenshots, or mixed SOFR/Fed Funds snapshots.'
+      withheld_reason:'Direct CME Fed Funds/SOFR instruments are confirmed, but the required anonymous reproducible historical settlement strip is not available from the permitted free public source set. CME routes historical Daily Bulletin access through Historical Daily Bulletin/DataMine, while anonymous settlement API requests return HTTP 403.',
+      rule:'Keep USD OIS withheld until direct CME current + prior-business-day + weekly settlements for the same 3m/6m/12m contracts are reproducibly accessible without mixing secondary quotes, FedWatch snapshots or 2Y yields.',
+      no_2y_proxy:true,
+      no_secondary_curve:true,
+      no_mixed_basis:true,
+      no_paid_feed_used:true
     };
 
     if(window.GMFQ_OIS_FEED_PRIORITY?.USD){
       window.GMFQ_OIS_FEED_PRIORITY.USD.ready=false;
-      window.GMFQ_OIS_FEED_PRIORITY.USD.label='CME Fed Funds / SOFR confirmed · settlement strip withheld';
+      window.GMFQ_OIS_FEED_PRIORITY.USD.label='CME Fed Funds/SOFR confirmed · historical settlement strip access withheld';
     }
 
     if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.USD){
       Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.USD,{
-        status:'DIRECT_INSTRUMENT_CONFIRMED_SETTLEMENT_STRIP_WITHHELD',
-        reason:'CME confirms the direct Fed Funds/SOFR futures framework, but a same-basis current + 1D + 1W settlement strip for the required horizons has not been captured.',
-        resolution_rule:'Activate only after direct CME settlement values for required horizons are captured for current, prior business day and weekly reference dates.'
+        status:'DIRECT_INSTRUMENT_CONFIRMED_HISTORY_ACCESS_WITHHELD',
+        reason:'CME confirms Fed Funds/SOFR futures, but the required matched historical settlement strip is not reproducibly available through anonymous free access; Historical Daily Bulletin is routed through CME historical data access.',
+        resolution_rule:'Activate only after direct same-contract CME settlements for current, prior business day and weekly reference are reproducibly accessible.'
+      });
+    }
+
+    if(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items?.USD_CB_PRICING){
+      Object.assign(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT.items.USD_CB_PRICING,{
+        status:'WITHHELD_DIRECT_CME_HISTORY_ACCESS',
+        reason:'Direct CME Fed Funds/SOFR instruments are confirmed, but matched current + 1D + 1W settlements are not available through the permitted anonymous free public path. CME historical Daily Bulletin access is routed through Historical Daily Bulletin/DataMine.',
+        source:'CME 30-Day Fed Funds / Three-Month SOFR futures',
+        resolution:'Reproducible direct CME settlement history on the same contracts and basis.'
       });
     }
 
@@ -2273,14 +2288,17 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       status:'WITHHELD',
       direct_instruments_confirmed:true,
       source:'CME 30-Day Fed Funds / Three-Month SOFR futures',
+      access_status:'DIRECT_HISTORY_NOT_ANONYMOUSLY_REPRODUCIBLE',
       required_horizons:['3m','6m','12m'],
       required_history:['1d','1w'],
       no_2y_proxy:true,
       no_secondary_curve:true,
-      no_mixed_basis:true
+      no_mixed_basis:true,
+      no_paid_feed_used:true
     };
 
     document.documentElement.setAttribute('data-usd-ois-audit','WITHHELD');
+    document.documentElement.setAttribute('data-usd-ois-access','DIRECT_HISTORY_WITHHELD');
   }catch(e){
     window.GMFQ_USD_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
     document.documentElement.setAttribute('data-usd-ois-audit','FAIL');
