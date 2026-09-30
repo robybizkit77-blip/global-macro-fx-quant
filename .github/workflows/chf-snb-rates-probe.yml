@@ -1,0 +1,54 @@
+name: CHF SNB Rates Probe
+
+on:
+  push:
+    branches:
+      - staging-chf-rates-snb-probe-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Discover SNB spot-yield cube
+        run: |
+          pip install requests beautifulsoup4
+          python - <<'PY'
+          import requests,re,bs4,urllib.parse,json
+          s=requests.Session()
+          s.headers.update({'User-Agent':'Mozilla/5.0'})
+          urls=[
+            'https://data.snb.ch/de/topics/ziredev/cube/rendoblim?dimSel=D0(10J)',
+            'https://data.snb.ch/en/topics/ziredev/cube/rendoblim?dimSel=D0(10J)',
+            'https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates'
+          ]
+          for url in urls:
+              r=s.get(url,timeout=120)
+              print('PAGE',r.status_code,r.url,len(r.text))
+              txt=r.text
+              for pat in ['Kassazinssätze von Eidgenössischen Anleihen','spot interest rates','Confederation bonds','10 years','10J','2J','2 years']:
+                  for m in list(re.finditer(re.escape(pat),txt,re.I))[:10]:
+                      print('CTX',pat,txt[max(0,m.start()-2500):m.start()+6000])
+              soup=bs4.BeautifulSoup(txt,'html.parser')
+              for a in soup.find_all('a',href=True):
+                  t=' '.join(a.stripped_strings)
+                  h=urllib.parse.urljoin(r.url,a['href'])
+                  if re.search(r'Kassazin|spot interest|Confederation|yield',t,re.I) or re.search(r'rend.*(cube|chart)',h,re.I):
+                      print('LINK',t[:500],h)
+
+          # Probe likely nearby cube ids and API dimensions to locate daily Confederation yields.
+          candidates=['rendoblim','rendoblid','rendobli','kassazins','kassazinsa','rendobll','rendoblt']
+          for cube in candidates:
+              for lang in ['de','en']:
+                  u=f'https://data.snb.ch/api/cube/{cube}/dimensions/{lang}'
+                  try:
+                      rr=s.get(u,timeout=40)
+                      print('DIM',cube,lang,rr.status_code,len(rr.text),rr.text[:12000])
+                  except Exception as e:
+                      print('DIM_ERR',cube,lang,repr(e))
+          PY
