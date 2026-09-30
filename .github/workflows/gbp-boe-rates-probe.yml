@@ -15,23 +15,48 @@ jobs:
           mkdir boe
           unzip -q boe.zip -d boe
           python - <<'PY'
-          import subprocess,sys
-          try:
-              import openpyxl
-          except Exception:
-              subprocess.check_call([sys.executable,"-m","pip","install","openpyxl","-q"])
-              import openpyxl
+          import zipfile,xml.etree.ElementTree as ET,re,os
           p="boe/GLC Nominal daily data current month.xlsx"
-          wb=openpyxl.load_workbook(p,data_only=True,read_only=True)
-          print("SHEETS",wb.sheetnames)
-          for ws in wb.worksheets:
-              print("\nSHEET",ws.title,"MAX",ws.max_row,ws.max_column)
-              rows=[]
-              for row in ws.iter_rows(values_only=True):
-                  if any(v is not None for v in row):
-                      rows.append(row)
-              for row in rows[:8]:
-                  print("HEAD",repr(row[:20]))
-              for row in rows[-8:]:
-                  print("TAIL",repr(row[:20]))
+          ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+              'r':'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+              'pr':'http://schemas.openxmlformats.org/package/2006/relationships'}
+          with zipfile.ZipFile(p) as z:
+              shared=[]
+              if 'xl/sharedStrings.xml' in z.namelist():
+                  root=ET.fromstring(z.read('xl/sharedStrings.xml'))
+                  for si in root.findall('m:si',ns):
+                      shared.append(''.join(t.text or '' for t in si.findall('.//m:t',ns)))
+              wb=ET.fromstring(z.read('xl/workbook.xml'))
+              rels=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
+              relmap={x.attrib['Id']:x.attrib['Target'] for x in rels}
+              sheets=[]
+              for s in wb.find('m:sheets',ns):
+                  name=s.attrib['name']; rid=s.attrib['{'+ns['r']+'}id']
+                  target=relmap[rid]
+                  if not target.startswith('xl/'): target='xl/'+target.lstrip('/')
+                  sheets.append((name,target))
+              print("SHEETS",[x[0] for x in sheets])
+              for name,target in sheets:
+                  root=ET.fromstring(z.read(target))
+                  rows=[]
+                  for row in root.findall('.//m:sheetData/m:row',ns):
+                      vals=[]
+                      for c in row.findall('m:c',ns):
+                          ref=c.attrib.get('r','')
+                          t=c.attrib.get('t')
+                          v=c.find('m:v',ns)
+                          inline=c.find('m:is',ns)
+                          val=None
+                          if t=='s' and v is not None:
+                              try: val=shared[int(v.text)]
+                              except: val=v.text
+                          elif t=='inlineStr' and inline is not None:
+                              val=''.join(x.text or '' for x in inline.findall('.//m:t',ns))
+                          elif v is not None:
+                              val=v.text
+                          vals.append((ref,val))
+                      if vals: rows.append(vals)
+                  print("\nSHEET",name,"ROWS",len(rows))
+                  for row in rows[:10]: print("HEAD",row[:20])
+                  for row in rows[-10:]: print("TAIL",row[:20])
           PY
