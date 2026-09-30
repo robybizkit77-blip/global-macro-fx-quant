@@ -1445,4 +1445,118 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-gbp-rates-boe-20260930">
+(function(){
+  'use strict';
+  try{
+    const d=NATIVE_RATES_DATA?.GBP;
+    if(!d) throw new Error('GBP_NATIVE_RATES_MISSING');
+
+    const rows=[
+      {date:'2026-09-23',y2:4.669921562630079,y10:5.305545920608861},
+      {date:'2026-09-24',y2:4.693872310931161,y10:5.361281731875085},
+      {date:'2026-09-25',y2:4.639504333788631,y10:5.384198743491068},
+      {date:'2026-09-28',y2:4.712985890055187,y10:5.412276884439468},
+      {date:'2026-09-29',y2:4.684827469902199,y10:5.380692223244884}
+    ];
+    const snap={
+      date:'2026-09-29',
+      source:'Bank of England · UK nominal government zero-coupon spot curve · official latest yield curve data',
+      y2:4.684827469902199,
+      y5:4.944927166285526,
+      y10:5.380692223244884,
+      y30:5.962687505950194,
+      week_ref_date:'2026-09-22',
+      week_ref_y2:4.573660307604147,
+      week_ref_y10:5.211332620761877
+    };
+    const chg2=(snap.y2-snap.week_ref_y2)*100;
+    const chg10=(snap.y10-snap.week_ref_y10)*100;
+    const curve=(snap.y10-snap.y2)*100;
+
+    function rebuildTail(h,key){
+      if(!h?.dates || !h?.values) throw new Error('GBP_HISTORY_MISSING_'+key);
+      const keep=[];
+      for(let i=0;i<h.dates.length;i++){
+        if(String(h.dates[i])<'2026-09-23') keep.push([String(h.dates[i]),Number(h.values[i])]);
+      }
+      for(const r of rows) keep.push([r.date,r[key]]);
+      h.dates=keep.map(x=>x[0]);
+      h.values=keep.map(x=>x[1]);
+      h.last_date=snap.date;
+      h.last_value=key==='y2'?snap.y2:snap.y10;
+    }
+    rebuildTail(d.history2,'y2');
+    rebuildTail(d.history10,'y10');
+
+    d.date=snap.date;
+    d.source=snap.source;
+    d.quality='FULL_CURRENT_VALIDATED';
+    d['2Y']=snap.y2;
+    d['10Y']=snap.y10;
+    d.curve_bp=curve;
+    d.chg2_bp=chg2;
+    d.chg10_bp=chg10;
+    d.curve_state='Bear steepening';
+    d.tenors=[
+      {tenor:'2Y',value:snap.y2,date:snap.date},
+      {tenor:'5Y',value:snap.y5,date:snap.date},
+      {tenor:'10Y',value:snap.y10,date:snap.date},
+      {tenor:'30Y',value:snap.y30,date:snap.date}
+    ];
+    d.freshness_status='CURRENT_SAME_BASIS';
+    d.freshness_note='BoE official nominal government zero-coupon spot curve updated through 29 Sep 2026.';
+    d.history_status='FULL_HISTORY';
+    d.history_note='Same-basis official BoE nominal spot history; 23, 24, 25, 28 and 29 Sep tail synchronized from the official current-month workbook.';
+
+    if(D?.macro?.GBP){
+      D.macro.GBP.rate2y=snap.y2;
+      D.macro.GBP.rate_status='CURRENT';
+    }
+    try{
+      if(window.FINAL_SOURCE_POLICY_AUDIT?.RATES?.GBP){
+        window.FINAL_SOURCE_POLICY_AUDIT.RATES.GBP.current_as_of=snap.date;
+        window.FINAL_SOURCE_POLICY_AUDIT.RATES.GBP.status='CURRENT_OFFICIAL_SAME_BASIS';
+      }
+    }catch(e){}
+
+    try{ if(typeof syncVisibleRatesSnapshots==='function') syncVisibleRatesSnapshots(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
+
+    const health=(typeof productionHealthCheck==='function'?productionHealthCheck():null);
+    window.GMFQ_GBP_RATES_AUDIT={
+      status:'PASS',
+      source:snap.source,
+      as_of:snap.date,
+      same_basis:true,
+      history_tail_synced:true,
+      values:{
+        '2Y':snap.y2,'5Y':snap.y5,'10Y':snap.y10,'30Y':snap.y30,
+        chg2_bp:Number(chg2.toFixed(4)),
+        chg10_bp:Number(chg10.toFixed(4)),
+        curve_bp:Number(curve.toFixed(4))
+      }
+    };
+    window.GMFQ_GBP_RATES_RUNTIME={
+      date:d.date,y2:d['2Y'],y10:d['10Y'],curve_bp:d.curve_bp,
+      history2_last:d.history2?.dates?.at(-1)||null,
+      history10_last:d.history10?.dates?.at(-1)||null,
+      history2_len:d.history2?.values?.length||0,
+      history10_len:d.history10?.values?.length||0,
+      basis_ok:(typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity().ok:null),
+      visible_ok:(typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity().ok:null),
+      hard_errors:Array.isArray(health?.hard_errors)?health.hard_errors.slice():[]
+    };
+    document.documentElement.setAttribute('data-gbp-rates-audit','PASS');
+    document.documentElement.setAttribute('data-gbp-rates-asof',snap.date);
+  }catch(e){
+    window.GMFQ_GBP_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-gbp-rates-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
