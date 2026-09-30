@@ -21,6 +21,7 @@ jobs:
         run: |
           npm init -y >/dev/null 2>&1
           npm install --save-dev playwright
+          npx playwright install --with-deps chromium
 
       - name: Start local server
         run: |
@@ -32,10 +33,8 @@ jobs:
         run: |
           cat > browser-audit.js <<'EOF'
           const { chromium } = require('playwright');
-const { execSync } = require('child_process');
           (async()=>{
-            const chromePath = execSync('which google-chrome || which chromium || which chromium-browser').toString().trim();
-            const browser = await chromium.launch({headless:true, executablePath:chromePath});
+            const browser = await chromium.launch({headless:true});
             const page = await browser.newPage({viewport:{width:1440,height:1200}});
             const consoleErrors=[];
             const pageErrors=[];
