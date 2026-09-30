@@ -1,4 +1,4 @@
-name: EUR ESTR Quote API Probe
+name: EUR ESTR Widget Script Probe
 
 on:
   push:
@@ -9,56 +9,27 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 22
-      - name: Install browser
+          python-version: '3.12'
+      - name: Inspect Eurex prices-statistics widget source
         run: |
-          npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
-          npx playwright install --with-deps chromium
-      - name: Inspect FST3 quotes network calls
-        run: |
-          cat > probe.js <<'EOF'
-          const { chromium } = require('playwright');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage();
-            const seen=[];
-            page.on('request',req=>{
-              const u=req.url();
-              if(/FST3|3402480|quote|price|contract|market|product/i.test(u)){
-                const x={method:req.method(),url:u,post:req.postData()||null};
-                seen.push(x);
-                console.log('REQ',JSON.stringify(x));
-              }
-            });
-            page.on('response',async res=>{
-              const u=res.url();
-              if(/FST3|3402480|quote|price|contract|market|product/i.test(u)){
-                let body='';
-                try{
-                  const ct=res.headers()['content-type']||'';
-                  if(/json|text|javascript|xml/.test(ct)) body=(await res.text()).slice(0,20000);
-                }catch(e){}
-                console.log('RESP',res.status(),u,body);
-              }
-            });
-            const url='https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480';
-            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
-            console.log('TITLE',await page.title());
-            console.log('BODY_SNIP',(await page.locator('body').innerText()).slice(0,20000));
-            const inputs=await page.locator('input,select,button').evaluateAll(els=>els.map((e,i)=>({
-              i,tag:e.tagName,type:e.getAttribute('type'),name:e.getAttribute('name'),id:e.id,
-              text:(e.innerText||e.value||e.getAttribute('aria-label')||'').trim(),
-              cls:e.className
-            })).filter(x=>/date|contract|fetch|quote|price/i.test(JSON.stringify(x))));
-            console.log('CONTROLS',JSON.stringify(inputs,null,2));
-            console.log('SEEN_COUNT',seen.length);
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
-          EOF
-          node probe.js
+          pip install requests
+          python - <<'PY'
+          import requests,re
+          url='https://www.eurex.com/resource/themes/eurex-facelift/js/prices-statistics-3466696-63.js'
+          s=requests.get(url,timeout=120).text
+          print('SIZE',len(s))
+          pats=['fullOrderBook','contractDate','contract-date','Fetch Data','fetchData','datepicker','histor','quote','settlement','marketData']
+          for pat in pats:
+              poss=[m.start() for m in re.finditer(re.escape(pat),s,re.I)]
+              print('PATTERN',pat,'COUNT',len(poss))
+              for p in poss[:30]:
+                  print('CTX',pat,p,s[max(0,p-3000):p+8000])
+          # surface strings that look like dynamic action URLs
+          urls=sorted(set(re.findall(r'["\']([^"\']*![-A-Za-z0-9_/?=&.]+)["\']',s)))
+          print('ACTION_STRINGS',urls[:500])
+          PY
