@@ -9,33 +9,95 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Scan official Eurex CB002 price XML for FST3
+      - name: Install probe dependencies
         run: |
-          pip install requests
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+          pip install pandas xlrd openpyxl
+
+      - name: Download official Eurex Trading Statistics files
+        run: |
+          cat > probe.js <<'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const url='https://www.eurex.com/ex-en/data/statistics/trading-statistics/122!search?hitsPerPage=25&query=&state=';
+            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
+            const links=await page.locator('a').evaluateAll(as=>as.map(a=>({
+              text:(a.innerText||'').trim(),
+              href:a.href||'',
+              parent:(a.parentElement?.innerText||'').trim()
+            })).filter(x=>/Download/i.test(x.text)));
+            console.log('DOWNLOAD_LINKS='+JSON.stringify(links.slice(0,120),null,2));
+            for(const date of ['Sep 28, 2026','Sep 23, 2026']){
+              const candidate=links.find(x=>x.parent.includes(date));
+              if(!candidate){ console.log('NO_LINK',date); continue; }
+              const resp=await page.request.get(candidate.href,{timeout:120000});
+              const buf=await resp.body();
+              const ct=resp.headers()['content-type']||'';
+              const fn='downloads/'+date.replace(/[^0-9A-Za-z]+/g,'_')+'.bin';
+              fs.writeFileSync(fn,buf);
+              console.log('DOWNLOADED',date,candidate.href,ct,buf.length,fn);
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          mkdir -p downloads
+          node probe.js
+
+      - name: Parse Trading Statistics files for FST3
+        run: |
           python - <<'PY'
-          import requests, zipfile, io, re
-          urls={
-            '2026-09-28':'https://www.eurex.com/resource/blob/5595268/4ce7a39c4801a834613321ea14fd02e8/data/90rptcb002publi20260928.zip',
-            '2026-09-23':'https://www.eurex.com/resource/blob/5585438/b28451ff709d8ff409f85d3655511075/data/90rptcb002publi20260923.zip'
-          }
-          for dt,url in urls.items():
-              r=requests.get(url,timeout=120); r.raise_for_status()
-              z=zipfile.ZipFile(io.BytesIO(r.content))
-              xmlname=z.namelist()[0]
-              data=z.read(xmlname).decode('utf-8','ignore')
-              pos=[m.start() for m in re.finditer('FST3',data,re.I)]
-              print('SOURCE',dt,url,'XML',xmlname,'CHARS',len(data),'FST3_OCCURRENCES',len(pos))
-              for i,p in enumerate(pos[:80]):
-                  s=max(0,p-2600); e=min(len(data),p+9000)
-                  ctx=data[s:e].replace('><','>\n<')
-                  print(f'CTX_BEGIN {dt} {i} offset={p}')
-                  print(ctx)
-                  print(f'CTX_END {dt} {i}')
+          import os, zipfile, pandas as pd, json, io
+          for fn in sorted(os.listdir('downloads')):
+              p=os.path.join('downloads',fn)
+              print('FILE',fn,'SIZE',os.path.getsize(p))
+              paths=[]
+              if zipfile.is_zipfile(p):
+                  with zipfile.ZipFile(p) as z:
+                      print('ZIP',z.namelist()[:20])
+                      for name in z.namelist():
+                          if name.lower().endswith(('.xls','.xlsx','.csv','.txt')):
+                              out=os.path.join('downloads','unzipped_'+os.path.basename(name))
+                              with open(out,'wb') as f:f.write(z.read(name))
+                              paths.append(out)
+              else:
+                  paths.append(p)
+              for q in paths:
+                  # Try Excel first.
+                  try:
+                      xl=pd.ExcelFile(q)
+                      print('EXCEL',os.path.basename(q),xl.sheet_names)
+                      for sh in xl.sheet_names:
+                          df=xl.parse(sh,header=None,dtype=str)
+                          mask=df.apply(lambda col: col.astype(str).str.contains('FST3',case=False,na=False)).any(axis=1)
+                          if mask.any():
+                              idx=list(df.index[mask])
+                              print('FST3_HIT',os.path.basename(q),sh,'ROWS',idx)
+                              for i in idx:
+                                  lo=max(0,i-3); hi=min(len(df),i+4)
+                                  print(df.iloc[lo:hi].to_string(index=False,header=False))
+                  except Exception as e:
+                      print('NOT_EXCEL',os.path.basename(q),repr(e))
+                      try:
+                          raw=open(q,'rb').read().decode('utf-8','ignore')
+                          if 'FST3' in raw.upper():
+                              print('TEXT_FST3_FOUND',os.path.basename(q))
+                              pos=raw.upper().find('FST3')
+                              print(raw[max(0,pos-3000):pos+9000])
+                      except Exception as ee:
+                          print('TEXT_FAIL',repr(ee))
           PY
