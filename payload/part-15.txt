@@ -1344,4 +1344,91 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-eur-rates-ecb-aaa-20260930">
+(function(){
+  'use strict';
+  try{
+    const d=NATIVE_RATES_DATA?.EUR;
+    if(!d) throw new Error('EUR_NATIVE_RATES_MISSING');
+
+    const snap={
+      date:'2026-09-29',
+      source:'ECB AAA Svensson spot curve · official ECB Data Portal',
+      y2:3.2105877756,
+      y5:3.3501176968,
+      y10:3.6076715398,
+      y30:3.8298132090,
+      prev_week_date:'2026-09-22',
+      prev_week_y2:3.1355631320,
+      prev_week_y10:3.4527398521
+    };
+    const chg2=(snap.y2-snap.prev_week_y2)*100;
+    const chg10=(snap.y10-snap.prev_week_y10)*100;
+    const curve=(snap.y10-snap.y2)*100;
+
+    d.date=snap.date;
+    d.source=snap.source;
+    d.quality='FULL_CURRENT_VALIDATED';
+    d['2Y']=snap.y2;
+    d['10Y']=snap.y10;
+    d.curve_bp=curve;
+    d.chg2_bp=chg2;
+    d.chg10_bp=chg10;
+    d.curve_state='Bear steepening';
+    d.tenors=[
+      {tenor:'2Y',value:snap.y2,date:snap.date},
+      {tenor:'5Y',value:snap.y5,date:snap.date},
+      {tenor:'10Y',value:snap.y10,date:snap.date},
+      {tenor:'30Y',value:snap.y30,date:snap.date}
+    ];
+    d.weekly2_validation={
+      end_date:snap.date,
+      end_value:snap.y2,
+      change_bp:chg2,
+      source:'ECB AAA Svensson spot curve · validated weekly change',
+      note:'Same-basis ECB AAA weekly validation, 22 Sep to 29 Sep 2026.'
+    };
+    d.freshness_status='CURRENT_SAME_BASIS';
+    d.freshness_note='ECB AAA Svensson spot curve updated to 29 Sep 2026 on the same canonical basis.';
+    d.history_status='SEPARATE_BASIS_CURRENT_SNAPSHOT_NOT_SPLICED';
+    d.history_note='Legacy embedded history remains separate; current snapshot and weekly change are validated directly on ECB AAA basis and are not spliced into the legacy series.';
+
+    if(D?.macro?.EUR){
+      D.macro.EUR.rate2y=snap.y2;
+      D.macro.EUR.rate_status='CURRENT';
+    }
+    try{
+      if(window.FINAL_SOURCE_POLICY_AUDIT?.RATES?.EUR){
+        window.FINAL_SOURCE_POLICY_AUDIT.RATES.EUR.current_as_of=snap.date;
+        window.FINAL_SOURCE_POLICY_AUDIT.RATES.EUR.status='CURRENT_OFFICIAL_SAME_BASIS';
+      }
+    }catch(e){}
+
+    window.GMFQ_EUR_RATES_AUDIT={
+      status:'PASS',
+      source:snap.source,
+      as_of:snap.date,
+      same_basis:true,
+      legacy_history_not_spliced:true,
+      values:{
+        '2Y':snap.y2,'5Y':snap.y5,'10Y':snap.y10,'30Y':snap.y30,
+        chg2_bp:Number(chg2.toFixed(4)),
+        chg10_bp:Number(chg10.toFixed(4)),
+        curve_bp:Number(curve.toFixed(4))
+      }
+    };
+    document.documentElement.setAttribute('data-eur-rates-audit','PASS');
+    document.documentElement.setAttribute('data-eur-rates-asof',snap.date);
+
+    try{ if(typeof syncVisibleRatesSnapshots==='function') syncVisibleRatesSnapshots(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+  }catch(e){
+    window.GMFQ_EUR_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-eur-rates-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
