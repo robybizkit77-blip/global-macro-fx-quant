@@ -480,8 +480,11 @@ function policyFamilyPolarity(d){
 const rates=layerPolarity(d?.rates);
 const cb=layerPolarity(d?.cb);
 // Front-end / Rates are the primary market translation of monetary repricing.
-// Realized CB stance is interpretative context, not a second vote.
-// Therefore CB only fills the gap when Rates are neutral.
+// A realized CB action is interpretative context, not a second vote. An
+// explicitly divergent front-end cannot be promoted merely by a hawkish CB.
+const ratesLabel=String(d?.rates?.[0]||'').toLowerCase();
+if(ratesLabel.includes('diverg')) return 0;
+// CB fills a genuinely neutral front-end only.
 if(rates!==0) return rates;
 if(cb!==0) return cb;
 return 0;

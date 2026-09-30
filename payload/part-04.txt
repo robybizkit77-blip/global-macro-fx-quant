@@ -136,6 +136,7 @@ return names.map(([n,v])=>`${n}: ${v}`).join(' · ');
 function v226Quality(frame){
 if(frame.quality==='CONTRASTO STRUTTURALE FORTE') return {label:'Vantaggio chiaro',cls:'pos'};
 if(frame.quality==='VANTAGGIO RELATIVO PARZIALE') return {label:'Vantaggio presente, ma incompleto',cls:'warn'};
+if(frame.quality==='SEPARAZIONE RATES MATERIALE') return {label:'Tassi separano le valute',cls:'warn'};
 if(frame.quality==='NESSUN CONTRASTO') return {label:'Nessun vantaggio chiaro',cls:'neu'};
 return {label:'Quadro misto',cls:'neu'};
 }
@@ -202,6 +203,10 @@ pair,frame.fav,side,
 function v228RatesRow(pair,frame,dyn){
 const [a,b]=pair.split('/');
 const sp=frame?.structural?.policy||{};
+const gap=frame?.structural?.ratesGap||{};
+if(gap.material){
+return {side:gap.side,text:`Differenziale 2Y osservato: ${gap.bp>=0?'+':''}${fmt(gap.bp,0)} pb verso ${gap.side}. Separa nettamente il layer Rates, ma da solo non assegna un bias direzionale alla coppia.`,cls:'warn'};
+}
 const aVal=Number(sp.a||0), bVal=Number(sp.b||0);
 const side=sp.side==='A'?a:sp.side==='B'?b:'—';
 const words=v=>v>0?'favorevoli alla valuta':v<0?'sfavorevoli alla valuta':'neutrali / non differenzianti';
@@ -258,6 +263,9 @@ return {side,text:`Il prezzo non conferma ancora ${frame.fav}; per ora si muove 
 return {side:'Non chiaro',text:'Il prezzo non dà ancora una conferma relativa utile.',cls:'neu'};
 }
 function v228MainDriver(frame,macro,rates){
+if(frame.quality==='SEPARAZIONE RATES MATERIALE'){
+return {driver:'Differenziale 2Y osservato',why:'Il layer Rates separa le valute in modo materiale; Macro e Prezzo non lo trasformano ancora in un bias direzionale.'};
+}
 if(frame.fav==='—'){
 return {driver:'Nessuno chiaro',why:'Macro e Tassi/CB non separano ancora abbastanza le due valute.'};
 }
@@ -275,6 +283,13 @@ return {driver:'Quadro misto',why:'I due pilastri strutturali non danno un vanta
 function v228DecisionMap(pair,frame,macro,rates,cot,price){
 const [a,b]=pair.split('/');
 if(frame.fav==='—'){
+if(frame.quality==='SEPARAZIONE RATES MATERIALE'){
+return {
+watch:'Guarda se Macro e Prezzo confermano o smentiscono la separazione già visibile nel front-end osservato.',
+confirm:'Il differenziale 2Y deve restare materiale e almeno un altro layer deve convergere prima di parlare di direzione.',
+invalidate:'La separazione Rates perde rilevanza se il differenziale 2Y si restringe sotto la soglia materiale.'
+};
+}
 return {
 watch:'Guarda se Macro o Tassi/CB iniziano a creare una differenza strutturale tra le due valute.',
 confirm:'Serve che almeno un pilastro strutturale separi chiaramente le due valute; meglio ancora se entrambi convergono.',
@@ -312,6 +327,7 @@ D.pairs.forEach(p=>{
 const frame=derivePairDecisionFrame(p.pair);
 if(frame.quality==='CONTRASTO STRUTTURALE FORTE') groups.strong.push(p.pair);
 else if(frame.quality==='VANTAGGIO RELATIVO PARZIALE') groups.partial.push(p.pair);
+else if(frame.quality==='SEPARAZIONE RATES MATERIALE') groups.partial.push(p.pair);
 else groups.weak.push(p.pair);
 });
 const put=(id,arr)=>{
@@ -359,12 +375,16 @@ const n=tfObs[pairTF];
 const hist=pairSeries(selectedPair,n);
 const r=(hist.values?.length>1 && hist.values[0]) ? hist.values.at(-1)/hist.values[0]-1 : 0;
 document.querySelector('#v226PairTitle').textContent=selectedPair;
-document.querySelector('#v227Headline').textContent=frame.fav==='—'
+document.querySelector('#v227Headline').textContent=frame.quality==='SEPARAZIONE RATES MATERIALE'
+? `${q.label}: il differenziale 2Y è materiale, ma Macro e Prezzo non confermano un bias direzionale.`
+: frame.fav==='—'
 ? `${q.label}. Aspetta che Macro e tassi separino meglio le due valute.`
 : `${frame.fav} ha il vantaggio relativo. ${q.label}.`;
 document.querySelector('#v227Headline').className=`v227Headline ${q.cls}`;
 document.querySelector('#v227Fav').textContent=frame.fav==='—'?'Nessuno':frame.fav;
-document.querySelector('#v227FavWhy').textContent=frame.fav==='—'
+document.querySelector('#v227FavWhy').textContent=frame.quality==='SEPARAZIONE RATES MATERIALE'
+? `Il differenziale 2Y osservato favorisce il livello ${frame.structural?.ratesGap?.side||'—'}, ma non basta da solo per scegliere una direzione.`
+: frame.fav==='—'
 ? 'Le due valute non sono ancora abbastanza diverse.'
 : `${frame.fav} è avanti nel confronto strutturale Macro + Tassi/CB.`;
 document.querySelector('#v227Driver').textContent=driver.driver;

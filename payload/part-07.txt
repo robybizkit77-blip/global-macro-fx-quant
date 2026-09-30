@@ -269,9 +269,9 @@ if(d.pricing_tier==='COMPLETO'){
 return {label:'Curva OIS/forward disponibile',cls:'pos',why:`È disponibile una curva forward validata. ${f.why}`};
 }
 if(d.pricing_tier==='PARZIALE'){
-return {label:'Pricing solo parziale',cls:'warn',why:`La curva OIS completa non è omogenea nei dati disponibili. Come conferma separata, ${f.label}: ${f.why}`};
+return {label:'OIS non confrontabile',cls:'warn',why:`Non c’è una curva OIS/forward omogenea da confrontare. Il front-end osservato (${f.label}) resta un dato separato: ${f.why}`};
 }
-return {label:'Pricing non comparabile',cls:'neu',why:`Nessuna curva forward omogenea disponibile. Il 2Y resta solo una lettura separata del repricing: ${f.label}.`};
+return {label:'OIS non confrontabile',cls:'neu',why:`Nessuna curva OIS/forward omogenea disponibile. Il front-end osservato (${f.label}) è soltanto una lettura separata del repricing.`};
 }
 function v234PolicyVsMarket(c,d){
 const s=v234StanceClass(d), f=v234FrontEnd(c);
@@ -316,14 +316,15 @@ return `
 function v234ChangeMap(c,d){
 const div=v234PolicyVsMarket(c,d), market=v234MarketSummary(c,d);
 const opposite=v234StanceClass(d)==='pos'?'dovish':v234StanceClass(d)==='neg'?'hawkish':'direzionale';
+const marketConfirm=d.pricing_tier==='COMPLETO'?'guidance, curva OIS/forward e 2Y restano coerenti tra loro.':'guidance e front-end osservato (2Y) restano coerenti; non stiamo ricostruendo un forward OIS.';
 return `
-<div><span>1 · COSA GUARDARE ORA</span><b>${div.label}</b><small>${div.why}</small></div><div><span>2 · COSA CONFERMA LA STORIA</span><b>Policy e mercato nella stessa direzione</b><small>La lettura diventa più robusta se guidance, OIS/forward e 2Y restano coerenti tra loro.</small></div><div><span>3 · COSA CAMBIA DAVVERO LA STORIA</span><b>Un repricing ${opposite} persistente</b><small>Serve che la comunicazione ufficiale cambi oppure che il mercato anticipi in modo persistente un percorso diverso e la banca centrale inizi a validarlo.</small></div><div><span>4 · LIMITE DEL DATO</span><b>${market.label}</b><small>${market.why}</small></div>`;
+<div><span>1 · COSA GUARDARE ORA</span><b>${div.label}</b><small>${div.why}</small></div><div><span>2 · COSA CONFERMA LA STORIA</span><b>Policy e mercato nella stessa direzione</b><small>La lettura diventa più robusta se ${marketConfirm}</small></div><div><span>3 · COSA CAMBIA DAVVERO LA STORIA</span><b>Un repricing ${opposite} persistente</b><small>Serve che la comunicazione ufficiale cambi oppure che il mercato anticipi in modo persistente un percorso diverso e la banca centrale inizi a validarlo.</small></div><div><span>4 · LIMITE DEL DATO</span><b>${market.label}</b><small>${market.why}</small></div>`;
 }
 function v234FxRead(c,d){
 const div=v234PolicyVsMarket(c,d), f=v234FrontEnd(c);
 if(div.cls==='pos') return `${c}: banca centrale e front-end sono allineati in senso più restrittivo. Questo può sostenere la valuta se il differenziale relativo contro le altre economie si amplia e il prezzo conferma.`;
 if(div.cls==='neg') return `${c}: banca centrale e front-end sono allineati in senso più accomodante. Questo tende a ridurre il supporto policy alla valuta se il repricing è relativo e persistente.`;
-if(div.cls==='warn') return `${c}: la parte interessante è la divergenza tra banca centrale e mercato. ${div.why} Il punto operativo è vedere chi si riallinea a chi: guidance ufficiale, OIS/forward o 2Y.`;
+if(div.cls==='warn') return `${c}: la parte interessante è la divergenza tra banca centrale e mercato. ${div.why} Il punto operativo è vedere chi si riallinea a chi: ${d.pricing_tier==='COMPLETO'?'guidance ufficiale, curva OIS/forward o 2Y':'guidance ufficiale e front-end osservato (2Y), senza inferire un forward OIS'}.`;
 return `${c}: la policy da sola non dà ancora un impulso FX netto. ${f.why} Serve una differenza relativa più chiara rispetto alle altre banche centrali.`;
 }
 function selectNativeCb(c){

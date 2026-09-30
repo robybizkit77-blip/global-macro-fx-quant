@@ -38,12 +38,23 @@ const macroA=Number(stateA?.macro||0);
 const macroB=Number(stateB?.macro||0);
 const policyA=Number(stateA?.policy||0);
 const policyB=Number(stateB?.policy||0);
-const macroSide = macroA>macroB ? 'A' : macroB>macroA ? 'B' : 'TIE';
+// A pair may carry a validated relative Macro reading which is more specific
+// than the two absolute currency cards.  Do not overwrite an explicit MISTO.
+const rawPair=D.pairStates?.[pair]||{};
+const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
+const macroSide = rawMacro==='A'||rawMacro===a ? 'A' : rawMacro==='B'||rawMacro===b ? 'B' : /mix|mist/i.test(String(rawMacro||'')) ? 'TIE' : macroA>macroB ? 'A' : macroB>macroA ? 'B' : 'TIE';
 const policySide = policyA>policyB ? 'A' : policyB>policyA ? 'B' : 'TIE';
+const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
+const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
+const materialRateSpread=twoYearSpreadBp!=null&&Math.abs(twoYearSpreadBp)>=75;
+const rateGapSide=!materialRateSpread?'—':twoYearSpreadBp>0?a:b;
 let fav='—';
 let quality='MISTO / NON RISOLUTIVO';
 let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
-if(macroSide!=='TIE' && macroSide===policySide){
+if(materialRateSpread && macroSide==='TIE'){
+quality='SEPARAZIONE RATES MATERIALE';
+relation=`Il differenziale 2Y osservato è ${twoYearSpreadBp>=0?'+':''}${fmt(twoYearSpreadBp,0)} pb verso ${rateGapSide}. Separa il layer Rates, ma Macro non conferma un bias direzionale di coppia.`;
+}else if(macroSide!=='TIE' && macroSide===policySide){
 fav=macroSide==='A'?a:b;
 quality='CONTRASTO STRUTTURALE FORTE';
 relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: contrasto strutturale pieno.`;
@@ -111,6 +122,8 @@ watch,
 structural:{
 macro:{a:macroA,b:macroB,side:macroSide},
 policy:{a:policyA,b:policyB,side:policySide}
+,
+ratesGap:{bp:twoYearSpreadBp,material:materialRateSpread,side:rateGapSide}
 }
 };
 }
