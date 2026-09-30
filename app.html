@@ -5061,7 +5061,7 @@ button,select,input,textarea{font-weight:inherit;}
 
     <div class="panel v256Panel">
       <div class="v256SectionHead">
-        <div><span>PAIR WATCHLIST</span><b>Dove il contrasto relativo è più interessante</b></div>
+        <div><span>COPPIE DA SEGUIRE</span><b>Dove il contrasto relativo è più interessante</b></div>
         <button class="v256Action" onclick="showView('pairs')">Apri Coppie →</button>
       </div>
       <div id="v254Pairs" class="v256List"></div>
@@ -5331,7 +5331,7 @@ button,select,input,textarea{font-weight:inherit;}
     <div class="qaBox"><div class="k">Prezzo</div><div class="v">16 conferma · 11 diverge · 1 incerto</div></div>
     <div class="qaBox"><div class="k">Gerarchia di lettura</div><div class="v">Macro → Rates/CB → COT → Prezzo</div></div><div class="qaBox"><div class="k">COT</div><div class="v">P70 warning · P80/P20 estremo</div></div>
   </div>
-  <div style="margin-top:7px">Nota: `PRICE_NOT_CLEAR` è normalizzato come “prezzo incerto”. La sezione <b>Valute</b> è una lettura assoluta della singola valuta; il <b>Pair Desk</b> è una lettura relativa A vs B. Una valuta può quindi risultare “costruttiva” in assoluto ma perdere contro una valuta ancora più forte: non è una contraddizione.</div>
+  <div style="margin-top:7px">Nota: quando il prezzo non dà una conferma chiara, la lettura resta “prezzo incerto”. La sezione <b>Valute</b> è una lettura assoluta della singola valuta; il <b>Desk Coppie</b> confronta invece le due valute. Una valuta può quindi risultare “costruttiva” in assoluto ma perdere contro una valuta ancora più forte: non è una contraddizione.</div>
 </div>
 <button class="modelGuideBtn" onclick="openModelGuide()">ⓘ Come leggere il modello</button>
 <div id="earlyShiftHost"></div>
@@ -5357,7 +5357,7 @@ button,select,input,textarea{font-weight:inherit;}
       <div class="v">Confrontiamo stato assoluto della valuta con il successivo movimento relativo contro USD e con i cambi di regime interni.</div>
     </div>
     <div class="btProtoCard">
-      <div class="k">Pair</div>
+      <div class="k">Coppie</div>
       <div class="v">Confrontiamo driver/co-driver, convergenza dei layer e successiva performance relativa della coppia nella sua orientazione reale.</div>
     </div>
     <div class="btProtoCard">
@@ -5791,7 +5791,7 @@ button,select,input,textarea{font-weight:inherit;}
 
   <div class="panel" style="margin-top:10px">
     <div class="v219SectionHead"><div><b>Attenzione da non inseguire</b><span>Posizionamenti dove il rischio di squeeze o letture superficiali è maggiore.</span></div></div>
-    <div class="v247Warning"><b>GBP:</b> ribasso confermato, ma lo short è già estremamente affollato: <strong>⚠ −33,7% Net/OI</strong>. <b>EUR:</b> estremo short al 15° percentile, quindi sensibile a short covering. <b>CAD:</b> percentile alto non significa Net assoluto positivo: va letto rispetto alla propria storia.</div>
+    <div class="v247Warning"><b>GBP:</b> short estremamente affollato: <strong>⚠ −33,7% Net/OI</strong>; è rischio squeeze, non una valutazione strutturale. <b>EUR:</b> estremo short al 15° percentile, quindi sensibile a short covering. <b>CAD:</b> percentile alto non significa Net assoluto positivo: va letto rispetto alla propria storia.</div>
   </div>
 
   <div class="panel" style="margin-top:10px">
@@ -6500,7 +6500,7 @@ button,select,input,textarea{font-weight:inherit;}
   </section>
 
 
-<div class="footer"><span>Fonti fisiche del progetto: ECB EXR · CFTC Legacy Futures Only · Treasury/FRED · fonti ufficiali G8</span><span>v270 · COT Pair Binding Fix · as of 25 Sep 2026</span></div>
+<div class="footer"><span>Fonti del progetto: ECB EXR · CFTC Legacy Futures Only · Treasury/FRED · fonti ufficiali G8</span><span>Dati disponibili fino al 25 settembre 2026 · COT al 22 settembre</span></div>
 </div>
 
 <script>
@@ -7794,9 +7794,9 @@ const currencyIntelData = {
  weaken:'disinflazione + deterioramento lavoro accelerano il repricing dovish.',
  watch:'lavoro, CPI core, comunicazione Fed e 2Y USA.'},
  EUR:{state:'MISTA',regime:'Crescita moderata / BCE restrittiva',driver:'BCE / Tassi',wind:'Neutrale',windClass:'windNeu',
- story:'La crescita resta meno brillante rispetto ad altre economie, ma la BCE ha appena alzato i tassi e il mercato sta valutando ulteriore restrizione: il quadro EUR è quindi più bilanciato di quanto suggerisca la sola macro.',
+ story:'Struttura attuale: BCE e front-end mantengono un supporto parziale. Cambiamento recente: crescita, lavoro e inflazione stanno rallentando. Le due frasi descrivono piani diversi, quindi il supporto policy non equivale a macro in miglioramento.',
  lead:'Banca centrale',confirm:'Tassi',diverge:'Macro',lag:'Prezzo',
- macro:['Divergente','stateMix','crescita moderata ma più resiliente delle attese precedenti'],
+ macro:['Divergente','stateMix','struttura macro ancora mista; crescita e lavoro stanno peggiorando nel dato recente'],
  cb:['Favorevole','statePos','BCE: +25 pb il 10 settembre; deposito al 2,50%; decisioni data-dependent'],
  rates:['Favorevole','statePos','front-end sostenuto dalle attese di ulteriore restrizione'],
  liq:['Neutrale','stateNeu','condizioni miste'],
@@ -7817,18 +7817,18 @@ const currencyIntelData = {
  strengthen:'inflazione core resta alta e la crescita evita un rallentamento marcato.',
  weaken:'salari e inflazione scendono più rapidamente del previsto.',
  watch:'salari, servizi CPI e 2Y UK.'},
- JPY:{state:'MIGLIORA',regime:'Reflazione',driver:'Macro / BoJ',wind:'Favorevole',windClass:'windFav',
- story:'Salari e reflazione hanno migliorato il quadro domestico e la BoJ ha alzato la guideline a settembre; ora serve conferma dal front-end e dal prezzo.',
- lead:'Macro',confirm:'Banca centrale',diverge:'Tassi',lag:'Prezzo',
- macro:['Favorevole','statePos','salari e reflazione più costruttivi'],
+ JPY:{state:'MISTA',regime:'Reflazione con segnali misti',driver:'Macro / BoJ',wind:'Neutrale',windClass:'windNeu',
+ story:'La BoJ ha alzato la guideline a settembre, ma il quadro domestico resta misto: attività e domanda non sono uniformi e il front-end non dà ancora una conferma conclusiva. È una transizione da monitorare, non un sostegno simultaneo da Macro e Tassi/CB.',
+ lead:'Macro e front-end',confirm:'Nessuno',diverge:'Macro / Tassi',lag:'Prezzo',
+ macro:['Divergente','stateMix','attività e domanda miste; lavoro e inflazione non danno un segnale unico'],
  cb:['Favorevole','statePos','BoJ: overnight call rate guidato intorno all’1,25% dal 18 settembre'],
  rates:['Divergente','stateMix','front-end ancora da allineare pienamente'],
  liq:['Neutrale','stateNeu','quadro in transizione'],
  cot:['Divergente','stateMix','posizionamento già significativo'],
  price:['Neutrale','stateNeu','non sempre conferma il miglioramento macro'],
- strengthen:'BoJ e tassi confermano il nuovo regime di reflazione.',
- weaken:'salari/inflazione rallentano e BoJ torna più prudente.',
- watch:'salari, servizi, BoJ e JGB 2Y.'},
+ strengthen:'attività, domanda e front-end diventano coerenti con una BoJ meno accomodante.',
+ weaken:'salari/inflazione rallentano, il front-end resta inconcludente e BoJ torna più prudente.',
+ watch:'attività, domanda, salari, servizi, BoJ e JGB 2Y.'},
  CHF:{state:'NEUTRALE',regime:'Reflazione lieve',driver:'SNB / canale FX',wind:'Neutrale',windClass:'windNeu',
  story:'Inflazione ancora bassa e SNB ferma allo 0%; il franco resta soprattutto sensibile a rischio globale e canale FX, più che a un impulso monetario domestico.',
  lead:'Banca centrale',confirm:'Prezzo',diverge:'Macro',lag:'Liquidità',
@@ -9563,9 +9563,9 @@ function canonicalStateQaHtml(){
   const status=(q.ok && vq.ok)?'OK':'ATTENZIONE';
   const allIssues=[...(q.issues||[]),...(vq.issues||[])];
   const detail=(q.ok && vq.ok)
-    ? `8/8 valute · 28/28 pair · Rischio esterno ${q.risk} · view layer canonico`
+    ? `8/8 valute · 28/28 coppie · rischio esterno ${q.risk} · sezioni allineate allo stesso stato`
     : allIssues.slice(0,3).join(' · ');
-  return `<div class="canonicalQa"><b>Canonical State QA: ${status}</b> · valuta ${c} · driver ${cs.driver}${cs.codriver?` + ${cs.codriver}`:''} · lead ${cs.lead}<br>${detail}</div>`;
+  return `<div class="canonicalQa"><b>Coerenza del modello: ${status}</b> · valuta ${c} · fattore guida ${cs.driver}${cs.codriver?` + ${cs.codriver}`:''} · elemento che anticipa ${cs.lead}<br>${detail}</div>`;
 }
 
 function backtestReadinessMatrixHtml(){
@@ -9946,6 +9946,7 @@ function layerShort(layers,a,b){
 function v226Quality(frame){
   if(frame.quality==='CONTRASTO STRUTTURALE FORTE') return {label:'Vantaggio chiaro',cls:'pos'};
   if(frame.quality==='VANTAGGIO RELATIVO PARZIALE') return {label:'Vantaggio presente, ma incompleto',cls:'warn'};
+  if(frame.quality==='SEPARAZIONE RATES MATERIALE') return {label:'Tassi separano le valute',cls:'warn'};
   if(frame.quality==='NESSUN CONTRASTO') return {label:'Nessun vantaggio chiaro',cls:'neu'};
   return {label:'Quadro misto',cls:'neu'};
 }
@@ -10089,7 +10090,7 @@ function renderPairGroups(){
   D.pairs.forEach(p=>{
     const frame=derivePairDecisionFrame(p.pair);
     if(frame.quality==='CONTRASTO STRUTTURALE FORTE') groups.strong.push(p.pair);
-    else if(frame.quality==='VANTAGGIO RELATIVO PARZIALE') groups.partial.push(p.pair);
+    else if(['VANTAGGIO RELATIVO PARZIALE','SEPARAZIONE RATES MATERIALE'].includes(frame.quality)) groups.partial.push(p.pair);
     else groups.weak.push(p.pair);
   });
   const put=(id,arr)=>{
@@ -10133,13 +10134,17 @@ function renderPair(){
   const r=(hist.values?.length>1 && hist.values[0]) ? hist.values.at(-1)/hist.values[0]-1 : 0;
 
   document.querySelector('#v226PairTitle').textContent=selectedPair;
-  document.querySelector('#v227Headline').textContent=frame.fav==='—'
+  document.querySelector('#v227Headline').textContent=frame.quality==='SEPARAZIONE RATES MATERIALE'
+    ? `${q.label}: il differenziale 2Y è materiale, ma Macro e Prezzo non confermano un bias direzionale.`
+    : frame.fav==='—'
     ? `${q.label}. Aspetta che Macro e tassi separino meglio le due valute.`
     : `${frame.fav} ha il vantaggio relativo. ${q.label}.`;
   document.querySelector('#v227Headline').className=`v227Headline ${q.cls}`;
 
   document.querySelector('#v227Fav').textContent=frame.fav==='—'?'Nessuno':frame.fav;
-  document.querySelector('#v227FavWhy').textContent=frame.fav==='—'
+  document.querySelector('#v227FavWhy').textContent=frame.quality==='SEPARAZIONE RATES MATERIALE'
+    ? `Il differenziale 2Y osservato favorisce il livello ${frame.rateSide}, ma non basta da solo per scegliere una direzione.`
+    : frame.fav==='—'
     ? 'Le due valute non sono ancora abbastanza diverse.'
     : `${frame.fav} è avanti perché la sua dinamica complessiva è migliore dell’altra valuta.`;
   document.querySelector('#v227Driver').textContent=driver.driver;
@@ -10192,10 +10197,10 @@ function renderPair(){
 const cotSelect=document.querySelector('#cotSelect');cotSelect.innerHTML=D.currencies.map(c=>`<option>${c}</option>`).join('');cotSelect.value='EUR';cotSelect.onchange=renderCot;
 function cotFlowDescription(d){
  const L=d.chg_long_1w, S=d.chg_short_1w;
- if(L>0 && S<0) return 'Nuovi long + short covering: flusso chiaramente favorevole alla valuta.';
+ if(L>0 && S<0) return 'Nuovi long + short covering: flusso di posizionamento da monitorare, non un voto strutturale.';
  if(L>0 && S>0) return L>S ? 'Entrano sia long sia short, ma prevale la costruzione long.' : 'Entrano sia long sia short: il lato short cresce di più.';
  if(L<0 && S<0) return Math.abs(S)>Math.abs(L) ? 'Short covering prevalente: il Net migliora soprattutto per chiusura degli short.' : 'Riduzione di entrambe le gambe: prevale la liquidazione long.';
- if(L<0 && S>0) return 'Liquidazione long + nuovi short: flusso chiaramente sfavorevole alla valuta.';
+ if(L<0 && S>0) return 'Liquidazione long + nuovi short: flusso di posizionamento da monitorare, non un voto strutturale.';
  return 'Flusso settimanale misto: nessuna anatomia dominante.';
 }
 function cotHeadlineText(c,d){
@@ -10240,8 +10245,8 @@ var v245CotSelected='GBP';
 var v245ChartKey='net';
 
 
-const V247_COT_STORIES={"EUR":{"signal":"EXTREME SHORT","today":"Fondi nettamente short EUR: Net −52,3K e 15° percentile.","w4":"Il positioning si è progressivamente deteriorato; gli short hanno continuato a costruirsi.","w1":"Nuovo peggioramento di −25,3K: il flusso ribassista resta attivo.","why":"Livello e momentum sono entrambi negativi. Però il positioning è già vicino a un estremo storico, quindi aumenta la sensibilità a short covering se il prezzo smette di confermare.","funds":"Fondi divisi","funds_detail":"Long e short aumentano, ma gli short crescono di più.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,7%. Positioning e prezzo raccontano la stessa storia."},"GBP":{"signal":"EXTREME SHORT","today":"È il posizionamento più affollato al ribasso: Net −82,6K, 5° percentile e ⚠ −33,7% Net/OI.","w4":"Il quadro è rimasto chiaramente negativo, con forte riduzione dell’esposizione rialzista e aumento della pressione short.","w1":"Il Net peggiora ancora di −23,9K e il flusso diventa più pulitamente ribassista.","why":"Il trend COT è ancora negativo, ma ormai è molto affollato. La domanda non è più solo “GBP è debole?”, ma “quanto spazio resta prima che aumenti il rischio squeeze?”.","funds":"Vendite vere","funds_detail":"Liquidazione long + nuovi short.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,9%. Il prezzo conferma, ma il positioning è già molto affollato."},"JPY":{"signal":"NEUTRALE","today":"I fondi restano net long JPY (+72,0K): il livello assoluto è ancora favorevole.","w4":"Il positioning era stato costruito in modo fortemente positivo.","w1":"Il Net crolla di −48,4K, andando nettamente contro la direzione delle settimane precedenti.","why":"Qui il punto non è il livello, che resta positivo, ma il cambio di momentum. È un possibile turning point del positioning da monitorare.","funds":"Deterioramento rapido","funds_detail":"Il flusso gira bruscamente contro JPY.","price":"CONFERMA","price_detail":"COT peggiora forte · Prezzo 1W −1,4%. Il cambio di impulso trova già conferma nel prezzo."},"CHF":{"signal":"NEUTRALE","today":"Positioning ancora net short CHF (−26,8K), senza estremo di percentile.","w4":"Il quadro è rimasto debole e senza una costruzione rialzista convincente.","w1":"Il Net migliora leggermente di +2,2K.","why":"C’è un primo miglioramento, ma è ancora troppo piccolo per parlare di vero cambio di regime. Serve persistenza e conferma del prezzo.","funds":"Migliora","funds_detail":"Entrano alcuni long e vengono chiusi pochi short.","price":"DIVERGENZA","price_detail":"COT migliora · Prezzo 1W −0,1%. Il positioning migliora, ma il prezzo non lo conferma ancora."},"AUD":{"signal":"NEUTRALE","today":"AUD resta net short (−46,8K), ma non è in un estremo storico.","w4":"Il positioning è rimasto debole e piuttosto instabile, senza una direzione forte e persistente.","w1":"Il Net peggiora di −7,9K con nuova pressione ribassista.","why":"Il quadro diventa un po’ più negativo, ma manca ancora un’accelerazione abbastanza forte da parlare di cambio strutturale.","funds":"Vendite vere","funds_detail":"Liquidazione long + nuovi short.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,2%. COT e prezzo sono entrambi deboli."},"NZD":{"signal":"NEUTRALE","today":"NZD è tornato net short (−11,4K), ma il percentile resta relativamente alto al 78°.","w4":"Il positioning era stato molto forte e aveva raggiunto livelli estremamente elevati.","w1":"Il Net crolla di −21,9K e il percentile passa da 100° a 78°.","why":"È un vero cambio di velocità: il livello storico resta alto, ma il flusso recente si è girato con forza. Qui il momentum conta più dello stock.","funds":"Vendite vere","funds_detail":"È il deterioramento più rapido del report.","price":"CONFERMA","price_detail":"COT peggiora forte · Prezzo 1W −0,8%. Il deterioramento rapido trova già conferma nel prezzo."},"CAD":{"signal":"EXTREME LONG","today":"Il Net assoluto resta negativo, ma il percentile è all’81°: rispetto alla propria storia recente il positioning è ancora forte.","w4":"La costruzione è stata chiaramente positiva e persistente.","w1":"Il Net peggiora di −15,6K, quindi l’impulso recente va contro il trend 4W.","why":"Il quadro di fondo è ancora costruttivo, ma la forza sta rallentando. Non è ancora inversione: è una prima perdita di momentum.","funds":"Impulso meno pulito","funds_detail":"4W ancora positivo, 1W peggiora.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,9%. L’impulso settimanale più debole è confermato dal prezzo."},"USD":{"signal":"NEUTRALE","today":"USD resta net long (+10,3K), con Net/OI +22,3%.","w4":"Il positioning ha perso qualità: il flusso non ha continuato a rafforzare il long USD.","w1":"Il Net è quasi invariato (−0,3K), quindi non c’è nuova accelerazione.","why":"Lo stock resta favorevole al dollaro, ma il momentum non lo è più. Se il prezzo resta forte nonostante questo, emerge una divergenza da osservare con attenzione.","funds":"Perde qualità","funds_detail":"Resta long, ma il flusso non accelera più.","price":"DIVERGENZA","price_detail":"COT non migliora · Prezzo 1W +0,9%. Il prezzo USD resta forte mentre il flusso COT non accelera."}};
-const V247_COT_FOCUS=[{"ccy":"GBP","title":"GBP · short molto affollato","why":"5° percentile e ⚠ Net/OI −33,7%.","change":"Entrano ancora nuovi short.","confirm":"GBP continua a sottoperformare.","lose":"Parte short covering e il prezzo smette di fare nuovi minimi."},{"ccy":"JPY","title":"JPY · cambio di impulso","why":"Net long ancora positivo, ma −48,4K in 1W.","change":"Il flusso settimanale si gira contro JPY.","confirm":"Altra liquidazione long / nuovi short.","lose":"Riprendono i long e il prezzo recupera."},{"ccy":"NZD","title":"NZD · deterioramento rapido","why":"Percentile 100° → 78°, ΔNet/OI −21,6%.","change":"Da positioning forte a flusso nettamente negativo.","confirm":"Persistono liquidazione long / nuovi short.","lose":"Il Net si stabilizza e NZD recupera."}];
+const V247_COT_STORIES={"EUR":{"signal":"EXTREME SHORT","today":"Fondi nettamente short EUR: Net −52,3K e 15° percentile.","w4":"Il positioning si è progressivamente deteriorato; gli short hanno continuato a costruirsi.","w1":"Nuovo peggioramento di −25,3K: il flusso ribassista resta attivo.","why":"Livello e momentum di positioning sono entrambi negativi. Il posizionamento è vicino a un estremo storico: aumenta la sensibilità a short covering se il prezzo smette di confermare.","funds":"Fondi divisi","funds_detail":"Long e short aumentano, ma gli short crescono di più.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,7%. Posizionamento e prezzo raccontano la stessa dinamica, senza cambiare lo stato strutturale."},"GBP":{"signal":"EXTREME SHORT","today":"È il posizionamento short più affollato: Net −82,6K, 5° percentile e ⚠ −33,7% Net/OI.","w4":"Il positioning resta short, con riduzione dell’esposizione long e aumento degli short.","w1":"Il Net peggiora ancora di −23,9K e aumenta l’esposizione short.","why":"Il COT è short e molto affollato. La domanda è quanto spazio resti prima che aumenti il rischio squeeze: non è un giudizio sulla forza strutturale GBP.","funds":"Vendite vere","funds_detail":"Liquidazione long + nuovi short.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,9%. Il prezzo conferma la dinamica di positioning; lo stato GBP resta deciso da Macro + Rates/CB."},"JPY":{"signal":"NEUTRALE","today":"I fondi restano net long JPY (+72,0K): livello di positioning ancora positivo.","w4":"Il positioning era stato costruito con flusso long persistente.","w1":"Il Net cala di −48,4K, contro la direzione delle settimane precedenti.","why":"Il punto è il cambio di momentum nel positioning, non un cambio strutturale della valuta. È un possibile turning point COT da monitorare.","funds":"Deterioramento rapido","funds_detail":"Il flusso gira bruscamente contro JPY.","price":"CONFERMA","price_detail":"COT peggiora forte · Prezzo 1W −1,4%. Il cambio di impulso trova conferma nel prezzo, senza modificare il core."},"CHF":{"signal":"NEUTRALE","today":"Positioning ancora net short CHF (−26,8K), senza estremo di percentile.","w4":"Il positioning è rimasto short senza una costruzione long convincente.","w1":"Il Net migliora leggermente di +2,2K.","why":"C’è un primo miglioramento nel positioning, troppo piccolo per parlare di cambio di regime FX. Serve persistenza e conferma del prezzo.","funds":"Migliora","funds_detail":"Entrano alcuni long e vengono chiusi pochi short.","price":"DIVERGENZA","price_detail":"COT migliora · Prezzo 1W −0,1%. Il positioning migliora, ma il prezzo non lo conferma ancora."},"AUD":{"signal":"NEUTRALE","today":"AUD resta net short (−46,8K), ma non è in un estremo storico.","w4":"Il positioning è rimasto debole e instabile, senza flusso persistente.","w1":"Il Net peggiora di −7,9K con nuova pressione short.","why":"Il positioning diventa più short, ma manca un’accelerazione sufficiente per qualunque conclusione strutturale FX.","funds":"Vendite vere","funds_detail":"Liquidazione long + nuovi short.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,2%. COT e prezzo condividono la dinamica recente, non lo stato strutturale."},"NZD":{"signal":"NEUTRALE","today":"NZD è tornato net short (−11,4K), ma il percentile resta relativamente alto al 78°.","w4":"Il positioning era stato molto forte e aveva raggiunto livelli elevati.","w1":"Il Net cala di −21,9K e il percentile passa da 100° a 78°.","why":"Cambia la velocità del positioning: lo stock resta alto ma il flusso recente si è girato. È contesto/rischio, non segnale strutturale.","funds":"Vendite vere","funds_detail":"È il deterioramento più rapido del report.","price":"CONFERMA","price_detail":"COT peggiora forte · Prezzo 1W −0,8%. Il deterioramento del flow trova conferma nel prezzo."},"CAD":{"signal":"EXTREME LONG","today":"Il Net assoluto resta negativo, ma il percentile è all’81°: rispetto alla propria storia il positioning è elevato.","w4":"La costruzione long è stata persistente.","w1":"Il Net peggiora di −15,6K: l’impulso recente va contro il trend 4W.","why":"Il positioning resta elevato ma il flow rallenta. È una perdita di momentum COT, non un’inversione né una valutazione strutturale CAD.","funds":"Impulso meno pulito","funds_detail":"4W ancora positivo, 1W peggiora.","price":"CONFERMA","price_detail":"COT peggiora · Prezzo 1W −0,9%. L’impulso settimanale più debole è confermato dal prezzo."},"USD":{"signal":"NEUTRALE","today":"USD resta net long (+10,3K), con Net/OI +22,3%.","w4":"Il positioning ha perso qualità: il flow non ha continuato a rafforzare il long USD.","w1":"Il Net è quasi invariato (−0,3K), quindi non c’è nuova accelerazione.","why":"Lo stock resta long, mentre il momentum non accelera. Se il prezzo resta forte emerge una divergenza di positioning da osservare, non un cambio strutturale.","funds":"Perde qualità","funds_detail":"Resta long, ma il flusso non accelera più.","price":"DIVERGENZA","price_detail":"COT non migliora · Prezzo 1W +0,9%. Il prezzo USD resta forte mentre il flow COT non accelera."}};
+const V247_COT_FOCUS=[{"ccy":"GBP","title":"GBP · short molto affollato","why":"5° percentile e ⚠ Net/OI −33,7%.","change":"Entrano ancora nuovi short.","confirm":"Il flow short persiste: monitorare il rischio squeeze, non inferire direzione strutturale.","lose":"Parte short covering e il prezzo smette di fare nuovi minimi."},{"ccy":"JPY","title":"JPY · cambio di impulso","why":"Net long ancora positivo, ma −48,4K in 1W.","change":"Il flusso settimanale si gira contro JPY.","confirm":"Altra liquidazione long / nuovi short.","lose":"Riprendono i long e il prezzo recupera."},{"ccy":"NZD","title":"NZD · deterioramento rapido","why":"Percentile 100° → 78°, ΔNet/OI −21,6%.","change":"Da positioning forte a flusso nettamente negativo.","confirm":"Persistono liquidazione long / nuovi short.","lose":"Il Net si stabilizza e NZD recupera."}];
 
 function v247SignalClass(sig){
   if(sig==='EXTREME SHORT')return 'neg';
@@ -11446,8 +11451,13 @@ function policyFamilyPolarity(d){
   const cb=layerPolarity(d?.cb);
 
   // Front-end / Rates are the primary market translation of monetary repricing.
-  // Realized CB stance is interpretative context, not a second vote.
-  // Therefore CB only fills the gap when Rates are neutral.
+  // A realized CB action is interpretative context, not a second vote.  In
+  // particular, a front-end explicitly marked as divergent cannot be promoted
+  // to a policy signal merely because the latest decision was hawkish.
+  const ratesLabel=String(d?.rates?.[0]||'').toLowerCase();
+  if(ratesLabel.includes('diverg')) return 0;
+  // CB fills a genuinely neutral front-end only; it never overwrites a
+  // contradictory or inconclusive observed front-end.
   if(rates!==0) return rates;
   if(cb!==0) return cb;
   return 0;
@@ -13204,9 +13214,9 @@ function v234MarketSummary(c,d){
     return {label:'Curva OIS/forward disponibile',cls:'pos',why:`È disponibile una curva forward validata. ${f.why}`};
   }
   if(d.pricing_tier==='PARZIALE'){
-    return {label:'Pricing solo parziale',cls:'warn',why:`La curva OIS completa non è omogenea nei dati disponibili. Come conferma separata, ${f.label}: ${f.why}`};
+    return {label:'OIS non confrontabile',cls:'warn',why:`Non c’è una curva OIS/forward omogenea da confrontare. Il front-end osservato (${f.label}) resta un dato separato: ${f.why}`};
   }
-  return {label:'Pricing non comparabile',cls:'neu',why:`Nessuna curva forward omogenea disponibile. Il 2Y resta solo una lettura separata del repricing: ${f.label}.`};
+  return {label:'OIS non confrontabile',cls:'neu',why:`Nessuna curva OIS/forward omogenea disponibile. Il front-end osservato (${f.label}) è soltanto una lettura separata del repricing.`};
 }
 function v234PolicyVsMarket(c,d){
   const s=v234StanceClass(d), f=v234FrontEnd(c);
@@ -13260,9 +13270,12 @@ function v234PricingCards(c,d){
 function v234ChangeMap(c,d){
   const div=v234PolicyVsMarket(c,d), market=v234MarketSummary(c,d);
   const opposite=v234StanceClass(d)==='pos'?'dovish':v234StanceClass(d)==='neg'?'hawkish':'direzionale';
+  const marketConfirm=d.pricing_tier==='COMPLETO'
+    ? 'guidance, curva OIS/forward e 2Y restano coerenti tra loro.'
+    : 'guidance e front-end osservato (2Y) restano coerenti; non stiamo ricostruendo un forward OIS.';
   return `
     <div><span>1 · COSA GUARDARE ORA</span><b>${div.label}</b><small>${div.why}</small></div>
-    <div><span>2 · COSA CONFERMA LA STORIA</span><b>Policy e mercato nella stessa direzione</b><small>La lettura diventa più robusta se guidance, OIS/forward e 2Y restano coerenti tra loro.</small></div>
+    <div><span>2 · COSA CONFERMA LA STORIA</span><b>Policy e mercato nella stessa direzione</b><small>La lettura diventa più robusta se ${marketConfirm}</small></div>
     <div><span>3 · COSA CAMBIA DAVVERO LA STORIA</span><b>Un repricing ${opposite} persistente</b><small>Serve che la comunicazione ufficiale cambi oppure che il mercato anticipi in modo persistente un percorso diverso e la banca centrale inizi a validarlo.</small></div>
     <div><span>4 · LIMITE DEL DATO</span><b>${market.label}</b><small>${market.why}</small></div>`;
 }
@@ -13270,7 +13283,7 @@ function v234FxRead(c,d){
   const div=v234PolicyVsMarket(c,d), f=v234FrontEnd(c);
   if(div.cls==='pos') return `${c}: banca centrale e front-end sono allineati in senso più restrittivo. Questo può sostenere la valuta se il differenziale relativo contro le altre economie si amplia e il prezzo conferma.`;
   if(div.cls==='neg') return `${c}: banca centrale e front-end sono allineati in senso più accomodante. Questo tende a ridurre il supporto policy alla valuta se il repricing è relativo e persistente.`;
-  if(div.cls==='warn') return `${c}: la parte interessante è la divergenza tra banca centrale e mercato. ${div.why} Il punto operativo è vedere chi si riallinea a chi: guidance ufficiale, OIS/forward o 2Y.`;
+  if(div.cls==='warn') return `${c}: la parte interessante è la divergenza tra banca centrale e mercato. ${div.why} Il punto operativo è vedere chi si riallinea a chi: ${d.pricing_tier==='COMPLETO'?'guidance ufficiale, curva OIS/forward o 2Y':'guidance ufficiale e front-end osservato (2Y), senza inferire un forward OIS'}.`;
   return `${c}: la policy da sola non dà ancora un impulso FX netto. ${f.why} Serve una differenza relativa più chiara rispetto alle altre banche centrali.`;
 }
 function selectNativeCb(c){
@@ -13316,6 +13329,125 @@ renderNativeCbDesk=function(){
 };
 </script>
 
+
+<script>
+/* v275 — UNIFORM G8 AUDIT / CANONICAL PAIR REBUILD
+   One source of truth for the September 25 snapshot.  This is model work only:
+   no view-specific overrides and no cosmetic UI changes.
+
+   Currency core = Macro + front-end/CB policy family.
+   Liquidity and global risk remain overlays; COT is positioning risk; Price is
+   confirmation/divergence only.  Pair states are rebuilt only after all eight
+   currency cores are frozen, so they cannot retain a prior certification. */
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const SIDE=(n,a,b)=>n>0?a:n<0?b:'MISTO';
+  const dir=(x)=>layerPolarity(x);
+
+  function stateFromCore(macro,policy){
+    if(macro>0 && policy>0) return 'FORTE';
+    if(macro<0 && policy<0) return 'FRAGILE';
+    if((macro>0 && policy===0)||(macro===0 && policy>0)) return 'COSTRUTTIVA';
+    if((macro<0 && policy===0)||(macro===0 && policy<0)) return 'DEBOLE';
+    return 'MISTA';
+  }
+
+  function freezeCurrency(c){
+    const d=currencyIntelData[c]||{};
+    const macro=dir(d.macro), policy=policyFamilyPolarity(d), liq=dir(d.liq), price=dir(d.price);
+    const change=currencyImprovementDiagnostic(c)||{};
+    const cot=D.cot?.[c]||{};
+    const base=stateFromCore(macro,policy);
+    const coreDirection=(base==='FORTE'||base==='COSTRUTTIVA')?1:(base==='FRAGILE'||base==='DEBOLE')?-1:0;
+    const confirmation=price===0 ? 'PREZZO NON RISOLUTIVO'
+      : coreDirection===0 ? 'PREZZO SENZA STRUTTURA'
+      : price===coreDirection ? 'PREZZO CONFERMA' : 'PREZZO DIVERGE';
+    return {
+      currency:c, base, macro, policy, liquidity:liq, price,
+      change:change.state||'NON DETERMINATO', confirmation,
+      cot:{pct:Number(cot.pct),netOi:Number(cot.net_oi),flow:cot.flow||'non disponibile'},
+      asOf:D.asOf||'—'
+    };
+  }
+
+  function pairFromFrozen(pair, frozen){
+    const [a,b]=pair.split('/'), A=frozen[a], B=frozen[b];
+    // Preserve the pair's validated relative Macro reading when it exists.
+    // Absolute currency cards are a cross-check, not a substitute for a
+    // pair-specific relative macro comparison.
+    const prior=D.pairStates?.[pair]||CERT53?.pairs?.[pair]||{};
+    const priorMacro=prior.layer_directions?.macro??prior.layers?.macro;
+    const macro=priorMacro==='A'||priorMacro===a?a:priorMacro==='B'||priorMacro===b?b:
+      /mix|mist/i.test(String(priorMacro||''))?'MISTO':SIDE(A.macro-B.macro,a,b);
+    const policyRates=SIDE(A.policy-B.policy,a,b);
+    const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
+    const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
+    const materialRateSpread=twoYearSpreadBp!=null&&Math.abs(twoYearSpreadBp)>=75;
+    // The observed 2Y gap is a Rates-layer separation.  It remains distinct
+    // from a forecast/OIS curve and does not itself create a trade bias.
+    const rateGapSide=!materialRateSpread?'MISTO':twoYearSpreadBp>0?a:b;
+    const rates=materialRateSpread?rateGapSide:policyRates;
+    const centralBank=SIDE(dir(currencyIntelData[a]?.cb)-dir(currencyIntelData[b]?.cb),a,b);
+    const price=SIDE(A.price-B.price,a,b);
+    const aligned=macro!=='MISTO' && macro===rates;
+    const ratesOnlyMaterial=!aligned && materialRateSpread;
+    const primary=aligned ? macro : ratesOnlyMaterial ? 'MISTO' : rates!=='MISTO' ? rates : macro;
+    const primaryLayer=aligned ? 'MACRO_RATES' : ratesOnlyMaterial ? 'RATES_SPREAD' : rates!=='MISTO' ? 'RATES' : macro!=='MISTO' ? 'MACRO' : 'UNCLEAR';
+    const confirms=[];
+    if(aligned) confirms.push('macro','rates');
+    else if(primaryLayer==='RATES') confirms.push('rates');
+    else if(primaryLayer==='MACRO') confirms.push('macro');
+    if(primary!=='MISTO' && price===primary) confirms.push('price');
+    const diverges=[];
+    if(primary!=='MISTO' && macro!=='MISTO' && macro!==primary) diverges.push('macro');
+    if(primary!=='MISTO' && rates!=='MISTO' && rates!==primary) diverges.push('rates');
+    if(primary!=='MISTO' && price!=='MISTO' && price!==primary) diverges.push('price');
+    const winner=primary==='MISTO'?'MISTA':primary;
+    const state=aligned ? 'PARTIAL_CONVERGENCE' : 'DIVERGENT';
+    const priceConfirmation=primary==='MISTO'||price==='MISTO' ? 'PRICE_NOT_CLEAR'
+      : price===primary ? 'PRICE_CONFIRMED' : 'PRICE_DIVERGES';
+    const cotAlert=[A,B].filter(x=>Number.isFinite(x.cot.pct)&&(x.cot.pct>=70||x.cot.pct<=30))
+      .map(x=>`${x.currency}_P${Math.round(x.cot.pct)}`).join('__')||'NONE';
+    return {
+      pair, state, state_label:state==='PARTIAL_CONVERGENCE'?'Convergenza parziale':'Divergenza',
+      convergence:aligned?'MEDIA':'BASSA', convergence_count:`${confirms.length}/${primary==='MISTO'?0:3}`,
+      convergence_winner:winner,
+      layers:{macro,central_bank:centralBank,rates,cot:'CONTESTO',price,market_pricing:'NON CONFRONTABILE'},
+      rates_evidence:{two_year_spread_bp:twoYearSpreadBp,material:materialRateSpread,side:rateGapSide,threshold_bp:75,description:materialRateSpread?`Differenziale 2Y osservato ${twoYearSpreadBp>=0?'+':''}${twoYearSpreadBp.toFixed(0)} pb verso ${rateGapSide}; separa il layer Rates, senza sostituire l’OIS/forward.`:'Nessun differenziale 2Y materiale.'},
+      layer_directions:{macro:macro===a?'A':macro===b?'B':'MIXED',central_bank:centralBank===a?'A':centralBank===b?'B':'MIXED',rates:rates===a?'A':rates===b?'B':'MIXED',cot:'CONTEXT',price:price===a?'A':price===b?'B':'MIXED',market_pricing:'WITHHELD'},
+      lead:primaryLayer==='RATES_SPREAD'?['Differenziale 2Y osservato (separazione, non bias)']:primaryLayer==='RATES'?['Rates / aspettative CB']:primaryLayer==='MACRO'?['Macro']:aligned?['Macro + Rates / aspettative CB']:[],
+      confirms, diverges, lags:[],
+      missing:['Market pricing forward confrontabile'].concat(aligned?[]:['allineamento Macro / Rates']),
+      cot_alert:cotAlert,
+      price_state:priceConfirmation,
+      dominant_driver_current:{
+        driver:primaryLayer, label_it:primaryLayer==='MACRO_RATES'?'Macro + Rates / aspettative CB':primaryLayer==='RATES_SPREAD'?'Differenziale 2Y osservato: separazione, non bias':primaryLayer==='RATES'?'Rates / riprezzamento front-end':primaryLayer==='MACRO'?'Macro':'Non determinato',
+        direction:primary===a?'A':primary===b?'B':'MIXED', price_confirmation:priceConfirmation,
+        confirms, diverges, rule:'Audit v275: Macro + Rates/CB core; COT contesto; Price sola conferma.'
+      },
+      audit_as_of:D.asOf||'—'
+    };
+  }
+
+  function rebuildV275Audit(){
+    const currency={}; CCYS.forEach(c=>currency[c]=freezeCurrency(c));
+    CCYS.forEach(c=>{
+      // Keep legacy currency cards as consumers of the frozen core, not owners
+      // of an independent state label.
+      currencyIntelData[c].state=currency[c].base;
+    });
+    const pairs={}; (D.pairs||[]).forEach(p=>pairs[p.pair]=pairFromFrozen(p.pair,currency));
+    window.AUDIT_V275=Object.freeze({asOf:D.asOf||'—',currency:Object.freeze(currency),pairs:Object.freeze(pairs)});
+    D.pairStates=pairs;
+    Object.keys(pairs).forEach(p=>{ CERT53.pairs[p]=pairs[p]; });
+    rebuildCanonicalState();
+    console.info('[v275 audit] frozen currencies',currency,'rebuilt pairs',Object.keys(pairs).length);
+  }
+
+  window.rebuildV275Audit=rebuildV275Audit;
+  rebuildV275Audit();
+})();
+</script>
 
 <script>
 /* v269 — END-TO-END EXECUTIVE RECOMPUTE
@@ -13458,7 +13590,7 @@ renderNativeCbDesk=function(){
           <div class="thRow invalidate"><span>Cosa lo indebolisce</span><b>${t.invalidate}</b></div>
         </div>
         <div class="thWhy"><b>Lettura attuale:</b> ${x.imp.state||'STABILE / MISTA'} · ${x.st.confirmation||'Prezzo non risolutivo'}</div>
-        <div class="thWhy"><b>Freshness:</b> ${freshness}</div>
+        <div class="thWhy"><b>Aggiornamento dei layer:</b> ${freshness}</div>
       </div>`;
     }).join('');
   };
@@ -13481,6 +13613,8 @@ renderNativeCbDesk=function(){
   function endToEndRecompute(){
     // Existing renderers already compute What Changed and most pair/currency panels dynamically.
     // Re-run them after the canonical datasets are loaded, then hydrate legacy/static executive fragments.
+    // Re-freeze all eight currency states before any view reads a pair state.
+    safe(()=>window.rebuildV275Audit&&window.rebuildV275Audit());
     refreshSnapshotLabels();
     safe(()=>renderSimpleOverview());
     safe(()=>renderOperationalOverview());
@@ -13498,6 +13632,194 @@ renderNativeCbDesk=function(){
   window.v269EndToEndRecompute=endToEndRecompute;
   setTimeout(endToEndRecompute,50);
   setTimeout(endToEndRecompute,350);
+})();
+</script>
+
+<script>
+/* v276 — CROSS-DESK CANONICAL GOVERNANCE
+   All executive views consume the frozen v275 state.  Layer desks retain their
+   own evidence, but may not publish an independent FX structural conclusion. */
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const canonicalCurrency=c=>window.AUDIT_V275?.currency?.[c]||null;
+  const canonicalPair=p=>window.AUDIT_V275?.pairs?.[p]||D.pairStates?.[p]||null;
+  const coreName=x=>x?.base||'MISTA';
+  const changeName=c=>canonicalCurrency(c)?.change||'NON DETERMINATO';
+  const priceName=c=>canonicalCurrency(c)?.confirmation||'PREZZO NON RISOLUTIVO';
+
+  /* Keep legacy consumers compatible, but make their structural fields read-only
+     projections of the frozen state rather than a fresh, view-specific verdict. */
+  const legacyCurrencyState=window.deriveCurrencyState;
+  window.deriveCurrencyState=function(c){
+    const legacy=legacyCurrencyState?legacyCurrencyState(c):{};
+    const x=canonicalCurrency(c);
+    if(!x)return legacy;
+    return Object.assign({},legacy,{
+      c,base:x.base,macro:x.macro,policy:x.policy,liq:x.liquidity,price:x.price,
+      confirmation:x.confirmation,change:x.change,
+      cotRisk:legacy.cotRisk||'',driver:legacy.driver||deriveCurrencyDriver(c)
+    });
+  };
+  try{deriveCurrencyState=window.deriveCurrencyState;}catch(e){}
+
+  /* Pair Desk previously rebuilt a separate frame from recent dynamics.  Dynamics
+     remain visible as timing diagnostics, but the structural winner now comes
+     exclusively from the already-frozen pair state. */
+  window.derivePairDecisionFrame=function(pair){
+    const s=canonicalPair(pair)||{};
+    const [a,b]=pair.split('/');
+    const d=s.dominant_driver_current||{};
+    const materialRates=d.driver==='RATES_SPREAD' && s.rates_evidence?.material;
+    const rateSide=s.rates_evidence?.side===a||s.rates_evidence?.side===b?s.rates_evidence.side:'—';
+    const fav=materialRates?'—':d.direction==='A'?a:d.direction==='B'?b:'—';
+    const aligned=d.driver==='MACRO_RATES';
+    const priceReading=d.price_confirmation==='PRICE_CONFIRMED'?'MERCATO GIÀ ALLINEATO'
+      :d.price_confirmation==='PRICE_DIVERGES'?'DIVERGENZA DA MONITORARE':'PREZZO NON CHIARO';
+    return {
+      pair,fav,
+      quality:materialRates?'SEPARAZIONE RATES MATERIALE':fav==='—'?'NESSUN CONTRASTO':'VANTAGGIO RELATIVO PARZIALE',
+      state:s.state||'DIVERGENT',
+      driver:d.driver||'UNCLEAR',
+      rateSide,
+      ratesEvidence:s.rates_evidence||null,
+      priceReading,
+      priceNote:priceReading==='MERCATO GIÀ ALLINEATO'
+        ? `Il prezzo conferma il vantaggio strutturale di ${fav}.`
+        :priceReading==='DIVERGENZA DA MONITORARE'
+          ? `Il prezzo diverge dal vantaggio strutturale di ${fav}; non lo sostituisce.`
+          : 'Il prezzo non offre una conferma relativa sufficiente.',
+      rule:'v276: Macro + Rates/CB determinano il vantaggio; COT è rischio; Price è conferma/divergenza.'
+    };
+  };
+  try{derivePairDecisionFrame=window.derivePairDecisionFrame;}catch(e){}
+
+  /* The layer rows in Pair Desk are consumers of the frozen pair state as well.
+     Recent dynamics can explain timing elsewhere, but cannot relabel the driver. */
+  function pairLayerRow(pair,layer,label){
+    const s=canonicalPair(pair)||{}, d=s.dominant_driver_current||{};
+    const [a,b]=pair.split('/');
+    const fav=d.direction==='A'?a:d.direction==='B'?b:'—';
+    const side=s.layers?.[layer];
+    if(layer==='rates' && d.driver==='RATES_SPREAD' && s.rates_evidence?.material){
+      const e=s.rates_evidence;
+      return {side:e.side,text:`Il differenziale 2Y osservato è ${e.two_year_spread_bp>=0?'+':''}${fmt(e.two_year_spread_bp,0)} pb verso ${e.side}. Separa nettamente il layer Rates, ma da solo non assegna un bias direzionale alla coppia.`,cls:'warn'};
+    }
+    if(side===a || side===b){
+      const supports=side===fav;
+      return {side,text:`${label} favorisce ${side}${supports?' e sostiene il vantaggio strutturale':' e diverge dal vantaggio strutturale'}${fav==='—'?' non determinato':''}.`,cls:supports?'pos':'neg'};
+    }
+    return {side:'Misto',text:`${label} non separa le due valute: non assegna un vantaggio relativo autonomo.`,cls:'neu'};
+  }
+  window.v228MacroRow=(pair)=>pairLayerRow(pair,'macro','La Macro');
+  window.v228RatesRow=(pair)=>pairLayerRow(pair,'rates','Rates / aspettative CB');
+  window.v228MainDriver=function(frame){
+    const labels={MACRO:'Macro',RATES:'Rates / aspettative CB',RATES_SPREAD:'Differenziale 2Y osservato',MACRO_RATES:'Macro + Rates / aspettative CB'};
+    const driver=labels[frame.driver]||'Nessuno chiaro';
+    return {driver,why:frame.driver==='RATES_SPREAD'?`Il differenziale 2Y osservato separa il layer Rates; Macro e Prezzo non lo trasformano ancora in un bias direzionale di coppia.`:frame.fav==='—'?'Macro e Rates/CB non separano le due valute in modo sufficiente.':`${driver} è il driver canonico del vantaggio strutturale di ${frame.fav}.`};
+  };
+  try{v228MacroRow=window.v228MacroRow;v228RatesRow=window.v228RatesRow;v228MainDriver=window.v228MainDriver;}catch(e){}
+
+  /* COT reports flows and crowding without assigning an FX direction. */
+  window.cotFlowDescription=function(d){
+    const L=Number(d?.chg_long_1w||0), S=Number(d?.chg_short_1w||0);
+    if(L>0 && S<0) return 'Nuovi long + short covering: flusso di posizionamento da monitorare, non un voto strutturale.';
+    if(L>0 && S>0) return L>S?'Aumentano long e short, con prevalenza long: contesto di positioning, non direzione FX.':'Aumentano long e short, con prevalenza short: contesto di positioning, non direzione FX.';
+    if(L<0 && S<0) return Math.abs(S)>Math.abs(L)?'Short covering prevalente: il Net cambia soprattutto per chiusura degli short; rischio di positioning, non direzione FX.':'Riduzione di entrambe le gambe: prevale liquidazione long; rischio di positioning, non direzione FX.';
+    if(L<0 && S>0) return 'Liquidazione long + nuovi short: flusso di positioning da monitorare, non un voto strutturale.';
+    return 'Flusso settimanale misto: nessuna anatomia dominante e nessun impatto sullo stato strutturale.';
+  };
+  try{cotFlowDescription=window.cotFlowDescription;}catch(e){}
+
+  /* Every country desk names the same structural state, then confines its own
+     evidence to its proper layer.  This prevents a macro/rates/CB headline from
+     being misread as a competing all-in FX rating. */
+  window.v232FxNarrative=function(c,snap){
+    const strong=snap.strength?.label||'—', weak=snap.weakness?.label||'—';
+    return `${c} è ${coreName(canonicalCurrency(c))} nello stato strutturale canonico; direzione recente: ${changeName(c).toLowerCase()}. Nel solo layer Macro, ${strong.toLowerCase()} sostiene il quadro mentre ${weak.toLowerCase()} è l’area fragile. La conclusione FX richiede Macro + Rates/CB; il prezzo è soltanto conferma/divergenza.`;
+  };
+  try{v232FxNarrative=window.v232FxNarrative;}catch(e){}
+
+  window.v233FxRead=function(c,d){
+    const x=canonicalCurrency(c);
+    return `${c}: Rates è evidenza di policy/front-end, non uno stato FX autonomo. Stato canonico ${coreName(x)} · direzione recente ${changeName(c).toLowerCase()}. La lettura strutturale resta Macro + Rates/CB; Price: ${priceName(c).toLowerCase()}.`;
+  };
+  try{v233FxRead=window.v233FxRead;}catch(e){}
+
+  window.v234FxRead=function(c,d){
+    const x=canonicalCurrency(c);
+    return `${c}: la Banca centrale spiega il contesto di policy e confluisce nella famiglia Rates/CB; non assegna una forza FX separata. Stato canonico ${coreName(x)} · direzione recente ${changeName(c).toLowerCase()} · Price ${priceName(c).toLowerCase()}.`;
+  };
+  try{v234FxRead=window.v234FxRead;}catch(e){}
+
+  function addGovernanceNote(hostSelector,c,layer){
+    const host=document.querySelector(hostSelector); if(!host)return;
+    let note=host.querySelector('.v276CanonicalNote');
+    if(!note){ note=document.createElement('div'); note.className='sectionNote v276CanonicalNote'; host.prepend(note); }
+    const x=canonicalCurrency(c);
+    if(!x)return;
+    note.innerHTML=`<b>Catena canonica:</b> ${c} è <b>${x.base}</b> (struttura Macro + Rates/CB) · direzione recente <b>${x.change}</b> · COT = rischio di posizionamento · Price = <b>${x.confirmation}</b>. <span style="opacity:.8">${layer}</span>`;
+  }
+  function addPairNote(){
+    const host=document.querySelector('#pairs'); if(!host)return;
+    let note=host.querySelector('.v276CanonicalPairNote');
+    if(!note){note=document.createElement('div');note.className='sectionNote v276CanonicalPairNote';host.prepend(note);}
+    const s=canonicalPair(selectedPair),d=s?.dominant_driver_current||{};
+    const [a,b]=String(selectedPair||'').split('/');
+    const winner=d.direction==='A'?a:d.direction==='B'?b:'nessuna valuta';
+    note.innerHTML=`<b>Pair state canonico:</b> ${selectedPair} · driver ${d.label_it||'non determinato'} · vantaggio strutturale ${winner} · Price ${d.price_confirmation||'non chiaro'} · COT solo contesto/rischio.`;
+  }
+
+  const wrap=(name,after)=>{
+    const old=window[name]; if(typeof old!=='function')return;
+    window[name]=function(){const r=old.apply(this,arguments); try{after();}catch(e){console.warn('[v276]',name,e);} return r;};
+    try{eval(`${name}=window[name]`);}catch(e){}
+  };
+  wrap('renderMacroLab',()=>addGovernanceNote('#macro',v232MacroCurrency,'Il desk Macro descrive soltanto l’evidenza macro.'));
+  wrap('renderNativeRatesDesk',()=>addGovernanceNote('#ratesdesk',v233RatesCurrency,'Il desk Rates descrive front-end, curva e pricing.'));
+  wrap('renderNativeCbDesk',()=>addGovernanceNote('#cbdesk',v234CbCurrency,'Il desk Central Bank descrive policy e pricing, senza doppio conteggio.'));
+  wrap('renderCot',()=>addGovernanceNote('#cot',v245CotSelected,'COT è sempre positioning risk / flow; non determina la direzione.'));
+  wrap('renderCurrency',()=>addGovernanceNote('#currency',selectedCcy,'Valute legge il freeze canonico.'));
+  wrap('renderCurrencyIntelligence',()=>addGovernanceNote('#currency',selectedCcy,'Diagnostiche e stato strutturale restano separati.'));
+  wrap('renderPair',addPairNote);
+  wrap('renderPairGroups',addPairNote);
+  wrap('renderWhatChanged',()=>addGovernanceNote('#whatChanged','GBP','What Changed mostra variazione recente, non sostituisce lo stato.'));
+  wrap('renderTopThemes',()=>addGovernanceNote('#themes','GBP','Top Themes usa i driver e gli stati canonici.'));
+  wrap('renderNewsPulse',()=>addGovernanceNote('#news','GBP','News Pulse è contesto: non modifica lo stato senza aggiornare i layer canonici.'));
+  wrap('renderEventRischio',()=>addGovernanceNote('#eventRisk','GBP','Event Risk mostra scenari condizionali, non una previsione né uno stato FX.'));
+
+  /* Deterministic audit: GBP first, then all 8 currencies and all 28 pairs. */
+  window.runV276CrossDeskAudit=function(){
+    const issues=[], frozen=window.AUDIT_V275;
+    const expected={USD:'FORTE',EUR:'COSTRUTTIVA',GBP:'COSTRUTTIVA',JPY:'MISTA',CHF:'MISTA',CAD:'COSTRUTTIVA',AUD:'FORTE',NZD:'COSTRUTTIVA'};
+    if(!frozen) issues.push('freeze v275 non disponibile');
+    CCYS.forEach(c=>{
+      const x=frozen?.currency?.[c];
+      if(!x) return issues.push(`${c}: stato canonico assente`);
+      if(x.base!==expected[c]) issues.push(`${c}: atteso ${expected[c]}, trovato ${x.base}`);
+      const visible=deriveCurrencyState(c);
+      if(visible.base!==x.base) issues.push(`${c}: consumer fuori sync (${visible.base}/${x.base})`);
+      if(!['PREZZO CONFERMA','PREZZO DIVERGE','PREZZO NON RISOLUTIVO','PREZZO SENZA STRUTTURA'].includes(x.confirmation)) issues.push(`${c}: price state non valido`);
+    });
+    const pairs=Object.keys(frozen?.pairs||{});
+    if(pairs.length!==28) issues.push(`pairStates ${pairs.length}/28`);
+    pairs.forEach(p=>{
+      const s=frozen.pairs[p],f=derivePairDecisionFrame(p);
+      if(s.layers?.cot!=='CONTESTO') issues.push(`${p}: COT non è contesto`);
+      if(!['PRICE_CONFIRMED','PRICE_DIVERGES','PRICE_NOT_CLEAR'].includes(s.price_state)) issues.push(`${p}: price state non valido`);
+      const expectedFav=s.dominant_driver_current?.direction==='A'?p.split('/')[0]:s.dominant_driver_current?.direction==='B'?p.split('/')[1]:'—';
+      if(f.fav!==expectedFav) issues.push(`${p}: pair consumer fuori sync (${f.fav}/${expectedFav})`);
+    });
+    const gbp=frozen?.currency?.GBP;
+    if(gbp?.base!=='COSTRUTTIVA') issues.push('GBP: test end-to-end fallito');
+    const jpy=frozen?.currency?.JPY;
+    if(jpy?.macro!==0 || jpy?.policy!==0 || jpy?.base!=='MISTA') issues.push('JPY: macro/rates devono restare misti o non conclusivi');
+    const usdjpy=frozen?.pairs?.['USD/JPY'];
+    if(!usdjpy?.rates_evidence?.material || usdjpy.rates_evidence.side!=='USD') issues.push('USD/JPY: differenziale 2Y materiale non rilevato');
+    const usdjpyFrame=derivePairDecisionFrame('USD/JPY');
+    if(usdjpyFrame.quality==='NESSUN CONTRASTO') issues.push('USD/JPY: separazione Rates classificata come nessun vantaggio');
+    return {ok:issues.length===0,issues,gbp,pairs:pairs.length,currencies:CCYS.length,rule:'Macro + Rates/CB = struttura; change = diagnostica; COT = rischio; Price = conferma/divergenza.'};
+  };
+  setTimeout(()=>{ const q=window.runV276CrossDeskAudit(); console.info('[v276 cross-desk audit]',q); if(!q.ok)console.warn('[v276 issues]',q.issues); },700);
 })();
 </script>
 
