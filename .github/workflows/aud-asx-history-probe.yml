@@ -15,63 +15,44 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Extract ASX IB matched curve
+      - name: Extract exact ASX IB matched curve
         run: |
           pip install requests beautifulsoup4
           python - <<'PY'
-          import requests, bs4, json, re
+          import requests, bs4, json
           dates=['260922','260928','260929']
           wanted=['Dec 2026','Mar 2027','Sep 2027']
           parsed={}
           for d in dates:
               url=f'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{d}SFD.htm'
               r=requests.get(url,timeout=120,headers={'User-Agent':'Mozilla/5.0'})
-              print('HTTP',d,r.status_code,len(r.content))
               r.raise_for_status()
               soup=bs4.BeautifulSoup(r.text,'html.parser')
               allrows=[]
               for tr in soup.find_all('tr'):
                   cells=[c.get_text(' ',strip=True) for c in tr.find_all(['th','td'])]
                   if cells: allrows.append(cells)
-              # Find the exact IB product heading row.
-              start=None
-              for i,row in enumerate(allrows):
-                  if any('IB - 30 Day Interbank Cash Rate' in c for c in row):
-                      start=i; break
-              if start is None:
-                  print('NO_IB',d); continue
-              print('IB_START',d,start)
-              # Show a compact slice to validate structure.
-              for j in range(start,min(start+30,len(allrows))):
-                  print('IBROW',d,j,json.dumps(allrows[j],ensure_ascii=False))
+              start=next(i for i,row in enumerate(allrows) if any('IB - 30 Day Interbank Cash Rate' in c for c in row))
+              end=next((i for i in range(start+1,len(allrows)) if any('IR - 90-Day Bank Bills' in c for c in allrows[i])),len(allrows))
+              section=allrows[start:end]
               parsed[d]={}
-              # Within the next ~30 rows only, take wanted expiries.
-              for row in allrows[start:start+35]:
-                  if not row: continue
-                  expiry=row[0]
-                  if expiry not in wanted: continue
+              for row in section:
+                  if not row or row[0] not in wanted: continue
                   vals=row+['']*10
                   def num(x):
                       x=x.replace(',','').replace('$','').strip()
                       if x in ('','-','--','---'): return None
                       try:return float(x)
                       except:return None
-                  parsed[d][expiry]={
-                      'open':num(vals[1]),'high':num(vals[2]),'low':num(vals[3]),'last':num(vals[4]),
+                  parsed[d][row[0]]={
                       'settlement':num(vals[5]),'settlement_change':num(vals[6]),
                       'open_interest':num(vals[7]),'open_interest_change':num(vals[8]),'volume':num(vals[9])
                   }
               print('PARSED_DAY',d,json.dumps(parsed[d],sort_keys=True))
-          print('PARSED='+json.dumps(parsed,sort_keys=True))
           labels={'3m':'Dec 2026','6m':'Mar 2027','12m':'Sep 2027'}
           out={}
           for h,expiry in labels.items():
-              cur=parsed.get('260929',{}).get(expiry)
-              d1=parsed.get('260928',{}).get(expiry)
-              w1=parsed.get('260922',{}).get(expiry)
-              if not all([cur,d1,w1]) or any(x.get('settlement') is None for x in [cur,d1,w1]):
-                  out[h]={'error':'missing settlement','expiry':expiry,'cur':cur,'d1':d1,'w1':w1}
-                  continue
+              cur=parsed['260929'][expiry]; d1=parsed['260928'][expiry]; w1=parsed['260922'][expiry]
               cr=100-cur['settlement']; r1=100-d1['settlement']; rw=100-w1['settlement']
               out[h]={
                 'expiry':expiry,
