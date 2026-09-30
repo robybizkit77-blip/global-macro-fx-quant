@@ -7,27 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract inline ASX RBA tracker AJAX calls
+      - name: Fetch official ASX tracker data files
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import requests,re
-          u="https://www.asx.com.au/markets/trade-our-derivatives-market/futures-market/rba-rate-tracker.html"
-          t=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30).text
-          print("LEN",len(t))
-          needles=["RBA_Trgt_Cash_Rate","Crnt_Dy_Stlmnt_Price","Prob_Change","Crnt_Stlmnt_Dt"]
-          for n in needles:
-            print("\n###",n)
-            pos=0
-            while True:
-              i=t.find(n,pos)
-              if i<0: break
-              print(t[max(0,i-5000):i+5000])
-              pos=i+len(n)
-          print("\n### AJAX/GET/URL LINES")
-          for line in t.splitlines():
-            if re.search(r'ajax|\.get\(|fetch\(|url\s*:|endpoint|targetRate|rateIndicator|cashrate|rba',line,re.I):
-              s=re.sub(r'\s+',' ',line).strip()
-              if s: print(s[:5000])
+          import requests
+          base="https://www.asx.com.au/content/dam/asx/data/"
+          for name in ["dynamic_text.csv","market_exp.csv","yield_curve.csv"]:
+            r=requests.get(base+name,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+            print("\nFILE",name,"STATUS",r.status_code,"TYPE",r.headers.get("content-type"),"LEN",len(r.content))
+            print(r.content.decode("utf-8","ignore")[:20000])
           PY
