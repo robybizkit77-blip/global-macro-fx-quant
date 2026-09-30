@@ -9,62 +9,50 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Inspect TFX history download logic
+      - name: Extract official TFX TONA history CSV
         run: |
-          pip install requests beautifulsoup4
+          pip install requests
           python - <<'PY'
-          import requests, bs4, re, urllib.parse
-          base='https://www.tfx.co.jp/en/historical/futures/'
+          import requests, csv, io, json
           s=requests.Session()
-          r=s.get(base,timeout=120)
-          print('PAGE',r.status_code,len(r.text))
-          soup=bs4.BeautifulSoup(r.text,'html.parser')
-          scripts=[]
-          for sc in soup.find_all('script'):
-              src=sc.get('src')
-              if src:
-                  scripts.append(urllib.parse.urljoin(base,src))
-              elif sc.string:
-                  scripts.append(('INLINE',sc.string))
-          pats=['futures_csv_download_submit','HistoricalFuturesDataSubmitType','submit_type','historical_form']
-          for item in scripts:
-              if isinstance(item,tuple):
-                  text=item[1]; label='INLINE'
-              else:
-                  try:
-                      rr=s.get(item,timeout=120); text=rr.text; label=item
-                  except Exception:
-                      continue
-              for pat in pats:
-                  if pat.lower() in text.lower():
-                      print('SCRIPT_HIT',label,pat)
-                      for m in re.finditer(re.escape(pat),text,re.I):
-                          print(text[max(0,m.start()-2500):m.start()+7000])
-                          break
-
-          # Try likely submit_type values and report response metadata.
-          common={
-            'HistoricalFuturesData[period_start_type]':'date',
-            'HistoricalFuturesData[period_start][year]':'2026',
-            'HistoricalFuturesData[period_start][month]':'9',
-            'HistoricalFuturesData[period_start][day]':'23',
-            'HistoricalFuturesData[period_end_type]':'date',
-            'HistoricalFuturesData[period_end][year]':'2026',
-            'HistoricalFuturesData[period_end][month]':'9',
-            'HistoricalFuturesData[period_end][day]':'29',
-            'HistoricalFuturesData[product_type1][]':'無担保コールオーバーナイト３ヵ月金利先物',
-            'HistoricalFuturesData[product_type2]':'1',
-            'HistoricalFuturesData[get_preference_all][]':'all',
-          }
-          for st in ['csv','download','csv_download','list','display','file']:
-              q=dict(common); q['HistoricalFuturesData[submit_type]']=st
-              rr=s.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120,allow_redirects=True)
-              print('TRY',st,rr.status_code,rr.url,rr.headers.get('content-type'),rr.headers.get('content-disposition'),len(rr.content))
-              print('HEAD',rr.content[:500])
+          q=[
+            ('HistoricalFuturesData[period_start_type]','date'),
+            ('HistoricalFuturesData[period_start][year]','2026'),
+            ('HistoricalFuturesData[period_start][month]','9'),
+            ('HistoricalFuturesData[period_start][day]','23'),
+            ('HistoricalFuturesData[period_end_type]','date'),
+            ('HistoricalFuturesData[period_end][year]','2026'),
+            ('HistoricalFuturesData[period_end][month]','9'),
+            ('HistoricalFuturesData[period_end][day]','29'),
+            ('HistoricalFuturesData[product_type1][]','無担保コールオーバーナイト３ヵ月金利先物'),
+            ('HistoricalFuturesData[product_type2]','1'),
+            ('HistoricalFuturesData[get_preference_all][]','all'),
+            ('HistoricalFuturesData[submit_type]','csv'),
+          ]
+          r=s.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120)
+          print('HTTP',r.status_code,r.headers.get('content-type'),r.headers.get('content-disposition'),len(r.content))
+          r.raise_for_status()
+          text=r.content.decode('cp932','replace')
+          print('CSV_TEXT_BEGIN')
+          print(text[:30000])
+          print('CSV_TEXT_END')
+          rows=list(csv.reader(io.StringIO(text)))
+          print('ROW_COUNT',len(rows))
+          # Find tabular header after metadata.
+          for i,row in enumerate(rows):
+              if any('Product' == c.strip() for c in row) and any('取引日' in c or 'Trading' in c for c in row):
+                  print('HEADER_ROW',i,row)
+          # Print all rows containing Three-month TONA Futures.
+          tona=[]
+          for i,row in enumerate(rows):
+              if any('Three-month TONA Futures' in c for c in row):
+                  tona.append((i,row))
+                  print('TONA_ROW',i,json.dumps(row,ensure_ascii=False))
+          print('TONA_COUNT',len(tona))
           PY
