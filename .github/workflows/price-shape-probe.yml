@@ -1,0 +1,48 @@
+name: Price Shape Probe
+
+on:
+  push:
+    branches:
+      - staging-price-ecb-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright package
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-server.log 2>&1 &
+          sleep 2
+      - name: Inspect price runtime shape
+        run: |
+          cat > probe.js <<'EOF'
+          const { chromium }=require('playwright');
+          const { execSync }=require('child_process');
+          (async()=>{
+            const chromePath=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:chromePath,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
+            const x=await page.evaluate(()=>({
+              lastPrices:D.prices.slice(-3),
+              priceKeys:Object.keys(D.prices.at(-1)||{}),
+              layerPrice:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,window.CANONICAL_LAYER_STATE?.[c]?.price])),
+              dynamics:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,currencyDynamics(c)?.price||null])),
+              finalPriceAudit:window.FINAL_SOURCE_POLICY_AUDIT?.PRICE||window.FINAL_SOURCE_POLICY_AUDIT?.price||null,
+              freshness:window.DATA_FRESHNESS_REGISTRY?.PRICE||null
+            }));
+            console.log('PRICE_SHAPE='+JSON.stringify(x,null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node probe.js
