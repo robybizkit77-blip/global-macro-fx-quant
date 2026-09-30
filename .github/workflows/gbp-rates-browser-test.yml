@@ -1,0 +1,44 @@
+name: GBP BoE rates browser test
+on:
+  push:
+    branches: [test-gbp-rates-boe-runtime-2026-09-30]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render and verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/s.log 2>&1 &
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > rendered.html 2>/tmp/c.log
+          ! grep -q "Errore caricamento dashboard" rendered.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html
+          grep -q 'data-gbp-rates-audit="PASS"' rendered.html
+          grep -q 'data-gbp-rates-asof="2026-09-29"' rendered.html
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+      - name: Runtime regression check
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > runtime-check.html <<'EOF'
+          <html><body><iframe id="f" src="/"></iframe><script>
+          setTimeout(()=>{const w=document.getElementById('f').contentWindow;const p=document.createElement('pre');p.id='r';p.textContent=JSON.stringify(w.GMFQ_GBP_RATES_RUNTIME||{});document.body.appendChild(p)},9000)
+          </script></body></html>
+          EOF
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=13000 --dump-dom http://127.0.0.1:8000/runtime-check.html > check.html 2>/tmp/check.log
+          grep -q '"date":"2026-09-29"' check.html
+          grep -q '"history2_last":"2026-09-29"' check.html
+          grep -q '"history10_last":"2026-09-29"' check.html
+          grep -q '"basis_ok":true' check.html
+          grep -q '"visible_ok":true' check.html
+          ! grep -q 'RATES_FRESHNESS_DESYNC:GBP' check.html
+          ! grep -q 'RATES_LEGACY_BASIS_LEAK:GBP' check.html
+          ! grep -q 'RATES_SNAPSHOT_HISTORY_DESYNC:GBP' check.html
+          grep 'id="r"' check.html
+          echo "PASS: GBP BoE rates runtime coherent"
