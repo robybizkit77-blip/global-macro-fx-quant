@@ -20,7 +20,8 @@ jobs:
           urls=[
             "https://www.m-x.ca/envoi/new_mcwx_mpcx_mvx_en.php",
             "https://www.m-x.ca/en/trading/data/quotes?symbol=CRA",
-            "https://www.m-x.ca/en/trading/data/market-review"
+            "https://www.m-x.ca/en/trading/data/market-review",
+            "https://www.m-x.ca/assets/application/js/market-review.1633382756.min.js"
           ]
           for url in urls:
               r=requests.get(url,timeout=30,headers={"User-Agent":"Mozilla/5.0"})
