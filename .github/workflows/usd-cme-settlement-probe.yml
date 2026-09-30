@@ -1,0 +1,61 @@
+name: USD CME Settlement Probe
+
+on:
+  push:
+    branches:
+      - staging-usd-cme-settlement-probe-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright package
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+      - name: Probe CME settlement network calls
+        run: |
+          cat > probe.js <<'EOF'
+          const { chromium } = require('playwright');
+          const { execSync } = require('child_process');
+          (async()=>{
+            const chromePath=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:chromePath,args:['--no-sandbox']});
+            for(const url of [
+              'https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html',
+              'https://www.cmegroup.com/markets/interest-rates/stirs/three-month-sofr.settlements.html'
+            ]){
+              const page=await browser.newPage();
+              console.log('PAGE',url);
+              page.on('request',req=>{
+                const u=req.url();
+                if(/settle|quote|tradeDate|product|market-data|api|futures|daily/i.test(u)){
+                  console.log('REQ',req.method(),u,'POST',req.postData()||'');
+                }
+              });
+              page.on('response',async res=>{
+                const u=res.url();
+                if(/settle|quote|tradeDate|product|market-data|api|futures|daily/i.test(u)){
+                  let body='';
+                  try{
+                    const ct=res.headers()['content-type']||'';
+                    if(/json|text|javascript|xml/.test(ct)) body=(await res.text()).slice(0,40000);
+                  }catch(e){}
+                  console.log('RESP',res.status(),u,'BODY',body);
+                }
+              });
+              await page.goto(url,{waitUntil:'networkidle',timeout:120000});
+              console.log('TITLE',await page.title());
+              console.log('BODY',(await page.locator('body').innerText()).slice(0,25000));
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node probe.js
