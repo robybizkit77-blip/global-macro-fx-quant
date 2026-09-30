@@ -1445,4 +1445,4 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-</body></html>
+<script id="gmfq-gbp-rates-inspect">(function(){function out(){try{const d=NATIVE_RATES_DATA?.GBP||{};const p=document.createElement('pre');p.id='gbpRatesInspect';p.textContent=JSON.stringify({date:d.date,source:d.source,quality:d.quality,y2:d['2Y'],y10:d['10Y'],curve:d.curve_bp,chg2:d.chg2_bp,chg10:d.chg10_bp,tenors:d.tenors,history2:{label:d.history2?.label,last_date:d.history2?.dates?.at(-1),last_value:d.history2?.values?.at(-1),len:d.history2?.values?.length,tail_dates:d.history2?.dates?.slice(-8),tail_values:d.history2?.values?.slice(-8)},history10:{label:d.history10?.label,last_date:d.history10?.dates?.at(-1),last_value:d.history10?.values?.at(-1),len:d.history10?.values?.length,tail_dates:d.history10?.dates?.slice(-8),tail_values:d.history10?.values?.slice(-8)},history_quality:d.history2_quality,history_status:d.history_status});document.body.appendChild(p);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1000));else setTimeout(out,1000);})();</script></body></html>
