@@ -10,3 +10,5 @@ Struttura:
 - nessun file legacy della precedente architettura
 
 La v490 viene ricomposta integralmente nel browser e verificata tramite il manifest runtime già incorporato nel payload.
+
+Production deployment: v490 OIS audit validated and browser-tested on 2026-09-30.
