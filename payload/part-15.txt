@@ -3037,6 +3037,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
 
     document.documentElement.setAttribute('data-ecb-price-audit','PASS');
     document.documentElement.setAttribute('data-price-asof','2026-09-30');
