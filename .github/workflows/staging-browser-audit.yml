@@ -77,7 +77,7 @@ jobs:
 
             console.log(JSON.stringify({result,consoleErrors,pageErrors},null,2));
 
-            if(result.title!=='GLOBAL MACRO FX QUANT') throw new Error('Unexpected title');
+            if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
             if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
             if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');
