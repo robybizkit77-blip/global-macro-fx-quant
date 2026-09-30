@@ -15,12 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Extract official TFX TONA history CSV
+      - name: Extract TFX TONA settlements volume OI
         run: |
           pip install requests
           python - <<'PY'
-          import requests, csv, io, json
-          s=requests.Session()
+          import requests,csv,io,json
           q=[
             ('HistoricalFuturesData[period_start_type]','date'),
             ('HistoricalFuturesData[period_start][year]','2026'),
@@ -32,27 +31,20 @@ jobs:
             ('HistoricalFuturesData[period_end][day]','29'),
             ('HistoricalFuturesData[product_type1][]','無担保コールオーバーナイト３ヵ月金利先物'),
             ('HistoricalFuturesData[product_type2]','1'),
-            ('HistoricalFuturesData[get_preference_all][]','all'),
+            ('HistoricalFuturesData[get_preference][]','day_settlement_price'),
+            ('HistoricalFuturesData[get_preference][]','trading_volume'),
+            ('HistoricalFuturesData[get_preference][]','open_interest_quantity'),
+            ('HistoricalFuturesData[get_preference][]','last'),
             ('HistoricalFuturesData[submit_type]','csv'),
           ]
-          r=s.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120)
+          r=requests.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120)
           print('HTTP',r.status_code,r.headers.get('content-type'),r.headers.get('content-disposition'),len(r.content))
           r.raise_for_status()
           text=r.content.decode('cp932','replace')
-          print('CSV_TEXT_BEGIN')
+          print('RAW_BEGIN')
           print(text[:30000])
-          print('CSV_TEXT_END')
+          print('RAW_END')
           rows=list(csv.reader(io.StringIO(text)))
-          print('ROW_COUNT',len(rows))
-          # Find tabular header after metadata.
           for i,row in enumerate(rows):
-              if any('Product' == c.strip() for c in row) and any('取引日' in c or 'Trading' in c for c in row):
-                  print('HEADER_ROW',i,row)
-          # Print all rows containing Three-month TONA Futures.
-          tona=[]
-          for i,row in enumerate(rows):
-              if any('Three-month TONA Futures' in c for c in row):
-                  tona.append((i,row))
-                  print('TONA_ROW',i,json.dumps(row,ensure_ascii=False))
-          print('TONA_COUNT',len(tona))
+              print('ROW',i,json.dumps(row,ensure_ascii=False))
           PY
