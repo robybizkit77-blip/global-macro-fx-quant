@@ -3163,6 +3163,39 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       changed:'Migliora il contesto lavoro senza modificare direttamente il blocco payroll canonico.'
     });
 
+    // Retire pre-release wording now that PCE/ADP are known.
+    const newsTargets=[];
+    if(typeof NEWS_PULSE_STRUCT!=='undefined' && Array.isArray(NEWS_PULSE_STRUCT)) newsTargets.push(NEWS_PULSE_STRUCT);
+    if(window.__GMFQ_DATA && Array.isArray(window.__GMFQ_DATA.NEWS_PULSE_STRUCT) && !newsTargets.includes(window.__GMFQ_DATA.NEWS_PULSE_STRUCT)) newsTargets.push(window.__GMFQ_DATA.NEWS_PULSE_STRUCT);
+    for(const arr of newsTargets){
+      for(const n of arr){
+        if(n?.title==='USD sostenuto da rendimenti USA elevati'){
+          n.what='Il dollaro resta sostenuto da rendimenti USA elevati, ma il PCE di agosto è risultato più morbido delle attese.';
+          n.why='Il vantaggio dei tassi resta un supporto USD, ma il PCE riduce l’urgenza di un nuovo hike vicino; la tenuta dei consumi impedisce una lettura ciclica debole.';
+          n.watch='UST 2Y + payrolls + pricing Fed';
+          n.changed='Supporto USD ancora Rates-driven, ma con impulso hawkish di breve leggermente ridotto dopo il PCE.';
+        }
+        if(n?.title==='PCE e payrolls USA diventano il prossimo snodo'){
+          n.title='Payrolls USA diventano il prossimo snodo';
+          n.what='Il PCE è uscito più morbido delle attese mentre la spesa è rimasta forte; il prossimo test decisivo passa ora dal mercato del lavoro ufficiale.';
+          n.why='Payroll, disoccupazione e salari diranno se la resilienza della domanda è compatibile con un percorso Fed ancora restrittivo.';
+          n.fx='USD · UST 2Y · Gold';
+          n.watch='NFP + unemployment + salari + UST 2Y';
+          n.changed='Il PCE ha tolto pressione hawkish al meeting vicino; il focus si sposta sui payrolls.';
+          n.status='watch';
+        }
+      }
+    }
+
+    if(window.GMFQ_REFRESH_MANIFEST_20260930_1318){
+      window.GMFQ_REFRESH_MANIFEST_20260930_1318.pending=[];
+      window.GMFQ_REFRESH_MANIFEST_20260930_1318.completed_us=[
+        {ccy:'USD',time:'14:15',event:'ADP Employment Change',actual:'90K',consensus:'70K',previous:'36K revised',mode:'INFO_ONLY'},
+        {ccy:'USD',time:'14:30',event:'Core PCE m/m + Personal Spending m/m',actual:'0.2% / 0.9%',consensus:'0.3% / 0.8%',mode:'CORE_PLUS_CONTEXT'}
+      ];
+      window.GMFQ_REFRESH_MANIFEST_20260930_1318.as_of='2026-09-30T21:45+02:00';
+    }
+
     if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
       window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
       window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_US_RELEASES_COMPLETE';
