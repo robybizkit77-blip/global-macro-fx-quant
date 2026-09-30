@@ -3048,5 +3048,97 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<style id="gmfq-overview-ux-strip-style">
+#overview .gmfqOverviewExecutive{margin:0 0 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#overview .gmfqExecCard{background:rgba(255,255,255,.035);border:1px solid rgba(143,167,181,.18);border-radius:14px;padding:12px 13px;min-height:86px}
+#overview .gmfqExecCard .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7f98a6;font-weight:800}
+#overview .gmfqExecCard .v{margin-top:6px;font-size:15px;line-height:1.25;font-weight:800;color:#eaf4f8}
+#overview .gmfqExecCard .n{margin-top:5px;font-size:11px;line-height:1.35;color:#8da3af}
+#overview .gmfqExecCard.pos{border-color:rgba(61,190,122,.28)}
+#overview .gmfqExecCard.neg{border-color:rgba(194,92,111,.28)}
+#overview .gmfqExecCard.warn{border-color:rgba(214,161,70,.28)}
+#overview .gmfqExecCard.neu{border-color:rgba(108,157,187,.24)}
+#overview .gmfqOverviewExecutive .ccy{white-space:nowrap}
+@media(max-width:900px){#overview .gmfqOverviewExecutive{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#overview .gmfqOverviewExecutive{grid-template-columns:1fr}}
+</style>
+<script id="gmfq-overview-ux-strip-20260930">
+(function(){
+  'use strict';
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+  function humanList(xs){
+    if(!xs||!xs.length)return 'Nessuna';
+    return xs.map(c=>'<span class="ccy">'+safe(()=>flagSvg(c),'')+' '+c+'</span>').join(' · ');
+  }
+  function changeBuckets(){
+    const out={up:[],down:[],turn:[],stable:[]};
+    CCYS.forEach(c=>{
+      const x=String(safe(()=>deriveCurrencyState(c)?.improvementState,'')||'').toUpperCase();
+      if(x==='MIGLIORA'||x.includes('EARLY SHIFT POSITIVO')) out.up.push(c);
+      else if(x==='PEGGIORA'||x.includes('EARLY SHIFT NEGATIVO')) out.down.push(c);
+      else if(x.includes('TURNING POINT')) out.turn.push(c);
+      else out.stable.push(c);
+    });
+    return out;
+  }
+  function topPairs(){
+    const weights={
+      'CONTRASTO STRUTTURALE FORTE':4,
+      'VANTAGGIO RELATIVO FORTE':4,
+      'VANTAGGIO RELATIVO PARZIALE':3,
+      'PILASTRI DIVISI':1,
+      'NESSUN CONTRASTO':0,
+      'MISTO / NON RISOLUTIVO':0
+    };
+    const rows=(D?.pairs||[]).map(p=>{
+      const f=safe(()=>derivePairDecisionFrame(p.pair),{})||{};
+      return {pair:p.pair,f,w:weights[f.quality]??0};
+    }).filter(x=>x.w>=3)
+      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair)))
+      .slice(0,2);
+    return rows;
+  }
+  function render(){
+    const view=document.getElementById('overview');
+    if(!view)return;
+    let host=view.querySelector('.gmfqOverviewExecutive');
+    if(!host){
+      host=document.createElement('div');
+      host.className='gmfqOverviewExecutive';
+      const grid=view.querySelector('.v302OverviewGrid');
+      if(grid) grid.insertAdjacentElement('beforebegin',host);
+      else view.prepend(host);
+    }
+    const b=changeBuckets();
+    const pairs=topPairs();
+    const pairText=pairs.length
+      ? pairs.map(x=>{
+          const fav=x.f?.fav&&x.f.fav!=='—'?(' · '+x.f.fav):'';
+          return '<span class="ccy">'+x.pair+fav+'</span>';
+        }).join(' · ')
+      : 'Nessuna coppia con separazione strutturale forte/parziale';
+    const pairNote=pairs.length
+      ? pairs.map(x=>String(x.f?.quality||'').replace('VANTAGGIO RELATIVO ','')).join(' · ')
+      : 'Aspettare maggiore differenziazione Macro + Tassi/CB';
+    host.innerHTML=
+      '<div class="gmfqExecCard pos"><div class="k">Sta migliorando</div><div class="v">'+humanList(b.up)+'</div><div class="n">Cambiamento recente, non forza strutturale.</div></div>'+
+      '<div class="gmfqExecCard neg"><div class="k">Sta peggiorando</div><div class="v">'+humanList(b.down)+'</div><div class="n">Deterioramento recente da confermare nei driver.</div></div>'+
+      '<div class="gmfqExecCard warn"><div class="k">Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Segnale iniziale: serve conferma da Macro/Rates e prezzo.</div></div>'+
+      '<div class="gmfqExecCard neu"><div class="k">Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
+  }
+  const old=window.v302ConsolidatedSync;
+  window.v302ConsolidatedSync=function(){
+    try{if(typeof old==='function')old();}catch(e){}
+    try{render();}catch(e){}
+  };
+  document.addEventListener('click',()=>setTimeout(render,0),true);
+  document.addEventListener('change',()=>setTimeout(render,0),true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(render,60),{once:true});
+  else setTimeout(render,60);
+})();
+</script>
+
 </body></html>
 
