@@ -1,4 +1,4 @@
-name: EUR ESTR History Probe
+name: EUR ESTR Contract Probe
 
 on:
   push:
@@ -9,95 +9,47 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install probe dependencies
+      - name: Parse Eurex daily statistics at contract level
         run: |
-          npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
-          npx playwright install --with-deps chromium
-          pip install pandas xlrd openpyxl
-
-      - name: Download official Eurex Trading Statistics files
-        run: |
-          cat > probe.js <<'EOF'
-          const { chromium } = require('playwright');
-          const fs = require('fs');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage();
-            const url='https://www.eurex.com/ex-en/data/statistics/trading-statistics/122!search?hitsPerPage=25&query=&state=';
-            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
-            const links=await page.locator('a').evaluateAll(as=>as.map(a=>({
-              text:(a.innerText||'').trim(),
-              href:a.href||'',
-              parent:(a.parentElement?.innerText||'').trim()
-            })).filter(x=>/Download/i.test(x.text)));
-            console.log('DOWNLOAD_LINKS='+JSON.stringify(links.slice(0,120),null,2));
-            for(const date of ['Sep 28, 2026','Sep 23, 2026']){
-              const candidate=links.find(x=>x.parent.includes(date));
-              if(!candidate){ console.log('NO_LINK',date); continue; }
-              const resp=await page.request.get(candidate.href,{timeout:120000});
-              const buf=await resp.body();
-              const ct=resp.headers()['content-type']||'';
-              const fn='downloads/'+date.replace(/[^0-9A-Za-z]+/g,'_')+'.bin';
-              fs.writeFileSync(fn,buf);
-              console.log('DOWNLOADED',date,candidate.href,ct,buf.length,fn);
-            }
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
-          EOF
-          mkdir -p downloads
-          node probe.js
-
-      - name: Parse Trading Statistics files for FST3
-        run: |
+          pip install pandas xlrd requests
           python - <<'PY'
-          import os, zipfile, pandas as pd, json, io
-          for fn in sorted(os.listdir('downloads')):
-              p=os.path.join('downloads',fn)
-              print('FILE',fn,'SIZE',os.path.getsize(p))
-              paths=[]
-              if zipfile.is_zipfile(p):
-                  with zipfile.ZipFile(p) as z:
-                      print('ZIP',z.namelist()[:20])
-                      for name in z.namelist():
-                          if name.lower().endswith(('.xls','.xlsx','.csv','.txt')):
-                              out=os.path.join('downloads','unzipped_'+os.path.basename(name))
-                              with open(out,'wb') as f:f.write(z.read(name))
-                              paths.append(out)
-              else:
-                  paths.append(p)
-              for q in paths:
-                  # Try Excel first.
-                  try:
-                      xl=pd.ExcelFile(q)
-                      print('EXCEL',os.path.basename(q),xl.sheet_names)
-                      for sh in xl.sheet_names:
-                          df=xl.parse(sh,header=None,dtype=str)
-                          mask=df.apply(lambda col: col.astype(str).str.contains('FST3',case=False,na=False)).any(axis=1)
-                          if mask.any():
-                              idx=list(df.index[mask])
-                              print('FST3_HIT',os.path.basename(q),sh,'ROWS',idx)
-                              for i in idx:
-                                  lo=max(0,i-3); hi=min(len(df),i+4)
-                                  print(df.iloc[lo:hi].to_string(index=False,header=False))
-                  except Exception as e:
-                      print('NOT_EXCEL',os.path.basename(q),repr(e))
-                      try:
-                          raw=open(q,'rb').read().decode('utf-8','ignore')
-                          if 'FST3' in raw.upper():
-                              print('TEXT_FST3_FOUND',os.path.basename(q))
-                              pos=raw.upper().find('FST3')
-                              print(raw[max(0,pos-3000):pos+9000])
-                      except Exception as ee:
-                          print('TEXT_FAIL',repr(ee))
+          import io, requests, pandas as pd, re, json
+          urls={
+            '2026-09-28':'https://www.eurex.com/resource/blob/5598608/6751d12c5792756e2201001b9bbdc5ec/data/dailystat_20260928.xls',
+            '2026-09-23':'https://www.eurex.com/resource/blob/5587244/b10f267f148bc82e2a993fe9b54ab78c/data/dailystat_20260923.xls'
+          }
+          needles=['FST3','202612','202703','202709','DEC 26','MAR 27','SEP 27','DEC-26','MAR-27','SEP-27']
+          for dt,url in urls.items():
+              b=requests.get(url,timeout=120).content
+              xl=pd.ExcelFile(io.BytesIO(b))
+              df=xl.parse('Eurex Daily Statistics',header=None,dtype=str)
+              print('DATE',dt,'SHAPE',df.shape)
+              print('HEADERS_0_40')
+              print(df.iloc[:40].fillna('').to_string(index=True,header=False,max_cols=60))
+              for needle in needles:
+                  mask=df.apply(lambda col: col.astype(str).str.contains(needle,case=False,na=False,regex=False)).any(axis=1)
+                  idx=list(df.index[mask])
+                  print('NEEDLE',dt,needle,'ROWS',idx[:100])
+                  for i in idx[:30]:
+                      lo=max(0,i-2); hi=min(len(df),i+3)
+                      print('ROW_BLOCK',dt,needle,i)
+                      print(df.iloc[lo:hi].fillna('').to_string(index=True,header=False,max_cols=60))
+              # scan numeric price-like 97.xx values near FST3 area and globally with row content
+              price_rows=[]
+              for i,row in df.iterrows():
+                  vals=[str(x) for x in row.tolist() if str(x)!='nan']
+                  if any(re.fullmatch(r'97\.\d{2,6}',v.strip()) for v in vals):
+                      price_rows.append(i)
+              print('PRICE97_ROWS_COUNT',dt,len(price_rows),'SAMPLE',price_rows[:120])
+              for i in price_rows[:80]:
+                  txt=' | '.join(str(x) for x in df.iloc[i].tolist() if str(x)!='nan')
+                  if any(k in txt.upper() for k in ['FST3','ESTR','EURO STR','DEC','MAR','SEP','2026','2027']):
+                      print('PRICE_ROW_RELEVANT',dt,i,txt[:6000])
           PY
