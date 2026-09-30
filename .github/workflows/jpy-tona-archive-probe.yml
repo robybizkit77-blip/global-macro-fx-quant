@@ -28,4 +28,14 @@ jobs:
                   if re.search(r'csv|settlement|tona|download|file|\.zip|derivative',line,re.I):
                       line=re.sub(r'\s+',' ',line).strip()
                       if line: print(line[:1800])
+          print("\nTONA DAILY FILES")
+          base="https://www.jpx.co.jp/english/markets/derivatives/settlement-price/tvdivq00000014l6-att/rb_e{}.csv"
+          for ds in ["20260922","20260929","20260930"]:
+              u=base.format(ds)
+              rr=requests.get(u,timeout=30,headers={"User-Agent":"Mozilla/5.0"})
+              print("CSV",ds,rr.status_code,len(rr.content),rr.headers.get("content-type"))
+              tx=rr.content.decode("shift_jis","ignore")
+              for line in tx.splitlines():
+                  if "TONA" in line.upper():
+                      print("TONA_ROW",ds,line)
           PY
