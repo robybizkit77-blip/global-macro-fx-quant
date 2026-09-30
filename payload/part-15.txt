@@ -2110,5 +2110,71 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-usd-ois-gate-20260930">
+(function(){
+  'use strict';
+  try{
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+
+    const existing=window.__GMFQ_DATA.OIS_DATA.currencies.USD||{};
+    window.__GMFQ_DATA.OIS_DATA.currencies.USD={
+      ...existing,
+      status:'WITHHELD',
+      source:'CME 30-Day Fed Funds / Three-Month SOFR futures',
+      source_meta:{
+        official_public:true,
+        public_exchange:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        instruments_confirmed:true,
+        settlement_strip_captured:false
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:false,
+        meeting_path_validated:false,
+        changes_validated:false
+      },
+      withheld_reason:'Same-business-day CME settlement strip for 3m/6m/12m plus 1D/1W history is not captured on a single validated basis.',
+      rule:'Do not activate USD OIS from Fed 2Y yields, secondary probability quotes, partial FedWatch screenshots, or mixed SOFR/Fed Funds snapshots.'
+    };
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.USD){
+      window.GMFQ_OIS_FEED_PRIORITY.USD.ready=false;
+      window.GMFQ_OIS_FEED_PRIORITY.USD.label='CME Fed Funds / SOFR confirmed · settlement strip withheld';
+    }
+
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.USD){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.USD,{
+        status:'DIRECT_INSTRUMENT_CONFIRMED_SETTLEMENT_STRIP_WITHHELD',
+        reason:'CME confirms the direct Fed Funds/SOFR futures framework, but a same-basis current + 1D + 1W settlement strip for the required horizons has not been captured.',
+        resolution_rule:'Activate only after direct CME settlement values for required horizons are captured for current, prior business day and weekly reference dates.'
+      });
+    }
+
+    window.GMFQ_USD_OIS_AUDIT={
+      status:'WITHHELD',
+      direct_instruments_confirmed:true,
+      source:'CME 30-Day Fed Funds / Three-Month SOFR futures',
+      required_horizons:['3m','6m','12m'],
+      required_history:['1d','1w'],
+      no_2y_proxy:true,
+      no_secondary_curve:true,
+      no_mixed_basis:true
+    };
+
+    document.documentElement.setAttribute('data-usd-ois-audit','WITHHELD');
+  }catch(e){
+    window.GMFQ_USD_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-usd-ois-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
 
