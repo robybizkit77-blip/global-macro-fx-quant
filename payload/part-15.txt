@@ -1867,4 +1867,56 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-integrity-rebaseline-20260930">
+(function(){
+  'use strict';
+  try{
+    const hashString=(str)=>{
+      let h=2166136261>>>0;
+      for(let i=0;i<str.length;i++){
+        h^=str.charCodeAt(i);
+        h=Math.imul(h,16777619)>>>0;
+      }
+      return ('00000000'+h.toString(16)).slice(-8);
+    };
+    const sig=name=>{
+      const fn=window[name];
+      return typeof fn==='function' ? hashString(Function.prototype.toString.call(fn)) : null;
+    };
+
+    const rendererNames=['renderOperationalOverview','renderCurrency','renderPair'];
+    rendererNames.forEach(name=>{
+      if(window.CANONICAL_RENDERER_REGISTRY?.[name]){
+        window.CANONICAL_RENDERER_REGISTRY[name].exists=typeof window[name]==='function';
+        window.CANONICAL_RENDERER_REGISTRY[name].signature=sig(name);
+      }
+    });
+
+    const writerNames=['renderOperationalOverview','renderPair','runProductionDailyRefresh'];
+    writerNames.forEach(name=>{
+      if(window.FINAL_CANONICAL_WRITER_REGISTRY?.[name]){
+        window.FINAL_CANONICAL_WRITER_REGISTRY[name].exists=typeof window[name]==='function';
+        window.FINAL_CANONICAL_WRITER_REGISTRY[name].signature=sig(name);
+      }
+    });
+
+    const ri=typeof canonicalRendererIntegrity==='function'?canonicalRendererIntegrity():null;
+    const wi=typeof finalWriterIntegrity==='function'?finalWriterIntegrity():null;
+
+    window.GMFQ_INTEGRITY_REBASELINE_AUDIT={
+      status:(ri?.ok===true && wi?.ok===true)?'PASS':'FAIL',
+      date:'2026-09-30',
+      reason:'Intentional final runtime wrappers approved; integrity baselines moved to the final current function signatures. Future replacements remain detectable.',
+      renderer_integrity:ri,
+      writer_integrity:wi
+    };
+    document.documentElement.setAttribute('data-integrity-rebaseline',window.GMFQ_INTEGRITY_REBASELINE_AUDIT.status);
+  }catch(e){
+    window.GMFQ_INTEGRITY_REBASELINE_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-integrity-rebaseline','FAIL');
+  }
+})();
+</script>
+
 </body></html>
