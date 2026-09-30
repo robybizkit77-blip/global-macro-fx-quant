@@ -1,0 +1,26 @@
+name: AUD ASX post-RBA browser test
+on:
+  push:
+    branches: [test-aud-asx-post-rba-2026-09-30]
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Serve and render
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/server.log 2>&1 &
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > rendered.html 2> chrome.log
+          ! grep -q "Errore caricamento dashboard" rendered.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html
+          grep -q "gmfq-aud-asx-post-rba-20260930" rendered.html
+          grep -q 'data-aud-asx-post-rba-audit="PASS"' rendered.html
+          grep -q "ASX post-RBA" rendered.html
+          grep -q "4,74% Dec-26" rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+          echo "PASS: AUD ASX post-RBA pricing rendered"
+          echo "Rendered bytes: $(wc -c < rendered.html)"
