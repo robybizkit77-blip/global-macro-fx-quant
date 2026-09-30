@@ -1247,4 +1247,101 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-aud-post-rba-pricing-20260930">
+(function(){
+  'use strict';
+  try{
+    if(typeof NATIVE_CB_DATA==='undefined' || !NATIVE_CB_DATA.AUD) throw new Error('AUD_CB_DATA_MISSING');
+    const x=NATIVE_CB_DATA.AUD;
+    x.pricing_tier='COMPLETO_DIRECT_ASX_POST_DECISION';
+    x.pricing_status='ASX 30-day interbank cash-rate futures post-RBA: circa 4,74% Dec-26, 4,855% Mar-27 e 4,96% Sep-27.';
+    x.market_3m='4.740%';
+    x.market_6m='4.855%';
+    x.market_12m='4.960%';
+    x.market_pricing={
+      as_of:'2026-09-29',
+      instrument:'ASX 30-Day Interbank Cash Rate Futures / RBA Rate Tracker',
+      quality:'COMPLETO_DIRECT_ASX_POST_DECISION',
+      h3m:4.740,
+      h6m:4.855,
+      h12m:4.960,
+      contracts:{
+        'Dec-26':{implied_rate:4.740},
+        'Mar-27':{implied_rate:4.855},
+        'Sep-27':{implied_rate:4.960}
+      },
+      next_meeting:{
+        date:'2026-11-03',
+        current_cash_rate:4.60,
+        hike_target:4.85,
+        hike_25bp_probability:42,
+        no_change_probability:58
+      },
+      prior_validated_snapshot:{
+        as_of:'2026-09-24',
+        h3m:4.745,
+        h6m:4.880,
+        h12m:5.020
+      },
+      change_since_prior_validated_bp:{
+        h3m:-0.5,
+        h6m:-2.5,
+        h12m:-6.0,
+        period:'2026-09-24_to_2026-09-29',
+        label:'confronto con ultimo snapshot pre-decisione validato; non etichettato come 1W'
+      },
+      source:'ASX RBA Rate Tracker / official public yield_curve.csv and market_exp.csv',
+      note:'First validated post-29-Sep-RBA end-of-day ASX curve. Full OIS 1D/1W comparative panel remains separate until same-source weekly history is captured.',
+      freshness_status:'DIRECT_ASX_POST_DECISION_CURRENT'
+    };
+
+    try{
+      if(window.FINAL_SOURCE_POLICY_AUDIT?.cb_pricing?.AUD){
+        const a=window.FINAL_SOURCE_POLICY_AUDIT.cb_pricing.AUD;
+        a.quality='COMPLETO_DIRECT_ASX_POST_DECISION';
+        a.policy='AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT';
+        a.source='ASX 30-Day Interbank Cash Rate Futures / RBA Rate Tracker';
+        a.current_as_of='2026-09-29';
+      }
+    }catch(e){}
+
+    try{
+      if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.AUD){
+        Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.AUD,{
+          status:'RESOLVED_POST_DECISION_EOD',
+          reason:'ASX published first post-RBA end-of-day curve dated 29 Sep 2026.',
+          resolved_at:'2026-09-30'
+        });
+      }
+    }catch(e){}
+
+    try{
+      if(window.SOURCE_RESOLUTION_WATCHLIST?.items?.AUD_CB_PRICING){
+        window.SOURCE_RESOLUTION_WATCHLIST.items.AUD_CB_PRICING.current_status='RESOLVED_DIRECT_POST_DECISION';
+      }
+    }catch(e){}
+
+    if(typeof stableModelRefresh==='function') stableModelRefresh();
+    if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+
+    const unresolved=(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks():[]);
+    window.GMFQ_AUD_POST_RBA_PRICING_AUDIT={
+      status:unresolved.some(z=>z.id==='AUD_CB_PRICING')?'FAIL':'PASS',
+      as_of:'2026-09-29',
+      source:'ASX official public RBA Rate Tracker files',
+      levels:{'3m':4.740,'6m':4.855,'12m':4.960},
+      next_meeting:{date:'2026-11-03',hike_25bp_probability:42,no_change_probability:58},
+      prior_validated:{as_of:'2026-09-24','3m':4.745,'6m':4.880,'12m':5.020},
+      change_since_prior_bp:{'3m':-0.5,'6m':-2.5,'12m':-6.0},
+      ois_weekly_comparison:'WITHHELD_SEPARATELY'
+    };
+    document.documentElement.setAttribute('data-aud-post-rba-pricing',window.GMFQ_AUD_POST_RBA_PRICING_AUDIT.status);
+  }catch(e){
+    window.GMFQ_AUD_POST_RBA_PRICING_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-aud-post-rba-pricing','FAIL');
+  }
+})();
+</script>
+
 </body></html>
