@@ -79,47 +79,48 @@ jobs:
           mkdir -p downloads
           node probe.js
 
-      - name: Inspect downloaded files for FST3
+      - name: Inspect downloaded XML files for FST3
         run: |
           python - <<'PY'
-          import os, zipfile, pandas as pd, json, traceback
+          import os, zipfile, json, re, xml.etree.ElementTree as ET
           root='downloads'
-          print('FILES', os.listdir(root))
           hits=[]
-          for fn in os.listdir(root):
+          for fn in sorted(os.listdir(root)):
               p=os.path.join(root,fn)
-              print('INSPECT',fn,os.path.getsize(p))
-              try:
-                  if zipfile.is_zipfile(p):
-                      with zipfile.ZipFile(p) as z:
-                          print('ZIP_NAMES', z.namelist()[:30])
-                          for name in z.namelist():
-                              if name.lower().endswith(('.xls','.xlsx','.csv','.txt')):
-                                  out=os.path.join(root,'unzipped_'+os.path.basename(name))
-                                  with open(out,'wb') as f:f.write(z.read(name))
-                  else:
-                      with open(p,'rb') as f:
-                          head=f.read(120)
-                      print('HEAD',head)
-              except Exception as e:
-                  print('BASIC_ERR',fn,e)
-
-          expanded=[os.path.join(root,x) for x in os.listdir(root)]
-          for p in expanded:
-              try:
-                  xl=pd.ExcelFile(p)
-                  print('EXCEL',os.path.basename(p),xl.sheet_names)
-                  for sh in xl.sheet_names:
-                      df=xl.parse(sh,header=None,dtype=str)
-                      mask=df.apply(lambda col: col.astype(str).str.contains('FST3',case=False,na=False)).any(axis=1)
-                      if mask.any():
-                          sub=df.loc[mask].copy()
-                          print('FST3_HIT',os.path.basename(p),sh)
-                          print(sub.to_string(index=False,header=False))
-                          hits.append({'file':os.path.basename(p),'sheet':sh,'rows':sub.fillna('').values.tolist()})
-              except Exception as e:
-                  pass
-          print('HITS_JSON='+json.dumps(hits,ensure_ascii=False))
+              if not zipfile.is_zipfile(p):
+                  continue
+              with zipfile.ZipFile(p) as z:
+                  for name in z.namelist():
+                      if not name.lower().endswith('.xml'):
+                          continue
+                      data=z.read(name)
+                      text=data.decode('utf-8','ignore')
+                      print('XML',fn,name,'bytes',len(data),'FST3_count',text.upper().count('FST3'))
+                      # Print compact context around every FST3 occurrence.
+                      for m in re.finditer('FST3',text,re.I):
+                          s=max(0,m.start()-1800); e=min(len(text),m.end()+5000)
+                          ctx=text[s:e].replace('><','>\n<')
+                          print('FST3_CONTEXT_BEGIN',fn)
+                          print(ctx)
+                          print('FST3_CONTEXT_END',fn)
+                          hits.append({'file':fn,'xml':name,'offset':m.start(),'context':ctx[:12000]})
+                      # Also parse XML and emit any element subtree containing FST3.
+                      try:
+                          rootel=ET.fromstring(data)
+                          parent={c:p for p in rootel.iter() for c in p}
+                          for el in rootel.iter():
+                              blob=' '.join([el.tag, el.text or '']+[str(v) for v in el.attrib.values()])
+                              if 'FST3' in blob.upper():
+                                  cur=el
+                                  for _ in range(4):
+                                      if cur in parent: cur=parent[cur]
+                                  xmltxt=ET.tostring(cur,encoding='unicode')
+                                  print('FST3_SUBTREE_BEGIN',fn)
+                                  print(xmltxt[:30000])
+                                  print('FST3_SUBTREE_END',fn)
+                      except Exception as e:
+                          print('XML_PARSE_ERROR',fn,str(e))
+          print('HITS_COUNT',len(hits))
           PY
 
       - name: Upload probe files
