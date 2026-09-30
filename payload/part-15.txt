@@ -1028,4 +1028,111 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-gbp-boe-ois-20260930">
+(function(){
+  'use strict';
+  try{
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+
+    const GBP_OIS={
+      status:'ACTIVE',
+      source:'Bank of England · Sterling OIS (SONIA) instantaneous forward curve · short end',
+      source_url:'https://www.bankofengland.co.uk/statistics/yield-curves',
+      source_meta:{
+        official_public:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        curve:'OIS',
+        measure:'instantaneous forward',
+        segment:'short end'
+      },
+      as_of:'2026-09-29',
+      policy_rate:3.75,
+      meetings:[
+        {date:'2026-11-05',label:'MPC'}
+      ],
+      horizons:{
+        '3m':{
+          rate:4.0707067300587045,
+          change_1d_bp:0.3982961403772493,
+          change_1w_bp:4.058922730076156,
+          policy_delta_bp:32.07067300587045
+        },
+        '6m':{
+          rate:4.438953376231498,
+          change_1d_bp:1.0397410395447004,
+          change_1w_bp:4.458705117375506,
+          policy_delta_bp:68.89533762314978
+        },
+        '12m':{
+          rate:4.865918765906023,
+          change_1d_bp:3.7377625475434546,
+          change_1w_bp:6.539849220272287,
+          policy_delta_bp:111.5918765906023
+        }
+      },
+      cuts_hikes_priced:{
+        '3m_bp':32.07067300587045,
+        '6m_bp':68.89533762314978,
+        '12m_bp':111.5918765906023
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:true
+      },
+      provenance:{
+        workbook:'OIS daily data current month.xlsx',
+        forward_sheet:'1. fwds, short end',
+        maturity_units:'years',
+        observed_dates:{
+          current:'2026-09-29',
+          previous_business_day:'2026-09-28',
+          one_week_reference:'2026-09-22'
+        },
+        levels:{
+          '2026-09-22':{'3m':4.030117502757943,'6m':4.394366325057743,'12m':4.8005202737033},
+          '2026-09-28':{'3m':4.066723768654932,'6m':4.428555965836051,'12m':4.8285411404305885},
+          '2026-09-29':{'3m':4.0707067300587045,'6m':4.438953376231498,'12m':4.865918765906023}
+        }
+      }
+    };
+
+    window.__GMFQ_DATA.OIS_DATA.currencies.GBP=GBP_OIS;
+    if(window.GMFQ_OIS_FEED_PRIORITY?.GBP){
+      window.GMFQ_OIS_FEED_PRIORITY.GBP.ready=true;
+      window.GMFQ_OIS_FEED_PRIORITY.GBP.label='Bank of England SONIA OIS curve';
+    }
+
+    const active=window.GMFQ_OIS?.currency?.('GBP')?.status==='ACTIVE';
+    const publishable=window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.('GBP')===true;
+    const validate=window.GMFQ_OIS_INGEST?.validateCurrency?.('GBP',GBP_OIS) || {ok:false,errors:['validator unavailable']};
+
+    window.GMFQ_GBP_OIS_AUDIT={
+      status:(active&&publishable&&validate.ok)?'PASS':'FAIL',
+      active,publishable,validation_ok:validate.ok,
+      validation_errors:validate.errors||[],
+      as_of:GBP_OIS.as_of,
+      source:GBP_OIS.source,
+      values:{
+        '3m':GBP_OIS.horizons['3m'].rate,
+        '6m':GBP_OIS.horizons['6m'].rate,
+        '12m':GBP_OIS.horizons['12m'].rate
+      }
+    };
+
+    document.documentElement.setAttribute('data-gbp-ois-audit',window.GMFQ_GBP_OIS_AUDIT.status);
+    document.documentElement.setAttribute('data-gbp-ois-asof',GBP_OIS.as_of);
+  }catch(e){
+    window.GMFQ_GBP_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-gbp-ois-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
