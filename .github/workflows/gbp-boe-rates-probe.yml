@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download and inspect BoE latest yield curve
+      - name: Extract BoE nominal spot curve
         shell: bash
         run: |
           set -euo pipefail
@@ -15,48 +15,67 @@ jobs:
           mkdir boe
           unzip -q boe.zip -d boe
           python - <<'PY'
-          import zipfile,xml.etree.ElementTree as ET,re,os
+          import zipfile,xml.etree.ElementTree as ET,re,datetime,math
           p="boe/GLC Nominal daily data current month.xlsx"
-          ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
-              'r':'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
-              'pr':'http://schemas.openxmlformats.org/package/2006/relationships'}
+          NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+          RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+          PNS='http://schemas.openxmlformats.org/package/2006/relationships'
+          ns={'m':NS,'r':RNS}
+          def colnum(ref):
+              s=re.match(r'([A-Z]+)',ref).group(1)
+              n=0
+              for ch in s:n=n*26+ord(ch)-64
+              return n
           with zipfile.ZipFile(p) as z:
               shared=[]
               if 'xl/sharedStrings.xml' in z.namelist():
                   root=ET.fromstring(z.read('xl/sharedStrings.xml'))
-                  for si in root.findall('m:si',ns):
-                      shared.append(''.join(t.text or '' for t in si.findall('.//m:t',ns)))
+                  for si in root.findall('{%s}si'%NS):
+                      shared.append(''.join(t.text or '' for t in si.iter('{%s}t'%NS)))
               wb=ET.fromstring(z.read('xl/workbook.xml'))
               rels=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
               relmap={x.attrib['Id']:x.attrib['Target'] for x in rels}
-              sheets=[]
-              for s in wb.find('m:sheets',ns):
-                  name=s.attrib['name']; rid=s.attrib['{'+ns['r']+'}id']
-                  target=relmap[rid]
-                  if not target.startswith('xl/'): target='xl/'+target.lstrip('/')
-                  sheets.append((name,target))
-              print("SHEETS",[x[0] for x in sheets])
-              for name,target in sheets:
-                  root=ET.fromstring(z.read(target))
-                  rows=[]
-                  for row in root.findall('.//m:sheetData/m:row',ns):
-                      vals=[]
-                      for c in row.findall('m:c',ns):
-                          ref=c.attrib.get('r','')
-                          t=c.attrib.get('t')
-                          v=c.find('m:v',ns)
-                          inline=c.find('m:is',ns)
-                          val=None
-                          if t=='s' and v is not None:
-                              try: val=shared[int(v.text)]
-                              except: val=v.text
-                          elif t=='inlineStr' and inline is not None:
-                              val=''.join(x.text or '' for x in inline.findall('.//m:t',ns))
-                          elif v is not None:
-                              val=v.text
-                          vals.append((ref,val))
-                      if vals: rows.append(vals)
-                  print("\nSHEET",name,"ROWS",len(rows))
-                  for row in rows[:10]: print("HEAD",row[:20])
-                  for row in rows[-10:]: print("TAIL",row[:20])
+              target=None
+              for s in wb.find('{%s}sheets'%NS):
+                  if s.attrib['name']=='4. spot curve':
+                      rid=s.attrib['{%s}id'%RNS]
+                      target=relmap[rid]
+              if not target: raise SystemExit("spot curve sheet not found")
+              if not target.startswith('xl/'): target='xl/'+target.lstrip('/')
+              root=ET.fromstring(z.read(target))
+              rows={}
+              for row in root.findall('.//{%s}sheetData/{%s}row'%(NS,NS)):
+                  rn=int(row.attrib['r']); d={}
+                  for c in row.findall('{%s}c'%NS):
+                      ref=c.attrib.get('r'); typ=c.attrib.get('t'); v=c.find('{%s}v'%NS)
+                      val=None
+                      if typ=='s' and v is not None:
+                          val=shared[int(v.text)]
+                      elif v is not None:
+                          val=v.text
+                      d[colnum(ref)]=val
+                  rows[rn]=d
+              mats={int(k):float(v) for k,v in rows[4].items() if k>1 and v not in (None,'')}
+              wanted=[2,5,10,25,40]
+              cmap={}
+              for w in wanted:
+                  best=min(mats.items(),key=lambda kv:abs(kv[1]-w))
+                  if abs(best[1]-w)<1e-6: cmap[w]=best[0]
+              print("COLMAP",cmap)
+              valid=[]
+              for rn,d in rows.items():
+                  a=d.get(1)
+                  try: serial=float(a)
+                  except: continue
+                  if serial<40000: continue
+                  vals={}
+                  for w,col in cmap.items():
+                      try: vals[w]=float(d.get(col))
+                      except: vals[w]=None
+                  if any(v is not None for v in vals.values()):
+                      date=(datetime.datetime(1899,12,30)+datetime.timedelta(days=serial)).date().isoformat()
+                      valid.append((date,vals,rn))
+              print("VALID_ROWS",len(valid))
+              for date,vals,rn in valid[-12:]:
+                  print("OBS",date,"ROW",rn," ".join(f"{k}Y={vals[k]}" for k in wanted if k in vals))
           PY
