@@ -1247,4 +1247,4 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-<script id="gmfq-aud-cb-inspect">(function(){function out(){try{const p=document.createElement('pre');p.id='audCbInspect';p.textContent=JSON.stringify({aud:window.NATIVE_CB_DATA?.AUD||null,ois:window.__GMFQ_DATA?.OIS_DATA?.currencies?.AUD||null});document.body.appendChild(p);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1200));else setTimeout(out,1200);})();</script></body></html>
+<script id="gmfq-aud-cb-inspect">(function(){function out(){try{const p=document.createElement('pre');p.id='audCbInspect';p.textContent=JSON.stringify({aud:(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA.AUD:null),ois:window.__GMFQ_DATA?.OIS_DATA?.currencies?.AUD||null});document.body.appendChild(p);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1200));else setTimeout(out,1200);})();</script></body></html>
