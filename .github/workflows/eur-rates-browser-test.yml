@@ -32,16 +32,8 @@ jobs:
           <script>
           setTimeout(()=>{
             const w=document.getElementById('f').contentWindow;
-            const r=w.NATIVE_RATES_DATA?.EUR||{};
-            const bi=w.ratesCanonicalBasisIntegrity?.();
-            const vi=w.visibleRatesSnapshotIntegrity?.();
-            const h=w.productionHealthCheck?.();
-            const out={
-              date:r.date,y2:r['2Y'],y10:r['10Y'],curve:r.curve_bp,
-              weekly:r.weekly2_validation,
-              basis_ok:bi?.ok,visible_ok:vi?.ok,health:h?.status,
-              audit:w.GMFQ_EUR_RATES_AUDIT
-            };
+            const out=w.GMFQ_EUR_RATES_RUNTIME||{};
+            out.audit=w.GMFQ_EUR_RATES_AUDIT||null;
             const p=document.createElement('pre');p.id='result';p.textContent=JSON.stringify(out);document.body.appendChild(p);
           },9000);
           </script></body></html>
