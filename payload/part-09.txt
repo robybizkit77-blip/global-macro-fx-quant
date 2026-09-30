@@ -1,0 +1,1000 @@
+return Object.fromEntries(CCYS.map(c=>[c,evaluateStructuralHysteresis(c)]));
+};
+window.STRUCTURAL_HYSTERESIS_STATE=window.STRUCTURAL_HYSTERESIS_AUDIT();
+// Safety principle:
+// This module only marks AUTO_ELIGIBLE. It never directly mutates canonical layers.
+// Atomic refresh remains the only commit path.
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+window.CB_LIQ_CHANGE_MEMORY=window.CB_LIQ_CHANGE_MEMORY||{};
+function currentPol(c,layer){
+try{return layerPolarity(currencyIntelData?.[c]?.[layer]);}catch(e){return 0;}
+}
+function stancePol(d){
+try{
+const cls=v234StanceClass(d||{});
+return cls==='pos'?1:cls==='neg'?-1:0;
+}catch(e){return 0;}
+}
+// CB candidate: official communication only.
+// No macro, liquidity, COT or price information is allowed into this decision.
+window.cbStructuralChangeCandidate=function(c){
+const d=NATIVE_CB_DATA?.[c];
+if(!d) return {status:'WITHHELD',candidate:0,reason:'dati CB assenti'};
+const p=stancePol(d);
+const action=String(d.action||'').toUpperCase();
+const impulse=String(d.impulse||'').toUpperCase();
+const bias=String(d.official_bias||'').toUpperCase();
+const stance=String(d.stance||'').toUpperCase();
+if(p===0){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,
+reason:'comunicazione ufficiale non direzionale / hold'};
+}
+const hawkishEvidence =
+/RIALZO|HIKE/.test(action) ||
+/TIGHTEN/.test(impulse) ||
+/HAWK|RESTRITT/.test(bias+' '+stance);
+const dovishEvidence =
+/TAGLIO|CUT/.test(action) ||
+/EASING/.test(impulse) ||
+/DOVISH|ACCOMOD/.test(bias+' '+stance);
+const coherent=(p>0 && hawkishEvidence && !dovishEvidence) ||
+(p<0 && dovishEvidence && !hawkishEvidence);
+if(!coherent){
+return {status:'REVIEW_REQUIRED',candidate:0,
+reason:'azione, impulso e comunicazione CB non sono pienamente coerenti'};
+}
+// Pricing is context, not a second vote; stale pricing prevents an automatic flip,
+// but does not invalidate the official CB reading itself.
+const q=String(d.market_pricing?.freshness_status||d.pricing_tier||'').toUpperCase();
+const pricingWeak=/WITHHELD|STALE_PRE_DECISION|PENDING_POST_DECISION/.test(q);
+return {
+status:pricingWeak?'PENDING_CONFIRMATION':'CANDIDATE',
+candidate:p,
+reason:pricingWeak
+? 'CB ufficiale direzionale ma pricing di mercato non ancora aggiornato'
+: 'azione/impulso/comunicazione CB coerenti',
+last_date:d.last_date||null
+};
+};
+// Liquidity candidate: only the liquidity dataset can change the liquidity layer.
+// Credit remains context and never overwrites the liquidity direction.
+window.liquidityStructuralChangeCandidate=function(c){
+const d=NATIVE_LIQ_DATA?.[c];
+if(!d) return {status:'WITHHELD',candidate:0,reason:'dataset liquidità assente'};
+const status=String(d.status||'').toUpperCase();
+const dir=String(d.liquidity_dir||'').toUpperCase();
+if(status!=='COMPLETO'){
+return {status:'WITHHELD',candidate:0,reason:'liquidità non completa'};
+}
+if(/NON DISPONIBILE|DATI CORRENTI/.test(dir)){
+return {status:'WITHHELD',candidate:0,reason:'direzione liquidità non validata'};
+}
+const p=dir==='IN AUMENTO'?1:dir==='IN CALO'?-1:0;
+return {
+status:'CANDIDATE',
+candidate:p,
+reason:p===0?'liquidità stabile':'direzione liquidità validata dal proprio dataset',
+credit_context:d.credit_dir||null,
+as_of:d.as_of||null
+};
+};
+function updateMemory(c,layer,candidate,current){
+const key=`${c}:${layer}`;
+const mem=window.CB_LIQ_CHANGE_MEMORY[key]||{
+candidate:null,streak:0,lastCurrent:current,lastSourceDate:null
+};
+if(candidate===current){
+mem.candidate=null; mem.streak=0; mem.lastCurrent=current;
+}else if(mem.candidate===candidate){
+mem.streak+=1; mem.lastCurrent=current;
+}else{
+mem.candidate=candidate; mem.streak=1; mem.lastCurrent=current;
+}
+window.CB_LIQ_CHANGE_MEMORY[key]=mem;
+return mem;
+}
+window.evaluateCbLiquidityHysteresis=function(c){
+const curCb=currentPol(c,'cb');
+const curLiq=currentPol(c,'liq');
+const cb=cbStructuralChangeCandidate(c);
+const liq=liquidityStructuralChangeCandidate(c);
+const cbCandidate=(cb.status==='CANDIDATE')?cb.candidate:curCb;
+const liqCandidate=(liq.status==='CANDIDATE')?liq.candidate:curLiq;
+const cm=updateMemory(c,'cb',cbCandidate,curCb);
+const lm=updateMemory(c,'liq',liqCandidate,curLiq);
+return {
+cb:{
+current:curCb,
+candidate:cb.status==='CANDIDATE'?cb.candidate:0,
+streak:cm.streak,
+status:
+cb.status==='PENDING_CONFIRMATION'?'PENDING_MARKET_CONFIRMATION':
+cb.status==='REVIEW_REQUIRED'?'REVIEW_REQUIRED':
+(cb.status==='CANDIDATE' && cb.candidate!==curCb && cm.streak>=2)?'AUTO_ELIGIBLE':
+(cb.status==='CANDIDATE' && cb.candidate!==curCb)?'PENDING_CONFIRMATION':'NO_CHANGE',
+reason:cb.reason||cb.status
+},
+liquidity:{
+current:curLiq,
+candidate:liq.status==='CANDIDATE'?liq.candidate:0,
+streak:lm.streak,
+status:
+liq.status==='WITHHELD'?'WITHHELD':
+(liq.status==='CANDIDATE' && liq.candidate!==curLiq && lm.streak>=2)?'AUTO_ELIGIBLE':
+(liq.status==='CANDIDATE' && liq.candidate!==curLiq)?'PENDING_CONFIRMATION':'NO_CHANGE',
+reason:liq.reason||liq.status,
+credit_context:liq.credit_context||null
+}
+};
+};
+window.CB_LIQ_HYSTERESIS_AUDIT=function(){
+return Object.fromEntries(CCYS.map(c=>[c,evaluateCbLiquidityHysteresis(c)]));
+};
+window.CB_LIQ_HYSTERESIS_STATE=window.CB_LIQ_HYSTERESIS_AUDIT();
+// Refresh diagnostics after every certified atomic update.
+const atomic=window.applyCanonicalRefreshPayload;
+window.applyCanonicalRefreshPayload=function(payload){
+const res=atomic(payload);
+try{
+window.CB_LIQ_HYSTERESIS_STATE=window.CB_LIQ_HYSTERESIS_AUDIT();
+if(res && typeof res==='object'){
+res.cb_liq_guard={
+auto_eligible:CCYS.filter(c=>{
+const x=window.CB_LIQ_HYSTERESIS_STATE[c];
+return x.cb.status==='AUTO_ELIGIBLE' || x.liquidity.status==='AUTO_ELIGIBLE';
+}),
+pending:CCYS.filter(c=>{
+const x=window.CB_LIQ_HYSTERESIS_STATE[c];
+return /PENDING|REVIEW|WITHHELD/.test(x.cb.status+' '+x.liquidity.status);
+})
+};
+}
+}catch(e){}
+return res;
+};
+// Safety: this guard never changes canonical CB or Liquidity by itself.
+// Atomic refresh remains the only commit path.
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+// ---------- source-aware confirmation ----------
+window.SOURCE_AWARE_GUARD_MEMORY=window.SOURCE_AWARE_GUARD_MEMORY||{};
+function latestCategoryDate(c,category){
+const rows=(S?.[c]||[]).filter(x=>x.category===category);
+const ds=rows.map(x=>String(x.last_date||x.dates?.at(-1)||'')).filter(Boolean).sort();
+return ds.at(-1)||'';
+}
+function sourceToken(c,layer){
+if(layer==='macro'){
+return `G:${latestCategoryDate(c,'Crescita')}|L:${latestCategoryDate(c,'Lavoro')}`;
+}
+if(layer==='rates'){
+const d=NATIVE_RATES_DATA?.[c]||{};
+const p=NATIVE_CB_DATA?.[c]?.market_pricing||{};
+return `R:${d.date||''}|P:${p.as_of||''}`;
+}
+if(layer==='cb'){
+return String(NATIVE_CB_DATA?.[c]?.last_date||'');
+}
+if(layer==='liq'){
+return String(NATIVE_LIQ_DATA?.[c]?.as_of||'');
+}
+return '';
+}
+function sourceAwareTrack(c,layer,candidate,current){
+const key=`${c}:${layer}`;
+const token=sourceToken(c,layer);
+const m=window.SOURCE_AWARE_GUARD_MEMORY[key]||{
+candidate:null,streak:0,lastToken:null,lastCurrent:current
+};
+if(!candidate || candidate===current){
+m.candidate=null;m.streak=0;m.lastToken=token;m.lastCurrent=current;
+}else if(m.candidate===candidate){
+// SAME source observation cannot increase confirmation.
+if(token && token!==m.lastToken){
+m.streak+=1;
+m.lastToken=token;
+}
+m.lastCurrent=current;
+}else{
+m.candidate=candidate;
+m.streak=1;
+m.lastToken=token;
+m.lastCurrent=current;
+}
+window.SOURCE_AWARE_GUARD_MEMORY[key]=m;
+return clone(m);
+}
+window.evaluateSourceAwareGuards=function(c){
+const macroCur=layerPolarity(currencyIntelData?.[c]?.macro);
+const ratesCur=layerPolarity(currencyIntelData?.[c]?.rates);
+const cbCur=layerPolarity(currencyIntelData?.[c]?.cb);
+const liqCur=layerPolarity(currencyIntelData?.[c]?.liq);
+const mc=typeof structuralMacroChangeCandidate==='function'
+? structuralMacroChangeCandidate(c):{candidate:0,status:'WITHHELD'};
+const rc=typeof structuralRatesChangeCandidate==='function'
+? structuralRatesChangeCandidate(c):{candidate:0,status:'WITHHELD'};
+const cc=typeof cbStructuralChangeCandidate==='function'
+? cbStructuralChangeCandidate(c):{candidate:0,status:'WITHHELD'};
+const lc=typeof liquidityStructuralChangeCandidate==='function'
+? liquidityStructuralChangeCandidate(c):{candidate:0,status:'WITHHELD'};
+function pack(layer,cand,current){
+const candidate=cand?.status==='CANDIDATE' ? (cand.candidate||0) : 0;
+const mem=sourceAwareTrack(c,layer,candidate,current);
+let status='NO_CHANGE';
+if(cand?.status==='WITHHELD') status='WITHHELD';
+else if(cand?.status==='REVIEW_REQUIRED') status='REVIEW_REQUIRED';
+else if(cand?.status==='PENDING_CONFIRMATION') status='PENDING_MARKET_CONFIRMATION';
+else if(candidate && candidate!==current){
+status=mem.streak>=2?'AUTO_ELIGIBLE':'PENDING_NEW_SOURCE_CONFIRMATION';
+}
+return {
+current,candidate,streak:mem.streak,
+token:mem.lastToken,status,
+reason:cand?.reason||cand?.status||'—'
+};
+}
+return {
+macro:pack('macro',mc,macroCur),
+rates:pack('rates',rc,ratesCur),
+cb:pack('cb',cc,cbCur),
+liquidity:pack('liq',lc,liqCur)
+};
+};
+window.SOURCE_AWARE_GUARD_AUDIT=function(){
+return Object.fromEntries(CCYS.map(c=>[c,evaluateSourceAwareGuards(c)]));
+};
+// ---------- price projection ----------
+function projectedPriceLayers(pricesPayload){
+if(!pricesPayload) return {};
+const backup=clone(D.prices);
+try{
+const rows=Array.isArray(pricesPayload)?pricesPayload:[pricesPayload];
+rows.forEach(row=>{
+if(!row?.Date) return;
+const i=D.prices.findIndex(x=>x.Date===row.Date);
+if(i>=0) D.prices[i]=Object.assign({},D.prices[i],clone(row));
+else D.prices.push(clone(row));
+});
+D.prices.sort((a,b)=>String(a.Date).localeCompare(String(b.Date)));
+const out={};
+CCYS.forEach(c=>{
+let r=null;
+try{r=currencyDynamics(c)?.price;}catch(e){}
+const p=r?.dir>0?1:r?.dir<0?-1:0;
+out[c]=[
+p>0?'Favorevole':p<0?'Contrario':'Neutrale',
+p>0?'statePos':p<0?'stateNeg':'stateNeu',
+p>0?'prezzo relativo in miglioramento':
+p<0?'prezzo relativo in peggioramento':
+'prezzo relativo non direzionale'
+];
+});
+return out;
+}finally{
+D.prices.splice(0,D.prices.length,...backup);
+}
+}
+// ---------- guarded daily planner ----------
+window.buildGuardedDailyPayload=function(raw){
+raw=clone(raw||{});
+raw.layerState=raw.layerState||{};
+const touch=(c,k)=>{
+raw.layerState[c]=raw.layerState[c]||{};
+if(raw.layerState[c][k]===undefined){
+raw.layerState[c][k]=clone(window.CANONICAL_LAYER_STATE?.[c]?.[k] ?? currencyIntelData?.[c]?.[k]);
+}
+};
+Object.keys(raw.rates||{}).forEach(c=>touch(c,'rates'));
+Object.keys(raw.cb||{}).forEach(c=>touch(c,'cb'));
+Object.keys(raw.liquidity||{}).forEach(c=>touch(c,'liq'));
+(raw.series||[]).forEach(u=>{
+if(String(u?.category||'').toLowerCase()!=='rates') touch(u.currency,'macro');
+});
+if(raw.prices){
+const px=projectedPriceLayers(raw.prices);
+CCYS.forEach(c=>{
+raw.layerState[c]=raw.layerState[c]||{};
+// Price is non-structural and can be derived directly from market data.
+if(raw.layerState[c].price===undefined) raw.layerState[c].price=px[c];
+});
+}
+return raw;
+};
+window.runGuardedDailyRefresh=function(raw){
+const planned=window.buildGuardedDailyPayload(raw);
+const result=window.applyCanonicalRefreshPayload(planned);
+const guards=window.SOURCE_AWARE_GUARD_AUDIT();
+const review=[];
+const eligible=[];
+CCYS.forEach(c=>{
+['macro','rates','cb','liquidity'].forEach(k=>{
+const st=guards[c][k]?.status;
+if(st==='AUTO_ELIGIBLE') eligible.push(`${c}:${k}`);
+else if(st && st!=='NO_CHANGE') review.push(`${c}:${k}:${st}`);
+});
+});
+const decision={
+ok:!!result?.ok,
+generation:result?.generation??window.REFRESH_GENERATION,
+guards,
+auto_eligible:eligible,
+review_required:review,
+policy:'DATA_UPDATED_STRUCTURE_HELD_UNLESS_EXPLICITLY_COMMITTED'
+};
+window.LAST_DAILY_REFRESH_DECISION=decision;
+return {result,decision,planned};
+};
+window.SOURCE_AWARE_GUARD_STATE=window.SOURCE_AWARE_GUARD_AUDIT();
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+window.PENDING_STRUCTURAL_CHANGES=window.PENDING_STRUCTURAL_CHANGES||{};
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function labelFromPol(p){return p>0?'Favorevole':p<0?'Contrario':'Neutrale';}
+function classFromPol(p){return p>0?'statePos':p<0?'stateNeg':'stateNeu';}
+function guardSnapshot(c){
+try{return evaluateSourceAwareGuards(c);}catch(e){return null;}
+}
+window.rebuildStructuralChangeQueue=function(){
+const q={};
+CCYS.forEach(c=>{
+const g=guardSnapshot(c);
+if(!g)return;
+const candidates=[];
+['macro','rates','cb','liquidity'].forEach(layer=>{
+const x=g[layer];
+if(!x)return;
+if(x.status==='AUTO_ELIGIBLE'){
+candidates.push({
+layer,
+current:x.current,
+candidate:x.candidate,
+status:x.status,
+token:x.token||null,
+reason:x.reason||'—'
+});
+}
+});
+if(candidates.length){
+q[c]={currency:c,candidates,createdAt:new Date().toISOString()};
+}
+});
+window.PENDING_STRUCTURAL_CHANGES=q;
+return clone(q);
+};
+function canonicalLayerKey(layer){
+return layer==='liquidity'?'liq':layer;
+}
+function buildLayerArray(layer,candidate,reason){
+return [
+labelFromPol(candidate),
+classFromPol(candidate),
+`Riclassificazione strutturale confermata dal guard ${layer}: ${reason}`
+];
+}
+window.buildStructuralCommitPayload=function(currency,layers){
+const queued=window.PENDING_STRUCTURAL_CHANGES?.[currency];
+if(!queued) return {ok:false,error:'Nessuna modifica strutturale in coda per '+currency};
+const wanted=new Set(Array.isArray(layers)?layers:[layers]);
+const patch={};
+const used=[];
+queued.candidates.forEach(c=>{
+if(!wanted.has(c.layer))return;
+const key=canonicalLayerKey(c.layer);
+patch[key]=buildLayerArray(c.layer,c.candidate,c.reason);
+used.push(c.layer);
+});
+if(!used.length) return {ok:false,error:'Nessun layer richiesto è AUTO_ELIGIBLE'};
+return {
+ok:true,
+payload:{layerState:{[currency]:patch}},
+layers:used
+};
+};
+window.commitQueuedStructuralChanges=function(currency,layers){
+const built=window.buildStructuralCommitPayload(currency,layers);
+if(!built.ok)return built;
+const result=window.applyCanonicalRefreshPayload(built.payload);
+if(result?.ok){
+// After a successful atomic commit, reset source-aware memory for committed layers.
+(built.layers||[]).forEach(layer=>{
+const key=`${currency}:${layer}`;
+if(window.SOURCE_AWARE_GUARD_MEMORY?.[key]){
+window.SOURCE_AWARE_GUARD_MEMORY[key].candidate=null;
+window.SOURCE_AWARE_GUARD_MEMORY[key].streak=0;
+}
+});
+window.rebuildStructuralChangeQueue();
+}
+return {ok:!!result?.ok,result,layers:built.layers};
+};
+// Dry-run helper used by the daily pipeline / QA.
+window.previewGuardedDailyRefresh=function(raw){
+const planned=window.buildGuardedDailyPayload(raw);
+const check=window.validateCanonicalRefreshPayload(planned);
+return {
+ok:check.ok,
+errors:check.errors||[],
+planned,
+currentQueue:clone(window.PENDING_STRUCTURAL_CHANGES||{})
+};
+};
+// Wrap daily refresh: after data update, rebuild proposal queue.
+const daily=window.runGuardedDailyRefresh;
+window.runGuardedDailyRefresh=function(raw){
+const out=daily(raw);
+const queue=window.rebuildStructuralChangeQueue();
+out.structural_queue=queue;
+return out;
+};
+window.rebuildStructuralChangeQueue();
+})();
+
+</script><script>
+
+window.FINAL_SOURCE_POLICY_AUDIT={"audit_date":"2026-09-29","principles":{"primary_source_first":true,"no_cross_basis_substitution":true,"last_valid_on_source_delay":true,"withhold_if_unvalidated":true,"secondary_market_pricing_requires_validation":true},"PRICE":{"source":"ECB euro foreign exchange reference rates","cadence":"TARGET business day","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-28"},"COT":{"source":"CFTC Legacy Futures Only · Non-Commercial","cadence":"weekly","policy":"AUTO_UPDATE_PRIMARY_WHEN_RELEASED","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-22"},"RATES":{"USD":{"source":"U.S. Treasury Daily Par Yield Curve","cadence":"US business day","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-28"},"EUR":{"source":"ECB euro area zero-coupon yield curve","cadence":"TARGET business day","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-25","status":"PENDING_NEW_OFFICIAL_SNAPSHOT"},"GBP":{"source":"Bank of England daily nominal government liability curve","cadence":"daily business day","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-25","status":"PENDING_NEW_OFFICIAL_SNAPSHOT"},"JPY":{"source":"Japan Ministry of Finance JGB interest-rate CSV","cadence":"business day with publication lag","policy":"AUTO_UPDATE_PRIMARY_WHEN_POSTED","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-25"},"CHF":{"source":"SNB data portal · Swiss Confederation yields","cadence":"source-native publication","policy":"AUTO_UPDATE_PRIMARY_WHEN_POSTED","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-25"},"CAD":{"source":"Bank of Canada selected benchmark bond yields","cadence":"daily business day","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE","current_as_of":"2026-09-25"},"AUD":{"source":"RBA F2 Capital Market Yields – Government Bonds","cadence":"weekly Friday; observations through two business days earlier","policy":"AUTO_UPDATE_PRIMARY_ON_RELEASE","fallback":"HOLD_LAST_VALID_NOT_STALE_UNTIL_EXPECTED_RELEASE","current_as_of":"2026-09-25"},"NZD":{"source":"RBNZ B2 Wholesale interest rates","cadence":"daily; one business day publication lag","policy":"AUTO_UPDATE_PRIMARY","fallback":"LAST_VALID_STALE_AFTER_EXPECTED_LAG","current_as_of":"2026-09-28"}},"CB":{"policy":"EVENT_DRIVEN_OFFICIAL_ONLY","fallback":"HOLD_LAST_OFFICIAL","rule":"Only official central-bank decisions/statements can alter the realized CB layer."},"CB_PRICING":{"USD":{"quality":"SECONDARY_QUOTE","policy":"VALIDATE_BEFORE_COMMIT"},"EUR":{"quality":"SECONDARY_QUOTE","policy":"VALIDATE_BEFORE_COMMIT"},"GBP":{"quality":"SECONDARY_QUOTE","policy":"VALIDATE_BEFORE_COMMIT"},"JPY":{"quality":"DIRECT_VALIDATED","policy":"AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT"},"CHF":{"quality":"SECONDARY_QUOTE","policy":"VALIDATE_BEFORE_COMMIT"},"CAD":{"quality":"DIRECT_VALIDATED","policy":"AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT"},"AUD":{"quality":"STALE_PRE_DECISION","policy":"HOLD_UNTIL_POST_DECISION_EOD"},"NZD":{"quality":"PARTIAL_OFFICIAL","policy":"AUTO_UPDATE_OFFICIAL_POINT_KEEP_MISSING_HORIZONS_WITHHELD"}},"LIQUIDITY":{"policy":"SOURCE_NATIVE_CADENCE","fallback":"HOLD_LAST_VALID_COMPONENT","rule":"Update each underlying liquidity/money/credit component only on its own source release; never infer a missing component from another layer.","NZD":{"source":"RBNZ D10 + C50","cadence":"monthly","next_expected":"2026-09-30"}},"MACRO":{"policy":"RELEASE_DRIVEN_BY_SERIES","fallback":"HOLD_LAST_VALID_SERIES","rule":"Each macro series refreshes only on its own official release. Calendar age alone does not make a monthly/quarterly series stale."}};
+window.sourceDisposition=function(layer,currency){
+const R=window.FINAL_SOURCE_POLICY_AUDIT||{};
+if(layer==='PRICE') return R.PRICE||null;
+if(layer==='COT') return R.COT||null;
+if(layer==='RATES') return R.RATES?.[currency]||null;
+if(layer==='CB') return R.CB||null;
+if(layer==='CB_PRICING') return R.CB_PRICING?.[currency]||null;
+if(layer==='LIQUIDITY') return Object.assign({},R.LIQUIDITY,R.LIQUIDITY?.[currency]||{});
+if(layer==='MACRO') return R.MACRO||null;
+return null;
+};
+window.finalSourceAuditSummary=function(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+return {
+audit_date:FINAL_SOURCE_POLICY_AUDIT.audit_date,
+rates:Object.fromEntries(ccys.map(c=>[c,sourceDisposition('RATES',c)])),
+cb_pricing:Object.fromEntries(ccys.map(c=>[c,sourceDisposition('CB_PRICING',c)])),
+price:sourceDisposition('PRICE'),
+cot:sourceDisposition('COT'),
+macro:sourceDisposition('MACRO'),
+liquidity:sourceDisposition('LIQUIDITY')
+};
+};
+
+</script><script>
+
+window.PRODUCTION_LIVE_REFRESH_AUDIT={
+as_of:"2026-09-29T09:22+02:00",
+aud_cb:{
+source:"RBA Monetary Policy Decision 29 Sep 2026",
+official_rate:"4.60%",
+action:"+25 bp",
+next_decision:"2026-11-03",
+visible_canonical_text_synced:true,
+market_pricing_status:"PENDING_POST_DECISION_EOD"
+},
+other_layers:"NO_NEW_OFFICIAL_COMMIT_AT_AUDIT_TIME"
+};
+
+</script><script>
+
+window.PRODUCTION_LIVE_REFRESH_AUDIT_JPY={
+audited_at:"2026-09-29T09:26+02:00",
+source:"Japan Ministry of Finance · JGB Interest Rate",
+source_publication_date:"2026-09-29",
+observation_date:"2026-09-28",
+y2:1.95,
+y10:3.08,
+chg2_bp:10.1,
+chg10_bp:9.9,
+status:"CURRENT_28SEP_SAME_BASIS"
+};
+
+</script><script>
+
+window.PRODUCTION_RATES_REFRESH_STATUS={"audited_at":"2026-09-29T09:31+02:00","rates_refresh":{"EUR":{"action":"HOLD_LAST_VALID","current_as_of":"2026-09-25","reason":"No newer same-basis official ECB snapshot validated in this refresh."},"GBP":{"action":"HOLD_LAST_VALID","current_as_of":"2026-09-25","reason":"No newer same-basis Bank of England zero-coupon snapshot validated in this refresh."},"CHF":{"action":"HOLD_LAST_VALID","current_as_of":"2026-09-25","reason":"SNB surfaced a 28 Sep Confederation yield headline, but not a full validated 2Y/10Y same-basis pair; no partial substitution."},"CAD":{"action":"HOLD_LAST_VALID","current_as_of":"2026-09-25","reason":"Bank of Canada benchmark series verified as canonical source; no newer 2Y/10Y closing pair validated through the available source snapshot."},"AUD":{"action":"HOLD_LAST_VALID","current_as_of":"2026-09-25","reason":"RBA F2 publication cadence does not justify a synthetic daily update; next official same-basis release awaited."},"JPY":{"action":"UPDATED","current_as_of":"2026-09-28","reason":"Official MOF same-basis 2Y/10Y update validated and committed."},"USD":{"action":"CURRENT","current_as_of":"2026-09-28","reason":"Official U.S. Treasury snapshot already current in Production."},"NZD":{"action":"CURRENT","current_as_of":"2026-09-28","reason":"Official RBNZ B2 snapshot already current in Production."}},"policy":"A missing newer canonical observation is not replaced by a different curve methodology, partial tenor or secondary quote."};
+
+</script><script>
+
+window.PRODUCTION_MACRO_CBPRICING_AUDIT={"audited_at":"2026-09-29T09:37+02:00","macro":{"status":"NO_NEW_G8_MACRO_COMMIT_VALIDATED_AT_AUDIT_TIME","action":"HOLD_ALL_LAST_VALID","rule":"No macro series is advanced without a validated official release for that exact series."},"aud_cb_pricing":{"status":"PENDING_POST_DECISION_EOD","action":"HOLD_PRE_DECISION_CURVE","reason":"No canonical post-29-Sep ASX Rate Tracker settlement snapshot validated yet.","official_cb_decision":{"date":"2026-09-29","cash_rate":4.6,"action":"+25 bp"}},"contamination_check":"PASS","structural_commit":"NONE"};
+
+</script><script>
+
+window.PRODUCTION_PRICE_COT_LIQ_AUDIT={"audited_at":"2026-09-29T09:39+02:00","price":{"status":"CURRENT_LAST_OFFICIAL","current_as_of":"2026-09-28","action":"HOLD_UNTIL_ECB_FIXING","next_expected":"around 16:00 CET/CEST on working days","rule":"Do not use intraday spot to overwrite the canonical ECB daily fixing."},"cot":{"status":"CURRENT_WEEKLY","current_as_of":"2026-09-22","action":"HOLD_UNTIL_NEXT_CFTC_RELEASE","rule":"Weekly CFTC Legacy Futures Only snapshot only; no interpolation."},"liquidity":{"status":"NO_NEW_VALIDATED_COMPONENTS_AT_AUDIT_TIME","action":"HOLD_LAST_VALID_BY_SOURCE_CADENCE","nzd":{"current_period":"2026-07","source":"RBNZ D10 + C50","next_release":"2026-09-30","action":"HOLD_UNTIL_SCHEDULED_RELEASE"}},"structural_commit":"NONE","contamination_check":"PASS"};
+
+</script><script>
+
+window.FORWARD_VALIDATION_REGISTRY={"created_at":"2026-09-29T09:45+02:00","t0_price_date":"2026-09-28","method":"Frozen forward validation. No retroactive edits to T0 classifications.","horizons":{"1W":"2026-10-06","4W":"2026-10-27","12W":"2026-12-22"},"metrics":["pair return from T0","return in structural direction","hit/miss by structural fav","setup-conditioned outcome","drawdown/adverse excursion if later added from daily path"],"pairs":[{"pair":"EUR/GBP","t0_price":0.85785,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/AUD","t0_price":1.6199,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/NZD","t0_price":2.0071,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/USD","t0_price":1.1378,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/CAD","t0_price":1.6118,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/CHF","t0_price":0.9464,"structural_fav":"EUR","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"EUR/JPY","t0_price":178.5,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/AUD","t0_price":1.8883254648248526,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/NZD","t0_price":2.33968642536574,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/USD","t0_price":1.3263391035728855,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/CAD","t0_price":1.8788832546482483,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/CHF","t0_price":1.1032231742146064,"structural_fav":"GBP","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"GBP/JPY","t0_price":208.078335373317,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"AUD/NZD","t0_price":1.2390271004382987,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"AUD/USD","t0_price":0.7023890363602692,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"AUD/CAD","t0_price":0.9949996913389716,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"AUD/CHF","t0_price":0.5842335946663375,"structural_fav":"AUD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"AUD/JPY","t0_price":110.19198715970123,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"NZD/USD","t0_price":0.5668875492003388,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"NZD/CAD","t0_price":0.8030491754272333,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"NZD/CHF","t0_price":0.4715260824074536,"structural_fav":"NZD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"NZD/JPY","t0_price":88.93428329430522,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"USD/CAD","t0_price":1.4165934259096502,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"USD/CHF","t0_price":0.8317806292845844,"structural_fav":"USD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"USD/JPY","t0_price":156.88170152926702,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"CAD/CHF","t0_price":0.5871696240228317,"structural_fav":"CAD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"CAD/JPY","t0_price":110.74575009306366,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null},{"pair":"CHF/JPY","t0_price":188.60946745562129,"structural_fav":"JPY","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing":null,"price_confirmation":null,"extension":null,"extension_percentile":null,"cot_risk":null,"liquidity":null}]};
+window.forwardValidationSummary=function(){
+const R=window.FORWARD_VALIDATION_REGISTRY;
+const counts={};
+(R.pairs||[]).forEach(x=>{
+const k=x.structural_quality||'UNKNOWN';
+counts[k]=(counts[k]||0)+1;
+});
+return {
+created_at:R.created_at,
+t0_price_date:R.t0_price_date,
+horizons:R.horizons,
+pair_count:(R.pairs||[]).length,
+structural_counts:counts,
+frozen:true
+};
+};
+window.evaluateForwardCheckpoint=function(checkpointDate){
+const R=window.FORWARD_VALIDATION_REGISTRY;
+const row=(D.prices||[]).find(x=>x.Date===checkpointDate);
+if(!row) return {ok:false,error:'Checkpoint price row not available',checkpointDate};
+const price=(pair)=>{
+const [a,b]=pair.split('/');
+const va=a==='EUR'?1:+row[a], vb=b==='EUR'?1:+row[b];
+if(!isFinite(va)||!isFinite(vb)||va===0) return null;
+return vb/va;
+};
+const out=(R.pairs||[]).map(x=>{
+const p1=price(x.pair);
+const ret=(p1&&x.t0_price)?(p1/x.t0_price-1)*100:null;
+let dirRet=null;
+if(ret!==null && x.structural_fav){
+const [a,b]=x.pair.split('/');
+dirRet=x.structural_fav===a?ret:x.structural_fav===b?-ret:null;
+}
+return Object.assign({},x,{checkpointDate,checkpoint_price:p1,return_pct:ret,directional_return_pct:dirRet,
+hit:dirRet===null?null:dirRet>0});
+});
+return {ok:true,checkpointDate,results:out};
+};
+
+</script><script>
+
+window.FORWARD_VALIDATION_REGISTRY.pairs=[{"pair":"EUR/GBP","t0_price":0.85785,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/AUD","t0_price":1.6199,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"PARTIAL","timing_text":"Timing da monitorare · EUR sta peggiorando · AUD è in possibile svolta","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":49.13824715804914,"extension_text":"Estensione non elevata · 1M -0.0% · P49 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"EUR/NZD","t0_price":2.0071,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/USD","t0_price":1.1378,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando · EUR sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.3% · P89 storico","extension_state":"ADVANCED","extension_percentile":88.5955262192886,"extension_text":"Prezzo già avanzato · 1M +2.3% · P89 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"EUR/CAD","t0_price":1.6118,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/CHF","t0_price":0.9464,"structural_fav":"EUR","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ADVERSE","timing_text":"Timing contrario · EUR sta peggiorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"ADVANCED","extension_percentile":81.004767143381,"extension_text":"Prezzo già avanzato · 1M +0.9% · P81 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"EUR: COT estremo · P15 · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce EUR"},{"pair":"EUR/JPY","t0_price":178.5,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · EUR sta peggiorando · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.8% · P97 storico","extension_state":"EXTENDED","extension_percentile":96.55298863219656,"extension_text":"Prezzo già molto avanzato · 1M +3.8% · P97 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce EUR"},{"pair":"GBP/AUD","t0_price":1.8883254648248526,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ADVERSE","timing_text":"Timing contrario · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":50.34836817015035,"extension_text":"Estensione non elevata · 1M +0.0% · P50 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"GBP/NZD","t0_price":2.33968642536574,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"GBP/USD","t0_price":1.3263391035728855,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · USD sta migliorando · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.3% · P85 storico","extension_state":"ADVANCED","extension_percentile":85.33186651998533,"extension_text":"Prezzo già avanzato · 1M +2.3% · P85 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"GBP/CAD","t0_price":1.8788832546482483,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"GBP/CHF","t0_price":1.1032231742146064,"structural_fav":"GBP","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · GBP sta migliorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"NORMAL","extension_percentile":69.08690869086908,"extension_text":"Estensione non elevata · 1M +0.9% · P69 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce GBP"},{"pair":"GBP/JPY","t0_price":208.078335373317,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.9% · P92 storico","extension_state":"EXTENDED","extension_percentile":92.37257059039237,"extension_text":"Prezzo già molto avanzato · 1M +3.9% · P92 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce GBP"},{"pair":"AUD/NZD","t0_price":1.2390271004382987,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +2.6% · P94 storico","extension_state":"EXTENDED","extension_percentile":93.61936193619361,"extension_text":"Prezzo già molto avanzato · 1M +2.6% · P94 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"AUD/USD","t0_price":0.7023890363602692,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"AUD/CAD","t0_price":0.9949996913389716,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"PARTIAL","timing_text":"Timing da monitorare · CAD sta peggiorando · AUD è in possibile svolta","price_state":"NEUTRAL","price_text":"Prezzo non conferma ancora","extension_state":"NORMAL","extension_percentile":45.947928126145946,"extension_text":"Estensione non elevata · 1M -0.2% · P46 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"AUD/CHF","t0_price":0.5842335946663375,"structural_fav":"AUD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"UNCERTAIN","timing_text":"Timing da monitorare · AUD è in possibile svolta","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":66.8133480014668,"extension_text":"Estensione non elevata · 1M +0.9% · P67 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce AUD"},{"pair":"AUD/JPY","t0_price":110.19198715970123,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"NZD/USD","t0_price":0.5668875492003388,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"MIXED","timing_text":"Timing misto · USD sta migliorando · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +4.8% · P96 storico","extension_state":"EXTENDED","extension_percentile":95.5995599559956,"extension_text":"Prezzo già molto avanzato · 1M +4.8% · P96 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"USD: COT da monitorare · P78 · già allineato al trade · NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"NZD/CAD","t0_price":0.8030491754272333,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"NZD/CHF","t0_price":0.4715260824074536,"structural_fav":"NZD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · NZD sta migliorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"NORMAL","extension_percentile":25.66923359002567,"extension_text":"Estensione non elevata · 1M -1.6% · P26 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"NZD: COT da monitorare · P78 · posizionamento contro il trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce NZD"},{"pair":"NZD/JPY","t0_price":88.93428329430522,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +6.3% · P98 storico","extension_state":"EXTENDED","extension_percentile":98.2031536486982,"extension_text":"Prezzo già molto avanzato · 1M +6.3% · P98 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"JPY: COT da monitorare · P70 · già allineato al trade · NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce NZD"},{"pair":"USD/CAD","t0_price":1.4165934259096502,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando · CAD sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.1% · P88 storico","extension_state":"ADVANCED","extension_percentile":88.37550421708838,"extension_text":"Prezzo già avanzato · 1M +2.1% · P88 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"USD/CHF","t0_price":0.8317806292845844,"structural_fav":"USD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.3% · P96 storico","extension_state":"EXTENDED","extension_percentile":96.40630729739641,"extension_text":"Prezzo già molto avanzato · 1M +3.3% · P96 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"USD: COT da monitorare · P78 · già allineato al trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"USD/JPY","t0_price":156.88170152926702,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"CAD/CHF","t0_price":0.5871696240228317,"structural_fav":"CAD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · CAD sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":75.65089842317565,"extension_text":"Estensione non elevata · 1M +1.1% · P76 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"CAD: COT estremo · P81 · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"CAD/JPY","t0_price":110.74575009306366,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · CAD sta peggiorando · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.6% · P93 storico","extension_state":"EXTENDED","extension_percentile":93.1059772643931,"extension_text":"Prezzo già molto avanzato · 1M +3.6% · P93 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"CHF/JPY","t0_price":188.60946745562129,"structural_fav":"JPY","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +4.7% · P99 storico","extension_state":"EXTENDED","extension_percentile":99.26659332599927,"extension_text":"Prezzo già molto avanzato · 1M +4.7% · P99 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"JPY: COT da monitorare · P70 · già allineato al trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"}];
+window.FORWARD_VALIDATION_REGISTRY.recorder_fix="2026-09-29T09:47+02:00";
+window.FORWARD_VALIDATION_REGISTRY.recorder_note="Timing, price, extension, COT and liquidity fields bound to derivePairSetupState output; model logic unchanged.";
+
+</script><script>
+
+window.FORWARD_VALIDATION_T0_FROZEN={"created_at":"2026-09-29T09:45+02:00","t0_price_date":"2026-09-28","pairs":[{"pair":"EUR/GBP","t0_price":0.85785,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/AUD","t0_price":1.6199,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"PARTIAL","timing_text":"Timing da monitorare · EUR sta peggiorando · AUD è in possibile svolta","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":49.13824715804914,"extension_text":"Estensione non elevata · 1M -0.0% · P49 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"EUR/NZD","t0_price":2.0071,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/USD","t0_price":1.1378,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando · EUR sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.3% · P89 storico","extension_state":"ADVANCED","extension_percentile":88.5955262192886,"extension_text":"Prezzo già avanzato · 1M +2.3% · P89 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"EUR/CAD","t0_price":1.6118,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"EUR/CHF","t0_price":0.9464,"structural_fav":"EUR","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ADVERSE","timing_text":"Timing contrario · EUR sta peggiorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"ADVANCED","extension_percentile":81.004767143381,"extension_text":"Prezzo già avanzato · 1M +0.9% · P81 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"EUR: COT estremo · P15 · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce EUR"},{"pair":"EUR/JPY","t0_price":178.5,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · EUR sta peggiorando · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.8% · P97 storico","extension_state":"EXTENDED","extension_percentile":96.55298863219656,"extension_text":"Prezzo già molto avanzato · 1M +3.8% · P97 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"EUR: COT estremo · P15 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce EUR"},{"pair":"GBP/AUD","t0_price":1.8883254648248526,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ADVERSE","timing_text":"Timing contrario · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":50.34836817015035,"extension_text":"Estensione non elevata · 1M +0.0% · P50 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"GBP/NZD","t0_price":2.33968642536574,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"GBP/USD","t0_price":1.3263391035728855,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · USD sta migliorando · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.3% · P85 storico","extension_state":"ADVANCED","extension_percentile":85.33186651998533,"extension_text":"Prezzo già avanzato · 1M +2.3% · P85 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"GBP/CAD","t0_price":1.8788832546482483,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"GBP/CHF","t0_price":1.1032231742146064,"structural_fav":"GBP","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · GBP sta migliorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"NORMAL","extension_percentile":69.08690869086908,"extension_text":"Estensione non elevata · 1M +0.9% · P69 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce GBP"},{"pair":"GBP/JPY","t0_price":208.078335373317,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando · GBP sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.9% · P92 storico","extension_state":"EXTENDED","extension_percentile":92.37257059039237,"extension_text":"Prezzo già molto avanzato · 1M +3.9% · P92 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"GBP: COT affollato · Net/OI -33.7% · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce GBP"},{"pair":"AUD/NZD","t0_price":1.2390271004382987,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +2.6% · P94 storico","extension_state":"EXTENDED","extension_percentile":93.61936193619361,"extension_text":"Prezzo già molto avanzato · 1M +2.6% · P94 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"AUD/USD","t0_price":0.7023890363602692,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"AUD/CAD","t0_price":0.9949996913389716,"structural_fav":"AUD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"PARTIAL","timing_text":"Timing da monitorare · CAD sta peggiorando · AUD è in possibile svolta","price_state":"NEUTRAL","price_text":"Prezzo non conferma ancora","extension_state":"NORMAL","extension_percentile":45.947928126145946,"extension_text":"Estensione non elevata · 1M -0.2% · P46 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"AUD/CHF","t0_price":0.5842335946663375,"structural_fav":"AUD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"UNCERTAIN","timing_text":"Timing da monitorare · AUD è in possibile svolta","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":66.8133480014668,"extension_text":"Estensione non elevata · 1M +0.9% · P67 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce AUD"},{"pair":"AUD/JPY","t0_price":110.19198715970123,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"NZD/USD","t0_price":0.5668875492003388,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"MIXED","timing_text":"Timing misto · USD sta migliorando · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +4.8% · P96 storico","extension_state":"EXTENDED","extension_percentile":95.5995599559956,"extension_text":"Prezzo già molto avanzato · 1M +4.8% · P96 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"USD: COT da monitorare · P78 · già allineato al trade · NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"NZD/CAD","t0_price":0.8030491754272333,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"NZD/CHF","t0_price":0.4715260824074536,"structural_fav":"NZD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA CONFERMARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · NZD sta migliorando","price_state":"BAD","price_text":"Prezzo diverge","extension_state":"NORMAL","extension_percentile":25.66923359002567,"extension_text":"Estensione non elevata · 1M -1.6% · P26 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"NZD: COT da monitorare · P78 · posizionamento contro il trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce NZD"},{"pair":"NZD/JPY","t0_price":88.93428329430522,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando · NZD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +6.3% · P98 storico","extension_state":"EXTENDED","extension_percentile":98.2031536486982,"extension_text":"Prezzo già molto avanzato · 1M +6.3% · P98 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"JPY: COT da monitorare · P70 · già allineato al trade · NZD: COT da monitorare · P78 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce NZD"},{"pair":"USD/CAD","t0_price":1.4165934259096502,"structural_fav":"USD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando · CAD sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.1% · P88 storico","extension_state":"ADVANCED","extension_percentile":88.37550421708838,"extension_text":"Prezzo già avanzato · 1M +2.1% · P88 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"},{"pair":"USD/CHF","t0_price":0.8317806292845844,"structural_fav":"USD","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"ALIGNED","timing_text":"Timing favorevole · USD sta migliorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.3% · P96 storico","extension_state":"EXTENDED","extension_percentile":96.40630729739641,"extension_text":"Prezzo già molto avanzato · 1M +3.3% · P96 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"USD: COT da monitorare · P78 · già allineato al trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce USD"},{"pair":"USD/JPY","t0_price":156.88170152926702,"structural_fav":"—","structural_quality":"NESSUN CONTRASTO","setup":"NON VALUTABILE","timing_state":null,"timing_text":null,"price_state":"NEUTRAL","price_text":"Nessun vantaggio strutturale","extension_state":null,"extension_percentile":null,"extension_text":null,"cot_state":"CONTEXT","cot_kind":"CONTEXT","cot_text":"COT solo contesto","liquidity_state":"CONTEXT","liquidity_text":"Liquidità solo contesto"},{"pair":"CAD/CHF","t0_price":0.5871696240228317,"structural_fav":"CAD","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · CAD sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma","extension_state":"NORMAL","extension_percentile":75.65089842317565,"extension_text":"Estensione non elevata · 1M +1.1% · P76 storico","cot_state":"DIVERGENT","cot_kind":"POSITIONING_AGAINST_TRADE","cot_text":"CAD: COT estremo · P81 · posizionamento contro il trade","liquidity_state":"GOOD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"CAD/JPY","t0_price":110.74575009306366,"structural_fav":"JPY","structural_quality":"VANTAGGIO RELATIVO PARZIALE","setup":"CON RISCHI","timing_state":"MIXED","timing_text":"Timing misto · CAD sta peggiorando · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.6% · P93 storico","extension_state":"EXTENDED","extension_percentile":93.1059772643931,"extension_text":"Prezzo già molto avanzato · 1M +3.6% · P93 storico","cot_state":"HIGH","cot_kind":"CROWDED_WITH_TRADE","cot_text":"CAD: COT estremo · P81 · già allineato al trade","liquidity_state":"BAD","liquidity_text":"Liquidità favorisce CAD"},{"pair":"CHF/JPY","t0_price":188.60946745562129,"structural_fav":"JPY","structural_quality":"CONTRASTO STRUTTURALE FORTE","setup":"DA MONITORARE","timing_state":"ADVERSE","timing_text":"Timing contrario · JPY sta peggiorando","price_state":"GOOD","price_text":"Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +4.7% · P99 storico","extension_state":"EXTENDED","extension_percentile":99.26659332599927,"extension_text":"Prezzo già molto avanzato · 1M +4.7% · P99 storico","cot_state":"MEDIUM","cot_kind":"WATCH_CROWDING","cot_text":"JPY: COT da monitorare · P70 · già allineato al trade · CHF: COT da monitorare · P74 · già allineato al trade","liquidity_state":"NEUTRAL","liquidity_text":"Liquidità neutra / simile"}]};
+window.FORWARD_VALIDATION_T0_SEAL="06ba0a7fd70382d6eedf0fa4694bd47ef08ce1521ea55e308ca4b956c3e93db9";
+window.forwardValidationFrozenSnapshot=function(){
+return JSON.parse(JSON.stringify(window.FORWARD_VALIDATION_T0_FROZEN));
+};
+window.evaluateForwardCheckpointV2=function(checkpointDate){
+const R=window.FORWARD_VALIDATION_T0_FROZEN;
+const row=(D.prices||[]).find(x=>x.Date===checkpointDate);
+if(!row) return {ok:false,error:'Checkpoint price row not available',checkpointDate};
+const price=(pair)=>{
+const [a,b]=pair.split('/');
+const va=a==='EUR'?1:+row[a], vb=b==='EUR'?1:+row[b];
+if(!isFinite(va)||!isFinite(vb)||va===0) return null;
+return vb/va;
+};
+const results=(R.pairs||[]).map(x=>{
+const p1=price(x.pair);
+const ret=(p1!==null && x.t0_price)?(p1/x.t0_price-1)*100:null;
+let dirRet=null, hit=null, isSignal=x.structural_fav && x.structural_fav!=='—';
+if(isSignal && ret!==null){
+const [a,b]=x.pair.split('/');
+dirRet=x.structural_fav===a?ret:x.structural_fav===b?-ret:null;
+hit=dirRet===null?null:dirRet>0;
+}
+return Object.assign({},x,{
+checkpointDate,
+checkpoint_price:p1,
+return_pct:ret,
+directional_return_pct:dirRet,
+hit,
+isSignal
+});
+});
+const bucket=(arr,key)=>{
+const groups={};
+arr.forEach(x=>{
+const k=x[key]||'UNKNOWN';
+(groups[k]||(groups[k]=[])).push(x);
+});
+return Object.fromEntries(Object.entries(groups).map(([k,a])=>{
+const sig=a.filter(x=>x.isSignal && x.directional_return_pct!==null);
+const hits=sig.filter(x=>x.hit===true).length;
+const avg=sig.length?sig.reduce((z,x)=>z+x.directional_return_pct,0)/sig.length:null;
+return [k,{
+total:a.length,
+signals:sig.length,
+hits,
+misses:sig.filter(x=>x.hit===false).length,
+hit_rate:sig.length?hits/sig.length:null,
+avg_directional_return_pct:avg
+}];
+}));
+};
+const signalResults=results.filter(x=>x.isSignal);
+const hits=signalResults.filter(x=>x.hit===true).length;
+const valid=signalResults.filter(x=>x.hit!==null);
+return {
+ok:true,
+checkpointDate,
+t0_price_date:R.t0_price_date,
+total_pairs:results.length,
+signal_pairs:signalResults.length,
+valid_signal_pairs:valid.length,
+overall_hit_rate:valid.length?hits/valid.length:null,
+by_structure:bucket(results,'structural_quality'),
+by_setup:bucket(results,'setup'),
+results
+};
+};
+window.forwardValidationIntegritySummary=function(){
+const R=window.FORWARD_VALIDATION_T0_FROZEN;
+return {
+seal:window.FORWARD_VALIDATION_T0_SEAL,
+created_at:R.created_at,
+t0_price_date:R.t0_price_date,
+pair_count:R.pairs.length,
+signal_count:R.pairs.filter(x=>x.structural_fav && x.structural_fav!=='—').length,
+no_signal_count:R.pairs.filter(x=>!x.structural_fav || x.structural_fav==='—').length,
+rule:'T0 frozen. No retroactive edits. No-contrast pairs excluded from directional hit-rate.'
+};
+};
+
+</script><script>
+
+(function(){
+const clone=x=>JSON.parse(JSON.stringify(x));
+window.AUXILIARY_REFRESH_GENERATION=window.AUXILIARY_REFRESH_GENERATION||0;
+window.LAST_AUXILIARY_REFRESH=window.LAST_AUXILIARY_REFRESH||null;
+window.AUXILIARY_FEED_FRESHNESS=window.AUXILIARY_FEED_FRESHNESS||{};
+// Existing calendar is an array. Give legacy overview code a live .today getter
+// instead of creating a second calendar source.
+try{
+Object.defineProperty(REAL_CALENDAR,'today',{
+configurable:true,
+get(){
+const key=(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date)||'2026-09-30';
+return (REAL_CALENDAR.find(d=>d.key===key)||{events:[]}).events||[];
+}
+});
+}catch(e){}
+window.validateAuxiliaryRefreshPayload=function(payload){
+const errors=[];
+if(payload?.calendar && !Array.isArray(payload.calendar)) errors.push('calendar must be an array');
+if(payload?.news && !Array.isArray(payload.news)) errors.push('news must be an array');
+if(payload?.risk){
+Object.entries(payload.risk).forEach(([k,v])=>{
+if(!v || !v.date || !Number.isFinite(+v.value)) errors.push(`risk ${k} requires date + numeric value`);
+});
+}
+return {ok:errors.length===0,errors};
+};
+function upsertRiskPoint(key,point){
+const r=D.risk?.[key];
+if(!r) throw new Error('Unknown risk series '+key);
+r.dates=r.dates||[]; r.values=r.values||[];
+const i=r.dates.indexOf(point.date);
+if(i>=0) r.values[i]=+point.value;
+else {
+r.dates.push(point.date); r.values.push(+point.value);
+const rows=r.dates.map((d,i)=>[d,r.values[i]]).sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+r.dates.splice(0,r.dates.length,...rows.map(x=>x[0]));
+r.values.splice(0,r.values.length,...rows.map(x=>x[1]));
+}
+}
+window.applyAuxiliaryRefreshPayload=function(payload){
+const chk=validateAuxiliaryRefreshPayload(payload);
+if(!chk.ok) return {ok:false,errors:chk.errors};
+const backup={
+calendar:clone(REAL_CALENDAR),
+news:clone(NEWS_PULSE_STRUCT),
+risk:clone(D.risk),
+freshness:clone(window.AUXILIARY_FEED_FRESHNESS)
+};
+try{
+if(payload.calendar){
+REAL_CALENDAR.splice(0,REAL_CALENDAR.length,...clone(payload.calendar));
+}
+if(payload.news){
+NEWS_PULSE_STRUCT.splice(0,NEWS_PULSE_STRUCT.length,...clone(payload.news));
+}
+if(payload.risk){
+Object.entries(payload.risk).forEach(([k,v])=>upsertRiskPoint(k,v));
+}
+if(payload.freshness){
+window.AUXILIARY_FEED_FRESHNESS=Object.assign({},window.AUXILIARY_FEED_FRESHNESS,clone(payload.freshness));
+}
+// Keep current calendar day aligned to the live date.
+const current=window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date;
+if(current){
+const idx=REAL_CALENDAR.findIndex(d=>d.key===current);
+if(idx>=0) calendarDay=idx;
+}
+// Auxiliary render propagation only. No structural state mutation here.
+const call=(fn)=>{try{return fn();}catch(e){return null;}};
+call(()=>renderRealCalendar());
+call(()=>renderNewsPulse());
+call(()=>refreshGlobalRiskOverview());
+call(()=>renderOperationalOverview());
+call(()=>renderSimpleOverview());
+call(()=>window.renderTopThemes());
+call(()=>renderWhatChanged());
+window.AUXILIARY_REFRESH_GENERATION+=1;
+window.LAST_AUXILIARY_REFRESH={
+ok:true,
+generation:window.AUXILIARY_REFRESH_GENERATION,
+at:new Date().toISOString(),
+touched:{
+calendar:!!payload.calendar,
+news:!!payload.news,
+risk:Object.keys(payload.risk||{})
+}
+};
+return clone(window.LAST_AUXILIARY_REFRESH);
+}catch(e){
+REAL_CALENDAR.splice(0,REAL_CALENDAR.length,...backup.calendar);
+NEWS_PULSE_STRUCT.splice(0,NEWS_PULSE_STRUCT.length,...backup.news);
+Object.keys(D.risk).forEach(k=>delete D.risk[k]);
+Object.assign(D.risk,backup.risk);
+window.AUXILIARY_FEED_FRESHNESS=backup.freshness;
+return {ok:false,error:String(e?.message||e),rolled_back:true};
+}
+};
+window.AUXILIARY_REFRESH_POLICY={
+calendar:'rolling 5 market days; actual/status only when validated',
+news:'replace current pulse with sourced items; informational only',
+risk:'update each market series independently; missing series keep last valid',
+structural_contamination:'FORBIDDEN'
+};
+})();
+
+</script><script>
+
+(function(){
+const cal=JSON.parse(JSON.stringify(REAL_CALENDAR));
+const today=cal.find(d=>d.key==='2026-09-29');
+if(today){
+const rba=today.events.find(e=>/RBA Cash Rate/.test(e.event));
+if(rba){
+rba.actual='4,60%';
+rba.status='done';
+rba.surprise='Rialzo +25 pb · ampiamente atteso';
+rba.scls='neutral';
+rba.direction='RBA più restrittiva; ora conta la conferma di AU 2Y e AUD';
+rba.confirm='ASX pricing post-decisione + AU 2Y + AUD cross';
+}
+const pc=today.events.find(e=>/RBA Press Conference/.test(e.event));
+if(pc){
+pc.status='done';
+pc.actual='Conclusa';
+pc.surprise='Tono restrittivo, ma nessuna traiettoria automatica';
+pc.scls='neutral';
+}
+}
+window.applyAuxiliaryRefreshPayload({
+calendar:cal,
+news:[{"cat":"CB","importance":"high","status":"change","ccy":"AUD","layer":"Banca centrale","title":"RBA alza il cash rate al 4,60%","what":"La Reserve Bank of Australia ha alzato il cash rate di 25 pb al 4,60% il 29 settembre.","why":"La decisione conferma una stance più restrittiva; per AUD ora conta soprattutto il pricing post-decisione del front-end.","fx":"AUD · AU 2Y · AUD cross","watch":"ASX cash-rate futures post-meeting + AU 2Y + AUD cross","changed":"La RBA ha consegnato il rialzo atteso; il prossimo test è quanto mercato e AUD mantengono il repricing."},{"cat":"Rates","importance":"high","status":"change","ccy":"USD","layer":"Rates","title":"USD sostenuto da rendimenti USA elevati","what":"Il dollaro resta vicino ai massimi di circa due mesi mentre i rendimenti Treasury rimangono elevati.","why":"Il differenziale di tasso continua a sostenere USD, ma il prossimo PCE e i payrolls possono cambiare rapidamente il pricing Fed.","fx":"USD · UST 2Y · UST 10Y","watch":"UST 2Y + PCE + payrolls + pricing Fed","changed":"Il supporto USD resta soprattutto Rates-driven."},{"cat":"Energy","importance":"high","status":"watch","ccy":"GLOBAL","layer":"Energia","title":"Brent resta sopra 100 dollari","what":"Il Brent ha chiuso il 28 settembre a circa 105,28 dollari e nella mattina del 29 è tornato sopra 107.","why":"Energia così alta può riaprire il canale inflazione → long-end → banche centrali e colpire in modo diverso esportatori e importatori.","fx":"CAD · USD · EUR · JPY · AUD","watch":"Brent + breakeven + 10Y + CAD/JPY/EUR","changed":"Lo shock energia resta un overlay macro importante."},{"cat":"Rates","importance":"high","status":"watch","ccy":"GLOBAL","layer":"Obbligazionario","title":"Vendite sui bond globali ancora al centro","what":"Il 28 settembre i rendimenti globali sono saliti nettamente, con la volatilità dei tassi molto più evidente di quella equity.","why":"Per FX va separato il rialzo del front-end, più direttamente legato alle banche centrali, dal rialzo del long-end legato a inflazione e term premium.","fx":"USD · JPY · EUR · Gold","watch":"2Y vs 10Y + real yields + breakeven","changed":"Il mercato continua a essere guidato più dai tassi che dall'equity volatility."},{"cat":"Macro","importance":"high","status":"watch","ccy":"USD","layer":"Event risk","title":"PCE e payrolls USA diventano il prossimo snodo","what":"Il mercato attende i prossimi dati USA su inflazione e lavoro dopo il forte repricing dei Treasury.","why":"Una sorpresa può cambiare rapidamente il percorso atteso Fed e quindi il vantaggio relativo di USD.","fx":"USD · UST 2Y · Gold","watch":"Core PCE + NFP + unemployment + UST 2Y","changed":"Il prossimo cambio di regime USD dipende soprattutto dai dati, non da una nuova narrativa già confermata."}],
+risk:{
+Brent:{date:'2026-09-28',value:105.28},
+WTI:{date:'2026-09-28',value:92.60}
+},
+freshness:{
+calendar:{current_date:'2026-09-30',status:'PARTIAL_LIVE_VALIDATED',note:'29 Sep chiuso; 30 Sep aggiornato fino alle 10:34. ADP e PCE ancora pending.'},
+news:{as_of:'2026-09-30T10:34+02:00',status:'CURRENT_SOURCED'},
+risk:{
+Brent:{as_of:'2026-09-28',status:'CURRENT_CLOSE'},
+WTI:{as_of:'2026-09-28',status:'CURRENT_CLOSE'},
+VIX:{as_of:'2026-09-25',status:'LAST_VALID'},
+Gold:{as_of:'2026-09-25',status:'LAST_VALID'},
+'China CLI':{as_of:'2026-08-01',status:'MONTHLY_LAST_VALID'}
+}
+}
+});
+})();
+
+</script><script>
+
+(function(){
+const clone=x=>JSON.parse(JSON.stringify(x));
+window.PRODUCTION_REFRESH_GENERATION=window.PRODUCTION_REFRESH_GENERATION||0;
+window.LAST_PRODUCTION_REFRESH=window.LAST_PRODUCTION_REFRESH||null;
+window.validateProductionDailyPayload=function(payload){
+payload=payload||{};
+const errors=[];
+if(payload.core){
+const planned=buildGuardedDailyPayload(clone(payload.core));
+const c=validateCanonicalRefreshPayload(planned);
+if(!c.ok) errors.push(...(c.errors||[]).map(x=>'CORE: '+x));
+}
+if(payload.auxiliary){
+const a=validateAuxiliaryRefreshPayload(payload.auxiliary);
+if(!a.ok) errors.push(...(a.errors||[]).map(x=>'AUX: '+x));
+}
+return {
+ok:errors.length===0,
+errors
+};
+};
+window.runProductionDailyRefresh=function(payload){
+payload=clone(payload||{});
+const pre=validateProductionDailyPayload(payload);
+if(!pre.ok){
+return {
+ok:false,
+stage:'PRECHECK',
+errors:pre.errors,
+generation:window.PRODUCTION_REFRESH_GENERATION
+};
+}
+// The individual pipelines are already rollback-safe.
+// Preflight validates both blocks BEFORE either is mutated.
+let coreResult={ok:true,skipped:true};
+let auxResult={ok:true,skipped:true};
+if(payload.core){
+coreResult=runGuardedDailyRefresh(payload.core);
+if(!coreResult?.result?.ok){
+return {
+ok:false,
+stage:'CORE',
+core:coreResult,
+auxiliary:auxResult,
+generation:window.PRODUCTION_REFRESH_GENERATION
+};
+}
+}
+if(payload.auxiliary){
+auxResult=applyAuxiliaryRefreshPayload(payload.auxiliary);
+if(!auxResult?.ok){
+return {
+ok:false,
+stage:'AUXILIARY',
+core:coreResult,
+auxiliary:auxResult,
+generation:window.PRODUCTION_REFRESH_GENERATION,
+warning:'Core succeeded but auxiliary failed after preflight. Investigate before next production refresh.'
+};
+}
+}
+// One final synchronization pass after both pipelines.
+try{
+endToEndRecompute();
+}catch(e){}
+try{
+renderOperationalOverview();
+renderRealCalendar();
+renderNewsPulse();
+refreshGlobalRiskOverview();
+}catch(e){}
+window.PRODUCTION_REFRESH_GENERATION+=1;
+const structuralQueue=(typeof rebuildStructuralChangeQueue==='function')
+? rebuildStructuralChangeQueue()
+: {};
+window.LAST_PRODUCTION_REFRESH={
+ok:true,
+generation:window.PRODUCTION_REFRESH_GENERATION,
+at:new Date().toISOString(),
+core:coreResult,
+auxiliary:auxResult,
+structural_queue:clone(structuralQueue),
+policy:'ONE_PREFLIGHT_CORE_PLUS_AUXILIARY'
+};
+return clone(window.LAST_PRODUCTION_REFRESH);
+};
+window.productionRefreshStatus=function(){
+return {
+generation:window.PRODUCTION_REFRESH_GENERATION,
+last:clone(window.LAST_PRODUCTION_REFRESH),
+core_generation:window.REFRESH_GENERATION,
+auxiliary_generation:window.AUXILIARY_REFRESH_GENERATION,
+structural_queue:clone(window.PENDING_STRUCTURAL_CHANGES||{}),
+source_audit:(typeof finalSourceAuditSummary==='function'?finalSourceAuditSummary():null),
+auxiliary_freshness:clone(window.AUXILIARY_FEED_FRESHNESS||{})
+};
+};
+})();
+
+</script><script>
+
+(function(){
+const clone=x=>JSON.parse(JSON.stringify(x));
+const baseRun=window.runProductionDailyRefresh;
+function restoreObjectInPlace(target,src){
+Object.keys(target||{}).forEach(k=>delete target[k]);
+Object.assign(target,clone(src||{}));
+}
+window.runProductionDailyRefresh=function(payload){
+payload=clone(payload||{});
+const pre=validateProductionDailyPayload(payload);
+if(!pre.ok){
+return {
+ok:false,
+stage:'PRECHECK',
+errors:pre.errors,
+generation:window.PRODUCTION_REFRESH_GENERATION
+};
+}
+const backup={
+nativeRates:clone(NATIVE_RATES_DATA),
+nativeCb:clone(NATIVE_CB_DATA),
+nativeLiq:clone(NATIVE_LIQ_DATA),
+prices:clone(D.prices),
+series:clone(S),
+canonical:clone(window.CANONICAL_LAYER_STATE),
+calendar:clone(REAL_CALENDAR),
+news:clone(NEWS_PULSE_STRUCT),
+risk:clone(D.risk),
+auxFresh:clone(window.AUXILIARY_FEED_FRESHNESS),
+refreshGen:window.REFRESH_GENERATION,
+auxGen:window.AUXILIARY_REFRESH_GENERATION,
+prodGen:window.PRODUCTION_REFRESH_GENERATION,
+lastRefresh:clone(window.LAST_REFRESH_AUDIT),
+lastAux:clone(window.LAST_AUXILIARY_REFRESH),
+lastProd:clone(window.LAST_PRODUCTION_REFRESH)
+};
+let coreResult={ok:true,skipped:true};
+let auxResult={ok:true,skipped:true};
+try{
+if(payload.core){
+coreResult=runGuardedDailyRefresh(payload.core);
+if(!coreResult?.result?.ok){
+throw new Error('CORE_REFRESH_FAILED');
+}
+}
+if(payload.auxiliary){
+auxResult=applyAuxiliaryRefreshPayload(payload.auxiliary);
+if(!auxResult?.ok){
+throw new Error('AUXILIARY_REFRESH_FAILED: '+(auxResult?.error||'unknown'));
+}
+}
+try{endToEndRecompute();}catch(e){}
+try{
+renderOperationalOverview();
+renderRealCalendar();
+renderNewsPulse();
+refreshGlobalRiskOverview();
+}catch(e){}
+window.PRODUCTION_REFRESH_GENERATION+=1;
+const queue=(typeof rebuildStructuralChangeQueue==='function')
+? rebuildStructuralChangeQueue()
+: {};
+window.LAST_PRODUCTION_REFRESH={
+ok:true,
+generation:window.PRODUCTION_REFRESH_GENERATION,
+at:new Date().toISOString(),
+core:coreResult,
+auxiliary:auxResult,
+structural_queue:clone(queue),
+policy:'GLOBAL_ATOMIC_CORE_PLUS_AUXILIARY'
+};
+return clone(window.LAST_PRODUCTION_REFRESH);
+}catch(err){
+// Full rollback: core + auxiliary return to the exact pre-refresh state.
+restoreObjectInPlace(NATIVE_RATES_DATA,backup.nativeRates);
+restoreObjectInPlace(NATIVE_CB_DATA,backup.nativeCb);
+restoreObjectInPlace(NATIVE_LIQ_DATA,backup.nativeLiq);
+D.prices.splice(0,D.prices.length,...clone(backup.prices));
+restoreObjectInPlace(S,backup.series);
+restoreObjectInPlace(window.CANONICAL_LAYER_STATE,backup.canonical);
+REAL_CALENDAR.splice(0,REAL_CALENDAR.length,...clone(backup.calendar));
+NEWS_PULSE_STRUCT.splice(0,NEWS_PULSE_STRUCT.length,...clone(backup.news));
+restoreObjectInPlace(D.risk,backup.risk);
+window.AUXILIARY_FEED_FRESHNESS=clone(backup.auxFresh);
+window.REFRESH_GENERATION=backup.refreshGen;
+window.AUXILIARY_REFRESH_GENERATION=backup.auxGen;
+window.PRODUCTION_REFRESH_GENERATION=backup.prodGen;
+window.LAST_REFRESH_AUDIT=clone(backup.lastRefresh);
+window.LAST_AUXILIARY_REFRESH=clone(backup.lastAux);
+window.LAST_PRODUCTION_REFRESH=clone(backup.lastProd);
+try{stableModelRefresh();}catch(e){}
+try{
+renderRealCalendar();
+renderNewsPulse();
+refreshGlobalRiskOverview();
+renderOperationalOverview();
+}catch(e){}
+return {
+ok:false,

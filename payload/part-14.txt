@@ -1,0 +1,1000 @@
+  return {ccy,labour,inflation,status:(labour.status==='ACTIVE'&&inflation.status==='ACTIVE')?'ACTIVE':'WITHHELD'};
+}
+window.GMFQ_MACRO_THERMOMETER.percentileRank=pctRank;
+window.GMFQ_MACRO_THERMOMETER.label=label;
+window.GMFQ_MACRO_THERMOMETER.series=series;
+window.GMFQ_MACRO_THERMOMETER.currency=currency;
+window.GMFQ_MACRO_THERMOMETER.snapshot=function(){
+  return ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(currency);
+};
+})();
+
+</script>
+<script>
+
+(function(){
+'use strict';
+window.GMFQ_REFRESH_HEALTH=window.GMFQ_REFRESH_HEALTH||{};
+function okValidation(x){
+  const v=x?.validation||{};
+  return v.source===true&&v.history===true&&v.latest===true&&v.transformation===true;
+}
+window.GMFQ_REFRESH_HEALTH.report=function(){
+  const out={status:'PASS',heatmap:{active:0,total:8,series:0,seriesTotal:16,warnings:[]},ois:{active:0,total:8,warnings:[]}};
+  const h=window.__GMFQ_DATA?.MACRO_THERMOMETER_DATA?.currencies||{};
+  for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+    const d=h[c];
+    const i=d?.inflation,l=d?.labour;
+    if(okValidation(i)&&i?.as_of) out.heatmap.series++;
+    else out.heatmap.warnings.push(c+': inflation freshness/validation incomplete');
+    if(okValidation(l)&&l?.as_of) out.heatmap.series++;
+    else out.heatmap.warnings.push(c+': unemployment freshness/validation incomplete');
+    if(okValidation(i)&&i?.as_of&&okValidation(l)&&l?.as_of&&l?.inverted_for_heat===false) out.heatmap.active++;
+    else out.heatmap.warnings.push(c+': currency heatmap not fully healthy');
+  }
+  const o=window.__GMFQ_DATA?.OIS_DATA?.currencies||{};
+  for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+    if(o[c]?.status==='ACTIVE') out.ois.active++;
+  }
+  if(out.ois.active<8) out.ois.warnings.push('OIS curve remains withheld until validated market path data are available for each active currency.');
+  if(out.heatmap.active<8||out.heatmap.series<16) out.status='FAIL';
+  else if(out.ois.active<8) out.status='PASS_WITH_WITHHELD_OIS';
+  return out;
+};
+})();
+
+
+</script>
+<script id="v407-inflation-labour-script">
+(function(){
+'use strict';
+const IL_NAMES={USD:'Stati Uniti',EUR:'Eurozona',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
+function ilFmt(v,d=1){ return Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '—'; }
+function ilBand(score){
+  const s=Number(score);
+  if(!Number.isFinite(s)) return {txt:'Non disponibile', cls:'normal', color:'#94a3b8'};
+  if(s<20) return {txt:'Molto fredda', cls:'cold', color:'linear-gradient(180deg,#38bdf8,#2563eb)'};
+  if(s<40) return {txt:'Fredda', cls:'cold', color:'linear-gradient(180deg,#38bdf8,#2563eb)'};
+  if(s<60) return {txt:'Normale', cls:'normal', color:'#94a3b8'};
+  if(s<80) return {txt:'Calda', cls:'hot', color:'linear-gradient(180deg,#f59e0b,#ef4444)'};
+  return {txt:'Molto calda', cls:'hot', color:'linear-gradient(180deg,#f59e0b,#ef4444)'};
+}
+function ilDir(x){
+  if(x==='SALE') return 'sta salendo';
+  if(x==='SCENDE') return 'sta scendendo';
+  return 'stabile';
+}
+function ilAcc(x){
+  if(x==='ACCELERA') return 'accelera';
+  if(x==='RALLENTA') return 'rallenta';
+  return 'senza variazioni di ritmo';
+}
+function ilNarrative(key, score, direction, acceleration){
+  const b=ilBand(score).txt.toLowerCase();
+  if(key==='inflation') return `Inflazione ${b}: ${ilDir(direction)}, ${ilAcc(acceleration)}.`;
+  return `Disoccupazione ${b}: ${ilDir(direction)}, ${ilAcc(acceleration)}.`;
+}
+function ilMetric(ccy,key,label,subhint){
+  const x=window.GMFQ_MACRO_THERMOMETER?.series ? window.GMFQ_MACRO_THERMOMETER.series(ccy,key) : {status:'WITHHELD'};
+  if(x.status!=='ACTIVE'){
+    return `<div class="il407Mini"><div class="il407MiniHead"><strong>${label}</strong><span class="il407Band normal">Con dati mancanti</span></div><div class="il407Hint">${subhint}</div></div>`;
+  }
+  const band=ilBand(x.score);
+  const fill=Math.max(6, Math.min(100, Number(x.score)));
+  return `
+  <div class="il407Mini">
+    <div class="il407MiniHead">
+      <strong>${label}</strong>
+      <span class="il407Band ${band.cls}">${band.txt}</span>
+    </div>
+    <div class="il407ThermoWrap">
+      <div class="il407Thermo">
+        <div class="il407Tube"><div class="il407Fill" style="height:${fill}%;background:${band.color}"></div></div>
+        <div class="il407Bulb"><div class="il407BulbInner" style="background:${band.color}"></div></div>
+        <div class="il407Ticks"><span>100</span><span>50</span><span>0</span></div>
+      </div>
+      <div>
+        <p class="il407StatLine"><b>${ilFmt(x.latest_value)}</b> · percentile <b>${ilFmt(x.score,0)}</b>/100</p>
+        <p class="il407StatLine">${ilNarrative(key, x.score, x.direction, x.acceleration)}</p>
+        <div class="il407Hint">${subhint}</div>
+      </div>
+    </div>
+  </div>`;
+}
+window.renderInflationLabourSection=function(){
+  const root=document.querySelector('#il407Grid');
+  const sum=document.querySelector('#il407Summary');
+  if(!root || !sum) return;
+  const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  let hotInf=0, hotLab=0, coldInf=0, coldLab=0;
+  const cards=ccys.map(ccy=>{
+    const infl=window.GMFQ_MACRO_THERMOMETER?.series(ccy,'inflation');
+    const lab=window.GMFQ_MACRO_THERMOMETER?.series(ccy,'labour');
+    if(infl?.status==='ACTIVE'){ if(Number(infl.score)>=60) hotInf++; if(Number(infl.score)<40) coldInf++; }
+    if(lab?.status==='ACTIVE'){ if(Number(lab.score)>=60) hotLab++; if(Number(lab.score)<40) coldLab++; }
+    const status=(infl?.status==='ACTIVE' && lab?.status==='ACTIVE') ? 'Copertura completa' : 'Copertura parziale';
+    return `
+      <div class="il407Card">
+        <div class="il407CardTop">
+          <div class="il407Ccy">
+            ${typeof flagSvg==='function' ? flagSvg(ccy) : ''}
+            <div class="il407CcyName"><b>${ccy}</b><span>${IL_NAMES[ccy]||ccy}</span></div>
+          </div>
+          <div class="il407Status">${status}</div>
+        </div>
+        <div class="il407Dual">
+          ${ilMetric(ccy,'inflation','Inflazione','')}
+          ${ilMetric(ccy,'labour','Disoccupazione','')}
+        </div>
+      </div>`;
+  }).join('');
+  root.innerHTML=cards;
+  sum.innerHTML = `
+    <div class="il407SummaryBox">
+      <div><span>Inflazione calda</span><b>${hotInf}</b><p>Valute con inflazione sopra la fascia normale della propria storia.</p></div>
+      <div><span>Inflazione fredda</span><b>${coldInf}</b></div>
+    </div>
+    <div class="il407SummaryBox">
+      <div><span>Disoccupazione calda</span><b>${hotLab}</b><p></p></div>
+      <div><span>Disoccupazione fredda</span><b>${coldLab}</b></div>
+    </div>`;
+};
+})();
+</script>
+
+
+<script id="v408-thermometer-route-fix">
+(function(){
+'use strict';
+const prev=window.showView;
+if(typeof prev==='function'){
+  window.showView=function(v){
+    const out=prev.apply(this,arguments);
+    if(v==='inflationlabour' && typeof window.renderInflationLabourSection==='function'){
+      try{ window.renderInflationLabourSection(); }catch(e){ console.error('[v408 inflationlabour]',e); }
+    }
+    return out;
+  };
+}
+document.querySelectorAll('#nav button[data-view="inflationlabour"]').forEach(function(b){
+  b.onclick=function(){ window.showView('inflationlabour'); };
+});
+})();
+</script>
+
+
+<script id="v434-functional-wiring-audit">
+
+(function(){
+'use strict';
+const EXPECTED_VIEWS=['overview','wow','themes','calendar','news','risk','currencies','pairs','macro','inflationlabour','ratesdesk','cbdesk','liquiditydesk','cot','method','forwarddesk'];
+const RENDERERS={
+  overview:['renderOperationalOverview','renderSimpleOverview','renderOverview387'],
+  currencies:['renderCurrency','renderCurrencyIntelligence'],
+  pairs:['renderPairGroups','renderPair'],
+  macro:['renderMacroLab'],
+  inflationlabour:['renderInflationLabourSection'],
+  cot:['renderCot'],
+  risk:['renderRischio'],
+  calendar:['renderRealCalendar'],
+  wow:['renderWhatChanged'],
+  themes:['renderTopThemes','renderTopThemes393'],
+  news:['renderNewsPulse'],
+  ratesdesk:['renderNativeRatesDesk'],
+  cbdesk:['renderNativeCbDesk'],
+  liquiditydesk:['renderNativeLiquidityDesk'],
+  forwarddesk:['renderForwardMonitor']
+};
+const MOUNTS={
+  overview:['ov387RatesLevel','ov387RatesChange','v256LayerMap','ov387Pairs','ov387Changes'],
+  currencies:['currencyGrid','v224Headline','v219MacroLayer','v219RatesLayer','v219CotLayer','v219PriceLayer'],
+  pairs:['strongPairs','partialPairs','weakPairs','v226PairDetail','pairSelect'],
+  macro:['v232CurrencyCards','v232MacroRead','v232SectorGrid'],
+  inflationlabour:['il407Summary','il407Grid'],
+  cot:['v247CurrencyCards','v247Headline','v247Today','v247FocusGrid'],
+  risk:['r218Narrative','r218Drivers','r218Currencies'],
+  calendar:['calendarTabs','realCalendar'],
+  wow:['wc388Summary','wowPriority','wowStable'],
+  themes:['tt392Main','tt392MoreGrid'],
+  news:['npNarrative','npChangedGrid','newsPulseList'],
+  ratesdesk:['v233CurrencyCards','v233RatesRead','v233RatesGrid','v401OisBlock'],
+  cbdesk:['v234CurrencyCards','v234PolicyRead','v234PolicyGrid'],
+  liquiditydesk:['v243CurrencyCards','v243ThesisText','v243ContextOverlay'],
+  forwarddesk:['fwdIntegrity','fwdTopCards','fwdHorizonTable','fwdRecentSnapshots']
+};
+function run(){
+  const issues=[], details={views:{}, renderers:{}, mounts:{}};
+  const nav=[...document.querySelectorAll('#nav [data-view]')].map(x=>x.dataset.view);
+  const sections=[...document.querySelectorAll('section.view[id]')].map(x=>x.id);
+  EXPECTED_VIEWS.forEach(v=>{
+    details.views[v]={nav:nav.includes(v),section:sections.includes(v)};
+    if(!details.views[v].nav) issues.push('MISSING_NAV:'+v);
+    if(!details.views[v].section) issues.push('MISSING_VIEW:'+v);
+  });
+  Object.entries(RENDERERS).forEach(([v,fs])=>{
+    details.renderers[v]={};
+    fs.forEach(f=>{
+      const ok=typeof window[f]==='function';
+      details.renderers[v][f]=ok;
+      if(!ok) issues.push('MISSING_RENDERER:'+v+':'+f);
+    });
+  });
+  Object.entries(MOUNTS).forEach(([v,ids])=>{
+    details.mounts[v]={};
+    ids.forEach(id=>{
+      const ok=!!document.getElementById(id);
+      details.mounts[v][id]=ok;
+      if(!ok) issues.push('MISSING_MOUNT:'+v+':'+id);
+    });
+  });
+  const active=[...document.querySelectorAll('section.view.active')].map(x=>x.id);
+  details.active_views=active;
+  if(active.length!==1) issues.push('ACTIVE_VIEW_COUNT:'+active.length);
+  const result={
+    ok:issues.length===0,
+    status:issues.length?'FAIL':'PASS',
+    issues,details,
+    checked_at:new Date().toISOString()
+  };
+  window.__GMFQ_FUNCTIONAL_WIRING_AUDIT__=result;
+  document.documentElement.dataset.functionalWiring=result.status;
+  return result;
+}
+window.gmfqFunctionalWiringAudit=run;
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(run,250));
+}else{
+  setTimeout(run,250);
+}
+})();
+
+</script>
+
+
+<script id="v436-post-cb-rates-freshness-guard">
+
+(function(){
+'use strict';
+function asDate(x){
+  const t=Date.parse(String(x||''));
+  return Number.isFinite(t)?t:null;
+}
+window.postCbRatesFreshness=function(ccy){
+  const r=window.NATIVE_RATES_DATA?.[ccy] || window.__GMFQ_DATA?.NATIVE_RATES_DATA?.[ccy];
+  const cb=window.NATIVE_CB_DATA?.[ccy] || window.__GMFQ_DATA?.NATIVE_CB_DATA?.[ccy];
+  const rd=asDate(r?.date), cd=asDate(cb?.last_date);
+  const stale=rd!=null && cd!=null && rd<cd;
+  return {
+    currency:ccy,
+    stale_after_cb:stale,
+    rates_date:r?.date||null,
+    cb_date:cb?.last_date||null,
+    note:stale
+      ? `Tassi ${r?.date||'—'} precedenti alla decisione CB ${cb?.last_date||'—'}: reazione post-decisione non ancora validata.`
+      : 'Rates snapshot non precedente all’ultima decisione CB.'
+  };
+};
+
+const base=window.renderNativeRatesDesk;
+if(typeof base==='function'){
+  window.renderNativeRatesDesk=function(){
+    const out=base.apply(this,arguments);
+    try{
+      const c=(typeof nativeRatesSelected!=='undefined' && nativeRatesSelected) ? nativeRatesSelected : 'USD';
+      const chk=window.postCbRatesFreshness(c);
+      const host=document.getElementById('nativeRatesQuality');
+      if(host && chk.stale_after_cb){
+        host.textContent=(host.textContent||'').trim()+' · PRE-DECISIONE CB';
+        host.title=chk.note;
+      }
+      const read=document.getElementById('nativeRatesRead');
+      if(read && chk.stale_after_cb){
+        read.insertAdjacentHTML('beforeend',` <b>Freshness:</b> ${chk.note}`);
+      }
+    }catch(e){}
+    return out;
+  };
+}
+})();
+
+</script>
+
+
+<script id="v463-currencies-visual-signals-js" type="text/plain">
+(function(){
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function signalClass(text){
+    const x=String(text||'').toUpperCase();
+    if(/PEGGIORA|PEGGIOR|FRENA|FRENANO|PRESSIONE|DIVERGE|FRAGILE|DEBOLE|NEGATIV|CONTRARIA|CALO/.test(x)) return 'v463SignalNeg';
+    if(/MIGLIORA|MIGLIOR|AIUTA|AIUTANO|CONFERMA|FORTE|COSTRUTTIV|POSITIV|AUMENTO|SOSTEGNO|SUPPORTO IN AUMENTO/.test(x)) return 'v463SignalPos';
+    if(/SVOLTA|MISTA|MISTO|CONTRASTANT|NON RISOLUTIVO|NON DETERMINATO|EARLY|ATTENZIONE|RISCHIO/.test(x)) return 'v463SignalWarn';
+    if(/STABILE|SENZA STRUTTURA|NEUTR|NON CHIARO/.test(x)) return 'v463SignalNeu';
+    return '';
+  }
+  function markText(text){
+    let s=esc(text);
+    const groups=[
+      ['v463SignalPos',/(Macro e Tassi\/CB aiutano la valuta|Macro e Tassi\/CB aiutano solo in parte|Migliora|Migliorando|Supporto in aumento|Conferma|conferma|positivo|positiva|favorevole|favorevoli)/gi],
+      ['v463SignalNeg',/(Macro e Tassi\/CB frenano la valuta|Macro e Tassi\/CB frenano in parte|Peggiora|Peggiorando|Supporto in calo|Diverge|diverge|negativo|negativa|contraria|pressione)/gi],
+      ['v463SignalWarn',/(segnali contrastanti|Possibile svolta|svolta|misto|mista|Non risolutivo|non risolutivo|rischio)/gi],
+      ['v463SignalNeu',/(Stabile|stabile|Senza struttura|senza struttura|Non determinato|non determinato)/gi]
+    ];
+    for(const [cls,re] of groups) s=s.replace(re,m=>`<span class="${cls}">${m}</span>`);
+    return s;
+  }
+  function setState(id,text){
+    const el=document.getElementById(id); if(!el) return;
+    el.textContent=text;
+    el.classList.remove('v463SignalPos','v463SignalNeg','v463SignalWarn','v463SignalNeu','v463SignalInfo');
+    const cls=signalClass(text); if(cls) el.classList.add(cls);
+  }
+  function decorateElement(el){
+    if(!el || el.dataset.v463Decorated==='1') return;
+    const txt=el.textContent||'';
+    const html=markText(txt);
+    if(html!==esc(txt)) el.innerHTML=html;
+    el.dataset.v463Decorated='1';
+  }
+  function decorate(){
+    const c=window.selectedCcy;
+    if(c && typeof window.v461OperationalRead==='function'){
+      const op=window.v461OperationalRead(c);
+      setState('v461StructuralState',op.structural);
+      setState('v461ChangeState',op.change);
+      setState('v461PriceState',op.price);
+      const h=document.getElementById('v224Headline');
+      if(h){
+        const text=`${c}: ${op.structural.toLowerCase()}. ${op.change.toLowerCase()}. Prezzo: ${op.price.toLowerCase()}.`;
+        h.innerHTML=markText(text);
+        h.dataset.v463Decorated='1';
+      }
+    }
+    document.querySelectorAll('#currencies .v461DriverRows b,#currencies .v461PricedRows b,#currencies .v461EndCard b').forEach(el=>{el.dataset.v463Decorated='';decorateElement(el);});
+  }
+  const old=window.renderCurrency;
+  if(typeof old==='function'){
+    window.renderCurrency=function(){
+      const r=old.apply(this,arguments);
+      decorate();
+      return r;
+    };
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(decorate,0));
+  else setTimeout(decorate,0);
+})();
+</script>
+
+
+<style id="v464-currencies-ui-fix">
+/* v464 — Valute: same visual grammar as Macro Country Desk. */
+#currencies .v461Selector{
+  padding:14px 16px!important;
+  background:linear-gradient(180deg,#0b2030,#081a27)!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+}
+#currencies .v461SelectorHead{display:block!important;margin-bottom:11px!important}
+#currencies .v461SelectorHead>div{display:block!important}
+#currencies .v461SelectorHead .v461Eyebrow{display:block!important;font-size:10px!important;font-weight:900!important;letter-spacing:.09em!important;color:#59ccff!important}
+#currencies .v461SelectorHead b{display:block!important;font-size:19px!important;line-height:1.2!important;color:#eefaff!important;margin-top:3px!important}
+#currencies .v461SelectorHead small{display:block!important;font-size:10px!important;line-height:1.4!important;color:#88a6b3!important;margin-top:3px!important}
+#currencies #currencyGrid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  border:0!important;
+}
+#currencies #currencyGrid .ccy{
+  min-height:73px!important;
+  padding:9px 7px!important;
+  border:1px solid #27495a!important;
+  border-radius:8px!important;
+  background:#071a28!important;
+  outline:none!important;
+  box-shadow:none!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  text-align:center!important;
+}
+#currencies #currencyGrid .ccy:hover{border-color:#36a8df!important;background:#071a28!important}
+#currencies #currencyGrid .ccy.active{border-color:#42bdf4!important;background:#0c2b3d!important;box-shadow:none!important}
+#currencies .v464CcyTab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0}
+#currencies .v464CcyTab .v464Flag{display:flex;align-items:center;justify-content:center;min-height:18px}
+#currencies .v464CcyTab b{display:block;font-size:12px;font-weight:900;margin-top:5px;color:#eefaff;letter-spacing:0}
+#currencies .v464CcyTab small{display:block;font-size:8px;color:#819fab;margin-top:2px;font-weight:500;letter-spacing:0}
+/* Signal color must live on text only — never as a highlighter/background. */
+#currencies .v461CoreState,
+#currencies .v461CoreState.pos,
+#currencies .v461CoreState.neg,
+#currencies .v461CoreState.warn,
+#currencies .v461CoreState.neu,
+#currencies .v461CoreState span,
+#currencies .v461CoreState .pos,
+#currencies .v461CoreState .neg,
+#currencies .v461CoreState .warn,
+#currencies .v461CoreState .neu,
+#currencies .v463SignalPos,
+#currencies .v463SignalNeg,
+#currencies .v463SignalWarn,
+#currencies .v463SignalInfo,
+#currencies .v463SignalNeu{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  border:0!important;
+  padding:0!important;
+}
+/* Keep core semantic text colors, but only as glyph color. */
+#currencies .v461CoreState.pos{color:#6fdfa8!important}
+#currencies .v461CoreState.neg{color:#d38bff!important}
+#currencies .v461CoreState.warn{color:#f0c96b!important}
+#currencies .v461CoreState.neu{color:#a7bbc4!important}
+/* Scheda operativa: restore original neutral treatment except CAMBIAMENTO RECENTE. */
+#currencies #v461StructuralState,
+#currencies #v461PriceState{color:#e5f1f6!important}
+#currencies #v461StructuralState.v464ChangePos,
+#currencies #v461StructuralState.v464ChangeNeg,
+#currencies #v461StructuralState.v464ChangeWarn,
+#currencies #v461StructuralState.v464ChangeNeu,
+#currencies #v461PriceState.v464ChangePos,
+#currencies #v461PriceState.v464ChangeNeg,
+#currencies #v461PriceState.v464ChangeWarn,
+#currencies #v461PriceState.v464ChangeNeu{color:#e5f1f6!important}
+#currencies #v461ChangeState.v464ChangePos{color:#6fdfa8!important}
+#currencies #v461ChangeState.v464ChangeNeg{color:#d38bff!important}
+#currencies #v461ChangeState.v464ChangeWarn{color:#f0c96b!important}
+#currencies #v461ChangeState.v464ChangeNeu{color:#a7bbc4!important}
+/* Restore headline and downstream operational rows to their pre-v463 behavior. */
+#currencies #v224Headline{color:#dcebf1!important}
+#currencies .v461DriverRows b,#currencies .v461PricedRows b,#currencies .v461EndCard b{color:inherit}
+@media(max-width:900px){#currencies #currencyGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style>
+<script id="v464-currencies-ui-fix-js">
+(function(){
+  const countries={USD:'Stati Uniti',EUR:'Eurozona',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
+  function repaintSelector(){
+    document.querySelectorAll('#currencyGrid .ccy').forEach(card=>{
+      const c=card.dataset.c;
+      if(!c) return;
+      card.innerHTML=`<div class="v464CcyTab"><span class="v464Flag">${flagSvg(c)}</span><b>${c}</b><small>${countries[c]||''}</small></div>`;
+      card.classList.toggle('active',c===window.selectedCcy || c===selectedCcy);
+    });
+  }
+  function changeClass(text){
+    const x=String(text||'').toUpperCase();
+    if(x.includes('MIGLIORA')||x.includes('POSITIV')) return 'v464ChangePos';
+    if(x.includes('PEGGIORA')||x.includes('NEGATIV')) return 'v464ChangeNeg';
+    if(x.includes('SVOLTA')||x.includes('TURNING')) return 'v464ChangeWarn';
+    return 'v464ChangeNeu';
+  }
+  function repaintOperational(){
+    const c=(typeof selectedCcy!=='undefined'&&selectedCcy)?selectedCcy:window.selectedCcy;
+    if(c && typeof window.v461OperationalRead==='function'){
+      const op=window.v461OperationalRead(c);
+      const structural=document.getElementById('v461StructuralState');
+      const change=document.getElementById('v461ChangeState');
+      const price=document.getElementById('v461PriceState');
+      if(structural){structural.textContent=op.structural;structural.className='';}
+      if(change){change.textContent=op.change;change.className=changeClass(op.change);}
+      if(price){price.textContent=op.price;price.className='';}
+      const h=document.getElementById('v224Headline');
+      if(h){h.textContent=`${c}: ${op.structural.toLowerCase()}. ${op.change.toLowerCase()}. Prezzo: ${op.price.toLowerCase()}.`;}
+    }
+  }
+  const oldRefresh=window.v219RefreshCurrencyCards;
+  if(typeof oldRefresh==='function'){
+    window.v219RefreshCurrencyCards=function(){const r=oldRefresh.apply(this,arguments); repaintSelector(); return r;};
+  }
+  const oldRender=window.renderCurrency;
+  if(typeof oldRender==='function'){
+    window.renderCurrency=function(){const r=oldRender.apply(this,arguments); repaintSelector(); repaintOperational(); return r;};
+  }
+  function init(){repaintSelector(); repaintOperational();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0)); else setTimeout(init,0);
+})();
+</script>
+
+
+<script>
+(function(){
+  function clone(x){return JSON.parse(JSON.stringify(x));}
+  const cal=clone(REAL_CALENDAR);
+  const day=cal.find(d=>d.key==='2026-09-30');
+  if(day){
+    const set=(re,patch)=>{const e=day.events.find(x=>re.test(x.event)); if(e) Object.assign(e,patch);};
+    set(/ANZ Business Confidence/i,{
+      prev:'53,7',forecast:'—',actual:'51,9',status:'done',
+      surprise:'In calo da 53,7; nessun consenso affidabile usato',scls:'neutral',
+      direction:'Fiducia ancora elevata ma in moderazione; segnale NZD leggermente meno favorevole',
+      confirm:'NZ 2Y + NZD cross'
+    });
+    set(/CPI m\/m \+ CPI y\/y \+ Trimmed Mean CPI/i,{
+      prev:'1,0% / 3,5% / 0,5% / 3,6%',
+      forecast:'0,4% / 4,1% / 0,3% / 3,6%',
+      actual:'0,4% / 4,0% / 0,2% / 3,6%',status:'done',
+      surprise:'Headline YoY sotto consenso; trimmed mean m/m più morbido',scls:'negative',
+      direction:'Inflazione resta alta, ma il dettaglio core non accelera: meno pressione per un nuovo hike immediato',
+      confirm:'AU 2Y / pricing RBA + AUD cross'
+    });
+    set(/Final GDP q\/q \+ Current Account/i,{
+      prev:'0,4% GDP / -£22,1 mld',forecast:'0,4% GDP / -£25,6 mld',
+      actual:'0,5% GDP / -£19,9 mld',status:'done',
+      surprise:'GDP rivisto sopra attese; deficit c/c migliore del previsto',scls:'positive',
+      direction:'Crescita e saldo estero migliori → supporto moderato GBP, da confermare nei Gilt 2Y',
+      confirm:'UK 2Y + GBP cross'
+    });
+    set(/German Unemployment Change/i,{
+      prev:'— / 6,4%',forecast:'+1K / 6,4%',actual:'+12K / 6,4%',status:'done',
+      surprise:'Disoccupati +12K vs +1K atteso; tasso invariato 6,4%',scls:'negative',
+      direction:'Mercato del lavoro tedesco più debole del previsto → lieve freno EUR',
+      confirm:'Bund 2Y + EUR cross'
+    });
+  }
+
+  const payload={
+    core:{
+      series:[
+        {currency:'AUD',id:'AU_CPI_HEADLINE_M_YOY_context_value',category:'Inflazione',date:'2026-08',value:4.0},
+        {currency:'AUD',id:'AU_CPI_TRIMMED_MEAN_M_YOY_context_value',category:'Inflazione',date:'2026-08',value:3.6}
+      ]
+    },
+    auxiliary:{
+      calendar:cal,
+      news:[
+        {cat:'Macro',importance:'high',status:'change',ccy:'AUD',layer:'Inflazione',title:'Australia: headline al 4,0%, core non accelera',what:'L’inflazione headline di agosto sale al 4,0% a/a, leggermente sotto il 4,1% atteso; il trimmed mean resta al 3,6% a/a e rallenta allo 0,2% m/m.',why:'Dopo il rialzo RBA al 4,60%, il dato resta troppo alto per essere rassicurante ma riduce il rischio di un nuovo hike immediato.',fx:'AUD · AU 2Y · pricing RBA',watch:'AU 2Y + probabilità novembre + AUD cross',changed:'Inflazione alta, ma il dettaglio core è meno aggressivo delle attese.'},
+        {cat:'Macro',importance:'high',status:'change',ccy:'GBP',layer:'Crescita',title:'UK: PIL Q2 rivisto al +0,5%',what:'Il PIL finale Q2 viene rivisto a +0,5% q/q dal +0,4% preliminare; il deficit di conto corrente è £19,9 mld, migliore delle attese.',why:'Il quadro crescita e reddito disponibile risulta un po’ più resiliente; per GBP serve conferma dal front-end BoE.',fx:'GBP · Gilt 2Y',watch:'UK 2Y + GBP cross + pricing BoE',changed:'La crescita UK risulta leggermente più forte di quanto prezzato nella stima precedente.'},
+        {cat:'Macro',importance:'high',status:'change',ccy:'EUR',layer:'Lavoro',title:'Germania: disoccupazione +12K, molto sopra attese',what:'I disoccupati aumentano di 12 mila a settembre contro +1 mila atteso; il tasso resta al 6,4%.',why:'La ripresa tedesca non sta ancora trasferendosi pienamente al mercato del lavoro.',fx:'EUR · Bund 2Y',watch:'Bund 2Y + EUR cross',changed:'Segnale lavoro tedesco più debole del previsto.'},
+        {cat:'Macro',importance:'high',status:'change',ccy:'EUR',layer:'Inflazione',title:'Francia: HICP preliminare al 3,4%',what:'L’inflazione armonizzata francese accelera al 3,4% a/a in settembre, sopra le attese.',why:'Aumenta il rischio di pressione sul pricing ECB, anche se parte dell’accelerazione è legata all’energia.',fx:'EUR · Bund/OAT 2Y',watch:'CPI tedesco + Bund 2Y + pricing ECB',changed:'Nuovo segnale inflattivo europeo prima del dato tedesco.'},
+        {cat:'Rates',importance:'high',status:'watch',ccy:'USD',layer:'Rates',title:'Treasury ancora estremi ma in lieve rientro',what:'Il 10Y USA si muove intorno al 5,23% dopo il picco del giorno precedente; il 2Y è vicino al 4,88%.',why:'Il long-end resta il driver globale, ma le parole Fed hanno ridotto parte delle attese di rialzo a breve.',fx:'USD · Gold · Equity',watch:'UST 2Y/10Y + PCE + pricing Fed',changed:'Il mercato riduce parte del repricing Fed senza smontare il regime di rendimenti elevati.'},
+        {cat:'Macro',importance:'high',status:'watch',ccy:'USD',layer:'Event risk',title:'PCE USA è il prossimo snodo',what:'Il PCE di agosto non è ancora uscito: il mercato attende headline/core e consumi dopo il forte movimento dei Treasury.',why:'Una sorpresa può riaprire o ridurre rapidamente il pricing di nuovi rialzi Fed.',fx:'USD · UST 2Y · Gold',watch:'Core PCE + personal spending + UST 2Y',changed:'Nessun dato USA nuovo ancora incorporato nel core questa mattina.'}
+      ],
+      freshness:{
+        calendar:{current_date:'2026-09-30',status:'PARTIAL_LIVE_VALIDATED',note:'29 Sep chiuso; 30 Sep aggiornato con JPY IP/retail, NZ ANZ, AUD CPI, UK GDP/current account e German unemployment. ADP e PCE ancora pending.'},
+        news:{as_of:'2026-09-30T10:34+02:00',status:'CURRENT_SOURCED'}
+      }
+    }
+  };
+  let result;
+  try{ result=window.runProductionDailyRefresh(payload); }
+  catch(e){ result={ok:false,error:String(e&&e.message||e)}; }
+  window.LIVE_REFRESH_20260930_AM={result:result,payload:payload,validated_at:'2026-09-30T13:18+02:00'};
+  document.documentElement.setAttribute('data-live-refresh',result&&result.ok?'PASS':'FAIL');
+  document.documentElement.setAttribute('data-live-refresh-generation',String((result&&result.generation)||0));
+})();
+</script>
+
+
+<script id="v473-unified-propagation-sync">
+(function(){
+'use strict';
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const PAIRS=()=>Object.keys((typeof MODEL_STATE!=='undefined'&&MODEL_STATE.pairs)||{});
+const safe=(fn)=>{try{return fn();}catch(e){return null;}};
+const call=(name)=>{const fn=window[name]; if(typeof fn==='function') return safe(()=>fn()); return null;};
+
+window.GMFQ_PROPAGATION_CONTRACT={
+  version:'1.0',
+  principle:'ONE_SOURCE_TO_ALL_DEPENDENCIES',
+  layers:{
+    macro:'Serie canonica → dinamiche macro → stato valuta → pair → overview/currency/macro/what-changed/themes',
+    rates:'Rates canonici → Rates/CB → stato valuta → pair → overview/currency/rates/themes',
+    cb:'Decisione/pricing validato → Rates/CB → stato valuta → pair → overview/currency/cb/themes',
+    liquidity:'Liquidità canonica → overlay valuta/risk → overview/currency/liquidity/themes',
+    price:'Price canonico → conferma/divergenza → valuta/pair/overview',
+    cot:'COT canonico → positioning/risk → valuta/pair/overview/cot',
+    auxiliary:'Calendario/News/Risk → contesto recente; NON modifica struttura se non esiste mapping canonico esplicito'
+  }
+};
+
+function recentEventOverlay(){
+  const out={}; CCYS.forEach(c=>out[c]=[]);
+  const cur=window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date;
+  const days=(typeof REAL_CALENDAR!=='undefined'&&Array.isArray(REAL_CALENDAR))?REAL_CALENDAR:[];
+  const selected=days.filter(d=>!cur || d.key===cur || d.key===days.find(x=>x.key===cur)?.prev);
+  days.forEach(d=>{
+    if(cur && d.key!==cur && d.key!==days[Math.max(0,days.findIndex(x=>x.key===cur)-1)]?.key) return;
+    (d.events||[]).forEach(e=>{
+      if(e.status!=='done') return;
+      const c=String(e.ccy||'').toUpperCase();
+      if(out[c]) out[c].push({date:d.key,event:e.event,actual:e.actual||null,forecast:e.forecast||null,prev:e.prev||null,surprise:e.surprise||null,direction:e.direction||null});
+    });
+  });
+  window.GMFQ_RECENT_EVENT_OVERLAY=out;
+  return out;
+}
+
+window.GMFQ_RELEASE_CLASSIFICATION={
+  as_of:'2026-09-30',
+  rules:[
+    {pattern:'Australia CPI',mode:'CORE_SERIES',reason:'Serie canoniche AUD headline/trimmed mean disponibili e trasformazione compatibile.'},
+    {pattern:'RBA',mode:'CORE_CB_WHEN_PAYLOAD',reason:'Decisione ufficiale deve aggiornare CB core se il payload CB è presente; calendario da solo non basta.'},
+    {pattern:'UK GDP',mode:'INFO_ONLY_UNTIL_SERIES',reason:'Nel dataset macro corrente non esiste una serie GDP GBP canonica equivalente da aggiornare automaticamente.'},
+    {pattern:'German Unemployment',mode:'INFO_ONLY_EUR_CONTEXT',reason:'Dato Germania ≠ serie lavoro area euro; entra nel contesto EUR ma non sovrascrive il blocco lavoro EA.'},
+    {pattern:'French HICP / CPI',mode:'INFO_ONLY_EUR_INFLATION_CONTEXT',reason:'Dato nazionale Francia ≠ HICP Eurozona canonico; informa pricing ECB ma non sovrascrive EA HICP.'},
+    {pattern:'Italy HICP',mode:'INFO_ONLY_EUR_INFLATION_CONTEXT',reason:'Dato nazionale Italia ≠ HICP Eurozona canonico; aggiorna contesto EUR/pricing ECB ma non il layer inflazione EA.'},
+    {pattern:'JPY Industrial Production / Retail',mode:'INFO_ONLY_TRANSFORM_MISMATCH',reason:'Calendario usa variazioni; serie canoniche JP_IIP/JP_RETAIL sono indici. Nessuna sostituzione cross-transform.'},
+    {pattern:'NZ ANZ Business Confidence',mode:'INFO_ONLY_UNTIL_SERIES',reason:'Nessuna serie ANZ Business Confidence canonica presente nel motore attuale.'}
+  ]
+};
+
+window.gmfqFullPropagationSync=function(reason,payload){
+  const started=Date.now();
+  // 1. Recompute every derived currency narrative/state.
+  CCYS.forEach(c=>{
+    safe(()=>refreshCurrencyNarrativeInData(c));
+    safe(()=>refreshLeadStructureInData(c));
+    safe(()=>refreshActionPlanInData(c));
+  });
+  safe(()=>rebuildCanonicalState());
+  recentEventOverlay();
+  safe(()=>{if(typeof rebuildStructuralChangeQueue==='function') rebuildStructuralChangeQueue();});
+
+  // 2. Render ALL canonical views from the same rebuilt state.
+  [
+    'refreshSnapshotLabels','renderOperationalOverview','renderSimpleOverview','renderOverview387',
+    'renderCurrency','renderCurrencyIntelligence','renderPairGroups','renderPair',
+    'renderMacroLab','renderInflationLabourSection','renderNativeRatesDesk','renderNativeCbDesk',
+    'renderNativeLiquidityDesk','renderCot','renderRischio','renderRealCalendar',
+    'renderWhatChanged','renderTopThemes','renderTopThemes393','renderNewsPulse','renderForwardMonitor',
+    'refreshGlobalRiskOverview'
+  ].forEach(call);
+
+  // 3. Audit graph completeness, not whether the economic conclusion changed.
+  const currencies=Object.keys((typeof MODEL_STATE!=='undefined'&&MODEL_STATE.currency)||{});
+  const pairs=Object.keys((typeof MODEL_STATE!=='undefined'&&MODEL_STATE.pairs)||{});
+  const touched=new Set();
+  const core=payload?.core||{};
+  Object.keys(core.rates||{}).forEach(c=>touched.add(c));
+  Object.keys(core.cb||{}).forEach(c=>touched.add(c));
+  Object.keys(core.liquidity||{}).forEach(c=>touched.add(c));
+  (core.series||[]).forEach(x=>x?.currency&&touched.add(x.currency));
+  Object.keys(core.layerState||{}).forEach(c=>touched.add(c));
+  const expectedPairs=[...touched].flatMap(c=>pairs.filter(p=>p.split('/').includes(c)));
+  const audit={
+    ok:currencies.length===8&&pairs.length===28,
+    reason:reason||'MANUAL_SYNC',
+    at:new Date().toISOString(),
+    duration_ms:Date.now()-started,
+    currencies:`${currencies.length}/8`,pairs:`${pairs.length}/28`,
+    touched_currencies:[...touched],
+    dependent_pairs:[...new Set(expectedPairs)],
+    model_updated_at:(typeof MODEL_STATE!=='undefined'?MODEL_STATE.updatedAt:null),
+    operating_date:window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||null,
+    auxiliary_overlay:true
+  };
+  window.GMFQ_LAST_PROPAGATION_AUDIT=audit;
+  try{
+    const status=document.querySelector('.status');
+    if(status){
+      const base=status.textContent.replace(/\s*·\s*PROP[^·]*/g,'').trim();
+      status.textContent=base+` · PROP ${audit.ok?'PASS':'FAIL'} ${audit.currencies} · ${audit.pairs}`;
+    }
+  }catch(e){}
+  return audit;
+};
+
+// Make the official production refresh always finish with one global propagation pass.
+const baseProductionRefresh=window.runProductionDailyRefresh;
+if(typeof baseProductionRefresh==='function'){
+  window.runProductionDailyRefresh=function(payload){
+    const res=baseProductionRefresh.apply(this,arguments);
+    if(res&&res.ok){
+      const propagation=window.gmfqFullPropagationSync('PRODUCTION_REFRESH',payload||{});
+      res.propagation=propagation;
+      window.LAST_PRODUCTION_REFRESH=Object.assign({},window.LAST_PRODUCTION_REFRESH||{}, {propagation});
+    }
+    return res;
+  };
+}
+
+// Direct auxiliary calls are allowed, but they also refresh all views so context is never visually stale.
+const baseAux=window.applyAuxiliaryRefreshPayload;
+if(typeof baseAux==='function'){
+  window.applyAuxiliaryRefreshPayload=function(payload){
+    const res=baseAux.apply(this,arguments);
+    if(res&&res.ok) window.gmfqFullPropagationSync('AUXILIARY_REFRESH',{auxiliary:payload||{}});
+    return res;
+  };
+}
+
+// One final synchronization for the embedded 30-Sep snapshot already present in this file.
+setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
+})();
+</script>
+
+
+<script id="v479-rates-shell-mount">
+(function(){
+  'use strict';
+  function mountRates(){
+    const shell=document.querySelector('.shell');
+    const rates=document.getElementById('ratesdesk');
+    if(shell && rates && rates.parentElement!==shell){
+      shell.appendChild(rates);
+    }
+  }
+  mountRates();
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',mountRates,{once:true});
+  }
+})();
+</script>
+
+
+<script id="gmfq-ui-modules">
+/*
+  CB Tutor UI module
+  Contract: reads existing CB desk helpers/data and writes only presentation nodes.
+  It never mutates macro/rates/CB data, engine state, refresh state, or guards.
+*/
+(function(){
+  'use strict';
+
+  function stateModel(c,d){
+    const s = window.v234StanceClass(d);
+    const action = window.v234ActionLabel(d);
+    let tone = {txt:'NEUTRALE', cls:'neu'};
+    if(s==='pos') tone={txt:'HAWKISH',cls:'pos'};
+    else if(s==='neg') tone={txt:'DOVISH',cls:'neg'};
+    else if(s==='warn') tone={txt:'NEUTRALE / TRANSIZIONE',cls:'warn'};
+
+    const z=(String(d?.official_bias||'')+' '+String(d?.official_next||'')+' '+String(d?.action||'')).toLowerCase();
+    const actionTxt=String(d?.action||'').toLowerCase();
+    const impulseTxt=String(d?.impulse||'').toLowerCase();
+    let dir={txt:'STABILE →',cls:'neu'};
+    if(/rialzo/.test(actionTxt)) dir={txt:'PIÙ HAWKISH ↗',cls:'pos'};
+    else if(/taglio/.test(actionTxt)) dir={txt:'PIÙ DOVISH ↘',cls:'neg'};
+    else if(/invariato|hold/.test(actionTxt+' '+impulseTxt)){
+      if(/hawk|rialzo|inflation_risk|rischio inflazione/.test(z+' '+impulseTxt)) dir={txt:'STABILE · RISCHIO HAWKISH',cls:'warn'};
+      else if(/dovish|accomod/.test(z+' '+impulseTxt)) dir={txt:'STABILE · TONO DOVISH',cls:'warn'};
+      else dir={txt:'STABILE →',cls:'neu'};
+    }
+
+    let title,text;
+    if(tone.cls==='pos'){
+      title='La banca centrale mantiene un tono restrittivo';
+      text=`${action}. In parole semplici, non sta ancora dando un segnale deciso di allentamento. Ora conta capire se il mercato continuerà a credere a questa linea.`;
+    } else if(tone.cls==='neg'){
+      title='La banca centrale sta diventando più accomodante';
+      text=`${action}. In parole semplici, la policy è meno restrittiva. Ora conta capire quanto di questo sia già stato prezzato dal mercato.`;
+    } else {
+      title='La banca centrale è in attesa o transizione';
+      text=`${action}. In parole semplici, non sta dando una direzione forte da sola. Guidance e front-end diventano quindi più importanti.`;
+    }
+    return {tone,dir,title,text};
+  }
+
+  function ensureUi(){
+    const countryTop=document.querySelector('#cbdesk .v234CountryTop');
+    const headline=document.querySelector('#cbdesk #v234Headline');
+    if(!countryTop || !headline) return false;
+
+    if(!document.getElementById('v480CbTone')){
+      const wrap=document.createElement('div');
+      wrap.className='v480CbTicks';
+      wrap.innerHTML='<div id="v480CbTone" class="v480CbTick neu"><span class="k">TONO OGGI</span><span class="v">—</span></div><div id="v480CbDirection" class="v480CbTick neu"><span class="k">DIREZIONE</span><span class="v">—</span></div>';
+      countryTop.appendChild(wrap);
+    }
+
+    if(!document.getElementById('v480CbTitle')){
+      const lead=document.createElement('div');
+      lead.className='v480CbSimpleLead';
+      lead.innerHTML='<div class="lab">COSA STA SUCCEDENDO?</div><div id="v480CbTitle" class="ttl">—</div><div id="v480CbText" class="txt">—</div>';
+      headline.insertAdjacentElement('afterend',lead);
+      headline.style.display='none';
+    }
+    return true;
+  }
+
+  function render(c,d){
+    if(!ensureUi() || !d) return;
+    const m=stateModel(c,d);
+    const tone=document.getElementById('v480CbTone');
+    const dir=document.getElementById('v480CbDirection');
+    const title=document.getElementById('v480CbTitle');
+    const text=document.getElementById('v480CbText');
+    if(tone){tone.className='v480CbTick '+m.tone.cls; tone.querySelector('.v').textContent=m.tone.txt;}
+    if(dir){dir.className='v480CbTick '+m.dir.cls; dir.querySelector('.v').textContent=m.dir.txt;}
+    if(title) title.textContent=m.title;
+    if(text) text.textContent=m.text;
+  }
+
+  window.GMFQ_CB_TUTOR={render,stateModel,ensureUi};
+})();
+
+/*
+  Liquidity Tutor UI module
+  Reads NATIVE_LIQ_DATA + existing v243 presentation helpers.
+  Presentation-only: no DATA / ENGINE / REFRESH / GUARDS mutation.
+*/
+(function(){
+  'use strict';
+
+  function toneFrom(d){
+    if(!d || d.status==='PARZIALE') return {txt:'NON DETERMINATA',cls:'warn'};
+    const cc=window.v243CreditConfirm ? window.v243CreditConfirm(d) : 'PARZIALE / NEUTRALE';
+    if(d.liquidity_dir==='IN AUMENTO' && cc==='CONFERMA') return {txt:'FAVOREVOLE',cls:'pos'};
+    if(d.liquidity_dir==='IN CALO' && cc==='CONFERMA') return {txt:'SFAVOREVOLE',cls:'neg'};
+    if(d.liquidity_dir==='STABILE' && d.credit_dir==='IN AUMENTO') return {txt:'NEUTRA / COSTRUTTIVA',cls:'neu'};
+    if(d.liquidity_dir==='IN AUMENTO' || d.liquidity_dir==='IN CALO') return {txt:'MISTA',cls:'warn'};
+    return {txt:'NEUTRA',cls:'neu'};
+  }
+
+  function directionFrom(d){
+    if(!d || d.status==='PARZIALE') return {txt:'DIREZIONE INCERTA',cls:'warn'};
+    if(d.liquidity_dir==='IN AUMENTO') return {txt:'MIGLIORA ↗',cls:'pos'};
+    if(d.liquidity_dir==='IN CALO') return {txt:'PEGGIORA ↘',cls:'neg'};
+    if(d.credit_dir==='IN AUMENTO') return {txt:'STABILE, CREDITO MIGLIORA',cls:'pos'};
+    if(d.credit_dir==='IN CALO') return {txt:'STABILE, CREDITO PEGGIORA',cls:'neg'};
+    return {txt:'STABILE →',cls:'neu'};
+  }
+
+  function stateModel(c,d){
+    const tone=toneFrom(d), dir=directionFrom(d);
+    const cc=window.v243CreditConfirm ? window.v243CreditConfirm(d) : 'PARZIALE / NEUTRALE';
+    let title,text,confirm,reverse,fx;
+
+    if(d?.status==='PARZIALE'){
+      title='Non abbiamo ancora una lettura completa della liquidità';
+      text='Il dato corrente esiste, ma storico e/o credito non sono abbastanza completi per una conclusione forte. Meglio trattarla come contesto, non come segnale.';
+      confirm='La lettura diventa più affidabile quando storico, credito e condizioni finanziarie puntano nella stessa direzione.';
+      reverse='Finché la copertura resta incompleta, evitiamo di trasformare la liquidità in un segnale direzionale sulla valuta.';
+      fx=`Per ${c}, la liquidità resta un overlay informativo: non deve cambiare da sola la struttura FX.`;
+    } else if(tone.cls==='pos'){
+      title='La liquidità sta diventando più favorevole';
+      text='Liquidità e credito si stanno muovendo in modo coerente. In parole semplici, il sistema finanziario sta offrendo più supporto all’attività e alla trasmissione del credito.';
+      confirm='La lettura si rafforza se liquidità e credito continuano a crescere insieme e le lending conditions non peggiorano.';
+      reverse='Va rivista se il credito smette di confermare oppure le condizioni di prestito si irrigidiscono.';
+      fx=`Per ${c}, questo è un vento di fondo favorevole, ma resta un overlay: Macro, Rates/CB e prezzo devono confermare.`;
+    } else if(tone.cls==='neg'){
+      title='La liquidità sta diventando più restrittiva';
+      text='Liquidità e credito stanno rallentando insieme. In parole semplici, le condizioni finanziarie stanno offrendo meno supporto e la restrizione si sta trasmettendo.';
+      confirm='La lettura si rafforza se liquidità e credito continuano a calare e le lending conditions peggiorano.';
+      reverse='Va rivista se il credito torna a crescere oppure la liquidità smette di contrarsi.';
+      fx=`Per ${c}, questo tende a essere un vento di fondo sfavorevole, ma non decide da solo la direzione FX.`;
+    } else {
+      title='La liquidità non sta dando un segnale netto';
+      text=cc==='DIVERGE'
+        ? 'Liquidità e credito stanno andando in direzioni diverse. Il segnale è misto: prima di trarre una conclusione serve capire quale dei due movimenti persiste.'
+        : 'Il quadro è stabile o solo parzialmente confermato dal credito. Per ora la liquidità non sta cambiando in modo forte il contesto finanziario.';
+      confirm='Diventa più interessante se liquidità e credito iniziano a muoversi insieme per più rilevazioni.';
+      reverse='Se continuano a divergere, resta un contesto misto e non va trasformato in un segnale FX forte.';
+      fx=`Per ${c}, la liquidità per ora è soprattutto contesto: non aggiunge un vantaggio direzionale chiaro.`;
+    }
+
+    const liq=window.v243DirText ? window.v243DirText(d?.liquidity_dir) : (d?.liquidity_dir||'—');
+    const credit=window.v243DirText ? window.v243DirText(d?.credit_dir) : (d?.credit_dir||'—');
+    const conditions=d?.conditions ? 'DISPONIBILI' : 'NON DISPONIBILI';
+    const drivers=[
+      {label:'Liquidità',txt:liq,cls:d?.liquidity_dir==='IN AUMENTO'?'pos':d?.liquidity_dir==='IN CALO'?'neg':'neu'},
+      {label:'Credito / moneta',txt:credit,cls:d?.credit_dir==='IN AUMENTO'?'pos':d?.credit_dir==='IN CALO'?'neg':'neu'},
+      {label:'Condizioni di prestito',txt:conditions,cls:d?.conditions?'neu':'warn'}
+    ];
+    return {tone,dir,title,text,drivers,confirm,reverse,fx};
+  }
+
+  function ensureUi(){
+    const top=document.querySelector('#liquiditydesk .v234CountryTop');
+    const thesis=document.querySelector('#liquiditydesk #v243ThesisText');
+    if(!top || !thesis) return false;
+
+    if(!document.getElementById('gmfqLiqTone')){
+      const ticks=document.createElement('div');
+      ticks.className='gmfqLiqTicks';
+      ticks.innerHTML='<div id="gmfqLiqTone" class="gmfqLiqTick neu"><span class="k">LIQUIDITÀ OGGI</span><span class="v">—</span></div><div id="gmfqLiqDir" class="gmfqLiqTick neu"><span class="k">DIREZIONE</span><span class="v">—</span></div>';
+      top.appendChild(ticks);
+    }
+
+    if(!document.getElementById('gmfqLiqTutor')){
+      const box=document.createElement('div');
+      box.id='gmfqLiqTutor';
+      box.className='gmfqLiqTutor';
+      box.innerHTML='<div class="lab">COSA STA SUCCEDENDO?</div><div id="gmfqLiqTitle" class="ttl">—</div><div id="gmfqLiqText" class="txt">—</div><div class="lab driversLab">LE 3 COSE CHE CONTANO</div><div id="gmfqLiqDrivers" class="drivers"></div><div class="watch"><div class="good"><small>COSA RAFFORZA QUESTA LETTURA?</small><b id="gmfqLiqConfirm">—</b></div><div class="bad"><small>COSA LA METTE IN DUBBIO?</small><b id="gmfqLiqReverse">—</b></div></div><div class="fx"><b>COSA SIGNIFICA PER LA VALUTA?</b><div id="gmfqLiqFx">—</div></div>';
+      thesis.insertAdjacentElement('beforebegin',box);
+    }
+    return true;
+  }
+
+  function render(c,d){
+    if(!ensureUi() || !d) return;
+    const m=stateModel(c,d);
+    const tone=document.getElementById('gmfqLiqTone');
+    const dir=document.getElementById('gmfqLiqDir');
+    if(tone){tone.className='gmfqLiqTick '+m.tone.cls; tone.querySelector('.v').textContent=m.tone.txt;}
+    if(dir){dir.className='gmfqLiqTick '+m.dir.cls; dir.querySelector('.v').textContent=m.dir.txt;}
+    document.getElementById('gmfqLiqTitle').textContent=m.title;
+    document.getElementById('gmfqLiqText').textContent=m.text;
+    document.getElementById('gmfqLiqDrivers').innerHTML=m.drivers.map(x=>`<div class="driver"><b>${x.label}</b><span class="${x.cls}">${x.txt}</span></div>`).join('');
+    document.getElementById('gmfqLiqConfirm').textContent=m.confirm;
+    document.getElementById('gmfqLiqReverse').textContent=m.reverse;
+    document.getElementById('gmfqLiqFx').textContent=m.fx;
+  }
+
+  window.GMFQ_LIQUIDITY_TUTOR={render,stateModel,ensureUi};
+})();
+
+/*
+  COT Tutor UI module
+  Reads canonical COT data + existing COT stories.
+  Presentation-only: no DATA / ENGINE / REFRESH / GUARDS mutation.
+*/
+(function(){
+  'use strict';
+
+  function dataFor(c){
+    return window.__GMFQ_DATA?.D?.cot?.[c] || null;
+  }
+  function storyFor(c){
+    return window.__GMFQ_DATA?.V247_COT_STORIES?.[c] || null;
+  }
+  function statusFrom(d){
+    if(!d) return {txt:'NON DISPONIBILE',cls:'neu'};
+    const crowded=Math.abs(Number(d.net_oi||0))>=30;
+    if(d.state_label==='EXTREME LONG') return {txt:crowded?'ESTREMO LONG · AFFOLLATO':'ESTREMO LONG',cls:'pos'};
+    if(d.state_label==='EXTREME SHORT') return {txt:crowded?'ESTREMO SHORT · AFFOLLATO':'ESTREMO SHORT',cls:'neg'};
+    if(crowded) return {txt:'AFFOLLATO',cls:'warn'};
+    return {txt:'NEUTRO',cls:'neu'};
+  }
+  function flowFrom(d){
+    if(!d || !Number.isFinite(Number(d.chg_net_1w))) return {txt:'NON DISPONIBILE',cls:'neu'};
+    const x=Number(d.chg_net_1w);
+    if(x>0) return {txt:'PIÙ LONG ↗',cls:'pos'};
+    if(x<0) return {txt:'PIÙ SHORT ↘',cls:'neg'};
+    return {txt:'STABILE →',cls:'neu'};
+  }
+  function model(c,d,st){
+    const status=statusFrom(d), flow=flowFrom(d);
+    const crowded=Math.abs(Number(d?.net_oi||0))>=30;
+    let title,text,confirm,reverse,fx;
+
+    if(d?.state_label==='EXTREME LONG'){
+      title=`${c} è già molto carico sul lato long`;
+      text=crowded
+        ? 'Il posizionamento è estremo e anche affollato. Questo può sostenere il trend finché il prezzo conferma, ma aumenta il rischio di prese di profitto o squeeze al contrario.'
+        : 'Il posizionamento è estremo rispetto alla propria storia. Il punto non è inseguire automaticamente il long: conta vedere se nuovi flussi continuano ad arrivare e se il prezzo conferma.';
+      confirm='Nuovi long continuano a entrare e il prezzo continua a muoversi nella stessa direzione.';
+      reverse='Il flusso si gira, iniziano liquidazioni long oppure il prezzo smette di confermare.';
+      fx=`Per ${c}, il COT è favorevole come contesto ma il rischio di affollamento aumenta: non va usato da solo come segnale long.`;
+    }else if(d?.state_label==='EXTREME SHORT'){
+      title=`${c} è già molto carico sul lato short`;
+      text=crowded
+        ? 'Il posizionamento short è estremo e affollato. Può accompagnare altra debolezza, ma aumenta anche il rischio di short covering se arriva una sorpresa positiva.'
+        : 'Il posizionamento è molto short rispetto alla propria storia. Il punto è capire se entrano ancora short oppure se il mercato comincia a ricoprirli.';
+      confirm='Continuano a entrare short e il prezzo continua a sottoperformare.';
+      reverse='Parte short covering, il flusso smette di peggiorare oppure il prezzo recupera senza nuovi minimi.';
+      fx=`Per ${c}, il COT resta un vento contrario ma con rischio crescente di short covering: non va inseguito meccanicamente.`;
+    }else{
+      title=`Il posizionamento su ${c} non è ancora a un estremo`;
+      text=crowded
+        ? 'Il percentile non è estremo, ma il rapporto Net/OI segnala concentrazione. Quindi il rischio di affollamento esiste anche senza un estremo storico.'
+        : 'Il livello è relativamente neutro. In questa fase conta soprattutto la direzione del flusso recente: sta diventando più long o più short?';
+      confirm='Il flusso recente persiste per più settimane e il prezzo inizia a confermarlo.';
+      reverse='Il flusso si gira rapidamente oppure il prezzo diverge dalla direzione del positioning.';
+      fx=`Per ${c}, il COT per ora è soprattutto contesto: il segnale diventa più utile se flusso e prezzo iniziano a convergere.`;
+    }
+
+    const pct=Number.isFinite(Number(d?.pct)) ? `${Number(d.pct).toFixed(0)}° percentile` : '—';
+    const noi=Number.isFinite(Number(d?.net_oi)) ? `${Number(d.net_oi).toFixed(1)}%${crowded?' · ⚠ affollato':''}` : '—';
+    const w1=Number.isFinite(Number(d?.chg_net_1w)) ? `${Number(d.chg_net_1w)>=0?'+':''}${Math.round(Number(d.chg_net_1w)).toLocaleString('it-IT')} contratti` : '—';
+    const drivers=[
+      {label:'Percentile 104W',txt:pct,cls:(Number(d?.pct)>=80?'pos':Number(d?.pct)<=20?'neg':'neu')},
+      {label:'Net / Open Interest',txt:noi,cls:crowded?'warn':'neu'},
+      {label:'Flusso ultima settimana',txt:w1,cls:Number(d?.chg_net_1w)>0?'pos':Number(d?.chg_net_1w)<0?'neg':'neu'}
+    ];
+    return {status,flow,title,text,drivers,confirm,reverse,fx,story:st};
+  }
+
+  function ensureUi(){
+    const hero=document.querySelector('#cot .v247Hero');
+    const top=hero?.querySelector('.v245CountryTop');
+    const headline=hero?.querySelector('#v247Headline');
+    if(!hero || !top || !headline) return false;
+
+    if(!document.getElementById('gmfqCotTicks')){
+      const ticks=document.createElement('div');
+      ticks.id='gmfqCotTicks';
+      ticks.className='gmfqCotTicks';
+      ticks.innerHTML='<div id="gmfqCotStatus" class="gmfqCotTick neu"><span class="k">POSIZIONAMENTO OGGI</span><span class="v">—</span></div><div id="gmfqCotFlow" class="gmfqCotTick neu"><span class="k">FLUSSO RECENTE</span><span class="v">—</span></div>';
+      top.appendChild(ticks);
+    }

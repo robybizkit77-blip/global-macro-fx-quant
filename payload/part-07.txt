@@ -1,0 +1,1000 @@
+return `${v233CountryLabel(c)}: ${driver.name.toLowerCase()} è il tratto dominante. Il 2Y è ${fmt(d['2Y'],2)}% (${m2.txt.toLowerCase()}), il 10Y è ${fmt(d['10Y'],2)}% (${m10.txt.toLowerCase()}). La curva 10Y−2Y è ${fmt(d.curve_bp,0)} pb e il regime è ${curve.name.toLowerCase()}.${decomp}`;
+}
+function v233RateCard(title,value,state,comment,cls='neu'){
+return `<div class="v233RateCard ${cls}"><div class="v233RateTop"><span>${title}</span><b>${value}</b></div><div class="v233RateState">${state}</div><p>${comment}</p></div>`;
+}
+function v233Cards(c,d){
+const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp), curve=v233CurveInterpretation(d);
+const ten5=(d.tenors||[]).find(x=>x.tenor==='5Y');
+const long=(d.tenors||[]).slice(-1)[0];
+const cards=[
+v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
+v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
+v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
+v233RateCard('Pendenza · 10Y−2Y',d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb',curve.name,curve.why,curve.cls)
+];
+if(d.real){
+const rv=d.real.last_value;
+cards.push(v233RateCard('Real yield',rv==null?'—':fmt(rv,2)+'%','Costo reale del capitale','Real yield più alto aumenta il costo opportunità degli asset senza rendimento e irrigidisce le condizioni finanziarie.','info'));
+} else {
+cards.push(v233RateCard('Real yield','Non comparabile','Dato non completo','Non viene stimato o sostituito con proxy non omogenei.','neu'));
+}
+if(d.breakeven){
+const bv=d.breakeven.last_value;
+cards.push(v233RateCard('Breakeven',bv==null?'—':fmt(bv,2)+'%','Inflazione attesa di mercato','Serve a separare un rialzo nominale dovuto all’inflazione attesa da uno dovuto ai tassi reali.','info'));
+} else {
+cards.push(v233RateCard('Breakeven','Non comparabile','Dato non completo','La componente di inflazione attesa resta separata e non viene inventata.','neu'));
+}
+if(long && long.tenor!=='10Y'){
+cards.push(v233RateCard(`Lunga scadenza · ${long.tenor}`,fmt(long.value,2)+'%','Coda della curva','Utile per leggere term premium, duration e pressione da offerta quando disponibile.','neu'));
+}
+return cards.join('');
+}
+function v233Changes(d){
+const rows=[];
+const curve=v233CurveInterpretation(d), driver=v233Driver(d), div=v233Divergence(d);
+const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp);
+if(Math.abs(d.chg2_bp||0)>=3) rows.push({k:'Front-end 2Y',v:m2.txt,why:'Il front-end sta cambiando il pricing della policy attesa.',cls:m2.cls});
+if(Math.abs(d.chg10_bp||0)>=3) rows.push({k:'Long-end 10Y',v:m10.txt,why:'Il tratto lungo sta cambiando e va scomposto prima di attribuirgli una causa.',cls:m10.cls});
+if(Math.abs(v233SlopeChange(d)||0)>=3) rows.push({k:'Curva 10Y−2Y',v:curve.name,why:curve.why,cls:curve.cls});
+if(div.name!=='Nessuna divergenza forte') rows.push({k:'Divergenza',v:div.name,why:div.why,cls:'warn'});
+if(!rows.length) return `<div class="v233NoChange">Nessun cambiamento Rates abbastanza ampio da modificare la lettura corrente.</div>`;
+return rows.map(r=>`<div class="v233ChangeRow ${r.cls}"><span>${r.k}</span><b>${r.v}</b><small>${r.why}</small></div>`).join('');
+}
+function v233FxRead(c,d){
+const driver=v233Driver(d), curve=v233CurveInterpretation(d);
+if(driver.name==='Front-end / 2Y'){
+return d.chg2_bp>0
+? `${c}: il front-end sta salendo e quindi il repricing monetario sta diventando più restrittivo. Questo è un vento favorevole per la valuta solo se il differenziale relativo contro le altre economie si amplia e il prezzo conferma.`
+: `${c}: il front-end sta scendendo e il mercato sta prezzando una traiettoria monetaria meno restrittiva. Questo tende a togliere supporto Rates alla valuta se il movimento è relativo e persistente.`;
+}
+return `${c}: il movimento è guidato soprattutto dal long-end. Prima di tradurlo in FX bisogna capire se viene da crescita, real yield, breakeven, term premium o supply. Il regime della curva è ${curve.name.toLowerCase()}.`;
+}
+function v233ParseDate(d){
+if(!d)return null;
+let m;
+if((m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})$/))) return new Date(+m[1],+m[2]-1,+m[3]);
+if((m=String(d).match(/^(\d{4})-(\d{2})$/))) return new Date(+m[1],+m[2]-1,1);
+const x=new Date(d); return isNaN(x)?null:x;
+}
+function v233Range(series,tf){
+if(!series) return {dates:[],values:[]};
+const dates=series.dates||[],values=series.values||[];
+if(tf==='MAX') return {dates,values};
+const parsed=dates.map(v233ParseDate), last=[...parsed].reverse().find(Boolean);
+if(!last)return {dates,values};
+const months={'1M':1,'3M':3,'6M':6,'1Y':12,'2Y':24,'5Y':60}[tf]||9999;
+const cut=new Date(last.getFullYear(),last.getMonth()-months,last.getDate());
+const idx=parsed.findIndex(x=>x&&x>=cut), start=idx>=0?idx:0;
+return {dates:dates.slice(start),values:values.slice(start)};
+}
+function v233AvailableTf(series){
+return ['1M','3M','6M','1Y','2Y','5Y','MAX'].filter(tf=>tf==='MAX'||v233Range(series,tf).values.filter(x=>x!=null).length>=2);
+}
+function v233ChartSeries(d,key){
+if(key==='2Y') return d.history2 ? [{name:'2Y',series:d.history2}] : [];
+if(key==='10Y') return d.history10 ? [{name:'10Y',series:d.history10}] : [];
+if(key==='CURVE' && d.history2 && d.history10){
+const map10=new Map(d.history10.dates.map((z,i)=>[z,d.history10.values[i]]));
+const dates=[],values=[];
+d.history2.dates.forEach((z,i)=>{if(map10.has(z)){dates.push(z);values.push((map10.get(z)-d.history2.values[i])*100)}});
+return [{name:'10Y−2Y',series:{dates,values,label:'Curva 10Y−2Y'}}];
+}
+if(key==='REAL') return d.real ? [{name:'Real yield',series:d.real}] : [];
+if(key==='BE') return d.breakeven ? [{name:'Breakeven',series:d.breakeven}] : [];
+return [];
+}
+function v233RenderCharts(){
+const det=document.querySelector('#v233ChartsDetails');
+if(!det?.open)return;
+const d=NATIVE_RATES_DATA[v233RatesCurrency]||NATIVE_RATES_DATA.USD;
+const tabs=[
+['2Y','2Y / front-end'],
+['10Y','10Y / long-end'],
+['CURVE','Curva 10Y−2Y'],
+['REAL','Real yield'],
+['BE','Breakeven']
+].filter(([k])=>v233ChartSeries(d,k).length);
+if(!tabs.some(x=>x[0]===v233RatesChart)) v233RatesChart=tabs[0]?.[0]||'2Y';
+document.querySelector('#v233ChartTabs').innerHTML=tabs.map(([k,l])=>`<button class="${k===v233RatesChart?'active':''}" data-k="${k}">${l}</button>`).join('');
+document.querySelectorAll('#v233ChartTabs button').forEach(b=>b.onclick=()=>{v233RatesChart=b.dataset.k;v233RenderCharts()});
+const items=v233ChartSeries(d,v233RatesChart);
+document.querySelector('#v233ChartsArea').innerHTML=items.map((item,i)=>{
+const key=`${v233RatesCurrency}_${v233RatesChart}_${i}`, av=v233AvailableTf(item.series);
+let tf=v233Tf[key]||(av.includes('1Y')?'1Y':av.at(-1)||'MAX');
+if(!av.includes(tf))tf=av.at(-1)||'MAX';
+v233Tf[key]=tf;
+return `<div class="v233ChartCard"><div class="v233ChartHead"><div><b>${item.name}</b><span>Serie storica · ${item.series.last_date||item.series.dates?.at(-1)||'—'}</span></div><div class="v233Tf" data-key="${key}">${av.map(x=>`<button class="${x===tf?'active':''}" data-tf="${x}">${x}</button>`).join('')}</div></div><div class="chartbox tall"><canvas id="v233Chart_${i}"></canvas></div></div>`;
+}).join('');
+items.forEach((item,i)=>{
+const key=`${v233RatesCurrency}_${v233RatesChart}_${i}`;
+const rg=v233Range(item.series,v233Tf[key]||'MAX');
+lineChart(document.querySelector('#v233Chart_'+i),[{values:rg.values,color:'#23b7ff'}],rg.dates,v233RatesChart==='CURVE'?0:2);
+});
+document.querySelectorAll('#v233ChartsArea .v233Tf button').forEach(btn=>btn.onclick=()=>{
+v233Tf[btn.closest('.v233Tf').dataset.key]=btn.dataset.tf;
+v233RenderCharts();
+});
+}
+function selectNativeRates(c){
+nativeRatesSelected=c;
+v233RatesCurrency=c;
+renderNativeRatesDesk();
+}
+
+function v478RatesTutor(c,d){
+  const m2=v233Move(d?.chg2_bp), m10=v233Move(d?.chg10_bp);
+  const driver=v233Driver(d), curve=v233CurveInterpretation(d), div=v233Divergence(d);
+
+  let now={txt:'MISTO / DA INTERPRETARE',cls:'warn'};
+  if(driver.name==='Front-end / 2Y'){
+    if((d.chg2_bp||0)>2) now={txt:'FAVOREVOLE',cls:'pos'};
+    else if((d.chg2_bp||0)<-2) now={txt:'SFAVOREVOLE',cls:'neg'};
+    else now={txt:'NEUTRO',cls:'neu'};
+  }else if(driver.name==='Movimento condiviso'){
+    if((d.chg2_bp||0)>2 && (d.chg10_bp||0)>0) now={txt:'FAVOREVOLE MA DA LEGGERE',cls:'warn'};
+    else if((d.chg2_bp||0)<-2 && (d.chg10_bp||0)<0) now={txt:'SFAVOREVOLE',cls:'neg'};
+  }
+
+  let dir={txt:'STABILE →',cls:'neu'};
+  if((d.chg2_bp||0)>2) dir={txt:'PIÙ FAVOREVOLE ↗',cls:'pos'};
+  else if((d.chg2_bp||0)<-2) dir={txt:'MENO FAVOREVOLE ↘',cls:'neg'};
+  else if(Math.abs(d.chg10_bp||0)>Math.abs(d.chg2_bp||0)+2) dir={txt:'CAMBIA, MA DAL LONG-END',cls:'warn'};
+
+  let title,text;
+  if(driver.name==='Front-end / 2Y'){
+    if((d.chg2_bp||0)>2){
+      title=`I tassi stanno dando più supporto a ${c}`;
+      text=`Il 2Y sta salendo ed è il tratto che guida il movimento. In parole semplici, il mercato sta prezzando una politica monetaria relativamente più restrittiva: questo tende ad aiutare la valuta.`;
+    }else if((d.chg2_bp||0)<-2){
+      title=`I tassi stanno togliendo supporto a ${c}`;
+      text=`Il 2Y sta scendendo ed è il tratto che guida il movimento. In parole semplici, il mercato sta prezzando una traiettoria monetaria meno restrittiva: questo tende a penalizzare la valuta.`;
+    }else{
+      title=`I tassi non stanno dando un impulso forte a ${c}`;
+      text=`Il front-end è il tratto più importante, ma il movimento è piccolo. Per ora il mercato non sta cambiando molto la storia monetaria.`;
+    }
+  }else if(driver.name==='Long-end / 10Y'){
+    title=`Il movimento dei tassi viene soprattutto dal lungo termine`;
+    text=`Il 10Y si sta muovendo più del 2Y. Questo non è automaticamente positivo o negativo per ${c}: prima bisogna capire se viene da crescita, rendimenti reali, inflazione attesa, term premium o supply.`;
+  }else{
+    title=`La curva dei tassi si sta muovendo in modo abbastanza condiviso`;
+    text=`2Y e 10Y si muovono con intensità simile. Il segnale per ${c} è meno pulito e va letto insieme alla forma della curva e al prezzo.`;
+  }
+
+  const drivers=[
+    {label:'Front-end · 2Y',txt:`${d['2Y']==null?'—':fmt(d['2Y'],2)+'%'} · ${m2.txt}`,cls:m2.cls==='pos'?'v478Pos':m2.cls==='neg'?'v478Neg':'v478Neu'},
+    {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:m10.cls==='pos'?'v478Pos':m10.cls==='neg'?'v478Neg':'v478Neu'},
+    {label:'Curva 10Y−2Y',txt:`${d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb'} · ${curve.name}`,cls:curve.cls==='pos'?'v478Pos':curve.cls==='neg'?'v478Neg':curve.cls==='warn'?'v478Warn':'v478Neu'}
+  ];
+
+  let confirm,reverse;
+  if(now.cls==='pos'){
+    confirm=`Se il 2Y continua a salire rispetto agli altri Paesi e il prezzo di ${c} conferma, il supporto Rates diventa più credibile.`;
+    reverse=`Se il 2Y torna a scendere o il rialzo resta confinato al 10Y senza conferma del front-end, il vantaggio Rates si indebolisce.`;
+  }else if(now.cls==='neg'){
+    confirm=`Se il 2Y continua a scendere e il mercato prezza una policy meno restrittiva, la pressione Rates su ${c} si rafforza.`;
+    reverse=`Se il 2Y torna a salire e recupera il differenziale contro le altre economie, questa lettura va rivista.`;
+  }else{
+    confirm=`La lettura diventa più chiara se il 2Y prende il comando e si muove con decisione nella stessa direzione per più sedute.`;
+    reverse=`Se continua a guidare soprattutto il 10Y o 2Y e 10Y divergono, evitiamo di tradurre il movimento in un segnale FX semplice.`;
+  }
+
+  const fx=v233FxRead(c,d);
+  return {now,dir,title,text,drivers,confirm,reverse,fx,div};
+}
+renderNativeRatesDesk=function(){
+const c=v233RatesCurrency;
+const d=NATIVE_RATES_DATA[c]||NATIVE_RATES_DATA.USD;
+nativeRatesSelected=c;
+document.querySelector('#v233CurrencyCards').innerHTML=Object.keys(NATIVE_RATES_DATA).map(x=>`
+<button class="v233CurrencyCard ${x===c?'active':''}" data-c="${x}"><span class="v233Flag">${flagSvg(x)}</span><span class="v233Ccy">${x}</span><small>${v233CountryLabel(x)}</small></button>`).join('');
+document.querySelectorAll('#v233CurrencyCards .v233CurrencyCard').forEach(b=>b.onclick=()=>selectNativeRates(b.dataset.c));
+const head=v233Headline(c,d), driver=v233Driver(d), div=v233Divergence(d), risk=v233Risk(d), curve=v233CurveInterpretation(d);
+const tutor=v478RatesTutor(c,d);
+document.querySelector('#v233CountryName').textContent=`${c} · ${v233CountryLabel(c)}`;
+const rNow=document.querySelector('#v478RatesNow');
+if(rNow){rNow.className=`v478Ticker ${tutor.now.cls}`;const v=rNow.querySelector('.v');if(v)v.textContent=tutor.now.txt;}
+const rDir=document.querySelector('#v478RatesDir');
+if(rDir){rDir.className=`v478Ticker ${tutor.dir.cls}`;const v=rDir.querySelector('.v');if(v)v.textContent=tutor.dir.txt;}
+const rTitle=document.querySelector('#v478StoryTitle');if(rTitle)rTitle.textContent=tutor.title;
+const rText=document.querySelector('#v478StoryText');if(rText)rText.textContent=tutor.text;
+const rDrivers=document.querySelector('#v478Drivers');
+if(rDrivers)rDrivers.innerHTML=tutor.drivers.map(x=>`<div class="v478Driver"><strong>${x.label}</strong><span class="${x.cls}">${x.txt}</span></div>`).join('');
+const rConfirm=document.querySelector('#v478Confirm');if(rConfirm)rConfirm.textContent=tutor.confirm;
+const rReverse=document.querySelector('#v478Reverse');if(rReverse)rReverse.textContent=tutor.reverse;
+const rFx=document.querySelector('#v478FxImpact');if(rFx)rFx.textContent=tutor.fx;
+document.querySelector('#v233DataQuality').textContent=v233QualityLabel(d.quality);
+document.querySelector('#v233Headline').textContent=head.text;
+document.querySelector('#v233Headline').className=`v233Headline ${head.cls}`;
+const set=(id,txt)=>{const el=document.querySelector(id);if(el)el.textContent=txt};
+set('#v233Driver',driver.name); set('#v233DriverWhy',driver.why);
+set('#v233Divergence',div.name); set('#v233DivergenceWhy',div.why);
+set('#v233Turning',curve.name); set('#v233TurningWhy',curve.why);
+set('#v233Risk',risk.name); set('#v233RiskWhy',risk.why);
+set('#v233RatesRead',v233RatesThesis(c,d));
+document.querySelector('#v233RatesGrid').innerHTML=v233Cards(c,d);
+if(window.v401RenderRatesLayers) window.v401RenderRatesLayers(c,d);
+document.querySelector('#v233ChangeList').innerHTML=v233Changes(d);
+set('#v233FxRead',v233FxRead(c,d));
+const det=document.querySelector('#v233ChartsDetails');
+if(det && !v233RatesBound){
+v233RatesBound=true;
+det.addEventListener('toggle',()=>{if(det.open)v233RenderCharts()});
+}
+if(det?.open)v233RenderCharts();
+};
+</script><script>
+let v234CbCurrency = (typeof nativeCbSelected!=='undefined' && nativeCbSelected) ? nativeCbSelected : 'USD';
+function v234CountryLabel(c){
+const m={USD:'Stati Uniti',EUR:'Eurozona',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
+return m[c]||c;
+}
+function v234StanceClass(d){
+const t=((d?.stance||'')+' '+(d?.official_bias||'')).toLowerCase();
+if(/hawk|rialzo|restritt/.test(t)) return 'pos';
+if(/dovish|accomod/.test(t)) return 'neg';
+if(/rischio|hold|invariat/.test(t)) return 'warn';
+return 'neu';
+}
+function v234StanceLabel(d){
+const t=((d?.stance||'')+' '+(d?.official_bias||'')).toLowerCase();
+if(/hawk/.test(t) && /rischio/.test(t)) return 'Neutrale con rischio hawkish';
+if(/hawk|restritt/.test(t)) return 'Hawkish / restrittiva';
+if(/dovish|accomod/.test(t)) return 'Dovish / accomodante';
+if(/hold|invariat/.test(t)) return 'In attesa / neutrale';
+return d?.stance||'Non chiara';
+}
+function v234ActionLabel(d){
+const a=String(d?.action||'');
+if(/RIALZO/i.test(a)) return 'Policy appena irrigidita';
+if(/TAGLIO/i.test(a)) return 'Policy appena allentata';
+if(/INVARIATO/i.test(a)) return 'Tasso lasciato invariato';
+return a||'Nessun cambiamento identificato';
+}
+function v234PricingQuality(d){
+if(d?.pricing_tier==='COMPLETO') return {label:'Pricing completo',cls:'pos'};
+if(d?.pricing_tier==='PARZIALE') return {label:'Pricing parziale',cls:'warn'};
+return {label:'Pricing non comparabile',cls:'neu'};
+}
+function v234FrontEnd(c){
+const r=NATIVE_RATES_DATA[c];
+if(!r || r.chg2_bp==null) return {label:'2Y non disponibile',cls:'neu',why:'Nessuna lettura del front-end disponibile.'};
+if(r.chg2_bp>2) return {label:`2Y +${fmt(r.chg2_bp,1)} pb`,cls:'pos',why:'Il front-end sta prezzando condizioni monetarie più restrittive / più alte.'};
+if(r.chg2_bp<-2) return {label:`2Y ${fmt(r.chg2_bp,1)} pb`,cls:'neg',why:'Il front-end sta prezzando condizioni monetarie meno restrittive / più basse.'};
+return {label:`2Y ${fmt(r.chg2_bp,1)} pb`,cls:'neu',why:'Il front-end è quasi stabile nell’ultima settimana.'};
+}
+function v234MarketSummary(c,d){
+const q=v234PricingQuality(d), f=v234FrontEnd(c);
+if(d.pricing_tier==='COMPLETO'){
+return {label:'Curva OIS/forward disponibile',cls:'pos',why:`È disponibile una curva forward validata. ${f.why}`};
+}
+if(d.pricing_tier==='PARZIALE'){
+return {label:'Pricing solo parziale',cls:'warn',why:`La curva OIS completa non è omogenea nei dati disponibili. Come conferma separata, ${f.label}: ${f.why}`};
+}
+return {label:'Pricing non comparabile',cls:'neu',why:`Nessuna curva forward omogenea disponibile. Il 2Y resta solo una lettura separata del repricing: ${f.label}.`};
+}
+function v234PolicyVsMarket(c,d){
+const s=v234StanceClass(d), f=v234FrontEnd(c);
+if(f.cls==='neu') return {label:'Nessuna divergenza forte',cls:'neu',why:'Il front-end non sta inviando un segnale abbastanza forte da contraddire la stance ufficiale.'};
+if(s==='pos' && f.cls==='pos') return {label:'CB e mercato allineati hawkish',cls:'pos',why:'La stance ufficiale è restrittiva e il front-end si muove nella stessa direzione.'};
+if(s==='neg' && f.cls==='neg') return {label:'CB e mercato allineati dovish',cls:'neg',why:'La stance ufficiale è accomodante e il front-end si muove nella stessa direzione.'};
+if(s==='pos' && f.cls==='neg') return {label:'Mercato più dovish della CB',cls:'warn',why:'La banca centrale resta restrittiva, ma il front-end sta prezzando un percorso meno restrittivo.'};
+if(s==='neg' && f.cls==='pos') return {label:'Mercato più hawkish della CB',cls:'warn',why:'La banca centrale resta accomodante, ma il front-end si sta irrigidendo.'};
+if(s==='warn') return {label:'Mercato da usare come conferma',cls:'warn',why:'La banca centrale è in hold / transizione: il front-end aiuta a capire quale direzione il mercato sta anticipando.'};
+return {label:'Allineamento non netto',cls:'neu',why:'Policy ufficiale e front-end non producono una lettura unica.'};
+}
+function v234Headline(c,d){
+const s=v234StanceLabel(d), div=v234PolicyVsMarket(c,d);
+return {text:`${c}: ${s.toLowerCase()}. ${div.label}.`,cls:v234StanceClass(d)==='pos'?'pos':v234StanceClass(d)==='neg'?'neg':'warn'};
+}
+function v234PolicyRead(c,d){
+const m=v234MarketSummary(c,d), div=v234PolicyVsMarket(c,d);
+return `${v234CountryLabel(c)}: tasso attuale ${d.rate_text}. Ultima decisione: ${String(d.action||'').toLowerCase()}. La stance resta ${v234StanceLabel(d).toLowerCase()}. ${m.why} ${div.why}`;
+}
+function v234PolicyCards(c,d){
+const scls=v234StanceClass(d);
+const f=v234FrontEnd(c);
+return [
+`<div class="v234PolicyCard ${scls}"><span>TASSO ATTUALE</span><b>${d.rate_text}</b><strong>${v234StanceLabel(d)}</strong><p>${v234ActionLabel(d)}.</p></div>`,
+`<div class="v234PolicyCard ${scls}"><span>ULTIMA DECISIONE</span><b>${d.action}</b><strong>${d.last_date||'Data non disponibile'}</strong><p>Decisione realizzata: resta separata dal percorso che il mercato prezza da qui in avanti.</p></div>`,
+`<div class="v234PolicyCard ${scls}"><span>BIAS UFFICIALE</span><b>${d.official_bias}</b><strong>Comunicazione ufficiale</strong><p>${d.official_next}</p></div>`,
+`<div class="v234PolicyCard neu"><span>PROSSIMO MEETING</span><b>${d.next_meeting}</b><strong>Evento policy</strong><p>È il prossimo punto in cui stance ufficiale e pricing di mercato possono riallinearsi.</p></div>`,
+`<div class="v234PolicyCard ${f.cls}"><span>FRONT-END 2Y</span><b>${f.label}</b><strong>Repricing del mercato</strong><p>${f.why}</p></div>`
+].join('');
+}
+function v234PricingCards(c,d){
+const x=V241_PLAIN_MARKET[c]||{};
+const rate=NATIVE_RATES_DATA[c]?.['2Y'];
+const chg=NATIVE_RATES_DATA[c]?.chg2_bp;
+const confirm = chg==null ? 'Conferma 2Y non disponibile'
+: chg>5 ? `2Y in rialzo (+${fmt(chg,1)} pb)`
+: chg<-5 ? `2Y in calo (${fmt(chg,1)} pb)`
+: `2Y quasi stabile (${chg>=0?'+':''}${fmt(chg,1)} pb)`;
+return `
+<div class="v234PricingCard wide"><span>COSA PREZZA IL MERCATO</span><b>${x.headline||'Nessun segnale chiaro al momento'}</b><small>${x.detail||''}</small></div><div class="v234PricingCard"><span>CONFERMA FRONT-END</span><b>${confirm}</b><small>Il 2Y è una conferma del repricing, non la fonte principale del messaggio della banca centrale.</small></div>`;
+}
+function v234ChangeMap(c,d){
+const div=v234PolicyVsMarket(c,d), market=v234MarketSummary(c,d);
+const opposite=v234StanceClass(d)==='pos'?'dovish':v234StanceClass(d)==='neg'?'hawkish':'direzionale';
+return `
+<div><span>1 · COSA GUARDARE ORA</span><b>${div.label}</b><small>${div.why}</small></div><div><span>2 · COSA CONFERMA LA STORIA</span><b>Policy e mercato nella stessa direzione</b><small>La lettura diventa più robusta se guidance, OIS/forward e 2Y restano coerenti tra loro.</small></div><div><span>3 · COSA CAMBIA DAVVERO LA STORIA</span><b>Un repricing ${opposite} persistente</b><small>Serve che la comunicazione ufficiale cambi oppure che il mercato anticipi in modo persistente un percorso diverso e la banca centrale inizi a validarlo.</small></div><div><span>4 · LIMITE DEL DATO</span><b>${market.label}</b><small>${market.why}</small></div>`;
+}
+function v234FxRead(c,d){
+const div=v234PolicyVsMarket(c,d), f=v234FrontEnd(c);
+if(div.cls==='pos') return `${c}: banca centrale e front-end sono allineati in senso più restrittivo. Questo può sostenere la valuta se il differenziale relativo contro le altre economie si amplia e il prezzo conferma.`;
+if(div.cls==='neg') return `${c}: banca centrale e front-end sono allineati in senso più accomodante. Questo tende a ridurre il supporto policy alla valuta se il repricing è relativo e persistente.`;
+if(div.cls==='warn') return `${c}: la parte interessante è la divergenza tra banca centrale e mercato. ${div.why} Il punto operativo è vedere chi si riallinea a chi: guidance ufficiale, OIS/forward o 2Y.`;
+return `${c}: la policy da sola non dà ancora un impulso FX netto. ${f.why} Serve una differenza relativa più chiara rispetto alle altre banche centrali.`;
+}
+function selectNativeCb(c){
+nativeCbSelected=c;
+v234CbCurrency=c;
+renderNativeCbDesk();
+if(document.querySelector('#v236ChartModal')?.classList.contains('open')) v236RenderCbCharts();
+}
+renderNativeCbDesk=function(){
+const c=v234CbCurrency, d=NATIVE_CB_DATA[c]||NATIVE_CB_DATA.USD;
+nativeCbSelected=c;
+document.querySelector('#v234CurrencyCards').innerHTML=Object.keys(NATIVE_CB_DATA).map(x=>`
+<button class="v234CurrencyCard v235CurrencyCard ${x===c?'active':''}" data-c="${x}"><span class="v234Flag">${flagSvg(x)}</span><span class="v234Ccy">${x}</span><strong class="v235PolicyRate">${NATIVE_CB_DATA[x].rate_text}</strong><small>${NATIVE_CB_DATA[x].bank} · ${v234StanceLabel(NATIVE_CB_DATA[x])}</small></button>`).join('');
+document.querySelectorAll('#v234CurrencyCards .v234CurrencyCard').forEach(b=>b.onclick=()=>selectNativeCb(b.dataset.c));
+const head=v234Headline(c,d), market=v234MarketSummary(c,d), div=v234PolicyVsMarket(c,d), q=v234PricingQuality(d);
+document.querySelector('#v234CountryName').textContent=`${c} · ${d.full_name}`;
+document.querySelector('#v234PricingQuality').textContent=q.label;
+document.querySelector('#v234PricingQuality').className=`v234PricingQuality ${q.cls}`;
+document.querySelector('#v234Headline').textContent=head.text;
+document.querySelector('#v234Headline').className=`v234Headline ${head.cls}`;
+const set=(id,txt)=>{const el=document.querySelector(id);if(el)el.textContent=txt};
+set('#v234Stance',v234StanceLabel(d));
+set('#v234StanceWhy',`${d.rate_text} · ${d.action}. ${d.official_bias}.`);
+set('#v234Change',v234ActionLabel(d));
+set('#v234ChangeWhy',d.official_next);
+set('#v234Market',market.label);
+set('#v234MarketWhy',market.why);
+set('#v234Divergence',div.label);
+set('#v234DivergenceWhy',div.why);
+set('#v234PolicyRead',v234PolicyRead(c,d));
+document.querySelector('#v234PolicyGrid').innerHTML=v234PolicyCards(c,d);
+document.querySelector('#v234PricingGrid').innerHTML=v234PricingCards(c,d);
+document.querySelector('#v234ChangeMap').innerHTML=v234ChangeMap(c,d);
+set('#v234FxRead',v234FxRead(c,d));
+};
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+const latestAsOf=()=>String((typeof D!=='undefined'&&D.asOf)||'2026-09-25');
+const prettyDate=(x)=>{
+const m=String(x||'').match(/(\d{4})-(\d{2})-(\d{2})/); if(!m)return String(x||'—');
+const mons=['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+return `${Number(m[3])} ${mons[Number(m[2])-1]} ${m[1]}`;
+};
+const sign=(n)=>Number(n)>0?1:Number(n)<0?-1:0;
+const dirTxt=(n)=>sign(n)>0?'in miglioramento':sign(n)<0?'in peggioramento':'stabile / misto';
+const priceDate=()=>safe(()=>D.prices[D.prices.length-1].Date,latestAsOf())||latestAsOf();
+const businessDate=()=>safe(()=>window.currentProductionBusinessDate?.(),null)
+|| safe(()=>window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date,null)
+|| priceDate();
+function currentLayerSnapshot(c){
+const st=safe(()=>deriveCurrencyState(c),{})||{};
+const imp=safe(()=>currencyImprovementDiagnostic(c),{})||{};
+const drv=safe(()=>deriveCurrencyDriver(c),'Non determinato');
+const cot=(typeof D!=='undefined'&&D.cot&&D.cot[c])||{};
+const rates=(typeof NATIVE_RATES_DATA!=='undefined'&&NATIVE_RATES_DATA[c])||{};
+const cb=(typeof NATIVE_CB_DATA!=='undefined'&&NATIVE_CB_DATA[c])||{};
+const liq=(typeof NATIVE_LIQ_DATA!=='undefined'&&NATIVE_LIQ_DATA[c])||{};
+const ctx=(typeof COUNTRY_CTX!=='undefined'&&COUNTRY_CTX[c])||{};
+const macro=(typeof D!=='undefined'&&D.macro&&D.macro[c])||{};
+return {c,st,imp,drv,cot,rates,cb,liq,ctx,macro};
+}
+function liquidityPrimaryAsOf(d){
+return d?.liquidity?.last_date
+|| safe(()=>d?.liquidity?.dates?.at(-1),null)
+|| d?.as_of
+|| '—';
+}
+function layerAsOf(c){
+const x=currentLayerSnapshot(c);
+return {
+price:priceDate(),
+rates:x.rates.date||x.rates.as_of||x.rates.asOf||'—',
+cb:x.cb.last_date||x.cb.as_of||'—',
+liq:liquidityPrimaryAsOf(x.liq),
+cot:safe(()=>D.cotAsOf,'2026-09-22')||'2026-09-22',
+macro:x.macro.as_of||x.ctx.as_of||'pubblicazioni correnti nel dataset'
+};
+}
+function refreshSnapshotLabels(){
+const pd=prettyDate(businessDate());
+document.querySelectorAll('.v256Snapshot b').forEach(e=>e.textContent=pd);
+document.querySelectorAll('.soSnapshot').forEach(e=>e.textContent=`Giornata dati · ${pd}`);
+document.querySelectorAll('.sectionNote').forEach(e=>{
+if(/Tempo dei dati:/i.test(e.textContent||''))
+e.innerHTML=`<b>Tempo dei dati:</b> giornata operativa <b>${pd}</b>. Ogni layer mantiene il proprio as-of reale; Price è ${prettyDate(priceDate())} e i dati mensili o settimanali non vengono falsamente trasformati in giornalieri.`;
+});
+}
+function refreshLegacyG8Cards(){
+const cards=[...document.querySelectorAll('.g8Visual .ccyCard')];
+cards.forEach((card,i)=>{
+const c=CCYS[i]; if(!c)return;
+const x=currentLayerSnapshot(c);
+const state=x.st.base||'MISTA';
+const sEl=card.querySelector('.ccyState'); if(sEl) sEl.textContent=state;
+const dEl=card.querySelector('.ccyDriver'); if(dEl) dEl.textContent=`Driver: ${x.drv||'Non determinato'}`;
+const mini=card.querySelectorAll('.ccyMini>div');
+if(mini[0]) mini[0].lastElementChild.textContent=x.macro.cycle_it||x.ctx.cycle||'—';
+if(mini[1]) mini[1].lastElementChild.textContent=Number.isFinite(Number(x.macro.rate2y))?`${Number(x.macro.rate2y).toFixed(2)}%`:'—';
+if(mini[2]) mini[2].lastElementChild.textContent=Number.isFinite(Number(x.cot.pct))?Number(x.cot.pct).toFixed(0):'—';
+const hook=card.querySelector('.ccyHook');
+if(hook){
+const ch=x.imp.state||'STABILE / MISTA';
+const pr=x.st.confirmation||'Prezzo non risolutivo';
+hook.textContent=`${ch} · ${pr}`;
+}
+});
+}
+function executiveNarrative(){
+const xs=CCYS.map(currentLayerSnapshot);
+const improve=xs.filter(x=>x.imp.state==='MIGLIORA'||x.imp.state==='EARLY SHIFT POSITIVO').map(x=>x.c);
+const worsen=xs.filter(x=>x.imp.state==='PEGGIORA'||x.imp.state==='EARLY SHIFT NEGATIVO').map(x=>x.c);
+const rates=xs.map(x=>({c:x.c,v:Number(x.rates.chg2_bp)})).filter(x=>Number.isFinite(x.v)).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+const r0=rates[0];
+const risk=safe(()=>deriveGlobalRiskState(),{state:'MISTO'})||{state:'MISTO'};
+let main='Il quadro G8 resta misto: non c’è una singola narrativa valida per tutte le valute.';
+const parts=[];
+if(improve.length) parts.push(`${improve.join(' e ')} mostrano supporto in aumento`);
+if(worsen.length) parts.push(`${worsen.join(' e ')} mostrano supporto in calo`);
+if(r0) parts.push(`il movimento 2Y più ampio è ${r0.c} ${r0.v>=0?'+':''}${r0.v.toFixed(1)} bp`);
+if(parts.length) main=parts.join(' · ')+'.';
+const sub=`Giornata operativa ${prettyDate(businessDate())}: Macro + Rates/CB definiscono la struttura; Liquidità e Risk sono overlay; COT modifica il rischio; Price (${prettyDate(priceDate())}) conferma o diverge. Ogni layer mantiene il proprio as-of. Rischio globale: ${risk.state||'misto'}.`;
+const a=document.getElementById('v254MainStory'); if(a)a.textContent=main;
+const b=document.getElementById('v254MainSub'); if(b)b.textContent=sub;
+const nm=document.getElementById('soNarrativeMain'); if(nm && (!nm.textContent||nm.textContent==='—'))nm.textContent=main;
+const ns=document.getElementById('soNarrativeSub'); if(ns)ns.textContent=`Ogni sezione deriva dallo stesso snapshot canonico; Price è aggiornato al ${prettyDate(priceDate())}.`;
+}
+function makeTheme(c){
+const x=currentLayerSnapshot(c), a=layerAsOf(c);
+const imp=x.imp.state||'STABILE / MISTA';
+const rate=Number(x.rates.chg2_bp);
+const pct=Number(x.cot.pct), netoi=Number(x.cot.net_oi);
+const macroSummary=x.ctx.summary_it||x.macro.simple_summary||'Quadro macro misto.';
+const rateTxt=Number.isFinite(rate)?`${rate>=0?'+':''}${rate.toFixed(1)} bp sul 2Y nell’ultima settimana`:'front-end non disponibile';
+const cotTxt=Number.isFinite(pct)?`COT P${pct.toFixed(0)}${Number.isFinite(netoi)?` · Net/OI ${netoi.toFixed(1)}%`:''}`:'COT non disponibile';
+const priceTxt=x.st.confirmation||'Prezzo non risolutivo';
+const title=`${c}: ${imp==='MIGLIORA'?'supporto in aumento':imp==='PEGGIORA'?'supporto in calo':imp.includes('POSITIVO')?'primo miglioramento':imp.includes('NEGATIVO')?'primo deterioramento':'quadro da confermare'}`;
+const state=(imp==='MIGLIORA'||imp==='PEGGIORA')?'IN COSTRUZIONE':'DA SEGUIRE';
+return {ccy:c,title,state,body:macroSummary,lead:`${x.drv||'Macro + tassi'} · ${rateTxt}`,confirm:`Prezzo (${v312HumanPrice(priceTxt)}) + prossime pubblicazioni Macro/Tassi`,diverge:`${cotTxt}; verificare se il posizionamento conferma o aumenta il rischio`,invalidate:`Un’inversione simultanea di Macro/front-end rispetto al cambiamento corrente`,_asOf:a};
+}
+function themePriority(c){
+const x=currentLayerSnapshot(c); let p=0;
+const imp=x.imp.state||'';
+if(imp==='MIGLIORA'||imp==='PEGGIORA') p+=6;
+else if(imp.includes('EARLY SHIFT')||imp==='TURNING POINT') p+=4;
+const r=Math.abs(Number(x.rates.chg2_bp)); if(Number.isFinite(r))p+=Math.min(4,r/5);
+const pct=Number(x.cot.pct),noi=Math.abs(Number(x.cot.net_oi));
+if(Number.isFinite(pct)&&(pct>=80||pct<=20))p+=2;
+if(Number.isFinite(noi)&&noi>=30)p+=2;
+return p;
+}
+function dynamicThemes(){ return [...CCYS].sort((a,b)=>themePriority(b)-themePriority(a)).slice(0,7).map(makeTheme); }
+// Override the old static TOP_THEMES renderer while preserving the exact visual card structure.
+const oldRenderTopThemes=window.renderTopThemes;
+window.renderTopThemes=function(){
+const box=document.querySelector('#themesGrid'); if(!box)return;
+const themes=dynamicThemes();
+const stateMap=(state)=>state==='IN COSTRUZIONE'?{label:'CAMBIAMENTO ATTIVO',cls:'building'}:{label:'DA SEGUIRE',cls:'watch'};
+box.innerHTML=themes.map(t=>{
+const st=stateMap(t.state),x=currentLayerSnapshot(t.ccy),a=t._asOf;
+const freshness=`Price ${prettyDate(a.price)} · Rates ${a.rates} · COT ${prettyDate(a.cot)}`;
+return `<div class="thCard ${st.cls}"><div class="thTop"><div class="thTitleWrap"><div class="thFlags">${flagSvg(t.ccy)}</div><div class="thName">${t.title}</div></div><div class="thState">${st.label}</div></div><div class="thStory">${t.body}</div><div class="thRows"><div class="thRow driver"><span>Cosa lo sta guidando</span><b>${t.lead}</b></div><div class="thRow confirm"><span>Cosa deve confermarlo</span><b>${t.confirm}</b></div><div class="thRow"><span>Cosa non torna ancora</span><b>${t.diverge}</b></div><div class="thRow invalidate"><span>Cosa lo indebolisce</span><b>${t.invalidate}</b></div></div><div class="thWhy"><b>Lettura attuale:</b> ${v312HumanChange(x.imp.state)} · ${v312HumanPrice(x.st.confirmation)}</div><div class="thWhy"><b>Aggiornamento:</b> ${freshness}</div></div>`;
+}).join('');
+};
+// Also replace the lexical global function binding used by showView in classic scripts.
+try{ renderTopThemes=window.renderTopThemes; }catch(e){}
+function refreshPairFreshness(){
+const host=document.querySelector('#pairs'); if(!host)return;
+host.setAttribute('data-recomputed-asof',priceDate());
+// Add one unobtrusive status line only if not already present.
+let n=host.querySelector('.v269PairFreshness');
+if(!n){
+n=document.createElement('div'); n.className='sectionNote v269PairFreshness';
+const first=host.querySelector('.panel,.pairHero,.pairHeader');
+if(first) first.insertAdjacentElement('afterend',n); else host.prepend(n);
+}
+n.innerHTML=`<b>Ricalcolo coppie:</b> 28/28 coppie costruite sul Price al <b>${prettyDate(priceDate())}</b>; Macro/Rates/CB/COT mantengono il proprio as-of. Nessuna coppia viene lasciata con una lettura precedente se cambia uno dei layer canonici.`;
+}
+function endToEndRecompute(){
+refreshSnapshotLabels();
+safe(()=>renderSimpleOverview());
+safe(()=>renderOperationalOverview());
+safe(()=>renderWhatChanged());
+safe(()=>window.renderTopThemes());
+safe(()=>renderPairGroups());
+safe(()=>renderPair());
+safe(()=>renderCurrency());
+safe(()=>renderCurrencyIntelligence());
+refreshLegacyG8Cards();
+executiveNarrative();
+refreshPairFreshness();
+}
+window.v269EndToEndRecompute=endToEndRecompute;
+setTimeout(endToEndRecompute,50);
+setTimeout(endToEndRecompute,350);
+})();
+</script><script>
+
+(function(){
+'use strict';
+function sideFromValues(a,b,va,vb){
+va=Number(va)||0; vb=Number(vb)||0;
+if(va>vb) return a;
+if(vb>va) return b;
+return null;
+}
+window.v271StructuralPairFrame=function(pair){
+const [a,b]=pair.split('/');
+const A=deriveCurrencyState(a)||{};
+const B=deriveCurrencyState(b)||{};
+const macroSide=sideFromValues(a,b,A.macro,B.macro);
+const policySide=sideFromValues(a,b,A.policy,B.policy);
+let fav='—';
+let quality='NESSUN CONTRASTO';
+let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
+if(macroSide && policySide && macroSide===policySide){
+fav=macroSide;
+quality='CONTRASTO STRUTTURALE FORTE';
+relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: il vantaggio relativo è strutturalmente allineato.`;
+}else if((macroSide && !policySide)||(!macroSide && policySide)){
+fav=macroSide||policySide;
+quality='VANTAGGIO RELATIVO PARZIALE';
+relation=`${fav} è avanti su uno dei due elementi principali; l’altro non separa ancora abbastanza le valute.`;
+}else if(macroSide && policySide && macroSide!==policySide){
+quality='NESSUN CONTRASTO';
+relation=`Macro e Tassi/CB favoriscono lati opposti: nessun vantaggio strutturale pulito.`;
+}
+let priceSide=null;
+try{
+const certified=typeof certifiedPairForMarket==='function' ? certifiedPairForMarket(pair) : CERT53?.pairs?.[pair];
+const raw=certified?.layer_directions?.price;
+const side=normalizePairSide(raw);
+priceSide=side==='A'?a:side==='B'?b:null;
+}catch(e){}
+let priceReading='PREZZO NON RISOLUTIVO';
+let priceNote='Il Prezzo non aggiunge ancora una conferma relativa abbastanza chiara.';
+if(fav!=='—' && priceSide){
+if(priceSide===fav){
+priceReading='MERCATO GIÀ ALLINEATO';
+priceNote=`Il Prezzo conferma il vantaggio strutturale di ${fav}. È conferma, non il motivo del segnale.`;
+}else{
+priceReading='DIVERGENZA DA MONITORARE';
+priceNote=`La struttura favorisce ${fav}, ma il Prezzo favorisce ${priceSide}. La divergenza va monitorata senza cambiare la lettura principale.`;
+}
+}
+const impA=currencyImprovementDiagnostic(a)||{};
+const impB=currencyImprovementDiagnostic(b)||{};
+const timing=`${a}: ${impA.state||'STABILE / MISTA'} · ${b}: ${impB.state||'STABILE / MISTA'}`;
+const missing=quality==='CONTRASTO STRUTTURALE FORTE'
+? 'Macro e Tassi/CB sono pienamente allineati: va verificato che Macro + Tassi/CB restino allineati.'
+: quality==='VANTAGGIO RELATIVO PARZIALE'
+? 'Manca l’allineamento del secondo elemento principale per avere un contrasto pieno.'
+: 'Serve che Macro e Tassi/CB inizino a favorire la stessa valuta prima di considerare il pair strutturalmente pulito.';
+const watch=priceReading==='DIVERGENZA DA MONITORARE'
+? `${priceNote} Controllare se il Prezzo si riallinea senza deterioramento di Macro + Tassi/CB.`
+: priceReading==='MERCATO GIÀ ALLINEATO'
+? `${priceNote} Evitare di inseguire il movimento solo perché il Prezzo è già allineato.`
+: `${priceNote} La priorità resta Macro + Tassi/CB.`;
+return {
+fav,quality,relation,timing,priceReading,priceNote,missing,watch,macroSide,policySide,
+structural:{
+macro:{a:Number(A.macro)||0,b:Number(B.macro)||0,side:macroSide===a?'A':macroSide===b?'B':'TIE'},
+policy:{a:Number(A.policy)||0,b:Number(B.policy)||0,side:policySide===a?'A':policySide===b?'B':'TIE'}
+}
+};
+};
+// Replace only the decision function used by Pair Desk / ranking.
+try{ derivePairDecisionFrame=window.v271StructuralPairFrame; }catch(e){ window.derivePairDecisionFrame=window.v271StructuralPairFrame; }
+// Pair-detail rows must describe CURRENT STRUCTURE, not recent acceleration.
+window.v271MacroRow=function(pair,frame){
+const [a,b]=pair.split('/');
+if(!frame.macroSide) return {side:'Nessuno',text:`Macro: ${a} e ${b} non mostrano un vantaggio relativo netto.`,cls:'neu'};
+const cls=frame.fav==='—'?'warn':frame.macroSide===frame.fav?'pos':'neg';
+return {side:frame.macroSide,text:`La struttura Macro favorisce ${frame.macroSide} nel confronto relativo.`,cls};
+};
+window.v271RatesRow=function(pair,frame){
+const [a,b]=pair.split('/');
+if(!frame.policySide) return {side:'Nessuno',text:`Tassi/CB: ${a} e ${b} non mostrano un vantaggio relativo netto.`,cls:'neu'};
+const cls=frame.fav==='—'?'warn':frame.policySide===frame.fav?'pos':'neg';
+return {side:frame.policySide,text:`La struttura Tassi/CB favorisce ${frame.policySide} nel confronto relativo.`,cls};
+};
+try{ v228MacroRow=(pair,frame,dyn)=>window.v271MacroRow(pair,frame); }catch(e){}
+try{ v228RatesRow=(pair,frame,dyn)=>window.v271RatesRow(pair,frame); }catch(e){}
+// Clarify the three buckets without changing layout.
+function relabelPairGroups(){
+const groups=document.querySelectorAll('.v226PairGroups .v226GroupHead > div, .v226PairGroups details summary > div');
+if(groups[0]) groups[0].innerHTML='<b>DA SEGUIRE</b><span>Macro e Tassi/CB favoriscono la stessa valuta: contrasto strutturale più pulito.</span>';
+if(groups[1]) groups[1].innerHTML='<b>DIVERGENZA DA MONITORARE</b><span>C’è un vantaggio su uno tra Macro e Tassi/CB, ma manca ancora l’allineamento completo.</span>';
+if(groups[2]) groups[2].innerHTML='<b>DA ASPETTARE</b><span>Macro e Tassi/CB sono divisi o non separano abbastanza le due valute.</span>';
+}
+function refreshSafe(){
+relabelPairGroups();
+try{ renderPairGroups(); }catch(e){ console.error('v271 pair groups',e); }
+try{ renderPair(); }catch(e){ console.error('v271 pair detail',e); }
+}
+relabelPairGroups();
+setTimeout(refreshSafe,0);
+setTimeout(refreshSafe,500);
+})();
+</script><style id="v272-ui-style">.v272Truth{margin:10px 0;padding:14px 16px;border:1px solid rgba(126,215,255,.22);border-radius:14px;background:linear-gradient(180deg,rgba(10,34,49,.88),rgba(7,25,37,.82));box-shadow:0 8px 24px rgba(0,0,0,.12)}.v272TruthTop{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:10px}.v272TruthTitle{font-weight:800;font-size:15px;letter-spacing:.01em}.v272TruthRole{font-size:12px;color:#9fb4c1;max-width:720px;line-height:1.45}.v272TruthGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.v272TruthCell{padding:10px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(255,255,255,.025)}.v272TruthCell span{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7f9baa;margin-bottom:5px}.v272TruthCell b{display:block;font-size:12px;line-height:1.3}.v272TruthCell.pos b{color:#58e795}.v272TruthCell.neg b{color:#c499ff}.v272TruthCell.warn b{color:#f1c66f}.v272TruthCell.neu b{color:#c8d4da}.v272TruthFoot{margin-top:9px;font-size:11px;line-height:1.45;color:#8fa7b4}.v272OverviewMatrix{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}.v272ScopeNote{margin-top:8px;padding:8px 10px;border-radius:9px;background:rgba(126,215,255,.06);border:1px solid rgba(126,215,255,.15);font-size:11px;color:#9fb4c1;line-height:1.4}@media(max-width:900px){.v272TruthGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.v272OverviewMatrix{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.v272TruthGrid,.v272OverviewMatrix{grid-template-columns:1fr}.v272TruthTop{display:block}.v272TruthRole{margin-top:6px}}</style><script>
+
+(function(){
+'use strict';
+let scheduled=false, applying=false;
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+const text=(el,v)=>{if(el && el.textContent!==String(v??'')) el.textContent=String(v??'')};
+const html=(el,v)=>{if(el && el.innerHTML!==String(v??'')) el.innerHTML=String(v??'')};
+function baseMeta(base){
+if(base==='FORTE') return {t:'BEN SOSTENUTA',c:'pos',d:'Macro e tassi stanno aiutando entrambi la valuta'};
+if(base==='COSTRUTTIVA') return {t:'SUPPORTO PRESENTE, MA INCOMPLETO',c:'pos',d:'solo uno tra Macro e Tassi/CB sta dando un sostegno chiaro'};
+if(base==='FRAGILE') return {t:'SOTTO PRESSIONE',c:'neg',d:'Macro e tassi stanno pesando entrambi sulla valuta'};
+if(base==='DEBOLE') return {t:'DEBOLE, MA NON SU TUTTI I FRONTI',c:'neg',d:'uno tra Macro e Tassi/CB sta pesando, l’altro non conferma'};
+return {t:'QUADRO POCO CHIARO',c:'neu',d:'Macro e tassi non danno ancora una direzione abbastanza chiara'};
+}
+function changeMeta(st){
+if(st==='MIGLIORA') return {t:'IL QUADRO STA MIGLIORANDO',c:'pos'};
+if(st==='PEGGIORA') return {t:'IL QUADRO STA PERDENDO FORZA',c:'neg'};
+if(st==='EARLY SHIFT POSITIVO') return {t:'PRIMI SEGNALI DI MIGLIORAMENTO',c:'warn'};
+if(st==='EARLY SHIFT NEGATIVO') return {t:'PRIMI SEGNALI DI PEGGIORAMENTO',c:'warn'};
+if(st==='TURNING POINT') return {t:'POSSIBILE SVOLTA IN CORSO',c:'warn'};
+if(st==='NON DETERMINATO') return {t:'NON È ANCORA CHIARO',c:'neu'};
+return {t:'NESSUN CAMBIAMENTO NETTO',c:'neu'};
+}
+function priceMeta(st){
+if(st==='PREZZO CONFERMA') return {t:'CONFERMA',c:'pos'};
+if(st==='PREZZO DIVERGE') return {t:'DIVERGE',c:'warn'};
+if(st==='PREZZO SENZA STRUTTURA') return {t:'SENZA STRUTTURA',c:'neu'};
+return {t:'NON RISOLUTIVO',c:'neu'};
+}
+function liqMeta(x,c){
+const d=(typeof NATIVE_LIQ_DATA!=='undefined'&&NATIVE_LIQ_DATA[c])||{};
+const dir=d.liquidity_dir;
+if(d.status==='PARZIALE'||dir==='DATI CORRENTI'||dir==='NON DISPONIBILE')
+return {t:'NON DETERMINATA · DATI INCOMPLETI',c:'warn'};
+if(dir==='IN AUMENTO') return {t:'IN AUMENTO · FAVOREVOLE',c:'pos'};
+if(dir==='IN CALO') return {t:'IN DIMINUZIONE · CONTRARIA',c:'neg'};
+if(dir==='STABILE') return {t:'STABILE · NEUTRA',c:'neu'};
+return {t:'NON DETERMINATA',c:'neu'};
+}
+function cotMeta(x){
+const r=String(x?.cotRisk||'');
+if(r) return {t:r.replace('P70 WARNING LONG','ATTENZIONE LONG').replace('P30 WARNING SHORT','ATTENZIONE SHORT'),c:'warn'};
+return {t:'NESSUN ECCESSO RILEVANTE',c:'neu'};
+}
+function truth(c){
+const x=safe(()=>deriveCurrencyState(c),null)||{};
+const imp=safe(()=>currencyImprovementDiagnostic(c),null)||{};
+return {c,x,b:baseMeta(x.base),ch:changeMeta(imp.state||x.improvementState),p:priceMeta(x.confirmation),l:liqMeta(x,c),cot:cotMeta(x)};
+}
+function truthHTML(c,role){
+const q=truth(c);
+return `<div class="v272TruthTop"><div><div class="v272TruthTitle">LETTURA UNICA · ${c}</div><div class="v272TruthRole">${role}</div></div></div><div class="v272TruthGrid"><div class="v272TruthCell ${q.b.c}"><span>COME STA ORA</span><b>${q.b.t}</b></div><div class="v272TruthCell ${q.ch.c}"><span>DIREZIONE COMPLESSIVA</span><b>${q.ch.t}</b></div><div class="v272TruthCell ${q.p.c}"><span>Prezzo</span><b>${q.p.t}</b></div><div class="v272TruthCell ${q.cot.c}"><span>COT · rischio</span><b>${q.cot.t}</b></div><div class="v272TruthCell ${q.l.c}"><span>Liquidità · overlay</span><b>${q.l.t}</b></div></div><div class="v272TruthFoot"><b>Come leggerla:</b> “Come sta ora” è la fotografia attuale. “Direzione complessiva” combina il cambiamento rilevante del quadro strutturale e non va confusa con la sola direzione Macro. Prezzo, COT e liquidità servono come conferma e contesto.</div>`;
+}
+function ensureStrip(viewId,anchorSel,c,role){
+const view=document.getElementById(viewId); if(!view||!c)return;
+let box=view.querySelector(':scope > .v272Truth');
+if(!box){box=document.createElement('div');box.className='v272Truth';const a=view.querySelector(anchorSel);if(a)a.insertAdjacentElement('afterend',box);else view.prepend(box)}
+html(box,truthHTML(c,role));
+}
+function selectedCurrencyFromView(){ return safe(()=>selectedCcy,'EUR')||'EUR'; }
+function syncCurrency(){
+const c=selectedCurrencyFromView(),q=truth(c);
+ensureStrip('currencies','.v224CurrencyHero',c,'Questa è la sintesi FX. Le card sotto spiegano i singoli layer senza poter cambiare da sole la struttura complessiva.');
+const boxes=document.querySelectorAll('#currencies .v224NowBox > span');
+if(boxes[0]) text(boxes[0],'COME STA ORA');
+if(boxes[1]) text(boxes[1],'COSA LA SOSTIENE');
+if(boxes[2]) text(boxes[2],'COSA STA CAMBIANDO');
+text(document.getElementById('v224Headline'),`${c}: ${q.b.t.toLowerCase()}. ${q.ch.t.charAt(0)+q.ch.t.slice(1).toLowerCase()}. Prezzo: ${q.p.t.toLowerCase()}.`);
+text(document.getElementById('v224HowItIs'),`${q.b.t} · ${q.b.d}.`);
+const drv=safe(()=>deriveCurrencyDriver(c),'Macro + Tassi/CB');
+text(document.getElementById('v224WhatMatters'),`Macro + Tassi/CB. Driver osservato: ${drv||'non determinato'}.`);
+let watch=`Controlla se questo cambiamento recente sta davvero modificando Macro oppure Tassi/CB.`;
+if(q.p.t==='DIVERGE') watch='Il prezzo non conferma ancora: controlla se torna ad allinearsi senza peggioramento di Macro o Tassi/CB.';
+else if(q.p.t==='CONFERMA') watch='Il prezzo conferma: ora conta che Macro e Tassi/CB mantengano questo supporto.';
+text(document.getElementById('v224WatchNow'),watch);
+const macroName=document.querySelector('#currencies #v219MacroLayer .v224LayerName'); if(macroName) text(macroName,'MACRO · QUADRO ECONOMICO');
+const ratesName=document.querySelector('#currencies #v219RatesLayer .v224LayerName'); if(ratesName) text(ratesName,'TASSI / BANCA CENTRALE');
+const cotName=[...document.querySelectorAll('#currencies .v224LayerName')].find(e=>/^COT/.test(e.textContent||'')); if(cotName) text(cotName,'COT · POSIZIONAMENTO E RISCHIO');
+}
+function syncMacro(){
+const c=safe(()=>v232MacroCurrency,'EUR')||'EUR';
+ensureStrip('macro','.v232Hero',c,'Qui guardi solo l’economia. Può migliorare anche se la valuta non è ancora forte, se i tassi non confermano.');
+const lab=document.querySelector('#macro .v232ThesisLabel'); if(lab) text(lab,'LETTURA DEL QUADRO MACRO');
+const sub=document.querySelector('#macro .v232SelectorSub'); if(sub) text(sub,'Prima il Paese nel suo insieme, poi i settori e i dati. Questa sezione non assegna da sola la forza FX.');
+}
+function syncRates(){
+const c=safe(()=>v233RatesCurrency,safe(()=>nativeRatesSelected,'USD'))||'USD';
+ensureStrip('ratesdesk','.v233Hero',c,'Qui guardi tassi e banca centrale. Insieme alla Macro spiegano come sta la valuta; da soli non bastano.');
+const lab=document.querySelector('#ratesdesk .v233ThesisLabel'); if(lab) text(lab,'LETTURA DI TASSI E BANCA CENTRALE');
+const sub=document.querySelector('#ratesdesk .v233SelectorSub'); if(sub) text(sub,'Prima la curva, poi i blocchi. La forza FX nasce dal confronto con il Macro, non dal livello dei rendimenti isolato.');
+}
+function syncCb(){
+const c=safe(()=>v234CbCurrency,safe(()=>nativeCbSelected,'USD'))||'USD';
+ensureStrip('cbdesk','.v234Hero',c,'Qui guardi la banca centrale. Va letta insieme ai tassi e alla Macro, senza confondere la stance con il movimento del mercato.');
+const lab=document.querySelector('#cbdesk .v234ThesisLabel'); if(lab) text(lab,'LETTURA POLICY · COMPONENTE DI TASSI/CB');
+}
+function syncLiquidity(){
+const c=safe(()=>nativeLiqSelected,'USD')||'USD';
+ensureStrip('liquiditydesk','.v243Hero',c,'La Liquidità è un overlay: può rafforzare o indebolire il contesto, ma non cambia da sola la struttura FX.');
+const lab=document.querySelector('#liquiditydesk .v243ThesisLabel'); if(lab) text(lab,'OVERLAY LIQUIDITÀ · NON DECIDE LA STRUTTURA');
+const sub=document.querySelector('#liquiditydesk .v243Sub'); if(sub) text(sub,'Liquidità, credito e condizioni finanziarie danno contesto. Sono un overlay e non un voto direzionale indipendente sulla valuta.');
+}
+function syncCot(){
+const c=safe(()=>v245CotSelected,document.querySelector('#cotSelect')?.value||'EUR')||'EUR';
+ensureStrip('cot','.v247Hero',c,'Il COT misura posizionamento, velocità dei flussi e rischio di affollamento. Non crea né ribalta da solo il segnale FX.');
+const sub=document.querySelector('#cot .v247Sub'); if(sub) text(sub,'Stock, flussi e affollamento restano separati. Il COT è un layer di rischio/contesto, non un segnale direzionale autonomo.');
+}
+function syncPairs(){
+const intro=document.querySelector('#pairs .v226IntroText');
+if(intro) text(intro,'Il vantaggio della coppia nasce solo dal confronto Macro + Tassi/CB. Il cambiamento recente serve per il timing; COT misura il rischio; il Prezzo conferma o diverge.');
+const heads=document.querySelectorAll('#pairs .v226GroupHead > div, #pairs .v226OtherPairs summary > div');
+if(heads[0]) html(heads[0],'<b>DA SEGUIRE</b><span>Macro e Tassi/CB favoriscono la stessa valuta: contrasto strutturale più pulito.</span>');
+if(heads[1]) html(heads[1],'<b>DIVERGENZA DA MONITORARE</b><span>Solo uno tra Macro e Tassi/CB separa chiaramente le due valute; l’altro non conferma ancora.</span>');
+if(heads[2]) html(heads[2],'<b>DA ASPETTARE</b><span>Macro e Tassi/CB sono divisi o non separano abbastanza le due valute.</span>');
+}
+function syncOverview(){return;}
+function syncScopeNotes(){
+const map=[['#macro .v232MacroThesis','La Macro può essere positiva anche se la valuta non è ancora forte, se Tassi/CB non confermano.'],['#ratesdesk .v233RatesThesis','Rendimenti in salita non equivalgono automaticamente a valuta forte.'],['#cbdesk .v234PolicyThesis','Policy è parte del blocco Tassi/CB e va letta insieme al pricing di mercato.'],['#liquiditydesk .v243Thesis','Liquidità è overlay: importante per il contesto, ma non determina la struttura FX.']];
+for(const [sel,msg] of map){const a=document.querySelector(sel);if(!a)continue;let n=a.querySelector('.v272ScopeNote');if(!n){n=document.createElement('div');n.className='v272ScopeNote';a.appendChild(n)}text(n,msg)}
+}
+function apply(){
+if(applying)return; applying=true;
+try{syncOverview();syncCurrency();syncPairs();syncMacro();syncRates();syncCb();syncLiquidity();syncCot();syncScopeNotes();}
+catch(e){console.error('v272 ui sync',e)}
+finally{applying=false;scheduled=false}
+}
+function schedule(){if(scheduled)return;scheduled=true;setTimeout(()=>{apply();try{if(typeof window.v302ConsolidatedSync==='function')window.v302ConsolidatedSync();}catch(e){}},35)}
+
+document.addEventListener('click',schedule,true); document.addEventListener('change',schedule,true);
+window.v272UiSync=apply;
+setTimeout(apply,0); setTimeout(apply,250); setTimeout(apply,900);
+})();
+</script><style id="v273-coherence-style">.v273CoreLine{display:block;margin-top:5px;font-size:10px!important;line-height:1.35;color:#8fb1c0!important;font-weight:650!important}.v273Coherence{margin-top:8px;padding:9px 11px;border:1px solid rgba(126,215,255,.16);border-radius:10px;background:rgba(126,215,255,.045);font-size:11px;line-height:1.45;color:#a9bdc7}.v273Coherence b{color:#e7f4f8}.v273Pos{color:#58e795!important}.v273Neg{color:#c499ff!important}.v273Neu{color:#c8d4da!important}.v273Warn{color:#f1c66f!important}</style><script>
+
+(function(){
+'use strict';
+let busy=false, queued=false;
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+const set=(sel,val)=>{const e=document.querySelector(sel);if(e&&e.textContent!==String(val??''))e.textContent=String(val??'')};
+function polMeta(v){
+if(v>0)return {label:'FAVOREVOLE',word:'favorevole',cls:'v273Pos'};
+if(v<0)return {label:'SFAVOREVOLE',word:'sfavorevole',cls:'v273Neg'};
+return {label:'MISTO / NEUTRO',word:'misto / neutro',cls:'v273Neu'};
+}
+function baseMeta(b){
+if(b==='FORTE')return 'FORTE'; if(b==='COSTRUTTIVA')return 'POSITIVA MA PARZIALE';
+if(b==='DEBOLE')return 'DEBOLE'; if(b==='FRAGILE')return 'FRAGILE'; return 'MISTA';
+}
+function rawLayer(c,key){return safe(()=>currencyIntelData[c][key],null)}
+function rawName(c,key){const x=rawLayer(c,key);return Array.isArray(x)&&x[0]?String(x[0]).toUpperCase():'NON DETERMINATO'}
+function rawPol(c,key){return safe(()=>layerPolarity(rawLayer(c,key)),0)||0}
+function state(c){return safe(()=>deriveCurrencyState(c),{})||{}}
+function policyWhy(c){
+const s=state(c), rp=rawPol(c,'rates'), cp=rawPol(c,'cb');
+if(rp!==0){
+if(cp===rp)return 'Rates guidano il pilastro e la banca centrale conferma.';
+if(cp===0)return 'Rates guidano il pilastro; la banca centrale non aggiunge una direzione autonoma.';
+return 'Rates guidano il pilastro, mentre la banca centrale invia un segnale opposto: divergenza da monitorare.';
+}
+if(cp!==0)return 'Rates non sono direzionali; la banca centrale guida temporaneamente il pilastro.';
+return 'Né Rates né banca centrale danno un impulso direzionale sufficiente.';
+}
+function bridge(c){
+const s=state(c), m=polMeta(s.macro||0), p=polMeta(s.policy||0);
+return `Macro ${m.label} · Tassi/CB ${p.label} → struttura ${baseMeta(s.base)}.`;
+}
+function addBridge(hostSel,c,extra=''){
+const host=document.querySelector(hostSel); if(!host)return;
+let n=host.querySelector(':scope > .v273Coherence');
+if(!n){n=document.createElement('div');n.className='v273Coherence';host.appendChild(n)}
+n.innerHTML=`<b>Coerenza con la valuta:</b> ${bridge(c)}${extra?` ${extra}`:''}`;
+}
+function syncOverview(){return;}
+function syncCurrency(){
+const c=safe(()=>selectedCcy,'EUR')||'EUR', s=state(c),m=polMeta(s.macro||0),p=polMeta(s.policy||0);
+const first=document.querySelector('#currencies .v272TruthCell');
+if(first){let sm=first.querySelector('.v273CoreLine');if(!sm){sm=document.createElement('span');sm.className='v273CoreLine';first.appendChild(sm)}sm.textContent=`Macro ${m.label} · Tassi/CB ${p.label}`;}
+addBridge('#currencies .v224CurrencyHero',c,'Le card sotto devono spiegare questi due pilastri, non produrre un voto FX alternativo.');
+}
+function syncMacro(){
+const c=safe(()=>v232MacroCurrency,'EUR')||'EUR', s=state(c), m=polMeta(s.macro||0);
+const detail=rawLayer(c,'macro'); const why=Array.isArray(detail)&&detail[2]?detail[2]:'';
+set('#v232CountryHeadline',`${c}: pilastro Macro ${m.word}.${why?` ${why}.`:''}`);
+set('#v232FxRead',`Macro ${m.label}. ${bridge(c)} Il desk Macro spiega il primo pilastro; la conclusione FX finale dipende anche da Tassi/CB.`);
+addBridge('#macro .v232MacroThesis',c,`Conclusione di questo desk: Macro ${m.label}.`);
+}
+function syncRates(){
+const c=safe(()=>v233RatesCurrency,safe(()=>nativeRatesSelected,'USD'))||'USD', s=state(c);
+const r=polMeta(rawPol(c,'rates')), p=polMeta(s.policy||0), cb=rawName(c,'cb');
+set('#v233Headline',`${c}: Rates ${r.word}. Pilastro Tassi/CB complessivo ${p.word}.`);
+set('#v233FxRead',`Rates ${rawName(c,'rates')} · Banca centrale ${cb}. ${policyWhy(c)} Sintesi usata dalla valuta: Tassi/CB ${p.label}.`);
+addBridge('#ratesdesk .v233RatesThesis',c,`Rates da soli: ${r.label}. Pilastro Tassi/CB usato dal motore: ${p.label}.`);
+}
+function syncCb(){
+const c=safe(()=>v234CbCurrency,safe(()=>nativeCbSelected,'USD'))||'USD', s=state(c);
+const cb=polMeta(rawPol(c,'cb')), p=polMeta(s.policy||0), rates=rawName(c,'rates');
+set('#v234Headline',`${c}: banca centrale ${cb.word}. Pilastro Tassi/CB complessivo ${p.word}.`);
+set('#v234FxRead',`Banca centrale ${rawName(c,'cb')} · Rates ${rates}. ${policyWhy(c)} Sintesi usata dalla valuta: Tassi/CB ${p.label}.`);
+addBridge('#cbdesk .v234PolicyThesis',c,`La CB è una componente del pilastro; il risultato combinato Tassi/CB è ${p.label}.`);
+}
+function liquidityVisual(c){
+const d=safe(()=>NATIVE_LIQ_DATA[c],{})||{}, s=state(c);
+if(d.liquidity_dir==='DATI CORRENTI'||d.liquidity_dir==='NON DISPONIBILE'||d.credit_dir==='NON DISPONIBILE'){
+return {label:'NON DETERMINATA · DATI INCOMPLETI',cls:'v273Warn',note:'Il dato corrente esiste, ma storico/credito non bastano per una conclusione robusta.'};
+}
+const m=polMeta(s.liq||0);
+return {label:m.label,cls:m.cls,note:'Overlay coerente con i dati disponibili; non entra nel voto strutturale Macro + Tassi/CB.'};
+}
+function syncLiquidity(){
+const c=safe(()=>nativeLiqSelected,'USD')||'USD', q=liquidityVisual(c);
+const badge=document.querySelector('#liquiditydesk .v272TruthGrid .v272TruthCell:last-child b'); if(badge){badge.textContent=q.label;badge.className=q.cls;}
+set('#v243ContextOverlay',q.label);
+addBridge('#liquiditydesk .v243Thesis',c,`Liquidità: ${q.label}. ${q.note}`);
+}
+function syncCot(){
+const c=safe(()=>v245CotSelected,document.querySelector('#cotSelect')?.value||'EUR')||'EUR';
+addBridge('#cot .v247Hero',c,'Il COT resta un controllo di rischio: non modifica il voto Macro + Tassi/CB.');
+}
+function syncPairs(){
+const intro=document.querySelector('#pairs .v226IntroText');
+if(intro)intro.textContent='Ogni pair confronta gli stessi due pilastri che vedi nei desk valuta: Macro + Tassi/CB. Timing, Prezzo, COT e Liquidità non possono creare un vantaggio strutturale da soli.';
+}
+function apply(){
+if(busy)return; busy=true;
+try{syncOverview();syncCurrency();syncMacro();syncRates();syncCb();syncLiquidity();syncCot();syncPairs();}
+catch(e){console.error('v273 coherence sync',e)}
+finally{busy=false;queued=false}
+}
+function schedule(){if(queued)return;queued=true;setTimeout(apply,55)}
+
+document.addEventListener('click',schedule,true); document.addEventListener('change',schedule,true);
+window.v273CoherenceSync=apply;
+setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);
+})();
+</script><style id="v274-layout-stability">html{overflow-y:scroll!important;scrollbar-gutter:stable!important}body{overflow-x:hidden!important}.shell,.shell>main,main,.view{min-width:0!important}.chartbox{flex:none!important;overflow:hidden!important}.chartbox canvas{display:block!important;max-width:100%!important}.view,.card,.chartbox{transition-property:background-color,border-color,color,opacity!important}</style><script>
+
+
+(function(){ window.v274PresentationSync=function(){}; })();
+
+</script><style id="v275-layout-lock">html{overflow-y:scroll!important;scrollbar-gutter:stable!important;scroll-behavior:auto!important;}body{overflow-x:hidden!important;}.shell{display:grid!important;grid-template-columns:220px minmax(0,1fr)!important;column-gap:18px!important;width:100%!important;max-width:1900px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;}.shell>#nav.nav{width:220px!important;min-width:220px!important;max-width:220px!important;box-sizing:border-box!important;}.shell>.top,.shell>section.view,.shell>.footer{grid-column:2!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}section.view{overflow-x:clip!important;}.grid,.panel,.card,.wide2{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}.chartbox{width:100%!important;min-width:0!important;max-width:100%!important;overflow:hidden!important;contain:layout paint size!important;box-sizing:border-box!important;}.chartbox canvas{display:block!important;width:100%!important;height:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}section.view table{max-width:100%!important;}section.view td,section.view th,section.view .panel,section.view .card{overflow-wrap:anywhere;}.view,.panel,.card,.chartbox,.grid{transition-property:background-color,border-color,color,opacity!important;transform:none;}@media(max-width:900px){.shell{display:block!important;width:100%!important;max-width:none!important;}.shell>#nav.nav{width:100%!important;min-width:0!important;max-width:none!important;}}</style><style id="v276-prepaint-stability">#overview *,#currencies *,#pairs *,#macro *,#liquiditydesk *,#cot *{animation:none !important;}</style><script>
+
+
+(function(){ window.__V276_PREPAINT_DISABLED__=true; })();
+
+</script><script id="v279-no-old-text-flash">
+
+(function(){
+'use strict';
+const oldStable = (typeof stableModelRefresh === 'function') ? stableModelRefresh : null;
+function uiTruthNow(){
+try{ if(typeof window.v272UiSync === 'function') window.v272UiSync(); }catch(e){}
+try{ if(typeof window.v273CoherenceSync === 'function') window.v273CoherenceSync(); }catch(e){}
+try{ if(typeof window.v302ConsolidatedSync === 'function') window.v302ConsolidatedSync(); }catch(e){}
+}
+
+if(oldStable){
+try{
+stableModelRefresh = function(){
+const out = oldStable.apply(this, arguments);
+uiTruthNow();
+return out;
+};
+window.stableModelRefresh = stableModelRefresh;
+}catch(e){}
+}
+
+try{
+showView = function(v){
+activeView=v;
+const target=document.getElementById(v);
+if(target) target.style.visibility='hidden';
+document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v));
+document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+try{
+if(v==='overview') safeRender('overview',()=>{ if(typeof renderOperationalOverview==='function') renderOperationalOverview(); renderSimpleOverview(); });
+if(v==='currencies') safeRender('currencies',()=>{ renderCurrency(); renderCurrencyIntelligence(); });
+if(v==='pairs') safeRender('pairs',()=>{ renderPairGroups(); renderPair(); });
+if(v==='macro') safeRender('macro',()=>{ if(typeof renderMacroLab==='function') renderMacroLab(); });
+if(v==='inflationlabour') safeRender('inflationlabour',()=>{ if(typeof renderInflationLabourSection==='function') renderInflationLabourSection(); });
+if(v==='cot') safeRender('cot',()=>{ renderCot(); });
+if(v==='risk') safeRender('risk',()=>{ renderRischio(); });
+if(v==='calendar') safeRender('calendar',()=>{ renderRealCalendar(); });
+if(v==='wow') safeRender('wow',()=>{ renderWhatChanged(); });
+if(v==='themes') safeRender('themes',()=>{ renderTopThemes(); });
+if(v==='news') safeRender('news',()=>{ renderNewsPulse(); });
+if(v==='ratesdesk') safeRender('ratesdesk',()=>{ renderNativeRatesDesk(); });
+if(v==='cbdesk') safeRender('cbdesk',()=>{ renderNativeCbDesk(); });
+if(v==='liquiditydesk') safeRender('liquiditydesk',()=>{ renderNativeLiquidityDesk(); });
+uiTruthNow();
+} finally {
+if(target) target.style.visibility='';
+}
+};
+window.showView = showView;
+}catch(e){}
+
+uiTruthNow();
+window.__V279_NO_OLD_TEXT_FLASH__=true;
+})();
+</script><script id="v302-consolidated-ui">
+(function(){
+'use strict';
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+function stateMeta(st){
+if(st.base==='FORTE')return {t:'BEN SOSTENUTA',c:'pos'};
+if(st.base==='COSTRUTTIVA')return {t:'SUPPORTO PARZIALE',c:'warn'};
+if(st.base==='FRAGILE')return {t:'SOTTO PRESSIONE',c:'neg'};
+if(st.base==='DEBOLE')return {t:'DEBOLE',c:'neg'};
+return {t:'POCO CHIARO',c:'neu'};
+}
+function changeMeta(x){
+if(x==='MIGLIORA')return {t:'MIGLIORA',c:'pos'};
+if(x==='PEGGIORA')return {t:'PEGGIORA',c:'neg'};
+if(x==='EARLY SHIFT POSITIVO')return {t:'PRIMI SEGNALI POSITIVI',c:'warn'};
+if(x==='EARLY SHIFT NEGATIVO')return {t:'PRIMI SEGNALI NEGATIVI',c:'warn'};
+if(x==='TURNING POINT')return {t:'POSSIBILE SVOLTA',c:'warn'};
+if(x==='NON DETERMINATO')return {t:'NON ANCORA CHIARO',c:'neu'};
+return {t:'STABILE',c:'neu'};
+}
+function priceMeta(x){
+if(x==='PREZZO CONFERMA')return {t:'CONFERMA',c:'pos'};
+if(x==='PREZZO DIVERGE')return {t:'DIVERGE',c:'warn'};
+return {t:'NON CONFERMA ANCORA',c:'neu'};
+}
+function pword(v){return v>0?'favorevole':v<0?'sfavorevole':'neutra / mista'}
+function riskMeta(c){
+const cot=D.cot?.[c]||{}, p=Number(cot.pct), noi=Math.abs(Number(cot.net_oi||0));
+const liq=NATIVE_LIQ_DATA?.[c]||{};
+let notes=[], level='BASSO', cls='neu';
+if(Number.isFinite(p)&&(p>=80||p<=20)){notes.push(p>=80?'COT estremo long':'COT estremo short');level='ALTO';cls='warn'}
+else if(Number.isFinite(p)&&(p>=70||p<=30)){notes.push('COT da monitorare');level='MEDIO';cls='warn'}
+if(noi>=MODEL_RULES.cot.netOiConcentration){notes.push('affollamento');level='ALTO';cls='warn'}
+if(liq.status==='PARZIALE'||liq.liquidity_dir==='DATI CORRENTI'||liq.liquidity_dir==='NON DISPONIBILE'){
+notes.push('liquidità non determinata');if(level==='BASSO')level='MEDIO';cls='warn';
+}else if(liq.liquidity_dir==='IN CALO'){notes.push('liquidità in calo');if(level==='BASSO')level='MEDIO';cls='warn'}
+else if(liq.liquidity_dir==='IN AUMENTO')notes.push('liquidità favorevole');
+else if(liq.liquidity_dir==='STABILE')notes.push('liquidità stabile');
+if(!notes.length)notes.push('nessun rischio evidente');
+return {t:level,c:cls,n:notes.join(' · ')};
+}
+function renderOverview(){
+const view=document.getElementById('overview'); if(!view)return;
+let host=view.querySelector('.v302OverviewGrid');
+const old=view.querySelector('.v272OverviewMatrix');
+if(!host){
+host=document.createElement('div');host.className='v302OverviewGrid';
+if(old) old.insertAdjacentElement('afterend',host); else view.prepend(host);
+}
+if(old) old.style.display='none';
+host.innerHTML=CCYS.map(c=>{
+const st=safe(()=>deriveCurrencyState(c),{})||{}, a=stateMeta(st),ch=changeMeta(st.improvementState),p=priceMeta(st.confirmation),r=riskMeta(c);
+return `<div class="v302OCard"><div class="v302Head">${safe(()=>flagSvg(c),'')} ${c}</div><div class="v302Rows"><div class="v302Row"><div class="v302Lbl">Stato</div><div class="v302Val ${a.c}">${a.t}</div></div><div class="v302Row"><div class="v302Lbl">Cambiamento</div><div class="v302Val ${ch.c}">${ch.t}</div></div><div class="v302Row"><div class="v302Lbl">Prezzo</div><div class="v302Val ${p.c}">${p.t}</div></div><div class="v302Row"><div class="v302Lbl">Rischio</div><div><div class="v302Val ${r.c}">${r.t}</div><div class="v302Note">${r.n}</div></div></div></div><div class="v302Reason">Macro ${pword(st.macro||0)} · Tassi/CB ${pword(st.policy||0)}</div></div>`;
+}).join('');
+}
+function ensureCurrencyShell(){
+const stale=document.getElementById('v302CurrencyShell');
+if(stale) stale.remove();
+return null;
+}
+function renderCurrency(){
+if(!ensureCurrencyShell())return;
+const c=safe(()=>selectedCcy,'EUR')||'EUR';
+const sel=document.getElementById('v302CurrencySelector');
+sel.innerHTML=CCYS.map(x=>{
+const st=safe(()=>deriveCurrencyState(x),{})||{},m=stateMeta(st);
+return `<div class="v302Sel ${x===c?'active':''}" data-v302-c="${x}"><b>${safe(()=>flagSvg(x),'')} ${x}</b><span class="${m.c}">${m.t}</span></div>`;
+}).join('');
+sel.querySelectorAll('[data-v302-c]').forEach(btn=>btn.onclick=()=>{
+try{selectedCcy=btn.dataset.v302C;if(typeof window.renderCurrency==='function')window.renderCurrency();}catch(e){}

@@ -1,0 +1,1000 @@
+${x.cot?`<div class="wc388Cot"><strong>Attenzione COT:</strong> ${x.cot}</div>`:''}
+</div>`).join('')
+: '<div class="wc388Empty">Nessuna valuta mostra un cambiamento abbastanza importante da mettere in evidenza.</div>';
+stable.textContent=sta.length
+? sta.map(x=>x.c).join(' · ')
+: 'Tutte le valute mostrano un cambiamento attivo.';
+}
+// deferred: rendered lazily by showView
+function theoreticalScenarios(e){
+const n=(e.event||'').toLowerCase();
+const normal=(strong,weak)=>({strong,weak});
+const hawkish=(ccy)=>normal(
+`Più forte / sopra attese → pricing più hawkish → ${ccy} teoricamente favorito`,
+`Più debole / sotto attese → pricing più dovish → ${ccy} teoricamente sfavorito`
+);
+if(n.includes('rate statement') || n.includes('press conference') || n.includes('speaks') || n.includes('minutes') || n.includes('summary of opinions')){
+return normal(
+`Tono più hawkish del previsto → ${e.ccy} teoricamente favorito`,
+`Tono più dovish del previsto → ${e.ccy} teoricamente sfavorito`
+);
+}
+if(n.includes('bond auction')){
+return normal(
+'Domanda più forte / rendimento più contenuto → minore stress sul debito → supporto EUR',
+'Domanda più debole / rendimento più alto → maggiore stress sul debito → pressione EUR'
+);
+}
+if(n.includes('unemployment rate')){
+return normal(
+`Disoccupazione più bassa del previsto → mercato del lavoro più forte → ${e.ccy} teoricamente favorito`,
+`Disoccupazione più alta del previsto → mercato del lavoro più debole → ${e.ccy} teoricamente sfavorito`
+);
+}
+if(n.includes('unemployment change')){
+return normal(
+`Variazione occupazionale migliore / disoccupazione più bassa → ${e.ccy} teoricamente favorito`,
+`Variazione occupazionale peggiore / disoccupazione più alta → ${e.ccy} teoricamente sfavorito`
+);
+}
+if(n.includes('cpi') || n.includes('pce') || n.includes('sppi') || n.includes('import prices')){
+return hawkish(e.ccy);
+}
+if(n.includes('gdp') || n.includes('pmi') || n.includes('retail') || n.includes('consumer spending') ||
+n.includes('durable goods') || n.includes('industrial production') || n.includes('business confidence') ||
+n.includes('consumer confidence') || n.includes('jolts') || n.includes('jobless claims') ||
+n.includes('trade balance') || n.includes('m3 money supply') || n.includes('tankan')){
+if(n.includes('jobless claims')){
+return normal(
+`Claims più bassi del previsto → lavoro più forte → ${e.ccy} teoricamente favorito`,
+`Claims più alti del previsto → lavoro più debole → ${e.ccy} teoricamente sfavorito`
+);
+}
+return normal(
+`Dato più forte / sopra attese → crescita o domanda più forti → ${e.ccy} teoricamente favorito`,
+`Dato più debole / sotto attese → crescita o domanda più deboli → ${e.ccy} teoricamente sfavorito`
+);
+}
+return normal(
+`Scenario più forte / più hawkish → ${e.ccy} teoricamente favorito`,
+`Scenario più debole / più dovish → ${e.ccy} teoricamente sfavorito`
+);
+}
+function renderRealCalendar(){
+const day=REAL_CALENDAR[calendarDay]||REAL_CALENDAR[0];
+const host=document.getElementById('realCalendar');
+const tabs=document.getElementById('calendarTabs');
+if(!host || !tabs) return;
+const cleanEvent=(name)=>{
+const n=String(name||'');
+return n
+.replace(/Monetary Policy Meeting Minutes/i,'Verbali banca centrale')
+.replace(/Summary of Opinions/i,'Sintesi delle opinioni')
+.replace(/Press Conference/i,'Conferenza stampa')
+.replace(/Rate Statement/i,'Comunicato sui tassi')
+.replace(/Consumer Confidence/i,'Fiducia dei consumatori')
+.replace(/Business Confidence/i,'Fiducia delle imprese')
+.replace(/Retail Sales/i,'Vendite al dettaglio')
+.replace(/Unemployment Rate/i,'Tasso di disoccupazione')
+.replace(/Jobless Claims/i,'Richieste sussidi disoccupazione')
+.replace(/Industrial Production/i,'Produzione industriale')
+.replace(/Durable Goods/i,'Ordini beni durevoli')
+.replace(/GDP/i,'PIL')
+.replace(/CPI/i,'Inflazione CPI')
+.replace(/PCE/i,'Inflazione PCE');
+};
+const kind=(e)=>{
+const n=String(e.event||'').toLowerCase();
+if(n.includes('press conference')||n.includes('speaks')) return 'speech';
+if(n.includes('minutes')||n.includes('summary of opinions')) return 'minutes';
+if(n.includes('cash rate')||n.includes('rate statement')) return 'rate';
+if(n.includes('bond auction')) return 'auction';
+return 'data';
+};
+const scenario=(e)=>{
+const k=kind(e);
+const sc=theoreticalScenarios(e);
+const strong=String(sc?.strong||'');
+const weak=String(sc?.weak||'');
+const parseDir=(s)=>{
+if(/sfavorito|pressione|indebol/i.test(s)) return {txt:`${e.ccy} tende a indebolirsi`,cls:'down'};
+if(/favorito|supporto|rafforz/i.test(s)) return {txt:`${e.ccy} tende a rafforzarsi`,cls:'up'};
+return {txt:'Guarda prima tassi a breve e prezzo FX',cls:''};
+};
+const s=parseDir(strong), w=parseDir(weak);
+if(k==='rate'){
+return {
+leftLabel:'SE DECISIONE / COMUNICATO È PIÙ HAWKISH',
+rightLabel:'SE È PIÙ DOVISH',
+left:s.txt,right:w.txt,leftCls:s.cls,rightCls:w.cls
+};
+}
+if(k==='speech'||k==='minutes'){
+return {
+leftLabel:'SE IL TONO È PIÙ HAWKISH',
+rightLabel:'SE IL TONO È PIÙ DOVISH',
+left:s.txt,right:w.txt,leftCls:s.cls,rightCls:w.cls
+};
+}
+if(k==='auction'){
+return {
+leftLabel:'SE LA DOMANDA È FORTE',
+rightLabel:'SE LA DOMANDA È DEBOLE',
+left:s.txt,right:w.txt,leftCls:s.cls,rightCls:w.cls
+};
+}
+return {
+leftLabel:'SE ESCE SOPRA LE ATTESE',
+rightLabel:'SE ESCE SOTTO LE ATTESE',
+left:s.txt,right:w.txt,leftCls:s.cls,rightCls:w.cls
+};
+};
+const metricBlock=(e)=>{
+const k=kind(e);
+const val=(x)=>x && x!=='—' ? x : 'Non disponibile';
+if(k==='speech'||k==='minutes'){
+return `<div class="cal395Listen"><span>COSA ASCOLTARE</span><b>${e.direction||'Tono più o meno restrittivo rispetto alle attese del mercato.'}</b></div>`;
+}
+const labels=k==='rate'
+? ['TASSO PRECEDENTE','TASSO ATTESO','TASSO DECISO']
+: k==='auction'
+? ['ULTIMA ASTA','ATTESO','RISULTATO']
+: ['PRECEDENTE','ATTESO','USCITO'];
+return `<div class="cal394Numbers"><div class="cal394Num"><span>${labels[0]}</span><b>${val(e.prev)}</b></div><div class="cal394Num"><span>${labels[1]}</span><b>${val(e.forecast)}</b></div><div class="cal394Num"><span>${labels[2]}</span><b>${val(e.actual)}</b></div></div>`;
+};
+const card=(e)=>{
+const sc=scenario(e);
+return `<div class="cal394Event ${e.impact==='high'?'high':''}"><div class="cal394Main"><div class="cal394Time">${e.time||'—'}</div><div class="cal394Ccy">${typeof flagSvg==='function'?flagSvg(e.ccy):''}<span>${e.ccy||''}</span></div><div class="cal394Name">${cleanEvent(e.event)}</div><div class="cal394Impact ${e.impact==='high'?'high':''}">${e.impact==='high'?'ALTO IMPATTO':'MEDIO'}</div></div>
+${metricBlock(e)}
+<div class="cal394Meaning"><div class="cal394Scenario ${sc.leftCls}"><span>${sc.leftLabel}</span><b>${sc.left}</b></div><div class="cal394Scenario ${sc.rightCls}"><span>${sc.rightLabel}</span><b>${sc.right}</b></div></div><div class="cal394Confirm"><b>Prima cosa da controllare:</b> ${e.confirm||'tassi a breve e prezzo FX'}</div></div>`;
+};
+tabs.innerHTML=REAL_CALENDAR.map((d,i)=>`<button class="cal394Tab ${i===calendarDay?'active':''}" data-i="${i}">${d.label}</button>`).join('');
+tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{calendarDay=+b.dataset.i;renderRealCalendar();});
+const rows=day.events||[];
+const high=rows.filter(e=>e.impact==='high');
+const medium=rows.filter(e=>e.impact!=='high');
+host.innerHTML=`
+<div class="cal394DayHead"><div><h2>${day.title}</h2><p>Orari in ora italiana.</p></div><div class="cal394Count">${high.length} alto impatto · ${medium.length} medio</div></div><div class="cal394SectionTitle">EVENTI DA GUARDARE PRIMA</div><div class="cal394Events">
+${high.length?high.map(card).join(''):'<div class="cal394Empty">Nessun evento ad alto impatto in questa giornata.</div>'}
+</div>
+${medium.length?`<details class="cal394Medium"><summary><div><b>Eventi di impatto medio</b><span>${medium.length} eventi</span></div><span>Apri</span></summary><div class="cal394Events">${medium.map(card).join('')}</div></details>`:''}
+`;
+const prev=document.getElementById('calPrev');
+const next=document.getElementById('calNext');
+if(prev) prev.onclick=()=>{calendarDay=(calendarDay-1+REAL_CALENDAR.length)%REAL_CALENDAR.length;renderRealCalendar();};
+if(next) next.onclick=()=>{calendarDay=(calendarDay+1)%REAL_CALENDAR.length;renderRealCalendar();};
+}
+// Calendar rendered lazily by showView
+const EVENT_TEMPLATES=window.__GMFQ_DATA.EVENT_TEMPLATES;
+function renderEventRischio(){
+const grid=document.querySelector('#eventGrid');
+if(!grid)return;
+grid.innerHTML=EVENT_TEMPLATES.map(e=>`<div class="eventCard"><div class="top"><div class="eventName">${e.name}</div><div class="ccy">${e.ccy}</div></div><div class="eventChain"><div class="eventCell"><div class="lab">Atteso</div><div class="val">Consensus live</div></div><div class="eventCell"><div class="lab">Uscito</div><div class="val">Dato effettivo</div></div><div class="eventCell warn"><div class="lab">Sorpresa</div><div class="val">Sopra / sotto attese</div></div><div class="eventCell up"><div class="lab">Se sopra</div><div class="val">${e.above}</div></div><div class="eventCell down"><div class="lab">Se sotto</div><div class="val">${e.below}</div></div></div><div class="below"><div class="eventMini"><b>Prima conferma:</b> ${e.first}</div><div class="eventMini"><b>Conferma finale:</b> ${e.confirm}</div></div><div class="eventMini"><b>Perché conta:</b> ${e.why}</div></div>`).join('');
+const guide=[
+['Inflazione','Numero più alto del previsto tende a spingere il pricing in senso hawkish; più basso tende al dovish. Ma guarda sempre se il 2Y reagisce.'],
+['Disoccupazione','È inversa: un dato più alto è normalmente peggiore per il ciclo e più dovish; più basso è normalmente più hawkish.'],
+['PMI / crescita','Più alto è normalmente positivo per il ciclo, ma la valuta reagisce davvero se anche Rates e differenziale di crescita si muovono.'],
+['Banca centrale','La sorpresa non è il livello del tasso in sé, ma la differenza tra decisione/comunicazione e ciò che il mercato aveva già prezzato.'],
+['Dati misti','Se headline e core, oppure crescita e lavoro, si contraddicono, la reazione iniziale può essere instabile: aspetta il front-end.']
+];
+document.querySelector('#eventGuide').innerHTML=guide.map(x=>`<div class="eventGuideItem"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('');
+}
+
+const RISK218_KEYS=['VIX','Brent','WTI','Gold','China CLI'];
+const RISK218_TF={VIX:'6M',Brent:'6M',WTI:'6M',Gold:'6M','China CLI':'6M'};
+let RISK218_ACTIVE='VIX';
+function r218Meta(k){
+if(k==='VIX') return {
+label:'VIX',
+title:'Volatilità / risk appetite',
+fx:'JPY · CHF · AUD · NZD · CAD',
+why:'Misura quanto lo stress globale può coprire i driver domestici.',
+watch:'VIX + equity + JPY/CHF + AUD/NZD',
+dec:1
+};
+if(k==='Brent') return {
+label:'BRENT',
+title:'Energia globale / geopolitica',
+fx:'CAD · EUR · JPY · GBP',
+why:'È il riferimento più utile per shock energetici globali, geopolitica e importatori di energia.',
+watch:'Brent + breakeven + long-end + CAD/EUR/JPY',
+dec:1
+};
+if(k==='WTI') return {
+label:'WTI',
+title:'Energia USA / inflazione',
+fx:'CAD · USD · EUR · JPY',
+why:'Più utile per il canale USA: inflazione, breakeven, Treasury e terms of trade.',
+watch:'WTI → breakeven USA → Treasury → CAD/USD',
+dec:1
+};
+if(k==='Gold') return {
+label:'ORO',
+title:'Real yields / safe haven',
+fx:'USD · JPY · CHF',
+why:'Aiuta a distinguere domanda di rifugio, real yields e pressione del dollaro.',
+watch:'Oro + real yields USA + USD + risk sentiment',
+dec:1
+};
+if(k==='China CLI') return {
+label:'CINA',
+title:'Cina / domanda globale',
+fx:'AUD · NZD · CAD',
+why:'Overlay esterno importante per ciclo asiatico, commodities e valute cicliche.',
+watch:'China CLI + commodities + AUD/NZD',
+dec:2
+};
+return {};
+}
+function r218Series(k){ return D.risk?.[k] || null; }
+function r218Dir(values){
+if(!values?.length || values.length<2) return {label:'Non valutabile',cls:'neutral',arrow:'→'};
+const last=values.at(-1), base=values[Math.max(0,values.length-6)];
+const pct=base?(last/base-1)*100:0;
+if(pct>3) return {label:'In aumento',cls:'up',arrow:'↑'};
+if(pct<-3) return {label:'In calo',cls:'down',arrow:'↓'};
+return {label:'Stabile',cls:'neutral',arrow:'→'};
+}
+function r218Velocity(values){
+if(!values?.length || values.length<7) return 'Velocità non valutabile';
+const ma=a=>a.reduce((p,c)=>p+c,0)/a.length;
+const a=ma(values.slice(-3)), b=ma(values.slice(-6,-3));
+if(!b) return 'Velocità non valutabile';
+const p=(a/b-1)*100;
+if(p>2.5) return 'Sta accelerando';
+if(p<-2.5) return 'Sta rallentando';
+return 'Velocità stabile';
+}
+function r218Obs(tf,len){
+const map={'1M':22,'3M':66,'6M':132,'1Y':252,'2Y':504,'5Y':1260,'MAX':len};
+return Math.min(map[tf]||len,len);
+}
+function r218Change(values,tf){
+if(!values?.length)return null;
+const n=r218Obs(tf,values.length), a=values[Math.max(0,values.length-n)], z=values.at(-1);
+return a?(z/a-1)*100:null;
+}
+function r218Comment(k){
+const s=r218Series(k);
+if(!s?.values?.length){
+if(k==='WTI') return 'Serie WTI non ancora collegata in questa build. Nessun valore viene inventato.';
+if(k==='Gold') return 'Serie Oro non ancora collegata in questa build. Nessun valore viene inventato.';
+return 'Serie non disponibile.';
+}
+const last=s.values.at(-1);
+const prev=s.values[Math.max(0,s.values.length-6)];
+const chg=prev?last/prev-1:0;
+if(k==='VIX'){
+if(last>=25) return 'Volatilità elevata: il risk-off può temporaneamente dominare le differenze macro. Le valute cicliche diventano più vulnerabili, mentre JPY e CHF possono ricevere domanda difensiva.';
+if(last>=18) return 'Volatilità in zona di attenzione: il rischio globale può iniziare a disturbare le narrative domestiche, ma non è ancora stress estremo.';
+return 'Volatilità contenuta: al momento Macro e Rates domestici possono emergere con maggiore chiarezza.';
+}
+if(k==='Brent'){
+if(chg>0.05) return 'Brent in accelerazione: aumenta il rischio di trasmissione a inflazione e long-end. CAD può ricevere supporto relativo; EUR e JPY sono più sensibili come importatori di energia.';
+if(chg<-0.05) return 'Brent in calo: diminuisce la pressione energetica globale. Verifica se breakeven e rendimenti lunghi stanno seguendo.';
+return 'Brent relativamente stabile: al momento non sta creando da solo un nuovo shock macro globale.';
+}
+if(k==='China CLI'){
+return last<100
+? 'Il ciclo cinese resta un vento esterno meno favorevole. AUD e NZD sono le prime valute da controllare.'
+: 'Il ciclo cinese offre un contesto esterno più favorevole. Serve conferma da commodities e valute cicliche.';
+}
+return 'Driver globale di contesto.';
+}
+function r218Regime(){
+const v=r218Series('VIX'), b=r218Series('Brent');
+const vLast=v?.values?.at(-1), bd=r218Dir(b?.values||[]);
+if(vLast>=25) return {label:'STRESS GLOBALE',cls:'stress',text:'Lo stress globale può coprire temporaneamente Macro e Rates domestici. In questo regime il primo controllo è capire se FX sta reagendo al rischio più che ai fondamentali.'};
+if(vLast>=18 || bd.cls==='up') return {label:'ATTENZIONE',cls:'watch',text:'Il rischio globale non domina necessariamente il mercato, ma volatilità o energia possono interferire con le narrative domestiche.'};
+return {label:'RISCHIO CONTENUTO',cls:'calm',text:'Il rischio globale appare relativamente contenuto: Macro e Rates domestici restano la prima lettura.'};
+}
+function r258SensitivityMeta(k){
+if(k==='VIX') return {
+icon:'⚡',label:'VIX',sub:'Risk appetite / stress',
+pills:[['JPY','safe','rifugio'],['CHF','safe','rifugio'],['AUD','neg','ciclica'],['NZD','neg','ciclica'],['CAD','neg','ciclica']],
+impact:'Con VIX in salita, <b>JPY/CHF</b> possono ricevere domanda difensiva; <b>AUD/NZD/CAD</b> tendono a essere più vulnerabili al risk-off.'
+};
+if(k==='Brent') return {
+icon:'🛢',label:'BRENT',sub:'Energia globale',
+pills:[['CAD','pos','exporter'],['EUR','neg','importer'],['JPY','neg','importer'],['GBP','safe','mista']],
+impact:'Shock Brent tende a favorire il canale terms-of-trade del <b>CAD</b> e a pesare maggiormente su importatori energetici come <b>EUR e JPY</b>.'
+};
+if(k==='WTI') return {
+icon:'⛽',label:'WTI',sub:'Energia USA',
+pills:[['CAD','pos','energia'],['USD','safe','inflazione/rates'],['EUR','neg','importer'],['JPY','neg','importer']],
+impact:'WTI parla soprattutto al canale <b>USA inflazione → breakeven → Treasury</b>; CAD resta la valuta più direttamente sensibile all’energia.'
+};
+if(k==='Gold') return {
+icon:'◈',label:'ORO',sub:'Real yields / safe haven',
+pills:[['USD','safe','real yields'],['JPY','safe','rifugio'],['CHF','safe','rifugio']],
+impact:'L’oro aiuta a capire se domina il canale <b>real yields/USD</b> oppure la domanda difensiva che coinvolge anche <b>JPY e CHF</b>.'
+};
+if(k==='China CLI') return {
+icon:'CN',label:'CINA',sub:'Ciclo / domanda globale',
+pills:[['AUD','pos','alta sensibilità'],['NZD','pos','alta sensibilità'],['CAD','safe','commodities']],
+impact:'Il ciclo cinese è soprattutto un overlay per <b>AUD e NZD</b>; CAD può essere coinvolto indirettamente attraverso commodities e domanda globale.'
+};
+return {icon:'•',label:k,sub:'',pills:[],impact:''};
+}
+function r258PillsHtml(k){
+const m=r258SensitivityMeta(k);
+return m.pills.map(x=>`<span class="${x[1]}">${flagSvg(x[0])}${x[0]} · ${x[2]}</span>`).join('');
+}
+function r258RenderSensitivity(){
+const host=document.querySelector('#r258Sensitivity');if(!host)return;
+host.innerHTML=RISK218_KEYS.map(k=>{
+const m=r258SensitivityMeta(k),s=r218Series(k),d=r218Dir(s?.values||[]);
+return `<div class="r258SensRow"><div class="r258SensDriver"><div class="r258SensIcon">${m.icon}</div><div><b>${m.label}</b><small>${m.sub} · ${d.arrow} ${d.label}</small></div></div><div class="r258FlagLine">${m.pills.map(x=>`<span class="r258FlagPill ${x[1]}">${flagSvg(x[0])}${x[0]} · ${x[2]}</span>`).join('')}</div><div class="r258SensImpact">${m.impact}</div></div>`;
+}).join('');
+}
+function r218DriverCard(k){
+const m=r218Meta(k), s=r218Series(k), pending=!s?.values?.length;
+const flags=`<div class="r258FxFlags">${r258PillsHtml(k)}</div>`;
+if(pending){
+return `<article class="r218Card pending"><div class="r218CardTop"><div><span>${m.label}</span><b>${m.title}</b></div><em>Dati da collegare</em></div><div class="r218State"><div><span>OGGI</span><b>—</b><small>Nessun dato inventato</small></div><div><span>TREND</span><b class="neutral">→ In attesa</b><small>serie da collegare</small></div></div><p>${m.why}</p><div class="r218Fx"><span>VALUTE PIÙ SENSIBILI</span>${flags}</div></article>`;
+}
+const d=r218Dir(s.values), last=s.values.at(-1), date=s.dates.at(-1);
+return `<article class="r218Card"><div class="r218CardTop"><div><span>${m.label}</span><b>${m.title}</b></div><button class="r218Open" data-k="${k}">Apri grafico</button></div><div class="r218State"><div><span>OGGI</span><b>${fmt(last,2)}</b><small>${date||''}</small></div><div><span>TREND</span><b class="${d.cls}">${d.arrow} ${d.label}</b><small>${r218Velocity(s.values)}</small></div></div><p>${m.why}</p><div class="r218Fx"><span>VALUTE PIÙ SENSIBILI</span>${flags}</div></article>`;
+}
+function r218Open(k){
+const s=r218Series(k);
+if(!s?.values?.length) return;
+RISK218_ACTIVE=k;
+const box=document.querySelector('#r218Detail');
+if(box) box.style.display='block';
+r218RenderDetail();
+if(box) box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function r218RenderDetail(){
+const k=RISK218_ACTIVE, m=r218Meta(k), s=r218Series(k);
+if(!s?.values?.length)return;
+const title=document.querySelector('#r218DetailTitle');
+const sub=document.querySelector('#r218DetailSubtitle');
+if(title) title.textContent=`${m.label} — ${m.title}`;
+if(sub) sub.textContent='Grafico e lettura dello stesso driver';
+const tf=RISK218_TF[k]||'6M';
+tfButtons('#r218Tf',['1M','3M','6M','1Y','2Y','5Y','MAX'],tf,v=>{RISK218_TF[k]=v;r218RenderDetail()});
+const n=r218Obs(tf,s.values.length);
+const canvas=document.querySelector('#r218Chart');
+if(canvas){
+lineChart(canvas,[{values:s.values.slice(-n),color:k==='VIX'?'#ff5263':'#23b7ff'}],s.dates.slice(-n),m.dec);
+}
+const ch=r218Change(s.values,tf), d=r218Dir(s.values);
+const stats=document.querySelector('#r218Stats');
+if(stats) stats.innerHTML=
+`<div><span>Ultimo</span><b>${fmt(s.values.at(-1),2)}</b></div><div><span>Variazione ${tf}</span><b>${ch==null?'—':(ch>=0?'+':'')+fmt(ch,1)+'%'}</b></div><div><span>Direzione</span><b class="${d.cls}">${d.arrow} ${d.label}</b></div><div><span>Velocità</span><b>${r218Velocity(s.values)}</b></div>`;
+const c=document.querySelector('#r218Comment');
+const cc=document.querySelector('#r218Currencies');
+const w=document.querySelector('#r218Watch');
+if(c)c.textContent=r218Comment(k);
+if(cc)cc.textContent=m.fx;
+const df=document.querySelector('#r258DetailFlags');
+if(df)df.innerHTML=r258PillsHtml(k);
+if(w)w.textContent=m.watch;
+}
+function r218ExposureRows(){
+const v=r218Series('VIX')?.values?.at(-1);
+const b=r218Dir(r218Series('Brent')?.values||[]);
+const c=r218Series('China CLI')?.values?.at(-1);
+const rows=[];
+if(v>=18){
+rows.push(['JPY / CHF','Possibile supporto difensivo','Il risk-off può sostenerle, ma Rates e prezzo devono confermare.']);
+rows.push(['AUD / NZD','Più vulnerabili','Cicliche e sensibili al rischio globale.']);
+}
+if(b.cls==='up'){
+rows.push(['CAD','Energia può amplificare','Il petrolio può migliorare il contesto relativo via terms of trade.']);
+rows.push(['EUR / JPY','Più sensibili allo shock energetico','Importatori di energia: attenzione a inflazione e crescita.']);
+}
+if(c<100) rows.push(['AUD / NZD','Cina resta un vento contrario','Il ciclo cinese può disturbare una storia domestica positiva.']);
+if(!rows.length) rows.push(['G8','Nessuna esposizione dominante','L’overlay globale non sta sovrastando in modo evidente i driver domestici.']);
+return rows.slice(0,5);
+}
+function r218InterferenceRows(){
+const r=r218Regime();
+if(r.cls==='stress') return [
+['AUD / NZD','DISTURBA','Lo stress globale può coprire temporaneamente miglioramenti domestici.'],
+['JPY / CHF','PUÒ AMPLIFICARE','La componente safe haven può sommarsi o entrare in conflitto con i Rates domestici.'],
+['USD','DA SEPARARE','Distinguere safe haven da repricing Fed/front-end.']
+];
+if(r.cls==='watch') return [
+['CAD','DA VERIFICARE','Se energia guida, separare supporto esterno e quadro domestico.'],
+['AUD / NZD','DA VERIFICARE','Cina e risk appetite possono sporcare la lettura domestica.'],
+['USD','DA SEPARARE','Se salgono i rendimenti, capire se domina front-end o long-end/term premium.']
+];
+return [['G8','NON DISTURBA IN MODO EVIDENTE','Macro e Rates domestici restano la prima lettura.']];
+}
+function renderRischio(){
+const r=r218Regime(), rg=document.querySelector('#r218Regime'), n=document.querySelector('#r218Narrative');
+if(rg){rg.textContent=r.label;rg.className='r218Regime '+r.cls}
+if(n)n.textContent=r.text;
+r258RenderSensitivity();
+const d=document.querySelector('#r218Drivers');
+if(d){
+d.innerHTML=RISK218_KEYS.map(r218DriverCard).join('');
+d.querySelectorAll('.r218Open').forEach(b=>b.onclick=()=>r218Open(b.dataset.k));
+}
+const ex=document.querySelector('#r218Exposure');
+if(ex) ex.innerHTML=r218ExposureRows().map(x=>`<div class="r218Row"><div><b>${x[0]}</b><span>${x[1]}</span></div><p>${x[2]}</p></div>`).join('');
+const inf=document.querySelector('#r218Interference');
+if(inf) inf.innerHTML=r218InterferenceRows().map(x=>`<div class="r218Row"><div><b>${x[0]}</b><span>${x[1]}</span></div><p>${x[2]}</p></div>`).join('');
+const close=document.querySelector('#r218Close');
+if(close) close.onclick=()=>{document.querySelector('#r218Detail').style.display='none';};
+}
+// Risk rendered lazily by showView
+setTimeout(()=>{
+safeRender('overview',()=>{
+if(typeof syncOverviewFromV46==='function') syncOverviewFromV46();
+if(typeof refreshOverviewCurrencyStates==='function') refreshOverviewCurrencyStates();
+if(typeof renderOperationalOverview==='function') renderOperationalOverview();
+});
+},0);
+</script><script id="v53-certified-overlay">
+const CERT53=window.__GMFQ_DATA.CERT53;
+function tvPairOrientation(pair,dir){
+const [a,b]=pair.split('/');
+// TradingView convention for G8 pairs used in this dashboard.
+const canonical = new Set(['EURUSD','GBPUSD','AUDUSD','NZDUSD','USDJPY','USDCHF','USDCAD',
+'EURGBP','EURJPY','EURCHF','EURCAD','EURAUD','EURNZD',
+'GBPJPY','GBPCHF','GBPCAD','GBPAUD','GBPNZD',
+'CHFJPY','CADJPY','AUDJPY','NZDJPY',
+'CADCHF','AUDCHF','NZDCHF','AUDCAD','NZDCAD','AUDNZD']);
+const direct=a+b, inverse=b+a;
+let ticker=canonical.has(direct)?direct:(canonical.has(inverse)?inverse:direct);
+const favored = dir==='A'?a:dir==='B'?b:null;
+if(!favored) return {ticker,side:'neutral',favored:null};
+const base=ticker.slice(0,3), quote=ticker.slice(3,6);
+const side=favored===base?'long':favored===quote?'short':'neutral';
+return {ticker,side,favored};
+}
+function overviewPairCard(pair){
+const frame=derivePairDecisionFrame(pair);
+if(!frame) return '';
+const driver=derivePairDriverStructure(pair);
+const [a,b]=pair.split('/');
+const fav=frame.fav && frame.fav!=='—' ? frame.fav : null;
+const dir=fav===a?'A':fav===b?'B':null;
+const o=tvPairOrientation(pair,dir);
+const cls=o.side==='long'?'longTicker':o.side==='short'?'shortTicker':'';
+const state=frame.quality;
+const stateCls=frame.quality==='CONTRASTO STRUTTURALE FORTE'?'partial':
+frame.quality==='VANTAGGIO RELATIVO PARZIALE'?'partial':'div';
+const winner=fav||'Nessuno';
+const price=frame.priceReading==='MERCATO GIÀ ALLINEATO'?'il prezzo conferma':
+frame.priceReading==='DIVERGENZA DA MONITORARE'?'il prezzo diverge':'il prezzo non è ancora chiaro';
+const monitor=frame.missing||'Serve maggiore differenziazione strutturale.';
+return `<div class="ideaCard" onclick="showView('pairs');setTimeout(()=>{openPairDetail('${pair}');setTimeout(()=>{appendPairDriverOverlayToDetail('${pair}');appendPairRelativeDynamicsToDetail('${pair}');appendPairTransitionToDetail('${pair}');appendPairRiskOverlayToDetail('${pair}')},0)},0)" style="cursor:pointer"><div class="ideaHead"><span class="ideaPair ${cls}">${o.ticker}</span><span class="ideaLabel ${stateCls}">${state}</span></div><div class="ideaWhy"><b>${winner}</b>${fav?' favorito':' senza vantaggio pulito'} nella struttura canonica Macro + Tassi/CB. ${driver.driver!=='Non determinato'?`Driver: ${driver.driver}. `:''}${price}.</div><div class="ideaChecks"><div class="ideaCheck"><b>Conferma</b>${frame.priceReading==='MERCATO GIÀ ALLINEATO'?'Prezzo già allineato alla struttura':'Serve conferma senza cambiare il core'}</div><div class="ideaCheck"><b>Da monitorare</b>${monitor}</div></div>
+${pairDriverOverlay(pair)}
+${pairRelativeDynamicsHtml(pair)}
+${pairTransitionHtml(pair)}
+${pairRiskOverlay(pair)}
+</div>`;
+}
+function layerPolarity(x){
+if(!x || !Array.isArray(x)) return 0;
+const st=(x[0]||'').toLowerCase();
+if(st.includes('favorevole')) return 1;
+if(st.includes('contrario')) return -1;
+return 0;
+}
+function policyFamilyPolarity(d){
+const rates=layerPolarity(d?.rates);
+const cb=layerPolarity(d?.cb);
+// Front-end / Rates are the primary market translation of monetary repricing.
+// Realized CB stance is interpretative context, not a second vote.
+// Therefore CB only fills the gap when Rates are neutral.
+if(rates!==0) return rates;
+if(cb!==0) return cb;
+return 0;
+}
+function currencyImprovementDiagnostic(c){
+const growth=blockDynamics(c,'Crescita');
+const labour=blockDynamics(c,'Lavoro');
+const rates=currencyDynamics(c)?.rates;
+const growthReady=!!growth && growth.n>=2;
+const labourReady=!!labour && labour.n>=2;
+if(!growthReady || !labourReady || !rates){
+return {
+state:'NON DETERMINATO',
+improving:false,
+worsening:false,
+earlyShift:false,
+reason:'copertura dati insufficiente: servono Crescita, Lavoro e Rates comparabili'
+};
+}
+const macroDirs=[growth.direction,labour.direction].filter(Number.isFinite);
+const macroSum=macroDirs.reduce((a,b)=>a+b,0);
+const macroDir=macroSum>0 ? 1 : macroSum<0 ? -1 : 0;
+const ratesDir=Number.isFinite(rates.dir) ? rates.dir : 0;
+const turning =
+growth.turning===true ||
+labour.turning===true ||
+rates.turn===true;
+if(macroDir>0 && ratesDir>0){
+return {
+state:'MIGLIORA',
+improving:true,
+worsening:false,
+earlyShift:false,
+reason:'Macro e Rates migliorano insieme'
+};
+}
+if(macroDir<0 && ratesDir<0){
+return {
+state:'PEGGIORA',
+improving:false,
+worsening:true,
+earlyShift:false,
+reason:'Macro e Rates peggiorano insieme'
+};
+}
+if(macroDir===0 && ratesDir>0){
+return {
+state:'EARLY SHIFT POSITIVO',
+improving:false,
+worsening:false,
+earlyShift:true,
+reason:'Rates migliorano, Macro non conferma ancora'
+};
+}
+if(macroDir===0 && ratesDir<0){
+return {
+state:'EARLY SHIFT NEGATIVO',
+improving:false,
+worsening:false,
+earlyShift:true,
+reason:'Rates peggiorano, Macro non conferma ancora'
+};
+}
+if(turning){
+return {
+state:'TURNING POINT',
+improving:false,
+worsening:false,
+earlyShift:false,
+reason:'segnali di svolta presenti ma non ancora allineati'
+};
+}
+return {
+state:'STABILE / MISTA',
+improving:false,
+worsening:false,
+earlyShift:false,
+reason:'Macro e Rates non mostrano un cambiamento strutturale concorde'
+};
+}
+function policyFamilyContext(d){
+const rates=layerPolarity(d?.rates);
+const cb=layerPolarity(d?.cb);
+if(rates===0 && cb===0) return 'POLICY NON RISOLUTIVA';
+if(rates!==0 && cb===0) return 'CB NEUTRALE VS RATES';
+if(rates===0 && cb!==0) return 'CB GUIDA TEMPORANEAMENTE';
+if(rates===cb) return 'CB CONFERMA RATES';
+return 'CB DIVERGE DA RATES';
+}
+function currencySignalMaturity(c){
+const imp=currencyImprovementDiagnostic(c);
+const growth=blockDynamics(c,'Crescita');
+const labour=blockDynamics(c,'Lavoro');
+const rates=currencyDynamics(c)?.rates;
+if(imp.state==='NON DETERMINATO'){
+return {
+quality:'WITHHELD',
+timing:'NON DETERMINATO',
+label:'DATI INSUFFICIENTI',
+note:'copertura dati insufficiente'
+};
+}
+if(imp.state==='EARLY SHIFT POSITIVO' || imp.state==='EARLY SHIFT NEGATIVO'){
+return {
+quality:'WARNING ANTICIPATO',
+timing:'RATES AVANTI',
+label:'WARNING ANTICIPATO',
+note:'il front-end si muove, ma la Macro non conferma ancora'
+};
+}
+if(imp.state==='TURNING POINT'){
+return {
+quality:'TRANSIZIONE NON ALLINEATA',
+timing:'TURNING RECENTE',
+label:'TRANSIZIONE',
+note:'segnali di svolta presenti ma Macro e Rates non sono ancora allineati'
+};
+}
+const hasFreshTurn =
+growth?.turning===true ||
+labour?.turning===true ||
+rates?.turn===true;
+if(imp.state==='MIGLIORA' || imp.state==='PEGGIORA'){
+return {
+quality:'STRUTTURA ALLINEATA',
+timing:hasFreshTurn ? 'TURNING RECENTE' : 'NESSUN TURNING RECENTE',
+label:'STRUTTURA ALLINEATA',
+note:hasFreshTurn
+? 'Macro e Rates sono allineati; il turning recente è un flag di timing, non un giudizio di qualità superiore'
+: 'Macro e Rates sono allineati; nessun turning recente rilevato'
+};
+}
+return {
+quality:'NON RISOLUTIVO',
+timing:'NESSUN TIMING CHIARO',
+label:'NON RISOLUTIVO',
+note:'nessun cambiamento strutturale concorde'
+};
+}
+function postBacktestPriceReading(state){
+const c=state?.confirmation || '';
+if(c==='PREZZO CONFERMA'){
+return {
+label:'MERCATO GIÀ ALLINEATO',
+note:'Il Prezzo ha già seguito la struttura principale. È conferma descrittiva, non prova di ulteriore continuazione.'
+};
+}
+if(c==='PREZZO DIVERGE'){
+return {
+label:'DIVERGENZA DA MONITORARE',
+note:'Il Prezzo non ha seguito la struttura principale. Può esserci spazio di riallineamento solo se Macro + Rates restano validi.'
+};
+}
+if(c==='PREZZO SENZA STRUTTURA'){
+return {
+label:'PREZZO SENZA STRUTTURA',
+note:'Il Prezzo si muove ma Macro e Rates non offrono una struttura direzionale pulita.'
+};
+}
+return {
+label:'PREZZO NON RISOLUTIVO',
+note:'Il Prezzo non aggiunge informazione direzionale sufficiente.'
+};
+}
+function currencyRelativeContext(c){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const rows=ccys.map(x=>deriveCurrencyState(x)).filter(Boolean);
+const order={FORTE:4,COSTRUTTIVA:3,MISTA:2,DEBOLE:1,FRAGILE:0};
+const me=rows.find(x=>x.c===c);
+if(!me) return 'Relazione G8 non determinata';
+const my=order[me.base];
+const above=rows.filter(x=>order[x.base]>my).length;
+const below=rows.filter(x=>order[x.base]<my).length;
+const peers=rows.filter(x=>x.c!==c && order[x.base]===my).map(x=>x.c);
+if(above===0 && peers.length===0) return 'Lettura strutturale migliore nel G8';
+if(below===0 && peers.length===0) return 'Lettura strutturale più fragile nel G8';
+if(above===0) return `Tra le letture strutturali migliori · parità con ${peers.join(' / ')}`;
+if(below===0) return `Tra le letture strutturali più fragili · parità con ${peers.join(' / ')}`;
+return `Posizione strutturale intermedia nel G8${peers.length?` · parità con ${peers.join(' / ')}`:''}`;
+}
+function deriveCurrencyDecisionFrame(c){
+const state=deriveCurrencyState(c);
+if(!state) return {
+status:'WITHHELD',
+importance:'WITHHELD',
+timing:'NON DETERMINATO',
+relation:'—',
+missing:'—',
+watch:'—'
+};
+const imp=currencyImprovementDiagnostic(c);
+const maturity=currencySignalMaturity(c);
+const priceReading=postBacktestPriceReading(state);
+let status =
+imp.state==='MIGLIORA' ? 'MIGLIORA' :
+imp.state==='PEGGIORA' ? 'PEGGIORA' :
+imp.state==='EARLY SHIFT POSITIVO' ? 'WARNING POSITIVO' :
+imp.state==='EARLY SHIFT NEGATIVO' ? 'WARNING NEGATIVO' :
+imp.state==='TURNING POINT' ? 'TRANSIZIONE' :
+imp.state==='NON DETERMINATO' ? 'WITHHELD' :
+'MISTA / STABILE';
+let missing='Nessuna conferma aggiuntiva obbligatoria';
+if(imp.state==='EARLY SHIFT POSITIVO' || imp.state==='EARLY SHIFT NEGATIVO'){
+missing='Manca la conferma della Macro: non trattare il movimento dei Rates come miglioramento strutturale.';
+}else if(imp.state==='TURNING POINT'){
+missing='Manca l’allineamento tra Macro e Rates.';
+}else if(imp.state==='NON DETERMINATO'){
+missing='Manca copertura dati sufficiente.';
+}else if(state.confirmation==='PREZZO DIVERGE'){
+missing='La struttura è leggibile, ma il Prezzo non si è ancora riallineato.';
+}else if(state.confirmation==='PREZZO CONFERMA'){
+missing='Il Prezzo ha già seguito: evitare di scambiarlo per nuovo vantaggio predittivo.';
+}
+let watch = priceReading.note;
+if(state.cotRisk){
+watch += ` COT: ${state.cotRisk.toLowerCase()} è un rischio di posizionamento, non un voto direzionale.`;
+}
+return {
+status,
+importance:`${maturity.quality} · ${maturity.note}`,
+timing:maturity.timing,
+relation:currencyRelativeContext(c),
+missing,
+watch,
+priceReading:priceReading.label
+};
+}
+function deriveCurrencyState(c){
+const d=currencyIntelData?.[c];
+if(!d) return null;
+const macro=layerPolarity(d.macro);
+const policy=policyFamilyPolarity(d);
+const policyContext=policyFamilyContext(d);
+const liq=layerPolarity(d.liq);
+const price=layerPolarity(d.price);
+const cot=D.cot?.[c]||{};
+const pct=+cot.pct;
+const netoiSigned=+(cot.net_oi||0);
+const netoi=Math.abs(netoiSigned);
+// Core directional structure:
+// Macro + Rates/CB expectations only.
+// Liquidity is an overlay and does NOT decide the base state by itself.
+const directional=[macro,policy];
+const pos=directional.filter(x=>x>0).length;
+const neg=directional.filter(x=>x<0).length;
+let base='MISTA';
+if(macro>0 && policy>0){
+base='FORTE';
+}else if(macro<0 && policy<0){
+base='FRAGILE';
+}else if((macro>0 && policy===0) || (policy>0 && macro===0)){
+base='COSTRUTTIVA';
+}else if((macro<0 && policy===0) || (policy<0 && macro===0)){
+base='DEBOLE';
+}else{
+base='MISTA';
+}
+const structuralDirection =
+base==='FORTE' || base==='COSTRUTTIVA' ? 1 :
+base==='FRAGILE' || base==='DEBOLE' ? -1 : 0;
+let confirmation='PREZZO NON RISOLUTIVO';
+if(price===0){
+confirmation='PREZZO NON RISOLUTIVO';
+}else if(structuralDirection===0){
+confirmation='PREZZO SENZA STRUTTURA';
+}else if(price===structuralDirection){
+confirmation='PREZZO CONFERMA';
+}else{
+confirmation='PREZZO DIVERGE';
+}
+let cotRisk='';
+if(isFinite(pct)){
+if(pct>=MODEL_RULES.cot.extremeHigh) cotRisk='ESTREMO LONG';
+else if(pct<=MODEL_RULES.cot.extremeLow) cotRisk='ESTREMO SHORT';
+else if(pct>=MODEL_RULES.cot.warningHigh) cotRisk='P70 WARNING LONG';
+else if(pct<=MODEL_RULES.cot.warningLow) cotRisk='P30 WARNING SHORT';
+}
+if(netoi>=MODEL_RULES.cot.netOiConcentration){
+const netOiSide=netoiSigned>0 ? 'CONCENTRAZIONE LONG' : netoiSigned<0 ? 'CONCENTRAZIONE SHORT' : 'CONCENTRAZIONE';
+cotRisk+=(cotRisk?' · ':'')+`${netOiSide} · Net/OI ${netoiSigned>0?'+':''}${fmt(netoiSigned,1)}%`;
+}
+const dynImprove=currencyImprovementDiagnostic(c);
+const improving=dynImprove.improving;
+const liqRaw=String(d?.liq?.[0]||'').toLowerCase();
+const liquidityOverlay =
+liqRaw.includes('non determinata') ? 'LIQUIDITÀ NON DETERMINATA' :
+liq>0 ? 'LIQUIDITÀ FAVOREVOLE' :
+liq<0 ? 'LIQUIDITÀ CONTRARIA' :
+'LIQUIDITÀ NEUTRA';
+return {
+c, base, confirmation, cotRisk,
+improving, improvementState:dynImprove.state,
+pos,neg,price,pct,netoi,netoiSigned,
+macro,policy,policyContext,liq,liquidityOverlay,
+driver:deriveCurrencyDriver(c),
+story:d.story||''
+};
+}
+function currencyStateSentence(x){
+if(!x) return '';
+let bits=[x.driver];
+if(x.policyContext==='CB DIVERGE DA RATES') bits.push('CB diverge dai rates');
+if(x.liquidityOverlay && x.liquidityOverlay!=='LIQUIDITÀ NEUTRA') bits.push(x.liquidityOverlay.toLowerCase());
+if(x.confirmation && x.confirmation!=='PREZZO NON RISOLUTIVO') bits.push(x.confirmation.toLowerCase());
+if(x.cotRisk) bits.push(x.cotRisk.toLowerCase());
+return bits.join(' · ');
+}
+function shortLayerState(layer){
+const p=layerPolarity(layer);
+if(p>0) return {txt:'Fav.',cls:'pos'};
+if(p<0) return {txt:'Contr.',cls:'neg'};
+const st=((layer&&layer[0])||'').toLowerCase();
+if(st.includes('diverg')) return {txt:'Div.',cls:'mix'};
+return {txt:'Neutr.',cls:'neu'};
+}
+function cotHeatState(c){
+const x=D.cot?.[c]||{};
+const p=+x.pct;
+const noi=Math.abs(+(x.net_oi||0));
+if(!isFinite(p)) return {txt:'—',cls:'neu'};
+let cls='neu';
+if(p>=MODEL_RULES.cot.extremeHigh || p<=MODEL_RULES.cot.extremeLow) cls='mix';
+else if(p>=MODEL_RULES.cot.warningHigh || p<=MODEL_RULES.cot.warningLow) cls='mix';
+if(noi>=MODEL_RULES.cot.netOiConcentration) cls='mix';
+return {txt:`P${Math.round(p)}`,cls,ext:(p>=80||p<=20||noi>=MODEL_RULES.cot.netOiConcentration)};
+}
+function renderDynamicHeatmap(){
+const host=document.getElementById('ovHeatmap');
+if(!host) return;
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+let html='<div></div>'+ccys.map(c=>`<div class="hmHead">${c}</div>`).join('');
+const rows=[
+['Macro','macro'],
+['Tassi','rates'],
+['Liquidità','liq']
+];
+rows.forEach(([label,key])=>{
+html+=`<div class="hmRowLab">${label}</div>`;
+ccys.forEach(c=>{
+const d=currencyIntelData?.[c];
+const st=shortLayerState(d?.[key]);
+html+=`<div class="hmCell ${st.cls}" title="${d?.[key]?.[2]||''}">${st.txt}</div>`;
+});
+});
+html+='<div class="hmRowLab">COT</div>';
+ccys.forEach(c=>{
+const st=cotHeatState(c);
+html+=`<div class="hmCell ${st.cls}${st.ext?' ext':''}" title="${cotEarlyWarning(c)||'Posizionamento non estremo'}">${st.txt}</div>`;
+});
+host.innerHTML=html;
+}
+function refreshInflationContext(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const rows=ccys.map(c=>{
+const m=D.macro?.[c]||{};
+const v=Number(m.inflation);
+return {c,v:isFinite(v)?v:null};
+}).filter(x=>x.v!=null);
+const v=document.getElementById('ovInflState');
+const d=document.getElementById('ovInflDetail');
+if(!v || !d) return;
+if(!rows.length){
+v.textContent='DATI NON DISPONIBILI';
+d.textContent='nessun input inflazione disponibile';
+return;
+}
+const hot=rows.filter(x=>x.v>0.5);
+const cool=rows.filter(x=>x.v<-0.25);
+const mid=rows.length-hot.length-cool.length;
+if(hot.length>=5) v.textContent='Pressione diffusa';
+else if(cool.length>=5) v.textContent='Disinflazione diffusa';
+else v.textContent='Disomogenea';
+d.textContent=`${hot.length} più calde · ${cool.length} in raffreddamento · ${mid} intermedie`;
+}
+function pctChange(values,n){
+if(!values || values.length<2) return null;
+const a=values[Math.max(0,values.length-1-n)];
+const b=values.at(-1);
+if(a==null || b==null || !isFinite(a) || !isFinite(b) || a===0) return null;
+return (b/a-1)*100;
+}
+function deriveGlobalRiskState(){
+const risk=D.risk||{};
+const vix=risk['VIX'];
+const brent=risk['Brent'];
+const china=risk['China CLI'];
+const out={
+state:'WITHHELD',
+cls:'riskMixedTxt',
+detail:'dati Rischio esterno insufficienti',
+driver:'—',
+affected:[],
+vix:null,brent1m:null,china:null
+};
+if(!vix?.values?.length) return out;
+const v=+vix.values.at(-1);
+const v1m=pctChange(vix.values,22);
+const b1m=brent?.values?.length?pctChange(brent.values,22):null;
+const c=china?.values?.length?+china.values.at(-1):null;
+const cPrev=china?.values?.length>1?+china.values.at(-2):null;
+const cDir=(c!=null && cPrev!=null)?Math.sign(c-cPrev):0;
+out.vix=v; out.brent1m=b1m; out.china=c;
+// No mechanical score: identify the dominant external regime by hierarchy.
+// 1) market stress via VIX; 2) oil inflation shock; 3) China/global-demand backdrop.
+if(v>=20 || (v>=17 && v1m!=null && v1m>20)){
+out.state='RISK-OFF';
+out.cls='riskOffTxt';
+out.driver='Volatilità / stress';
+out.affected=['JPY','CHF','AUD','NZD','CAD'];
+out.detail=`VIX ${fmt(v,1)}${v1m!=null?` · 1M ${v1m>=0?'+':''}${fmt(v1m,0)}%`:''}. Primo controllo: rifugi JPY/CHF vs cicliche AUD/NZD/CAD.`;
+return out;
+}
+if(b1m!=null && b1m>=10){
+out.state='SHOCK ENERGIA';
+out.cls='riskMixedTxt';
+out.driver='Petrolio / inflazione';
+out.affected=['CAD','USD','EUR','JPY'];
+out.detail=`Brent accelera ${b1m>=0?'+':''}${fmt(b1m,0)}% in 1M. Overlay inflazione/term premium: prima CAD, poi Rates delle altre valute.`;
+return out;
+}
+if(v<=15 && (c==null || cDir>=0)){
+out.state='RISCHIO CONTENUTO';
+out.cls='riskOnTxt';
+out.driver='Volatilità bassa';
+out.affected=['AUD','NZD','CAD','JPY','CHF'];
+out.detail=`VIX ${fmt(v,1)}: stress di mercato contenuto${c!=null?` · China CLI ${fmt(c,1)}`:''}. Il Rischio esterno non sta dominando il quadro domestico.`;
+return out;
+}
+out.state='MISTO';
+out.cls='riskMixedTxt';
+out.driver='Nessun shock dominante';
+out.affected=['USD','JPY','CHF','AUD','NZD','CAD'];
+out.detail=`VIX ${fmt(v,1)}${b1m!=null?` · Brent 1M ${b1m>=0?'+':''}${fmt(b1m,0)}%`:''}${c!=null?` · China CLI ${fmt(c,1)}`:''}. Nessun singolo shock globale prende il controllo.`;
+return out;
+}
+function refreshGlobalRiskOverview(){
+const r=deriveGlobalRiskState();
+const st=document.getElementById('ovRiskState');
+const dt=document.getElementById('ovRiskDetail');
+if(st){
+st.textContent=r.state;
+st.classList.remove('riskOnTxt','riskOffTxt','riskMixedTxt');
+st.classList.add(r.cls);
+}
+if(dt){
+const vixDate=D.risk?.VIX?.dates?.at(-1)||'—';
+const brentDate=D.risk?.Brent?.dates?.at(-1)||'—';
+const priceAsOf=D.prices?.at(-1)?.Date||null;
+const stale=(priceAsOf && vixDate!=='—' && String(vixDate).slice(0,10)<String(priceAsOf).slice(0,10));
+dt.textContent=`${r.detail} · As-of rischio: VIX ${vixDate} · Brent ${brentDate}${stale?' · snapshot rischio precedente al Price':''}`;
+}
+// Update Rischio esterno card values from the actual embedded series where possible.
+const cards=[...document.querySelectorAll('#risk .riskMacroCard')];
+cards.forEach(card=>{
+const name=card.querySelector('.riskName')?.textContent||'';
+const val=card.querySelector('.riskValue');
+const date=card.querySelector('.riskDate');
+if(name.includes('Volatilità') && D.risk?.VIX?.values?.length){
+val.textContent=`VIX ${fmt(D.risk.VIX.values.at(-1),2)}`;
+date.textContent=D.risk.VIX.dates.at(-1);
+}
+if(name.includes('Energia') && D.risk?.Brent?.values?.length){
+val.textContent=`Brent ${fmt(D.risk.Brent.values.at(-1),2)}`;
+date.textContent=D.risk.Brent.dates.at(-1);
+}
+if(name.includes('Cina') && D.risk?.['China CLI']?.values?.length){
+val.textContent=`CLI ${fmt(D.risk['China CLI'].values.at(-1),2)}`;
+date.textContent=D.risk['China CLI'].dates.at(-1);
+}
+});
+}
+let __lastOverviewRefresh=0;
+function refreshOverviewContext(){
+const __now=Date.now();
+if(__now-__lastOverviewRefresh<120) return;
+__lastOverviewRefresh=__now;
+refreshInflationContext();
+const cqHost=document.getElementById('canonicalQaHost'); if(cqHost) cqHost.innerHTML=canonicalStateQaHtml();
+const esHost=document.getElementById('earlyShiftHost'); if(esHost) esHost.innerHTML=earlyShiftWatchHtml();
+const btHost=document.getElementById('btReadyHost'); if(btHost) btHost.innerHTML=backtestReadinessMatrixHtml();
+refreshGlobalRiskOverview();
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+// Macro context from the currency macro layer.
+const macro=ccys.map(c=>({c,st:shortLayerState(currencyIntelData?.[c]?.macro)}));
+const mp=macro.filter(x=>x.st.cls==='pos').map(x=>x.c);
+const mn=macro.filter(x=>x.st.cls==='neg').map(x=>x.c);
+const mm=macro.filter(x=>x.st.cls==='mix' || x.st.cls==='neu').map(x=>x.c);
+const gv=document.getElementById('ovGrowthState'), gd=document.getElementById('ovGrowthDetail');
+if(gv) gv.textContent=(mp.length>=5?'Prevalentemente favorevole':mn.length>=5?'Prevalentemente debole':'Divergente');
+if(gd) gd.textContent=`${mp.length} favorevoli · ${mn.length} contrari · ${mm.length} misti/neutrali`;
+// Liquidity context from liquidity layer.
+const liq=ccys.map(c=>({c,st:shortLayerState(currencyIntelData?.[c]?.liq)}));
+const lp=liq.filter(x=>x.st.cls==='pos').length;
+const ln=liq.filter(x=>x.st.cls==='neg').length;
+const lm=liq.length-lp-ln;
+const lv=document.getElementById('ovLiqState'), ld=document.getElementById('ovLiqDetail');
+if(lv) lv.textContent=(lp>=5?'Favorevole':ln>=5?'Restrittiva':'Mista');
+if(ld) ld.textContent=`${lp} favorevoli · ${ln} restrittive · ${lm} miste/neutrali`;
+}
+function refreshQuickFocus(strong,improving,crowded,strongTie=null,improvingTie=null){
+const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt||'—'};
+if(strong){
+set('ovQuickStrong',strong.c);
+set('ovQuickStrongDriver',strong.driver);
+}else if(strongTie?.length){
+set('ovQuickStrong','PARITÀ');
+set('ovQuickStrongDriver',strongTie.join(' / '));
+}else{
+set('ovQuickStrong','—');
+set('ovQuickStrongDriver','Nessuna forza relativa chiara');
+}
+if(improving){
+set('ovQuickImprove',improving.c);
+set('ovQuickImproveDriver',improving.driver);
+}else if(improvingTie?.length){
+set('ovQuickImprove','PARITÀ');

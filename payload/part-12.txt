@@ -1,0 +1,1000 @@
+Object.keys(x).sort().forEach(k=>{o[k]=stableObject(x[k]);});
+return o;
+}
+return x;
+}
+function stableStringify(x){return JSON.stringify(stableObject(x));}
+function hashString(str){
+let h=2166136261>>>0;
+for(let i=0;i<str.length;i++){
+h^=str.charCodeAt(i);
+h=Math.imul(h,16777619)>>>0;
+}
+return ('00000000'+h.toString(16)).slice(-8);
+}
+function deepFreeze(obj){
+if(!obj || typeof obj!=='object' || Object.isFrozen(obj)) return obj;
+Object.freeze(obj);
+Object.getOwnPropertyNames(obj).forEach(k=>deepFreeze(obj[k]));
+return obj;
+}
+function safeLoad(key){
+try{
+const raw=localStorage.getItem(key);
+const x=raw?JSON.parse(raw):[];
+return Array.isArray(x)?x:[];
+}catch(e){return [];}
+}
+function safeSave(key,arr){
+localStorage.setItem(key,JSON.stringify(arr));
+}
+function rulesFingerprint(){
+const core=window.CANONICAL_CORE_POLICY_REGISTRY||{};
+const renderer=window.CANONICAL_RENDERER_REGISTRY||{};
+return hashString(stableStringify({
+model_version:window.MODEL_RULES?.version||null,
+freeze:window.MODEL_RULES?.freeze||null,
+rules:window.MODEL_RULES||null,
+core_signatures:core,
+renderer_signatures:renderer
+}));
+}
+function pairAnchor(pair){
+try{
+const s=pairSeries(pair,2);
+const vals=(s?.values||[]).map(Number).filter(Number.isFinite);
+return vals.length?vals.at(-1):null;
+}catch(e){return null;}
+}
+function currencyForwardState(c){
+const s=deriveCurrencyState(c)||{};
+const dyn=(typeof currencyDynamics==='function'?currencyDynamics(c):{})||{};
+return {
+base:s.base||null,
+macro:Number.isFinite(Number(s.macro))?Number(s.macro):null,
+policy:Number.isFinite(Number(s.policy))?Number(s.policy):null,
+improvement_state:s.improvementState||null,
+state:s.state||currencyIntelData?.[c]?.state||null,
+wind:s.wind||currencyIntelData?.[c]?.wind||null,
+driver:currencyIntelData?.[c]?.driver||null,
+regime:currencyIntelData?.[c]?.regime||null,
+dynamics:{
+direction:dyn.direction||null,
+velocity:dyn.velocity||null,
+acceleration:dyn.acceleration||null,
+turning_point:dyn.turningPoint||dyn.turning_point||null
+}
+};
+}
+function pairForwardState(pair){
+const f=derivePairDecisionFrame(pair)||{};
+const setup=(typeof derivePairSetupState==='function'?derivePairSetupState(pair):{})||{};
+return {
+favored:f.fav||null,
+quality:f.quality||null,
+relation:f.relation||null,
+structural:{
+macro:f.structural?.macro||null,
+policy:f.structural?.policy||null
+},
+price_reading:f.priceReading||null,
+setup:{
+quality:setup.quality||null,
+quality_code:setup.qualityCode||null,
+timing:setup.timing?.state||null,
+cot:setup.cot?.state||null,
+liquidity:setup.liquidity?.state||null,
+price:setup.price?.state||null
+},
+anchor_price:pairAnchor(pair)
+};
+}
+function liveInputStamp(){
+try{
+if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive();
+}catch(e){}
+return clone(window.DATA_FRESHNESS_REGISTRY?.live||window.DATA_FRESHNESS_REGISTRY||{});
+}
+function buildSnapshotPayload(label){
+const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+if(!health || health.status==='FAIL'){
+throw new Error('FORWARD_CAPTURE_BLOCKED_HEALTH_FAIL');
+}
+const pairs=Object.keys(CERT53?.pairs||{}).sort();
+if(pairs.length!==28) throw new Error(`FORWARD_CAPTURE_BLOCKED_PAIR_COUNT:${pairs.length}`);
+return {
+schema:'GMFQ_FORWARD_SNAPSHOT_V1',
+recorded_at:new Date().toISOString(),
+label:label||'scheduled_forward_capture',
+model:{
+version:window.MODEL_RULES?.version||null,
+rules_fingerprint:rulesFingerprint(),
+oos_rule:window.MODEL_RULES?.freeze?.oosRule||'ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE'
+},
+freshness:liveInputStamp(),
+health:{
+status:health.status,
+hard_errors:clone(health.hard_errors||[]),
+warnings:clone(health.warnings||[])
+},
+currencies:Object.fromEntries(CCYS.map(c=>[c,currencyForwardState(c)])),
+pairs:Object.fromEntries(pairs.map(p=>[p,pairForwardState(p)]))
+};
+}
+function computeRecordHash(recordWithoutHash){
+return hashString(stableStringify(recordWithoutHash));
+}
+window.forwardLedgerIntegrity=function(){
+const ledger=safeLoad(LEDGER_KEY);
+const issues=[];
+let prev='GENESIS';
+let priorRules=null;
+const regimeBreaks=[];
+ledger.forEach((r,i)=>{
+const copy=clone(r);
+const stored=copy.record_hash;
+delete copy.record_hash;
+const expected=computeRecordHash(copy);
+if(stored!==expected) issues.push(`LEDGER_RECORD_HASH_MISMATCH:${i+1}`);
+if(copy.sequence!==i+1) issues.push(`LEDGER_SEQUENCE_MISMATCH:${i+1}`);
+if(copy.prev_hash!==prev) issues.push(`LEDGER_CHAIN_BROKEN:${i+1}`);
+if(copy.payload_hash!==hashString(stableStringify(copy.snapshot))) issues.push(`SNAPSHOT_HASH_MISMATCH:${i+1}`);
+const rf=copy.snapshot?.model?.rules_fingerprint||null;
+if(priorRules && rf && rf!==priorRules){
+regimeBreaks.push({
+sequence:i+1,
+snapshot_id:copy.snapshot_id,
+rule:'OOS_RESTART_REQUIRED'
+});
+}
+if(rf) priorRules=rf;
+prev=stored||prev;
+});
+return {
+ok:issues.length===0,
+issues,
+records:ledger.length,
+head_hash:ledger.length?ledger.at(-1).record_hash:'GENESIS',
+rule_regime_breaks:regimeBreaks,
+append_only:true,
+note:'Tamper-evident local ledger. Outcomes are stored separately and never rewrite signal snapshots.'
+};
+};
+window.captureForwardSnapshot=function(label){
+const pre=forwardLedgerIntegrity();
+if(!pre.ok) throw new Error('FORWARD_LEDGER_INTEGRITY_FAIL:'+pre.issues.join('|'));
+const ledger=safeLoad(LEDGER_KEY);
+const snapshot=buildSnapshotPayload(label);
+const payloadHash=hashString(stableStringify(snapshot));
+const seq=ledger.length+1;
+const prev=ledger.length?ledger.at(-1).record_hash:'GENESIS';
+const snapshotId=`FWD-${snapshot.recorded_at.replace(/[-:.TZ]/g,'').slice(0,14)}-${payloadHash}`;
+const rec={
+sequence:seq,
+snapshot_id:snapshotId,
+prev_hash:prev,
+payload_hash:payloadHash,
+snapshot:snapshot
+};
+rec.record_hash=computeRecordHash(rec);
+ledger.push(rec);
+safeSave(LEDGER_KEY,ledger);
+const verify=forwardLedgerIntegrity();
+if(!verify.ok) throw new Error('FORWARD_LEDGER_POSTWRITE_FAIL:'+verify.issues.join('|'));
+return deepFreeze(clone(rec));
+};
+window.getForwardLedger=function(){
+return deepFreeze(clone(safeLoad(LEDGER_KEY)));
+};
+window.recordForwardOutcome=function(snapshotId,horizon,result){
+const ledger=safeLoad(LEDGER_KEY);
+if(!ledger.some(x=>x.snapshot_id===snapshotId)) throw new Error('UNKNOWN_FORWARD_SNAPSHOT');
+const allowed=['1D','3D','1W','2W'];
+if(!allowed.includes(String(horizon))) throw new Error('INVALID_FORWARD_HORIZON');
+const outcomes=safeLoad(OUTCOME_KEY);
+if(outcomes.some(x=>x.snapshot_id===snapshotId && x.horizon===horizon)){
+throw new Error('OUTCOME_ALREADY_RECORDED_APPEND_ONLY');
+}
+const body={
+schema:'GMFQ_FORWARD_OUTCOME_V1',
+recorded_at:new Date().toISOString(),
+snapshot_id:snapshotId,
+horizon:String(horizon),
+result:clone(result)
+};
+body.outcome_hash=hashString(stableStringify(body));
+outcomes.push(body);
+safeSave(OUTCOME_KEY,outcomes);
+return deepFreeze(clone(body));
+};
+window.getForwardOutcomes=function(){
+return deepFreeze(clone(safeLoad(OUTCOME_KEY)));
+};
+window.forwardValidationSummary=function(){
+const ledger=safeLoad(LEDGER_KEY);
+const outcomes=safeLoad(OUTCOME_KEY);
+const integrity=forwardLedgerIntegrity();
+const currentRules=rulesFingerprint();
+const lastRules=ledger.length?ledger.at(-1).snapshot?.model?.rules_fingerprint:null;
+return {
+integrity,
+snapshots:ledger.length,
+outcomes:outcomes.length,
+current_rules_fingerprint:currentRules,
+last_snapshot_rules_fingerprint:lastRules,
+oos_restart_required:!!(lastRules && currentRules!==lastRules),
+horizons:['1D','3D','1W','2W']
+};
+};
+const baseHealth355=window.productionHealthCheck;
+if(typeof baseHealth355==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth355();
+const li=forwardLedgerIntegrity();
+r.forward_ledger_integrity=li;
+if(!li.ok){
+li.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+window.FORWARD_VALIDATION_POLICY=deepFreeze({
+status:'READY',
+snapshot_mode:'APPEND_ONLY_TAMPER_EVIDENT',
+no_rewrite:true,
+outcomes_separate:true,
+horizons:['1D','3D','1W','2W'],
+rule_change_policy:'ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE'
+});
+})();
+
+</script><script>
+
+(function(){
+'use strict';
+const NAMES=[
+'deriveCurrencyState',
+'derivePairDecisionFrame',
+'derivePairDriverStructure',
+'renderOperationalOverview',
+'renderPair',
+'stableModelRefresh',
+'endToEndRecompute',
+'runProductionDailyRefresh',
+'productionHealthCheck'
+];
+const hashString=(str)=>{
+let h=2166136261>>>0;
+for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+return ('00000000'+h.toString(16)).slice(-8);
+};
+window.FINAL_CANONICAL_WRITER_REGISTRY=Object.fromEntries(NAMES.map(name=>{
+const fn=window[name];
+return [name,{
+exists:typeof fn==='function',
+signature:typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null
+}];
+}));
+window.finalWriterIntegrity=function(){
+const rows={},changed=[];
+Object.entries(window.FINAL_CANONICAL_WRITER_REGISTRY||{}).forEach(([name,base])=>{
+const fn=window[name];
+const sig=typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null;
+const ok=(typeof fn==='function')===base.exists && sig===base.signature;
+rows[name]={ok,expected:base.signature,current:sig};
+if(!ok) changed.push(name);
+});
+const source=Function.prototype.toString.call(window.renderPair||function(){});
+const legacyRefs=[];
+if(/\bD\.pairStates\b/.test(source)) legacyRefs.push('renderPair:D.pairStates');
+if(/\bdominant_driver_current\b/.test(source)) legacyRefs.push('renderPair:dominant_driver_current');
+return {
+ok:changed.length===0 && legacyRefs.length===0,
+changed,
+legacyRefs,
+rows,
+rule:'Final canonical writers may not be silently replaced or reintroduce legacy pair-state decision sources.'
+};
+};
+const baseHealth356=window.productionHealthCheck;
+if(typeof baseHealth356==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth356();
+const wi=finalWriterIntegrity();
+r.final_writer_integrity=wi;
+if(!wi.ok){
+[...wi.changed.map(x=>`FINAL_WRITER_CHANGED:${x}`),...wi.legacyRefs.map(x=>`LEGACY_WRITER_REF:${x}`)].forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+// The Health Check is intentionally wrapped above. Re-baseline its fingerprint
+// once to the final wrapper; any later replacement will still be detected.
+if(window.FINAL_CANONICAL_WRITER_REGISTRY?.productionHealthCheck){
+window.FINAL_CANONICAL_WRITER_REGISTRY.productionHealthCheck.exists=true;
+window.FINAL_CANONICAL_WRITER_REGISTRY.productionHealthCheck.signature=
+hashString(Function.prototype.toString.call(window.productionHealthCheck));
+}
+}
+})();
+
+</script><script>
+
+(function(){
+window.recoverCanonicalRuntimeAfterRepair=function(){
+try{
+if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+if(typeof syncAllCurrencyDisplayState==='function') syncAllCurrencyDisplayState();
+return typeof productionHealthCheck==='function' ? productionHealthCheck() : {status:'UNKNOWN'};
+}catch(e){
+return {status:'FAIL',hard_errors:[`RECOVERY_ERROR:${String(e?.message||e)}`]};
+}
+};
+})();
+
+</script><script id="v361-oos-freeze-and-first-capture">
+
+(function(){
+'use strict';
+const BASELINE_ID='GMFQ_OOS_V1_2026-09-29_v360';
+const CAPTURE_FLAG='GMFQ_OOS_V1_T0_CAPTURED';
+window.OOS_BASELINE=Object.freeze({
+id:BASELINE_ID,
+source_version:'v360',
+frozen_on:'2026-09-29',
+status:'FROZEN',
+rule_change_policy:'ANY_MODEL_RULE_CHANGE_RESTARTS_OOS',
+horizons:Object.freeze(['1D','3D','1W','2W']),
+layers:Object.freeze({
+core:'Macro + Rates/CB',
+overlays:Object.freeze(['Price','COT','Liquidity','Global Risk'])
+})
+});
+function tryFirstCapture(){
+try{
+if(localStorage.getItem(CAPTURE_FLAG)==='1'){
+window.OOS_BASELINE_T0_STATUS={ok:true,status:'ALREADY_CAPTURED'};
+return;
+}
+if(typeof productionHealthCheck!=='function' || typeof captureForwardSnapshot!=='function'){
+window.OOS_BASELINE_T0_STATUS={ok:false,status:'RUNTIME_NOT_READY'};
+return;
+}
+const health=productionHealthCheck();
+if(health?.status==='FAIL'){
+window.OOS_BASELINE_T0_STATUS={
+ok:false,status:'BLOCKED_BY_HEALTH',hard_errors:health.hard_errors||[]
+};
+return;
+}
+const rec=captureForwardSnapshot('OOS_T0_GMFQ_V1_2026-09-29');
+localStorage.setItem(CAPTURE_FLAG,'1');
+window.OOS_BASELINE_T0_STATUS={
+ok:true,status:'CAPTURED',snapshot_id:rec?.snapshot_id||null,
+recorded_at:rec?.snapshot?.recorded_at||null
+};
+}catch(e){
+window.OOS_BASELINE_T0_STATUS={ok:false,status:'CAPTURE_ERROR',error:String(e?.message||e)};
+}
+}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',()=>setTimeout(tryFirstCapture,2200),{once:true});
+}else{
+setTimeout(tryFirstCapture,2200);
+}
+})();
+
+</script><script>
+
+(function(){
+'use strict';
+const HORIZONS=Object.freeze({
+'1D':1,
+'3D':3,
+'1W':5,
+'2W':10
+});
+const DAILY_CAPTURE_KEY='GMFQ_OOS_V1_DAILY_CAPTURE_INDEX';
+const clone=x=>JSON.parse(JSON.stringify(x));
+function pairPriceAtRow(pair,row){
+const [a,b]=String(pair||'').split('/');
+if(!a||!b||!row) return null;
+const qa=a==='EUR'?1:Number(row[a]);
+const qb=b==='EUR'?1:Number(row[b]);
+if(!Number.isFinite(qa)||!Number.isFinite(qb)||qa===0) return null;
+return qb/qa;
+}
+function priceRows(){
+return Array.isArray(D?.prices) ? D.prices.filter(r=>r?.Date).slice() : [];
+}
+function anchorIndexForSnapshot(snapshot,rows){
+const asof=String(snapshot?.freshness?.PRICE?.as_of||'');
+if(!asof || !rows.length) return -1;
+let exact=rows.findIndex(r=>String(r.Date)===asof);
+if(exact>=0) return exact;
+// Safe fallback: last market observation not later than the snapshot's price as-of.
+let idx=-1;
+rows.forEach((r,i)=>{
+if(String(r.Date)<=asof) idx=i;
+});
+return idx;
+}
+function outcomeForSnapshot(rec,horizon,targetOffset){
+const rows=priceRows();
+const snap=rec?.snapshot;
+const startIdx=anchorIndexForSnapshot(snap,rows);
+if(startIdx<0) return null;
+const targetIdx=startIdx+targetOffset;
+if(targetIdx>=rows.length) return null;
+const startRow=rows[startIdx], endRow=rows[targetIdx];
+const pairResults={};
+Object.entries(snap?.pairs||{}).forEach(([pair,p])=>{
+const p0=Number(p?.anchor_price ?? pairPriceAtRow(pair,startRow));
+const p1=pairPriceAtRow(pair,endRow);
+if(!Number.isFinite(p0)||!Number.isFinite(p1)||p0===0) return;
+const raw=(p1/p0-1)*100;
+const [a,b]=pair.split('/');
+const fav=p?.favored||null;
+const sign=fav===a?1:fav===b?-1:0;
+const favored=sign?raw*sign:null;
+pairResults[pair]={
+start_date:String(startRow.Date),
+end_date:String(endRow.Date),
+observations:targetOffset,
+start_price:p0,
+end_price:p1,
+raw_return_pct:raw,
+favored:fav,
+favored_return_pct:favored,
+hit:favored==null?null:favored>0,
+core_quality:p?.quality||null,
+overlay_tags:{
+price:p?.setup?.price||null,
+cot:p?.setup?.cot||null,
+liquidity:p?.setup?.liquidity||null,
+timing:p?.setup?.timing||null,
+setup_quality:p?.setup?.quality||null,
+setup_quality_code:p?.setup?.quality_code||null
+}
+};
+});
+const vals=Object.values(pairResults).filter(x=>Number.isFinite(x.favored_return_pct));
+const hits=vals.filter(x=>x.hit===true).length;
+const mean=vals.length?vals.reduce((s,x)=>s+x.favored_return_pct,0)/vals.length:null;
+const sorted=vals.map(x=>x.favored_return_pct).sort((a,b)=>a-b);
+const median=!sorted.length?null:
+sorted.length%2?sorted[(sorted.length-1)/2]:
+(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;
+return {
+measurement_basis:'FX_MARKET_OBSERVATIONS',
+horizon,
+observation_count:targetOffset,
+start_price_asof:String(startRow.Date),
+end_price_asof:String(endRow.Date),
+pair_results:pairResults,
+aggregate_core:{
+n:vals.length,
+hits,
+misses:vals.length-hits,
+hit_rate:vals.length?hits/vals.length:null,
+mean_favored_return_pct:mean,
+median_favored_return_pct:median
+},
+overlay_method:'TAGS_ONLY_NO_POST_FREEZE_THRESHOLD_OPTIMIZATION'
+};
+}
+window.settleMatureForwardOutcomes=function(){
+if(typeof getForwardLedger!=='function' || typeof getForwardOutcomes!=='function' || typeof recordForwardOutcome!=='function'){
+return {ok:false,status:'FORWARD_API_NOT_READY'};
+}
+const ledger=getForwardLedger();
+const existing=getForwardOutcomes();
+const already=new Set(existing.map(x=>`${x.snapshot_id}|${x.horizon}`));
+const settled=[];
+const pending=[];
+ledger.forEach(rec=>{
+Object.entries(HORIZONS).forEach(([h,n])=>{
+const key=`${rec.snapshot_id}|${h}`;
+if(already.has(key)) return;
+const result=outcomeForSnapshot(rec,h,n);
+if(!result){
+pending.push({snapshot_id:rec.snapshot_id,horizon:h,observations:n});
+return;
+}
+const out=recordForwardOutcome(rec.snapshot_id,h,result);
+settled.push({
+snapshot_id:rec.snapshot_id,
+horizon:h,
+end_price_asof:result.end_price_asof,
+n:result.aggregate_core.n,
+hit_rate:result.aggregate_core.hit_rate,
+outcome_hash:out.outcome_hash
+});
+});
+});
+return {
+ok:true,
+settled,
+pending,
+total_snapshots:ledger.length,
+total_outcomes:getForwardOutcomes().length,
+horizons:clone(HORIZONS)
+};
+};
+function dailyCaptureIdentity(){
+const priceAsOf=String(window.DATA_FRESHNESS_REGISTRY?.live?.PRICE?.as_of||'NA');
+const gen=String(window.PRODUCTION_REFRESH_GENERATION??'NA');
+return `${priceAsOf}|${gen}`;
+}
+function captureAfterHealthyRefresh(){
+if(typeof productionHealthCheck!=='function' || typeof captureForwardSnapshot!=='function'){
+return {ok:false,status:'FORWARD_API_NOT_READY'};
+}
+const health=productionHealthCheck();
+if(health?.status==='FAIL'){
+return {ok:false,status:'BLOCKED_BY_HEALTH',hard_errors:clone(health.hard_errors||[])};
+}
+let index={};
+try{ index=JSON.parse(localStorage.getItem(DAILY_CAPTURE_KEY)||'{}')||{}; }catch(e){index={};}
+const key=dailyCaptureIdentity();
+if(index[key]){
+return {ok:true,status:'ALREADY_CAPTURED',snapshot_id:index[key],identity:key};
+}
+const rec=captureForwardSnapshot(`DAILY_OOS_${key}`);
+index[key]=rec.snapshot_id;
+localStorage.setItem(DAILY_CAPTURE_KEY,JSON.stringify(index));
+return {ok:true,status:'CAPTURED',snapshot_id:rec.snapshot_id,identity:key};
+}
+const baseRun362=window.runProductionDailyRefresh;
+if(typeof baseRun362==='function'){
+window.runProductionDailyRefresh=function(payload){
+const out=baseRun362.apply(this,arguments);
+if(!out?.ok) return out;
+let forwardCapture=null, settlement=null;
+try{ forwardCapture=captureAfterHealthyRefresh(); }
+catch(e){ forwardCapture={ok:false,status:'CAPTURE_ERROR',error:String(e?.message||e)}; }
+try{ settlement=settleMatureForwardOutcomes(); }
+catch(e){ settlement={ok:false,status:'SETTLEMENT_ERROR',error:String(e?.message||e)}; }
+const enriched=Object.assign({},out,{
+forward_oos:{
+baseline:window.OOS_BASELINE?.id||null,
+capture:forwardCapture,
+settlement
+}
+});
+window.LAST_PRODUCTION_REFRESH=clone(enriched);
+return clone(enriched);
+};
+// Infrastructure wrapper only; model rules are unchanged.
+// Re-baseline the final writer fingerprint to the final production-refresh wrapper.
+try{
+if(window.FINAL_CANONICAL_WRITER_REGISTRY?.runProductionDailyRefresh){
+let h=2166136261>>>0;
+const s=Function.prototype.toString.call(window.runProductionDailyRefresh);
+for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+window.FINAL_CANONICAL_WRITER_REGISTRY.runProductionDailyRefresh.signature=
+('00000000'+h.toString(16)).slice(-8);
+}
+}catch(e){}
+}
+window.FORWARD_SETTLEMENT_POLICY=Object.freeze({
+status:'FROZEN_MEASUREMENT_PROTOCOL',
+horizon_basis:'MARKET_OBSERVATIONS',
+horizons:Object.freeze({'1D':1,'3D':3,'1W':5,'2W':10}),
+return_measure:'PAIR_SIMPLE_RETURN_AND_FAVORED_SIDE_RETURN',
+overlays:'RECORDED_AS_TAGS; NO THRESHOLD OPTIMIZATION DURING OOS',
+rule_change:'ANY MODEL RULE CHANGE RESTARTS OOS'
+});
+// On ordinary page loads, only settle outcomes that have already matured.
+// This never creates a new daily signal snapshot by itself.
+setTimeout(()=>{try{settleMatureForwardOutcomes();}catch(e){}},2600);
+})();
+
+</script><script id="v363-forward-monitor-renderer">
+
+(function(){
+'use strict';
+const fmtN=(x,d=2)=>Number.isFinite(Number(x))?Number(x).toFixed(d):'—';
+const pct=(x,d=1)=>Number.isFinite(Number(x))?(100*Number(x)).toFixed(d)+'%':'—';
+function loadData(){
+const ledger=typeof getForwardLedger==='function'?getForwardLedger():[];
+const outcomes=typeof getForwardOutcomes==='function'?getForwardOutcomes():[];
+const integrity=typeof forwardLedgerIntegrity==='function'?forwardLedgerIntegrity():{ok:false,issues:['API_NOT_READY']};
+return {ledger,outcomes,integrity};
+}
+function allPairRows(outcomes,horizon){
+const rows=[];
+outcomes.filter(o=>o.horizon===horizon).forEach(o=>{
+const pr=o?.result?.pair_results||{};
+Object.entries(pr).forEach(([pair,x])=>rows.push({pair,...x,snapshot_id:o.snapshot_id}));
+});
+return rows;
+}
+function stats(rows){
+const vals=rows.filter(x=>Number.isFinite(Number(x.favored_return_pct)));
+if(!vals.length) return {n:0,hit:null,mean:null,median:null};
+const rs=vals.map(x=>Number(x.favored_return_pct));
+const hit=vals.filter(x=>x.hit===true).length/vals.length;
+const mean=rs.reduce((a,b)=>a+b,0)/rs.length;
+const s=[...rs].sort((a,b)=>a-b);
+const median=s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;
+return {n:vals.length,hit,mean,median};
+}
+function overlaySubset(rows,kind,value){
+return rows.filter(x=>String(x.overlay_tags?.[kind]||'')===String(value));
+}
+function render(){
+const {ledger,outcomes,integrity}=loadData();
+const badge=document.getElementById('fwdIntegrity');
+if(badge){
+badge.textContent=integrity.ok?'INTEGRITY PASS':'INTEGRITY FAIL';
+badge.className='fwdBadge '+(integrity.ok?'pass':'fail');
+}
+const snapshots=ledger.length;
+const matured=outcomes.length;
+const ruleBreaks=integrity.rule_regime_breaks?.length||0;
+const last=ledger.at(-1);
+const cards=document.getElementById('fwdTopCards');
+if(cards){
+cards.innerHTML=[
+['Snapshot',snapshots,'Segnali congelati'],
+['Outcome',matured,'Orizzonti già maturati'],
+['Rule breaks',ruleBreaks,ruleBreaks?'Serve nuovo regime OOS':'Nessuna modifica regole'],
+['Ultimo T0',last?.snapshot?.freshness?.PRICE?.as_of||'—',last?.snapshot_id||'Nessuno snapshot']
+].map(([k,v,s])=>`<div class="fwdCard"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+}
+const horizons=['1D','3D','1W','2W'];
+const ht=document.getElementById('fwdHorizonTable');
+if(ht){
+let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N</div><div>Hit rate</div><div>Mean</div><div>Median</div><div>Stato</div></div>`;
+horizons.forEach(h=>{
+const st=stats(allPairRows(outcomes,h));
+const state=st.n>=56?'Campione iniziale':st.n>0?'Preliminare':'In attesa';
+html+=`<div class="fwdRow"><b>${h}</b><div>${st.n}</div><div>${pct(st.hit)}</div><div class="${st.mean>0?'fwdPos':st.mean<0?'fwdNeg':'fwdNeu'}">${fmtN(st.mean)}%</div><div class="${st.median>0?'fwdPos':st.median<0?'fwdNeg':'fwdNeu'}">${fmtN(st.median)}%</div><div class="${st.n?'fwdWarn':'fwdNeu'}">${state}</div></div>`;
+});
+ht.innerHTML=html;
+}
+const ot=document.getElementById('fwdOverlayTable');
+if(ot){
+const defs=[
+['Price GOOD','price','GOOD'],
+['Price BAD','price','BAD'],
+['COT LOW','cot','LOW'],
+['COT HIGH','cot','HIGH'],
+['Liquidity GOOD','liquidity','GOOD'],
+['Liquidity BAD','liquidity','BAD']
+];
+let html=`<div class="fwdRow head"><div>Filtro</div><div>N 1W</div><div>Hit 1W</div><div>Mean 1W</div><div>Δ mean vs Core</div><div>Lettura</div></div>`;
+const coreRows=allPairRows(outcomes,'1W');
+const core=stats(coreRows);
+defs.forEach(([lab,k,v])=>{
+const s=stats(overlaySubset(coreRows,k,v));
+const delta=(Number.isFinite(s.mean)&&Number.isFinite(core.mean))?s.mean-core.mean:null;
+const reading=s.n<20?'Troppo presto':delta>0?'Migliora Core':delta<0?'Peggiora Core':'Neutro';
+html+=`<div class="fwdRow"><b>${lab}</b><div>${s.n}</div><div>${pct(s.hit)}</div><div>${fmtN(s.mean)}%</div><div class="${delta>0?'fwdPos':delta<0?'fwdNeg':'fwdNeu'}">${fmtN(delta)}%</div><div class="${s.n<20?'fwdWarn':delta>0?'fwdPos':delta<0?'fwdNeg':'fwdNeu'}">${reading}</div></div>`;
+});
+ot.innerHTML=html;
+}
+const robust=document.getElementById('fwdRobustTable');
+if(robust){
+let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Basket mean</div><div>Errore standard</div><div>95% CI</div><div>Affidabilità</div></div>`;
+['1D','3D','1W','2W'].forEach(h=>{
+const st=window.snapshotStats(outcomes,h);
+const rel=reliabilityLabel(st);
+const ci=(Number.isFinite(st.ciLow)&&Number.isFinite(st.ciHigh))
+? `${fmtN(st.ciLow)}% / ${fmtN(st.ciHigh)}%`
+: '—';
+html+=`<div class="fwdRow"><b>${h}</b><div>${st.n}</div><div class="${st.mean>0?'fwdPos':st.mean<0?'fwdNeg':'fwdNeu'}">${fmtN(st.mean)}%</div><div>${fmtN(st.se)}%</div><div>${ci}</div><div class="${rel.cls}">${rel.label}</div></div>`;
+});
+robust.innerHTML=html;
+}
+const risk=document.getElementById('fwdRiskTable');
+if(risk){
+let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Vol basket</div><div>Sharpe desc.</div><div>Sortino desc.</div><div>Max DD</div></div>`;
+['1D','3D','1W','2W'].forEach(h=>{
+const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));
+html+=`<div class="fwdRow"><b>${h}</b><div>${rs.n}</div><div>${fmtN(rs.vol)}%</div><div class="${rs.sharpe>0?'fwdPos':rs.sharpe<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sharpe)}</div><div class="${rs.sortino>0?'fwdPos':rs.sortino<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sortino)}</div><div class="${rs.maxDD<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.maxDD)}%</div></div>`;
+});
+risk.innerHTML=html;
+}
+const paired=document.getElementById('fwdPairedOverlayTable');
+if(paired){
+const defs=[
+['Price GOOD','price','GOOD'],
+['Price BAD','price','BAD'],
+['COT LOW','cot','LOW'],
+['COT HIGH','cot','HIGH'],
+['Liquidity GOOD','liquidity','GOOD'],
+['Liquidity BAD','liquidity','BAD']
+];
+let html=`<div class="fwdRow head"><div>Overlay · 1W</div><div>N snapshot</div><div>Δ medio vs Core</div><div>Δ mediano</div><div>% snapshot > Core</div><div>Lettura</div></div>`;
+defs.forEach(([lab,k,v])=>{
+const s=pairedOverlayStats(outcomes,'1W',k,v);
+const read=s.n<10?'Troppo presto':
+s.deltaMean>0 && s.positiveShare>0.55?'Valore aggiunto preliminare':
+s.deltaMean<0 && s.positiveShare<0.45?'Peggiora Core preliminarmente':'Misto';
+html+=`<div class="fwdRow"><b>${lab}</b><div>${s.n}</div><div class="${s.deltaMean>0?'fwdPos':s.deltaMean<0?'fwdNeg':'fwdNeu'}">${fmtN(s.deltaMean)}%</div><div>${fmtN(s.deltaMedian)}%</div><div>${pct(s.positiveShare)}</div><div class="${s.n<10?'fwdWarn':s.deltaMean>0?'fwdPos':s.deltaMean<0?'fwdNeg':'fwdNeu'}">${read}</div></div>`;
+});
+paired.innerHTML=html;
+}
+const recent=document.getElementById('fwdRecentSnapshots');
+if(recent){
+const lastRows=[...ledger].slice(-6).reverse();
+let html=`<div class="fwdRow head"><div>Snapshot</div><div>Prezzo as-of</div><div>Health</div><div>Pairs</div><div>Regole</div><div>Timestamp</div></div>`;
+lastRows.forEach(r=>{
+html+=`<div class="fwdRow"><b>${r.snapshot_id}</b><div>${r.snapshot?.freshness?.PRICE?.as_of||'—'}</div><div>${r.snapshot?.health?.status||'—'}</div><div>${Object.keys(r.snapshot?.pairs||{}).length}</div><div>${r.snapshot?.model?.rules_fingerprint||'—'}</div><div>${r.snapshot?.recorded_at||'—'}</div></div>`;
+});
+recent.innerHTML=html || '<div class="fwdNote">Nessuno snapshot ancora registrato.</div>';
+}
+}
+window.renderForwardMonitor=render;
+const originalShowView=window.showView;
+if(typeof originalShowView==='function'){
+window.showView=function(v){
+const out=originalShowView.apply(this,arguments);
+if(v==='forwarddesk'){
+try{render();}catch(e){
+const host=document.getElementById('forwarddesk');
+if(host) host.insertAdjacentHTML('afterbegin',`<div class="runtimeError">Forward Monitor: ${String(e?.message||e)}</div>`);
+}
+}
+return out;
+};
+}
+setTimeout(()=>{try{if((typeof activeView!=='undefined')&&activeView==='forwarddesk')render();}catch(e){}},2800);
+})();
+
+</script><script>
+
+(function(){
+'use strict';
+const CONTEXT_KEY='GMFQ_FORWARD_CONTEXT_V1';
+const clone=x=>JSON.parse(JSON.stringify(x));
+function loadContext(){
+try{
+const x=JSON.parse(localStorage.getItem(CONTEXT_KEY)||'[]');
+return Array.isArray(x)?x:[];
+}catch(e){return [];}
+}
+function saveContext(rows){
+localStorage.setItem(CONTEXT_KEY,JSON.stringify(rows));
+}
+function hashString(str){
+let h=2166136261>>>0;
+for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+return ('00000000'+h.toString(16)).slice(-8);
+}
+function lastSeriesValue(obj){
+const a=obj?.values;
+return Array.isArray(a)&&a.length?Number(a[a.length-1]):null;
+}
+function priorSeriesValue(obj){
+const a=obj?.values;
+return Array.isArray(a)&&a.length>1?Number(a[a.length-2]):null;
+}
+function direction(obj){
+const a=priorSeriesValue(obj),b=lastSeriesValue(obj);
+if(!Number.isFinite(a)||!Number.isFinite(b)) return null;
+return b>a?'UP':b<a?'DOWN':'FLAT';
+}
+function vixRegime(v){
+if(!Number.isFinite(v)) return 'UNKNOWN';
+if(v>=25) return 'STRESS';
+if(v>=18) return 'ATTENTION';
+return 'CALM';
+}
+function chinaRegime(v){
+if(!Number.isFinite(v)) return 'UNKNOWN';
+return v>=100?'ABOVE_100':'BELOW_100';
+}
+function marketContext(){
+const risk=D?.risk||{};
+const vix=lastSeriesValue(risk['VIX']);
+const cli=lastSeriesValue(risk['China CLI']);
+const brent=lastSeriesValue(risk['Brent']);
+const gold=lastSeriesValue(risk['Gold']);
+const wti=lastSeriesValue(risk['WTI']);
+const curves={};
+['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].forEach(c=>{
+const r=NATIVE_RATES_DATA?.[c]||{};
+curves[c]={
+date:r.date||null,
+curve_bp:Number.isFinite(Number(r.curve_bp))?Number(r.curve_bp):null,
+curve_state:r.curve_state||null,
+chg2_bp:Number.isFinite(Number(r.chg2_bp))?Number(r.chg2_bp):null,
+chg10_bp:Number.isFinite(Number(r.chg10_bp))?Number(r.chg10_bp):null
+};
+});
+return {
+schema:'GMFQ_FORWARD_CONTEXT_V1',
+recorded_at:new Date().toISOString(),
+global:{
+vix:{value:vix,regime:vixRegime(vix),direction:direction(risk['VIX'])},
+china_cli:{value:cli,regime:chinaRegime(cli),direction:direction(risk['China CLI'])},
+brent:{value:brent,direction:direction(risk['Brent'])},
+wti:{value:wti,direction:direction(risk['WTI'])},
+gold:{value:gold,direction:direction(risk['Gold'])}
+},
+curves
+};
+}
+function appendContextForSnapshot(snapshotId){
+if(!snapshotId) return {ok:false,status:'NO_SNAPSHOT_ID'};
+const rows=loadContext();
+if(rows.some(x=>x.snapshot_id===snapshotId)){
+return {ok:true,status:'ALREADY_RECORDED',snapshot_id:snapshotId};
+}
+const body=marketContext();
+const rec={
+snapshot_id:snapshotId,
+context:body
+};
+rec.context_hash=hashString(JSON.stringify(rec));
+rows.push(rec);
+saveContext(rows);
+return {ok:true,status:'RECORDED',snapshot_id:snapshotId,context_hash:rec.context_hash};
+}
+window.getForwardContext=function(){
+return clone(loadContext());
+};
+window.forwardContextIntegrity=function(){
+const rows=loadContext(),issues=[],seen=new Set();
+rows.forEach((rec,i)=>{
+if(!rec?.snapshot_id) issues.push(`CONTEXT_MISSING_SNAPSHOT_ID:${i+1}`);
+if(seen.has(rec?.snapshot_id)) issues.push(`CONTEXT_DUPLICATE_SNAPSHOT:${rec?.snapshot_id}`);
+seen.add(rec?.snapshot_id);
+const expected=hashString(JSON.stringify({
+snapshot_id:rec.snapshot_id,
+context:rec.context
+}));
+if(expected!==rec.context_hash) issues.push(`CONTEXT_HASH_MISMATCH:${rec?.snapshot_id||i+1}`);
+});
+return {ok:issues.length===0,issues,records:rows.length};
+};
+const baseRun366=window.runProductionDailyRefresh;
+if(typeof baseRun366==='function'){
+window.runProductionDailyRefresh=function(payload){
+const out=baseRun366.apply(this,arguments);
+if(!out?.ok) return out;
+let context=null;
+try{
+const sid=out?.forward_oos?.capture?.snapshot_id||null;
+if(sid) context=appendContextForSnapshot(sid);
+else context={ok:false,status:'NO_NEW_SNAPSHOT'};
+}catch(e){
+context={ok:false,status:'CONTEXT_CAPTURE_ERROR',error:String(e?.message||e)};
+}
+const enriched=Object.assign({},out,{
+forward_oos:Object.assign({},out.forward_oos||{},{
+regime_context:context
+})
+});
+window.LAST_PRODUCTION_REFRESH=clone(enriched);
+return clone(enriched);
+};
+// Infrastructure wrapper only: update final writer registry, not MODEL_RULES.
+try{
+if(window.FINAL_CANONICAL_WRITER_REGISTRY?.runProductionDailyRefresh){
+window.FINAL_CANONICAL_WRITER_REGISTRY.runProductionDailyRefresh.signature=
+hashString(Function.prototype.toString.call(window.runProductionDailyRefresh));
+}
+}catch(e){}
+}
+window.FORWARD_CONTEXT_POLICY=Object.freeze({
+status:'FORWARD_ONLY',
+no_backfill:true,
+append_only:true,
+starts_with:'v366',
+purpose:'REGIME_CONDITIONAL_PERFORMANCE_ONLY',
+model_rules_changed:false
+});
+})();
+
+</script><script id="v366-forward-regime-monitor">
+
+(function(){
+'use strict';
+const fmt=(x,d=2)=>Number.isFinite(Number(x))?Number(x).toFixed(d):'—';
+const pct=x=>Number.isFinite(Number(x))?(100*Number(x)).toFixed(1)+'%':'—';
+function stats(vals){
+vals=vals.filter(Number.isFinite);
+if(!vals.length) return {n:0,mean:null,hit:null};
+return {
+n:vals.length,
+mean:vals.reduce((a,b)=>a+b,0)/vals.length,
+hit:vals.filter(x=>x>0).length/vals.length
+};
+}
+function renderRegimes(){
+const context=typeof getForwardContext==='function'?getForwardContext():[];
+const outcomes=typeof getForwardOutcomes==='function'?getForwardOutcomes():[];
+const ledger=typeof getForwardLedger==='function'?getForwardLedger():[];
+const ctxMap=Object.fromEntries(context.map(x=>[x.snapshot_id,x.context]));
+const summary=document.getElementById('fwdRegimeSummary');
+if(summary){
+const integ=typeof forwardContextIntegrity==='function'?forwardContextIntegrity():{ok:false,records:0};
+const withCtx=ledger.filter(x=>ctxMap[x.snapshot_id]).length;
+const withoutCtx=ledger.length-withCtx;
+summary.innerHTML=`
+<div class="fwdRow head"><div>Context ledger</div><div>Snapshot totali</div><div>Con contesto</div><div>Senza contesto</div><div>Integrità</div><div>Policy</div></div><div class="fwdRow"><b>Regime sidecar</b><div>${ledger.length}</div><div>${withCtx}</div><div>${withoutCtx}</div><div class="${integ.ok?'fwdPos':'fwdNeg'}">${integ.ok?'PASS':'FAIL'}</div><div>NO BACKFILL</div></div>`;
+}
+const host=document.getElementById('fwdRegimeResults');
+if(!host) return;
+const defs=[
+['VIX · Calm','vix','CALM'],
+['VIX · Attention','vix','ATTENTION'],
+['VIX · Stress','vix','STRESS'],
+['Cina · sopra 100','china_cli','ABOVE_100'],
+['Cina · sotto 100','china_cli','BELOW_100']
+];
+let html=`<div class="fwdRow head"><div>Regime · 1W</div><div>N snapshot</div><div>N pair</div><div>Hit rate</div><div>Mean return</div><div>Lettura</div></div>`;
+defs.forEach(([label,key,wanted])=>{
+const chosen=outcomes.filter(o=>{
+if(o.horizon!=='1W') return false;
+const c=ctxMap[o.snapshot_id];
+return c?.global?.[key]?.regime===wanted;
+});
+const vals=[];
+chosen.forEach(o=>{
+Object.values(o?.result?.pair_results||{}).forEach(x=>{
+const r=Number(x.favored_return_pct);
+if(Number.isFinite(r)) vals.push(r);
+});
+});
+const s=stats(vals);
+const read=chosen.length<10?'Troppo presto':
+s.mean>0?'Positivo nel campione':'Debole nel campione';
+html+=`<div class="fwdRow"><b>${label}</b><div>${chosen.length}</div><div>${s.n}</div><div>${pct(s.hit)}</div><div class="${s.mean>0?'fwdPos':s.mean<0?'fwdNeg':'fwdNeu'}">${fmt(s.mean)}%</div><div class="${chosen.length<10?'fwdWarn':s.mean>0?'fwdPos':'fwdNeg'}">${read}</div></div>`;
+});
+host.innerHTML=html;
+}
+const base=window.renderForwardMonitor;
+if(typeof base==='function'){
+window.renderForwardMonitor=function(){
+const out=base.apply(this,arguments);
+try{renderRegimes();}catch(e){}
+return out;
+};
+}
+setTimeout(()=>{try{renderRegimes();}catch(e){}},3000);
+})();
+
+</script><script id="v367-forward-curve-regime-monitor">
+
+(function(){
+'use strict';
+const fmt=(x,d=2)=>Number.isFinite(Number(x))?Number(x).toFixed(d):'—';
+const pct=x=>Number.isFinite(Number(x))?(100*Number(x)).toFixed(1)+'%':'—';
+function classifyCurveState(s){
+const x=String(s||'').toUpperCase();
+if(/BEAR.*STEEP|STEEP.*BEAR/.test(x)) return 'BEAR_STEEPENING';
+if(/BEAR.*FLAT|FLAT.*BEAR/.test(x)) return 'BEAR_FLATTENING';
+if(/BULL.*STEEP|STEEP.*BULL/.test(x)) return 'BULL_STEEPENING';
+if(/BULL.*FLAT|FLAT.*BULL/.test(x)) return 'BULL_FLATTENING';
+return 'OTHER_OR_UNKNOWN';
+}
+function rowsForRegime(outcomes,ctxMap,horizon,regime){
+const rows=[];
+outcomes.filter(o=>o.horizon===horizon).forEach(o=>{
+const ctx=ctxMap[o.snapshot_id];
+if(!ctx) return;
+Object.entries(o?.result?.pair_results||{}).forEach(([pair,r])=>{
+const fav=r?.favored;
+if(!fav) return;
+const curve=ctx?.curves?.[fav];
+const cls=classifyCurveState(curve?.curve_state);
+if(cls!==regime) return;
+const ret=Number(r.favored_return_pct);
+if(!Number.isFinite(ret)) return;
+rows.push({
+snapshot_id:o.snapshot_id,
+pair,
+favored:fav,
+ret,
+hit:r.hit===true,
+curve_state:curve?.curve_state||null

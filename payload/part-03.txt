@@ -1,0 +1,1000 @@
+return {
+level:'NON PRIORITARIO',
+cls:'pairAttentionLow',
+note:'Il contrasto tra Macro e Tassi/CB non è abbastanza chiaro. Non serve forzare un’idea sul pair.'
+};
+}
+if(f.quality==='CONTRASTO STRUTTURALE FORTE'){
+return {
+level:'DA APPROFONDIRE',
+cls:'pairAttentionHigh',
+note:'Macro + Rates mostrano un contrasto opposto tra le due valute. È la configurazione relativa più interessante emersa dal backtest.'
+};
+}
+if(f.quality==='VANTAGGIO RELATIVO PARZIALE'){
+return {
+level:'DA MONITORARE',
+cls:'pairAttentionMid',
+note:'C’è un vantaggio relativo, ma manca ancora una gamba strutturalmente opposta. Il backtest non mostra un vantaggio robusto sufficiente per promuoverlo.'
+};
+}
+return {
+level:'NON PRIORITARIO',
+cls:'pairAttentionLow',
+note:'Nessun contrasto relativo abbastanza pulito.'
+};
+}
+function derivePairDecisionFrame(pair){
+const [a,b]=pair.split('/');
+const stateA=deriveCurrencyState(a);
+const stateB=deriveCurrencyState(b);
+const timingA=currencySignalMaturity(a);
+const timingB=currencySignalMaturity(b);
+// CANONICAL STRUCTURAL ENGINE:
+// Only Macro + Rates/CB determine the relative structural advantage.
+// Recent change (improves/worsens/turning), Price, COT and Liquidity
+// are deliberately excluded from the structural direction.
+const macroA=Number(stateA?.macro||0);
+const macroB=Number(stateB?.macro||0);
+const policyA=Number(stateA?.policy||0);
+const policyB=Number(stateB?.policy||0);
+const macroSide = macroA>macroB ? 'A' : macroB>macroA ? 'B' : 'TIE';
+const policySide = policyA>policyB ? 'A' : policyB>policyA ? 'B' : 'TIE';
+let fav='—';
+let quality='MISTO / NON RISOLUTIVO';
+let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
+if(macroSide!=='TIE' && macroSide===policySide){
+fav=macroSide==='A'?a:b;
+quality='CONTRASTO STRUTTURALE FORTE';
+relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: contrasto strutturale pieno.`;
+}else if(macroSide!=='TIE' && policySide==='TIE'){
+fav=macroSide==='A'?a:b;
+quality='VANTAGGIO RELATIVO PARZIALE';
+relation=`La Macro favorisce ${fav}, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.`;
+}else if(policySide!=='TIE' && macroSide==='TIE'){
+fav=policySide==='A'?a:b;
+quality='VANTAGGIO RELATIVO PARZIALE';
+relation=`Tassi/CB favoriscono ${fav}, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.`;
+}else if(macroSide!=='TIE' && policySide!=='TIE' && macroSide!==policySide){
+quality='PILASTRI DIVISI';
+relation='Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.';
+}else{
+quality='NESSUN CONTRASTO';
+}
+const certified=typeof certifiedPairForMarket==='function'
+? certifiedPairForMarket(pair)
+: CERT53?.pairs?.[pair];
+let priceSide=null;
+if(certified){
+const raw=certified.layer_directions?.price;
+const side=normalizePairSide(raw);
+priceSide=side==='A'?a:side==='B'?b:null;
+}
+let priceReading='PREZZO NON RISOLUTIVO';
+let priceNote='Il Prezzo non aggiunge una lettura relativa abbastanza chiara.';
+if(fav!=='—' && priceSide){
+if(priceSide===fav){
+priceReading='MERCATO GIÀ ALLINEATO';
+priceNote=`Il Prezzo è già dalla parte di ${fav}. È conferma descrittiva, non prova di ulteriore continuazione.`;
+}else{
+priceReading='DIVERGENZA DA MONITORARE';
+priceNote=`La struttura Macro + Tassi/CB favorisce ${fav}, ma il Prezzo favorisce ${priceSide}.`;
+}
+}
+let missing='';
+if(quality==='CONTRASTO STRUTTURALE FORTE'){
+missing='Macro e Tassi/CB sono allineati sulla stessa valuta.';
+}else if(quality==='VANTAGGIO RELATIVO PARZIALE'){
+missing='Solo uno dei due pilastri strutturali separa chiaramente le valute.';
+}else if(quality==='PILASTRI DIVISI'){
+missing='Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.';
+}else{
+missing='Serve maggiore differenziazione strutturale tra le due valute.';
+}
+const timing =
+`${a}: ${timingA?.timing||'non determinato'} · ${b}: ${timingB?.timing||'non determinato'}`;
+const watch =
+priceReading==='DIVERGENZA DA MONITORARE'
+? `${priceNote} Il Prezzo resta solo una verifica, non modifica la struttura.`
+: priceReading==='MERCATO GIÀ ALLINEATO'
+? `${priceNote} Evitare di confondere conferma con nuovo vantaggio strutturale.`
+: `${priceNote} Priorità alla struttura Macro + Tassi/CB.`;
+return {
+fav,
+quality,
+relation,
+timing,
+priceReading,
+priceNote,
+missing,
+watch,
+structural:{
+macro:{a:macroA,b:macroB,side:macroSide},
+policy:{a:policyA,b:policyB,side:policySide}
+}
+};
+}
+function derivePairRelativeDynamics(pair){
+const [a,b]=pair.split('/');
+const A=currencyMomentumSignature(a);
+const B=currencyMomentumSignature(b);
+if(A.withheld || B.withheld){
+return {
+a,b,A,B,
+aNet:null,bNet:null,
+state:'WITHHELD',
+fav:'—'
+};
+}
+const aNet=A.positive-A.negative;
+const bNet=B.positive-B.negative;
+let state='MISTO';
+let fav='—';
+if(aNet>bNet){
+state='DINAMICA FAVOREVOLE A';
+fav=a;
+}else if(bNet>aNet){
+state='DINAMICA FAVOREVOLE B';
+fav=b;
+}else if(A.turns!==B.turns){
+state='TURNING POINT ASIMMETRICO';
+fav=A.turns>B.turns?a:b;
+}
+return {a,b,A,B,aNet,bNet,state,fav};
+}
+function certifiedPairFavoredSide(pair){
+// v348: compatibility name retained, but the answer now comes only from
+// the canonical Macro + Rates/CB pair frame. Legacy CERT53 cannot decide
+// the structural winner anymore.
+const frame=derivePairDecisionFrame(pair);
+return frame && frame.fav && frame.fav!=='—' ? frame.fav : null;
+}
+function pairTransitionState(pair){
+const dyn=derivePairRelativeDynamics(pair);
+const structural=certifiedPairFavoredSide(pair);
+if(dyn?.state==='WITHHELD'){
+return {
+state:'WITHHELD',
+cls:'transNeutral',
+note:'copertura dinamica insufficiente su almeno una delle due valute'
+};
+}
+if(!structural){
+return {
+state:'NON DETERMINATO',
+cls:'transNeutral',
+note:'il driver strutturale non identifica una valuta favorita in modo pulito'
+};
+}
+if(dyn.fav==='—'){
+return {
+state:'NESSUNA DIVERGENZA RELATIVA CHIARA',
+cls:'transNeutral',
+note:`la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di ${structural}`
+};
+}
+if(dyn.fav===structural){
+return {
+state:'DINAMICA RELATIVA ALLINEATA',
+cls:'transConfirm',
+note:`la dinamica relativa è allineata al driver strutturale (${structural}); il backtest la mantiene diagnostica, non autonoma`
+};
+}
+return {
+state:'DIVERGENZA RELATIVA DA MONITORARE',
+cls:'transWatch',
+note:`il driver strutturale favorisce ${structural}, ma la dinamica relativa favorisce ${dyn.fav}: divergenza da monitorare, non segnale automatico`
+};
+}
+function pairTransitionHtml(pair){
+const x=getCanonicalPair(pair).transition || pairTransitionState(pair);
+return `<div class="pairTransition"><span class="k">Stato transizione:</span><span class="v ${x.state==='WITHHELD'?'stateDynWarning':x.cls}">${x.state}</span>
+· ${x.note}.
+<br><span style="color:#657f8a">Diagnostica soltanto: non cambia ancora il driver del pair.</span></div>`;
+}
+function pairRelativeDynamicsHtml(pair){
+const x=getCanonicalPair(pair).relativeDynamics || derivePairRelativeDynamics(pair);
+if(x?.state==='WITHHELD'){
+return `<div class="pairDynPanel"><div class="title">Dinamica relativa del pair <span style="font-size:8px;color:#6f8792;font-weight:600">· diagnostica</span></div><div class="pairDynVerdict"><b>WITHHELD</b> · copertura dinamica insufficiente su almeno una delle due valute.<br>
+Nessun vantaggio dinamico relativo viene inferito finché i dati non sono sufficienti.</div></div>`;
+}
+const side=(c,z)=>`
+<div class="pairDynSide"><div class="ccy">${c}</div><div class="row"><span>Miglioramenti</span><span>${z.positive}</span></div><div class="row"><span>Deterioramenti</span><span>${z.negative}</span></div><div class="row"><span>Turning point</span><span>${z.turns}</span></div></div>`;
+const verdict = x.fav==='—'
+? 'Nessun vantaggio dinamico relativo chiaro.'
+: `${x.fav} mostra una dinamica relativa più costruttiva nello snapshot.`;
+return `<div class="pairDynPanel"><div class="title">Dinamica relativa del pair <span style="font-size:8px;color:#6f8792;font-weight:600">· diagnostica</span></div><div class="pairDynGrid">
+${side(x.a,x.A)}
+${side(x.b,x.B)}
+</div><div class="pairDynVerdict"><b>${x.state}</b> · ${verdict}<br>
+Il backtest Pass 1–8 suggerisce che la lettura relativa è promettente ma con campione ancora piccolo: resta diagnostica e non modifica da sola il driver certificato.</div></div>`;
+}
+function pairDriverOverlay(pair){
+const x=getCanonicalPair(pair).driver;
+const main=x.codriver ? `${x.driver} + ${x.codriver}` : x.driver;
+return `<div class="pairDriverLine"><b>Driver:</b> ${main} · <b>Lead:</b> ${x.lead}<br>${x.reason}</div>`;
+}
+function pairRiskOverlay(pair){
+const r=deriveGlobalRiskState();
+if(!r || r.state==='WITHHELD') return '';
+const [a,b]=pair.split('/');
+const aa=(r.affected||[]).includes(a), bb=(r.affected||[]).includes(b);
+if(!aa && !bb && r.state==='RISCHIO CONTENUTO') return '';
+let txt='contesto globale';
+if(aa && bb) txt=`può influenzare entrambe le gambe`;
+else if(aa) txt=`più rilevante per ${a}`;
+else if(bb) txt=`più rilevante per ${b}`;
+return `<div class="pairRiskOverlay"><b>Rischio esterno:</b> ${r.state} · ${txt} · ${r.driver}</div>`;
+}
+const CURRENCY_DNA=window.__GMFQ_DATA.CURRENCY_DNA;
+function deriveCurrencyDrivers(c){
+const d=currencyIntelData?.[c];
+if(!d) return {driver:'Non determinato',codriver:null};
+const macro=layerPolarity(d.macro);
+const rates=policyFamilyPolarity(d);
+// Core driver logic:
+// Macro = fundamental anchor.
+// Rates/CB expectations = market translation.
+// If both point in the same direction, agreement alone is not enough
+// to claim which one is the primary driver.
+// Liquidity remains an overlay and does not compete for the core driver.
+if(macro===0 && rates===0){
+return {driver:'Non determinato',codriver:null};
+}
+if(rates!==0 && macro===0){
+return {driver:'Rates / aspettative CB',codriver:null};
+}
+if(macro!==0 && rates===0){
+return {driver:'Macro',codriver:null};
+}
+if(macro===rates){
+return {driver:'Macro + Rates / aspettative CB',codriver:null};
+}
+return {driver:'Non determinato',codriver:null};
+}
+function deriveCurrencyDriver(c){
+const x=deriveCurrencyDrivers(c);
+return x.codriver ? `${x.driver} + ${x.codriver}` : x.driver;
+}
+function median(arr){
+const x=arr.filter(Number.isFinite).slice().sort((a,b)=>a-b);
+if(!x.length) return null;
+const m=Math.floor(x.length/2);
+return x.length%2?x[m]:(x[m-1]+x[m])/2;
+}
+function seriesDynamics(seriesObj){
+if(!seriesObj?.values?.length) return null;
+const vals=seriesObj.values.map(Number).filter(Number.isFinite);
+if(vals.length<10) return null;
+const n=vals.length;
+const fast=Math.min(5, Math.floor(n/3));
+const slow=Math.min(10, Math.floor(n/2));
+const slope=(end,len)=>{
+const st=end-len+1;
+if(st<0) return null;
+const a=vals[st], b=vals[end];
+return (b-a)/(len-1);
+};
+const recent=slope(n-1,fast);
+const prior=slope(n-fast,fast);
+if(recent==null || prior==null) return null;
+const diffs=[];
+for(let i=Math.max(1,n-52);i<n;i++) diffs.push(Math.abs(vals[i]-vals[i-1]));
+const typical=median(diffs)||0;
+const dir=Math.abs(recent)<(typical*0.15)?0:Math.sign(recent);
+const speed=typical>0?Math.abs(recent)/typical:null;
+const accel=recent-prior;
+const accelDir=Math.abs(accel)<(typical*0.15)?0:Math.sign(accel);
+const turn=(Math.sign(prior)!==0 && Math.sign(recent)!==0 && Math.sign(prior)!==Math.sign(recent));
+return {recent,prior,dir,speed,accel,accelDir,turn};
+}
+function directionLabel(x){
+if(!x) return '—';
+if(x.dir>0) return 'In aumento';
+if(x.dir<0) return 'In calo';
+return 'Laterale';
+}
+function speedLabel(x){
+if(!x || x.speed==null) return '—';
+if(x.speed>=1.5) return 'Alta';
+if(x.speed>=0.75) return 'Normale';
+return 'Bassa';
+}
+function accelLabel(x){
+if(!x) return '—';
+if(x.accelDir>0) return 'Accelera al rialzo';
+if(x.accelDir<0) return 'Accelera al ribasso';
+return 'Stabile / decelera';
+}
+function turningLabel(x){
+if(!x) return '—';
+return x.turn?'Turning point candidato':'Nessun turning point';
+}
+function dynClass(x){
+if(!x) return 'dynFlat';
+return x.dir>0?'dynUp':x.dir<0?'dynDown':'dynFlat';
+}
+function currencyDynamics(c){
+const rates=seriesDynamics(ratesSeriesObjectForCurrency(c));
+const price=seriesDynamics(priceSeriesObjectForCurrency(c));
+return {rates,price};
+}
+function robustScaleDiffs(vals){
+const diffs=[];
+for(let i=1;i<vals.length;i++){
+const d=Number(vals[i])-Number(vals[i-1]);
+if(isFinite(d)) diffs.push(Math.abs(d));
+}
+const m=median(diffs);
+return (m && isFinite(m) && m>0)?m:null;
+}
+function macroSeriesPolarity(category,label){
+const l=String(label||'').toLowerCase();
+if(category==='Lavoro'){
+if(l.includes('disoccup')) return -1;
+if(l.includes('sussidi disoccupazione')) return -1;
+if(l.includes('claims')) return -1;
+if(l.includes('costo unitario')) return 0; // inflation/labour-cost signal, not clean labour-health direction
+return 1;
+}
+if(category==='Crescita'){
+if(l.includes('tasso di risparmio')) return 0; // ambiguous for contemporaneous demand
+return 1;
+}
+if(category==='Inflazione'){
+return 1; // direction = inflation pressure rising/falling, NOT FX-positive/negative
+}
+if(category==='Liquidità'){
+return 1; // quantity direction only; not automatically FX-positive
+}
+return 0;
+}
+function normalizedSeriesImpulse(x,category){
+const vals=(x?.values||[]).map(Number).filter(Number.isFinite);
+if(vals.length<8) return null;
+const pol=macroSeriesPolarity(category,x.label);
+if(pol===0) return null;
+const scale=robustScaleDiffs(vals.slice(-80));
+if(!scale) return null;
+const d0=(vals.at(-1)-vals.at(-2))*pol/scale;
+const d1=(vals.at(-2)-vals.at(-3))*pol/scale;
+return {current:d0,previous:d1,label:x.label};
+}
+function medianNumber(arr){
+return median(arr.filter(Number.isFinite));
+}
+function blockDynamics(c,category){
+const list=(S?.[c]||[]).filter(x=>x.category===category);
+const impulses=list.map(x=>normalizedSeriesImpulse(x,category)).filter(Boolean);
+if(!impulses.length) return null;
+const current=medianNumber(impulses.map(x=>x.current));
+const previous=medianNumber(impulses.map(x=>x.previous));
+if(current==null || previous==null) return null;
+const direction=Math.abs(current)<0.20?0:Math.sign(current);
+const acceleration=current-previous;
+const accelDir=Math.abs(acceleration)<0.20?0:Math.sign(acceleration);
+const turning=(Math.sign(previous)!==0 && direction!==0 && Math.sign(previous)!==direction);
+return {
+category,
+direction,
+speed:Math.abs(current),
+acceleration,
+accelDir,
+turning,
+n:impulses.length
+};
+}
+function macroBlockDirectionLabel(x,category){
+if(!x) return 'Withheld';
+if(category==='Inflazione'){
+if(x.direction>0) return 'Pressioni in aumento';
+if(x.direction<0) return 'Pressioni in calo';
+return 'Stabili';
+}
+if(category==='Liquidità'){
+if(x.direction>0) return 'In espansione';
+if(x.direction<0) return 'In contrazione';
+return 'Stabile';
+}
+if(x.direction>0) return 'Migliora';
+if(x.direction<0) return 'Peggiora';
+return 'Stabile';
+}
+function blockSpeedLabel(x){
+if(!x) return '—';
+if(x.speed>=1.5) return 'Alta';
+if(x.speed>=0.75) return 'Normale';
+return 'Bassa';
+}
+function blockAccelLabel(x,category){
+if(!x) return '—';
+if(x.accelDir===0) return 'Stabile / decelera';
+if(category==='Inflazione') return x.accelDir>0?'Pressioni accelerano':'Disinflazione accelera';
+if(category==='Liquidità') return x.accelDir>0?'Espansione accelera':'Contrazione accelera';
+return x.accelDir>0?'Miglioramento accelera':'Deterioramento accelera';
+}
+function blockDynClass(x,category){
+if(!x || x.direction===0) return 'dynFlat';
+if(category==='Inflazione') return 'dynFlat'; // descriptive, not good/bad
+return x.direction>0?'dynUp':'dynDown';
+}
+function macroLiquidityDynamicsHtml(c){
+const cats=['Crescita','Lavoro','Inflazione','Liquidità'];
+const cards=cats.map(cat=>{
+const x=blockDynamics(c,cat);
+const scope=x?`${x.n} serie normalizzate`:'dati insufficienti';
+return `<div class="blockDynCard"><div class="t">${cat}</div><div class="r"><span>Direzione</span><span class="${blockDynClass(x,cat)}">${macroBlockDirectionLabel(x,cat)}</span></div><div class="r"><span>Velocità</span><span>${blockSpeedLabel(x)}</span></div><div class="r"><span>Accelerazione</span><span>${blockAccelLabel(x,cat)}</span></div><div class="r"><span>Turning point</span><span>${x?(x.turning?'Candidato':'No'):'—'}</span></div><div class="note">${scope}. Ogni serie è scalata sulla propria variazione storica tipica; nessun confronto diretto di unità.</div></div>`;
+}).join('');
+return `<div class="blockDynWrap"><div class="blockDynGrid">${cards}</div><div style="margin-top:6px;font-size:8.3px;color:#6c8590"><b>Diagnostica:</b> questa dinamica non modifica ancora Driver, stato valuta o Pair Desk. Prima verrà validata nel backtest.</div></div>`;
+}
+function dynamicsQaForCurrency(c){
+const growth=blockDynamics(c,'Crescita');
+const labour=blockDynamics(c,'Lavoro');
+const inflation=blockDynamics(c,'Inflazione');
+const liquidity=blockDynamics(c,'Liquidità');
+const growthReady=!!growth && growth.n>=2;
+const labourReady=!!labour && labour.n>=2;
+const inflationReady=!!inflation && inflation.n>=2;
+const liquidityReady=!!liquidity && liquidity.n>=2;
+const rates=seriesDynamics(ratesSeriesObjectForCurrency(c));
+const price=seriesDynamics(priceSeriesObjectForCurrency(c));
+// Core transition readiness follows the same methodology used by
+// improvement / early-shift / pair relative dynamics:
+// Growth + Labour + Rates, with Price required for confirmation testing.
+const coreMacroReady=growthReady && labourReady;
+const temporalReady=!!rates && !!price;
+const allCoreReady=coreMacroReady && temporalReady;
+const diagnosticOptionalCount=[inflationReady,liquidityReady].filter(Boolean).length;
+const availableCoreCount=[growthReady,labourReady,!!rates,!!price].filter(Boolean).length;
+let state='WITHHELD';
+let cls='qaFail';
+if(allCoreReady){
+state='PASS DIAGNOSTICO';
+cls='qaPass';
+}else if(availableCoreCount>=2){
+state='PARZIALE';
+cls='qaWarn';
+}
+return {
+state,cls,
+growthReady,labourReady,inflationReady,liquidityReady,
+rates:!!rates,price:!!price,
+coreMacroReady,temporalReady,allCoreReady,
+availableCoreCount,diagnosticOptionalCount
+};
+}
+function dynamicsQaPanelHtml(c){
+const q=dynamicsQaForCurrency(c);
+const box=(k,v,cls='')=>`<div class="dynQaItem"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
+return `<div class="dynQaPanel"><div class="dynQaTitle"><b>QA dinamica</b><span>gate prima del backtest · nessun impatto sul segnale</span></div><div class="dynQaGrid">
+${box('Stato',q.state,q.cls)}
+${box('Crescita',q.growthReady?'robusta':'withheld',q.growthReady?'qaPass':'qaFail')}
+${box('Lavoro',q.labourReady?'robusto':'withheld',q.labourReady?'qaPass':'qaFail')}
+${box('Rates 2Y',q.rates?'serie valida':'withheld',q.rates?'qaPass':'qaFail')}
+${box('Prezzo',q.price?'serie valida':'withheld',q.price?'qaPass':'qaFail')}
+${box('Diagnostica extra',`${q.diagnosticOptionalCount}/2 · inflazione/liquidità`,q.diagnosticOptionalCount===2?'qaPass':q.diagnosticOptionalCount===1?'qaWarn':'qaFail')}
+</div><div style="margin-top:7px;font-size:8.3px;color:#708995">
+PASS diagnostico richiede Crescita + Lavoro + Rates + Prezzo. Inflazione e Liquidità restano diagnostiche aggiuntive e non possono sostituire un blocco core mancante.
+</div></div>`;
+}
+function globalDynamicsQa(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const rows=ccys.map(c=>({c,...dynamicsQaForCurrency(c)}));
+return {
+rows,
+pass:rows.filter(x=>x.allCoreReady).length,
+partial:rows.filter(x=>!x.allCoreReady && x.availableCoreCount>=2).length,
+withheld:rows.filter(x=>!x.allCoreReady && x.availableCoreCount<2).length
+};
+}
+function layerPolForCategory(c,cat){
+const d=currencyIntelData?.[c];
+if(!d) return 0;
+if(cat==='Crescita' || cat==='Lavoro' || cat==='Inflazione') return layerPolarity(d.macro);
+if(cat==='Liquidità') return layerPolarity(d.liq);
+return 0;
+}
+function interpretStateVsDynamics(c,cat){
+const level=layerPolForCategory(c,cat);
+const dyn=blockDynamics(c,cat);
+if(!dyn) return {
+label:'Withheld',
+cls:'stateDynNeutral',
+note:'dinamica insufficiente'
+};
+// Inflation dynamics are descriptive, not directly FX-positive/negative.
+if(cat==='Inflazione'){
+if(dyn.turning) return {
+label:'Turning point inflazione',
+cls:'stateDynWarning',
+note:macroBlockDirectionLabel(dyn,cat)
+};
+return {
+label:macroBlockDirectionLabel(dyn,cat),
+cls:'stateDynNeutral',
+note:blockAccelLabel(dyn,cat)
+};
+}
+const improving=dyn.direction>0;
+const worsening=dyn.direction<0;
+if(level>0 && improving) return {
+label:'Favorevole e migliora',
+cls:'stateDynPositive',
+note:'livello e dinamica si rafforzano'
+};
+if(level>0 && worsening) return {
+label:'Favorevole ma rallenta',
+cls:'stateDynWarning',
+note:'possibile perdita di momentum'
+};
+if(level<0 && improving) return {
+label:'Contrario ma migliora',
+cls:'stateDynWarning',
+note:'possibile early recovery'
+};
+if(level<0 && worsening) return {
+label:'Contrario e peggiora',
+cls:'stateDynNegative',
+note:'livello e dinamica si deteriorano'
+};
+if(level===0 && dyn.turning) return {
+label:'Neutrale con turning point',
+cls:'stateDynWarning',
+note:'possibile cambio di regime'
+};
+if(level===0 && improving) return {
+label:'Neutrale ma migliora',
+cls:'stateDynWarning',
+note:'dinamica positiva non ancora confermata dal livello'
+};
+if(level===0 && worsening) return {
+label:'Neutrale ma peggiora',
+cls:'stateDynWarning',
+note:'dinamica negativa non ancora confermata dal livello'
+};
+return {
+label:'Stabile',
+cls:'stateDynNeutral',
+note:'nessun cambiamento rilevante'
+};
+}
+function stateVsDynamicsHtml(c){
+const cats=['Crescita','Lavoro','Inflazione','Liquidità'];
+const cards=cats.map(cat=>{
+const x=interpretStateVsDynamics(c,cat);
+return `<div class="stateDynCard"><div class="t">${cat}</div><div class="main ${x.cls}">${x.label}</div><div class="sub">${x.note}</div></div>`;
+}).join('');
+return `<div class="stateDynPanel"><h3>Stato × Dinamica <span style="font-size:8px;color:#6f8792;font-weight:600">· diagnostica di regime</span></h3><div class="stateDynGrid">${cards}</div><div style="margin-top:7px;font-size:8.3px;color:#6f8792">
+Questo blocco non modifica ancora Driver o Pair Desk. Serve a distinguere forza/debolezza attuale da miglioramento/deterioramento.
+</div></div>`;
+}
+function dynamicsPanelHtml(c){
+const x=currencyDynamics(c);
+const card=(name,dyn,scope)=>`
+<div class="dynCard"><div class="name">${name}</div><div class="dynLine"><span>Direzione</span><span class="${dynClass(dyn)}">${directionLabel(dyn)}</span></div><div class="dynLine"><span>Velocità</span><span>${speedLabel(dyn)}</span></div><div class="dynLine"><span>Accelerazione</span><span>${accelLabel(dyn)}</span></div><div class="dynLine"><span>Turning point</span><span>${turningLabel(dyn)}</span></div><div class="dynLine"><span>Copertura</span><span>${scope}</span></div></div>`;
+return `<div class="dynamicsPanel"><h3>Dinamica del movimento <span style="font-size:8px;color:#6f8792;font-weight:600">· livello → direzione → velocità → accelerazione → turning point</span></h3><div class="dynamicsGrid">
+${card('Rates 2Y',x.rates,'serie datata')}
+${card('Prezzo relativo',x.price,'serie datata')}
+</div>
+${macroLiquidityDynamicsHtml(c)}
+${dynamicsQaPanelHtml(c)}
+</div>`;
+}
+function currencyEarlyShift(c){
+const imp=currencyImprovementDiagnostic(c);
+const signals=[];
+const growth=interpretStateVsDynamics(c,'Crescita');
+const labour=interpretStateVsDynamics(c,'Lavoro');
+const rates=currencyDynamics(c)?.rates;
+if(growth && growth.label!=='Withheld' && growth.label!=='Stabile'){
+signals.push({cat:'Crescita',label:growth.label,note:growth.note,type:'core'});
+}
+if(labour && labour.label!=='Withheld' && labour.label!=='Stabile'){
+signals.push({cat:'Lavoro',label:labour.label,note:labour.note,type:'core'});
+}
+if(rates){
+const rateLabel =
+rates.turn ? 'Turning point Rates' :
+rates.dir>0 ? 'Rates migliorano' :
+rates.dir<0 ? 'Rates peggiorano' :
+'Rates stabili';
+if(rateLabel!=='Rates stabili'){
+signals.push({cat:'Rates',label:rateLabel,note:'dinamica front-end',type:'core'});
+}
+}
+if(imp.state==='NON DETERMINATO'){
+return {c,state:'WITHHELD',cls:'earlyNone',signals,active:false};
+}
+if(imp.state==='EARLY SHIFT POSITIVO'){
+return {c,state:'Warning anticipato positivo · Macro non conferma',cls:'earlyWarn',signals,active:true};
+}
+if(imp.state==='EARLY SHIFT NEGATIVO'){
+return {c,state:'Warning anticipato negativo · Macro non conferma',cls:'earlyWarn',signals,active:true};
+}
+if(imp.state==='TURNING POINT'){
+return {c,state:'Turning Point',cls:'earlyWarn',signals,active:true};
+}
+if(imp.state==='MIGLIORA'){
+return {c,state:'Miglioramento confermato',cls:'earlyUp',signals,active:true};
+}
+if(imp.state==='PEGGIORA'){
+return {c,state:'Deterioramento confermato',cls:'earlyWarn',signals,active:true};
+}
+return {c,state:'Nessun early shift',cls:'earlyNone',signals,active:false};
+}
+function globalEarlyShiftWatch(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+return ccys.map(currencyEarlyShift);
+}
+function earlyShiftWatchHtml(){
+const rows=globalEarlyShiftWatch();
+const active=rows.filter(x=>x.active===true);
+const cards=rows.map(x=>{
+const detail=x.signals?.length
+? x.signals.slice(0,2).map(y=>`${y.cat}: ${y.label}`).join(' · ')
+: 'nessun cambio di regime rilevante';
+return `<div class="earlyShiftCard"><div class="ccy">${x.c}</div><div class="tag ${x.cls}">${x.state}</div><div class="why">${detail}</div></div>`;
+}).join('');
+return `<div class="earlyShiftPanel"><div class="earlyShiftTop"><div><h3>Early Shift / Turning Point Watch</h3><p>Mostra dove la dinamica sta cambiando prima del livello. È diagnostica: non modifica ancora Driver o Pair Desk.</p></div><div class="spacer"></div><div class="earlyShiftBadge">${active.length}/8 con cambiamento da osservare</div></div><div class="earlyShiftGrid">${cards}</div></div>`;
+}
+function canonicalViewQa(){
+const issues=[];
+if(typeof selectedCcy!=='undefined' && MODEL_STATE.selectedCurrency!==selectedCcy){
+issues.push('selectedCurrency fuori sync');
+}
+const c=MODEL_STATE.selectedCurrency;
+if(!MODEL_STATE.currency?.[c]) issues.push('selected currency state mancante');
+const pairCount=Object.keys(MODEL_STATE.pairs||{}).length;
+if(pairCount!==28) issues.push(`pair state ${pairCount}/28`);
+if(!MODEL_STATE.globalRisk) issues.push('global risk snapshot mancante');
+return {ok:issues.length===0,issues};
+}
+function canonicalConsistencyQa(){
+const issues=[];
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+if(!MODEL_STATE.updatedAt) issues.push('state non inizializzato');
+if(Object.keys(MODEL_STATE.currency||{}).length!==8) issues.push('currency state incompleto');
+if(Object.keys(MODEL_STATE.pairs||{}).length!==28) issues.push('pair state incompleto');
+ccys.forEach(c=>{
+const x=MODEL_STATE.currency?.[c];
+if(!x) issues.push(`${c}: stato mancante`);
+else{
+if(!x.driver) issues.push(`${c}: driver mancante`);
+if(!x.lead) issues.push(`${c}: lead mancante`);
+if(!x.regime) issues.push(`${c}: regime mancante`);
+}
+});
+const selected=MODEL_STATE.selectedCurrency;
+if(selected && typeof selectedCcy!=='undefined' && selected!==selectedCcy){
+issues.push(`selected currency mismatch ${selected}/${selectedCcy}`);
+}
+return {
+ok:issues.length===0,
+issues,
+currencies:Object.keys(MODEL_STATE.currency||{}).length,
+pairs:Object.keys(MODEL_STATE.pairs||{}).length,
+risk:MODEL_STATE.globalRisk?.state || 'WITHHELD'
+};
+}
+function canonicalStateQaHtml(){
+const c=MODEL_STATE.selectedCurrency;
+const cs=getCurrencyState(c);
+const q=canonicalConsistencyQa();
+const vq=canonicalViewQa();
+const status=(q.ok && vq.ok)?'OK':'ATTENZIONE';
+const allIssues=[...(q.issues||[]),...(vq.issues||[])];
+const detail=(q.ok && vq.ok)
+? `8/8 valute · 28/28 pair · Rischio esterno ${q.risk} · view layer canonico`
+: allIssues.slice(0,3).join(' · ');
+return `<div class="canonicalQa"><b>Canonical State QA: ${status}</b> · valuta ${c} · driver ${cs.driver}${cs.codriver?` + ${cs.codriver}`:''} · lead ${cs.lead}<br>${detail}</div>`;
+}
+function backtestReadinessMatrixHtml(){
+const q=globalDynamicsQa();
+const rows=q.rows.map(x=>{
+const st=x.allCoreReady?'PASS':(x.availableCoreCount>=2?'PARZIALE':'WITHHELD');
+const cls=st==='PASS'?'qaPass':st==='PARZIALE'?'qaWarn':'qaFail';
+return `<tr><td><b>${x.c}</b></td><td class="${cls}">${st}</td><td>${x.growthReady?'OK':'—'}</td><td>${x.labourReady?'OK':'—'}</td><td>${x.rates?'OK':'—'}</td><td>${x.price?'OK':'—'}</td><td>${x.allCoreReady?'Pronta per test dinamica':'Completare copertura core'}</td></tr>`;
+}).join('');
+const total=q.rows.length;
+const overall=q.pass===total?'PRONTO'
+: q.pass>=6?'QUASI PRONTO'
+: q.pass>=4?'PARZIALE'
+:'NON PRONTO';
+return `<div class="btReadyPanel"><div class="btReadyTop"><div><h3>Backtest readiness — Dynamics Engine</h3><p>Controllo copertura dati prima di congelare la metodologia. Non misura la bontà predittiva.</p></div><div class="spacer"></div><div class="btReadyBadge">${overall} · ${q.pass}/${total} PASS</div></div><table class="btTable"><thead><tr><th>Valuta</th><th>QA</th><th>Crescita</th><th>Lavoro</th><th>Rates</th><th>Prezzo</th><th>Stato</th></tr></thead><tbody>${rows}</tbody></table><div class="btReadyFoot">
+Gate core: Crescita + Lavoro + Rates + Prezzo. Inflazione e Liquidità restano diagnostiche separate. Nessuna nuova variabile o soglia entra nel motore durante il backtest.
+</div></div>`;
+}
+function renderCurrencyIntelligence(){
+// Compatibility hook only.
+// The old technical Currency Intelligence UI has been retired from the Valute view.
+// Keep canonical state refreshes, but do not render duplicated/engine-facing panels.
+try{
+if(typeof selectedCcy==='undefined') return;
+refreshCurrencyNarrativeInData(selectedCcy);
+refreshCurrencyIntelHeader();
+refreshLeadStructureInData(selectedCcy);
+refreshActionPlanInData(selectedCcy);
+rebuildCanonicalState();
+const host=document.querySelector('#currencies');
+const stale=host?.querySelector('#currencyIntelWrap');
+if(stale) stale.remove();
+}catch(e){
+console.warn('currency compatibility refresh:',e);
+}
+}
+function v224ToneClass(txt){
+const t=String(txt||'').toLowerCase();
+if(t.includes('miglior')||t.includes('sostiene')||t.includes('favorev')||t.includes('sale')||t.includes('supporto')) return 'pos';
+if(t.includes('peggior')||t.includes('pesa')||t.includes('scende')||t.includes('debole')) return 'neg';
+if(t.includes('svolta')||t.includes('non conferma')||t.includes('misto')||t.includes('estremo')||t.includes('affoll')) return 'warn';
+return 'neu';
+}
+function v224Level(base){
+if(base==='FORTE') return {label:'La valuta è ben sostenuta',cls:'pos'};
+if(base==='COSTRUTTIVA') return {label:'La valuta ha ancora supporto, ma non completo',cls:'pos'};
+if(base==='DEBOLE') return {label:'La valuta è sotto pressione, ma non in modo completo',cls:'neg'};
+if(base==='FRAGILE') return {label:'La valuta è sotto pressione forte',cls:'neg'};
+return {label:'La valuta non ha un vantaggio chiaro',cls:'neu'};
+}
+function v224Trend(c){
+const imp=currencyImprovementDiagnostic(c);
+if(!imp) return {label:'direzione non chiara',cls:'neu'};
+if(imp.state==='MIGLIORA') return {label:'sta migliorando',cls:'pos'};
+if(imp.state==='PEGGIORA') return {label:'sta peggiorando',cls:'neg'};
+if(imp.state==='EARLY SHIFT POSITIVO') return {label:'mostra un primo miglioramento',cls:'warn'};
+if(imp.state==='EARLY SHIFT NEGATIVO') return {label:'mostra un primo deterioramento',cls:'warn'};
+if(imp.state==='TURNING POINT') return {label:'potrebbe essere a una svolta',cls:'warn'};
+if(imp.state==='NON DETERMINATO') return {label:'non è ancora leggibile con sicurezza',cls:'neu'};
+return {label:'resta stabile o mista',cls:'neu'};
+}
+function v224Driver(raw){
+const x=String(raw||'');
+if(x==='Macro') return 'i dati economici';
+if(x==='Rates / aspettative CB') return 'i tassi a breve e la banca centrale';
+if(x==='Macro + Rates / aspettative CB') return 'i dati economici insieme ai tassi';
+if(x==='Non determinato') return 'nessun fattore singolo';
+return x.replace(/Macro/gi,'dati economici').replace(/Rates/gi,'tassi').replace(/aspettative CB/gi,'banca centrale');
+}
+function v219PricePresentation(state){
+const p=postBacktestPriceReading(state);
+if(p.label==='MERCATO GIÀ ALLINEATO') return {label:'Sì, conferma',cls:'pos',note:'il prezzo va nella stessa direzione del quadro'};
+if(p.label==='DIVERGENZA DA MONITORARE') return {label:'No, non ancora',cls:'warn',note:'il prezzo non sta ancora confermando il quadro'};
+if(p.label==='PREZZO SENZA STRUTTURA') return {label:'Non è chiaro',cls:'neu',note:'il prezzo si muove ma il quadro non è ancora definito'};
+return {label:'Non è chiaro',cls:'neu',note:'nessuna conferma netta dal prezzo'};
+}
+function v219LayerLevel(layer){
+const p=layerPolarity(layer);
+if(p>0) return {label:'Sostiene la valuta',cls:'pos'};
+if(p<0) return {label:'Pesa sulla valuta',cls:'neg'};
+const raw=((layer&&layer[0])||'').toLowerCase();
+if(raw.includes('diverg')) return {label:'Non è allineato',cls:'warn'};
+return {label:'Neutro / misto',cls:'neu'};
+}
+function v219MacroTrend(c){
+const g=blockDynamics(c,'Crescita'), l=blockDynamics(c,'Lavoro');
+if(!g || !l) return {label:'Trend non valutabile',cls:'neu',note:'mancano dati economici sufficienti'};
+const sum=(g.direction||0)+(l.direction||0);
+if(sum>0) return {label:'↑ Sta migliorando',cls:'pos',note:'crescita e/o lavoro stanno migliorando'};
+if(sum<0) return {label:'↓ Sta peggiorando',cls:'neg',note:'crescita e/o lavoro stanno peggiorando'};
+return {label:'→ Stabile / mista',cls:'neu',note:'crescita e lavoro non danno una direzione comune'};
+}
+function v219RatesTrend(c){
+const r=currencyDynamics(c)?.rates;
+if(!r) return {label:'Trend non valutabile',cls:'neu',note:'mancano dati sufficienti sui tassi'};
+if(r.dir>0) return {label:'↑ Sta migliorando',cls:'pos',note:r.turn?'possibile svolta recente nei tassi a breve':'i tassi a breve stanno dando più supporto'};
+if(r.dir<0) return {label:'↓ Sta peggiorando',cls:'neg',note:r.turn?'possibile svolta recente nei tassi a breve':'i tassi a breve stanno dando meno supporto'};
+return {label:'→ Stabile',cls:'neu',note:r.turn?'possibile svolta, ma direzione non ancora chiara':'nessun cambiamento forte nei tassi'};
+}
+function v220MacroPoint(c,block){
+const d=blockDynamics(c,block);
+if(!d) return {label:'—',cls:'neu',note:'dati insufficienti'};
+const label=macroBlockDirectionLabel(d,block);
+const cls=d.direction>0?'pos':d.direction<0?'neg':d.turn?'warn':'neu';
+return {label,cls,note:blockAccelLabel(d,block)};
+}
+function v224MacroSummary(c){
+const mt=v219MacroTrend(c);
+if(mt.cls==='pos') return {text:'I dati economici stanno migliorando e danno più supporto alla valuta.',cls:'pos'};
+if(mt.cls==='neg') return {text:'I dati economici stanno peggiorando e tolgono supporto alla valuta.',cls:'neg'};
+if(mt.cls==='warn') return {text:'I dati economici stanno cambiando direzione, ma il segnale non è ancora completo.',cls:'warn'};
+return {text:'I dati economici restano misti: non danno ancora un segnale netto.',cls:'neu'};
+}
+function v224RatesSummary(c){
+const lvl=v219LayerLevel(currencyIntelData[c]?.rates), rt=v219RatesTrend(c);
+if(lvl.cls==='pos' && rt.cls==='neg') return {text:'I tassi sostengono ancora la valuta, ma il supporto si sta riducendo.',cls:'warn'};
+if(lvl.cls==='pos' && rt.cls==='pos') return {text:'I tassi sostengono la valuta e stanno diventando ancora più favorevoli.',cls:'pos'};
+if(lvl.cls==='neg' && rt.cls==='neg') return {text:'I tassi pesano sulla valuta e il quadro sta peggiorando.',cls:'neg'};
+if(lvl.cls==='neg' && rt.cls==='pos') return {text:'I tassi pesano ancora sulla valuta, ma stanno iniziando a migliorare.',cls:'warn'};
+if(lvl.cls==='pos') return {text:'I tassi continuano a sostenere la valuta.',cls:'pos'};
+if(lvl.cls==='neg') return {text:'I tassi continuano a pesare sulla valuta.',cls:'neg'};
+return {text:'I tassi non danno ancora un vantaggio chiaro.',cls:'neu'};
+}
+function v224CotSummary(c){
+const x=D.cot?.[c]||{};
+const p=Number(x.pct), n=Number(x.net_oi), f=Number(x.chg_net_1w);
+const extreme=Number.isFinite(p)&&(p>=80||p<=20);
+const crowded=Number.isFinite(n)&&Math.abs(n)>=MODEL_RULES.cot.netOiConcentration;
+if(extreme && crowded){
+return {text:`Il posizionamento è molto affollato: aumenta il rischio che il mercato reagisca meno alle notizie favorevoli.`,cls:'warn'};
+}
+if(extreme){
+return {text:`Il posizionamento è su un estremo: va trattato come rischio, non come segnale direzionale.`,cls:'warn'};
+}
+if(crowded){
+return {text:`Il mercato è molto esposto su questa valuta: attenzione al rischio di movimento contrario se la narrativa cambia.`,cls:'warn'};
+}
+if(Number.isFinite(f) && f>0){
+return {text:'Il posizionamento è diventato più favorevole nell’ultima settimana, senza segnali di eccesso.',cls:'pos'};
+}
+if(Number.isFinite(f) && f<0){
+return {text:'Il posizionamento è diventato meno favorevole nell’ultima settimana, senza segnali di eccesso.',cls:'neg'};
+}
+return {text:'Il posizionamento non sta aggiungendo un segnale importante in questo momento.',cls:'neu'};
+}
+function v224PriceSummary(c){
+const st=deriveCurrencyState(c);
+const p=postBacktestPriceReading(st);
+const d=currencyDynamics(c)?.price;
+if(p.label==='MERCATO GIÀ ALLINEATO'){
+return {text:d?.dir<0?'Il prezzo sta scendendo e conferma il deterioramento del quadro.':'Il prezzo si sta muovendo nella stessa direzione del quadro.',cls:'pos'};
+}
+if(p.label==='DIVERGENZA DA MONITORARE'){
+return {text:'Il prezzo non sta ancora confermando la storia raccontata da dati e tassi.',cls:'warn'};
+}
+if(p.label==='PREZZO SENZA STRUTTURA'){
+return {text:'Il prezzo si muove, ma il quadro economico e dei tassi non è ancora abbastanza chiaro.',cls:'neu'};
+}
+return {text:'Il prezzo non dà ancora una conferma chiara.',cls:'neu'};
+}
+function v224HowItIs(c){
+const st=deriveCurrencyState(c), lvl=v224Level(st?.base), tr=v224Trend(c);
+return {text:`${lvl.label}; ${tr.label}.`,cls:tr.cls==='neu'?lvl.cls:tr.cls};
+}
+function v224WhatMatters(c){
+return `Conta soprattutto ${v224Driver(deriveCurrencyDriver(c))}.`;
+}
+function v224Watch(c){
+const mt=v219MacroTrend(c), rt=v219RatesTrend(c), ps=v224PriceSummary(c);
+if(mt.cls==='neg' && rt.cls==='neg') return 'Guarda se dati economici e tassi continuano a peggiorare e se il prezzo segue.';
+if(mt.cls==='pos' && rt.cls==='pos') return 'Guarda se dati economici e tassi continuano a migliorare e se il prezzo conferma.';
+if(rt.cls==='neg') return 'Guarda soprattutto i tassi a breve: se continuano a peggiorare, il supporto alla valuta diminuisce.';
+if(mt.cls==='neg') return 'Guarda soprattutto i dati economici: se continuano a peggiorare, la valuta perde supporto.';
+if(ps.cls==='warn') return 'Guarda il prezzo: per ora non sta ancora confermando pienamente la storia.';
+return 'Guarda dati economici, tassi a breve e prezzo: serve più coerenza tra i tre.';
+}
+function v224Scenarios(c){
+const mt=v219MacroTrend(c), rt=v219RatesTrend(c), ps=v224PriceSummary(c);
+let better='I dati economici stabilizzano, i tassi a breve migliorano e il prezzo inizia a rafforzarsi.';
+let worse='I dati economici peggiorano, i tassi danno meno supporto e il prezzo conferma al ribasso.';
+let change='Dati economici e tassi iniziano a muoversi insieme nella direzione opposta a quella attuale.';
+if(mt.cls==='pos' || rt.cls==='pos'){
+better='Il miglioramento continua e passa anche agli altri blocchi: dati, tassi e prezzo diventano coerenti.';
+}
+if(mt.cls==='neg' || rt.cls==='neg'){
+worse='Il deterioramento si allarga: dati e tassi peggiorano insieme e il prezzo li conferma.';
+}
+if(ps.cls==='warn'){
+change='Il prezzo smette di divergere e si allinea chiaramente con dati economici e tassi.';
+}
+return {better,worse,change};
+}
+function v219MacroDetail(c){
+const d=currencyIntelData[c], g=v220MacroPoint(c,'Crescita'), l=v220MacroPoint(c,'Lavoro'), i=v220MacroPoint(c,'Inflazione');
+return `<div class="v219DetailGrid"><div class="${g.cls}"><span>CRESCITA</span><b>${g.label}</b><small>${g.note}</small></div><div class="${l.cls}"><span>LAVORO</span><b>${l.label}</b><small>${l.note}</small></div><div class="${i.cls}"><span>INFLAZIONE</span><b>${i.label}</b><small>${i.note}</small></div></div><p class="v219DetailText">${d?.macro?.[2]||'Nessuna nota macro disponibile.'}</p><button class="v220InlineLink" type="button" onclick="showView('macro')">Apri i grafici Macro</button>`;
+}
+function v219RatesDetail(c){
+const d=currencyIntelData[c], r=NATIVE_RATES_DATA?.[c]||{}, dyn=currencyDynamics(c)?.rates;
+const cls2=(Number(r.chg2_bp)>0?'pos':Number(r.chg2_bp)<0?'neg':'neu');
+const cls10=(Number(r.chg10_bp)>0?'pos':Number(r.chg10_bp)<0?'neg':'neu');
+return `<div class="v219DetailGrid"><div class="${cls2}"><span>TASSO 2 ANNI</span><b>${r['2Y']==null?'—':fmt(r['2Y'],2)+'%'}</b><small>${r.chg2_bp==null?'—':(r.chg2_bp>=0?'+':'')+fmt(r.chg2_bp,1)+' bp ultimo movimento'}</small></div><div class="${cls10}"><span>TASSO 10 ANNI</span><b>${r['10Y']==null?'—':fmt(r['10Y'],2)+'%'}</b><small>${r.chg10_bp==null?'—':(r.chg10_bp>=0?'+':'')+fmt(r.chg10_bp,1)+' bp ultimo movimento'}</small></div><div class="neu"><span>CURVA 2Y-10Y</span><b>${r.curve_bp==null?'—':fmt(r.curve_bp,0)+' bp'}</b><small>${r.curve_state||'—'}</small></div></div><p class="v219DetailText"><b>Tassi:</b> ${d?.rates?.[2]||'—'}<br><b>Banca centrale:</b> ${d?.cb?.[2]||'—'}${dyn?.turn?'<br><b>Attenzione:</b> possibile svolta recente nei tassi a breve.':''}</p><button class="v220InlineLink" type="button" onclick="showView('ratesdesk')">Apri i grafici Rates</button>`;
+}
+function v219CotDetail(c){
+const x=D.cot?.[c]||{};
+const extreme=(x.pct>=80||x.pct<=20);
+const concentration=Math.abs(Number(x.net_oi||0))>=MODEL_RULES.cot.netOiConcentration;
+const pctCls=extreme?'warn':'neu';
+const netCls=Number(x.net_oi)>0?'pos':Number(x.net_oi)<0?'neg':'neu';
+const flowCls=Number(x.chg_net_1w)>0?'pos':Number(x.chg_net_1w)<0?'neg':'neu';
+return `<div class="v219DetailGrid"><div class="${pctCls}"><span>PERCENTILE 104W</span><b>${x.pct==null?'—':'P'+fmt(x.pct,0)}</b><small>${extreme?'Estremo 80/20':'Area non estrema'}</small></div><div class="${concentration?'warn':netCls}"><span>NET / OI</span><b>${x.net_oi==null?'—':(x.net_oi>=0?'+':'')+fmt(x.net_oi,1)+'%'}</b><small>${concentration?'⚠ concentrazione ≥30%':'nessun alert ±30%'}</small></div><div class="${flowCls}"><span>ULTIMA SETTIMANA</span><b>${x.chg_net_1w==null?'—':(x.chg_net_1w>=0?'+':'')+fmt(x.chg_net_1w,0)}</b><small>${x.flow||'—'}</small></div></div><p class="v219DetailText">${x.comment||'Nessun commento COT disponibile.'}</p><button class="v220InlineLink" type="button" onclick="showView('cot')">Apri analisi COT</button>`;
+}
+function v219PriceDetail(c){
+const st=deriveCurrencyState(c), pp=v219PricePresentation(st), dyn=currencyDynamics(c)?.price;
+const p1=pctMoveForCurrency(c,22), p3=pctMoveForCurrency(c,66), p6=pctMoveForCurrency(c,132);
+const fmtMove=v=>v==null?'—':(v>=0?'+':'')+fmt(v,1)+'%';
+const cls=v=>v>0?'pos':v<0?'neg':'neu';
+return `<div class="v219DetailGrid"><div class="${cls(p1)}"><span>1 MESE</span><b>${fmtMove(p1)}</b><small>rispetto al dollaro</small></div><div class="${cls(p3)}"><span>3 MESI</span><b>${fmtMove(p3)}</b><small>rispetto al dollaro</small></div><div class="${cls(p6)}"><span>6 MESI</span><b>${fmtMove(p6)}</b><small>rispetto al dollaro</small></div></div><p class="v219DetailText">${v224PriceSummary(c).text}${dyn?.turn?' Il prezzo mostra anche una possibile svolta recente.':''}</p>`;
+}
+function v219RefreshCurrencyCards(){
+document.querySelectorAll('#currencyGrid .ccy').forEach(card=>{
+const c=card.dataset.c;
+card.innerHTML=`<div class="v462CcyTab"><span class="v462Flag">${flagSvg(c)}</span><b>${c}</b></div>`;
+card.classList.toggle('active',c===selectedCcy);
+});
+}
+
+function v461StateLabel(c){
+  const st=deriveCurrencyState(c)||{};
+  const map={
+    'FORTE':'Macro e Tassi/CB aiutano la valuta',
+    'COSTRUTTIVA':'Macro e Tassi/CB aiutano solo in parte',
+    'MISTA':'Macro e Tassi/CB danno segnali contrastanti',
+    'DEBOLE':'Macro e Tassi/CB frenano in parte',
+    'FRAGILE':'Macro e Tassi/CB frenano la valuta'
+  };
+  return map[st.base]||'Il quadro di fondo non è ancora chiaro';
+}
+function v461ChangeLabel(c){
+  const x=String((deriveCurrencyState(c)||{}).improvementState||'').toUpperCase();
+  if(x.includes('MIGLIORA')||x.includes('POSITIVO')) return 'Migliora';
+  if(x.includes('PEGGIORA')||x.includes('NEGATIVO')) return 'Peggiora';
+  if(x.includes('TURNING')) return 'Possibile svolta';
+  if(x.includes('STABILE')) return 'Stabile';
+  return 'Non determinato';
+}
+function v461PriceLabel(c){
+  const x=String((deriveCurrencyState(c)||{}).confirmation||'');
+  if(x.includes('CONFERMA')) return 'Conferma';
+  if(x.includes('DIVERGE')) return 'Diverge';
+  if(x.includes('SENZA STRUTTURA')) return 'Senza struttura';
+  return 'Non risolutivo';
+}
+function v461PriceExtension(c){
+  if(c==='USD') return {state:'BASE',pct:null,move:null,text:'USD è la base del confronto.'};
+  const full=ccySeries(c,D.prices.length);
+  const v=(full&&full.values)||[];
+  const win=22;
+  if(v.length<win+30) return {state:'WITHHELD',pct:null,move:null,text:'Storico prezzo insufficiente.'};
+  const hist=[];
+  for(let i=win;i<v.length;i++){
+    const a=Number(v[i-win]),b=Number(v[i]);
+    if(!Number.isFinite(a)||!Number.isFinite(b)||a===0) continue;
+    hist.push((b/a-1)*100);
+  }
+  if(hist.length<80) return {state:'WITHHELD',pct:null,move:null,text:'Storico prezzo insufficiente.'};
+  const cur=hist.at(-1), sorted=[...hist].sort((a,b)=>a-b);
+  let le=0; for(const x of sorted) if(x<=cur) le++;
+  const pct=100*le/sorted.length;
+  const absTail=Math.max(pct,100-pct);
+  if(absTail>=90) return {state:'EXTENDED',pct,move:cur,text:`Movimento 1M molto avanzato rispetto allo storico · P${pct.toFixed(0)}.`};
+  if(absTail>=80) return {state:'ADVANCED',pct,move:cur,text:`Movimento 1M già avanzato rispetto allo storico · P${pct.toFixed(0)}.`};
+  return {state:'NORMAL',pct,move:cur,text:`Movimento 1M non particolarmente esteso · P${pct.toFixed(0)}.`};
+}
+function v461OperationalRead(c){
+  const st=deriveCurrencyState(c)||{};
+  const d=currencyIntelData?.[c]||{};
+  const lead=deriveLeadStructure(c)||{};
+  const plan=deriveCurrencyActionPlan(c)||{};
+  const ext=v461PriceExtension(c);
+  const driver=deriveCurrencyDriver(c)||'Non determinato';
+  let second=lead.confirm&&lead.confirm!=='Nessuna conferma chiara'?lead.confirm:'Nessuna conferma secondaria forte';
+  let brake='Nessun freno dominante';
+  if(st.confirmation==='PREZZO DIVERGE') brake='Prezzo: non conferma ancora la struttura';
+  else if(st.cotRisk) brake=`COT: ${st.cotRisk.toLowerCase()}`;
+  else if(st.liquidityOverlay==='LIQUIDITÀ CONTRARIA') brake='Liquidità contraria';
+  let priced='Il prezzo non sta ancora incorporando in modo pulito la storia strutturale.';
+  if(st.confirmation==='PREZZO CONFERMA') priced='Il prezzo è già allineato a Macro + Tassi/CB: una parte della storia è già riflessa.';
+  else if(st.confirmation==='PREZZO DIVERGE') priced='La struttura e il prezzo sono ancora separati: la storia non è pienamente prezzata.';
+  let surprise='Una sorpresa sarebbe un movimento netto di Macro o Tassi/CB contro il driver dominante.';
+  if(st.base==='MISTA') surprise='La vera sorpresa sarebbe vedere Macro e Tassi/CB finalmente convergere nella stessa direzione.';
+  const profit=ext.state==='EXTENDED'||ext.state==='ADVANCED'
+    ? ext.text+' Il rischio di presa di profitto è quindi più alto.'
+    : ext.state==='WITHHELD'
+      ? 'WITHHELD: storico insufficiente per valutare l’estensione.'
+      : ext.text+' Nessun segnale meccanico di eccesso.';
+  return {
+    structural:v461StateLabel(c),
+    change:v461ChangeLabel(c),
+    price:v461PriceLabel(c),
+    driver,
+    second,
+    brake,
+    missing:plan.strengthen||'Serve maggiore coerenza tra Macro, Tassi/CB e Prezzo.',
+    priced,
+    surprise,
+    profit,
+    next:d.watch||plan.watch||'Controlla i prossimi dati macro e il front-end rates.'
+  };
+}
+function v461RatesSpreadSeries(c){
+  if(c==='USD') return {labels:[],values:[],note:'USD è la base: il differenziale 2Y vs USD è zero per definizione.'};
+  const a=NATIVE_RATES_DATA?.[c]?.history2;

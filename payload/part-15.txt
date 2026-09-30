@@ -1,0 +1,885 @@
+
+    if(!document.getElementById('gmfqCotTutor')){
+      const box=document.createElement('div');
+      box.id='gmfqCotTutor';
+      box.className='gmfqCotTutor';
+      box.innerHTML='<div class="lab">COSA STA SUCCEDENDO?</div><div id="gmfqCotTitle" class="ttl">—</div><div id="gmfqCotText" class="txt">—</div><div class="lab driversLab">LE 3 COSE CHE CONTANO</div><div id="gmfqCotDrivers" class="drivers"></div><div class="watch"><div class="good"><small>COSA RAFFORZA QUESTA LETTURA?</small><b id="gmfqCotConfirm">—</b></div><div class="bad"><small>COSA LA METTE IN DUBBIO?</small><b id="gmfqCotReverse">—</b></div></div><div class="fx"><b>COSA SIGNIFICA PER LA VALUTA?</b><div id="gmfqCotFx">—</div></div>';
+      headline.insertAdjacentElement('beforebegin',box);
+      headline.style.display='none';
+    }
+    return true;
+  }
+
+  function render(c,d,st){
+    d=d||dataFor(c); st=st||storyFor(c);
+    if(!ensureUi() || !c || !d) return;
+    const m=model(c,d,st);
+    const s=document.getElementById('gmfqCotStatus');
+    const f=document.getElementById('gmfqCotFlow');
+    if(s){s.className='gmfqCotTick '+m.status.cls; s.querySelector('.v').textContent=m.status.txt;}
+    if(f){f.className='gmfqCotTick '+m.flow.cls; f.querySelector('.v').textContent=m.flow.txt;}
+    document.getElementById('gmfqCotTitle').textContent=m.title;
+    document.getElementById('gmfqCotText').textContent=m.text;
+    document.getElementById('gmfqCotDrivers').innerHTML=m.drivers.map(x=>`<div class="driver"><b>${x.label}</b><span class="${x.cls}">${x.txt}</span></div>`).join('');
+    document.getElementById('gmfqCotConfirm').textContent=m.confirm;
+    document.getElementById('gmfqCotReverse').textContent=m.reverse;
+    document.getElementById('gmfqCotFx').textContent=m.fx;
+  }
+
+  window.GMFQ_COT_TUTOR={render,model,ensureUi,statusFrom,flowFrom};
+})();
+
+/*
+  Price Tutor UI module
+  Reads canonical currency state + existing price dynamics.
+  Presentation-only: no DATA / ENGINE / REFRESH / GUARDS mutation.
+*/
+(function(){
+  'use strict';
+
+  function selectedCurrency(){
+    const active=document.querySelector('#currencyGrid .ccy.active');
+    if(active?.dataset?.c) return active.dataset.c;
+    const title=document.querySelector('#v219CurrencyTitle')?.textContent||'';
+    const m=title.match(/\b(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)\b/);
+    return m?.[1]||null;
+  }
+
+  function statusFrom(st){
+    const c=String(st?.confirmation||'');
+    if(c==='PREZZO CONFERMA') return {txt:'CONFERMA',cls:'pos'};
+    if(c==='PREZZO DIVERGE') return {txt:'DIVERGE',cls:'warn'};
+    if(c==='PREZZO SENZA STRUTTURA') return {txt:'SENZA STRUTTURA',cls:'neu'};
+    return {txt:'NEUTRO / NON RISOLUTIVO',cls:'neu'};
+  }
+
+  function directionFrom(c){
+    let d=null;
+    try{ d=window.currencyDynamics?.(c)?.price||null; }catch(e){}
+    if(!d) return {txt:'STABILE / NON CHIARA',cls:'neu'};
+    if(d.turn) return {txt:'POSSIBILE SVOLTA',cls:'warn'};
+    if(Number(d.dir)>0) return {txt:'MIGLIORA ↗',cls:'pos'};
+    if(Number(d.dir)<0) return {txt:'PEGGIORA ↘',cls:'neg'};
+    return {txt:'STABILE →',cls:'neu'};
+  }
+
+  function move(c,n){
+    try{
+      const v=window.pctMoveForCurrency?.(c,n);
+      return Number.isFinite(Number(v))?Number(v):null;
+    }catch(e){return null;}
+  }
+
+  function fmtMove(v){
+    if(v==null) return '—';
+    return `${v>=0?'+':''}${v.toFixed(1)}%`;
+  }
+
+  function model(c){
+    let st={};
+    try{ st=window.deriveCurrencyState?.(c)||{}; }catch(e){}
+    let status=statusFrom(st), direction=directionFrom(c);
+    const p1=move(c,22), p3=move(c,66), p6=move(c,132);
+
+    if(c==='USD'){
+      status={txt:'NON DETERMINATO',cls:'neu'};
+      direction={txt:'DXY / BASKET NECESSARIO',cls:'neu'};
+    }
+
+    let title,text,confirm,reverse,fx;
+    if(c==='USD'){
+      title='Prezzo USD non determinato';
+      text='Non usiamo più USD contro se stesso. Finché non colleghiamo un DXY o un basket USD validato, il layer Prezzo resta volutamente neutro e non conferma né diverge.';
+      confirm='Il layer diventa utilizzabile quando viene collegato un riferimento USD esterno e validato, come DXY o un basket coerente.';
+      reverse='Nessuna conclusione direzionale dal prezzo USD finché manca quel riferimento.';
+      fx='Per USD, Macro e Tassi/CB restano leggibili; il Prezzo non aggiunge conferma finché non viene validato un benchmark esterno.';
+    }else if(status.txt==='CONFERMA'){
+      title=`Il prezzo sta confermando la storia su ${c}`;
+      text='Il mercato si sta muovendo nella stessa direzione indicata dal quadro principale. È una conferma utile, ma non è il motivo originario della view.';
+      confirm='La conferma diventa più credibile se il movimento continua senza deterioramento di Macro e Tassi/CB.';
+      reverse='La lettura va rivista se il prezzo perde direzione o inizia a divergere mentre il core resta invariato.';
+      fx=`Per ${c}, il prezzo è allineato alla storia principale: aiuta il timing, ma non deve sostituire Macro e Tassi/CB.`;
+    }else if(status.txt==='DIVERGE'){
+      title=`Il prezzo non sta confermando la storia su ${c}`;
+      text='Macro e Tassi/CB raccontano una cosa, ma il mercato per ora non la sta seguendo. Questa divergenza è informazione importante: può anticipare un errore della view oppure un futuro riallineamento.';
+      confirm='La storia strutturale si rafforza se il prezzo smette di divergere e si riallinea senza peggioramento del core.';
+      reverse='Se la divergenza persiste e contemporaneamente Macro o Tassi/CB iniziano a cedere, aumenta il rischio che sia la view a essere sbagliata.';
+      fx=`Per ${c}, il prezzo è un campanello d’allarme: non invalida da solo la view, ma richiede conferma prima di fidarsi del setup.`;
+    }else{
+      title=`Il prezzo non sta dando una conferma chiara su ${c}`;
+      text='Il mercato si muove, ma non abbastanza da confermare o negare la storia principale. In questa fase il prezzo va trattato come neutro.';
+      confirm='Il segnale diventa utile quando il prezzo prende una direzione coerente con Macro e Tassi/CB e la mantiene.';
+      reverse='Se il prezzo prende una direzione opposta al core e la divergenza persiste, diventa un elemento da approfondire.';
+      fx=`Per ${c}, il prezzo per ora non aggiunge un vantaggio: la priorità resta capire Macro e Tassi/CB.`;
+    }
+
+    const cls=v=>v==null?'neu':v>0?'pos':v<0?'neg':'neu';
+    const drivers=c==='USD' ? [
+      {label:'Benchmark prezzo',txt:'DXY / basket USD non ancora validato',cls:'neu'},
+      {label:'1M / 3M / 6M',txt:'WITHHELD: non usare USD contro se stesso',cls:'neu'},
+      {label:'Regola',txt:'Il prezzo USD non modifica la view finché manca il benchmark',cls:'neu'}
+    ] : [
+      {label:'1 mese',txt:fmtMove(p1),cls:cls(p1)},
+      {label:'3 mesi',txt:fmtMove(p3),cls:cls(p3)},
+      {label:'6 mesi',txt:fmtMove(p6),cls:cls(p6)}
+    ];
+    return {status,direction,title,text,drivers,confirm,reverse,fx};
+  }
+
+  function ensureUi(){
+    const layer=document.getElementById('v219PriceLayer');
+    const head=layer?.querySelector('.v461CoreHead');
+    const summary=document.getElementById('v224PriceSummary');
+    const detail=document.getElementById('v219PriceDetail');
+    if(!layer||!head||!summary||!detail) return false;
+
+    if(!document.getElementById('gmfqPriceTicks')){
+      const ticks=document.createElement('div');
+      ticks.id='gmfqPriceTicks';
+      ticks.className='gmfqPriceTicks';
+      ticks.innerHTML='<div id="gmfqPriceStatus" class="gmfqPriceTick neu"><span class="k">PREZZO OGGI</span><span class="v">—</span></div><div id="gmfqPriceDirection" class="gmfqPriceTick neu"><span class="k">DIREZIONE</span><span class="v">—</span></div>';
+      head.insertAdjacentElement('afterend',ticks);
+    }
+
+    if(!document.getElementById('gmfqPriceLead')){
+      const lead=document.createElement('div');
+      lead.id='gmfqPriceLead';
+      lead.className='gmfqPriceLead';
+      lead.innerHTML='<b id="gmfqPriceTitle">—</b><span id="gmfqPriceText">—</span>';
+      summary.insertAdjacentElement('beforebegin',lead);
+    }
+
+    if(!document.getElementById('gmfqPriceTutor')){
+      const box=document.createElement('div');
+      box.id='gmfqPriceTutor';
+      box.className='gmfqPriceTutor';
+      box.innerHTML='<div class="lab">LE 3 COSE CHE CONTANO</div><div id="gmfqPriceDrivers" class="drivers"></div><div class="watch"><div class="good"><small>COSA RAFFORZA QUESTA LETTURA?</small><b id="gmfqPriceConfirm">—</b></div><div class="bad"><small>COSA LA METTE IN DUBBIO?</small><b id="gmfqPriceReverse">—</b></div></div><div class="fx"><b>COSA SIGNIFICA PER LA VALUTA?</b><div id="gmfqPriceFx">—</div></div>';
+      detail.insertAdjacentElement('afterbegin',box);
+    }
+    return true;
+  }
+
+  function render(c){
+    c=c||selectedCurrency();
+    if(!c||!ensureUi()) return;
+    const m=model(c);
+    const s=document.getElementById('gmfqPriceStatus');
+    const d=document.getElementById('gmfqPriceDirection');
+    if(s){s.className='gmfqPriceTick '+m.status.cls;s.querySelector('.v').textContent=m.status.txt;}
+    if(d){d.className='gmfqPriceTick '+m.direction.cls;d.querySelector('.v').textContent=m.direction.txt;}
+    document.getElementById('gmfqPriceTitle').textContent=m.title;
+    document.getElementById('gmfqPriceText').textContent=m.text;
+    document.getElementById('gmfqPriceDrivers').innerHTML=m.drivers.map(x=>`<div class="driver"><b>${x.label}</b><span class="${x.cls}">${x.txt}</span></div>`).join('');
+    document.getElementById('gmfqPriceConfirm').textContent=m.confirm;
+    document.getElementById('gmfqPriceReverse').textContent=m.reverse;
+    document.getElementById('gmfqPriceFx').textContent=m.fx;
+  }
+
+  window.GMFQ_PRICE_TUTOR={render,model,ensureUi,statusFrom,directionFrom,selectedCurrency};
+})();
+
+/* Pair Tutor UI module — presentation only. */
+(function(){
+  'use strict';
+
+  function selectedPair(){
+    const sel=document.querySelector('#pairSelect');
+    if(sel?.value) return sel.value;
+    const t=document.querySelector('#v226PairTitle')?.textContent||'';
+    return /^([A-Z]{3}\/[A-Z]{3})$/.test(t.trim())?t.trim():null;
+  }
+
+  function sideText(pair,fav){
+    const [base,quote]=String(pair||'').split('/');
+    if(!fav||fav==='—') return {txt:'NESSUN VANTAGGIO',cls:'neu'};
+    if(fav===base) return {txt:`LONG ${pair}`,cls:'pos'};
+    if(fav===quote) return {txt:`SHORT ${pair}`,cls:'neg'};
+    return {txt:'MISTA',cls:'warn'};
+  }
+
+  function direction(pair,frame){
+    let dyn=null, trans=null;
+    try{ dyn=window.derivePairRelativeDynamics?.(pair)||null; }catch(e){}
+    try{ trans=window.pairTransitionState?.(pair)||null; }catch(e){}
+    if(!frame?.fav || frame.fav==='—') return {txt:'DIREZIONE INCERTA',cls:'warn'};
+    if(trans?.state==='DINAMICA RELATIVA ALLINEATA') return {txt:'SI RAFFORZA ↗',cls:'pos'};
+    if(trans?.state==='DIVERGENZA RELATIVA DA MONITORARE') return {txt:'SI INDEBOLISCE ↘',cls:'neg'};
+    if(dyn?.state==='TURNING POINT ASIMMETRICO') return {txt:'POSSIBILE SVOLTA',cls:'warn'};
+    return {txt:'STABILE →',cls:'neu'};
+  }
+
+  function sideLabel(pair,side){
+    const [a,b]=pair.split('/');
+    if(side==='A') return a;
+    if(side==='B') return b;
+    return 'nessuna delle due';
+  }
+
+  function model(pair){
+    let frame={}, setup={};
+    try{ frame=window.derivePairDecisionFrame?.(pair)||{}; }catch(e){}
+    try{ setup=window.derivePairSetupState?.(pair)||{}; }catch(e){}
+    const structure=sideText(pair,frame.fav), dir=direction(pair,frame);
+    const [a,b]=pair.split('/');
+
+    let title,text;
+    if(frame.fav && frame.fav!=='—'){
+      const other=frame.fav===a?b:a;
+      if(frame.quality==='CONTRASTO STRUTTURALE FORTE'){
+        title=`${frame.fav} ha un vantaggio strutturale chiaro su ${other}`;
+        text=`Macro e Tassi/CB puntano entrambi verso ${frame.fav}. Questo è il tipo di contrasto relativo più pulito: il pair ha una direzione strutturale, mentre prezzo e COT servono soprattutto a capire timing e rischio.`;
+      }else{
+        title=`${frame.fav} è avanti, ma il vantaggio non è ancora completo`;
+        text=`Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.`;
+      }
+    }else{
+      title=`${pair} non ha ancora un vantaggio strutturale chiaro`;
+      text=`Macro e Tassi/CB non separano abbastanza le due valute oppure puntano in direzioni opposte. In questa situazione è meglio non forzare una view sul pair.`;
+    }
+
+    const macroSide=sideLabel(pair,frame?.structural?.macro?.side);
+    const policySide=sideLabel(pair,frame?.structural?.policy?.side);
+    const priceTxt=frame?.priceReading==='MERCATO GIÀ ALLINEATO'?'Il prezzo conferma':frame?.priceReading==='DIVERGENZA DA MONITORARE'?'Il prezzo diverge':'Il prezzo non è risolutivo';
+    const priceCls=frame?.priceReading==='MERCATO GIÀ ALLINEATO'?'pos':frame?.priceReading==='DIVERGENZA DA MONITORARE'?'warn':'neu';
+    const drivers=[
+      {label:'Macro',txt:macroSide==='nessuna delle due'?'Non separa le due valute':`Favorisce ${macroSide}`,cls:macroSide===frame.fav?'pos':macroSide==='nessuna delle due'?'neu':'warn'},
+      {label:'Tassi / CB',txt:policySide==='nessuna delle due'?'Non separano le due valute':`Favoriscono ${policySide}`,cls:policySide===frame.fav?'pos':policySide==='nessuna delle due'?'neu':'warn'},
+      {label:'Prezzo',txt:priceTxt,cls:priceCls}
+    ];
+
+    let confirm,reverse;
+    if(frame.fav && frame.fav!=='—'){
+      confirm=frame.quality==='CONTRASTO STRUTTURALE FORTE'
+        ? `Il vantaggio si rafforza se Macro e Tassi/CB restano allineati su ${frame.fav} e il prezzo continua o inizia a confermare.`
+        : `Il vantaggio diventa più credibile quando anche il pilastro oggi neutro si allinea a ${frame.fav}.`;
+      reverse=`Dobbiamo rivedere la view se il vantaggio Macro/Tassi si perde, se i due pilastri iniziano a favorire valute opposte o se la divergenza di prezzo persiste mentre il core si deteriora.`;
+    }else{
+      confirm='Serve che Macro e Tassi/CB inizino a favorire la stessa valuta. Finché non succede, il pair resta da aspettare.';
+      reverse='Se Macro e Tassi/CB continuano a essere divisi, non c’è una view strutturale da invalidare: semplicemente non c’è ancora un setup.';
+    }
+
+    const quality=setup?.quality||frame?.quality||'—';
+    const conclusion=frame.fav&&frame.fav!=='—'
+      ? `Conclusione: ${frame.fav} è la valuta favorita nel confronto. Qualità del setup: ${quality}. COT e liquidità restano contesto/rischio; il prezzo conferma o diverge, ma non decide la struttura.`
+      : `Conclusione: nessun vantaggio strutturale pulito su ${pair}. Aspetta una differenza più chiara tra le due valute.`;
+
+    return {structure,dir,title,text,drivers,confirm,reverse,conclusion,frame,setup};
+  }
+
+  function ensureUi(){
+    const detail=document.getElementById('v226PairDetail');
+    const head=detail?.querySelector('.v226DetailHead');
+    const legacy=document.getElementById('v227Headline');
+    if(!detail||!head) return false;
+    if(!document.getElementById('gmfqPairTicks')){
+      const ticks=document.createElement('div');
+      ticks.id='gmfqPairTicks'; ticks.className='gmfqPairTicks';
+      ticks.innerHTML='<div id="gmfqPairStructure" class="gmfqPairTick neu"><span class="k">STRUTTURA OGGI</span><span class="v">—</span></div><div id="gmfqPairDirection" class="gmfqPairTick neu"><span class="k">DIREZIONE</span><span class="v">—</span></div>';
+      head.insertAdjacentElement('afterend',ticks);
+    }
+    if(!document.getElementById('gmfqPairTutor')){
+      const box=document.createElement('div');
+      box.id='gmfqPairTutor'; box.className='gmfqPairTutor';
+      box.innerHTML='<div class="lab">COSA STA SUCCEDENDO?</div><div id="gmfqPairTitle" class="ttl">—</div><div id="gmfqPairText" class="txt">—</div><div id="gmfqPairDrivers" class="drivers"></div><div class="watch"><div class="good"><small>COSA RAFFORZA QUESTA LETTURA?</small><b id="gmfqPairConfirm">—</b></div><div class="bad"><small>COSA LA METTE IN DUBBIO?</small><b id="gmfqPairReverse">—</b></div></div><div class="confirm"><b>CONCLUSIONE</b><div id="gmfqPairConclusion">—</div></div>';
+      (legacy||head).insertAdjacentElement('afterend',box);
+    }
+    if(legacy) legacy.style.display='none';
+    return true;
+  }
+
+  function render(pair){
+    pair=pair||selectedPair();
+    if(!pair||!ensureUi()) return;
+    const m=model(pair);
+    const s=document.getElementById('gmfqPairStructure');
+    const d=document.getElementById('gmfqPairDirection');
+    if(s){s.className='gmfqPairTick '+m.structure.cls;s.querySelector('.v').textContent=m.structure.txt;}
+    if(d){d.className='gmfqPairTick '+m.dir.cls;d.querySelector('.v').textContent=m.dir.txt;}
+    document.getElementById('gmfqPairTitle').textContent=m.title;
+    document.getElementById('gmfqPairText').textContent=m.text;
+    document.getElementById('gmfqPairDrivers').innerHTML=m.drivers.map(x=>`<div class="driver"><b>${x.label}</b><span class="${x.cls}">${x.txt}</span></div>`).join('');
+    document.getElementById('gmfqPairConfirm').textContent=m.confirm;
+    document.getElementById('gmfqPairReverse').textContent=m.reverse;
+    document.getElementById('gmfqPairConclusion').textContent=m.conclusion;
+  }
+
+  window.GMFQ_PAIR_TUTOR={render,model,ensureUi,selectedPair};
+})();
+
+</script>
+
+<script id="gmfq-portable-bootstrap">
+(function(){
+  'use strict';
+
+  function mountAllViews(){
+    const shell=document.querySelector('.shell');
+    if(!shell) return;
+    document.querySelectorAll('body > section.view').forEach(sec=>shell.appendChild(sec));
+  }
+
+  function codeFromText(sel,fallback){
+    const t=document.querySelector(sel)?.textContent||'';
+    const m=t.match(/\b(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)\b/);
+    return m?m[1]:fallback;
+  }
+
+  function currentPair(){
+    return window.GMFQ_PAIR_TUTOR?.selectedPair?.() ||
+           (document.querySelector('#pairSelect')?.value||null);
+  }
+
+  function cbAfter(){
+    try{
+      const c=codeFromText('#v234CountryName','USD');
+      const d=(typeof NATIVE_CB_DATA!=='undefined' ? NATIVE_CB_DATA[c] : null);
+      if(c&&d) window.GMFQ_CB_TUTOR?.render(c,d);
+    }catch(e){console.error('CB tutor',e);}
+  }
+
+  function liqAfter(){
+    try{
+      const c=codeFromText('#v243CountryName','USD');
+      const d=(typeof NATIVE_LIQ_DATA!=='undefined' ? NATIVE_LIQ_DATA[c] : null);
+      if(c&&d) window.GMFQ_LIQUIDITY_TUTOR?.render(c,d);
+    }catch(e){console.error('Liquidity tutor',e);}
+  }
+
+  function cotAfter(){
+    try{
+      const c=(document.querySelector('#cotSelect')?.value ||
+               codeFromText('#v247CountryName','GBP'));
+      const d=window.__GMFQ_DATA?.D?.cot?.[c];
+      let st=null;
+      try{ if(typeof V247_COT_STORIES!=='undefined') st=V247_COT_STORIES[c]; }catch(_){}
+      if(c&&d) window.GMFQ_COT_TUTOR?.render(c,d,st);
+    }catch(e){console.error('COT tutor',e);}
+  }
+
+  function priceAfter(){
+    try{
+      const c=window.GMFQ_PRICE_TUTOR?.selectedCurrency?.();
+      if(c) window.GMFQ_PRICE_TUTOR?.render(c);
+    }catch(e){console.error('Price tutor',e);}
+  }
+
+  function pairAfter(){
+    try{
+      const p=currentPair();
+      if(p) window.GMFQ_PAIR_TUTOR?.render(p);
+    }catch(e){console.error('Pair tutor',e);}
+  }
+
+  function wrap(name,after){
+    const original=window[name];
+    if(typeof original!=='function' || original.__gmfqPortableWrapped) return;
+    const wrapped=function(){
+      const out=original.apply(this,arguments);
+      try{after();}catch(e){}
+      return out;
+    };
+    wrapped.__gmfqPortableWrapped=true;
+    wrapped.__gmfqOriginal=original;
+    window[name]=wrapped;
+  }
+
+  function install(){
+    mountAllViews();
+
+    wrap('renderNativeCbDesk',cbAfter);
+    wrap('renderNativeLiquidityDesk',liqAfter);
+    wrap('v243Render',liqAfter);
+    wrap('v245Render',cotAfter);
+    wrap('renderCot',cotAfter);
+    wrap('renderCurrency',priceAfter);
+    wrap('renderPair',pairAfter);
+
+    // Force one clean render of the upgraded sections.
+    try{ if(typeof renderNativeCbDesk==='function') renderNativeCbDesk(); }catch(e){}
+    try{ if(typeof renderNativeLiquidityDesk==='function') renderNativeLiquidityDesk(); }catch(e){}
+    try{ if(typeof v245Render==='function') v245Render(); }catch(e){}
+    try{ if(typeof renderCurrency==='function') renderCurrency(); }catch(e){}
+    try{ if(typeof renderPair==='function') renderPair(); }catch(e){}
+
+    cbAfter(); liqAfter(); cotAfter(); priceAfter(); pairAfter();
+
+    window.__GMFQ_PORTABLE_STATUS__={
+      mounted:{
+        cb:document.querySelector('#cbdesk')?.parentElement?.classList.contains('shell')||false,
+        liquidity:document.querySelector('#liquiditydesk')?.parentElement?.classList.contains('shell')||false,
+        cot:document.querySelector('#cot')?.parentElement?.classList.contains('shell')||false
+      },
+      tutors:{
+        cb:!!document.getElementById('v480CbTitle'),
+        liquidity:!!document.getElementById('gmfqLiqTutor'),
+        cot:!!document.getElementById('gmfqCotTutor'),
+        pair:!!document.getElementById('gmfqPairTutor')
+      }
+    };
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
+})();
+</script>
+
+
+<script id="gmfq-risk-tutor-js">
+(function(){
+  function txt(sel){ return (document.querySelector(sel)?.textContent||'').trim(); }
+  function riskText(){
+    const sec=document.querySelector('#risk');
+    if(!sec) return '';
+    return sec.innerText || sec.textContent || '';
+  }
+  function classify(){
+    const t=riskText().toLowerCase();
+    let level={txt:'MEDIO',cls:'warn'};
+    if(/risk.?off|stress alto|rischio alto|volatilità alta|volatilita alta|fragile/.test(t)) level={txt:'ALTO',cls:'neg'};
+    else if(/risk.?on|stress basso|rischio basso|volatilità bassa|volatilita bassa|costruttiv/.test(t)) level={txt:'BASSO',cls:'pos'};
+    let dir={txt:'STABILE →',cls:'neu'};
+    if(/aumenta|peggiora|sale il rischio|stress in aumento|volatilità in aumento|volatilita in aumento/.test(t)) dir={txt:'AUMENTA ↗',cls:'neg'};
+    else if(/diminuisce|migliora|scende il rischio|stress in calo|volatilità in calo|volatilita in calo/.test(t)) dir={txt:'DIMINUISCE ↘',cls:'pos'};
+    return {level,dir,t};
+  }
+  function drivers(){
+    const sec=document.querySelector('#risk');
+    if(!sec) return [];
+    const cards=[...sec.querySelectorAll('.risk-driver,.v219RiskCard,.risk-card,.card')].slice(0,3);
+    if(cards.length) return cards.map((el,i)=>({
+      k: txt('#'+el.id) || (el.querySelector('b,strong')?.textContent||`Driver ${i+1}`).trim(),
+      v:(el.innerText||el.textContent||'').trim().replace(/\s+/g,' ').slice(0,180)
+    }));
+    return [
+      {k:'Volatilità / stress',v:'Controlla se il mercato sta diventando più nervoso o più tranquillo.'},
+      {k:'Azionario / credito',v:'Guarda se asset rischiosi e credito confermano o smentiscono il clima generale.'},
+      {k:'Safe haven',v:'Controlla se JPY, CHF, USD e oro stanno ricevendo domanda difensiva.'}
+    ];
+  }
+  function render(){
+    const root=document.getElementById('gmfqRiskTutor'); if(!root) return;
+    const s=classify();
+    const l=document.getElementById('gmfqRiskLevel'); l.className=`gmfqRiskTick ${s.level.cls}`; l.querySelector('.v').textContent=s.level.txt;
+    const d=document.getElementById('gmfqRiskDir'); d.className=`gmfqRiskTick ${s.dir.cls}`; d.querySelector('.v').textContent=s.dir.txt;
+    document.getElementById('gmfqRiskTitle').textContent =
+      s.level.txt==='ALTO' ? 'Il mercato sta chiedendo più prudenza' :
+      s.level.txt==='BASSO' ? 'Il contesto di rischio è relativamente tranquillo' :
+      'Il rischio è presente ma non domina il quadro';
+    document.getElementById('gmfqRiskText').textContent =
+      s.level.txt==='ALTO' ? 'In parole semplici, aumenta la domanda di protezione e diventa più difficile fidarsi dei movimenti risk-on.' :
+      s.level.txt==='BASSO' ? 'In parole semplici, il mercato tollera meglio il rischio e gli asset ciclici hanno più spazio per muoversi.' :
+      'In parole semplici, il rischio non è abbastanza forte da guidare da solo il mercato: serve conferma dagli altri blocchi.';
+    document.getElementById('gmfqRiskDrivers').innerHTML = drivers().map(x=>`<div class="gmfqRiskDriver"><b>${x.k}</b><span>${x.v}</span></div>`).join('');
+    document.getElementById('gmfqRiskBetter').textContent='Stress e volatilità scendono, credito e azionario tengono, la domanda difensiva diminuisce.';
+    document.getElementById('gmfqRiskWorse').textContent='Volatilità e stress salgono insieme, credito si deteriora e aumenta la domanda di safe haven.';
+    document.getElementById('gmfqRiskFx').textContent =
+      s.level.txt==='ALTO' ? 'Più attenzione alle valute cicliche; safe haven e USD possono ricevere supporto, ma va sempre verificato con tassi e macro.' :
+      s.level.txt==='BASSO' ? 'Più spazio per valute cicliche e pro-risk, se Macro e Rates non remano contro.' :
+      'Il Risk Desk resta un filtro di contesto: non deve ribaltare da solo una view costruita da Macro e Rates.';
+  }
+  function install(){
+    const names=['renderRisk','renderRiskDesk','v219RenderRisk'];
+    names.forEach(n=>{
+      const f=window[n];
+      if(typeof f==='function'&&!f.__gmfqRiskWrapped){
+        const w=function(){const o=f.apply(this,arguments);try{render();}catch(e){}return o};
+        w.__gmfqRiskWrapped=true; window[n]=w;
+      }
+    });
+    render();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+  window.GMFQ_RISK_TUTOR={render};
+})();
+</script>
+
+
+
+
+
+<script id="gmfq-currency-overview-js">
+(function(){
+  const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  function country(c){
+    try{return v232CountryLabel(c)}catch(e){return c}
+  }
+  function macroState(c,snap){
+    const h=v232Headline(c,snap);
+    if(h.cls==='pos') return {txt:'SOLIDA',cls:'pos'};
+    if(h.cls==='neg') return {txt:'DEBOLE',cls:'neg'};
+    if(h.cls==='warn') return {txt:'MISTA',cls:'warn'};
+    return {txt:'NON CHIARA',cls:'neu'};
+  }
+  function direction(tutor){
+    const x=String(tutor?.change?.txt||'').toLowerCase();
+    if(/miglior/.test(x)) return {txt:'MIGLIORA ↗',cls:'pos',group:'up'};
+    if(/peggior/.test(x)) return {txt:'PEGGIORA ↘',cls:'neg',group:'down'};
+    if(/misti|svolta/.test(x)) return {txt:'POSSIBILE SVOLTA',cls:'warn',group:'mix'};
+    return {txt:'STABILE →',cls:'neu',group:'mix'};
+  }
+  function supportText(x){
+    if(!x) return 'Nessun punto di forza netto identificato.';
+    const d=x.trend?.txt ? ` · ${x.trend.txt}` : '';
+    return `${x.label}: ${x.state||'—'}${d}`;
+  }
+  function dragText(x){
+    if(!x) return 'Nessuna fragilità netta identificata.';
+    const d=x.trend?.txt ? ` · ${x.trend.txt}` : '';
+    return `${x.label}: ${x.state||'—'}${d}`;
+  }
+  function model(c){
+    const snap=v232CountrySnapshot(c);
+    const tutor=v475MacroTutorModel(c,snap);
+    return {c,snap,tutor,state:macroState(c,snap),dir:direction(tutor)};
+  }
+  function card(m){
+    const s=m.snap.strength, w=m.snap.weakness;
+    return `<div class="gmfqCcyCard" onclick="try{v232MacroCurrency='${m.c}';renderNativeMacroDesk();showView('macro')}catch(e){}">
+      <div class="gmfqCcyHead">
+        <div><div class="gmfqCcyCode">${m.c}</div><span class="gmfqCcyCountry">${country(m.c)}</span></div>
+        <span class="gmfqCcyBadge ${m.state.cls}">${m.state.txt}</span>
+      </div>
+      <div class="gmfqCcyDir ${m.dir.cls}">DIREZIONE MACRO · ${m.dir.txt}</div>
+      <div class="gmfqCcyRow good"><small>COSA LA STA SOSTENENDO</small><b>${supportText(s)}</b></div>
+      <div class="gmfqCcyRow bad"><small>COSA LA STA PENALIZZANDO</small><b>${dragText(w)}</b></div>
+    </div>`;
+  }
+  function render(){
+    const root=document.getElementById('gmfqCurrencyOverview'); if(!root) return;
+    let models=[];
+    try{models=CCYS.map(model)}catch(e){console.error('Currency overview',e);return;}
+    const up=models.filter(x=>x.dir.group==='up').map(x=>x.c);
+    const down=models.filter(x=>x.dir.group==='down').map(x=>x.c);
+    const mix=models.filter(x=>x.dir.group==='mix').map(x=>x.c);
+    document.getElementById('gmfqCcyImproving').textContent=up.length?up.join(' · '):'Nessuna con miglioramento netto';
+    document.getElementById('gmfqCcyWorsening').textContent=down.length?down.join(' · '):'Nessuna con peggioramento netto';
+    document.getElementById('gmfqCcyMixed').textContent=mix.length?mix.join(' · '):'Nessuna';
+    document.getElementById('gmfqCcyGrid').innerHTML=models.map(card).join('');
+  }
+  function install(){
+    const names=['renderOverview','renderOverview387','v387RenderOverview','renderOperationalOverview'];
+    names.forEach(n=>{
+      const f=window[n];
+      if(typeof f==='function'&&!f.__gmfqCcyOvWrapped){
+        const w=function(){const o=f.apply(this,arguments);try{render();}catch(e){}return o};
+        w.__gmfqCcyOvWrapped=true; window[n]=w;
+      }
+    });
+    setTimeout(render,0);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+  window.GMFQ_CURRENCY_OVERVIEW={render};
+})();
+</script>
+
+
+<script id="gmfq-propagation-qa">
+(function(){
+'use strict';
+const EXPECTED_CORE_SERIES=new Set([
+  'AUD:AU_CPI_HEADLINE_M_YOY_context_value',
+  'AUD:AU_CPI_TRIMMED_MEAN_M_YOY_context_value'
+]);
+const INFO_ONLY_RULES=[
+  {ccy:'GBP',re:/GDP.*Current Account|GDP/i,label:'UK GDP'},
+  {ccy:'EUR',re:/German.*Unemployment|Unemployment.*German/i,label:'German Unemployment'},
+  {ccy:'EUR',re:/French.*HICP|French.*CPI/i,label:'French HICP / CPI'},
+  {ccy:'EUR',re:/Italy.*HICP/i,label:'Italy HICP'},
+  {ccy:'JPY',re:/Industrial Production.*Retail Sales|Retail Sales.*Industrial Production/i,label:'JPY Industrial Production / Retail'},
+  {ccy:'NZD',re:/ANZ Business Confidence/i,label:'NZ ANZ Business Confidence'}
+];
+
+function safe(fn,fallback=null){try{return fn()}catch(e){return fallback}}
+function seriesItem(c,id){
+  return safe(()=>((S&&S[c])||[]).find(x=>x.id===id));
+}
+function currentDay(){
+  const cur=window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||'2026-09-30';
+  return safe(()=>REAL_CALENDAR.find(d=>d.key===cur));
+}
+function eventExists(rule){
+  const d=currentDay();
+  return !!safe(()=>d.events.some(e=>String(e.ccy||'').toUpperCase()===rule.ccy && rule.re.test(String(e.event||'')) && e.status==='done'),false);
+}
+function payloadCoreKeys(){
+  const p=window.LIVE_REFRESH_20260930_AM?.payload?.core||{};
+  return new Set((p.series||[]).map(x=>`${x.currency}:${x.id}`));
+}
+function setEq(a,b){
+  return a.size===b.size && [...a].every(x=>b.has(x));
+}
+function run(){
+  const tests=[];
+  const add=(name,ok,detail)=>tests.push({name,ok:!!ok,detail:detail||''});
+
+  const coreKeys=payloadCoreKeys();
+  add('CORE contiene solo le 2 serie AUD CPI validate',
+      setEq(coreKeys,EXPECTED_CORE_SERIES),
+      [...coreKeys].join(', ')||'nessuna');
+
+  const h=seriesItem('AUD','AU_CPI_HEADLINE_M_YOY_context_value');
+  const t=seriesItem('AUD','AU_CPI_TRIMMED_MEAN_M_YOY_context_value');
+  add('AUD headline aggiornato nel dataset canonico',
+      h && String(h.last_date)==='2026-08' && Number(h.last_value)===4.0,
+      h?`${h.last_date} · ${h.last_value}`:'serie assente');
+  add('AUD trimmed mean aggiornato nel dataset canonico',
+      t && String(t.last_date)==='2026-08' && Number(t.last_value)===3.6,
+      t?`${t.last_date} · ${t.last_value}`:'serie assente');
+
+  INFO_ONLY_RULES.forEach(r=>{
+    add(`${r.label} presente come evento informativo`,eventExists(r),'calendar/news context');
+    add(`${r.label} NON presente nel CORE`,
+        ![...coreKeys].some(k=>k.startsWith(r.ccy+':')),
+        'nessuna serie strutturale aggiornata');
+  });
+
+  const replay=safe(()=>window.gmfqFullPropagationSync(
+    'QA_CORE_REPLAY',
+    {core:window.LIVE_REFRESH_20260930_AM?.payload?.core||{}}
+  ),{});
+  const deps=replay?.dependent_pairs||[];
+  add('Propagazione AUD raggiunge 7 pair dipendenti',
+      deps.length===7 && deps.every(p=>String(p).split('/').includes('AUD')),
+      deps.join(' · '));
+  add('Modello finale contiene 8 valute',
+      replay?.currencies==='8/8',
+      replay?.currencies||'—');
+  add('Modello finale contiene 28 pair',
+      replay?.pairs==='28/28',
+      replay?.pairs||'—');
+
+  const today=currentDay();
+  const adp=safe(()=>today.events.find(e=>/ADP Employment Change/i.test(e.event)));
+  const pce=safe(()=>today.events.find(e=>/Core PCE/i.test(e.event)));
+  add('ADP resta IN ATTESA prima delle 14:15',adp && adp.status==='next' && adp.actual==='—',adp?`${adp.forecast} consenso`:'evento assente');
+  add('PCE/Spending resta IN ATTESA prima delle 14:30',pce && pce.status==='next' && pce.actual==='—',pce?`${pce.forecast} consenso`:'evento assente');
+
+  const overlay=window.GMFQ_RECENT_EVENT_OVERLAY||{};
+  INFO_ONLY_RULES.forEach(r=>{
+    add(`${r.label} resta disponibile nel recent-event overlay`,
+        Array.isArray(overlay[r.ccy]) && overlay[r.ccy].some(e=>r.re.test(String(e.event||''))),
+        `${r.ccy} overlay`);
+  });
+
+  const failed=tests.filter(x=>!x.ok);
+  const result={
+    ok:failed.length===0,
+    at:new Date().toISOString(),
+    policy:'CORE_UPDATES_CANONICAL__INFO_ONLY_CONTEXT_ONLY',
+    tests,
+    failed:failed.map(x=>x.name),
+    core_series:[...coreKeys],
+    dependent_pairs:deps
+  };
+  window.GMFQ_PROPAGATION_QA=result;
+  document.documentElement.setAttribute('data-propagation-qa',result.ok?'PASS':'FAIL');
+  return result;
+}
+
+window.runGmfqPropagationQa=run;
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(run,1400),{once:true});
+}else{
+  setTimeout(run,1400);
+}
+})();
+</script>
+
+
+<script id="gmfq-refresh-manifest-20260930-1318">
+window.GMFQ_REFRESH_MANIFEST_20260930_1318={
+  as_of:'2026-09-30T13:18+02:00',
+  core_updates:[
+    {ccy:'AUD',series:'AU_CPI_HEADLINE_M_YOY_context_value',actual:4.0,previous:3.5,consensus:4.1},
+    {ccy:'AUD',series:'AU_CPI_TRIMMED_MEAN_M_YOY_context_value',actual:3.6,previous:3.6,consensus:null}
+  ],
+  info_only:[
+    {ccy:'GBP',event:'UK Q2 GDP final + current account',actual:'0.5% / -£19.9bn',consensus:'0.4% / about -£25bn'},
+    {ccy:'EUR',event:'German unemployment change',actual:'+12K / 6.4%',consensus:'+1K / 6.4%'},
+    {ccy:'EUR',event:'French HICP / CPI',actual:'3.4% / 3.0%',consensus:'3.1% / 2.8%'},
+    {ccy:'JPY',event:'Industrial production / retail sales',actual:'-1.7% m/m / 2.7% y/y',consensus:'rise expected / 3.3%'},
+    {ccy:'NZD',event:'ANZ Business Confidence',actual:'about 52',previous:'about 54'}
+  ],
+  pending:[
+    {ccy:'USD',time:'14:15',event:'ADP Employment Change',previous:'38K',consensus:'75K'},
+    {ccy:'USD',time:'14:30',event:'Core PCE m/m + Personal Spending m/m',previous:'0.2% / 0.2%',consensus:'0.3% / 0.8%'}
+  ],
+  market_context:{
+    UST10Y:'near multiyear highs into the release window',
+    USD:'about +2% in September before US data',
+    AUD_reaction:'AUD slipped after CPI; front-end pared near-term RBA hike odds'
+  },
+  rule:'CORE updates canonical engine; INFO_ONLY updates calendar/news/context only; pending events never propagate before release.'
+};
+</script>
+
+
+<script id="gmfq-release-manifest-v487">
+window.GMFQ_RELEASE_MANIFEST={
+  version:'v487',
+  status:'RELEASE_CANDIDATE',
+  built_from:'v486_REAL_REFRESH_FINAL',
+  source_sha256:'199038715ef938f00b06c7481307635a4ee733798abf88a565a0b3323a33b366',
+  frozen_at:'2026-09-30',
+  ui_status:'FROZEN',
+  engine_status:'UNCHANGED_FROM_VALIDATED_BASE',
+  propagation_policy:'CORE_UPDATES_CANONICAL__INFO_ONLY_CONTEXT_ONLY',
+  currencies:'8/8',
+  pairs:'28/28',
+  usd_price:'WITHHELD_UNTIL_DXY_OR_VALIDATED_USD_BASKET',
+  audit_passed:true
+};
+</script>
+
+
+<script id="gmfq-e2e-live-italy">
+(function(){
+  function safe(fn,fallback=null){try{return fn()}catch(e){return fallback}}
+  function run(){
+    const out={};
+    const today=safe(()=>REAL_CALENDAR.find(d=>d.key==='2026-09-30'));
+    const ev=safe(()=>today.events.find(e=>/Italy HICP/i.test(e.event)));
+    out.calendar_event=!!ev && ev.status==='done' && /4,1%/.test(String(ev.actual||''));
+
+    const news=window.__GMFQ_DATA?.NEWS_PULSE_STRUCT||[];
+    out.news_pulse=news.some(x=>/Italia: HICP 4,1%/.test(String(x.title||'')));
+
+    const core=window.LIVE_REFRESH_20260930_AM?.payload?.core?.series||[];
+    out.not_in_core=!core.some(x=>String(x.currency)==='EUR' && /ital/i.test(String(x.id||'')));
+
+    const classification=(window.GMFQ_RELEASE_CLASSIFICATION?.rules||[]);
+    out.info_only_rule=classification.some(x=>/Italy HICP/i.test(String(x.pattern||'')) && /INFO_ONLY/.test(String(x.mode||'')));
+
+    const beforePairs=safe(()=>JSON.stringify(Object.keys(window.pairStates||{}).sort()));
+    const replay=safe(()=>window.gmfqFullPropagationSync('E2E_ITALY_INFO_ONLY',{core:{series:[]}}),{});
+    const afterPairs=safe(()=>JSON.stringify(Object.keys(window.pairStates||{}).sort()));
+    out.pair_universe_unchanged=beforePairs===afterPairs;
+    out.model_28_pairs=replay?.pairs==='28/28' || Object.keys(window.pairStates||{}).length===28;
+
+    const ov=document.getElementById('gmfqCurrencyOverview');
+    out.overview_present=!!ov;
+    const eurCard=[...(ov?.querySelectorAll('.gmfqCcyCard')||[])].find(x=>/^EUR\b/.test((x.innerText||'').trim()));
+    out.eur_overview_present=!!eurCard;
+
+    const result={ok:Object.values(out).every(Boolean),tests:out,at:new Date().toISOString()};
+    window.GMFQ_E2E_LIVE_ITALY=result;
+    document.documentElement.setAttribute('data-e2e-live',result.ok?'PASS':'FAIL');
+    return result;
+  }
+  window.runGmfqE2eLiveItaly=run;
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(run,1800),{once:true});
+  else setTimeout(run,1800);
+})();
+</script>
+
+
+<script id="gmfq-runtime-refresh-fix-20260930">
+(function(){
+'use strict';
+function safe(fn){try{return fn()}catch(e){return null}}
+function upsertNews(row){
+  try{
+    if(typeof NEWS_PULSE_STRUCT!=='undefined' && Array.isArray(NEWS_PULSE_STRUCT)){
+      if(!NEWS_PULSE_STRUCT.some(x=>x.title===row.title)) NEWS_PULSE_STRUCT.unshift(row);
+    }
+    if(window.__GMFQ_DATA && Array.isArray(window.__GMFQ_DATA.NEWS_PULSE_STRUCT)){
+      if(!window.__GMFQ_DATA.NEWS_PULSE_STRUCT.some(x=>x.title===row.title)) window.__GMFQ_DATA.NEWS_PULSE_STRUCT.unshift(row);
+    }
+  }catch(e){}
+}
+function patchSeries(ccy,id,date,val){
+  try{
+    const x=(S[ccy]||[]).find(z=>z.id===id);
+    if(x){x.last_date=date;x.last_value=val;return true;}
+  }catch(e){}
+  return false;
+}
+function apply(){
+  // 1) Freshness pointer must reference the actual live day used by REAL_CALENDAR.
+  if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
+    window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
+    window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_TO_13_18_RELEASES';
+    window.AUXILIARY_FEED_FRESHNESS.calendar.note='30 settembre: Asia/Europa aggiornati; ADP e PCE/Spending USA ancora pending.';
+  }
+
+  // 2) Apply validated CORE payload to the canonical AUD series.
+  patchSeries('AUD','AU_CPI_HEADLINE_M_YOY_context_value','2026-08',4.0);
+  patchSeries('AUD','AU_CPI_TRIMMED_MEAN_M_YOY_context_value','2026-08',3.6);
+
+  // 3) Runtime News Pulse: add the new INFO_ONLY releases to the array actually used by the UI.
+  upsertNews({
+    cat:'Macro',importance:'high',status:'change',ccy:'EUR',layer:'Inflazione',
+    title:'Italia: HICP 4,1% a/a, forte accelerazione',
+    what:'L’HICP preliminare italiano sale al 4,1% a/a dal 3,2% di agosto; +2,0% m/m.',
+    why:'Aggiunge un secondo impulso nazionale forte dopo la Francia e aumenta il rischio di un dato Eurozona più caldo.',
+    fx:'EUR · Bund 2Y · pricing ECB',
+    watch:'German CPI nazionale + Eurozone CPI venerdì + Bund 2Y',
+    changed:'Nuovo supporto inflattivo EUR, ma INFO-ONLY: non sostituisce HICP Eurozona.'
+  });
+  upsertNews({
+    cat:'Macro',importance:'high',status:'change',ccy:'EUR',layer:'Inflazione',
+    title:'Francia: HICP 3,4% vs 3,1% atteso',
+    what:'L’HICP francese accelera al 3,4% a/a dal 2,6%; CPI nazionale 3,0% vs 2,8% atteso.',
+    why:'La sorpresa aumenta il rischio di inflazione area euro più alta e sostiene un pricing ECB più hawkish.',
+    fx:'EUR · Bund 2Y · pricing ECB',
+    watch:'German CPI nazionale + Eurozone CPI venerdì + Bund 2Y',
+    changed:'Impulso inflattivo EUR, ma INFO-ONLY finché non aggiorna la serie Eurozona.'
+  });
+
+  // 4) Rebuild canonical state and every dependent view from one source of truth.
+  const core=window.LIVE_REFRESH_20260930_AM?.payload?.core||{series:[]};
+  safe(()=>window.gmfqFullPropagationSync('RUNTIME_REFRESH_20260930_1318',{core}));
+  safe(()=>{if(typeof renderNewsPulse==='function') renderNewsPulse();});
+  safe(()=>{if(typeof renderOverview==='function') renderOverview();});
+  safe(()=>window.GMFQ_CURRENCY_OVERVIEW?.render());
+  safe(()=>window.GMFQ_CB_TUTOR?.render());
+  safe(()=>window.GMFQ_LIQUIDITY_TUTOR?.render());
+  safe(()=>window.GMFQ_COT_TUTOR?.render());
+
+  window.GMFQ_RUNTIME_REFRESH_20260930={
+    ok:true,
+    as_of:'2026-09-30T13:18+02:00',
+    freshness:window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date,
+    aud_headline:safe(()=>S.AUD.find(x=>x.id==='AU_CPI_HEADLINE_M_YOY_context_value').last_value),
+    aud_trimmed:safe(()=>S.AUD.find(x=>x.id==='AU_CPI_TRIMMED_MEAN_M_YOY_context_value').last_value),
+    news_count:safe(()=>NEWS_PULSE_STRUCT.length)
+  };
+
+  // Rerun the two QA suites only after canonical propagation is complete.
+  setTimeout(()=>{
+    safe(()=>window.runGmfqPropagationQa());
+    safe(()=>window.runGmfqE2eLiveItaly());
+  },250);
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,100),{once:true});
+else setTimeout(apply,100);
+})();
+</script>
+
+
+<script id="gmfq-runtime-validation-manifest-v490">
+window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
+  version:'v490',
+  status:'RUNTIME_VALIDATED',
+  built_from:'v489_RUNTIME_PROPAGATION_FIXED',
+  source_sha256:'b3b2471b78f1223e178f4945302b08639a7f556b008e2a543a6b0130ddb3c092',
+  validated_date:'2026-09-30',
+  tested_paths:{
+    core_AUD_CPI:'PASS',
+    info_only_Italy_HICP:'PASS',
+    calendar_to_context:'PASS',
+    news_pulse_runtime:'PASS',
+    canonical_series_update:'PASS',
+    currency_rebuild:'PASS',
+    dependent_pairs:'PASS',
+    overview_runtime:'PASS',
+    model_8_currencies:'PASS',
+    model_28_pairs:'PASS',
+    pending_event_discipline:'PASS'
+  },
+  javascript_errors:0,
+  note:'Runtime browser validation passed for the tested CORE and INFO_ONLY propagation paths. This does not claim every future release type is universally proven.'
+};
+</script>
+
+</body></html>

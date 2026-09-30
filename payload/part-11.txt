@@ -1,0 +1,1000 @@
+});
+});
+return {ok:issues.length===0,issues,coverage:cov};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const mi=macroCategoryIntegrity();
+if(!mi.ok){
+mi.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.macro_category_integrity=mi;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+// Extend coverage summary with core macro block dates.
+const baseSummary=window.productionCoverageSummary;
+if(typeof baseSummary==='function'){
+window.productionCoverageSummary=function(){
+const x=baseSummary();
+x.macro_blocks=macroBlockCoverage();
+return x;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+function parseMacroAuditDate(x){
+if(!x) return null;
+const s=String(x).trim();
+let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+m=s.match(/^(\d{4})[-\/](\d{1,2})$/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,1));
+m=s.match(/^(\d{4})[-\/]?Q([1-4])$/i);
+if(m) return new Date(Date.UTC(+m[1],(+m[2])*3-1,1));
+m=s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+if(m) return new Date(Date.UTC(+m[3],+m[2]-1,+m[1]));
+const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+m=s.match(/^([A-Za-z]{3})-(\d{2})$/);
+if(m && months[m[1].toLowerCase()]!=null)
+return new Date(Date.UTC(2000+(+m[2]),months[m[1].toLowerCase()],1));
+m=s.match(/^(\d{1,2})[\s-]([A-Za-z]{3})[\s-](\d{4})$/);
+if(m && months[m[2].toLowerCase()]!=null)
+return new Date(Date.UTC(+m[3],months[m[2].toLowerCase()],+m[1]));
+return null;
+}
+window.macroBlockCoverage=function(){
+const out={};
+for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+out[ccy]={};
+for(const cat of ['Crescita','Inflazione','Lavoro']){
+const all=(S?.[ccy]||[]).filter(x=>x && x.category===cat);
+const rows=all
+.filter(x=>x.last_date)
+.map(x=>({x,d:parseMacroAuditDate(x.last_date)}))
+.filter(y=>y.d && !Number.isNaN(y.d.getTime()))
+.sort((a,b)=>b.d-a.d);
+out[ccy][cat]={
+count:all.length,
+latest:rows.length?rows[0].x.last_date:null,
+normalized_date:rows.length?rows[0].d.toISOString().slice(0,10):null,
+latest_series:rows.length?(rows[0].x.label||rows[0].x.id):null,
+source:rows.length?(rows[0].x.source_file||null):null
+};
+}
+}
+return out;
+};
+})();
+
+</script><script>
+
+(function(){
+const legacyRate2YSeries=window.rate2YSeries;
+window.rate2YSeries=function(c){
+const h=NATIVE_RATES_DATA?.[c]?.history2;
+if(h?.values?.length){
+return {
+dates:h.dates||[],
+values:h.values,
+label:h.label||'2Y canonico',
+source:'NATIVE_RATES_DATA.history2'
+};
+}
+return typeof legacyRate2YSeries==='function'?legacyRate2YSeries(c):null;
+};
+window.ratesTimingBindingIntegrity=function(){
+const issues=[];
+const rows={};
+for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+const d=NATIVE_RATES_DATA?.[c]||{};
+const native=d.history2;
+const bound=rate2YSeries(c);
+const nativeLen=native?.values?.length||0;
+const boundLen=bound?.values?.length||0;
+let ok=false;
+let sameLast=false;
+let mode=bound?.same_basis_mode||'FULL_HISTORY';
+if(mode==='WEEKLY_VALIDATION_ONLY'){
+const w=d.weekly2_validation;
+const lastDate=bound?.dates?.[boundLen-1]||null;
+const lastValue=Number(bound?.values?.[boundLen-1]);
+sameLast=!!w &&
+String(lastDate)===String(w.end_date) &&
+Number.isFinite(lastValue) &&
+Number(lastValue)===Number(w.end_value);
+ok=!!w && boundLen===1 && sameLast && Number.isFinite(+w.change_bp);
+}else{
+sameLast=!!nativeLen && !!boundLen
+? Number(native.values[nativeLen-1])===Number(bound.values[boundLen-1])
+: false;
+const sameLen=nativeLen===boundLen;
+ok=!!nativeLen && sameLen && sameLast;
+}
+rows[c]={ok,nativeLen,boundLen,sameLast,mode};
+if(!ok) issues.push(`RATES_TIMING_NOT_CANONICAL:${c}`);
+}
+return {ok:issues.length===0,issues,rows};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const bi=ratesTimingBindingIntegrity();
+if(!bi.ok){
+bi.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.rates_timing_binding=bi;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const previousRate2YSeries=window.rate2YSeries;
+const previousCurrencyDynamics=window.currencyDynamics;
+// Never use a historical 2Y series explicitly marked as a different basis
+// from the validated canonical snapshot. When only a validated weekly move
+// exists, expose only that observable information; do not manufacture history.
+window.rate2YSeries=function(c){
+const d=NATIVE_RATES_DATA?.[c];
+const h=d?.history2;
+const quality=String(d?.history2_quality||'');
+const w=d?.weekly2_validation;
+if(/LEGACY_NOT_SAME_BASIS/i.test(quality)){
+if(w && w.end_date && Number.isFinite(+w.end_value) && Number.isFinite(+w.change_bp)){
+return {
+dates:[w.end_date],
+values:[+w.end_value],
+label:'2Y canonico validato · solo variazione settimanale',
+source:w.source||d.source||'validated weekly 2Y',
+same_basis_mode:'WEEKLY_VALIDATION_ONLY',
+weekly_change_bp:+w.change_bp
+};
+}
+return null;
+}
+if(h?.values?.length){
+return {
+dates:h.dates||[],
+values:h.values,
+label:h.label||'2Y canonico',
+source:'NATIVE_RATES_DATA.history2',
+same_basis_mode:'FULL_HISTORY'
+};
+}
+return typeof previousRate2YSeries==='function'?previousRate2YSeries(c):null;
+};
+window.currencyDynamics=function(c){
+const rs=rate2YSeries(c);
+let rates=seriesDynamics(rs);
+// Reduced-but-valid fallback: direction from the validated weekly 2Y move.
+// Speed, acceleration and turning stay unavailable because there is no
+// sufficiently long same-basis history.
+if(!rates && rs?.same_basis_mode==='WEEKLY_VALIDATION_ONLY' && Number.isFinite(+rs.weekly_change_bp)){
+const bp=+rs.weekly_change_bp;
+rates={
+recent:bp/100,
+prior:null,
+dir:Math.abs(bp)<0.5?0:Math.sign(bp),
+speed:null,
+accel:null,
+accelDir:0,
+turn:false,
+limited:true,
+source:'WEEKLY_VALIDATION_ONLY',
+weekly_change_bp:bp
+};
+}
+const price=seriesDynamics(priceSeriesObjectForCurrency(c));
+return {rates,price};
+};
+window.ratesCanonicalBasisIntegrity=function(){
+const issues=[];
+const rows={};
+for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+const d=NATIVE_RATES_DATA?.[c];
+const bound=rate2YSeries(c);
+const quality=String(d?.history2_quality||'');
+const legacy=/LEGACY_NOT_SAME_BASIS/i.test(quality);
+const topDate=d?.date||null;
+const topValue=Number(d?.['2Y']);
+let ok=false;
+let mode=bound?.same_basis_mode||null;
+let boundDate=bound?.dates?.at?.(-1) ?? bound?.dates?.[bound?.dates?.length-1] ?? null;
+let boundValue=Number(bound?.values?.at?.(-1) ?? bound?.values?.[bound?.values?.length-1]);
+if(legacy){
+const w=d?.weekly2_validation;
+ok=!!w && mode==='WEEKLY_VALIDATION_ONLY' &&
+String(boundDate)===String(w.end_date) &&
+Number.isFinite(boundValue) && Number(boundValue)===Number(w.end_value) &&
+String(w.end_date)===String(topDate) &&
+Number(w.end_value)===topValue;
+if(!ok) issues.push(`RATES_LEGACY_BASIS_LEAK:${c}`);
+}else{
+const h=d?.history2;
+const hDate=h?.dates?.at?.(-1) ?? h?.dates?.[h?.dates?.length-1] ?? null;
+const hValue=Number(h?.values?.at?.(-1) ?? h?.values?.[h?.values?.length-1]);
+ok=!!h?.values?.length && mode==='FULL_HISTORY' &&
+String(boundDate)===String(hDate) && Number(boundValue)===Number(hValue) &&
+String(hDate)===String(topDate) && Number(hValue)===topValue;
+if(!ok) issues.push(`RATES_SNAPSHOT_HISTORY_DESYNC:${c}`);
+}
+rows[c]={ok,legacy,mode,topDate,topValue,boundDate,boundValue,history_quality:quality||null};
+}
+return {ok:issues.length===0,issues,rows};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const bi=ratesCanonicalBasisIntegrity();
+if(!bi.ok){
+bi.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.rates_canonical_basis_integrity=bi;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+window.syncVisibleRatesSnapshots=function(){
+const changed=[];
+for(const c of CCYS){
+const native=NATIVE_RATES_DATA?.[c];
+const macro=D?.macro?.[c];
+if(!native || !macro || !Number.isFinite(+native['2Y'])) continue;
+const next=+native['2Y'];
+if(Number(macro.rate2y)!==next){
+changed.push({currency:c,from:macro.rate2y,to:next});
+macro.rate2y=next;
+}
+macro.rate_status=String(native.quality||'CURRENT').includes('PENDING')?'PENDING':'CURRENT';
+}
+return changed;
+};
+window.visibleRatesSnapshotIntegrity=function(){
+const issues=[];
+const rows={};
+for(const c of CCYS){
+const native=NATIVE_RATES_DATA?.[c];
+const macro=D?.macro?.[c];
+const native2Y=Number(native?.['2Y']);
+const visible2Y=Number(macro?.rate2y);
+const ok=Number.isFinite(native2Y) && Number.isFinite(visible2Y) && native2Y===visible2Y;
+rows[c]={ok,native2Y,visible2Y,native_date:native?.date||null};
+if(!ok) issues.push(`VISIBLE_2Y_DESYNC:${c}`);
+}
+return {ok:issues.length===0,issues,rows};
+};
+window.VISIBLE_RATES_SYNC_AUDIT={
+audited_at:'2026-09-29T11:00+02:00',
+changed:syncVisibleRatesSnapshots(),
+rule:'Visible 2Y snapshots are aliases of NATIVE_RATES_DATA[ccy][2Y]; no independent stale copy allowed.'
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const vi=visibleRatesSnapshotIntegrity();
+if(!vi.ok){
+vi.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.visible_rates_snapshot_integrity=vi;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+try{ stableModelRefresh(); }catch(e){}
+})();
+
+</script><script>
+
+(function(){
+const fnNames=[
+'deriveCurrencyState',
+'policyFamilyPolarity',
+'policyFamilyContext',
+'currencyImprovementDiagnostic',
+'currencyDynamics',
+'rate2YSeries'
+];
+const hashString=(str)=>{
+let h=2166136261>>>0;
+for(let i=0;i<str.length;i++){
+h^=str.charCodeAt(i);
+h=Math.imul(h,16777619)>>>0;
+}
+return ('00000000'+h.toString(16)).slice(-8);
+};
+window.CANONICAL_CORE_POLICY_REGISTRY=Object.fromEntries(
+fnNames.map(name=>{
+const fn=window[name];
+return [name,{
+exists:typeof fn==='function',
+signature:typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null
+}];
+})
+);
+window.corePolicyIntegrity=function(){
+const changed=[];
+const rows={};
+Object.entries(window.CANONICAL_CORE_POLICY_REGISTRY||{}).forEach(([name,base])=>{
+const fn=window[name];
+const current=typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null;
+const ok=(typeof fn==='function')===base.exists && current===base.signature;
+rows[name]={ok,expected:base.signature,current};
+if(!ok) changed.push(name);
+});
+const cbIssues=[];
+for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+const d=NATIVE_CB_DATA?.[c];
+if(!d) cbIssues.push(`MISSING_NATIVE_CB:${c}`);
+else{
+if(!d.last_date) cbIssues.push(`MISSING_CB_DATE:${c}`);
+if(d.rate==null) cbIssues.push(`MISSING_CB_RATE:${c}`);
+if(!d.action) cbIssues.push(`MISSING_CB_ACTION:${c}`);
+if(!Array.isArray(currencyIntelData?.[c]?.cb)) cbIssues.push(`MISSING_CB_INTEL:${c}`);
+}
+}
+return {
+ok:changed.length===0 && cbIssues.length===0,
+changed,
+cbIssues,
+rows,
+pricing_core_isolation:'CERTIFIED_BY_ARTIFICIAL_SHOCK_2026-09-29'
+};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const ci=corePolicyIntegrity();
+if(!ci.ok){
+[...ci.changed.map(x=>`CORE_LOGIC_CHANGED:${x}`),...ci.cbIssues].forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.core_policy_integrity=ci;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+function audit(){
+const pairs=Object.keys(CERT53?.pairs||{});
+const failures=[];
+pairs.forEach(pair=>{
+const f=derivePairDecisionFrame(pair);
+const d=derivePairDriverStructure(pair);
+const compat=certifiedPairFavoredSide(pair);
+const fav=f?.fav && f.fav!=='—' ? f.fav : null;
+const [a,b]=pair.split('/');
+const side=fav===a?'A':fav===b?'B':null;
+if((d?.side||null)!==(side||null)) failures.push(`${pair}: driver side`);
+if((compat||null)!==(fav||null)) failures.push(`${pair}: transition side`);
+if(d?.source!=='CANONICAL_PAIR_FRAME') failures.push(`${pair}: driver source`);
+});
+window.__PAIR_SINGLE_SOURCE_AUDIT__={
+version:'v349',
+checkedPairs:pairs.length,
+failures,
+status:failures.length?'FAIL':'PASS',
+rule:'Macro + Rates/CB canonical pair frame is the only structural winner/driver source'
+};
+if(failures.length) console.error('[PAIR SINGLE SOURCE AUDIT]',failures);
+}
+try{ audit(); }catch(e){ window.__PAIR_SINGLE_SOURCE_AUDIT__={version:'v349',status:'FAIL',error:String(e)}; }
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+function same(a,b){ return String(a??'')===String(b??''); }
+window.currencyNarrativeIntegrity=function(){
+const rows={};
+const issues=[];
+CCYS.forEach(c=>{
+const d=window.currencyIntelData?.[c] || (typeof currencyIntelData!=='undefined'?currencyIntelData?.[c]:null);
+if(!d){
+rows[c]={ok:false,error:'currencyIntelData missing'};
+issues.push(`NARRATIVE_DATA_MISSING:${c}`);
+return;
+}
+let expDriver,expRegime,expStory,expLead,expPlan,imp;
+try{
+expDriver=deriveCurrencyDriver(c);
+expRegime=deriveCurrencyRegime(c);
+expStory=deriveCurrencyStory(c);
+expLead=deriveLeadStructure(c);
+expPlan=deriveCurrencyActionPlan(c);
+imp=currencyImprovementDiagnostic(c);
+}catch(e){
+rows[c]={ok:false,error:String(e?.message||e)};
+issues.push(`NARRATIVE_DERIVE_ERROR:${c}`);
+return;
+}
+const checks={
+driver:same(d.driver,expDriver),
+regime:same(d.regime,expRegime),
+story:same(d.story,expStory),
+lead:same(d.lead,expLead.lead),
+confirm:same(d.confirm,expLead.confirm),
+diverge:same(d.diverge,expLead.diverge),
+lag:same(d.lag,expLead.lag),
+overlay:same(d.overlay,expLead.overlay),
+strengthen:same(d.strengthen,expPlan.strengthen),
+weaken:same(d.weaken,expPlan.weaken),
+watch:same(d.watch,expPlan.watch),
+improvement_state:!!imp && typeof imp.state==='string' && imp.state.length>0
+};
+const bad=Object.entries(checks).filter(([,ok])=>!ok).map(([k])=>k);
+rows[c]={ok:bad.length===0,bad,improvement:imp?.state||null,checks};
+bad.forEach(k=>issues.push(`NARRATIVE_DESYNC:${c}:${k}`));
+});
+return {ok:issues.length===0,issues,rows};
+};
+// Re-sync all derived narrative fields before evaluating integrity.
+try{
+CCYS.forEach(c=>{
+refreshCurrencyNarrativeInData(c);
+refreshLeadStructureInData(c);
+refreshActionPlanInData(c);
+});
+if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+}catch(e){}
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const ni=currencyNarrativeIntegrity();
+r.currency_narrative_integrity=ni;
+if(!ni.ok){
+ni.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+// Tamper-test helper for audit use only; it restores the value immediately.
+window.testCurrencyNarrativeGuard=function(ccy='GBP',field='story'){
+const d=(typeof currencyIntelData!=='undefined')?currencyIntelData?.[ccy]:null;
+if(!d || !(field in d)) return {ok:false,error:'field unavailable'};
+const old=d[field];
+d[field]='__AUDIT_TAMPER__';
+const during=currencyNarrativeIntegrity();
+d[field]=old;
+const after=currencyNarrativeIntegrity();
+return {ok:!during.ok && after.ok,during,after};
+};
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+function syncDisplayState(c){
+const d=(typeof currencyIntelData!=='undefined')?currencyIntelData?.[c]:null;
+const x=deriveCurrencyState(c);
+if(!d || !x) return false;
+d.state=x.base;
+if(x.base==='FORTE' || x.base==='COSTRUTTIVA'){
+d.wind='Favorevole'; d.windClass='windFav';
+}else if(x.base==='FRAGILE' || x.base==='DEBOLE'){
+d.wind='Contrario'; d.windClass='windNeg';
+}else{
+d.wind='Neutrale'; d.windClass='windNeu';
+}
+return true;
+}
+window.syncAllCurrencyDisplayState=function(){
+const out={};
+CCYS.forEach(c=>out[c]=syncDisplayState(c));
+return out;
+};
+try{syncAllCurrencyDisplayState();}catch(e){}
+const baseStable=window.stableModelRefresh;
+if(typeof baseStable==='function'){
+window.stableModelRefresh=function(){
+const out=baseStable.apply(this,arguments);
+try{syncAllCurrencyDisplayState();}catch(e){}
+return out;
+};
+}
+const baseNarrativeIntegrity=window.currencyNarrativeIntegrity;
+if(typeof baseNarrativeIntegrity==='function'){
+window.currencyNarrativeIntegrity=function(){
+const r=baseNarrativeIntegrity();
+CCYS.forEach(c=>{
+const d=(typeof currencyIntelData!=='undefined')?currencyIntelData?.[c]:null;
+const x=deriveCurrencyState(c);
+if(!d || !x) return;
+const expectedWind=(x.base==='FORTE'||x.base==='COSTRUTTIVA')?'Favorevole':(x.base==='FRAGILE'||x.base==='DEBOLE')?'Contrario':'Neutrale';
+const expectedClass=expectedWind==='Favorevole'?'windFav':expectedWind==='Contrario'?'windNeg':'windNeu';
+const row=r.rows[c]||(r.rows[c]={ok:true,bad:[],checks:{}});
+row.checks=row.checks||{};
+row.bad=row.bad||[];
+row.checks.state=String(d.state||'')===String(x.base||'');
+row.checks.wind=String(d.wind||'')===expectedWind;
+row.checks.windClass=String(d.windClass||'')===expectedClass;
+for(const k of ['state','wind','windClass']){
+if(!row.checks[k] && !row.bad.includes(k)){
+row.bad.push(k);
+r.issues.push(`NARRATIVE_DESYNC:${c}:${k}`);
+}
+}
+row.ok=row.bad.length===0;
+});
+r.ok=r.issues.length===0;
+return r;
+};
+}
+// Force a clean post-patch synchronization.
+try{
+syncAllCurrencyDisplayState();
+if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+}catch(e){}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+function structuralSnapshot(){
+const pairs=Object.keys((typeof CERT53!=='undefined' && CERT53?.pairs)||{});
+return {
+currencies:Object.fromEntries(CCYS.map(c=>{
+const x=deriveCurrencyState(c)||{};
+return [c,{base:x.base||null,macro:Number(x.macro||0),policy:Number(x.policy||0)}];
+})),
+pairs:Object.fromEntries(pairs.map(p=>{
+const x=derivePairDecisionFrame(p)||{};
+return [p,{
+fav:x.fav||'—',quality:x.quality||null,
+macro:x.structural?.macro||null,policy:x.structural?.policy||null
+}];
+}))
+};
+}
+function same(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+window.overlayIsolationIntegrity=function(){
+const issues=[];
+const before=structuralSnapshot();
+const backup={cot:clone(D?.cot||{}),ccy:{},pairPrice:{},modelState:clone(typeof MODEL_STATE!=='undefined'?MODEL_STATE:{})};
+try{
+CCYS.forEach((c,i)=>{
+const d=currencyIntelData?.[c];
+if(!d) return;
+backup.ccy[c]={price:clone(d.price),liq:clone(d.liq)};
+// Deliberately absurd shocks: these layers must remain overlays only.
+d.price=[i%2?'FORTE':'DEBOLE',i%2?'RIALZO':'RIBASSO','__OVERLAY_ISOLATION_AUDIT__'];
+d.liq=[i%2?'FAVOREVOLE':'CONTRARIA',i%2?'UP':'DOWN','__OVERLAY_ISOLATION_AUDIT__'];
+if(D?.cot?.[c]){
+D.cot[c].pct=i%2?99:1;
+D.cot[c].net_oi=i%2?99:-99;
+D.cot[c].chg_net_1w=i%2?999999:-999999;
+}
+});
+Object.entries(CERT53?.pairs||{}).forEach(([p,x],i)=>{
+backup.pairPrice[p]=clone(x?.layer_directions?.price);
+x.layer_directions=x.layer_directions||{};
+x.layer_directions.price=i%2?'A':'B';
+});
+const after=structuralSnapshot();
+CCYS.forEach(c=>{
+if(!same(before.currencies[c],after.currencies[c])) issues.push(`OVERLAY_CONTAMINATES_CURRENCY_STRUCTURE:${c}`);
+});
+Object.keys(before.pairs).forEach(p=>{
+if(!same(before.pairs[p],after.pairs[p])) issues.push(`OVERLAY_CONTAMINATES_PAIR_STRUCTURE:${p}`);
+});
+}catch(e){
+issues.push(`OVERLAY_ISOLATION_TEST_ERROR:${String(e?.message||e)}`);
+}finally{
+try{
+if(D?.cot){
+Object.keys(D.cot).forEach(k=>delete D.cot[k]);
+Object.assign(D.cot,backup.cot);
+}
+CCYS.forEach(c=>{
+const d=currencyIntelData?.[c], b=backup.ccy[c];
+if(d && b){d.price=b.price; d.liq=b.liq;}
+});
+Object.entries(backup.pairPrice).forEach(([p,v])=>{
+if(CERT53?.pairs?.[p]){
+CERT53.pairs[p].layer_directions=CERT53.pairs[p].layer_directions||{};
+CERT53.pairs[p].layer_directions.price=v;
+}
+});
+if(typeof MODEL_STATE!=='undefined'){
+Object.keys(MODEL_STATE).forEach(k=>delete MODEL_STATE[k]);
+Object.assign(MODEL_STATE,clone(backup.modelState||{}));
+}
+}catch(e){issues.push(`OVERLAY_ISOLATION_RESTORE_ERROR:${String(e?.message||e)}`);}
+}
+return {
+ok:issues.length===0,
+issues,
+checkedCurrencies:CCYS.length,
+checkedPairs:Object.keys(before.pairs).length,
+rule:'COT + Price + Liquidity may alter context/confirmation/risk, never Macro+Rates/CB structural direction'
+};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const oi=overlayIsolationIntegrity();
+r.overlay_isolation_integrity=oi;
+if(!oi.ok){
+oi.issues.forEach(code=>{if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+function structuralSnapshot353(){
+const pairs=Object.keys((typeof CERT53!=='undefined' && CERT53?.pairs)||{});
+return {
+currencies:Object.fromEntries(CCYS.map(c=>{
+const x=deriveCurrencyState(c)||{};
+return [c,{base:x.base||null,macro:Number(x.macro||0),policy:Number(x.policy||0)}];
+})),
+pairs:Object.fromEntries(pairs.map(p=>{
+const x=derivePairDecisionFrame(p)||{};
+return [p,{
+fav:x.fav||'—',
+quality:x.quality||null,
+macro:x.structural?.macro||null,
+policy:x.structural?.policy||null
+}];
+}))
+};
+}
+function same353(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+window.riskEventIsolationIntegrity=function(){
+const issues=[];
+const before=structuralSnapshot353();
+const riskBackup=clone(D?.risk||{});
+const eventBackup=(typeof EVENT_TEMPLATES!=='undefined')?clone(EVENT_TEMPLATES):null;
+const modelStateBackup=clone(typeof MODEL_STATE!=='undefined'?MODEL_STATE:{});
+try{
+// Deliberately absurd global-risk shocks.
+if(D){
+D.risk=D.risk||{};
+D.risk['VIX']={dates:['2099-01-01','2099-01-02'],values:[5,100]};
+D.risk['Brent']={dates:['2099-01-01','2099-01-02'],values:[20,300]};
+D.risk['WTI']={dates:['2099-01-01','2099-01-02'],values:[15,250]};
+D.risk['Gold']={dates:['2099-01-01','2099-01-02'],values:[1000,5000]};
+D.risk['China CLI']={dates:['2099-01-01','2099-01-02'],values:[120,50]};
+}
+// Event Risk is presentation/expectation guidance only. Mutate it too:
+// structural currency/pair states must remain unchanged.
+if(typeof EVENT_TEMPLATES!=='undefined' && Array.isArray(EVENT_TEMPLATES)){
+EVENT_TEMPLATES.splice(0,EVENT_TEMPLATES.length,{
+name:'__EVENT_ISOLATION_AUDIT__',
+ccy:'ALL',
+type:'audit',
+above:'IMPOSSIBLE_UP',
+below:'IMPOSSIBLE_DOWN',
+first:'NONE',
+confirm:'NONE',
+why:'Audit-only mutation'
+});
+}
+if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+const after=structuralSnapshot353();
+CCYS.forEach(c=>{
+if(!same353(before.currencies[c],after.currencies[c])){
+issues.push(`GLOBAL_RISK_OR_EVENT_CONTAMINATES_CURRENCY_STRUCTURE:${c}`);
+}
+});
+Object.keys(before.pairs).forEach(p=>{
+if(!same353(before.pairs[p],after.pairs[p])){
+issues.push(`GLOBAL_RISK_OR_EVENT_CONTAMINATES_PAIR_STRUCTURE:${p}`);
+}
+});
+}catch(e){
+issues.push(`RISK_EVENT_ISOLATION_TEST_ERROR:${String(e?.message||e)}`);
+}finally{
+try{
+if(D){
+D.risk={};
+Object.assign(D.risk,riskBackup);
+}
+if(eventBackup && typeof EVENT_TEMPLATES!=='undefined' && Array.isArray(EVENT_TEMPLATES)){
+EVENT_TEMPLATES.splice(0,EVENT_TEMPLATES.length,...eventBackup);
+}
+if(typeof MODEL_STATE!=='undefined'){
+Object.keys(MODEL_STATE).forEach(k=>delete MODEL_STATE[k]);
+Object.assign(MODEL_STATE,clone(modelStateBackup||{}));
+}
+}catch(e){
+issues.push(`RISK_EVENT_ISOLATION_RESTORE_ERROR:${String(e?.message||e)}`);
+}
+}
+return {
+ok:issues.length===0,
+issues,
+checkedCurrencies:CCYS.length,
+checkedPairs:Object.keys(before.pairs).length,
+rule:'Global Risk and Event Risk are overlays/context only; they must not alter Macro+Rates/CB structural direction'
+};
+};
+const baseHealth353=window.productionHealthCheck;
+if(typeof baseHealth353==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth353();
+const x=riskEventIsolationIntegrity();
+r.risk_event_isolation_integrity=x;
+if(!x.ok){
+x.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+function restoreObjectInPlace354(target,src){
+if(!target || typeof target!=='object') return;
+Object.keys(target).forEach(k=>delete target[k]);
+Object.assign(target,clone(src||{}));
+}
+function latestSeriesDate354(obj){
+const dates=obj?.dates;
+if(Array.isArray(dates) && dates.length) return String(dates[dates.length-1]);
+return obj?.last_date ? String(obj.last_date) : null;
+}
+function liveFreshnessSnapshot354(){
+const rateDates=Object.fromEntries(CCYS.map(c=>[
+c,
+NATIVE_RATES_DATA?.[c]?.date || null
+]));
+const cbPricing=Object.fromEntries(CCYS.map(c=>{
+const d=NATIVE_CB_DATA?.[c]||{};
+const mp=d.market_pricing||{};
+return [c,{
+as_of:mp.as_of||null,
+quality:mp.quality||d.pricing_tier||null,
+source:mp.source||null
+}];
+}));
+const liquidity=Object.fromEntries(CCYS.map(c=>{
+const d=NATIVE_LIQ_DATA?.[c]||{};
+const candidates=[
+latestSeriesDate354(d.liquidity),
+latestSeriesDate354(d.money),
+latestSeriesDate354(d.credit),
+latestSeriesDate354(d.balance_sheet)
+].filter(Boolean).sort();
+return [c,{
+status:d.status||null,
+latest_observation:candidates.length?candidates[candidates.length-1]:null
+}];
+}));
+return {
+synced_at:new Date().toISOString(),
+PRICE:{
+as_of:D?.prices?.length ? (D.prices[D.prices.length-1].Date||D.prices[D.prices.length-1].date||null) : null
+},
+RATES:{per_currency:rateDates},
+COT:{as_of:(typeof D!=='undefined' && D?.cotAsOf)||null},
+CB_PRICING:{per_currency:cbPricing},
+LIQUIDITY:{per_currency:liquidity}
+};
+}
+window.syncCoreFreshnessRegistryFromLive=function(){
+const live=liveFreshnessSnapshot354();
+window.DATA_FRESHNESS_REGISTRY=window.DATA_FRESHNESS_REGISTRY||{};
+window.DATA_FRESHNESS_REGISTRY.live=live;
+// Keep the headline fields synchronized where the live basis is unambiguous.
+window.DATA_FRESHNESS_REGISTRY.PRICE=Object.assign(
+{},
+window.DATA_FRESHNESS_REGISTRY.PRICE||{},
+{as_of:live.PRICE.as_of}
+);
+window.DATA_FRESHNESS_REGISTRY.COT=Object.assign(
+{},
+window.DATA_FRESHNESS_REGISTRY.COT||{},
+{as_of:live.COT.as_of}
+);
+return clone(window.DATA_FRESHNESS_REGISTRY);
+};
+window.freshnessRegistryIntegrity=function(){
+const issues=[];
+const live=liveFreshnessSnapshot354();
+const reg=window.DATA_FRESHNESS_REGISTRY?.live;
+if(!reg){
+issues.push('LIVE_FRESHNESS_REGISTRY_MISSING');
+return {ok:false,issues,live};
+}
+if(String(reg.PRICE?.as_of||'')!==String(live.PRICE?.as_of||'')){
+issues.push('PRICE_FRESHNESS_DESYNC');
+}
+if(String(reg.COT?.as_of||'')!==String(live.COT?.as_of||'')){
+issues.push('COT_FRESHNESS_DESYNC');
+}
+CCYS.forEach(c=>{
+if(String(reg.RATES?.per_currency?.[c]||'')!==String(live.RATES?.per_currency?.[c]||'')){
+issues.push(`RATES_FRESHNESS_DESYNC:${c}`);
+}
+const a=reg.CB_PRICING?.per_currency?.[c]||{};
+const b=live.CB_PRICING?.per_currency?.[c]||{};
+if(String(a.as_of||'')!==String(b.as_of||'') || String(a.quality||'')!==String(b.quality||'')){
+issues.push(`CB_PRICING_FRESHNESS_DESYNC:${c}`);
+}
+const la=reg.LIQUIDITY?.per_currency?.[c]||{};
+const lb=live.LIQUIDITY?.per_currency?.[c]||{};
+if(String(la.latest_observation||'')!==String(lb.latest_observation||'')){
+issues.push(`LIQUIDITY_FRESHNESS_DESYNC:${c}`);
+}
+});
+return {ok:issues.length===0,issues,live};
+};
+// Initialize the registry from the actual embedded live datasets.
+try{ syncCoreFreshnessRegistryFromLive(); }catch(e){}
+const baseProductionRefresh354=window.runProductionDailyRefresh;
+if(typeof baseProductionRefresh354==='function'){
+window.runProductionDailyRefresh=function(payload){
+const backup={
+nativeRates:clone(NATIVE_RATES_DATA),
+nativeCb:clone(NATIVE_CB_DATA),
+nativeLiq:clone(NATIVE_LIQ_DATA),
+prices:clone(D.prices),
+series:clone(S),
+canonical:clone(window.CANONICAL_LAYER_STATE),
+calendar:clone(REAL_CALENDAR),
+news:clone(NEWS_PULSE_STRUCT),
+risk:clone(D.risk),
+auxFresh:clone(window.AUXILIARY_FEED_FRESHNESS||{}),
+dataFresh:clone(window.DATA_FRESHNESS_REGISTRY||{}),
+refreshGen:window.REFRESH_GENERATION,
+auxGen:window.AUXILIARY_REFRESH_GENERATION,
+prodGen:window.PRODUCTION_REFRESH_GENERATION,
+lastRefresh:clone(window.LAST_REFRESH_AUDIT),
+lastAux:clone(window.LAST_AUXILIARY_REFRESH),
+lastProd:clone(window.LAST_PRODUCTION_REFRESH)
+};
+const rollback=(reason)=>{
+restoreObjectInPlace354(NATIVE_RATES_DATA,backup.nativeRates);
+restoreObjectInPlace354(NATIVE_CB_DATA,backup.nativeCb);
+restoreObjectInPlace354(NATIVE_LIQ_DATA,backup.nativeLiq);
+D.prices.splice(0,D.prices.length,...clone(backup.prices));
+restoreObjectInPlace354(S,backup.series);
+restoreObjectInPlace354(window.CANONICAL_LAYER_STATE,backup.canonical);
+REAL_CALENDAR.splice(0,REAL_CALENDAR.length,...clone(backup.calendar));
+NEWS_PULSE_STRUCT.splice(0,NEWS_PULSE_STRUCT.length,...clone(backup.news));
+restoreObjectInPlace354(D.risk,backup.risk);
+window.AUXILIARY_FEED_FRESHNESS=clone(backup.auxFresh);
+window.DATA_FRESHNESS_REGISTRY=clone(backup.dataFresh);
+window.REFRESH_GENERATION=backup.refreshGen;
+window.AUXILIARY_REFRESH_GENERATION=backup.auxGen;
+window.PRODUCTION_REFRESH_GENERATION=backup.prodGen;
+window.LAST_REFRESH_AUDIT=clone(backup.lastRefresh);
+window.LAST_AUXILIARY_REFRESH=clone(backup.lastAux);
+window.LAST_PRODUCTION_REFRESH=clone(backup.lastProd);
+try{ stableModelRefresh(); }catch(e){}
+try{
+renderOperationalOverview();
+renderRealCalendar();
+renderNewsPulse();
+refreshGlobalRiskOverview();
+}catch(e){}
+return {
+ok:false,
+stage:'POSTCONDITION',
+error:String(reason||'POSTCONDITION_FAILED'),
+rolled_back:true,
+generation:window.PRODUCTION_REFRESH_GENERATION
+};
+};
+try{
+const out=baseProductionRefresh354(payload);
+if(!out?.ok) return out;
+// No swallowed recompute errors: a successful transaction must be recomputable.
+if(typeof endToEndRecompute!=='function') return rollback('END_TO_END_RECOMPUTE_MISSING');
+endToEndRecompute();
+// Essential visible surfaces must render from the committed state.
+if(typeof renderOperationalOverview==='function') renderOperationalOverview();
+if(typeof renderRealCalendar==='function') renderRealCalendar();
+if(typeof renderNewsPulse==='function') renderNewsPulse();
+if(typeof refreshGlobalRiskOverview==='function') refreshGlobalRiskOverview();
+syncCoreFreshnessRegistryFromLive();
+const fresh=freshnessRegistryIntegrity();
+if(!fresh.ok) return rollback('FRESHNESS_POSTCONDITION_FAILED:'+fresh.issues.join('|'));
+// Final model-integrity gate after the commit.
+if(typeof productionHealthCheck!=='function') return rollback('PRODUCTION_HEALTH_CHECK_MISSING');
+const health=productionHealthCheck();
+if(health?.status==='FAIL'){
+return rollback('HEALTH_POSTCONDITION_FAILED:'+(health.hard_errors||[]).join('|'));
+}
+window.LAST_PRODUCTION_REFRESH=Object.assign({},window.LAST_PRODUCTION_REFRESH||out,{
+postcondition:{
+ok:true,
+recompute:true,
+freshness:true,
+health_status:health?.status||null,
+checked_at:new Date().toISOString()
+}
+});
+return clone(window.LAST_PRODUCTION_REFRESH);
+}catch(e){
+return rollback(e?.message||e);
+}
+};
+}
+const baseHealth354=window.productionHealthCheck;
+if(typeof baseHealth354==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth354();
+const f=freshnessRegistryIntegrity();
+r.live_freshness_integrity=f;
+if(!f.ok){
+f.issues.forEach(code=>{
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+'use strict';
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const LEDGER_KEY='GMFQ_FORWARD_LEDGER_V1';
+const OUTCOME_KEY='GMFQ_FORWARD_OUTCOMES_V1';
+const clone=x=>JSON.parse(JSON.stringify(x));
+function stableObject(x){
+if(Array.isArray(x)) return x.map(stableObject);
+if(x && typeof x==='object'){
+const o={};

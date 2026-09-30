@@ -1,0 +1,1000 @@
+renderCurrency();
+});
+const st=safe(()=>deriveCurrencyState(c),{})||{},a=stateMeta(st),ch=changeMeta(st.improvementState),p=priceMeta(st.confirmation),r=riskMeta(c);
+document.getElementById('v302CurrencySummary').innerHTML=`<div class="v302Title">VALUTA SELEZIONATA · ${c}</div><div class="v302Grid"><div class="v302Cell ${a.c}"><span>Stato</span><b>${a.t}</b><small>Macro ${pword(st.macro||0)} · Tassi/CB ${pword(st.policy||0)}</small></div><div class="v302Cell ${ch.c}"><span>Cambiamento</span><b>${ch.t}</b><small>Rispetto al quadro precedente</small></div><div class="v302Cell ${p.c}"><span>Prezzo</span><b>${p.t}</b><small>Conferma o divergenza</small></div><div class="v302Cell ${r.c}"><span>Rischio</span><b>${r.t}</b><small>${r.n}</small></div></div>`;
+}
+function renderPairSummary(){
+const view=document.getElementById('pairs');if(!view)return;
+let box=document.getElementById('v302PairSummary');
+if(!box){
+box=document.createElement('div');box.id='v302PairSummary';
+const anchor=view.querySelector('.v226DetailHead')||view.firstElementChild;
+if(anchor)anchor.insertAdjacentElement('afterend',box);else view.prepend(box);
+}
+const pair=safe(()=>selectedPair,'EUR/USD')||'EUR/USD';
+const f=safe(()=>derivePairDecisionFrame(pair),{})||{};
+let qt={t:'DA ASPETTARE',c:'neu'};
+if(f.quality==='CONTRASTO STRUTTURALE FORTE'||f.quality==='VANTAGGIO RELATIVO FORTE')qt={t:'DA SEGUIRE',c:'pos'};
+else if(f.quality==='VANTAGGIO RELATIVO PARZIALE')qt={t:'VANTAGGIO PARZIALE',c:'warn'};
+const missing=document.getElementById('v227MissingNow')?.textContent||'—';
+const watch=document.getElementById('v227Watch')?.textContent||'—';
+box.innerHTML=`<div class="v302Title">COPPIA · ${pair}</div><div class="v302Grid"><div class="v302Cell ${f.fav&&f.fav!=='—'?qt.c:'neu'}"><span>Vantaggio</span><b>${f.fav&&f.fav!=='—'?f.fav:'NESSUNO'}</b></div><div class="v302Cell ${qt.c}"><span>Qualità</span><b>${qt.t}</b></div><div class="v302Cell warn"><span>Cosa manca</span><b>${missing}</b></div><div class="v302Cell neu"><span>Da monitorare</span><b>${watch}</b></div></div>`;
+}
+function sync(){
+renderOverview();
+// Currency v302 summary retired: the v224 Currency view is the single visible source.
+const stale=document.getElementById('v302CurrencyShell');
+if(stale) stale.remove();
+renderPairSummary();
+}
+window.v302ConsolidatedSync=sync;
+document.addEventListener('click',()=>setTimeout(sync,0),true);
+document.addEventListener('change',()=>setTimeout(sync,0),true);
+sync();
+})();
+</script><script id="v303-initial-load-sync">
+(function(){
+'use strict';
+function run(){
+try{
+if(typeof window.v302ConsolidatedSync==='function') window.v302ConsolidatedSync();
+}catch(e){ console.error('v303 initial sync',e); }
+}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',()=>{run();setTimeout(run,40);},{once:true});
+}else{
+run();setTimeout(run,40);
+}
+})();
+</script><script id="v305-canonical-pair-setup-engine">
+(function(){
+'use strict';
+const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
+function pairCurrencies(pair){
+const p=String(pair||'').split('/');
+return p.length===2?p:[null,null];
+}
+function liquidityOverlayScore(c){
+const x=safe(()=>NATIVE_LIQ_DATA?.[c],null);
+if(!x) return null;
+if(x.status==='PARZIALE' || x.liquidity_dir==='DATI CORRENTI' || x.liquidity_dir==='NON DISPONIBILE') return null;
+if(x.liquidity_dir==='IN AUMENTO') return 1;
+if(x.liquidity_dir==='IN CALO') return -1;
+return 0;
+}
+function cotPositionRisk(c){
+const x=safe(()=>D.cot?.[c],null);
+if(!x) return {level:'UNKNOWN', source:'UNKNOWN', text:'COT non disponibile'};
+const pct=Number(x.pct);
+const noi=Number(x.net_oi||0);
+const absNoi=Math.abs(noi);
+if(absNoi>=MODEL_RULES.cot.netOiConcentration){
+return {level:'HIGH', source:'CONCENTRATION', text:`COT affollato · Net/OI ${noi>0?'+':''}${noi.toFixed(1)}%`};
+}
+if(Number.isFinite(pct) && (pct>=MODEL_RULES.cot.extremeHigh || pct<=MODEL_RULES.cot.extremeLow)){
+return {level:'HIGH', source:'PERCENTILE_EXTREME', text:`COT estremo · P${Math.round(pct)}`};
+}
+if(Number.isFinite(pct) && (pct>=MODEL_RULES.cot.warningHigh || pct<=MODEL_RULES.cot.warningLow)){
+return {level:'MEDIUM', source:'PERCENTILE_WARNING', text:`COT da monitorare · P${Math.round(pct)}`};
+}
+return {level:'LOW', source:'NONE', text:'COT non estremo'};
+}
+function cotTradeContext(c, desiredSign){
+const d=safe(()=>D.cot?.[c],null);
+if(!d) return {level:'UNKNOWN', relation:'UNKNOWN', text:`${c}: COT non disponibile`};
+const baseRisk=cotPositionRisk(c);
+const noi=Number(d.net_oi);
+const net=Number(d.net);
+let sign=0;
+if(Number.isFinite(noi) && noi!==0) sign=Math.sign(noi);
+else if(Number.isFinite(net) && net!==0) sign=Math.sign(net);
+if(baseRisk.level==='LOW'){
+return {level:'LOW', source:baseRisk.source, relation:'NEUTRAL', text:`${c}: COT non estremo`};
+}
+if(sign===0){
+return {level:baseRisk.level, source:baseRisk.source, relation:'UNKNOWN', text:`${c}: ${baseRisk.text} · direzione net non leggibile`};
+}
+const withTrade=sign===Math.sign(desiredSign);
+if(withTrade){
+return {
+level:baseRisk.level,
+source:baseRisk.source,
+relation:'WITH_TRADE',
+text:`${c}: ${baseRisk.text} · già allineato al trade`
+};
+}
+return {
+level:baseRisk.level,
+source:baseRisk.source,
+relation:'AGAINST_TRADE',
+text:`${c}: ${baseRisk.text} · posizionamento contro il trade`
+};
+}
+function cotPairContext(fav,other){
+const lf=cotTradeContext(fav,+1);
+const lo=cotTradeContext(other,-1);
+const legs=[lf,lo];
+const highAligned=legs.filter(x=>x.level==='HIGH' && x.relation==='WITH_TRADE');
+const highAgainst=legs.filter(x=>x.level==='HIGH' && x.relation==='AGAINST_TRADE');
+const medium=legs.filter(x=>x.level==='MEDIUM');
+const unknown=legs.filter(x=>x.level==='UNKNOWN' || x.relation==='UNKNOWN');
+if(highAligned.length){
+const actualCrowding=highAligned.some(x=>x.source==='CONCENTRATION');
+return {
+state:'HIGH',
+kind:actualCrowding?'CROWDED_WITH_TRADE':'EXTREME_POSITIONING_WITH_TRADE',
+text:highAligned.map(x=>x.text).join(' · '),
+legs
+};
+}
+if(highAgainst.length){
+const actualCrowding=highAgainst.some(x=>x.source==='CONCENTRATION');
+return {
+state:'DIVERGENT',
+kind:actualCrowding?'CROWDED_AGAINST_TRADE':'EXTREME_POSITIONING_AGAINST_TRADE',
+text:highAgainst.map(x=>x.text).join(' · '),
+legs
+};
+}
+if(medium.length){
+return {
+state:'MEDIUM',
+kind:medium.some(x=>x.relation==='WITH_TRADE')?'WATCH_POSITIONING_WITH_TRADE':'WATCH_POSITIONING_DIVERGENCE',
+text:medium.map(x=>x.text).join(' · '),
+legs
+};
+}
+if(unknown.length){
+return {state:'UNKNOWN',kind:'UNKNOWN',text:'COT non pienamente leggibile',legs};
+}
+return {state:'LOW',kind:'NEUTRAL',text:'COT non estremo',legs};
+}
+function pairPriceExtensionDiagnostic(pair,fav){
+const [a,b]=pairCurrencies(pair);
+if(!a || !b || !fav || fav==='—') return {state:'UNKNOWN',pct:null,move1m:null,text:'Estensione prezzo non valutabile'};
+const full=safe(()=>pairSeries(pair,D.prices.length),null);
+const v=full?.values||[];
+const win=22;
+if(v.length<win+30) return {state:'UNKNOWN',pct:null,move1m:null,text:'Storico prezzo insufficiente'};
+const hist=[];
+for(let i=win;i<v.length;i++){
+const x=Number(v[i-win]), y=Number(v[i]);
+if(!Number.isFinite(x)||!Number.isFinite(y)||x===0) continue;
+let r=(y/x-1)*100;
+// pairSeries is quote/base: positive price return favors the first currency.
+// Reverse the sign when the structural favorite is the second currency.
+if(fav===b) r=-r;
+hist.push(r);
+}
+if(hist.length<100) return {state:'UNKNOWN',pct:null,move1m:null,text:'Storico prezzo insufficiente'};
+const current=hist.at(-1);
+const sorted=[...hist].sort((x,y)=>x-y);
+let le=0;
+for(const x of sorted) if(x<=current) le++;
+const pct=100*le/sorted.length;
+// Descriptive historical diagnostic only; not a predictive alpha rule.
+// >=90 means the current 1M move in the structural direction is among
+// the strongest decile of rolling 1M moves in this pair's available history.
+if(current>0 && pct>=90){
+return {
+state:'EXTENDED',
+pct,
+move1m:current,
+text:`Prezzo già molto avanzato · 1M ${current>=0?'+':''}${current.toFixed(1)}% · P${pct.toFixed(0)} storico`
+};
+}
+if(current>0 && pct>=80){
+return {
+state:'ADVANCED',
+pct,
+move1m:current,
+text:`Prezzo già avanzato · 1M ${current>=0?'+':''}${current.toFixed(1)}% · P${pct.toFixed(0)} storico`
+};
+}
+return {
+state:'NORMAL',
+pct,
+move1m:current,
+text:`Estensione non elevata · 1M ${current>=0?'+':''}${current.toFixed(1)}% · P${pct.toFixed(0)} storico`
+};
+}
+function recentChangeSignal(c){
+const st=safe(()=>deriveCurrencyState(c),null);
+const x=String(st?.improvementState||'').toUpperCase();
+if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')){
+return {side:'POS', text:`${c} sta migliorando`};
+}
+if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')){
+return {side:'NEG', text:`${c} sta peggiorando`};
+}
+if(x.includes('TURNING POINT')){
+return {side:'TRANSITION', text:`${c} è in possibile svolta`};
+}
+if(x.includes('STABILE')){
+return {side:'NEUTRAL', text:`${c} è stabile`};
+}
+if(x.includes('NON DETERMINATO') || !x){
+return {side:'UNKNOWN', text:`${c}: cambiamento non determinato`};
+}
+return {side:'NEUTRAL', text:`${c}: nessun cambiamento direzionale chiaro`};
+}
+function pairTimingContext(fav,other){
+const f=recentChangeSignal(fav);
+const o=recentChangeSignal(other);
+const aligned=[];
+const adverse=[];
+const uncertain=[];
+if(f.side==='POS') aligned.push(f.text);
+else if(f.side==='NEG') adverse.push(f.text);
+else if(f.side==='TRANSITION' || f.side==='UNKNOWN') uncertain.push(f.text);
+// For the "other" currency, weakening is supportive to the structural pair;
+// strengthening is adverse.
+if(o.side==='NEG') aligned.push(o.text);
+else if(o.side==='POS') adverse.push(o.text);
+else if(o.side==='TRANSITION' || o.side==='UNKNOWN') uncertain.push(o.text);
+if(aligned.length && adverse.length){
+return {
+state:'MIXED',
+text:`Timing misto · ${[...aligned,...adverse].join(' · ')}`,
+favChange:f, otherChange:o
+};
+}
+if(adverse.length){
+return {
+state:'ADVERSE',
+text:`Timing contrario · ${adverse.join(' · ')}`,
+favChange:f, otherChange:o
+};
+}
+if(uncertain.length){
+return {
+state:aligned.length?'PARTIAL':'UNCERTAIN',
+text:`Timing da monitorare · ${[...aligned,...uncertain].join(' · ')}`,
+favChange:f, otherChange:o
+};
+}
+if(aligned.length){
+return {
+state:'ALIGNED',
+text:`Timing favorevole · ${aligned.join(' · ')}`,
+favChange:f, otherChange:o
+};
+}
+return {
+state:'NEUTRAL',
+text:'Timing recente neutro',
+favChange:f, otherChange:o
+};
+}
+function derivePairSetupState(pair){
+const structural=safe(()=>derivePairDecisionFrame(pair),{})||{};
+const [a,b]=pairCurrencies(pair);
+const fav=(structural.fav && structural.fav!=='—') ? structural.fav : null;
+if(!a || !b || !fav){
+return {
+pair, structuralFav:null,
+quality:'NON VALUTABILE', qualityCode:'NOT_EVALUABLE',
+price:{state:'NEUTRAL', text:'Nessun vantaggio strutturale'},
+cot:{state:'CONTEXT', kind:'CONTEXT', text:'COT solo contesto'},
+liquidity:{state:'CONTEXT', text:'Liquidità solo contesto'},
+structural
+};
+}
+const other=fav===a?b:a;
+let price={state:'NEUTRAL', text:'Prezzo non conferma ancora'};
+if(structural.priceReading==='MERCATO GIÀ ALLINEATO'){
+price={state:'GOOD', text:'Prezzo conferma'};
+}else if(structural.priceReading==='DIVERGENZA DA MONITORARE'){
+price={state:'BAD', text:'Prezzo diverge'};
+}
+const extension=pairPriceExtensionDiagnostic(pair,fav);
+const timing=pairTimingContext(fav,other);
+if(price.state==='GOOD' && extension.state==='EXTENDED'){
+price={state:'GOOD', text:`Prezzo conferma, ma è già molto esteso · ${extension.text}`};
+}else if(price.state==='GOOD' && extension.state==='ADVANCED'){
+price={state:'GOOD', text:`Prezzo conferma, ma è già avanzato · ${extension.text}`};
+}
+const cot=cotPairContext(fav,other);
+const lf=liquidityOverlayScore(fav);
+const lo=liquidityOverlayScore(other);
+let liquidity={state:'NEUTRAL', text:'Liquidità neutra / simile'};
+if(lf===null || lo===null){
+liquidity={state:'UNKNOWN', text:'Liquidità non pienamente determinata'};
+}else if(lf>lo){
+liquidity={state:'GOOD', text:`Liquidità favorisce ${fav}`};
+}else if(lf<lo){
+liquidity={state:'BAD', text:`Liquidità favorisce ${other}`};
+}
+let quality='DA CONFERMARE';
+let qualityCode='NEEDS_CONFIRMATION';
+if(cot.state==='HIGH'){
+quality='CON RISCHI';
+qualityCode='RISKY';
+}else if(price.state!=='GOOD'){
+quality='DA CONFERMARE';
+qualityCode='NEEDS_CONFIRMATION';
+}else if(extension.state==='EXTENDED' || extension.state==='ADVANCED' ||
+timing.state==='ADVERSE' || timing.state==='MIXED' || timing.state==='PARTIAL' || timing.state==='UNCERTAIN' ||
+cot.state==='DIVERGENT' || cot.state==='MEDIUM' || cot.state==='UNKNOWN' ||
+liquidity.state==='BAD' || liquidity.state==='UNKNOWN'){
+quality='DA MONITORARE';
+qualityCode='WATCH';
+}else{
+quality='PULITO';
+qualityCode='CLEAN';
+}
+return {pair,structuralFav:fav,other,quality,qualityCode,price,extension,timing,cot,liquidity,structural};
+}
+window.derivePairSetupState=derivePairSetupState;
+window.snapshotStats=function(outcomes,horizon){
+const rows=outcomes.filter(o=>o.horizon===horizon);
+const basket=[];
+const hitBasket=[];
+rows.forEach(o=>{
+const vals=Object.values(o?.result?.pair_results||{})
+.map(x=>Number(x.favored_return_pct))
+.filter(Number.isFinite);
+if(!vals.length) return;
+basket.push(vals.reduce((a,b)=>a+b,0)/vals.length);
+const hits=Object.values(o?.result?.pair_results||{})
+.filter(x=>x.hit===true || x.hit===false);
+if(hits.length){
+hitBasket.push(hits.filter(x=>x.hit===true).length/hits.length);
+}
+});
+const n=basket.length;
+if(!n) return {n:0,mean:null,se:null,ciLow:null,ciHigh:null,hitMean:null};
+const mean=basket.reduce((a,b)=>a+b,0)/n;
+const variance=n>1
+? basket.reduce((s,x)=>s+(x-mean)**2,0)/(n-1)
+: null;
+const se=(variance!=null)?Math.sqrt(variance/n):null;
+// 95% normal approximation shown only as descriptive uncertainty.
+const ciLow=se!=null?mean-1.96*se:null;
+const ciHigh=se!=null?mean+1.96*se:null;
+const hitMean=hitBasket.length?hitBasket.reduce((a,b)=>a+b,0)/hitBasket.length:null;
+return {n,mean,se,ciLow,ciHigh,hitMean};
+};
+function reliabilityLabel(st){
+if(!st.n) return {label:'In attesa',cls:'fwdNeu'};
+if(st.n<10) return {label:'Troppo presto',cls:'fwdWarn'};
+if(st.n<20) return {label:'Preliminare',cls:'fwdWarn'};
+if(st.n<40) return {label:'Campione in costruzione',cls:'fwdWarn'};
+return {label:'Più affidabile',cls:'fwdPos'};
+}
+function snapshotBasketSeries(outcomes,horizon){
+return outcomes
+.filter(o=>o.horizon===horizon)
+.map(o=>{
+const vals=Object.values(o?.result?.pair_results||{})
+.map(x=>Number(x.favored_return_pct))
+.filter(Number.isFinite);
+if(!vals.length) return null;
+return {
+snapshot_id:o.snapshot_id,
+value:vals.reduce((a,b)=>a+b,0)/vals.length
+};
+})
+.filter(Boolean);
+}
+function pathRiskStats(series){
+const vals=series.map(x=>Number(x.value)).filter(Number.isFinite);
+const n=vals.length;
+if(!n) return {n:0,mean:null,vol:null,sharpe:null,sortino:null,maxDD:null};
+const mean=vals.reduce((a,b)=>a+b,0)/n;
+const variance=n>1?vals.reduce((s,x)=>s+(x-mean)**2,0)/(n-1):null;
+const vol=variance!=null?Math.sqrt(variance):null;
+const downside=vals.filter(x=>x<0);
+const downVar=downside.length>1
+? downside.reduce((s,x)=>s+x*x,0)/(downside.length-1)
+: downside.length===1 ? downside[0]*downside[0] : null;
+const downDev=downVar!=null?Math.sqrt(downVar):null;
+const sharpe=(vol && vol>0)?mean/vol:null;
+const sortino=(downDev && downDev>0)?mean/downDev:null;
+let equity=1,peak=1,maxDD=0;
+vals.forEach(r=>{
+equity*=1+r/100;
+if(equity>peak) peak=equity;
+const dd=(equity/peak-1)*100;
+if(dd<maxDD) maxDD=dd;
+});
+return {n,mean,vol,sharpe,sortino,maxDD};
+}
+function pairedOverlayStats(outcomes,horizon,kind,value){
+const grouped=[];
+outcomes.filter(o=>o.horizon===horizon).forEach(o=>{
+const all=Object.values(o?.result?.pair_results||{})
+.filter(x=>Number.isFinite(Number(x.favored_return_pct)));
+if(!all.length) return;
+const sub=all.filter(x=>String(x.overlay_tags?.[kind]||'')===String(value));
+if(!sub.length) return;
+const coreMean=all.reduce((s,x)=>s+Number(x.favored_return_pct),0)/all.length;
+const subMean=sub.reduce((s,x)=>s+Number(x.favored_return_pct),0)/sub.length;
+grouped.push({
+snapshot_id:o.snapshot_id,
+core:coreMean,
+overlay:subMean,
+delta:subMean-coreMean,
+n_sub:sub.length
+});
+});
+const ds=grouped.map(x=>x.delta);
+if(!ds.length) return {n:0,deltaMean:null,deltaMedian:null,positiveShare:null,se:null};
+const mean=ds.reduce((a,b)=>a+b,0)/ds.length;
+const s=[...ds].sort((a,b)=>a-b);
+const median=s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;
+const var_=ds.length>1?ds.reduce((z,x)=>z+(x-mean)**2,0)/(ds.length-1):null;
+const se=var_!=null?Math.sqrt(var_/ds.length):null;
+const positiveShare=ds.filter(x=>x>0).length/ds.length;
+return {n:ds.length,deltaMean:mean,deltaMedian:median,positiveShare,se};
+}
+function render(){
+const box=document.getElementById('v302PairSummary');
+if(!box) return;
+const pair=safe(()=>selectedPair,'EUR/GBP')||'EUR/GBP';
+const f=safe(()=>derivePairDecisionFrame(pair),{})||{};
+const q=derivePairSetupState(pair);
+let st={t:'DA ASPETTARE',c:'neu'};
+if(f.quality==='CONTRASTO STRUTTURALE FORTE' || f.quality==='VANTAGGIO RELATIVO FORTE'){
+st={t:'DA SEGUIRE',c:'pos'};
+}else if(f.quality==='VANTAGGIO RELATIVO PARZIALE'){
+st={t:'VANTAGGIO PARZIALE',c:'warn'};
+}
+const qcls=q.qualityCode==='CLEAN'?'pos':q.qualityCode==='NOT_EVALUABLE'?'neu':'warn';
+box.innerHTML=`<div class="v302Title">COPPIA · ${pair}</div><div class="v302Grid"><div class="v302Cell ${f.fav&&f.fav!=='—'?st.c:'neu'}"><span>Vantaggio strutturale</span><b>${f.fav&&f.fav!=='—'?f.fav:'NESSUNO'}</b><small>Solo Macro + Tassi/CB</small></div><div class="v302Cell ${st.c}"><span>Struttura</span><b>${st.t}</b><small>${f.relation||'—'}</small></div><div class="v302Cell ${qcls}"><span>Qualità setup</span><b>${q.quality}</b><small>${q.price.text} · ${q.cot.text} · ${q.liquidity.text}</small></div><div class="v302Cell neu"><span>Gerarchia</span><b>STRUTTURA ≠ SETUP</b><small>Il secondo layer qualifica il setup ma non cambia mai la valuta favorita</small></div></div>`;
+}
+window.v305PairSetupRender=render;
+const old=window.v302ConsolidatedSync;
+window.v302ConsolidatedSync=function(){
+try{ if(typeof old==='function') old(); }catch(e){}
+try{ render(); }catch(e){}
+};
+document.addEventListener('click',()=>setTimeout(render,0),true);
+document.addEventListener('change',()=>setTimeout(render,0),true);
+render();
+})();
+</script><script>
+
+(function(){
+'use strict';
+window.v312HumanChange=function(x){
+const t=String(x||'').toUpperCase();
+if(t==='MIGLIORA') return 'STA MIGLIORANDO';
+if(t==='PEGGIORA') return 'STA PEGGIORANDO';
+if(t.includes('EARLY SHIFT NEGATIVO')) return 'PRIMI SEGNALI NEGATIVI';
+if(t.includes('EARLY SHIFT POSITIVO')) return 'PRIMI SEGNALI POSITIVI';
+if(t.includes('TURNING POINT')) return 'POSSIBILE SVOLTA';
+if(t.includes('STABILE')) return 'STABILE';
+if(t.includes('NON DETERMINATO')) return 'NON DETERMINATO';
+return x||'STABILE';
+};
+window.v312HumanPrice=function(x){
+const t=String(x||'').toUpperCase();
+if(t.includes('CONFERMA')) return 'PREZZO CONFERMA';
+if(t.includes('DIVERGE')) return 'PREZZO DIVERGE';
+if(t.includes('NON RISOLUTIVO')||t.includes('SENZA STRUTTURA')) return 'PREZZO NON CONFERMA ANCORA';
+return x||'PREZZO NON CONFERMA ANCORA';
+};
+})();
+
+</script><script id="v321-liquidity-method-note"></script><script id="v322-price-extension-method-note"></script><script id="v323-pair-timing-method-note"></script><script id="v330-cb-pricing-method-note"></script><script id="v331-cb-pricing-source-note"></script><script id="v332-freshness-guard-note"></script><script id="v333-cb-pricing-max-coverage-note"></script><script>
+window.DATA_FRESHNESS_REGISTRY={"audit_date":"2026-09-29","PRICE":{"as_of":"2026-09-28","status":"CURRENT_OFFICIAL","source":"ECB euro reference rates"},"RATES":{"as_of":"2026-09-28 mixed","status":"PARTIAL_CURRENT_SAME_BASIS","current":["USD","NZD"],"pending_same_basis":["EUR","GBP","JPY","CHF","CAD","AUD"],"note":"USD official U.S. Treasury and NZD official RBNZ updated to 28 Sep. Other six retain last validated canonical-basis snapshot rather than mixing benchmark methodologies."},"COT":{"as_of":"2026-09-22","status":"CURRENT_WEEKLY","note":"Latest weekly CFTC observation embedded in model."},"CB_PRICING":{"status":"MIXED_QUALITY","note":"JPY/CAD direct validated; USD/EUR/GBP/CHF secondary validated; AUD pending post-decision EOD; NZD partial official."},"LIQUIDITY":{"status":"MIXED_FREQUENCY_CURRENT","note":"Monthly/weekly source cadence respected; NZD now complete through Jul 2026."},"MACRO":{"status":"MIXED_FREQUENCY","note":"Monthly/quarterly/weekly series retain source-specific release cadence; stale-by-calendar is not automatically stale-by-release."}};
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const LAYERS=['macro','rates','cb','liq','price'];
+// Seed ONE canonical qualitative state from the already-approved current model.
+window.CANONICAL_LAYER_STATE = window.CANONICAL_LAYER_STATE || {};
+CCYS.forEach(c=>{
+const d=currencyIntelData?.[c]||{};
+const slot=window.CANONICAL_LAYER_STATE[c]||(window.CANONICAL_LAYER_STATE[c]={});
+LAYERS.forEach(k=>{
+if(slot[k]===undefined){
+const v=d[k];
+slot[k]=Array.isArray(v)?v.slice():v;
+}
+});
+});
+// Rebind all existing readers to the single canonical state.
+CCYS.forEach(c=>{
+const d=currencyIntelData?.[c];
+if(!d)return;
+LAYERS.forEach(k=>{
+try{
+Object.defineProperty(d,k,{
+configurable:true,
+enumerable:true,
+get(){ return window.CANONICAL_LAYER_STATE[c][k]; },
+set(v){ window.CANONICAL_LAYER_STATE[c][k]=v; }
+});
+}catch(e){}
+});
+});
+window.REFRESH_GENERATION = window.REFRESH_GENERATION || 0;
+window.LAST_REFRESH_AUDIT = window.LAST_REFRESH_AUDIT || null;
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+function isObj(x){ return x && typeof x==='object' && !Array.isArray(x); }
+function requireLayer(payload,c,layer,reason,errors){
+const v=payload?.layerState?.[c]?.[layer];
+if(v===undefined) errors.push(`${c}: manca layerState.${layer} per aggiornamento ${reason}`);
+}
+window.validateCanonicalRefreshPayload=function(payload){
+const errors=[];
+if(!isObj(payload)){errors.push('Payload non valido');return {ok:false,errors};}
+Object.keys(payload.rates||{}).forEach(c=>{
+if(!CCYS.includes(c)) errors.push(`Valuta Rates non supportata: ${c}`);
+else requireLayer(payload,c,'rates','Rates',errors);
+});
+Object.keys(payload.cb||{}).forEach(c=>{
+if(!CCYS.includes(c)) errors.push(`Valuta CB non supportata: ${c}`);
+else requireLayer(payload,c,'cb','CB',errors);
+});
+Object.keys(payload.liquidity||{}).forEach(c=>{
+if(!CCYS.includes(c)) errors.push(`Valuta Liquidità non supportata: ${c}`);
+else requireLayer(payload,c,'liq','Liquidità',errors);
+});
+(payload.series||[]).forEach(u=>{
+const c=u?.currency;
+if(!CCYS.includes(c)) errors.push(`Valuta Macro/Series non supportata: ${c}`);
+else if(String(u?.category||'').toLowerCase()!=='rates') requireLayer(payload,c,'macro','Macro/Series',errors);
+});
+if(payload.prices){
+// A full price snapshot can alter confirmation for every currency.
+CCYS.forEach(c=>requireLayer(payload,c,'price','Price',errors));
+}
+Object.entries(payload.layerState||{}).forEach(([c,layers])=>{
+if(!CCYS.includes(c)) errors.push(`Valuta layerState non supportata: ${c}`);
+else Object.keys(layers||{}).forEach(k=>{
+if(!LAYERS.includes(k)) errors.push(`${c}: layerState non supportato ${k}`);
+});
+});
+return {ok:errors.length===0,errors};
+};
+window.applyCanonicalRefreshPayload=function(payload){
+const check=window.validateCanonicalRefreshPayload(payload);
+if(!check.ok){
+window.LAST_REFRESH_AUDIT={ok:false,generation:window.REFRESH_GENERATION,errors:check.errors.slice(),at:new Date().toISOString()};
+return window.LAST_REFRESH_AUDIT;
+}
+// Backups make the update atomic: any exception restores every touched source.
+const backup={
+rates:clone(NATIVE_RATES_DATA),
+cb:clone(NATIVE_CB_DATA),
+liq:clone(NATIVE_LIQ_DATA),
+prices:clone(D.prices),
+series:clone(S),
+layer:clone(window.CANONICAL_LAYER_STATE)
+};
+try{
+Object.entries(payload.rates||{}).forEach(([c,patch])=>Object.assign(NATIVE_RATES_DATA[c],clone(patch)));
+Object.entries(payload.cb||{}).forEach(([c,patch])=>Object.assign(NATIVE_CB_DATA[c],clone(patch)));
+Object.entries(payload.liquidity||{}).forEach(([c,patch])=>Object.assign(NATIVE_LIQ_DATA[c],clone(patch)));
+(payload.series||[]).forEach(u=>{
+const arr=S[u.currency]||[];
+const item=arr.find(x=>x.id===u.id);
+if(!item) throw new Error(`${u.currency}: serie non trovata ${u.id}`);
+if(u.date!==undefined && u.value!==undefined){
+const dates=item.dates||(item.dates=[]), values=item.values||(item.values=[]);
+const i=dates.indexOf(u.date);
+if(i>=0) values[i]=u.value;
+else {dates.push(u.date);values.push(u.value);}
+item.last_date=u.date; item.last_value=u.value;
+}
+Object.entries(u.patch||{}).forEach(([k,v])=>item[k]=clone(v));
+});
+if(payload.prices){
+const rows=Array.isArray(payload.prices)?payload.prices:[payload.prices];
+rows.forEach(row=>{
+if(!row?.Date) throw new Error('Price row senza Date');
+const i=D.prices.findIndex(x=>x.Date===row.Date);
+if(i>=0) D.prices[i]=Object.assign({},D.prices[i],clone(row));
+else D.prices.push(clone(row));
+});
+D.prices.sort((a,b)=>String(a.Date).localeCompare(String(b.Date)));
+}
+Object.entries(payload.layerState||{}).forEach(([c,layers])=>{
+Object.entries(layers||{}).forEach(([k,v])=>{
+window.CANONICAL_LAYER_STATE[c][k]=clone(v);
+});
+});
+// Exactly one model refresh after all sources and canonical readings are coherent.
+window.REFRESH_GENERATION++;
+stableModelRefresh();
+const audit={
+ok:true,
+generation:window.REFRESH_GENERATION,
+at:new Date().toISOString(),
+touched:{
+rates:Object.keys(payload.rates||{}),
+cb:Object.keys(payload.cb||{}),
+liquidity:Object.keys(payload.liquidity||{}),
+series:(payload.series||[]).map(x=>`${x.currency}:${x.id}`),
+prices:!!payload.prices,
+layerState:Object.keys(payload.layerState||{})
+}
+};
+window.LAST_REFRESH_AUDIT=audit;
+return audit;
+}catch(err){
+// rollback in place so existing object references remain valid
+Object.keys(NATIVE_RATES_DATA).forEach(k=>delete NATIVE_RATES_DATA[k]);
+Object.assign(NATIVE_RATES_DATA,backup.rates);
+Object.keys(NATIVE_CB_DATA).forEach(k=>delete NATIVE_CB_DATA[k]);
+Object.assign(NATIVE_CB_DATA,backup.cb);
+Object.keys(NATIVE_LIQ_DATA).forEach(k=>delete NATIVE_LIQ_DATA[k]);
+Object.assign(NATIVE_LIQ_DATA,backup.liq);
+D.prices.splice(0,D.prices.length,...backup.prices);
+Object.keys(S).forEach(k=>delete S[k]);
+Object.assign(S,backup.series);
+window.CANONICAL_LAYER_STATE=backup.layer;
+window.LAST_REFRESH_AUDIT={ok:false,generation:window.REFRESH_GENERATION,error:String(err?.message||err),rolledBack:true,at:new Date().toISOString()};
+return window.LAST_REFRESH_AUDIT;
+}
+};
+try{ stableModelRefresh(); }catch(e){}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+window.stableModelRefresh=function(){
+try{
+// 1) Rebuild derived narrative metadata for ALL currencies.
+CCYS.forEach(c=>{
+try{ refreshCurrencyNarrativeInData(c); }catch(e){}
+try{ refreshLeadStructureInData(c); }catch(e){}
+try{ refreshActionPlanInData(c); }catch(e){}
+});
+// 2) Only the selected card/header needs selected-state presentation fields.
+if(typeof selectedCcy!=='undefined'){
+try{ refreshCurrencyIntelHeader(); }catch(e){}
+}
+// 3) One canonical rebuild after every currency has been synchronized.
+rebuildCanonicalState();
+// 4) Render only visible views; they now read the same rebuilt state.
+if(typeof selectedCcy!=='undefined'){
+try{ renderCurrency(); }catch(e){}
+try{ renderCurrencyIntelligence(); }catch(e){}
+}
+if(typeof selectedPair!=='undefined'){
+try{ renderPair(); }catch(e){}
+}
+if(typeof refreshOverviewContext==='function'){
+try{ refreshOverviewContext(); }catch(e){}
+}
+// 5) Final presentation sync only.
+try{
+if(typeof window.v302ConsolidatedSync==='function') window.v302ConsolidatedSync();
+}catch(e){}
+setTimeout(currencySyncQa,0);
+}catch(err){
+console.warn('Dashboard refresh skipped:',err);
+}
+};
+// Re-run once so the production candidate starts fully synchronized.
+try{ stableModelRefresh(); }catch(e){}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+function labelFromPol(p){
+return p>0?'Favorevole':p<0?'Contrario':'Neutrale';
+}
+function currentPol(c,layer){
+try{
+if(layer==='policy') return policyFamilyPolarity(currencyIntelData[c]);
+return layerPolarity(currencyIntelData[c]?.[layer]);
+}catch(e){return 0;}
+}
+function shadowMacro(c){
+try{
+const g=blockDynamics(c,'Crescita'), l=blockDynamics(c,'Lavoro');
+if(!g || !l) return {available:false,reason:'copertura Crescita/Lavoro insufficiente'};
+const sum=(g.direction||0)+(l.direction||0);
+const pol=sum>0?1:sum<0?-1:0;
+return {
+available:true,pol,label:labelFromPol(pol),
+growth:g.direction||0,labour:l.direction||0,
+turning:!!(g.turning||l.turning),
+reason:`impulso recente Crescita ${g.direction||0}, Lavoro ${l.direction||0}`
+};
+}catch(e){return {available:false,reason:String(e?.message||e)};}
+}
+function shadowRates(c){
+try{
+const r=currencyDynamics(c)?.rates;
+if(!r) return {available:false,reason:'storico 2Y insufficiente'};
+const pol=r.dir>0?1:r.dir<0?-1:0;
+return {
+available:true,pol,label:labelFromPol(pol),
+dir:r.dir||0,turn:!!r.turn,
+reason:`direzione recente 2Y ${r.dir||0}${r.turn?' con turning point':''}`
+};
+}catch(e){return {available:false,reason:String(e?.message||e)};}
+}
+function shadowLiquidity(c){
+try{
+const d=NATIVE_LIQ_DATA?.[c];
+if(!d) return {available:false,reason:'dataset liquidità assente'};
+if(d.status==='PARZIALE' || d.liquidity_dir==='DATI CORRENTI' || d.liquidity_dir==='NON DISPONIBILE'){
+return {available:false,reason:'liquidità incompleta/withheld'};
+}
+const pol=d.liquidity_dir==='IN AUMENTO'?1:d.liquidity_dir==='IN CALO'?-1:0;
+return {available:true,pol,label:labelFromPol(pol),reason:`liquidità ${d.liquidity_dir||'non direzionale'}`};
+}catch(e){return {available:false,reason:String(e?.message||e)};}
+}
+function shadowPrice(c){
+try{
+const r=currencyDynamics(c)?.price;
+if(!r) return {available:false,reason:'storico prezzo insufficiente'};
+const pol=r.dir>0?1:r.dir<0?-1:0;
+return {available:true,pol,label:labelFromPol(pol),dir:r.dir||0,turn:!!r.turn,
+reason:`direzione recente prezzo ${r.dir||0}${r.turn?' con turning point':''}`};
+}catch(e){return {available:false,reason:String(e?.message||e)};}
+}
+window.buildSemanticShadow=function(){
+const out={at:new Date().toISOString(),currencies:{}};
+CCYS.forEach(c=>{
+const macro=shadowMacro(c), rates=shadowRates(c), liq=shadowLiquidity(c), price=shadowPrice(c);
+const current={
+macro:currentPol(c,'macro'),
+rates:currentPol(c,'rates'),
+policy:currentPol(c,'policy'),
+liq:currentPol(c,'liq'),
+price:currentPol(c,'price')
+};
+const diffs=[];
+if(macro.available && macro.pol!==current.macro) diffs.push('macro');
+if(rates.available && rates.pol!==current.rates) diffs.push('rates');
+if(liq.available && liq.pol!==current.liq) diffs.push('liq');
+if(price.available && price.pol!==current.price) diffs.push('price');
+out.currencies[c]={current,shadow:{macro,rates,liq,price},diffs,
+status:diffs.length?'REVIEW_REQUIRED':'ALIGNED'};
+});
+out.review_required=CCYS.filter(c=>out.currencies[c].status==='REVIEW_REQUIRED');
+return out;
+};
+window.SEMANTIC_SHADOW=window.buildSemanticShadow();
+// Wrap the already-certified atomic refresh.
+const atomic=window.applyCanonicalRefreshPayload;
+window.applyCanonicalRefreshPayload=function(payload){
+const res=atomic(payload);
+try{
+window.SEMANTIC_SHADOW=window.buildSemanticShadow();
+if(res && typeof res==='object'){
+res.semantic_shadow={
+review_required:window.SEMANTIC_SHADOW.review_required.slice(),
+status:window.SEMANTIC_SHADOW.review_required.length?'REVIEW_REQUIRED':'ALIGNED'
+};
+}
+}catch(e){}
+return res;
+};
+// Important: shadow signals NEVER overwrite canonical structural layers.
+// They are diagnostics for possible reclassification after source-specific validation.
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+function label(pol){
+return pol>0?'Favorevole':pol<0?'Contrario':'Neutrale';
+}
+// STRUCTURAL MACRO:
+// Uses the existing D.macro level snapshot, never blockDynamics().
+// No weighted score is invented here. Auto classification is allowed only
+// when growth and labour agree in sign and neither is effectively flat.
+window.classifyStructuralMacro=function(c){
+const m=D?.macro?.[c];
+if(!m) return {status:'WITHHELD',pol:0,reason:'snapshot macro strutturale assente'};
+const g=Number(m.growth), l=Number(m.labour);
+if(!Number.isFinite(g)||!Number.isFinite(l)){
+return {status:'WITHHELD',pol:0,reason:'growth/labour strutturali non completi'};
+}
+const eps=0.20; // existing model neutral-band convention used elsewhere
+const gs=Math.abs(g)<eps?0:Math.sign(g);
+const ls=Math.abs(l)<eps?0:Math.sign(l);
+if(gs!==0 && gs===ls){
+return {
+status:'AUTO_HIGH_CONFIDENCE',
+pol:gs,
+label:label(gs),
+reason:`growth e labour strutturali concordi (${g.toFixed(2)}, ${l.toFixed(2)})`,
+cycle:m.cycle||null
+};
+}
+return {
+status:'REVIEW_REQUIRED',
+pol:0,
+label:'Neutrale',
+reason:`growth e labour strutturali non concordi/abbastanza distanti da zero (${g.toFixed(2)}, ${l.toFixed(2)})`,
+cycle:m.cycle||null
+};
+};
+// STRUCTURAL RATES:
+// A recent 1W change is timing only, never the structural label.
+// High-confidence automatic classification requires BOTH:
+// 1) the 2Y level to be meaningfully separated from the G8 cross-section,
+// 2) current CB stance to point in the same direction.
+// The cross-sectional cut uses quartiles, not hand-picked currency thresholds.
+window.classifyStructuralRates=function(c){
+const rows=CCYS.map(k=>({c:k,v:Number(NATIVE_RATES_DATA?.[k]?.['2Y'])}))
+.filter(x=>Number.isFinite(x.v)).sort((a,b)=>a.v-b.v);
+const r=NATIVE_RATES_DATA?.[c];
+if(!r || !Number.isFinite(Number(r['2Y'])) || rows.length<6){
+return {status:'WITHHELD',pol:0,reason:'2Y G8 non comparabile'};
+}
+const vals=rows.map(x=>x.v);
+const q=(p)=>{
+const i=(vals.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
+return lo===hi?vals[lo]:vals[lo]+(vals[hi]-vals[lo])*(i-lo);
+};
+const q25=q(.25), q75=q(.75), y2=Number(r['2Y']);
+let levelPol=0;
+if(y2>=q75) levelPol=1;
+else if(y2<=q25) levelPol=-1;
+let cbPol=0;
+try{
+const cls=v234StanceClass(NATIVE_CB_DATA?.[c]||{});
+cbPol=cls==='pos'?1:cls==='neg'?-1:0;
+}catch(e){}
+if(levelPol!==0 && cbPol===levelPol){
+return {
+status:'AUTO_HIGH_CONFIDENCE',
+pol:levelPol,
+label:label(levelPol),
+reason:`2Y nel quartile ${levelPol>0?'alto':'basso'} G8 e stance CB concorde`,
+y2,q25,q75,cbPol
+};
+}
+return {
+status:'REVIEW_REQUIRED',
+pol:0,
+label:'Neutrale',
+reason:`livello 2Y/stance CB non danno una classificazione strutturale concorde ad alta confidenza`,
+y2,q25,q75,cbPol,levelPol
+};
+};
+window.STRUCTURAL_CLASSIFIER_AUDIT=function(){
+return {
+at:new Date().toISOString(),
+macro:Object.fromEntries(CCYS.map(c=>[c,classifyStructuralMacro(c)])),
+rates:Object.fromEntries(CCYS.map(c=>[c,classifyStructuralRates(c)]))
+};
+};
+window.STRUCTURAL_CLASSIFIER_STATE=window.STRUCTURAL_CLASSIFIER_AUDIT();
+// Safe helper: generates only the canonical layer patches that are high-confidence.
+// It DOES NOT apply them automatically. The certified atomic refresh still decides commit.
+window.buildHighConfidenceLayerPatch=function(c){
+const out={};
+const m=classifyStructuralMacro(c);
+const r=classifyStructuralRates(c);
+if(m.status==='AUTO_HIGH_CONFIDENCE'){
+out.macro=[m.label,m.pol>0?'statePos':'stateNeg',
+`Classificazione strutturale automatica: ${m.reason}`];
+}
+if(r.status==='AUTO_HIGH_CONFIDENCE'){
+out.rates=[r.label,r.pol>0?'statePos':'stateNeg',
+`Classificazione strutturale automatica: ${r.reason}`];
+}
+return out;
+};
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+window.STRUCTURAL_CHANGE_MEMORY=window.STRUCTURAL_CHANGE_MEMORY||{};
+function polFromLayer(c,k){
+try{
+if(k==='rates') return layerPolarity(currencyIntelData[c]?.rates);
+return layerPolarity(currencyIntelData[c]?.[k]);
+}catch(e){return 0;}
+}
+function signBand(v,eps=.20){
+v=Number(v);
+if(!Number.isFinite(v)) return null;
+return Math.abs(v)<eps?0:Math.sign(v);
+}
+// Candidate structural Macro change:
+// - structural snapshot D.macro only
+// - recent blockDynamics is confirmation/timing, never the structural vote itself
+// - change is eligible only when growth+labour agree AND the recent dynamics do not oppose it
+window.structuralMacroChangeCandidate=function(c){
+const m=D?.macro?.[c];
+if(!m) return {status:'WITHHELD'};
+const gs=signBand(m.growth), ls=signBand(m.labour);
+if(gs===null||ls===null) return {status:'WITHHELD'};
+if(gs===0 || ls===0 || gs!==ls){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,
+reason:'growth/labour strutturali non concordi'};
+}
+let gd=null,ld=null;
+try{gd=blockDynamics(c,'Crescita');ld=blockDynamics(c,'Lavoro');}catch(e){}
+const gdir=gd?.direction??0, ldir=ld?.direction??0;
+const timingOpposes=(gdir!==0 && gdir!==gs) || (ldir!==0 && ldir!==gs);
+if(timingOpposes){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,
+reason:'livello strutturale concorde ma timing recente opposto'};
+}
+return {
+status:'CANDIDATE',
+candidate:gs,
+reason:'growth/labour strutturali concordi e timing non opposto'
+};
+};
+// Candidate structural Rates change:
+// We deliberately DO NOT use absolute/cross-sectional 2Y level as a vote.
+// already carried by the canonical CB-pricing layer, while weekly 2Y remains timing.
+window.structuralRatesChangeCandidate=function(c){
+const d=NATIVE_CB_DATA?.[c]||{};
+const p=d.market_pricing||{};
+const quality=String(p.quality||d.pricing_tier||'').toUpperCase();
+const stale=/STALE|WITHHELD|PARZIALE|PARTIAL/.test(quality);
+if(stale){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,reason:'pricing CB non abbastanza completo/corrente'};
+}
+// Use the already-normalized policy stance as structural context.
+let cb=0;
+try{
+const cls=v234StanceClass(d);
+cb=cls==='pos'?1:cls==='neg'?-1:0;
+}catch(e){}
+if(cb===0){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,reason:'stance CB non direzionale'};
+}
+// Require front-end timing NOT to contradict the candidate.
+let r=null;
+try{r=currencyDynamics(c)?.rates;}catch(e){}
+const rdir=r?.dir??0;
+if(rdir!==0 && rdir!==cb){
+return {status:'NO_STRUCTURAL_FLIP',candidate:0,reason:'front-end recente contraddice la stance strutturale'};
+}
+return {status:'CANDIDATE',candidate:cb,reason:'pricing/stance CB validati e front-end non contrario'};
+};
+function updateMemory(c,layer,candidate,current){
+const key=`${c}:${layer}`;
+const mem=window.STRUCTURAL_CHANGE_MEMORY[key]||{candidate:null,streak:0,lastCurrent:current};
+if(!candidate || candidate===current){
+mem.candidate=null; mem.streak=0; mem.lastCurrent=current;
+}else if(mem.candidate===candidate){
+mem.streak+=1; mem.lastCurrent=current;
+}else{
+mem.candidate=candidate; mem.streak=1; mem.lastCurrent=current;
+}
+window.STRUCTURAL_CHANGE_MEMORY[key]=mem;
+return mem;
+}
+// Two consecutive validated refresh generations are required before a structural flip
+// becomes AUTO_ELIGIBLE. This is hysteresis against one-release noise.
+window.evaluateStructuralHysteresis=function(c){
+const curMacro=polFromLayer(c,'macro');
+const curRates=polFromLayer(c,'rates');
+const mc=structuralMacroChangeCandidate(c);
+const rc=structuralRatesChangeCandidate(c);
+const mm=updateMemory(c,'macro',mc.candidate||0,curMacro);
+const rm=updateMemory(c,'rates',rc.candidate||0,curRates);
+return {
+macro:{
+current:curMacro,candidate:mc.candidate||0,
+streak:mm.streak,
+status:(mc.candidate && mc.candidate!==curMacro && mm.streak>=2)?'AUTO_ELIGIBLE':
+(mc.candidate && mc.candidate!==curMacro)?'PENDING_CONFIRMATION':'NO_CHANGE',
+reason:mc.reason||mc.status
+},
+rates:{
+current:curRates,candidate:rc.candidate||0,
+streak:rm.streak,
+status:(rc.candidate && rc.candidate!==curRates && rm.streak>=2)?'AUTO_ELIGIBLE':
+(rc.candidate && rc.candidate!==curRates)?'PENDING_CONFIRMATION':'NO_CHANGE',
+reason:rc.reason||rc.status
+}
+};
+};
+window.STRUCTURAL_HYSTERESIS_AUDIT=function(){

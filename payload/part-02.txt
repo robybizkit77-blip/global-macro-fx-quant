@@ -1,0 +1,1000 @@
+if(v==='news') safeRender('news',()=>{ renderNewsPulse(); });
+if(v==='ratesdesk') safeRender('ratesdesk',()=>{ renderNativeRatesDesk(); });
+if(v==='cbdesk') safeRender('cbdesk',()=>{ renderNativeCbDesk(); });
+if(v==='liquiditydesk') safeRender('liquiditydesk',()=>{ renderNativeLiquidityDesk(); });
+}
+function scoreBg(x,scale=1.5){if(x==null)return '#536977';let v=Math.max(-1,Math.min(1,x/scale));if(v>=0)return `rgb(${Math.round(37-9*v)},${Math.round(105+92*v)},${Math.round(81+15*v)})`;v=-v;return `rgb(${Math.round(119+70*v)},${Math.round(77-22*v)},${Math.round(80-18*v)})`}
+function openCotDetail(ccy){
+const sel=document.querySelector('#cotSelect');
+if(sel) sel.value=ccy;
+showView('cot');
+}
+function openRischioDetail(k){riskKey=k;showView('risk');renderRischio()}
+function renderConvergenceRanking(){
+const weight={
+'CONTRASTO STRUTTURALE FORTE':3,
+'VANTAGGIO RELATIVO PARZIALE':2,
+'PILASTRI DIVISI':1,
+'NESSUN CONTRASTO':0,
+'MISTO / NON RISOLUTIVO':0
+};
+const ranked=(D.pairs||[]).map(p=>{
+const f=derivePairDecisionFrame(p.pair);
+return {p,f,w:weight[f?.quality]??0};
+}).sort((x,y)=>y.w-x.w || String(x.p.pair).localeCompare(String(y.p.pair))).slice(0,5);
+const host=document.querySelector('#convRanking');
+if(!host) return;
+host.innerHTML=ranked.map((x,i)=>{
+const q=x.f?.quality||'NON RISOLUTIVO';
+const c=q==='CONTRASTO STRUTTURALE FORTE'?'convHigh':q==='VANTAGGIO RELATIVO PARZIALE'?'convMed':'convLow';
+const fav=x.f?.fav && x.f.fav!=='—' ? x.f.fav : 'Nessuno';
+return `<div class="convCard ${c}" onclick="openPairDetail('${x.p.pair}')"><div class="rank">#${i+1} · ${q}</div><div class="pair">${x.p.pair}</div><div><b>${fav}</b> · struttura Macro + Tassi/CB</div><div class="meta">Apri Desk Coppie →</div></div>`;
+}).join('');
+}
+function cycleSpan(txt){
+const help={
+"Espansione equilibrata":"Crescita solida con inflazione relativamente sotto controllo. È un quadro macro sano; l'effetto FX dipende poi da banca centrale e Rates.",
+"Rallentamento / disinflazione":"La crescita perde forza mentre l'inflazione si raffredda. Il mercato tende a valutare una politica monetaria meno restrittiva.",
+"Stagflazione":"Crescita debole con inflazione ancora elevata. È un quadro difficile per la banca centrale perché crescita e inflazione spingono in direzioni opposte.",
+"Ripresa / reflazione":"L'attività economica migliora e le pressioni sui prezzi possono risalire. Può aumentare la sensibilità dei rendimenti e delle attese di banca centrale."
+};
+const tip=help[txt]||"Classificazione sintetica del regime macro corrente.";
+return `<span class="cycleTip" data-tip="${tip}">${txt}</span>`;
+}
+let macroBlockSelected='Crescita';
+function macroStateClass(label,state){
+const s=(state||'').toUpperCase();
+const l=(label||'').toUpperCase();
+if(!s) return 'info';
+if(/MIST|MIXED|NEUTRAL|DIVERG|PARZIAL/.test(s)) return 'mix';
+if(/DETERIOR|WEAK|DEBOL|CONTRACT|COOLING|TIGHTEN|RALLENT/.test(s)) return 'bad';
+if(l.includes('INFLAZ') && /PERSIST|REACCEL|ELEVAT|ALTA|STICKY/.test(s)) return 'warn';
+if(l.includes('SALAR') && /ELEVAT|STRONG/.test(s)) return 'warn';
+if(/STRONG|RESILIENT|SUPPORTIVE|FAVOREV|EXPAND|ACCELER|BENIGN|EASING|RECUPERO|SOLID/.test(s)) return 'good';
+if(/PERSIST|REACCEL|COSTLY|RIGID|PRESSURE/.test(s)) return 'warn';
+return 'info';
+}
+function macroSimpleScore(v,kind){
+if(kind==='Inflazione'){
+const a=Math.abs(v);
+if(a<=0.35)return 'vicina alla normalità';
+if(a<=0.8)return 'da monitorare';
+return 'pressione più distante dalla normalità';
+}
+if(v>=0.75)return 'forte';
+if(v>=0.2)return 'resiliente';
+if(v>-0.2)return 'mista / neutra';
+if(v>-0.75)return 'debole';
+return 'molto debole';
+}
+function renderOperationalOverview(){
+// Events today from the real calendar already embedded in the dashboard.
+const evBox=document.querySelector('#ovTodayEvents');
+if(evBox){
+const evs=(typeof REAL_CALENDAR!=='undefined' && REAL_CALENDAR.today)?REAL_CALENDAR.today:[];
+evBox.innerHTML='<div class="deskTable">'+evs.slice(0,7).map(e=>`
+<div class="deskRow"><div class="time">${e.time}</div><div class="ccy">${e.ccy}</div><div class="event">${e.event}</div><div class="tag ${e.impact==='high'?'high':''}">${e.status==='done'?'USCITO':'IN ARRIVO'}</div></div>`).join('')+'</div>';
+}
+// Current G8 2Y yields.
+const ratesBox=document.querySelector('#ovRatesTable');
+if(ratesBox){
+ratesBox.innerHTML='<div class="rateMini">'+D.currencies.map(c=>{
+const m=D.macro[c];
+const v=m.rate2y;
+const rr=rate2YMove(c); return `<div class="rateCell"><b>${flagSvg(c)} ${c}</b><span>${v==null?'—':fmt(v,2)+'% '+dirSymbol(rr.curr,rr.prev)}</span><small>rendimento governativo 2Y</small></div>`;
+}).join('')+'</div>';
+}
+// COT alerts: extremes first, then concentration.
+const cotBox=document.querySelector('#ovCotAlerts');
+if(cotBox){
+const rows=D.currencies.map(c=>({c,d:D.cot[c]}))
+.sort((a,b)=>{
+const aa=(Math.abs(a.d.net_oi)>=30?100:0)+Math.abs(a.d.pct-50);
+const bb=(Math.abs(b.d.net_oi)>=30?100:0)+Math.abs(b.d.pct-50);
+return bb-aa;
+}).slice(0,6);
+cotBox.innerHTML=rows.map(({c,d})=>{
+const ext=d.pct>=80?'Estremo long':d.pct<=20?'Estremo short':'Neutrale';
+const conc=Math.abs(d.net_oi)>=30?'Concentrazione elevata':'';
+return `<div class="cotAlertRow"><b>${flagSvg(c)} ${c}</b><span>${d.chg_net_1w>0?'<span class="dirUp dirArrow">↑</span>':d.chg_net_1w<0?'<span class="dirDown dirArrow">↓</span>':'<span class="dirFlat dirArrow">→</span>'} ${ext} · Pct ${fmt(d.pct,0)} · Net/OI ${fmt(d.net_oi,1)}%</span><div class="${conc?'warn':''}">${conc}</div></div>`;
+}).join('');
+}
+// Rischio pulse using the same canonical dashboard series.
+const rp=document.querySelector('#ovRischioPulse');
+if(rp){
+const vix=D.risk['VIX'], br=D.risk['Brent'], ch=D.risk['China CLI'];
+rp.innerHTML=`<div class="riskPulseGrid"><div class="riskPulseItem"><b>VIX</b><span>${fmt(vix.values.at(-1),2)} ${dirSymbol(vix.values.at(-1),vix.values.at(-2))}</span><small>${vix.values.at(-1)>=25?'Stress elevato':vix.values.at(-1)>=18?'Zona attenzione':'Volatilità contenuta'}</small></div><div class="riskPulseItem"><b>Brent</b><span>${fmt(br.values.at(-1),2)} ${dirSymbol(br.values.at(-1),br.values.at(-2))}</span><small>Energia / inflazione globale</small></div><div class="riskPulseItem"><b>China CLI</b><span>${fmt(ch.values.at(-1),2)} ${dirSymbol(ch.values.at(-1),ch.values.at(-2))}</span><small>${ch.values.at(-1)>=100?'Ciclo sopra 100':'Ciclo sotto 100'}</small></div></div>`;
+}
+}
+setTimeout(renderOperationalOverview,0);
+setTimeout(renderSimpleOverview,0);
+function hydrateFlags(){
+document.querySelectorAll('[data-flag]').forEach(el=>{el.innerHTML=flagSvg(el.dataset.flag)});
+}
+setTimeout(hydrateFlags,0);
+function renderMacroLab(){
+const cards=D.currencies.map(c=>{
+const m=D.macro[c],ctx=COUNTRY_CTX[c]||{},states=ctx.sector_states_it||{};
+const pills=Object.entries(states).slice(0,8).map(([lab,state])=>`<span class="sectorPill ${macroStateClass(lab,state)}">${lab}: ${state}</span>`).join('');
+return `<div class="macroCountry" onclick="selectCurrency('${c}',true)"><div class="head"><div class="ccyName">${flagSvg(c)} ${c}</div><span class="cycle">${m.cycle_it}</span></div><div class="summary">${m.simple_summary||ctx.summary_it||'Quadro in aggiornamento.'}</div><div class="sectorPills">${pills||`<span class="sectorPill info">Dettagli settoriali nella pagina Valute</span>`}</div><div class="macroMini">2Y ${m.rate2y==null?'—':fmt(m.rate2y,2)+'%'} · COT percentile ${fmt(D.cot[c].pct,0)}</div></div>`;
+}).join('');
+document.querySelector('#macroLabGrid').innerHTML=cards;
+const blocks=['Crescita','Lavoro','Inflazione'];
+document.querySelector('#macroBlockTabs').innerHTML=blocks.map(x=>`<button class="${x===macroBlockSelected?'active':''}" data-block="${x}">${x}</button>`).join('');
+document.querySelectorAll('#macroBlockTabs button').forEach(b=>b.onclick=()=>{macroBlockSelected=b.dataset.block;renderMacroLab()});
+const key=macroBlockSelected==='Crescita'?'growth':macroBlockSelected==='Lavoro'?'labour':'inflation';
+const vals=D.currencies.map(c=>({c,v:D.macro[c][key]}));
+const max=Math.max(...vals.map(x=>Math.abs(x.v)),1);
+document.querySelector('#macroBlockCompare').innerHTML=vals.map(x=>{
+const width=Math.max(6,Math.abs(x.v)/max*100);
+const read=macroSimpleScore(x.v,macroBlockSelected);
+return `<div class="macroCompareRow"><b>${D.flags[x.c]||''} ${x.c}</b><div class="macroBar"><span style="width:${width}%"></span></div><div class="reading">${read}</div></div>`;
+}).join('');
+const watches=[
+['Crescita vs lavoro','Se crescita e lavoro iniziano a muoversi nella stessa direzione, la narrativa macro diventa più robusta. Se divergono, serve cautela.'],
+['Inflazione vs banca centrale','Un’inflazione persistente conta soprattutto quando cambia ciò che la banca centrale può fare e viene recepita dal front-end.'],
+['Rates come lead','Dopo il macro guarda sempre il 2Y/front-end: spesso è il primo posto in cui il mercato mostra che sta cambiando idea.'],
+['Prezzo per ultimo','La narrativa è più credibile quando il prezzo smette di divergere e comincia a confermare.']
+];
+document.querySelector('#macroWatch').innerHTML=watches.map(x=>`<div class="watchItem"><b>${x[0]}</b><div>${x[1]}</div></div>`).join('');
+}
+// Direction helpers: arrows show variable direction only, never FX judgement.
+function dirArrow(curr,prev,eps=1e-12){
+if(curr==null||prev==null||!isFinite(curr)||!isFinite(prev)) return '<span class="dirFlat dirArrow">→</span>';
+const d=curr-prev;
+if(Math.abs(d)<=eps) return '<span class="dirFlat dirArrow">→</span>';
+return d>0?'<span class="dirUp dirArrow">↑</span>':'<span class="dirDown dirArrow">↓</span>';
+}
+function dirSymbol(curr,prev,eps=1e-12){
+if(curr==null||prev==null||!isFinite(curr)||!isFinite(prev)) return '<span class="dirFlat dirArrow">→</span>';
+const d=curr-prev;
+if(Math.abs(d)<=eps) return '<span class="dirFlat dirArrow">→</span>';
+return d>0?'<span class="dirUp dirArrow">↑</span>':'<span class="dirDown dirArrow">↓</span>';
+}
+function rate2YSeries(c){
+const arr=S[c]||[];
+return arr.find(x=>x.category==='Rates' && /(^|\s|spot\s|treasury\s|rendimento\s|zc\s)2y(\b|\s)/i.test(x.label||''))
+|| arr.find(x=>x.category==='Rates' && /2Y/i.test(x.label||''));
+}
+function lastPair(x){
+if(!x||!x.values||x.values.length<1) return [null,null];
+const a=x.values.at(-1), b=x.values.length>1?x.values.at(-2):null;
+return [a,b];
+}
+function rate2YMove(c){
+const s=rate2YSeries(c), [curr,prev]=lastPair(s);
+return {c,s,curr,prev,delta:(curr!=null&&prev!=null)?curr-prev:null};
+}
+// overview (deferred until full runtime initialization)
+function bootstrapLegacyOverview(){
+const rateMoves=D.currencies.map(rate2YMove).filter(x=>x.delta!=null);
+const rateUp=rateMoves.length?[...rateMoves].sort((a,b)=>b.delta-a.delta)[0]:null;
+const rateDown=rateMoves.length?[...rateMoves].sort((a,b)=>a.delta-b.delta)[0]:null;
+const cotExtreme=D.currencies.map(c=>({c,d:D.cot[c]})).sort((a,b)=>Math.abs(b.d.pct-50)-Math.abs(a.d.pct-50))[0];
+const cotCrowded=D.currencies.filter(c=>Math.abs(D.cot[c].net_oi)>=30);
+const vixS=D.risk.VIX, brentS=D.risk.Brent, chinaS=D.risk['China CLI'];
+const vixLast=vixS.values.at(-1),vixPrev=vixS.values.at(-2);
+const brLast=brentS.values.at(-1),brPrev=brentS.values.at(-2);
+const chLast=chinaS.values.at(-1),chPrev=chinaS.values.at(-2);
+const partialPairs=(D.pairs||[]).filter(x=>{const q=derivePairDecisionFrame(x.pair)?.quality;return q==='CONTRASTO STRUTTURALE FORTE'||q==='VANTAGGIO RELATIVO PARZIALE';}).length;
+let kpis=[
+['2Y più in rialzo',rateUp?`${rateUp.c} ${fmt(rateUp.curr,2)}% ${dirSymbol(rateUp.curr,rateUp.prev)}`:'—',rateUp?`ultimo movimento ${rateUp.delta>=0?'+':''}${fmt(rateUp.delta*100,1)} bp`:''],
+['2Y più in calo',rateDown?`${rateDown.c} ${fmt(rateDown.curr,2)}% ${dirSymbol(rateDown.curr,rateDown.prev)}`:'—',rateDown?`ultimo movimento ${rateDown.delta>=0?'+':''}${fmt(rateDown.delta*100,1)} bp`:''],
+['COT più estremo',cotExtreme?`${cotExtreme.c} · P${fmt(cotExtreme.d.pct,0)}`:'—',cotExtreme?`${cotExtreme.d.chg_net_1w>0?'<span class="dirUp dirArrow">↑</span>':cotExtreme.d.chg_net_1w<0?'<span class="dirDown dirArrow">↓</span>':'<span class="dirFlat dirArrow">→</span>'} Net 1W`:''],
+['Concentrazione COT',cotCrowded.length?cotCrowded.join(', '):'Nessuna',`${cotCrowded.length}/8 oltre ±30% Net/OI`],
+['VIX',`${fmt(vixLast,2)} ${dirSymbol(vixLast,vixPrev)}`,'risk appetite'],
+['Brent',`${fmt(brLast,2)} ${dirSymbol(brLast,brPrev)}`,'USD/barile'],
+['China CLI',`${fmt(chLast,2)} ${dirSymbol(chLast,chPrev)}`,'ciclo globale'],
+['Coppie con vantaggio strutturale',`${partialPairs}/28`,'Macro + Tassi/CB']
+];
+const kpisHost=document.querySelector('#kpis');if(kpisHost)kpisHost.innerHTML=kpis.map(x=>`<div class="card kpi"><div>${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+let mt='<tr><th>Valuta</th><th>Crescita</th><th>Lavoro</th><th>Inflazione</th><th>Rates 2Y</th><th>COT pct</th><th>Ciclo</th></tr>';
+D.currencies.forEach(c=>{let m=D.macro[c];mt+=`<tr><td>${D.flags[c]} <b>${flagSvg(c)} ${c}</b></td><td style="background:${scoreBg(m.growth)}">${fmt(m.growth)}</td><td style="background:${scoreBg(m.labour)}">${fmt(m.labour)}</td><td style="background:${Math.abs(m.inflation)<=0.35?'#315f55':Math.abs(m.inflation)<=0.8?'#6f5d2b':'#7b3f49'}">${fmt(m.inflation)}</td><td><span class="tag ${m.rate_status.toLowerCase()}">${m.rate2y==null?'—':fmt(m.rate2y,2)+'% '+(()=>{const r=rate2YMove(c);return dirSymbol(r.curr,r.prev)})()}</span></td><td>${fmt(D.cot[c].pct,0)}</td><td>${cycleSpan(m.cycle_it)}</td></tr>`});
+const macroTableHost=document.querySelector('#macroTable');if(macroTableHost)macroTableHost.innerHTML=mt;const macroFullHost=document.querySelector('#macroFull');if(macroFullHost)macroFullHost.innerHTML=mt;
+// deferred: rendered lazily by showView
+const themes=[
+['Rates','Il front-end resta uno dei primi filtri del riprezzamento FX','high'],
+['COT','Estremi selettivi: non c’è posizionamento affollato generalizzato','med'],
+['Rischio','Brent elevato, VIX ancora contenuto','med'],
+['Qualità dati','Rates G8 correnti; JPY/NZD hanno solo alcuni storici secondari qualificati','med']
+];
+const themesHost=document.querySelector('#themesLegacy');if(themesHost)themesHost.innerHTML=themes.map(x=>`<div class="newsrow"><b>${x[0]}</b><span>${x[1]}</span><span class="badge ${x[2]}">${x[2]==='high'?'ALTA':'MEDIA'}</span></div>`).join('');
+// legacy overview charts are optional after v382 overview rebuild
+const ovPairCanvas=document.querySelector('#ovPair');
+if(ovPairCanvas){const ov=pairSeries('EUR/USD',132);lineChart(ovPairCanvas,[{values:ov.values,color:'#23b7ff'}],ov.labels,4);}
+const ovCotCanvas=document.querySelector('#ovCot');
+if(ovCotCanvas){const ce=D.cot.EUR;lineChart(ovCotCanvas,[{values:ce.net_series.slice(-52),color:'#23b7ff'}],ce.dates.slice(-52),0);}
+const ovRiskCanvas=document.querySelector('#ovRischio');
+if(ovRiskCanvas)lineChart(ovRiskCanvas,[{values:D.risk.VIX.values.slice(-132),color:'#ff5263'}],D.risk.VIX.dates.slice(-132),1);
+if(document.querySelector('#convRanking'))renderConvergenceRanking();
+}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',()=>setTimeout(bootstrapLegacyOverview,0),{once:true});
+}else{
+setTimeout(bootstrapLegacyOverview,0);
+}
+// Currency view
+document.querySelector('#currencyGrid').innerHTML=D.currencies.map(c=>`<div class="ccy" data-c="${c}"><b>${flagSvg(c)} ${c}</b><div class="muted" style="font-size:10px;margin-top:5px">Rendimento governativo 2Y</div><div class="big">${D.macro[c].rate2y==null?'—':Number(D.macro[c].rate2y).toFixed(2).replace('.',',')+'%'}</div><span class="tag ${D.macro[c].rate_status.toLowerCase()}">${D.macro[c].rate_status==='CURRENT'?'AGGIORNATO':D.macro[c].rate_status}</span></div>`).join('');
+document.querySelectorAll('.ccy').forEach(x=>x.onclick=()=>selectCurrency(x.dataset.c,false));
+function tfButtons(id,vals,current,setter){document.querySelector(id).innerHTML=vals.map(x=>`<button class="${x===current?'active':''}" data-v="${x}">${x}</button>`).join('');document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>setter(b.dataset.v))}
+function closePairDetail(){ const top=document.querySelector('#pairs'); if(top) top.scrollIntoView({behavior:'smooth',block:'start'}); }
+function appendPairTransitionToDetail(pair){
+const host=document.querySelector('#pairDetail') || document.querySelector('.pairDetail') || document.querySelector('#pair-drawer');
+if(!host) return;
+const old=host.querySelector('.pairTransition');
+if(old) old.remove();
+const html=pairTransitionHtml(pair);
+if(html) host.insertAdjacentHTML('beforeend',html);
+}
+function appendPairRelativeDynamicsToDetail(pair){
+const host=document.querySelector('#pairDetail') || document.querySelector('.pairDetail') || document.querySelector('#pair-drawer');
+if(!host) return;
+const old=host.querySelector('.pairDynPanel');
+if(old) old.remove();
+const html=pairRelativeDynamicsHtml(pair);
+if(html) host.insertAdjacentHTML('beforeend',html);
+}
+function appendPairDriverOverlayToDetail(pair){
+const host=document.querySelector('#pairDetail') || document.querySelector('.pairDetail') || document.querySelector('#pair-drawer');
+if(!host) return;
+const old=host.querySelector('.pairDriverLine');
+if(old) old.remove();
+const html=pairDriverOverlay(pair);
+if(html) host.insertAdjacentHTML('beforeend',html);
+}
+function appendPairRiskOverlayToDetail(pair){
+const host=document.querySelector('#pairDetail') || document.querySelector('.pairDetail') || document.querySelector('#pair-drawer');
+if(!host) return;
+const existing=host.querySelector('.pairRiskOverlay');
+if(existing) existing.remove();
+const html=pairRiskOverlay(pair);
+if(html) host.insertAdjacentHTML('beforeend',html);
+}
+function openPairDetail(pair){
+pair=marketPair(pair);
+selectedPair=pair;
+const sel=document.querySelector('#pairSelect');
+if(sel) sel.value=pair;
+showView('pairs');
+renderPair();
+const detail=document.querySelector('#v226PairDetail');
+if(detail) detail.scrollIntoView({behavior:'smooth',block:'start'});
+}
+let seriesCategory='Crescita';
+const sectorOrder=['Crescita','Inflazione','Lavoro','Housing','Credito','Liquidità','Condizioni finanziarie','Rates','Lead / survey','FX / esterno'];
+const sectorLabels={
+'Crescita':'Crescita / domanda',
+'Inflazione':'Inflazione',
+'Lavoro':'Lavoro / salari',
+'Housing':'Housing',
+'Credito':'Credito',
+'Liquidità':'Liquidità / bilancio CB',
+'Condizioni finanziarie':'Condizioni finanziarie / FX',
+'Rates':'Rates / curva',
+'Lead / survey':'Lead / survey',
+'FX / esterno':'FX / esterno'
+};
+function renderSeriesGallery(){
+const all=S[selectedCcy]||[];
+const present=sectorOrder.filter(c=>all.some(x=>x.category===c));
+if(!present.includes(seriesCategory)) seriesCategory=present[0]||'Crescita';
+document.querySelector('#seriesFilters').innerHTML=present.map(c=>{
+const n=all.filter(x=>x.category===c).length;
+return `<button class="${c===seriesCategory?'active':''}" data-cat="${c}">${sectorLabels[c]||c}<span class="n">${n}</span></button>`;
+}).join('');
+document.querySelectorAll('#seriesFilters button').forEach(b=>b.onclick=()=>{seriesCategory=b.dataset.cat;renderSeriesGallery()});
+const rows=all.filter(x=>x.category===seriesCategory);
+document.querySelector('#seriesCount').textContent=`${rows.length} grafici nel settore · ${all.length} serie totali`;
+document.querySelector('#seriesGallery').innerHTML=`<div class="seriesSectionTitle">${sectorLabels[seriesCategory]||seriesCategory}</div>`+rows.map((x,i)=>`<div class="seriesCard"><div class="seriesTitle">${x.label}</div><div class="seriesMeta">${x.frequency?'Frequenza '+x.frequency+' · ':''}${x.unit?x.unit+' · ':''}ultimo dato ${x.last_date}</div><div class="seriesLast">Ultimo valore: <b>${x.last_value==null?'—':fmt(x.last_value,Math.abs(x.last_value||0)>=100?1:3)} ${x.values&&x.values.length>1?dirSymbol(x.values.at(-1),x.values.at(-2)):''}</b></div><div class="chartbox"><canvas id="sg_${i}"></canvas></div></div>`).join('');
+rows.forEach((x,i)=>lineChart(document.querySelector('#sg_'+i),[{values:x.values,color:'#23b7ff'}],x.dates,Math.abs(x.last_value||0)>=100?1:3));
+}
+const currencyIntelData = {
+USD:{state:'RESILIENTE',regime:'Espansione equilibrata',driver:'Tassi',wind:'Favorevole',windClass:'windFav',
+story:'Economia ancora resiliente e politica monetaria tornata più restrittiva dopo il rialzo Fed di settembre; il dollaro resta sostenuto finché il front-end mantiene il vantaggio.',
+lead:'Tassi',confirm:'Macro',diverge:'COT',lag:'Prezzo',
+macro:['Favorevole','statePos','crescita resiliente, inflazione ancora tenace'],
+cb:['Favorevole','statePos','Fed: +25 pb il 16 settembre; target 3,75–4,00%'],
+rates:['Favorevole','statePos','2Y elevato, front-end di supporto'],
+liq:['Favorevole','statePos','liquidità in aumento; credito stabile: supporto positivo ma trasmissione incompleta'],
+cot:['ATTENZIONE LONG','stateMix','P78: vicino alla fascia alta storica; Net/OI +22,3%, non affollato oltre soglia'],
+price:['Non determinato','stateNeu','serve DXY/basket USD validato; non usare USD contro se stesso'],
+strengthen:'front-end resta alto e i dati USA continuano a sorprendere positivamente.',
+weaken:'disinflazione + deterioramento lavoro accelerano il repricing dovish.',
+watch:'lavoro, CPI core, comunicazione Fed e 2Y USA.'},
+EUR:{state:'MISTA',regime:'Crescita moderata / BCE restrittiva',driver:'BCE / Tassi',wind:'Neutrale',windClass:'windNeu',
+story:'La crescita resta meno brillante rispetto ad altre economie, ma la BCE ha appena alzato i tassi e il mercato sta valutando ulteriore restrizione: il quadro EUR è quindi più bilanciato di quanto suggerisca la sola macro.',
+lead:'Banca centrale',confirm:'Tassi',diverge:'Macro',lag:'Prezzo',
+macro:['Divergente','stateMix','crescita moderata ma più resiliente delle attese precedenti'],
+cb:['Favorevole','statePos','BCE: +25 pb il 10 settembre; deposito al 2,50%; decisioni data-dependent'],
+rates:['Favorevole','statePos','front-end sostenuto dalle attese di ulteriore restrizione'],
+liq:['Neutrale','stateNeu','liquidità stabile; credito in aumento: overlay neutro con trasmissione positiva'],
+cot:['ESTREMO SHORT','stateMix','P15: posizionamento storicamente basso; Net/OI −6,4%, non concentrato'],
+price:['Contrario','stateNeg','prezzo ancora poco convincente'],
+strengthen:'la crescita regge e il mercato mantiene o aumenta le attese di ulteriore restrizione BCE.',
+weaken:'la crescita si deteriora e il mercato riduce le attese di ulteriori rialzi BCE.',
+watch:'PMI, inflazione, comunicazione BCE e 2Y Germania.'},
+GBP:{state:'MISTA',regime:'Stagflazione',driver:'Banca centrale / Inflazione',wind:'Neutrale',windClass:'windNeu',
+story:'Inflazione e salari mantengono la BoE in assetto restrittivo; a settembre il tasso è rimasto al 3,75%, ma tre membri hanno votato per un rialzo.',
+lead:'Banca centrale',confirm:'Inflazione',diverge:'Crescita',lag:'Credito',
+macro:['Divergente','stateMix','inflazione tenace ma crescita irregolare'],
+cb:['Favorevole','statePos','BoE: Bank Rate 3,75%; hold 6–3, tre membri preferivano +25 pb'],
+rates:['Neutrale','stateNeu','front-end non sempre direzionale'],
+liq:['Neutrale','stateNeu','liquidità stabile; credito in aumento. Funding restrittivo resta contesto separato'],
+cot:['ESTREMO SHORT · AFFOLLATO','stateMix','P5 e Net/OI −33,7%: estremo short con concentrazione oltre soglia'],
+price:['Neutrale','stateNeu','prezzo non pienamente direzionale'],
+strengthen:'inflazione core resta alta e la crescita evita un rallentamento marcato.',
+weaken:'salari e inflazione scendono più rapidamente del previsto.',
+watch:'salari, servizi CPI e 2Y UK.'},
+JPY:{state:'MIGLIORA',regime:'Reflazione',driver:'Macro / BoJ',wind:'Favorevole',windClass:'windFav',
+story:'Salari e reflazione hanno migliorato il quadro domestico e la BoJ ha alzato la guideline a settembre; ora serve conferma dal front-end e dal prezzo.',
+lead:'Macro',confirm:'Banca centrale',diverge:'Tassi',lag:'Prezzo',
+macro:['Favorevole','statePos','salari e reflazione più costruttivi'],
+cb:['Favorevole','statePos','BoJ: overnight call rate guidato intorno all’1,25% dal 18 settembre'],
+rates:['Divergente','stateMix','front-end ancora da allineare pienamente'],
+liq:['Contrario','stateNeg','liquidità in diminuzione mentre il credito cresce: divergenza da monitorare'],
+cot:['ATTENZIONE LONG','stateMix','P70: fascia alta ma non estrema; flusso settimanale in deterioramento'],
+price:['Neutrale','stateNeu','non sempre conferma il miglioramento macro'],
+strengthen:'BoJ e tassi confermano il nuovo regime di reflazione.',
+weaken:'salari/inflazione rallentano e BoJ torna più prudente.',
+watch:'salari, servizi, BoJ e JGB 2Y.'},
+CHF:{state:'NEUTRALE',regime:'Reflazione lieve',driver:'SNB / canale FX',wind:'Neutrale',windClass:'windNeu',
+story:'Inflazione ancora bassa e SNB ferma allo 0%; il franco resta soprattutto sensibile a rischio globale e canale FX, più che a un impulso monetario domestico.',
+lead:'Banca centrale',confirm:'Prezzo',diverge:'Macro',lag:'Liquidità',
+macro:['Neutrale','stateNeu','attività discreta ma inflazione molto bassa'],
+cb:['Neutrale','stateNeu','SNB: tasso 0% invariato il 24 settembre; disponibile a interventi FX se necessari'],
+rates:['Neutrale','stateNeu','front-end basso'],
+liq:['Contrario','stateNeg','liquidità in diminuzione mentre il credito cresce: divergenza da monitorare'],
+cot:['ATTENZIONE LONG','stateMix','P74: fascia alta storica; Net/OI −20,0%, non oltre soglia'],
+price:['Neutrale','stateNeu','mancanza di direzione strutturale'],
+strengthen:'risk-off globale o SNB meno accomodante.',
+weaken:'franco forte torna a pesare e SNB mantiene tono morbido.',
+watch:'SNB, inflazione e domanda difensiva.'},
+CAD:{state:'RESILIENTE',regime:'Espansione equilibrata',driver:'Macro / Petrolio',wind:'Favorevole',windClass:'windFav',
+story:'La crescita è più solida ma l’incertezza commerciale resta elevata; la BoC ha tenuto il 2,25% e segnala maggiore attenzione ai rischi inflazionistici.',
+lead:'Macro',confirm:'Prezzo',diverge:'COT',lag:'Tassi',
+macro:['Favorevole','statePos','crescita e lavoro ancora resilienti'],
+cb:['Neutrale','stateNeu','BoC: tasso 2,25% invariato il 2 settembre; rischi inflazione aumentati'],
+rates:['Neutrale','stateNeu','front-end poco dominante'],
+liq:['Favorevole','statePos','liquidità e credito entrambi in aumento: trasmissione favorevole'],
+cot:['ESTREMO LONG','stateMix','P81 rispetto alla propria storia; Net/OI resta negativo (−17,1%): percentile e segno del Net sono concetti distinti'],
+price:['Favorevole','statePos','prezzo generalmente coerente'],
+strengthen:'crescita regge e petrolio resta favorevole.',
+weaken:'deterioramento lavoro + calo oil + repricing dovish BoC.',
+watch:'lavoro, CPI core, WTI e 2Y Canada.'},
+AUD:{state:'FORTE',regime:'Reflazione',driver:'Macro + Rates / aspettative CB',wind:'Favorevole',windClass:'windFav',
+story:'Inflazione ancora troppo alta e RBA più restrittiva sostengono il quadro AUD; il snapshot tassi visibile è però del 25/09, quindi la reazione post-decisione del 29/09 va ancora validata.',
+lead:'Tassi',confirm:'Liquidità',diverge:'COT',lag:'Prezzo',
+macro:['Favorevole','statePos','domanda interna robusta'],
+cb:['Favorevole','statePos','RBA: +25 pb il 29 settembre; cash rate 4,60%; inflazione ancora elevata e ulteriori rialzi restano possibili'],
+rates:['Favorevole','statePos','snapshot 25/09 pre-RBA: livello elevato, ma reazione post-decisione ancora da validare'],
+liq:['Neutrale','stateNeu','liquidità stabile; credito in aumento: trasmissione positiva senza nuova espansione della liquidità'],
+cot:['NEUTRALE','stateNeu','P49 e Net/OI −15,3%: nessun estremo o concentrazione rilevante'],
+price:['Divergente','stateMix','prezzo non sempre ha seguito tutto il vantaggio'],
+strengthen:'front-end resta superiore e la domanda domestica non cede.',
+weaken:'inflazione cala nettamente e RBA perde tono hawkish.',
+watch:'CPI, occupazione, 2Y Australia e Cina.'},
+NZD:{state:'RECUPERO',regime:'Reflazione',driver:'Macro + Rates / aspettative CB',wind:'Favorevole',windClass:'windFav',
+story:'L’economia è in recupero ma il lavoro resta debole; la RBNZ ha alzato l’OCR al 2,75%, mentre il COT resta in fascia alta storica senza concentrazione oltre soglia.',
+lead:'Rates/CB',confirm:'Macro',diverge:'COT',lag:'Lavoro',
+macro:['Divergente','stateMix','crescita migliora ma lavoro ancora debole'],
+cb:['Favorevole','statePos','RBNZ: +25 pb il 2 settembre a 2,75%; nessuna traiettoria automatica inserita'],
+rates:['Favorevole','statePos','front-end ancora di supporto'],
+liq:['Neutrale','stateNeu','settlement cash sostanzialmente stabile; broad money e credito privato ancora in crescita'],
+cot:['ATTENZIONE LONG','stateMix','P78: vicino alla fascia alta storica; Net/OI −11,2%, nessuna concentrazione oltre soglia'],
+price:['Neutrale','stateNeu','serve conferma più pulita'],
+strengthen:'ripresa si estende al lavoro senza perdere supporto dei tassi.',
+weaken:'COT estremo incontra nuovi segnali macro deboli o il repricing RBNZ diventa meno restrittivo.',
+watch:'occupazione, retail, RBNZ e COT.'}
+};
+function selectCurrency(c, switchView=false){
+if(!c || !D.currencies.includes(c)) return;
+selectedCcy=c;
+MODEL_STATE.selectedCurrency=c;
+// Selecting a currency changes the view only. It must not recalculate the model.
+if(switchView && typeof showView==='function'){
+showView('currencies');
+return;
+}
+try{ renderCurrency(); }catch(e){ console.warn('renderCurrency:',e); }
+}
+function openCurrencyFromOverview(c){
+selectCurrency(c,true);
+}
+function pctMoveForCurrency(c,n){
+if(c==='USD') return null;
+const z=ccySeries(c,n);
+const v=z.values.filter(x=>x!=null&&isFinite(x));
+if(v.length<2 || !v[0]) return null;
+return (v.at(-1)/v[0]-1)*100;
+}
+function marketTxtClass(x){
+if(x==null || Math.abs(x)<0.05)return 'neuTxt';
+return x>0?'posTxt':'negTxt';
+}
+function renderCurrencyMarketPanel(){
+const host=document.querySelector('#ccyMarketPanel');
+if(!host || typeof selectedCcy==='undefined') return;
+const c=selectedCcy;
+const p1=pctMoveForCurrency(c,22), p3=pctMoveForCurrency(c,66), p6=pctMoveForCurrency(c,132);
+const r=D.macro[c]?.rate2y, usd=D.macro.USD?.rate2y;
+const spread=(r!=null&&usd!=null)?(r-usd)*100:null;
+const rm=rate2YMove(c);
+const cot=D.cot[c]||{};
+const cotState=cot.pct>=80?'Estremo long':cot.pct<=20?'Estremo short':'Area intermedia';
+const netOiSigned=+(cot.net_oi||0);
+const concentration=Math.abs(netOiSigned)>=MODEL_RULES.cot.netOiConcentration
+? ` · concentrazione ${netOiSigned>0?'long':'short'} ${netOiSigned>0?'+':''}${fmt(netOiSigned,1)}%`
+: '';
+host.innerHTML=`
+<div class="ccyMarketCard"><h4>Performance relativa vs USD</h4><div class="perfTable">
+${[['1M',p1],['3M',p3],['6M',p6]].map(([k,v])=>`
+<div class="perfCell"><div class="k">${k}</div><div class="v ${marketTxtClass(v)}">${v==null?'—':(v>=0?'+':'')+fmt(v,1)+'%'}</div></div>`).join('')}
+</div><div class="ccyMarketSub">${c==='USD'?'USD è la base di confronto.':'Misura quanto la valuta si è mossa rispetto al dollaro.'}</div></div><div class="ccyMarketCard"><h4>Differenziale tassi 2Y vs USD</h4><div class="ccyMarketMetric ${marketTxtClass(spread)}">${spread==null?'—':(spread>=0?'+':'')+fmt(spread,0)+' bp'}</div><div class="ccyMarketSub">2Y ${c}: ${r==null?'—':fmt(r,2)+'%'} · ultimo impulso: ${rm.delta==null?'—':(rm.delta>=0?'+':'')+fmt(rm.delta*100,1)+' bp'}</div></div><div class="ccyMarketCard"><h4>Posizionamento COT</h4><div class="ccyMarketMetric">${cot.pct==null?'—':'P'+fmt(cot.pct,0)}</div><div class="ccyMarketSub">${cotState}${concentration}<br>Net/OI: ${cot.net_oi==null?'—':fmt(cot.net_oi,1)+'%'} · variazione net 1W: ${cot.chg_net_1w==null?'—':fmt(cot.chg_net_1w,0)}</div></div>`;
+}
+const MODEL_STATE = {
+selectedCurrency: typeof selectedCcy!=='undefined' ? selectedCcy : 'USD',
+selectedPair: null,
+currency: {},
+pairs: {},
+globalRisk: null,
+updatedAt: null
+};
+function buildCanonicalCurrencyState(c){
+const d=currencyIntelData?.[c] || {};
+const dyn=typeof currencyDynamics==='function' ? currencyDynamics(c) : {rates:null,price:null};
+const driverStruct=typeof deriveCurrencyDrivers==='function'
+? deriveCurrencyDrivers(c)
+: {driver:'Non determinato',codriver:null};
+const leadStruct=typeof deriveLeadStructure==='function'
+? deriveLeadStructure(c)
+: {lead:'Non determinato',confirm:'—',diverge:'—',lag:'—',leadReason:''};
+const actionPlan=typeof deriveCurrencyActionPlan==='function'
+? deriveCurrencyActionPlan(c)
+: {strengthen:'—',weaken:'—',watch:'—'};
+const regime=typeof deriveCurrencyRegime==='function'
+? deriveCurrencyRegime(c)
+: 'Misto';
+const overall=typeof deriveCurrencyState==='function'
+? deriveCurrencyState(c)
+: {base:'MISTA',price:'NEUTRALE',cot:'—'};
+return {
+code:c,
+regime,
+overall,
+driver:driverStruct.driver || 'Non determinato',
+codriver:driverStruct.codriver || null,
+lead:leadStruct.lead || 'Non determinato',
+leadReason:leadStruct.leadReason || '',
+confirm:leadStruct.confirm || '—',
+diverge:leadStruct.diverge || '—',
+lag:leadStruct.lag || '—',
+actionPlan,
+decisionFrame:typeof deriveCurrencyDecisionFrame==='function' ? deriveCurrencyDecisionFrame(c) : null,
+dynamics:dyn,
+cotWarning:typeof cotEarlyWarning==='function' ? cotEarlyWarning(c) : '',
+dna:typeof CURRENCY_DNA!=='undefined' ? (CURRENCY_DNA[c]||null) : null
+};
+}
+function buildCanonicalPairState(pair){
+const certified=typeof certifiedPairForMarket==='function'
+? certifiedPairForMarket(pair)
+: (CERT53?.pairs?.[pair] || null);
+const driver=typeof derivePairDriverStructure==='function'
+? derivePairDriverStructure(pair)
+: {driver:'Non determinato',codriver:null,lead:'Non determinato',reason:'—'};
+const relDyn=typeof derivePairRelativeDynamics==='function'
+? derivePairRelativeDynamics(pair)
+: null;
+const transition=typeof pairTransitionState==='function'
+? pairTransitionState(pair)
+: null;
+const decisionFrame=typeof derivePairDecisionFrame==='function'
+? derivePairDecisionFrame(pair)
+: null;
+const setupState=typeof derivePairSetupState==='function'
+? derivePairSetupState(pair)
+: null;
+const attention=typeof pairAttentionLevel==='function'
+? pairAttentionLevel(pair)
+: null;
+return {
+pair,
+certified,
+driver,
+relativeDynamics:relDyn,
+transition,
+decisionFrame,
+setupState,
+attention
+};
+}
+function rebuildCanonicalState(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+MODEL_STATE.globalRisk=typeof deriveGlobalRiskState==='function' ? deriveGlobalRiskState() : null;
+MODEL_STATE.currency={};
+ccys.forEach(c=>MODEL_STATE.currency[c]=buildCanonicalCurrencyState(c));
+MODEL_STATE.pairs={};
+Object.keys(CERT53?.pairs||{}).forEach(p=>MODEL_STATE.pairs[p]=buildCanonicalPairState(p));
+MODEL_STATE.selectedCurrency=typeof selectedCcy!=='undefined' ? selectedCcy : MODEL_STATE.selectedCurrency;
+MODEL_STATE.updatedAt=new Date().toISOString();
+}
+function getCurrencyState(c){
+return MODEL_STATE.currency?.[c] || buildCanonicalCurrencyState(c);
+}
+function getPairState(pair){
+return MODEL_STATE.pairs?.[pair] || buildCanonicalPairState(pair);
+}
+function getSelectedCurrencyState(){
+const c=MODEL_STATE.selectedCurrency || selectedCcy || 'USD';
+return getCurrencyState(c);
+}
+function getCanonicalGlobalRisk(){
+if(!MODEL_STATE.globalRisk) rebuildCanonicalState();
+return MODEL_STATE.globalRisk;
+}
+function getCanonicalPair(pair){
+return getPairState(pair);
+}
+const MODEL_RULES = {
+version: '9.3-pair-attention-hierarchy',
+freeze: {
+status: 'RECALIBRATED_POST_BACKTEST',
+frozenAt: '2026-09-25',
+purpose: 'POST_BACKTEST_RECALIBRATION',
+rule: 'RECALIBRATION_ONLY_WHERE_SUPPORTED_BY_PASS_1_8_EVIDENCE',
+oosRule: 'ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE'
+},
+analysisOrder: ['macro','rates_cb','cot','price'],
+overlays: ['liq','globalRisk'],
+leadGate: {minTurnGapDays: 2, requireDatedSeries: true},
+dynamics: {sequence:['level','direction','velocity','acceleration','turning_point'], requireHomogeneousSeries:true, noCrossFrequencyShortcut:true, macroLiquidityMode:'diagnostic_only_until_backtest', robustPerSeriesNormalization:true, qaGate:{requireGrowth:true, requireLabour:true, requireRates:true, requirePrice:true, inflationOptional:true, liquidityOptional:true}, freezePolicy:{lockRulesDuringBacktest:true, noNewVariablesDuringTest:true, requireOutOfSample:true, refactorMustBeStableBeforeFreeze:true}, backtestProtocol:{horizonsDays:[7,28,84], sameHorizonsAllCurrencies:true, sameRulesAllPairs:true, optimizeThresholdsDuringTest:false, restartOOSAfterRuleChange:true}, stateDynamicsMode:'diagnostic_only_until_backtest', earlyShiftMode:'diagnostic_only_no_signal_impact', pairRelativeDynamicsMode:'diagnostic_only_until_backtest', pairTransitionMode:'diagnostic_only_no_driver_override'},
+roles: {
+macro: 'fundamental_anchor',
+ratesCb: 'market_translation',
+cot: 'positioning_context',
+price: 'market_expression',
+liquidity: 'overlay',
+globalRisk: 'overlay'
+},
+cot: {
+warningHigh: 70,
+warningLow: 30,
+extremeHigh: 80,
+extremeLow: 20,
+netOiConcentration: 30
+},
+currencyState: {
+coreStructure: 'MACRO_PLUS_RATES_CB',
+strongRule: 'macro_positive_and_policy_positive',
+fragileRule: 'macro_negative_and_policy_negative',
+constructiveRule: 'one_positive_other_neutral',
+weakRule: 'one_negative_other_neutral',
+mixedRule: 'macro_policy_conflict_or_both_neutral',
+liquidityRole: 'overlay_only',
+priceRole: 'confirmation_only',
+cotRole: 'positioning_context_only'
+}
+};
+function modelRuleSummary(){
+return {
+analysisOrder: 'Macro → Rates/CB expectations → COT → Price',
+leadRule: 'nessuna priorità fissa: può fare lead qualunque layer con evidenza temporale',
+driverRule: 'fattore che spiega meglio il repricing corrente; non coincide necessariamente con il lead',
+currencyStateRule: 'Macro + Rates/CB definiscono lo stato base; Liquidità overlay, Prezzo conferma, COT contesto',
+cotWarning: `P${MODEL_RULES.cot.warningHigh}/P${MODEL_RULES.cot.warningLow}`,
+cotExtreme: `P${MODEL_RULES.cot.extremeHigh}/P${MODEL_RULES.cot.extremeLow}`,
+netOi: `${MODEL_RULES.cot.netOiConcentration}%`
+};
+}
+function cotEarlyWarning(c){
+const x=D.cot?.[c];
+if(!x || x.pct==null) return '';
+const p=+x.pct;
+const noiSigned=+(x.net_oi||0);
+const noi=Math.abs(noiSigned);
+const noiLabel=noi>=MODEL_RULES.cot.netOiConcentration ? ` · ${noiSigned>0?'concentrazione long':'concentrazione short'} Net/OI ${noiSigned>0?'+':''}${fmt(noiSigned,1)}%` : '';
+if(p>=MODEL_RULES.cot.extremeHigh || p<=MODEL_RULES.cot.extremeLow){
+return `Estremo COT · P${fmt(p,0)}${noiLabel}`;
+}
+if(p>=MODEL_RULES.cot.warningHigh || p<=MODEL_RULES.cot.warningLow){
+return `Candidato P70 · early warning${noiLabel}`;
+}
+return '';
+}
+function lastDirectionalTurn(seriesObj, lookback=30){
+if(!seriesObj?.values?.length || !seriesObj?.dates?.length) return null;
+const vals=seriesObj.values.map(Number);
+const dates=seriesObj.dates;
+if(vals.length<8) return null;
+const start=Math.max(3, vals.length-lookback);
+let last=null;
+for(let i=start;i<vals.length;i++){
+const prevDelta=vals[i-1]-vals[i-3];
+const currDelta=vals[i]-vals[i-2];
+if(!isFinite(prevDelta) || !isFinite(currDelta)) continue;
+const prevSign=Math.sign(prevDelta);
+const currSign=Math.sign(currDelta);
+if(prevSign!==0 && currSign!==0 && prevSign!==currSign){
+last={date:dates[i],dir:currSign,index:i};
+}
+}
+return last;
+}
+function priceSeriesObjectForCurrency(c){
+try{
+const ps=ccySeries(c,60);
+if(!ps?.values?.length) return null;
+return {dates:ps.labels,values:ps.values};
+}catch(e){
+return null;
+}
+}
+function ratesSeriesObjectForCurrency(c){
+const rs=rate2YSeries(c);
+if(!rs?.values?.length) return null;
+return {dates:rs.dates||[],values:rs.values};
+}
+function daysBetweenDates(a,b){
+const da=new Date(a), db=new Date(b);
+if(!isFinite(da) || !isFinite(db)) return null;
+return Math.abs(db-da)/86400000;
+}
+function deriveLeadStructure(c){
+const d=currencyIntelData?.[c];
+if(!d) return {
+lead:'Non determinato',
+confirm:'—',
+diverge:'—',
+lag:'Non determinato',
+overlay:'Liquidità non determinata',
+leadReason:'dati insufficienti'
+};
+const coreLayers=[
+{key:'macro',name:'Macro',pol:layerPolarity(d.macro)},
+{key:'rates',name:'Rates / aspettative CB',pol:policyFamilyPolarity(d)},
+{key:'price',name:'Prezzo',pol:layerPolarity(d.price)}
+];
+const liqPol=layerPolarity(d.liq);
+const overlay =
+liqPol>0 ? 'Liquidità favorevole' :
+liqPol<0 ? 'Liquidità contraria' :
+'Liquidità neutra';
+// Lead and Lag are temporal concepts.
+// At this stage only Rates and Price have directly comparable dated turning points.
+const rateTurn=lastDirectionalTurn(ratesSeriesObjectForCurrency(c));
+const priceTurn=lastDirectionalTurn(priceSeriesObjectForCurrency(c));
+let lead='Non determinato';
+let lag='Non determinato';
+let leadReason='tempistiche non confrontabili con sufficiente sicurezza';
+if(rateTurn && priceTurn){
+const gap=daysBetweenDates(rateTurn.date,priceTurn.date);
+if(gap!=null && gap>=2){
+const rt=new Date(rateTurn.date).getTime();
+const pt=new Date(priceTurn.date).getTime();
+if(rt<pt){
+lead='Rates / aspettative CB';
+lag='Prezzo';
+leadReason=`turning point rates ${rateTurn.date} prima del prezzo ${priceTurn.date}`;
+}else if(pt<rt){
+lead='Prezzo';
+lag='Rates / aspettative CB';
+leadReason=`turning point prezzo ${priceTurn.date} prima dei rates ${rateTurn.date}`;
+}
+}else if(gap!=null){
+lead='Quasi simultanei';
+lag='Nessun lag temporale chiaro';
+leadReason='rates e prezzo hanno girato nello stesso intervallo temporale';
+}
+}
+const driver=deriveCurrencyDriver(c);
+const jointDriver=driver.startsWith('Macro + Rates');
+const driverKey =
+jointDriver ? null :
+driver.startsWith('Macro')?'macro':
+driver.startsWith('Rates')?'rates':null;
+const policyPol=policyFamilyPolarity(d);
+const driverPol = jointDriver
+? (layerPolarity(d.macro)===policyPol ? layerPolarity(d.macro) : 0)
+: driverKey==='rates'
+? policyPol
+: (driverKey ? coreLayers.find(x=>x.key===driverKey)?.pol : 0);
+const compareLayers = jointDriver
+? coreLayers.filter(x=>x.key==='price')
+: coreLayers.filter(x=>x.key!==driverKey);
+const confirms = driverPol
+? compareLayers.filter(x=>x.pol===driverPol).map(x=>x.name)
+: [];
+const diverges = driverPol
+? compareLayers.filter(x=>x.pol!==0 && x.pol!==driverPol).map(x=>x.name)
+: [];
+return {
+lead,
+leadReason,
+confirm: confirms.length?confirms.join(' + '):'Nessuna conferma chiara',
+diverge: diverges.length?diverges.join(' + '):'Nessuna divergenza evidente',
+lag,
+overlay
+};
+}
+function refreshLeadStructureInData(c){
+const d=currencyIntelData?.[c];
+if(!d) return;
+const x=deriveLeadStructure(c);
+d.lead=x.lead;
+d.confirm=x.confirm;
+d.diverge=x.diverge;
+d.lag=x.lag;
+d.overlay=x.overlay;
+}
+function coreDirectionalLayers(c){
+const d=currencyIntelData?.[c];
+if(!d) return [];
+return [
+{key:'macro',name:'Macro',pol:layerPolarity(d.macro)},
+{key:'policy',name:'Rates / aspettative CB',pol:policyFamilyPolarity(d)},
+{key:'price',name:'Prezzo',pol:layerPolarity(d.price)}
+];
+}
+function deriveCurrencyActionPlan(c){
+const d=currencyIntelData?.[c];
+if(!d) return {strengthen:'—',weaken:'—',watch:'—'};
+const layers=coreDirectionalLayers(c);
+const state=deriveCurrencyState(c);
+const lead=deriveLeadStructure(c);
+const core=layers.filter(x=>x.key!=='price');
+const positive=core.filter(x=>x.pol>0);
+const negative=core.filter(x=>x.pol<0);
+const neutral=core.filter(x=>x.pol===0);
+const price=layers.find(x=>x.key==='price');
+const liqPol=layerPolarity(d.liq);
+const liqTxt =
+liqPol>0 ? 'liquidità favorevole' :
+liqPol<0 ? 'liquidità contraria' :
+'liquidità neutra';
+const cotNote=cotEarlyWarning(c);
+let strengthen='';
+let weaken='';
+if(state?.base==='FORTE'){
+strengthen='Macro e Rates/aspettative CB devono restare allineati';
+}else if(state?.base==='COSTRUTTIVA'){
+strengthen=`Serve che ${neutral[0]?.name || 'il layer neutrale'} si allinei al layer favorevole`;
+}else if(state?.base==='FRAGILE'){
+strengthen='Serve un miglioramento congiunto di Macro e Rates/aspettative CB';
+}else if(state?.base==='DEBOLE'){
+strengthen=`Serve che ${negative[0]?.name || 'il layer contrario'} smetta di deteriorare il quadro`;
+}else{
+strengthen='Serve che Macro e Rates/aspettative CB convergano nella stessa direzione';
+}
+if(price?.pol===0){
+strengthen+='; il Prezzo deve diventare più risolutivo';
+}else if(state?.confirmation==='PREZZO DIVERGE'){
+strengthen+='; la divergenza del Prezzo può riassorbirsi solo se il core resta valido';
+}else if(state?.confirmation==='PREZZO CONFERMA'){
+strengthen+='; il Prezzo è già allineato: non usarlo come prova di ulteriore continuazione';
+}
+if(state?.base==='FORTE' || state?.base==='COSTRUTTIVA'){
+weaken='Il quadro si indebolisce se Macro o Rates/aspettative CB perdono supporto';
+}else if(state?.base==='FRAGILE' || state?.base==='DEBOLE'){
+weaken='La debolezza aumenta se Macro e Rates/aspettative CB restano contrari';
+}else{
+weaken='La lettura peggiora se Macro e Rates/aspettative CB divergono ulteriormente';
+}
+if(cotNote){
+weaken+='; il COT può amplificare il rischio di reazione';
+}
+const watchParts=[];
+if(lead.lead && lead.lead!=='—' && lead.lead!=='Non determinato'){
+watchParts.push(`Lead: ${lead.lead}${lead.leadReason?` (${lead.leadReason})`:''}`);
+}
+if(lead.diverge && !lead.diverge.startsWith('Nessuna')){
+watchParts.push(`Divergenza tra i segnali: ${lead.diverge}`);
+}
+if(lead.lag && !lead.lag.startsWith('Nessun') && lead.lag!=='Non determinato'){
+watchParts.push(`Lag: ${lead.lag}`);
+}
+if(liqPol!==0){
+watchParts.push(`Overlay: ${liqTxt}`);
+}
+if(cotNote){
+watchParts.push(cotNote);
+}
+if(!watchParts.length){
+watchParts.push('Macro, Rates/aspettative CB e conferma del Prezzo');
+}
+return {
+strengthen:strengthen.charAt(0).toUpperCase()+strengthen.slice(1)+'.',
+weaken:weaken.charAt(0).toUpperCase()+weaken.slice(1)+'.',
+watch:watchParts.join(' · ')
+};
+}
+function refreshActionPlanInData(c){
+const d=currencyIntelData?.[c];
+if(!d) return;
+const p=deriveCurrencyActionPlan(c);
+d.strengthen=p.strengthen;
+d.weaken=p.weaken;
+d.watch=p.watch;
+}
+function deriveCurrencyRegime(c){
+const m=D.macro?.[c]||{};
+const cycle=(m.cycle||'').toUpperCase();
+// Prefer the canonical macro-cycle field already present in the engine.
+if(cycle.includes('GOLDILOCKS')) return 'Espansione equilibrata';
+if(cycle.includes('SLOWDOWN')) return 'Rallentamento';
+if(cycle.includes('STAGFLATION')) return 'Stagflazione';
+if(cycle.includes('REFLATION')) return 'Reflazione';
+// Fallback only if canonical cycle is unavailable.
+const d=currencyIntelData?.[c];
+if(!d) return 'Misto';
+const mp=layerPolarity(d.macro);
+if(mp>0) return 'Espansione / reflazione';
+if(mp<0) return 'Rallentamento';
+return 'Misto';
+}
+function deriveCurrencyStory(c){
+const d=currencyIntelData?.[c];
+if(!d) return '—';
+const x=deriveCurrencyState(c);
+const lead=deriveLeadStructure(c);
+const driver=deriveCurrencyDriver(c);
+const cot=cotEarlyWarning(c);
+const bits=[];
+bits.push(driver==='Non determinato'
+? 'Perché si muove non ancora identificato'
+: `${driver} è il driver dominante`);
+// Macro/Rates confirmation can be narrated here.
+// Price is handled once, separately below, to avoid duplicate messages.
+const nonPriceConfirm=(lead.confirm||'')
+.split(' + ')
+.filter(x=>x && x!=='Prezzo' && !x.startsWith('Nessuna'));
+const nonPriceDiverge=(lead.diverge||'')
+.split(' + ')
+.filter(x=>x && x!=='Prezzo' && !x.startsWith('Nessuna'));
+if(nonPriceConfirm.length){
+bits.push(`${nonPriceConfirm.join(' + ')} conferma`);
+}
+if(nonPriceDiverge.length){
+bits.push(`${nonPriceDiverge.join(' + ')} diverge`);
+}
+if(lead.lag && !lead.lag.startsWith('Nessun') && lead.lag!=='Non determinato'){
+bits.push(`${lead.lag} è in ritardo`);
+}
+if(x?.confirmation==='PREZZO CONFERMA'){
+bits.push('il prezzo conferma la struttura');
+}else if(x?.confirmation==='PREZZO DIVERGE'){
+bits.push('il prezzo diverge dalla struttura');
+}else if(x?.confirmation==='PREZZO SENZA STRUTTURA'){
+bits.push('il prezzo si muove, ma la struttura resta mista');
+}else{
+bits.push('il prezzo non dà ancora una conferma risolutiva');
+}
+if(lead.overlay && lead.overlay!=='Liquidità neutra'){
+bits.push(lead.overlay.toLowerCase());
+}
+if(cot) bits.push(`${cot.toLowerCase()} sul posizionamento`);
+return bits.join(' · ') + '.';
+}
+function refreshCurrencyNarrativeInData(c){
+const d=currencyIntelData?.[c];
+if(!d) return;
+d.driver=deriveCurrencyDriver(c);
+d.regime=deriveCurrencyRegime(c);
+d.story=deriveCurrencyStory(c);
+// Keep lead/action plan aligned with the newly-derived driver.
+refreshLeadStructureInData(c);
+refreshActionPlanInData(c);
+}
+function riskClassFromState(state){
+if(state==='RISK-OFF') return 'riskOff';
+if(state==='RISCHIO CONTENUTO') return 'riskOn';
+return 'riskMixed';
+}
+function currencyRiskOverlay(c){
+const r=getCanonicalGlobalRisk();
+if(!r || r.state==='WITHHELD') return '';
+let relevance='contesto globale';
+let detail=r.driver;
+if(r.state==='SHOCK ENERGIA'){
+if(c==='CAD'){
+relevance='rilevante direttamente';
+detail='Petrolio / terms of trade favorevoli se lo shock è supply-driven';
+}else if(c==='JPY' || c==='EUR'){
+relevance='rilevante direttamente';
+detail='Energia importata / inflazione / crescita';
+}else if(c==='USD'){
+relevance='rilevante indirettamente';
+detail='Inflazione / Treasury / aspettative Fed';
+}else{
+relevance='impatto secondario';
+detail='Contesto globale, salvo shock molto ampio';
+}
+}else if(r.state==='RISK-OFF'){
+if(['JPY','CHF'].includes(c)){
+relevance='rilevante direttamente';
+detail='Flussi difensivi / safe haven';
+}else if(['AUD','NZD','CAD'].includes(c)){
+relevance='rilevante direttamente';
+detail='Sensibilità ciclica / risk appetite';
+}else{
+relevance='contesto globale';
+}
+}else if((r.affected||[]).includes(c)){
+relevance='rilevante per questa valuta';
+}
+if(r.state==='RISCHIO CONTENUTO' && relevance==='contesto globale') return '';
+return `<div class="globalRiskBadge ${riskClassFromState(r.state)}"><b>${r.state}</b> · ${relevance} · ${detail}</div>`;
+}
+function normalizePairSide(x){
+if(!x) return null;
+const t=String(x).toUpperCase();
+if(t==='A') return 'A';
+if(t==='B') return 'B';
+return null;
+}
+function derivePairDriverStructure(pair){
+const frame=derivePairDecisionFrame(pair);
+if(!frame || frame.fav==='—') return {
+driver:'Non determinato',
+codriver:null,
+lead:'Non determinato',
+reason:'Macro e Tassi/CB non identificano un vantaggio strutturale pulito.',
+side:null,
+source:'CANONICAL_PAIR_FRAME'
+};
+const [a,b]=pair.split('/');
+const favSide=frame.fav===a?'A':frame.fav===b?'B':null;
+const ms=frame.structural?.macro?.side;
+const ps=frame.structural?.policy?.side;
+let driver='Non determinato', codriver=null;
+if(ms===favSide && ps===favSide){
+driver='Macro + Rates / aspettative CB';
+}else if(ms===favSide && ps==='TIE'){
+driver='Macro';
+}else if(ps===favSide && ms==='TIE'){
+driver='Rates / aspettative CB';
+}
+return {
+driver,
+codriver,
+lead:'Non determinato',
+reason: driver==='Non determinato'
+? 'I pilastri strutturali non sono abbastanza allineati per definire un driver unico.'
+: `${driver} determina il vantaggio strutturale canonico di ${frame.fav}.`,
+side:favSide,
+source:'CANONICAL_PAIR_FRAME'
+};
+}
+function currencyMomentumSignature(c){
+const growth=blockDynamics(c,'Crescita');
+const labour=blockDynamics(c,'Lavoro');
+const rates=currencyDynamics(c)?.rates;
+const out={positive:0,negative:0,turns:0,details:[],withheld:false};
+const add=(name,dir,turn)=>{
+if(dir>0){
+out.positive++;
+out.details.push(`${name}: migliora`);
+}else if(dir<0){
+out.negative++;
+out.details.push(`${name}: peggiora`);
+}
+if(turn){
+out.turns++;
+out.details.push(`${name}: turning point`);
+}
+};
+const growthReady=!!growth && growth.n>=2;
+const labourReady=!!labour && labour.n>=2;
+if(!growthReady || !labourReady || !rates){
+out.withheld=true;
+return out;
+}
+add('Crescita',growth.direction,growth.turning===true);
+add('Lavoro',labour.direction,labour.turning===true);
+add('Rates',rates.dir,rates.turn===true);
+// Inflation is descriptive and Liquidity is an overlay.
+// Neither enters the core relative-momentum comparison.
+return out;
+}
+function pairAttentionLevel(pair){
+const f=derivePairDecisionFrame(pair);
+if(!f || f.quality==='MISTO / NON RISOLUTIVO' || f.quality==='NESSUN CONTRASTO'){

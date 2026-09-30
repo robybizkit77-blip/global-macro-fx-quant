@@ -1,0 +1,1000 @@
+stage:'GLOBAL_TRANSACTION',
+error:String(err?.message||err),
+rolled_back:true,
+generation:window.PRODUCTION_REFRESH_GENERATION
+};
+}
+};
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+window.productionHealthCheck=function(){
+const issues=[];
+const warnings=[];
+// 1) Core currency states must exist for all 8 currencies.
+const states={};
+CCYS.forEach(c=>{
+try{
+const st=deriveCurrencyState(c);
+states[c]=st?.base||null;
+if(!st || !st.base) issues.push(`STATE_MISSING:${c}`);
+}catch(e){
+issues.push(`STATE_ERROR:${c}`);
+}
+});
+// 2) Narrative + driver sync.
+const narrativeSync={};
+CCYS.forEach(c=>{
+let storyOk=false,driverOk=false;
+try{
+storyOk=currencyIntelData[c].story===deriveCurrencyStory(c);
+driverOk=currencyIntelData[c].driver===deriveCurrencyDriver(c);
+}catch(e){}
+narrativeSync[c]={storyOk,driverOk};
+if(!storyOk) issues.push(`STORY_DESYNC:${c}`);
+if(!driverOk) issues.push(`DRIVER_DESYNC:${c}`);
+});
+// 3) Pair Engine vs MODEL_STATE, all 28 pairs.
+const pairIssues=[];
+const canon=MODEL_STATE?.pairs||{};
+const getCanon=(pair)=>{
+const [a,b]=pair.split('/');
+const k=Object.keys(canon).find(x=>{
+const [u,v]=x.split('/');
+return (u===a&&v===b)||(u===b&&v===a);
+});
+return k?canon[k]:null;
+};
+(D.pairs||[]).forEach(x=>{
+try{
+const f=derivePairDecisionFrame(x.pair);
+const q=derivePairSetupState(x.pair);
+const c=getCanon(x.pair);
+const ok=f.fav===(c?.decisionFrame?.fav??'—') &&
+f.quality===c?.decisionFrame?.quality &&
+q.quality===c?.setupState?.quality;
+if(!ok){
+pairIssues.push(x.pair);
+issues.push(`PAIR_DESYNC:${x.pair}`);
+}
+}catch(e){
+pairIssues.push(x.pair);
+issues.push(`PAIR_ERROR:${x.pair}`);
+}
+});
+if((D.pairs||[]).length!==28) issues.push(`PAIR_COUNT:${(D.pairs||[]).length}`);
+// 4) Structural queue is not an error, but it must be visible.
+const queue=clone(window.PENDING_STRUCTURAL_CHANGES||{});
+const queued=Object.keys(queue);
+if(queued.length) warnings.push(`STRUCTURAL_QUEUE:${queued.join(',')}`);
+// 5) Core source freshness / quality.
+const sourceAudit=(typeof finalSourceAuditSummary==='function')
+? finalSourceAuditSummary()
+: null;
+if(!sourceAudit){
+warnings.push('SOURCE_AUDIT_UNAVAILABLE');
+}else{
+Object.entries(sourceAudit.rates||{}).forEach(([c,x])=>{
+const pol=String(x?.policy||'');
+if(!pol) warnings.push(`RATES_POLICY_MISSING:${c}`);
+});
+Object.entries(sourceAudit.cb_pricing||{}).forEach(([c,x])=>{
+const q=String(x?.quality||'');
+if(/STALE_PRE_DECISION/.test(q)) warnings.push(`CB_PRICING_STALE:${c}`);
+if(/SECONDARY_QUOTE/.test(q)) warnings.push(`CB_PRICING_SECONDARY:${c}`);
+if(/PARTIAL_OFFICIAL/.test(q)) warnings.push(`CB_PRICING_PARTIAL:${c}`);
+});
+}
+// 6) Auxiliary freshness.
+const aux=clone(window.AUXILIARY_FEED_FRESHNESS||{});
+if(!aux.calendar) warnings.push('CALENDAR_FRESHNESS_MISSING');
+if(!aux.news) warnings.push('NEWS_FRESHNESS_MISSING');
+if(!aux.risk) warnings.push('RISK_FRESHNESS_MISSING');
+if(aux.calendar && !/CURRENT|LIVE|VALIDATED/i.test(String(aux.calendar.status||''))){
+warnings.push('CALENDAR_NOT_CURRENT');
+}
+if(aux.news && !/CURRENT|VALIDATED/i.test(String(aux.news.status||''))){
+warnings.push('NEWS_NOT_CURRENT');
+}
+const riskFresh=aux.risk||{};
+Object.entries(riskFresh).forEach(([k,v])=>{
+const st=String(v?.status||'');
+if(/LAST_VALID/.test(st)) warnings.push(`RISK_LAST_VALID:${k}`);
+});
+// 7) Forward validation registry integrity.
+let forward=null;
+try{
+forward=forwardValidationIntegritySummary();
+if(forward.pair_count!==28) issues.push(`FORWARD_PAIR_COUNT:${forward.pair_count}`);
+if(!forward.seal) issues.push('FORWARD_SEAL_MISSING');
+}catch(e){
+warnings.push('FORWARD_VALIDATION_UNAVAILABLE');
+}
+// 8) Production refresh controllers available.
+if(typeof runProductionDailyRefresh!=='function') issues.push('UNIFIED_REFRESH_MISSING');
+if(typeof applyCanonicalRefreshPayload!=='function') issues.push('CORE_ATOMIC_REFRESH_MISSING');
+if(typeof applyAuxiliaryRefreshPayload!=='function') issues.push('AUX_ATOMIC_REFRESH_MISSING');
+let status='PASS';
+if(issues.length) status='FAIL';
+else if(warnings.length) status='PASS_WITH_WARNINGS';
+return {
+status,
+checked_at:new Date().toISOString(),
+hard_errors:issues,
+warnings,
+states,
+narrative_sync:narrativeSync,
+pair_count:(D.pairs||[]).length,
+pair_mismatches:pairIssues,
+structural_queue:queue,
+source_audit:sourceAudit,
+auxiliary_freshness:aux,
+forward_validation:forward,
+generations:{
+core:window.REFRESH_GENERATION,
+auxiliary:window.AUXILIARY_REFRESH_GENERATION,
+production:window.PRODUCTION_REFRESH_GENERATION
+}
+};
+};
+window.PRODUCTION_HEALTH_POLICY={
+PASS:'No hard integrity errors and no freshness/quality warnings.',
+PASS_WITH_WARNINGS:'Architecture coherent; one or more feeds are stale/partial/secondary or a structural proposal is pending.',
+FAIL:'Integrity problem: stop production refresh decisions until resolved.'
+};
+})();
+
+</script><script>
+
+(function(){
+const payload={
+risk:{
+VIX:{date:'2026-09-28',value:16.32},
+Gold:{date:'2026-09-28',value:4149.58}
+},
+freshness:{
+risk:{
+VIX:{
+as_of:'2026-09-28',
+status:'CURRENT_VALIDATED_SECONDARY',
+source:'Cboe historical daily series cross-checked with Yahoo Finance historical close'
+},
+Gold:{
+as_of:'2026-09-28',
+status:'CURRENT_VALIDATED_SECONDARY',
+source:'Spot XAU/USD historical close; same spot basis as prior series'
+},
+Brent:{
+as_of:'2026-09-28',
+status:'CURRENT_CLOSE'
+},
+WTI:{
+as_of:'2026-09-28',
+status:'CURRENT_CLOSE'
+},
+'China CLI':{
+as_of:'2026-08-01',
+status:'CURRENT_MONTHLY',
+source:'Monthly leading indicator; no daily freshness requirement'
+}
+}
+}
+};
+window.applyAuxiliaryRefreshPayload(payload);
+})();
+
+</script><script>
+
+(function(){
+const base=window.productionHealthCheck;
+window.productionHealthCheck=function(){
+const r=base();
+const filtered=[];
+const aux=window.AUXILIARY_FEED_FRESHNESS||{};
+const rf=aux.risk||{};
+for(const w of (r.warnings||[])){
+if(w==='RISK_LAST_VALID:China CLI' && /CURRENT_MONTHLY/.test(String(rf['China CLI']?.status||''))) continue;
+if(w==='RISK_LAST_VALID:VIX' && /CURRENT/.test(String(rf.VIX?.status||''))) continue;
+if(w==='RISK_LAST_VALID:Gold' && /CURRENT/.test(String(rf.Gold?.status||''))) continue;
+filtered.push(w);
+}
+r.warnings=filtered;
+r.status=r.hard_errors.length?'FAIL':(filtered.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+})();
+
+</script><script>
+
+(function(){
+const x=NATIVE_CB_DATA.EUR;
+x.pricing_tier='COMPLETO_DIRECT_EXCHANGE';
+x.pricing_status='Eurex €STR futures: circa 2,68% Dec-26, 2,86% Mar-27 e 2,96% Sep-27.';
+x.market_3m='2.683%';
+x.market_6m='2.858%';
+x.market_12m='2.963%';
+x.market_pricing={
+as_of:'2026-09-29',
+instrument:'Eurex Three-Month Euro STR Futures',
+quality:'COMPLETO_DIRECT_EXCHANGE',
+h3m:2.6825,
+h6m:2.8575,
+h12m:2.9625,
+contracts:{
+'Dec-26':{price:97.3175,implied_rate:2.6825},
+'Mar-27':{price:97.1425,implied_rate:2.8575},
+'Sep-27':{price:97.0375,implied_rate:2.9625}
+},
+near_term:'La curva €STR diretta Eurex prezza circa 2,68% a Dec-26, 2,86% a Mar-27 e 2,96% a Sep-27.',
+source:'Eurex Three-Month Euro STR Futures direct exchange quotes',
+note:'Direct exchange pricing; implied rate = 100 - futures price. Replaces prior secondary quote layer.',
+freshness_status:'DIRECT_EXCHANGE_CURRENT'
+};
+try{stableModelRefresh();}catch(e){}
+})();
+(function(){
+const base=window.productionHealthCheck;
+window.productionHealthCheck=function(){
+const r=base();
+const q=String(NATIVE_CB_DATA?.EUR?.market_pricing?.quality||'');
+if(q==='COMPLETO_DIRECT_EXCHANGE'){
+r.warnings=(r.warnings||[]).filter(w=>w!=='CB_PRICING_SECONDARY:EUR');
+}
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+})();
+
+</script><script>
+
+window.CB_PRICING_WARNING_RESOLUTION_AUDIT={"audited_at":"2026-09-29T10:22+02:00","USD":{"warning":"CB_PRICING_SECONDARY","direct_instrument":"CME 30-Day Fed Funds / 3M SOFR futures","status":"DIRECT_INSTRUMENT_CONFIRMED_CURRENT_SETTLEMENT_NOT_CAPTURED","reason":"CME confirms the direct instruments and daily settlement framework, but the current public page accessible here does not expose the complete settlement strip needed for 3m/6m/12m without a dedicated market-data/API feed.","resolution_rule":"Replace secondary curve only when direct CME settlement/quote values for the required horizons are captured from the same business day."},"GBP":{"warning":"CB_PRICING_SECONDARY","direct_instrument":"ICE Three-Month SONIA Index Futures / MPC Dated SONIA Futures","status":"DIRECT_INSTRUMENT_CONFIRMED_CURRENT_PRICES_NOT_CAPTURED","reason":"ICE exposes the official contract set and expiries, but the publicly readable page available here does not expose the current price strip needed for a complete direct curve.","resolution_rule":"Replace secondary curve only when current ICE SONIA prices/settlements are captured for the required horizons."},"CHF":{"warning":"CB_PRICING_SECONDARY","direct_instrument":"Eurex 3M SARON Futures","status":"DIRECT_BUT_ILLIQUID_REJECTED","reason":"Direct Eurex SARON futures exist, but current displayed contracts show zero volume and zero open interest; settlement values are therefore not promoted to canonical market pricing.","resolution_rule":"Promote only when direct SARON contracts show usable liquidity/price discovery or another validated direct CHF OIS source is available."},"AUD":{"warning":"CB_PRICING_STALE","direct_instrument":"ASX 30-Day Interbank Cash Rate Futures / RBA Rate Tracker","status":"AWAIT_POST_DECISION_EOD","reason":"ASX Rate Tracker is the preferred direct source, but the latest publicly validated curve still reflects pre-29-Sep pricing.","resolution_rule":"Replace immediately when the first post-RBA end-of-day ASX curve is published and validated."},"NZD":{"warning":"CB_PRICING_PARTIAL","direct_instrument":"RBNZ/NZFMA wholesale rates; no complete official OCR-futures strip validated","status":"OFFICIAL_MARKET_DATA_AVAILABLE_BUT_NOT_FULL_OCR_CURVE","reason":"RBNZ B2 provides official wholesale rates and swaps, but those are not a direct full OCR-expectations strip equivalent to Fed Funds/SONIA/ASX cash-rate futures.","resolution_rule":"Keep partial official pricing until a direct NZ OCR/OIS curve with required horizons is validated."}};
+window.cbPricingWarningResolutionSummary=function(){
+return JSON.parse(JSON.stringify(window.CB_PRICING_WARNING_RESOLUTION_AUDIT));
+};
+
+</script><script>
+
+window.SOURCE_RESOLUTION_WATCHLIST={"policy":"CHECK_EVERY_DAILY_REFRESH","updated_at":"2026-09-29T10:26+02:00","items":{"USD_CB_PRICING":{"currency":"USD","layer":"CB_PRICING","priority":"HIGH","target_source":"CME 30-Day Fed Funds / 3M SOFR direct settlement strip","current_status":"SECONDARY_QUOTE","resolution_condition":"Same-business-day direct CME settlement/quote values captured for required 3m/6m/12m horizons.","check_each_refresh":true},"GBP_CB_PRICING":{"currency":"GBP","layer":"CB_PRICING","priority":"HIGH","target_source":"ICE Three-Month SONIA / MPC Dated SONIA direct prices or settlements","current_status":"SECONDARY_QUOTE","resolution_condition":"Current direct ICE SONIA strip captured for required horizons.","check_each_refresh":true},"CHF_CB_PRICING":{"currency":"CHF","layer":"CB_PRICING","priority":"MEDIUM","target_source":"Eurex 3M SARON futures or validated direct CHF OIS source","current_status":"DIRECT_BUT_ILLIQUID","resolution_condition":"Usable liquidity/price discovery or validated alternative direct CHF OIS curve becomes available.","check_each_refresh":true},"AUD_CB_PRICING":{"currency":"AUD","layer":"CB_PRICING","priority":"HIGH","target_source":"ASX RBA Rate Tracker / 30-Day Interbank Cash Rate Futures","current_status":"AWAIT_POST_DECISION_EOD","resolution_condition":"First validated post-29-Sep-RBA end-of-day ASX curve is published.","check_each_refresh":true},"NZD_CB_PRICING":{"currency":"NZD","layer":"CB_PRICING","priority":"MEDIUM","target_source":"Direct NZ OCR/OIS curve with required horizons","current_status":"PARTIAL_OFFICIAL","resolution_condition":"Validated direct OCR/OIS curve becomes available for the required horizons.","check_each_refresh":true}}};
+window.sourceResolutionWatchlist=function(){
+const W=JSON.parse(JSON.stringify(window.SOURCE_RESOLUTION_WATCHLIST));
+const out=[];
+Object.entries(W.items||{}).forEach(([id,x])=>{
+let resolved=false;
+if(x.currency==='EUR'){
+resolved=String(NATIVE_CB_DATA?.EUR?.market_pricing?.quality||'')==='COMPLETO_DIRECT_EXCHANGE';
+} else if(x.currency==='AUD'){
+const q=String(NATIVE_CB_DATA?.AUD?.market_pricing?.quality||'');
+resolved=/DIRECT|COMPLETO/.test(q) && !/STALE|PRE_DECISION/.test(q);
+} else {
+const q=String(NATIVE_CB_DATA?.[x.currency]?.market_pricing?.quality||'');
+resolved=/COMPLETO_DIRECT|DIRECT_EXCHANGE/.test(q);
+}
+out.push(Object.assign({id,resolved},x));
+});
+return out;
+};
+window.unresolvedSourceChecks=function(){
+return sourceResolutionWatchlist().filter(x=>x.check_each_refresh && !x.resolved);
+};
+(function(){
+const base=window.productionRefreshStatus;
+if(typeof base==='function'){
+window.productionRefreshStatus=function(){
+const r=base();
+r.source_resolution_watchlist=sourceResolutionWatchlist();
+r.unresolved_source_checks=unresolvedSourceChecks();
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const clone=x=>JSON.parse(JSON.stringify(x));
+window.DAILY_SOURCE_CHECK_LOG=window.DAILY_SOURCE_CHECK_LOG||[];
+window.validateDailySourceChecks=function(checks){
+checks=checks||{};
+const unresolved=(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks():[]);
+const errors=[];
+const allowed=['FOUND','NOT_FOUND','NOT_USABLE'];
+unresolved.forEach(x=>{
+const r=checks[x.id];
+if(!r){
+errors.push(`MISSING_SOURCE_CHECK:${x.id}`);
+return;
+}
+if(!allowed.includes(String(r.status||''))){
+errors.push(`INVALID_SOURCE_CHECK_STATUS:${x.id}`);
+}
+if(!r.checked_at) errors.push(`MISSING_CHECK_TIME:${x.id}`);
+if(!r.source) errors.push(`MISSING_CHECK_SOURCE:${x.id}`);
+if(r.status==='FOUND' && !r.evidence) errors.push(`MISSING_FOUND_EVIDENCE:${x.id}`);
+if(r.status==='NOT_USABLE' && !r.reason) errors.push(`MISSING_NOT_USABLE_REASON:${x.id}`);
+});
+return {ok:errors.length===0,errors,required:unresolved.map(x=>x.id)};
+};
+window.closeProductionDailyRefresh=function(sourceChecks){
+const chk=validateDailySourceChecks(sourceChecks);
+if(!chk.ok){
+return {
+ok:false,
+stage:'SOURCE_CLOSEOUT',
+errors:chk.errors,
+required:chk.required
+};
+}
+const record={
+closed_at:new Date().toISOString(),
+production_generation:window.PRODUCTION_REFRESH_GENERATION,
+checks:clone(sourceChecks),
+health:(typeof productionHealthCheck==='function'?productionHealthCheck():null)
+};
+window.DAILY_SOURCE_CHECK_LOG.push(record);
+window.LAST_DAILY_CLOSEOUT=clone(record);
+return {
+ok:true,
+stage:'CLOSED',
+production_generation:window.PRODUCTION_REFRESH_GENERATION,
+checked_sources:Object.keys(sourceChecks),
+health_status:record.health?.status||null
+};
+};
+window.productionDailyCloseoutStatus=function(){
+return {
+last:clone(window.LAST_DAILY_CLOSEOUT||null),
+required:(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks().map(x=>x.id):[]),
+log_count:(window.DAILY_SOURCE_CHECK_LOG||[]).length
+};
+};
+})();
+
+</script><script>
+
+(function(){
+// Keep source-policy audit metadata synchronized with the actual live Production datasets.
+try{
+if(window.FINAL_SOURCE_POLICY_AUDIT?.rates){
+const r=window.FINAL_SOURCE_POLICY_AUDIT.rates;
+if(r.USD) r.USD.current_as_of='2026-09-28';
+if(r.EUR) r.EUR.current_as_of='2026-09-25';
+if(r.GBP) r.GBP.current_as_of='2026-09-25';
+if(r.JPY) r.JPY.current_as_of='2026-09-28';
+if(r.CHF) r.CHF.current_as_of='2026-09-25';
+if(r.CAD) r.CAD.current_as_of='2026-09-25';
+if(r.AUD) r.AUD.current_as_of='2026-09-25';
+if(r.NZD) r.NZD.current_as_of='2026-09-28';
+}
+if(window.FINAL_SOURCE_POLICY_AUDIT?.cb_pricing){
+const c=window.FINAL_SOURCE_POLICY_AUDIT.cb_pricing;
+if(c.EUR){
+c.EUR.quality='COMPLETO_DIRECT_EXCHANGE';
+c.EUR.policy='AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT';
+c.EUR.source='Eurex Three-Month Euro STR Futures';
+c.EUR.current_as_of='2026-09-29';
+}
+if(c.AUD){
+c.AUD.quality='STALE_PRE_DECISION';
+c.AUD.policy='HOLD_UNTIL_POST_DECISION_EOD';
+}
+if(c.NZD){
+c.NZD.quality='PARTIAL_OFFICIAL';
+c.NZD.policy='AUTO_UPDATE_OFFICIAL_POINT_KEEP_MISSING_HORIZONS_WITHHELD';
+}
+}
+if(window.FINAL_SOURCE_POLICY_AUDIT?.price){
+window.FINAL_SOURCE_POLICY_AUDIT.price.current_as_of='2026-09-28';
+}
+if(window.FINAL_SOURCE_POLICY_AUDIT?.cot){
+window.FINAL_SOURCE_POLICY_AUDIT.cot.current_as_of='2026-09-22';
+}
+}catch(e){}
+// Override summary to derive current quality/as-of from live data where possible,
+// rather than trusting stale embedded metadata.
+const previousSummary=window.finalSourceAuditSummary;
+window.finalSourceAuditSummary=function(){
+let x={};
+try{x=previousSummary?previousSummary():JSON.parse(JSON.stringify(window.FINAL_SOURCE_POLICY_AUDIT||{}));}
+catch(e){x=JSON.parse(JSON.stringify(window.FINAL_SOURCE_POLICY_AUDIT||{}));}
+x.rates=x.rates||{};
+Object.entries(NATIVE_RATES_DATA||{}).forEach(([ccy,d])=>{
+x.rates[ccy]=Object.assign({},x.rates[ccy]||{},{
+current_as_of:d.date||x.rates[ccy]?.current_as_of||null,
+live_quality:d.quality||null,
+live_source:d.source||null
+});
+});
+x.cb_pricing=x.cb_pricing||{};
+Object.entries(NATIVE_CB_DATA||{}).forEach(([ccy,d])=>{
+const mp=d.market_pricing||{};
+x.cb_pricing[ccy]=Object.assign({},x.cb_pricing[ccy]||{},{
+quality:mp.quality||d.pricing_tier||x.cb_pricing[ccy]?.quality||null,
+current_as_of:mp.as_of||null,
+live_source:mp.source||null
+});
+});
+x.price=Object.assign({},x.price||{},{
+current_as_of:(D.prices?.at(-1)?.Date)||x.price?.current_as_of||null
+});
+return x;
+};
+})();
+
+</script><script>
+
+(function(){
+const checks={
+USD_CB_PRICING:{
+status:'NOT_FOUND',
+checked_at:'2026-09-29T10:27+02:00',
+source:'CME public direct pages',
+reason:'Direct instruments confirmed; same-day complete settlement strip not captured from the public page.'
+},
+GBP_CB_PRICING:{
+status:'NOT_FOUND',
+checked_at:'2026-09-29T10:27+02:00',
+source:'ICE SONIA public direct pages',
+reason:'Official direct instruments confirmed; current complete public price strip not captured.'
+},
+CHF_CB_PRICING:{
+status:'NOT_USABLE',
+checked_at:'2026-09-29T10:27+02:00',
+source:'Eurex 3M SARON Futures',
+reason:'Insufficient liquidity / price discovery for canonical use.'
+},
+AUD_CB_PRICING:{
+status:'NOT_FOUND',
+checked_at:'2026-09-29T10:27+02:00',
+source:'ASX RBA Rate Tracker',
+reason:'First post-29-Sep RBA end-of-day curve not yet validated.'
+},
+NZD_CB_PRICING:{
+status:'NOT_USABLE',
+checked_at:'2026-09-29T10:27+02:00',
+source:'RBNZ B2 / direct NZ market sources',
+reason:'No complete validated direct OCR/OIS strip for required horizons.'
+}
+};
+window.PERSISTED_DAILY_CLOSEOUT_20260929={
+date:'2026-09-29',
+closed_at:'2026-09-29T10:30+02:00',
+checks:checks,
+health_status:'PASS_WITH_WARNINGS',
+production_generation:0,
+note:'All unresolved direct-source upgrades explicitly checked before closeout.'
+};
+// Seed runtime closeout status from the persisted record.
+window.LAST_DAILY_CLOSEOUT=JSON.parse(JSON.stringify(window.PERSISTED_DAILY_CLOSEOUT_20260929));
+})();
+
+</script><script>
+
+(function(){
+const base=window.productionHealthCheck;
+window.productionHealthCheck=function(){
+const r=base();
+const warnings=new Set(r.warnings||[]);
+const unresolved=(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks():[]);
+unresolved.forEach(x=>{
+if(x.id==='USD_CB_PRICING') warnings.add('CB_PRICING_SECONDARY:USD');
+else if(x.id==='GBP_CB_PRICING') warnings.add('CB_PRICING_SECONDARY:GBP');
+else if(x.id==='CHF_CB_PRICING') warnings.add('CB_PRICING_SECONDARY:CHF');
+else if(x.id==='AUD_CB_PRICING') warnings.add('CB_PRICING_STALE:AUD');
+else if(x.id==='NZD_CB_PRICING') warnings.add('CB_PRICING_PARTIAL:NZD');
+});
+r.warnings=[...warnings];
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+r.unresolved_source_checks=unresolved.map(x=>x.id);
+return r;
+};
+})();
+
+</script><script>
+
+(function(){
+const clone=x=>JSON.parse(JSON.stringify(x));
+window.currentProductionBusinessDate=function(){
+const d=(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date)
+||(D.prices?.at(-1)?.Date)
+||null;
+return d;
+};
+window.isDailyCloseoutCurrent=function(){
+const last=window.LAST_DAILY_CLOSEOUT||null;
+const currentDate=currentProductionBusinessDate();
+if(!last) return false;
+const dateOk=String(last.date||'')===String(currentDate||'');
+const gen=Number(last.production_generation);
+const genOk=Number.isFinite(gen)
+? gen===Number(window.PRODUCTION_REFRESH_GENERATION||0)
+: Number(window.PRODUCTION_REFRESH_GENERATION||0)===0;
+return !!(dateOk && genOk);
+};
+const baseCloseStatus=window.productionDailyCloseoutStatus;
+window.productionDailyCloseoutStatus=function(){
+const r=baseCloseStatus?baseCloseStatus():{
+last:clone(window.LAST_DAILY_CLOSEOUT||null),
+required:(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks().map(x=>x.id):[]),
+log_count:(window.DAILY_SOURCE_CHECK_LOG||[]).length
+};
+r.current_business_date=currentProductionBusinessDate();
+r.production_generation=window.PRODUCTION_REFRESH_GENERATION||0;
+r.is_current=isDailyCloseoutCurrent();
+r.state=r.is_current?'CLOSED_CURRENT':'OPEN_REQUIRED';
+return r;
+};
+const baseRefresh=window.runProductionDailyRefresh;
+if(typeof baseRefresh==='function'){
+window.runProductionDailyRefresh=function(payload){
+const res=baseRefresh(payload);
+if(res?.ok){
+// Any successful new Production refresh invalidates previous daily closeout.
+window.LAST_DAILY_CLOSEOUT=null;
+}
+return res;
+};
+}
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const current=isDailyCloseoutCurrent();
+if(!current){
+if(!(r.warnings||[]).includes('DAILY_CLOSEOUT_OPEN')){
+r.warnings=(r.warnings||[]).concat('DAILY_CLOSEOUT_OPEN');
+}
+}else{
+r.warnings=(r.warnings||[]).filter(x=>x!=='DAILY_CLOSEOUT_OPEN');
+}
+r.daily_closeout_current=current;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script id="production-overview-snapshot-live-label">
+(function(){
+function itDateLabel(iso){
+if(!iso) return '—';
+const m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+if(!m) return String(iso);
+const months=['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+return `${+m[3]} ${months[(+m[2])-1]} ${m[1]}`;
+}
+window.currentProductionSnapshotDate=function(){
+return (window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date)
+|| (D.prices?.at(-1)?.Date)
+|| null;
+};
+window.refreshProductionSnapshotLabels=function(){
+const d=currentProductionSnapshotDate();
+const lab=itDateLabel(d);
+const v256=document.querySelector('#overview .v256Snapshot');
+if(v256){
+const priceAsOf=D.prices?.at(-1)?.Date||'—';
+const cotAsOf=D.cotAsOf||D.cot?.USD?.date||'2026-09-22';
+v256.innerHTML=`<span>GIORNATA</span><b>${lab}</b><small>Price ${priceAsOf} · COT ${cotAsOf} · Rates/CB/Liquidità con as-of propri</small>`;
+}
+const so=document.querySelector('#overview .soSnapshot');
+if(so){
+so.textContent=`Giornata ${lab} · ogni layer mantiene il proprio as-of`;
+}
+};
+const oldRefresh=window.refreshSnapshotLabels;
+window.refreshSnapshotLabels=function(){
+try{ if(typeof oldRefresh==='function') oldRefresh(); }catch(e){}
+try{ refreshProductionSnapshotLabels(); }catch(e){}
+};
+// Apply immediately on load.
+try{refreshProductionSnapshotLabels();}catch(e){}
+// Re-apply after every full Production refresh.
+const baseRun=window.runProductionDailyRefresh;
+if(typeof baseRun==='function'){
+window.runProductionDailyRefresh=function(payload){
+const res=baseRun(payload);
+try{refreshProductionSnapshotLabels();}catch(e){}
+return res;
+};
+}
+})();
+</script><script>
+
+(function(){
+const apply=()=>{
+try{refreshProductionSnapshotLabels();}catch(e){}
+};
+const wrap=(name)=>{
+const fn=window[name];
+if(typeof fn!=='function') return;
+window[name]=function(...args){
+const out=fn.apply(this,args);
+apply();
+return out;
+};
+};
+wrap('renderSimpleOverview');
+wrap('renderOperationalOverview');
+wrap('renderOverview');
+wrap('endToEndRecompute');
+// Legacy code also renders via delayed callbacks during load.
+[0,50,250,750,1500].forEach(ms=>setTimeout(apply,ms));
+})();
+
+</script><script>
+
+(function(){
+const names=[
+'renderSimpleOverview','renderOperationalOverview','renderOverview',
+'renderCurrency','renderPair','renderWhatChanged','renderTopThemes',
+'renderRealCalendar','renderNewsPulse','refreshGlobalRiskOverview'
+];
+const hashString=(str)=>{
+let h=2166136261>>>0;
+for(let i=0;i<str.length;i++){
+h^=str.charCodeAt(i);
+h=Math.imul(h,16777619)>>>0;
+}
+return ('00000000'+h.toString(16)).slice(-8);
+};
+window.CANONICAL_RENDERER_REGISTRY=Object.fromEntries(
+names.map(name=>{
+const fn=window[name];
+return [name,{
+exists:typeof fn==='function',
+signature:typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null
+}];
+})
+);
+window.canonicalRendererIntegrity=function(){
+const rows={};
+const changed=[];
+Object.entries(window.CANONICAL_RENDERER_REGISTRY||{}).forEach(([name,base])=>{
+const fn=window[name];
+const now=typeof fn==='function'?hashString(Function.prototype.toString.call(fn)):null;
+const ok=base.exists=== (typeof fn==='function') && base.signature===now;
+rows[name]={expected:base.signature,current:now,ok};
+if(!ok) changed.push(name);
+});
+return {ok:changed.length===0,changed,rows};
+};
+const baseHealth=window.productionHealthCheck;
+if(typeof baseHealth==='function'){
+window.productionHealthCheck=function(){
+const r=baseHealth();
+const ri=canonicalRendererIntegrity();
+if(!ri.ok){
+ri.changed.forEach(name=>{
+const code=`RENDERER_CHANGED:${name}`;
+if(!(r.hard_errors||[]).includes(code)) r.hard_errors.push(code);
+});
+}
+r.renderer_integrity=ri;
+r.status=r.hard_errors.length?'FAIL':(r.warnings.length?'PASS_WITH_WARNINGS':'PASS');
+return r;
+};
+}
+})();
+
+</script><script>
+
+(function(){
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+function macroLatestDate(ccy){
+try{
+const rows=(S||[]).filter(x=>x.ccy===ccy && x.date);
+if(!rows.length) return null;
+return rows.map(x=>x.date).sort().at(-1);
+}catch(e){return null;}
+}
+function liquidityAsOf(ccy){
+try{
+const d=NATIVE_LIQ_DATA?.[ccy]||{};
+return d.as_of||d.date||d.period||null;
+}catch(e){return null;}
+}
+function cotAsOf(ccy){
+try{
+return D.cot?.[ccy]?.as_of || D.cot?.[ccy]?.date || null;
+}catch(e){return null;}
+}
+function cbPricing(ccy){
+const d=NATIVE_CB_DATA?.[ccy]||{};
+const mp=d.market_pricing||{};
+return {
+as_of:mp.as_of||null,
+quality:mp.quality||d.pricing_tier||null,
+source:mp.source||null
+};
+}
+window.productionRefreshCoverageMatrix=function(){
+const sourceAudit=(typeof finalSourceAuditSummary==='function')?finalSourceAuditSummary():{};
+const aux=clone(window.AUXILIARY_FEED_FRESHNESS||{});
+const watch=(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks():[]);
+const watchByCcy=Object.fromEntries(watch.map(x=>[x.currency,x]));
+const currencies=Object.fromEntries(CCYS.map(ccy=>{
+const r=NATIVE_RATES_DATA?.[ccy]||{};
+const cb=NATIVE_CB_DATA?.[ccy]||{};
+const cp=cbPricing(ccy);
+return [ccy,{
+macro:{
+as_of:macroLatestDate(ccy),
+policy:'RELEASE_DRIVEN',
+source_quality:'SERIES_SPECIFIC'
+},
+rates:{
+as_of:r.date||null,
+quality:r.quality||null,
+source:r.source||null,
+policy:sourceAudit?.rates?.[ccy]?.policy||null
+},
+cb:{
+as_of:cb.last_date||null,
+action:cb.action||null,
+stance:cb.stance||null,
+source:'OFFICIAL_EVENT'
+},
+cb_pricing:{
+as_of:cp.as_of,
+quality:cp.quality,
+source:cp.source,
+unresolved:!!watchByCcy[ccy],
+resolution_target:watchByCcy[ccy]?.target_source||null
+},
+liquidity:{
+as_of:liquidityAsOf(ccy),
+quality:NATIVE_LIQ_DATA?.[ccy]?.quality||null,
+source:NATIVE_LIQ_DATA?.[ccy]?.source||null
+},
+cot:{
+as_of:cotAsOf(ccy),
+cadence:'WEEKLY'
+}
+}];
+}));
+return {
+generated_at:new Date().toISOString(),
+production_business_date:(typeof currentProductionBusinessDate==='function'?currentProductionBusinessDate():null),
+price:{
+as_of:D.prices?.at(-1)?.Date||null,
+source:sourceAudit?.price?.source||'ECB reference rates',
+policy:sourceAudit?.price?.policy||null
+},
+risk:aux.risk||{},
+calendar:aux.calendar||null,
+news:aux.news||null,
+currencies
+};
+};
+window.productionCoverageSummary=function(){
+const M=productionRefreshCoverageMatrix();
+const rows=[];
+Object.entries(M.currencies).forEach(([ccy,x])=>{
+['macro','rates','cb','cb_pricing','liquidity','cot'].forEach(layer=>{
+rows.push({ccy,layer,...x[layer]});
+});
+});
+return {
+business_date:M.production_business_date,
+price_as_of:M.price.as_of,
+unresolved_cb_pricing:rows
+.filter(x=>x.layer==='cb_pricing' && x.unresolved)
+.map(x=>x.ccy),
+rates_as_of:Object.fromEntries(
+Object.entries(M.currencies).map(([c,x])=>[c,x.rates.as_of])
+),
+cb_as_of:Object.fromEntries(
+Object.entries(M.currencies).map(([c,x])=>[c,x.cb.as_of])
+),
+liquidity_as_of:Object.fromEntries(
+Object.entries(M.currencies).map(([c,x])=>[c,x.liquidity.as_of])
+),
+cot_as_of:Object.fromEntries(
+Object.entries(M.currencies).map(([c,x])=>[c,x.cot.as_of])
+),
+auxiliary:{
+calendar:M.calendar,
+news:M.news,
+risk:M.risk
+}
+};
+};
+})();
+
+</script><script>
+
+(function(){
+function updateTodayEvent(match, patch){
+try{
+const rows=REAL_CALENDAR.today||[];
+const row=rows.find(x=>match(x));
+if(row) Object.assign(row,patch);
+}catch(e){}
+}
+updateTodayEvent(
+x=>x.ccy==='AUD' && /Household Spending/i.test(x.event||''),
+{
+prev:'1,1%',
+forecast:'+0,3%',
+actual:'0,0%',
+surprise:'Sotto attese · spesa ferma dopo il forte luglio',
+scls:'negative',
+direction:'Domanda meno forte del previsto → piccolo freno per AUD; da confermare su AU 2Y e prezzo',
+confirm:'AU 2Y + AUD cross',
+status:'done'
+}
+);
+updateTodayEvent(
+x=>x.ccy==='EUR' && /Spanish Flash CPI/i.test(x.event||''),
+{
+prev:'4,3%',
+forecast:'4,7%',
+actual:'4,9%',
+surprise:'+0,2 pp sopra attese · inflazione accelera',
+scls:'positive',
+direction:'Inflazione spagnola più alta del previsto → lieve pressione hawkish sul pricing ECB; non basta da sola a cambiare EUR strutturale',
+confirm:'Bund 2Y + pricing ECB + EUR cross',
+status:'done'
+}
+);
+window.AUXILIARY_FEED_FRESHNESS=window.AUXILIARY_FEED_FRESHNESS||{};
+window.AUXILIARY_FEED_FRESHNESS.calendar={
+current_date:'2026-09-29',
+status:'LIVE_VALIDATED_TO_09_00_RELEASES',
+note:'RBA, Australia Household Spending e Spanish Flash CPI aggiornati; CAD GDP e USD JOLTS/Confidence ancora da pubblicare.'
+};
+window.INTRADAY_MACRO_EVENT_AUDIT_20260929={
+as_of:'2026-09-29T11:08+02:00',
+events:{
+AUD_HOUSEHOLD_SPENDING:{
+actual:0.0, forecast:0.3, previous:1.1,
+structural_commit:false,
+reason:'Singolo dato mensile sotto attese; informativo per timing/domanda, non sufficiente da solo a riclassificare Macro strutturale AUD.'
+},
+ES_FLASH_CPI:{
+actual:4.9, forecast:4.7, previous:4.3,
+structural_commit:false,
+reason:'Dato nazionale spagnolo, non aggregato euro-area; utile per event risk/pricing ECB ma non sostituisce il blocco inflazione EUR canonico.'
+}
+}
+};
+try{renderRealCalendar();}catch(e){}
+try{renderOperationalOverview();}catch(e){}
+try{renderSimpleOverview();}catch(e){}
+try{renderWhatChanged();}catch(e){}
+try{renderTopThemes();}catch(e){}
+try{refreshProductionSnapshotLabels();}catch(e){}
+})();
+
+</script><script>
+
+(function(){
+const MACRO_EXCLUDED_CATEGORIES=new Set(['Rates','Liquidità','Condizioni finanziarie']);
+function parseCoverageDate(x){
+if(!x) return null;
+const s=String(x).trim();
+// ISO / ISO-like
+let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+// YYYY-MM or YYYY/MM
+m=s.match(/^(\d{4})[-\/](\d{1,2})$/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,1));
+// YYYYQn / YYYY-Qn / YYYY/Qn
+m=s.match(/^(\d{4})[-\/]?Q([1-4])$/i);
+if(m) return new Date(Date.UTC(+m[1],(+m[2])*3-1,1));
+// YYYY/MM/DD
+m=s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+if(m) return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+// DD/MM/YYYY
+m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+if(m) return new Date(Date.UTC(+m[3],+m[2]-1,+m[1]));
+// Month-name formats: Jul-26, 31 Jul 2026, 31-Aug-2026
+const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+m=s.match(/^([A-Za-z]{3})-(\d{2})$/);
+if(m && months[m[1].toLowerCase()]!=null)
+return new Date(Date.UTC(2000+(+m[2]),months[m[1].toLowerCase()],1));
+m=s.match(/^(\d{1,2})[\s-]([A-Za-z]{3})[\s-](\d{4})$/);
+if(m && months[m[2].toLowerCase()]!=null)
+return new Date(Date.UTC(+m[3],months[m[2].toLowerCase()],+m[1]));
+return null;
+}
+window.latestMacroObservation=function(ccy){
+const rows=(S?.[ccy]||[])
+.filter(x=>x && x.last_date && !MACRO_EXCLUDED_CATEGORIES.has(x.category))
+.map(x=>({x,d:parseCoverageDate(x.last_date)}))
+.filter(y=>y.d && !Number.isNaN(y.d.getTime()))
+.sort((a,b)=>b.d-a.d);
+if(!rows.length) return {as_of:null,series:null,category:null,source:null};
+const z=rows[0].x;
+return {
+as_of:z.last_date,
+normalized_date:rows[0].d.toISOString().slice(0,10),
+series:z.label||z.id||null,
+category:z.category||null,
+source:z.source_file||null
+};
+};
+const baseMatrix=window.productionRefreshCoverageMatrix;
+window.productionRefreshCoverageMatrix=function(){
+const M=baseMatrix();
+Object.keys(M.currencies||{}).forEach(ccy=>{
+const latest=latestMacroObservation(ccy);
+M.currencies[ccy].macro={
+as_of:latest.as_of,
+normalized_date:latest.normalized_date||null,
+latest_series:latest.series,
+latest_category:latest.category,
+source:latest.source,
+policy:'RELEASE_DRIVEN',
+source_quality:'SERIES_SPECIFIC'
+};
+});
+return M;
+};
+const baseSummary=window.productionCoverageSummary;
+window.productionCoverageSummary=function(){
+const x=baseSummary();
+const M=productionRefreshCoverageMatrix();
+x.macro_as_of=Object.fromEntries(
+Object.entries(M.currencies).map(([c,v])=>[c,{
+as_of:v.macro.as_of,
+normalized_date:v.macro.normalized_date,
+series:v.macro.latest_series,
+category:v.macro.latest_category
+}])
+);
+return x;
+};
+})();
+
+</script><script>
+
+(function(){
+// Correct one verified taxonomy error: US unemployment is realised labour data.
+try{
+const usUnemp=(S?.USD||[]).find(x=>x.id==='US_UNRATE_history_value');
+if(usUnemp) usUnemp.category='Lavoro';
+}catch(e){}
+const CORE_MACRO_CATEGORIES=['Crescita','Inflazione','Lavoro'];
+window.macroBlockCoverage=function(){
+const out={};
+const parse=(x)=>{
+try{return parseCoverageDate(x)}catch(e){return null}
+};
+for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+out[ccy]={};
+for(const cat of CORE_MACRO_CATEGORIES){
+const rows=(S?.[ccy]||[])
+.filter(x=>x && x.category===cat && x.last_date)
+.map(x=>({x,d:parse(x.last_date)}))
+.filter(y=>y.d && !Number.isNaN(y.d.getTime()))
+.sort((a,b)=>b.d-a.d);
+out[ccy][cat]={
+count:(S?.[ccy]||[]).filter(x=>x && x.category===cat).length,
+latest:rows.length?rows[0].x.last_date:null,
+latest_series:rows.length?(rows[0].x.label||rows[0].x.id):null,
+source:rows.length?(rows[0].x.source_file||null):null
+};
+}
+}
+return out;
+};
+window.macroCategoryIntegrity=function(){
+const issues=[];
+try{
+const us=(S?.USD||[]).find(x=>x.id==='US_UNRATE_history_value');
+if(!us || us.category!=='Lavoro') issues.push('USD_UNEMPLOYMENT_NOT_LABOUR');
+}catch(e){
+issues.push('USD_UNEMPLOYMENT_CATEGORY_CHECK_FAILED');
+}
+const cov=macroBlockCoverage();
+Object.entries(cov).forEach(([ccy,cats])=>{
+CORE_MACRO_CATEGORIES.forEach(cat=>{
+if(!cats[cat] || cats[cat].count<1 || !cats[cat].latest){
+issues.push(`MISSING_CORE_MACRO_BLOCK:${ccy}:${cat}`);
+}

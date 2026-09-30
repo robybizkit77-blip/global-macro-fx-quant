@@ -1,0 +1,1000 @@
+});
+});
+});
+return rows;
+}
+function summarize(rows){
+if(!rows.length) return {nPairs:0,nSnapshots:0,hit:null,mean:null,median:null};
+const vals=rows.map(x=>x.ret);
+const snap=new Set(rows.map(x=>x.snapshot_id));
+const hit=rows.filter(x=>x.hit===true).length/rows.length;
+const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+const s=[...vals].sort((a,b)=>a-b);
+const median=s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;
+return {nPairs:rows.length,nSnapshots:snap.size,hit,mean,median};
+}
+function renderCurveRegimes(){
+const host=document.getElementById('fwdCurveRegimeTable');
+if(!host) return;
+const outcomes=typeof getForwardOutcomes==='function'?getForwardOutcomes():[];
+const ctx=typeof getForwardContext==='function'?getForwardContext():[];
+const ctxMap=Object.fromEntries(ctx.map(x=>[x.snapshot_id,x.context]));
+const defs=[
+['Bear steepening','BEAR_STEEPENING'],
+['Bear flattening','BEAR_FLATTENING'],
+['Bull steepening','BULL_STEEPENING'],
+['Bull flattening','BULL_FLATTENING'],
+['Altro / non classificato','OTHER_OR_UNKNOWN']
+];
+let html=`<div class="fwdRow head"><div>Curva · 1W</div><div>N snapshot</div><div>N pair</div><div>Hit rate</div><div>Mean return</div><div>Lettura</div></div>`;
+defs.forEach(([label,reg])=>{
+const s=summarize(rowsForRegime(outcomes,ctxMap,'1W',reg));
+const read=s.nSnapshots<10?'Troppo presto':
+s.mean>0?'Positivo nel campione':
+s.mean<0?'Debole nel campione':'Neutro';
+html+=`<div class="fwdRow"><b>${label}</b><div>${s.nSnapshots}</div><div>${s.nPairs}</div><div>${pct(s.hit)}</div><div class="${s.mean>0?'fwdPos':s.mean<0?'fwdNeg':'fwdNeu'}">${fmt(s.mean)}%</div><div class="${s.nSnapshots<10?'fwdWarn':s.mean>0?'fwdPos':s.mean<0?'fwdNeg':'fwdNeu'}">${read}</div></div>`;
+});
+host.innerHTML=html;
+}
+const base=window.renderForwardMonitor;
+if(typeof base==='function'){
+window.renderForwardMonitor=function(){
+const out=base.apply(this,arguments);
+try{renderCurveRegimes();}catch(e){}
+return out;
+};
+}
+setTimeout(()=>{try{renderCurveRegimes();}catch(e){}},3200);
+})();
+
+</script><script id="v369-forward-dom-integrity">
+
+(function(){
+window.forwardDomIntegrity=function(){
+const f=document.getElementById('forwarddesk');
+const ov=document.getElementById('overview');
+return {
+ok:!!f && !!ov && f.parentElement===ov.parentElement,
+forward_parent:f?.parentElement?.id||f?.parentElement?.className||null,
+overview_parent:ov?.parentElement?.id||ov?.parentElement?.className||null
+};
+};
+})();
+
+</script><script id="v370-forward-structural-quality-monitor">
+
+(function(){
+'use strict';
+const fmt=(x,d=2)=>Number.isFinite(Number(x))?Number(x).toFixed(d):'—';
+const pct=x=>Number.isFinite(Number(x))?(100*Number(x)).toFixed(1)+'%':'—';
+function summarize(rows){
+if(!rows.length) return {nPairs:0,nSnapshots:0,hit:null,mean:null,median:null};
+const vals=rows.map(x=>Number(x.ret)).filter(Number.isFinite);
+if(!vals.length) return {nPairs:0,nSnapshots:0,hit:null,mean:null,median:null};
+const snap=new Set(rows.map(x=>x.snapshot_id));
+const hits=rows.filter(x=>x.hit===true).length;
+const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+const s=[...vals].sort((a,b)=>a-b);
+const median=s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;
+return {nPairs:vals.length,nSnapshots:snap.size,hit:hits/vals.length,mean,median};
+}
+function allRows(horizon){
+const ledger=typeof getForwardLedger==='function'?getForwardLedger():[];
+const outcomes=typeof getForwardOutcomes==='function'?getForwardOutcomes():[];
+const snapMap=Object.fromEntries(ledger.map(x=>[x.snapshot_id,x.snapshot]));
+const rows=[];
+outcomes.filter(o=>o.horizon===horizon).forEach(o=>{
+const snap=snapMap[o.snapshot_id];
+Object.entries(o?.result?.pair_results||{}).forEach(([pair,r])=>{
+const pairSnap=snap?.pairs?.[pair]||{};
+const fav=pairSnap?.favored||r?.favored||null;
+const favCcy=fav && snap?.currencies?.[fav] ? snap.currencies[fav] : null;
+const ret=Number(r?.favored_return_pct);
+if(!Number.isFinite(ret)) return;
+rows.push({
+snapshot_id:o.snapshot_id,
+pair,
+ret,
+hit:r?.hit===true,
+quality:pairSnap?.quality||'NON DETERMINATO',
+favored:fav,
+improvement_state:favCcy?.improvement_state||'NON DETERMINATO'
+});
+});
+});
+return rows;
+}
+function qualityBucket(q){
+const x=String(q||'').toUpperCase();
+if(x.includes('CONTRASTO STRUTTURALE FORTE')) return 'STRONG';
+if(x.includes('VANTAGGIO RELATIVO PARZIALE')) return 'PARTIAL';
+if(x.includes('PILASTRI DIVISI')) return 'DIVIDED';
+if(x.includes('NESSUN CONTRASTO')) return 'NONE';
+return 'OTHER';
+}
+function improvementBucket(s){
+const x=String(s||'').toUpperCase();
+if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')) return 'IMPROVING';
+if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')) return 'WORSENING';
+if(x.includes('TURNING')) return 'TURNING';
+return 'NEUTRAL_OTHER';
+}
+function reading(st){
+if(st.nSnapshots<10) return {t:'Troppo presto',c:'fwdWarn'};
+if(st.mean>0 && st.hit>0.55) return {t:'Costruttivo nel campione',c:'fwdPos'};
+if(st.mean<0 && st.hit<0.45) return {t:'Debole nel campione',c:'fwdNeg'};
+return {t:'Misto',c:'fwdNeu'};
+}
+function renderStructuralQuality(){
+const rows=allRows('1W');
+const qualityHost=document.getElementById('fwdStructuralQuality');
+if(qualityHost){
+const defs=[
+['Contrasto strutturale forte','STRONG'],
+['Vantaggio relativo parziale','PARTIAL'],
+['Pilastri divisi','DIVIDED'],
+['Nessun contrasto','NONE'],
+['Altro / non determinato','OTHER']
+];
+let html=`<div class="fwdRow head"><div>Qualità · 1W</div><div>N snapshot</div><div>N pair</div><div>Hit rate</div><div>Mean return</div><div>Lettura</div></div>`;
+defs.forEach(([label,b])=>{
+const st=summarize(rows.filter(x=>qualityBucket(x.quality)===b));
+const rd=reading(st);
+html+=`<div class="fwdRow"><b>${label}</b><div>${st.nSnapshots}</div><div>${st.nPairs}</div><div>${pct(st.hit)}</div><div class="${st.mean>0?'fwdPos':st.mean<0?'fwdNeg':'fwdNeu'}">${fmt(st.mean)}%</div><div class="${rd.c}">${rd.t}</div></div>`;
+});
+qualityHost.innerHTML=html;
+}
+const impHost=document.getElementById('fwdImprovementState');
+if(impHost){
+const defs=[
+['Valuta favorita in miglioramento','IMPROVING'],
+['Valuta favorita in peggioramento','WORSENING'],
+['Turning point','TURNING'],
+['Neutra / altro','NEUTRAL_OTHER']
+];
+let html=`<div class="fwdRow head"><div>Cambiamento · 1W</div><div>N snapshot</div><div>N pair</div><div>Hit rate</div><div>Mean return</div><div>Lettura</div></div>`;
+defs.forEach(([label,b])=>{
+const st=summarize(rows.filter(x=>improvementBucket(x.improvement_state)===b));
+const rd=reading(st);
+html+=`<div class="fwdRow"><b>${label}</b><div>${st.nSnapshots}</div><div>${st.nPairs}</div><div>${pct(st.hit)}</div><div class="${st.mean>0?'fwdPos':st.mean<0?'fwdNeg':'fwdNeu'}">${fmt(st.mean)}%</div><div class="${rd.c}">${rd.t}</div></div>`;
+});
+impHost.innerHTML=html;
+}
+}
+const base=window.renderForwardMonitor;
+if(typeof base==='function'){
+window.renderForwardMonitor=function(){
+const out=base.apply(this,arguments);
+try{renderStructuralQuality();}catch(e){}
+return out;
+};
+}
+setTimeout(()=>{try{renderStructuralQuality();}catch(e){}},3400);
+})();
+
+</script><script id="v371-currency-ui-integrity">
+
+(function(){
+window.currencyUiIntegrity=function(){
+const issues=[];
+const legacy=document.getElementById('v302CurrencyShell');
+if(legacy && getComputedStyle(legacy).display!=='none') issues.push('LEGACY_V302_CURRENCY_VISIBLE');
+const headline=document.getElementById('v224Headline');
+const how=document.getElementById('v224HowItIs');
+if(headline && how){
+const a=(headline.textContent||'').trim().replace(/\s+/g,' ');
+const b=(how.textContent||'').trim().replace(/\s+/g,' ');
+const headlineVisible=getComputedStyle(headline).display!=='none';
+if(headlineVisible && a && a===b) issues.push('DUPLICATE_HEADLINE_AND_HOW_IT_IS');
+}
+const ids=['v224HowItIs','v224WhatMatters','v224WatchNow'];
+const vals=ids.map(id=>{
+const el=document.getElementById(id);
+return {id,text:(el?.textContent||'').trim().replace(/\s+/g,' ')};
+}).filter(x=>x.text);
+for(let i=0;i<vals.length;i++){
+for(let j=i+1;j<vals.length;j++){
+if(vals[i].text===vals[j].text) issues.push(`DUPLICATE_VISIBLE_TEXT:${vals[i].id}:${vals[j].id}`);
+}
+}
+return {ok:issues.length===0,issues};
+};
+const base=window.renderCurrency;
+if(typeof base==='function'){
+window.renderCurrency=function(){
+const out=base.apply(this,arguments);
+try{
+const stale=document.getElementById('v302CurrencyShell');
+if(stale) stale.remove();
+window.__CURRENCY_UI_INTEGRITY__=currencyUiIntegrity();
+}catch(e){}
+return out;
+};
+}
+})();
+
+</script><script id="v372-ui-integrity-guard">
+
+(function(){
+'use strict';
+function visible(el){
+if(!el) return false;
+const s=getComputedStyle(el);
+return s.display!=='none' && s.visibility!=='hidden' && el.getClientRects().length>0;
+}
+function normText(el){
+return String(el?.textContent||'').replace(/\s+/g,' ').trim();
+}
+function countDirect(view,sel){
+try{return view ? view.querySelectorAll(`:scope > ${sel}`).length : 0;}catch(e){return 0;}
+}
+window.uiIntegrityAudit=function(){
+const issues=[], warnings=[], details={};
+// A. Real live-DOM duplicate IDs.
+const all=[...document.querySelectorAll('[id]')];
+const byId={};
+all.forEach(el=>{
+const id=el.id;
+if(!byId[id]) byId[id]=[];
+byId[id].push(el);
+});
+const dupIds=Object.entries(byId)
+.filter(([id,nodes])=>id && nodes.length>1)
+.map(([id,nodes])=>({id,count:nodes.length,visible:nodes.filter(visible).length}));
+details.duplicate_ids=dupIds;
+dupIds.forEach(x=>issues.push(`DUPLICATE_DOM_ID:${x.id}:${x.count}`));
+// B. View and nav uniqueness.
+const views=[...document.querySelectorAll('.view[id]')];
+const viewCounts={};
+views.forEach(v=>viewCounts[v.id]=(viewCounts[v.id]||0)+1);
+Object.entries(viewCounts).forEach(([id,n])=>{
+if(n>1) issues.push(`DUPLICATE_VIEW:${id}:${n}`);
+});
+const nav=[...document.querySelectorAll('#nav [data-view]')];
+const navCounts={};
+nav.forEach(n=>{const k=n.dataset.view;navCounts[k]=(navCounts[k]||0)+1;});
+Object.entries(navCounts).forEach(([id,n])=>{
+if(n>1) issues.push(`DUPLICATE_NAV_TARGET:${id}:${n}`);
+});
+// C. Known legacy shells that must not become visible again.
+const forbidden=[
+['v302CurrencyShell','#v302CurrencyShell'],
+['currencyIntelWrap','#currencyIntelWrap']
+];
+details.legacy={};
+forbidden.forEach(([name,sel])=>{
+const nodes=[...document.querySelectorAll(sel)];
+const vis=nodes.filter(visible).length;
+details.legacy[name]={count:nodes.length,visible:vis};
+if(vis>0) issues.push(`LEGACY_UI_VISIBLE:${name}`);
+});
+// D. Canonical top-level shells should exist at most once per view.
+const shellRules=[
+['overview','.v272Truth.v272Overview'],
+['currencies','.v272Truth'],
+['pairs','.v272Truth'],
+['macro','.v272Truth'],
+['ratesdesk','.v272Truth'],
+['cbdesk','.v272Truth'],
+['liquiditydesk','.v272Truth'],
+['cot','.v272Truth']
+];
+details.shells={};
+shellRules.forEach(([viewId,sel])=>{
+const view=document.getElementById(viewId);
+const n=countDirect(view,sel);
+details.shells[viewId]=n;
+if(n>1) issues.push(`DUPLICATE_CANONICAL_SHELL:${viewId}:${n}`);
+});
+// E. Currency summary must not repeat the same sentence in visible canonical boxes.
+const ccyIds=['v224HowItIs','v224WhatMatters','v224WatchNow'];
+const ccy=ccyIds
+.map(id=>document.getElementById(id))
+.filter(el=>el && visible(el) && normText(el))
+.map(el=>({id:el.id,text:normText(el)}));
+for(let i=0;i<ccy.length;i++){
+for(let j=i+1;j<ccy.length;j++){
+if(ccy[i].text===ccy[j].text){
+issues.push(`DUPLICATE_CURRENCY_TEXT:${ccy[i].id}:${ccy[j].id}`);
+}
+}
+}
+details.currency_text=ccy;
+// F. A view should not accumulate duplicate runtime error banners.
+document.querySelectorAll('.view[id]').forEach(view=>{
+const n=[...view.querySelectorAll(':scope > .runtimeError')].filter(visible).length;
+if(n>1) warnings.push(`MULTIPLE_RUNTIME_ERROR_BANNERS:${view.id}:${n}`);
+});
+const out={
+ok:issues.length===0,
+status:issues.length?'FAIL':(warnings.length?'PASS_WITH_WARNINGS':'PASS'),
+issues,warnings,details,
+checked_at:new Date().toISOString()
+};
+window.__UI_INTEGRITY_AUDIT__=out;
+document.documentElement.dataset.uiIntegrity=out.status;
+return out;
+};
+// Debounced UI audit: catches regressions caused by future restyling/render work.
+let timer=null;
+window.scheduleUiIntegrityAudit=function(delay=80){
+if(timer) clearTimeout(timer);
+timer=setTimeout(()=>{timer=null;try{uiIntegrityAudit();}catch(e){}},delay);
+};
+document.addEventListener('click',()=>scheduleUiIntegrityAudit(120),true);
+document.addEventListener('change',()=>scheduleUiIntegrityAudit(120),true);
+window.addEventListener('resize',()=>scheduleUiIntegrityAudit(180),{passive:true});
+setTimeout(()=>scheduleUiIntegrityAudit(0),1200);
+})();
+
+</script><script id="v373-desk-headline-ui-integrity">
+
+(function(){
+function visible(el){if(!el) return false; const s=getComputedStyle(el); return s.display!=='none' && s.visibility!=='hidden' && el.getClientRects().length>0;}
+function norm(el){return String(el?.textContent||'').replace(/\s+/g,' ').trim();}
+window.deskHeadlineIntegrity=function(){
+const pairs=[
+['macro','v232CountryHeadline','v232MacroRead'],
+['ratesdesk','v233Headline','v233RatesRead'],
+['cbdesk','v234Headline','v234PolicyRead']
+];
+const issues=[]; const rows={};
+pairs.forEach(([view,aId,bId])=>{
+const a=document.getElementById(aId), b=document.getElementById(bId);
+const aVis=visible(a), bVis=visible(b);
+const aTxt=norm(a), bTxt=norm(b);
+rows[view]={headline_visible:aVis, thesis_visible:bVis, headline_text:aTxt, thesis_text:bTxt};
+if(aVis && bVis && aTxt && aTxt===bTxt) issues.push(`DUPLICATE_DESK_HEADLINE:${view}`);
+});
+return {ok:issues.length===0, issues, rows};
+};
+const base=window.uiIntegrityAudit;
+if(typeof base==='function'){
+window.uiIntegrityAudit=function(){
+const r=base();
+const d=deskHeadlineIntegrity();
+r.desk_headline_integrity=d;
+if(!d.ok){(r.issues||[]).push(...d.issues); r.ok=false; r.status='FAIL';}
+return r;
+};
+}
+})();
+
+</script><script id="v374-ui-ownership-baseline">
+
+(function(){
+'use strict';
+window.UI_OWNERSHIP_REGISTRY=Object.freeze({
+overview:{canonical:'v256/v254 overview',legacy:['v272Truth','v273 coherence','v302 overview'],rule:'ONE_VISIBLE_SUMMARY_LAYER'},
+currencies:{canonical:'v224 currency desk',legacy:['v272Truth','v273 coherence','v302 currency','currencyIntelWrap'],rule:'ONE_VISIBLE_SUMMARY_LAYER'},
+pairs:{canonical:'v226/v227 pair desk',legacy:['v272 truth','v273 coherence','v302 pair summary'],rule:'ONE_VISIBLE_PAIR_SUMMARY'},
+macro:{canonical:'v232 macro desk',legacy:['v272 truth','v273 coherence'],rule:'ONE_VISIBLE_HEADLINE_AND_ONE_THESIS'},
+ratesdesk:{canonical:'v233 rates desk',legacy:['v272 truth','v273 coherence'],rule:'ONE_VISIBLE_HEADLINE_AND_ONE_THESIS'},
+cbdesk:{canonical:'v234 cb desk',legacy:['v272 truth','v273 coherence'],rule:'ONE_VISIBLE_HEADLINE_AND_ONE_THESIS'},
+liquiditydesk:{canonical:'v243 liquidity desk',legacy:['v272 truth','v273 coherence'],rule:'ONE_VISIBLE_SUMMARY_LAYER'},
+cot:{canonical:'v247 cot desk',legacy:['v272 truth','v273 coherence'],rule:'ONE_VISIBLE_SUMMARY_LAYER'},
+risk:{canonical:'r258 risk desk',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+calendar:{canonical:'cal5 calendar',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+wow:{canonical:'wc what-changed',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+themes:{canonical:'th themes',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+news:{canonical:'np news pulse',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+method:{canonical:'v253 methodology',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'},
+forwarddesk:{canonical:'fwd forward monitor',legacy:[],rule:'NO_PARALLEL_SUMMARY_LAYER'}
+});
+function visible(el){
+if(!el) return false;
+const s=getComputedStyle(el);
+return s.display!=='none' && s.visibility!=='hidden' && el.getClientRects().length>0;
+}
+window.uiOwnershipAudit=function(){
+const issues=[],warnings=[],rows={};
+const legacySelectors={
+overview:['#overview > .v272Truth','#overview .v273Coherence','#overview .v302OverviewGrid'],
+currencies:['#currencies > .v272Truth','#currencies .v273Coherence','#currencies #v302CurrencyShell','#currencies #currencyIntelWrap'],
+pairs:['#pairs > .v272Truth','#pairs .v273Coherence','#pairs #v302PairSummary'],
+macro:['#macro > .v272Truth','#macro .v273Coherence'],
+ratesdesk:['#ratesdesk > .v272Truth','#ratesdesk .v273Coherence'],
+cbdesk:['#cbdesk > .v272Truth','#cbdesk .v273Coherence'],
+liquiditydesk:['#liquiditydesk > .v272Truth','#liquiditydesk .v273Coherence'],
+cot:['#cot > .v272Truth','#cot .v273Coherence']
+};
+Object.entries(UI_OWNERSHIP_REGISTRY).forEach(([view,cfg])=>{
+const root=document.getElementById(view);
+const visibleLegacy=[];
+(legacySelectors[view]||[]).forEach(sel=>{
+document.querySelectorAll(sel).forEach(el=>{if(visible(el)) visibleLegacy.push(sel);});
+});
+rows[view]={canonical:cfg.canonical,visible_legacy:[...new Set(visibleLegacy)],rule:cfg.rule};
+if(visibleLegacy.length) warnings.push(`LEGACY_UI_STILL_VISIBLE:${view}`);
+});
+return {ok:issues.length===0,status:issues.length?'FAIL':(warnings.length?'NEEDS_REFACTOR':'PASS'),issues,warnings,rows};
+};
+window.UI_RESTYLE_POLICY=Object.freeze({
+status:'FROZEN_PRE_RESTYLE',
+rules:[
+'No information deletion to solve duplication',
+'Merge duplicate narratives into one canonical block',
+'One visible summary owner per section',
+'Legacy compatibility code may remain hidden but may not create parallel UI',
+'Desktop and mobile must use the same information hierarchy',
+'Run uiIntegrityAudit and uiOwnershipAudit after every section redesign'
+]
+});
+})();
+
+</script><script id="v387-overview-renderer">
+(function(){
+'use strict';
+function esc387(s){return String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function dir387(v){return v>0?'up':v<0?'down':'';}
+window.renderOverview387=function(){
+const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+// Operating day, not a fake single snapshot date.
+// Each Rates row already exposes its own as-of; COT/Price/CB/Liquidity also keep separate as-ofs.
+const dates=ccys.map(c=>NATIVE_RATES_DATA?.[c]?.date).filter(Boolean).sort();
+const snap=document.getElementById('ov387Snapshot');
+const operatingDay=
+((typeof AUXILIARY_FEED_FRESHNESS!=='undefined' && AUXILIARY_FEED_FRESHNESS?.calendar?.current_date)
+? AUXILIARY_FEED_FRESHNESS.calendar.current_date
+: null)
+|| (D?.prices?.length ? D.prices.at(-1)?.Date : null)
+|| (dates.length?dates[dates.length-1]:'corrente');
+if(snap) snap.textContent=`${operatingDay} · layer separati`;
+// Table 1: current 2Y levels.
+const levelRows=ccys.map(c=>({
+c,
+v:Number(NATIVE_RATES_DATA?.[c]?.['2Y']),
+date:NATIVE_RATES_DATA?.[c]?.date||''
+})).filter(x=>Number.isFinite(x.v));
+const maxLevel=Math.max(...levelRows.map(x=>x.v),1);
+const levelHost=document.getElementById('ov387RatesLevel');
+if(levelHost) levelHost.innerHTML=levelRows
+.sort((a,b)=>b.v-a.v)
+.map(x=>`<div class="ov387RateRow" onclick="showView('ratesdesk')"><div class="ov387RateCcy">${typeof flagSvg==='function'?flagSvg(x.c):''}<span>${x.c}</span></div><div class="ov387RateTrack"><div class="ov387RateFill" style="width:${Math.max(4,x.v/maxLevel*100)}%"></div></div><div class="ov387RateVal">${x.v.toFixed(2)}%<small class="ov387RateDate">${esc387(x.date)}</small></div></div>`).join('');
+// Table 2: weekly 2Y changes.
+const changeRows=ccys.map(c=>({
+c,
+v:Number(NATIVE_RATES_DATA?.[c]?.chg2_bp),
+date:NATIVE_RATES_DATA?.[c]?.date||''
+})).filter(x=>Number.isFinite(x.v));
+const maxAbs=Math.max(...changeRows.map(x=>Math.abs(x.v)),1);
+const changeHost=document.getElementById('ov387RatesChange');
+if(changeHost) changeHost.innerHTML=changeRows
+.sort((a,b)=>b.v-a.v)
+.map(x=>`<div class="ov387RateRow" onclick="showView('ratesdesk')"><div class="ov387RateCcy">${typeof flagSvg==='function'?flagSvg(x.c):''}<span>${x.c}</span></div><div class="ov387RateTrack"><div class="ov387RateFill ${dir387(x.v)}" style="width:${Math.max(4,Math.abs(x.v)/maxAbs*100)}%"></div></div><div class="ov387RateVal ${dir387(x.v)}">${x.v>0?'+':''}${x.v.toFixed(1)} bp<small class="ov387RateDate">${esc387(x.date)}</small></div></div>`).join('');
+// Reuse the previously approved G8 map renderer.
+try{ if(typeof v256RenderLayerMap==='function') v256RenderLayerMap(); }catch(e){}
+// Pair focus.
+const pairs=(D.pairs||[])
+.map(p=>({pair:p.pair,att:pairAttentionLevel(p.pair),frame:derivePairDecisionFrame(p.pair)}))
+.filter(x=>x.att.level==='DA APPROFONDIRE')
+.slice(0,3);
+const ph=document.getElementById('ov387Pairs');
+if(ph) ph.innerHTML=pairs.length
+? pairs.map(x=>`<div class="ov387Card" onclick="openPairDetail('${x.pair}')"><b>${esc387(x.pair)} · ${esc387(x.frame?.fav||'')}</b><span>${esc387(typeof simplePairWhy==='function'?simplePairWhy(x.pair,x.frame):(x.frame?.relation||''))}</span></div>`).join('')
+: '<div class="ov387Empty">Nessun pair con un contrasto abbastanza pulito da mettere in primo piano.</div>';
+// Changes.
+const changeItems=ccys.map(c=>({c,d:currencyImprovementDiagnostic(c)}))
+.filter(x=>['MIGLIORA','PEGGIORA','EARLY SHIFT POSITIVO','EARLY SHIFT NEGATIVO','TURNING POINT'].includes(x.d?.state))
+.slice(0,3);
+const ch=document.getElementById('ov387Changes');
+if(ch) ch.innerHTML=changeItems.length
+? changeItems.map(x=>{
+const s=x.d.state;
+const cls=(s==='MIGLIORA'||s==='EARLY SHIFT POSITIVO')?'up':(s==='PEGGIORA'||s==='EARLY SHIFT NEGATIVO')?'down':'turn';
+const arrow=cls==='up'?'↑':cls==='down'?'↓':'↕';
+const word=s==='MIGLIORA'?'sta migliorando':s==='PEGGIORA'?'sta peggiorando':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa':'possibile svolta';
+return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Apri la valuta per vedere quali dati stanno cambiando.</span></div>`;
+}).join('')
+: '<div class="ov387Empty">Nessun cambiamento recente abbastanza importante da evidenziare.</div>';
+// Risk, only if active, translated to plain language.
+const risk=deriveGlobalRiskState();
+const box=document.getElementById('ov387Risk');
+const title=document.getElementById('ov387RiskTitle');
+const text=document.getElementById('ov387RiskText');
+const active=risk && ['RISK-OFF','SHOCK ENERGIA'].includes(risk.state);
+if(box) box.hidden=!active;
+const riskVixDate=D.risk?.VIX?.dates?.at(-1)||'—';
+const riskBrentDate=D.risk?.Brent?.dates?.at(-1)||'—';
+const riskPriceDate=D.prices?.at(-1)?.Date||'—';
+const riskStale=(riskVixDate!=='—' && riskPriceDate!=='—' && String(riskVixDate).slice(0,10)<String(riskPriceDate).slice(0,10));
+if(active && risk.state==='SHOCK ENERGIA'){
+if(title) title.textContent='Petrolio in forte rialzo';
+if(text) text.textContent=`CAD tende a beneficiarne; EUR e JPY sono più esposte negativamente; USD può avere un effetto misto a seconda dei rendimenti. As-of rischio: VIX ${riskVixDate} · Brent ${riskBrentDate}${riskStale?' · precedente al Price '+riskPriceDate:''}.`;
+}else if(active && risk.state==='RISK-OFF'){
+if(title) title.textContent='Mercato in modalità difensiva';
+if(text) text.textContent=`JPY e CHF tendono a essere favorite; AUD, NZD e CAD sono più esposte alla pressione ciclica. As-of rischio: VIX ${riskVixDate} · Brent ${riskBrentDate}${riskStale?' · precedente al Price '+riskPriceDate:''}.`;
+}
+};
+// Single overview owner: render this after any old compatibility pass.
+const originalShow=window.showView;
+if(typeof originalShow==='function'){
+window.showView=function(v){
+const out=originalShow.apply(this,arguments);
+if(v==='overview') setTimeout(()=>{try{renderOverview387();}catch(e){console.warn('overview387',e)}},0);
+return out;
+};
+}
+setTimeout(()=>{try{renderOverview387();}catch(e){}},600);
+})();
+</script><script id="v393-top-themes-final-renderer">
+(function(){
+'use strict';
+function e393(s){
+return String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function plain393(t){
+if(t.ccy==='USD') return {
+title:'USD · I tassi USA stanno ancora sostenendo il dollaro?',
+story:'I dati USA restano solidi. Per il dollaro conta soprattutto se i rendimenti a breve restano alti e il mercato mantiene aspettative Fed restrittive.',
+why:'Se il 2Y USA resta alto, il dollaro mantiene un vantaggio relativo contro valute con tassi in calo.',
+confirm:'2Y USA stabile o in rialzo + dollaro che continua a tenere sui cross.',
+stop:'2Y USA in calo e inflazione attesa in rientro.'
+};
+if(t.ccy==='EUR') return {
+title:'EUR · Liquidità migliore, ma servono conferme da tassi e domanda',
+story:'La moneta in circolazione migliora, ma credito e domanda restano misti. Per l’euro serve una conferma dai tassi europei e dai cross.',
+why:'Dati monetari migliori aiutano solo se cambiano davvero le aspettative sui tassi o la crescita.',
+confirm:'Bund 2Y in rialzo o stabile + domanda/credito migliori + EUR che reagisce.',
+stop:'Domanda e credito peggiorano e il Bund 2Y continua a scendere.'
+};
+if(t.ccy==='GBP') return {
+title:'GBP · Salari e inflazione possono tenere la BoE più restrittiva?',
+story:'La sterlina dipende dalla persistenza di salari e inflazione. Se restano alti, la BoE può mantenere i tassi più restrittivi più a lungo.',
+why:'La GBP ha più supporto quando il mercato rinvia i tagli BoE e il 2Y britannico tiene.',
+confirm:'Salari/inflazione persistenti + Gilt 2Y che smette di scendere o torna a salire.',
+stop:'Salari e inflazione rallentano insieme e il Gilt 2Y continua a scendere.'
+};
+if(t.ccy==='JPY') return {
+title:'JPY · Lo yen ha bisogno di conferme da salari, inflazione e tassi',
+story:'Un singolo dato non basta. Per uno yen più forte servono salari, inflazione e rendimenti giapponesi che inizino a muoversi insieme.',
+why:'Lo yen diventa più interessante solo se il mercato prezza una BoJ più restrittiva e il JGB 2Y reagisce.',
+confirm:'Salari e inflazione servizi solidi + JGB 2Y in rialzo + JPY che inizia a rafforzarsi.',
+stop:'Inflazione servizi rallenta e il JGB 2Y non reagisce.'
+};
+if(t.ccy==='AUD' && t.ccy2==='NZD') return {
+title:'AUD / NZD · Cina e propensione al rischio aiutano o frenano?',
+story:'Cina, commodity e propensione al rischio possono aiutare AUD e NZD, ma non devono sostituire i segnali domestici.',
+why:'Il vento globale conta, ma il movimento è più credibile se anche i tassi domestici confermano.',
+confirm:'Cina/risk favorevoli + AU/NZ 2Y nella stessa direzione + cross che confermano.',
+stop:'Il sostegno esterno si gira e i tassi domestici non compensano.'
+};
+if(t.ccy==='CAD') return {
+title:'CAD · Petrolio forte: basta davvero per aiutare il dollaro canadese?',
+story:'Il petrolio aiuta il CAD, ma da solo non basta. Serve che anche i tassi canadesi o i dati interni vadano nella stessa direzione.',
+why:'Un petrolio forte è più utile al CAD quando il Canada 2Y non sta scendendo contro gli altri paesi.',
+confirm:'Petrolio forte + Canada 2Y stabile/in rialzo + CAD che reagisce.',
+stop:'Petrolio perde forza oppure Canada 2Y scende.'
+};
+if(t.ccy==='CHF') return {
+title:'CHF · SNB accomodante contro domanda di rifugio',
+story:'Lo CHF riceve due spinte opposte: una SNB accomodante lo frena, mentre il risk-off può rafforzarlo come valuta rifugio.',
+why:'Il CHF può salire anche con tassi poco favorevoli se il mercato entra in modalità difensiva.',
+confirm:'Risk-off in aumento + CHF forte su EURCHF/USDCHF.',
+stop:'Il risk-off rientra e torna a dominare la politica accomodante della SNB.'
+};
+return {title:t.title,story:t.body,why:t.lead,confirm:t.confirm,stop:t.invalidate};
+}
+function rate393(t){
+const cs=[t.ccy,t.ccy2].filter(Boolean);
+const vals=cs.map(c=>{
+try{
+const v=Number(window.NATIVE_RATES_DATA?.[c]?.chg2_bp ?? NATIVE_RATES_DATA?.[c]?.chg2_bp);
+return Number.isFinite(v)?{c,v}:null;
+}catch(e){return null;}
+}).filter(Boolean);
+if(!vals.length) return {text:'Dato 2Y non disponibile',cls:''};
+const text=vals.map(x=>`${x.c} ${x.v>0?'+':''}${x.v.toFixed(1)} bp`).join(' · ');
+const avg=vals.reduce((a,b)=>a+b.v,0)/vals.length;
+return {text,cls:avg>0?'up':avg<0?'down':''};
+}
+function cot393(t){
+const bits=[];
+[t.ccy,t.ccy2].filter(Boolean).forEach(c=>{
+try{
+const d=D?.cot?.[c];
+if(!d) return;
+const pct=Number(d.pct), netoi=Number(d.net_oi);
+if(Number.isFinite(pct)&&pct>=80) bits.push(`${c}: molto long`);
+else if(Number.isFinite(pct)&&pct<=20) bits.push(`${c}: molto short`);
+if(Number.isFinite(netoi)&&Math.abs(netoi)>=30) bits.push(`${c}: affollamento ${netoi>0?'+':''}${Number(netoi).toFixed(1)}% Net/OI`);
+}catch(e){}
+});
+return bits.join(' · ');
+}
+function card393(t){
+const p=plain393(t);
+const r=rate393(t);
+const cot=cot393(t);
+return `<div class="tt392Card"><div class="tt392Top"><div class="tt392TitleWrap"><div class="tt392Flags">${typeof flagSvg==='function'?flagSvg(t.ccy):''}${t.ccy2&&typeof flagSvg==='function'?flagSvg(t.ccy2):''}</div><div class="tt392Title">${e393(p.title)}</div></div><div class="tt392Rate ${r.cls}"><span>2Y · 1 SETTIMANA</span><b>${e393(r.text)}</b></div></div><div class="tt392Story">${e393(p.story)}</div><div class="tt392Row"><span>PERCHÉ CONTA PER FX</span><b>${e393(p.why)}</b></div><div class="tt392Row confirm"><span>COSA DEVE SUCCEDERE PER CONFERMARLO</span><b>${e393(p.confirm)}</b></div><div class="tt392Row"><span>QUANDO IL TEMA PERDE FORZA</span><b>${e393(p.stop)}</b></div>
+${cot?`<div class="tt392Cot"><b>COT:</b> ${e393(cot)}</div>`:''}
+</div>`;
+}
+window.renderTopThemes393=function(){
+const main=document.getElementById('tt392Main');
+const more=document.getElementById('tt392MoreGrid');
+if(!main || !more) return;
+const themes=Array.isArray(TOP_THEMES)?TOP_THEMES:[];
+main.innerHTML=themes.slice(0,4).map(card393).join('') || '<div class="tt392Empty">Nessun tema disponibile.</div>';
+more.innerHTML=themes.slice(4).map(card393).join('') || '<div class="tt392Empty">Nessun altro tema rilevante.</div>';
+};
+const previous=window.showView;
+if(typeof previous==='function'){
+window.showView=function(v){
+const out=previous.apply(this,arguments);
+if(v==='themes') setTimeout(()=>{try{renderTopThemes393();}catch(e){console.warn('themes393',e)}},0);
+return out;
+};
+}
+document.addEventListener('click',e=>{
+if(e.target.closest?.('[data-view="themes"],[onclick*="themes"]')){
+setTimeout(()=>{try{renderTopThemes393();}catch(err){}},60);
+}
+},true);
+setTimeout(()=>{try{if(document.getElementById('themes')?.classList.contains('active'))renderTopThemes393();}catch(e){}},700);
+})();
+</script><script>
+
+(function(){
+'use strict';
+window.GMFQ_OIS=window.GMFQ_OIS||{};
+const P=()=>window.__GMFQ_DATA?.OIS_DATA||null;
+const validNum=x=>Number.isFinite(Number(x));
+
+function currency(ccy){
+  const p=P(), d=p?.currencies?.[ccy];
+  if(!d) return {ccy,status:'WITHHELD',reason:'NO_RECORD'};
+  const v=d.validation||{};
+  const active=d.status==='ACTIVE' &&
+    v.source_validated===true &&
+    v.asof_validated===true &&
+    v.meeting_path_validated===true &&
+    v.changes_validated===true;
+  if(!active) return {ccy,status:'WITHHELD',reason:'NOT_FULLY_VALIDATED',raw:d};
+  return {ccy,status:'ACTIVE',raw:d};
+}
+
+function policyDelta(ccy,horizon='12m'){
+  const x=currency(ccy);
+  if(x.status!=='ACTIVE') return {ccy,horizon,status:'WITHHELD',bp:null};
+  const bp=x.raw?.cuts_hikes_priced?.[horizon+'_bp'];
+  return validNum(bp)?{ccy,horizon,status:'ACTIVE',bp:Number(bp)}:{ccy,horizon,status:'WITHHELD',bp:null};
+}
+
+function change(ccy,windowKey='1w',horizon='12m'){
+  const x=currency(ccy);
+  if(x.status!=='ACTIVE') return {ccy,horizon,window:windowKey,status:'WITHHELD',bp:null};
+  const h=x.raw?.horizons?.[horizon];
+  const k=windowKey==='1d'?'change_1d_bp':'change_1w_bp';
+  return validNum(h?.[k])?{ccy,horizon,window:windowKey,status:'ACTIVE',bp:Number(h[k])}:{ccy,horizon,window:windowKey,status:'WITHHELD',bp:null};
+}
+
+function pair(a,b,horizon='12m'){
+  const A=policyDelta(a,horizon), B=policyDelta(b,horizon);
+  if(A.status!=='ACTIVE'||B.status!=='ACTIVE')
+    return {pair:a+'/'+b,horizon,status:'WITHHELD',spread_bp:null};
+  return {pair:a+'/'+b,horizon,status:'ACTIVE',spread_bp:A.bp-B.bp,a_bp:A.bp,b_bp:B.bp};
+}
+
+function compare2Y(ccy,horizon='12m'){
+  const x=policyDelta(ccy,horizon);
+  let r=null;
+  try{ r=window.NATIVE_RATES_DATA?.[ccy] ?? window.__GMFQ_DATA?.NATIVE_RATES_DATA?.[ccy]; }catch(e){}
+  if(x.status!=='ACTIVE'||!r||!validNum(r.chg2_bp))
+    return {ccy,horizon,status:'WITHHELD',ois_bp:x.bp??null,y2_week_bp:validNum(r?.chg2_bp)?Number(r.chg2_bp):null,relation:'WITHHELD'};
+  const ois=x.bp, y=Number(r.chg2_bp);
+  const relation=(Math.sign(ois)===Math.sign(y)||ois===0||y===0)?'CONFERMA':'DIVERGE';
+  return {ccy,horizon,status:'ACTIVE',ois_bp:ois,y2_week_bp:y,relation};
+}
+
+window.GMFQ_OIS.currency=currency;
+window.GMFQ_OIS.policyDelta=policyDelta;
+window.GMFQ_OIS.change=change;
+window.GMFQ_OIS.pair=pair;
+window.GMFQ_OIS.compare2Y=compare2Y;
+window.GMFQ_OIS.snapshot=function(){
+  return ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>currency(c));
+};
+})();
+
+
+(function(){
+'use strict';
+if(!window.GMFQ_OIS) return;
+window.GMFQ_OIS.ratesDiagnostic=function(ccy){
+  const x=window.GMFQ_OIS.currency?.(ccy);
+  if(!x||x.status!=='ACTIVE') return {status:'WITHHELD',ccy};
+  const d=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[ccy];
+  const h=d?.horizons?.['12m'];
+  if(!h) return {status:'WITHHELD',ccy};
+  const delta=Number(h.policy_delta_bp);
+  const weekly=Number(h.change_1w_bp);
+  return {
+    status:'ACTIVE',ccy,
+    path:delta>5?'HIGHER':delta<-5?'LOWER':'FLAT',
+    weekly_repricing:weekly>5?'HAWKISH_SHIFT':weekly<-5?'DOVISH_SHIFT':'STABLE',
+    structural_override:false,
+    use:'rates_expectations_evidence_only'
+  };
+};
+})();
+
+
+</script>
+<script>
+
+(function(){
+'use strict';
+window.GMFQ_OIS_INGEST=window.GMFQ_OIS_INGEST||{};
+const CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+function finite(x){return Number.isFinite(Number(x));}
+function validHorizon(h){
+  return h && finite(h.rate) && finite(h.change_1d_bp) && finite(h.change_1w_bp) && finite(h.policy_delta_bp);
+}
+window.GMFQ_OIS_INGEST.validateCurrency=function(ccy,d){
+  const errors=[];
+  if(!CCY.includes(ccy)) errors.push('unknown currency');
+  if(!d?.source) errors.push('missing source');
+  if(!d?.as_of) errors.push('missing as_of');
+  if(!finite(d?.policy_rate)) errors.push('missing policy_rate');
+  if(!Array.isArray(d?.meetings)||!d.meetings.length) errors.push('missing meeting path');
+  for(const h of ['3m','6m','12m']) if(!validHorizon(d?.horizons?.[h])) errors.push('invalid '+h+' horizon');
+  return {ccy,ok:errors.length===0,errors};
+};
+window.GMFQ_OIS_INGEST.validateAll=function(payload){
+  const out={ok:true,currencies:{},active:0,total:8};
+  for(const c of CCY){
+    const r=window.GMFQ_OIS_INGEST.validateCurrency(c,payload?.currencies?.[c]);
+    out.currencies[c]=r;
+    if(r.ok) out.active++; else out.ok=false;
+  }
+  return out;
+};
+})();
+
+
+</script>
+<script>
+
+(function(){
+'use strict';
+window.GMFQ_OIS_SOURCE_MONITOR=window.GMFQ_OIS_SOURCE_MONITOR||{};
+window.GMFQ_OIS_SOURCE_MONITOR.activationState=function(){
+  const payload=window.__GMFQ_DATA?.OIS_DATA?.currencies||{};
+  const out={active:0,withheld:0,total:8,issues:[]};
+  for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+    const d=payload[c];
+    if(d?.status==='ACTIVE') out.active++;
+    else {out.withheld++; out.issues.push(c+': OIS withheld');}
+  }
+  return out;
+};
+window.GMFQ_OIS_SOURCE_MONITOR.canPublishCurve=function(ccy){
+  const d=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[ccy];
+  if(!d||d.status!=='ACTIVE') return false;
+  const h=d.horizons||{};
+  const ok=x=>x&&Number.isFinite(Number(x.rate))&&Number.isFinite(Number(x.change_1d_bp))&&Number.isFinite(Number(x.change_1w_bp))&&Number.isFinite(Number(x.policy_delta_bp));
+  return Boolean(d.source&&d.as_of&&Number.isFinite(Number(d.policy_rate))&&Array.isArray(d.meetings)&&d.meetings.length&&ok(h['3m'])&&ok(h['6m'])&&ok(h['12m']));
+};
+})();
+
+
+</script>
+<script>
+
+(function(){
+'use strict';
+window.GMFQ_OIS_FEED_PRIORITY={
+  USD:{tier:1,label:'CME FedWatch API',ready:false},
+  AUD:{tier:2,label:'ASX 30 Day Interbank Cash Rate futures',ready:false},
+  EUR:{tier:1,label:'€STR OIS/futures feed',ready:false},
+  GBP:{tier:1,label:'SONIA OIS/futures feed',ready:false},
+  JPY:{tier:1,label:'TONA OIS/futures feed',ready:false},
+  CHF:{tier:1,label:'SARON OIS/futures feed',ready:false},
+  CAD:{tier:1,label:'CORRA OIS feed',ready:false},
+  NZD:{tier:1,label:'NZ OIS feed',ready:false}
+};
+window.GMFQ_OIS_FEED_PRIORITY.nextCandidate=function(){
+  const order=['AUD','USD','EUR','GBP','JPY','CHF','CAD','NZD'];
+  for(const c of order){
+    if(window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c]?.status!=='ACTIVE') return c;
+  }
+  return null;
+};
+})();
+
+
+</script>
+<script>
+
+(function(){
+'use strict';
+window.GMFQ_OIS_FREE_ONLY={
+  paidFeedAllowed:false,
+  paidApiAllowed:false,
+  syntheticCurveAllowed:false,
+  surveyCanActivate:false,
+  twoYearCanActivate:false,
+  preferredOrder:['GBP','AUD','USD','EUR','CAD','CHF','JPY','NZD'],
+  canUseSource:function(meta){
+    if(!meta) return false;
+    if(meta.paid===true||meta.subscription_required===true||meta.licensed_feed_required===true) return false;
+    return meta.official_public===true || meta.public_exchange===true;
+  }
+};
+})();
+
+
+</script>
+<script id="v401-ois-rates-ui">
+(function(){
+'use strict';
+
+function num(v,d=2){ return Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '—'; }
+
+window.v401NominalCards=function(c,d){
+  const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp), curve=v233CurveInterpretation(d);
+  const ten5=(d.tenors||[]).find(x=>x.tenor==='5Y');
+  return [
+    v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
+    v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
+    v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
+    v233RateCard('Pendenza · 10Y−2Y',d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb',curve.name,curve.why,curve.cls)
+  ].join('');
+};
+
+window.v401DecompCards=function(c,d){
+  const cards=[];
+  if(d.real){
+    const rv=d.real.last_value;
+    cards.push(v233RateCard('Real yield',rv==null?'—':fmt(rv,2)+'%','Costo reale del capitale','Aiuta a capire quanta parte del movimento nominale viene dai tassi reali.','info'));
+  } else {
+    cards.push(v233RateCard('Real yield','Non comparabile','Dato non completo','Non viene stimato o sostituito con proxy non omogenei.','neu'));
+  }
+  if(d.breakeven){
+    const bv=d.breakeven.last_value;
+    cards.push(v233RateCard('Breakeven',bv==null?'—':fmt(bv,2)+'%','Inflazione attesa di mercato','Serve a separare un rialzo nominale dovuto all’inflazione attesa da uno dovuto ai tassi reali.','info'));
+  } else {
+    cards.push(v233RateCard('Breakeven','Non comparabile','Dato non completo','La componente di inflazione attesa resta separata e non viene inventata.','neu'));
+  }
+  const long=(d.tenors||[]).slice(-1)[0];
+  if(long && long.tenor!=='10Y'){
+    cards.push(v233RateCard(`Lunga scadenza · ${long.tenor}`,fmt(long.value,2)+'%','Coda della curva','Utile per leggere term premium, duration e pressione da offerta quando disponibile.','neu'));
+  }
+  if(d.term_premium){
+    const tv=d.term_premium.last_value ?? d.term_premium.value ?? null;
+    cards.push(v233RateCard('Term premium',tv==null?'Non comparabile':fmt(tv,2)+'%','Premio per detenere duration','Aiuta a distinguere un rialzo del 10Y dovuto al premio per il rischio di durata da un vero repricing della policy.','info'));
+  }
+  return cards.join('');
+};
+
+window.v401RenderOis=function(c){
+  const root=document.querySelector('#v401OisBlock');
+  if(!root) return;
+  const d=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c];
+  const x=window.GMFQ_OIS?.currency ? window.GMFQ_OIS.currency(c) : {status:'WITHHELD'};
+  const active=x?.status==='ACTIVE';
+  const fmtBp=(v)=>Number.isFinite(Number(v)) ? `${Number(v)>0?'+':''}${Number(v).toFixed(0)} pb` : '—';
+  if(!active){
+    root.innerHTML=`
+      <div class="v413OisTop">
+        <div><div class="v413OisTitle">${c} · percorso atteso dei tassi</div><div class="v413OisMeta">OIS non ancora attivato · fonte di mercato richiesta</div></div>
+        <div class="v413OisState wait">IN ATTESA DATI VALIDATI</div>
+      </div>
+      <div class="v413OisPath">
+        <div class="v413OisPoint"><span>Tasso attuale</span><b>—</b><small>Il livello ufficiale verrà collegato alla stessa fotografia temporale dell’OIS.</small></div>
+        <div class="v413OisPoint"><span>3 mesi</span><b>—</b><small>Nessun livello OIS validato.</small></div>
+        <div class="v413OisPoint"><span>6 mesi</span><b>—</b><small>Nessun livello OIS validato.</small></div>
+        <div class="v413OisPoint"><span>12 mesi</span><b>—</b><small>Nessun livello OIS validato.</small></div>
+      </div>
+      <div class="v413OisEmpty"><b>La curva comparativa apparirà qui.</b><p>Quando il feed sarà attivo vedrai <b>oggi · ieri · 1 settimana fa</b> sullo stesso grafico, più quanti punti base di rialzi o tagli sono prezzati. Il 2Y non viene mai usato per ricostruire artificialmente questa curva.</p></div>
+      <div class="v413OisReads">
+        <div class="v413OisRead"><span>Repricing 1 giorno</span><b>—</b></div>
+        <div class="v413OisRead"><span>Repricing 1 settimana</span><b>—</b></div>
+        <div class="v413OisRead"><span>OIS vs 2Y</span><b>Non confrontabile finché OIS è withheld</b></div>
+      </div>`;
+    return;
+  }
+  const h=d.horizons||{};
+  const pts=[
+    {label:'Oggi',rate:Number(d.policy_rate)},
+    {label:'3M',rate:Number(h['3m']?.rate)},
+    {label:'6M',rate:Number(h['6m']?.rate)},
+    {label:'12M',rate:Number(h['12m']?.rate)}
+  ];
+  root.innerHTML=`
+    <div class="v413OisTop">
+      <div><div class="v413OisTitle">${c} · percorso atteso dei tassi</div><div class="v413OisMeta">${d.as_of||'—'} · ${d.source||'fonte validata'}</div></div>
+      <div class="v413OisState ok">OIS VALIDATO</div>
+    </div>
+    <div class="v413OisPath">
+      <div class="v413OisPoint"><span>Tasso attuale</span><b>${Number(d.policy_rate).toFixed(2)}%</b><small>Punto di partenza ufficiale.</small></div>
+      <div class="v413OisPoint"><span>3 mesi</span><b>${Number(h['3m']?.rate).toFixed(2)}%</b><small>${fmtBp(h['3m']?.policy_delta_bp)} vs oggi.</small></div>
+      <div class="v413OisPoint"><span>6 mesi</span><b>${Number(h['6m']?.rate).toFixed(2)}%</b><small>${fmtBp(h['6m']?.policy_delta_bp)} vs oggi.</small></div>
+      <div class="v413OisPoint"><span>12 mesi</span><b>${Number(h['12m']?.rate).toFixed(2)}%</b><small>${fmtBp(h['12m']?.policy_delta_bp)} vs oggi.</small></div>
+    </div>
+    <div class="v413OisChartBox">
+      <div class="v413OisChartHead"><b>Curva OIS · oggi / ieri / 1 settimana fa</b><span>stessa scala · stessi orizzonti</span></div>
+      <canvas id="v413OisCanvas" class="v413OisCanvas"></canvas>
+    </div>
+    <div class="v413OisReads">
+      <div class="v413OisRead"><span>Repricing 1 giorno · 12M</span><b>${fmtBp(h['12m']?.change_1d_bp)}</b></div>
+      <div class="v413OisRead"><span>Repricing 1 settimana · 12M</span><b>${fmtBp(h['12m']?.change_1w_bp)}</b></div>
+      <div class="v413OisRead"><span>OIS vs 2Y</span><b>${window.GMFQ_OIS?.compare2Y?.(c,'12m')?.relation||'—'}</b></div>
+    </div>`;
+  requestAnimationFrame(()=>window.v413DrawOisCurve?.(c));
+};
+
+window.v413DrawOisCurve=function(c){
+  const cv=document.querySelector('#v413OisCanvas'); if(!cv) return;
+  const d=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c]; if(!d||d.status!=='ACTIVE') return;
+  const h=d.horizons||{}, labels=['Oggi','3M','6M','12M'];
+  const today=[Number(d.policy_rate),Number(h['3m']?.rate),Number(h['6m']?.rate),Number(h['12m']?.rate)];
+  const prev1=[Number(d.policy_rate),Number(h['3m']?.rate)-Number(h['3m']?.change_1d_bp)/100,Number(h['6m']?.rate)-Number(h['6m']?.change_1d_bp)/100,Number(h['12m']?.rate)-Number(h['12m']?.change_1d_bp)/100];
+  const prevW=[Number(d.policy_rate),Number(h['3m']?.rate)-Number(h['3m']?.change_1w_bp)/100,Number(h['6m']?.rate)-Number(h['6m']?.change_1w_bp)/100,Number(h['12m']?.rate)-Number(h['12m']?.change_1w_bp)/100];
+  const series=[today,prev1,prevW].filter(a=>a.every(Number.isFinite));
+  if(series.length<3) return;
+  const W=cv.clientWidth||700,H=cv.clientHeight||220,R=window.devicePixelRatio||1;
+  cv.width=W*R;cv.height=H*R;const ctx=cv.getContext('2d');ctx.scale(R,R);ctx.clearRect(0,0,W,H);
+  const vals=series.flat(),mn=Math.min(...vals)-.08,mx=Math.max(...vals)+.08, pad={l:42,r:18,t:18,b:32};
+  const X=i=>pad.l+i*(W-pad.l-pad.r)/(labels.length-1);
+  const Y=v=>pad.t+(mx-v)*(H-pad.t-pad.b)/(mx-mn||1);
+  ctx.font='11px Segoe UI';ctx.fillStyle='#8ea5b5';ctx.strokeStyle='rgba(148,163,184,.14)';ctx.lineWidth=1;
+  for(let i=0;i<4;i++){const y=pad.t+i*(H-pad.t-pad.b)/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();const val=mx-i*(mx-mn)/3;ctx.fillText(val.toFixed(2)+'%',4,y+4);}
+  labels.forEach((l,i)=>ctx.fillText(l,X(i)-12,H-8));
+  const styles=[{a:1,w:2.6},{a:.62,w:1.8},{a:.38,w:1.6}];
+  series.forEach((s,si)=>{ctx.strokeStyle=`rgba(96,165,250,${styles[si].a})`;ctx.lineWidth=styles[si].w;ctx.beginPath();s.forEach((v,i)=>{if(i===0)ctx.moveTo(X(i),Y(v));else ctx.lineTo(X(i),Y(v));});ctx.stroke();});
+};
+
+window.v401RenderRatesLayers=function(c,d){
+  const ng=document.querySelector('#v233RatesGrid');
+  const dg=document.querySelector('#v401RatesDecompGrid');
+  if(ng) ng.innerHTML=window.v401NominalCards(c,d);
+  if(dg) dg.innerHTML=window.v401DecompCards(c,d);
+  window.v401RenderOis(c);
+};
+})();
+</script>
+<script >
+(function(){
+'use strict';
+window.GMFQ_MACRO_THERMOMETER=window.GMFQ_MACRO_THERMOMETER||{};
+const ROOT=()=>window.__GMFQ_DATA?.MACRO_THERMOMETER_DATA||null;
+const isNum=x=>Number.isFinite(Number(x));
+
+function pctRank(history,value){
+  const a=(history||[]).map(Number).filter(Number.isFinite).sort((x,y)=>x-y);
+  if(!a.length||!isNum(value)) return null;
+  const v=Number(value);
+  let below=0,equal=0;
+  for(const x of a){ if(x<v) below++; else if(x===v) equal++; }
+  return 100*((below+0.5*equal)/a.length);
+}
+function label(score){
+  if(!isNum(score)) return 'WITHHELD';
+  const x=Number(score);
+  if(x<20)return 'MOLTO_FREDDO';
+  if(x<40)return 'FREDDO';
+  if(x<60)return 'NORMALE';
+  if(x<80)return 'CALDO';
+  return 'MOLTO_CALDO';
+}
+function validated(s){
+  const v=s?.validation||{};
+  return v.source===true && v.history===true && v.latest===true && v.transformation===true &&
+         Array.isArray(s.history) && s.history.length>=24 && isNum(s.latest_value);
+}
+function series(ccy,key){
+  if(key!=='labour' && key!=='inflation') return {ccy,key,status:'WITHHELD',reason:'NOT_IN_DUAL_THERMOMETER'};
+  const d=ROOT()?.currencies?.[ccy]?.[key];
+  if(!d||!validated(d))return {ccy,key,status:'WITHHELD',score:null,label:'WITHHELD'};
+  const p=pctRank(d.history,d.latest_value);
+  if(p==null)return {ccy,key,status:'WITHHELD',score:null,label:'WITHHELD'};
+  const score=p;
+  return {ccy,key,status:'ACTIVE',percentile:p,score,label:label(score),
+          latest_value:Number(d.latest_value),direction:d.direction||'WITHHELD',
+          acceleration:d.acceleration||'WITHHELD'};
+}
+function currency(ccy){
+  const labour=series(ccy,'labour');
+  const inflation=series(ccy,'inflation');
