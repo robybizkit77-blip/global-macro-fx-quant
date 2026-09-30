@@ -3123,9 +3123,9 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       ? pairs.map(x=>String(x.f?.quality||'').replace('VANTAGGIO RELATIVO ','')).join(' · ')
       : 'Aspettare maggiore differenziazione Macro + Tassi/CB';
     host.innerHTML=
-      '<div class="gmfqExecCard pos"><div class="k">Sta migliorando</div><div class="v">'+humanList(b.up)+'</div><div class="n">Cambiamento recente, non forza strutturale.</div></div>'+
-      '<div class="gmfqExecCard neg"><div class="k">Sta peggiorando</div><div class="v">'+humanList(b.down)+'</div><div class="n">Deterioramento recente da confermare nei driver.</div></div>'+
-      '<div class="gmfqExecCard warn"><div class="k">Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Segnale iniziale: serve conferma da Macro/Rates e prezzo.</div></div>'+
+      '<div class="gmfqExecCard pos"><div class="k">FX · Sta migliorando</div><div class="v">'+humanList(b.up)+'</div><div class="n">Sintesi complessiva: Macro + Tassi/CB; il prezzo resta conferma.</div></div>'+
+      '<div class="gmfqExecCard neg"><div class="k">FX · Sta peggiorando</div><div class="v">'+humanList(b.down)+'</div><div class="n">Sintesi complessiva: Macro + Tassi/CB; il prezzo resta conferma.</div></div>'+
+      '<div class="gmfqExecCard warn"><div class="k">FX · Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Segnale complessivo iniziale: serve conferma da Macro/Rates e prezzo.</div></div>'+
       '<div class="gmfqExecCard neu"><div class="k">Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
   }
   const old=window.v302ConsolidatedSync;
@@ -3137,6 +3137,45 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   document.addEventListener('change',()=>setTimeout(render,0),true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(render,60),{once:true});
   else setTimeout(render,60);
+})();
+</script>
+
+
+<script id="gmfq-overview-semantic-fix-20260930">
+(function(){
+  'use strict';
+  function relabel(){
+    const root=document.getElementById('gmfqCurrencyOverview');
+    if(!root)return;
+    const els=[...root.querySelectorAll('*')];
+    const exact=new Map([
+      ['PANORAMICA VALUTE · COSA STA CAMBIANDO DAVVERO','FOCUS MACRO · COSA STA CAMBIANDO NEI DATI'],
+      ['Quali valute stanno ricevendo supporto dai dati?','Come si sta muovendo la Macro nelle 8 valute?'],
+      ['Qui non guardiamo il G8 come blocco unico. Guardiamo valuta per valuta: stato macro, direzione recente, punto di forza e punto di debolezza.','Qui guardiamo solo la Macro: crescita, lavoro, inflazione e attività. Non è la direzione FX complessiva: per quella usa la sintesi sopra.'],
+      ['STANNO MIGLIORANDO','MACRO IN MIGLIORAMENTO'],
+      ['STANNO PEGGIORANDO','MACRO IN PEGGIORAMENTO'],
+      ['QUADRO MISTO / DA CONFERMARE','MACRO MISTA / POSSIBILE SVOLTA']
+    ]);
+    els.forEach(el=>{
+      const t=(el.textContent||'').trim();
+      if(exact.has(t) && el.children.length===0) el.textContent=exact.get(t);
+    });
+    root.setAttribute('data-semantic-scope','MACRO_ONLY');
+  }
+  function install(){
+    relabel();
+    const old=window.GMFQ_CURRENCY_OVERVIEW?.render;
+    if(typeof old==='function'&&!old.__semanticWrapped){
+      const w=function(){const out=old.apply(this,arguments);try{relabel();}catch(e){}return out;};
+      w.__semanticWrapped=true;
+      window.GMFQ_CURRENCY_OVERVIEW.render=w;
+    }
+    setTimeout(relabel,80);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
+  document.addEventListener('click',()=>setTimeout(relabel,0),true);
+  document.addEventListener('change',()=>setTimeout(relabel,0),true);
 })();
 </script>
 
