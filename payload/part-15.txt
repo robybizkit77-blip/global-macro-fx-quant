@@ -2302,5 +2302,94 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-post-gate-final-audit-20260930">
+(function(){
+  'use strict';
+  try{
+    const issues=[];
+    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+
+    // Final source registry must reflect the live post-gate state.
+    const A=window.FINAL_SOURCE_POLICY_AUDIT;
+    const C=A?.CB_PRICING||A?.cb_pricing;
+    if(C?.EUR){
+      Object.assign(C.EUR,{
+        quality:'DIRECT_LEVELS_HISTORY_WITHHELD',
+        policy:'DIRECT_LEVELS_VALIDATED_KEEP_1D_1W_WITHHELD',
+        source:'Eurex Three-Month Euro STR Futures',
+        current_as_of:'2026-09-29'
+      });
+    }
+
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){issues.push('REBUILD_CANONICAL_FAIL');}
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){issues.push('STABLE_REFRESH_FAIL');}
+
+    let cq=null,vq=null,rb=null,rv=null;
+    try{ cq=canonicalConsistencyQa(); if(cq?.ok!==true) issues.push(...(cq?.issues||['CANONICAL_CONSISTENCY_FAIL'])); }
+    catch(e){ issues.push('CANONICAL_CONSISTENCY_UNAVAILABLE'); }
+    try{ vq=canonicalViewQa(); if(vq?.ok!==true) issues.push(...(vq?.issues||['CANONICAL_VIEW_FAIL'])); }
+    catch(e){ issues.push('CANONICAL_VIEW_UNAVAILABLE'); }
+    try{ rb=ratesCanonicalBasisIntegrity(); if(rb?.ok!==true) issues.push('RATES_BASIS_FAIL'); }
+    catch(e){ issues.push('RATES_BASIS_UNAVAILABLE'); }
+    try{ rv=visibleRatesSnapshotIntegrity(); if(rv?.ok!==true) issues.push('RATES_VISIBLE_FAIL'); }
+    catch(e){ issues.push('RATES_VISIBLE_UNAVAILABLE'); }
+
+    if(Number(cq?.currencies)!==8) issues.push('CURRENCY_COUNT:'+String(cq?.currencies));
+    if(Number(cq?.pairs)!==28) issues.push('PAIR_COUNT:'+String(cq?.pairs));
+
+    const ois=Object.fromEntries(ccys.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||'WITHHELD']));
+    const expectedOis={USD:'WITHHELD',EUR:'WITHHELD',GBP:'ACTIVE',JPY:'WITHHELD',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
+    ccys.forEach(c=>{
+      if(ois[c]!==expectedOis[c]) issues.push('OIS_STATUS:'+c+':'+ois[c]+'!='+expectedOis[c]);
+    });
+
+    const gates={
+      AUD:window.GMFQ_AUD_POST_RBA_PRICING_AUDIT?.status||null,
+      EUR:window.GMFQ_EUR_ESTR_HISTORY_AUDIT?.status||null,
+      USD:window.GMFQ_USD_OIS_AUDIT?.status||null,
+      JPY:window.GMFQ_JPY_TONA_AUDIT?.status||null,
+      CHF:window.GMFQ_CHF_SARON_AUDIT?.status||null,
+      NZD:window.GMFQ_NZD_OIS_AUDIT?.status||null,
+      GBP:window.GMFQ_GBP_OIS_AUDIT?.status||null,
+      CAD:window.GMFQ_CAD_CORRA_AUDIT?.status||null
+    };
+
+    if(gates.AUD!=='PASS') issues.push('AUD_GATE:'+gates.AUD);
+    if(gates.GBP!=='PASS') issues.push('GBP_GATE:'+gates.GBP);
+    if(gates.CAD!=='PASS') issues.push('CAD_GATE:'+gates.CAD);
+    if(!/^WITHHELD_/.test(String(gates.EUR||''))) issues.push('EUR_GATE:'+gates.EUR);
+    if(gates.USD!=='WITHHELD') issues.push('USD_GATE:'+gates.USD);
+    if(gates.JPY!=='PARTIAL_DIRECT_WITHHELD_FULL_CURVE') issues.push('JPY_GATE:'+gates.JPY);
+    if(gates.CHF!=='WITHHELD_ILLIQUID') issues.push('CHF_GATE:'+gates.CHF);
+    if(gates.NZD!=='WITHHELD_NO_DIRECT_PUBLIC_STRIP') issues.push('NZD_GATE:'+gates.NZD);
+
+    const sourceQuality=Object.fromEntries(ccys.map(c=>[c,String((A?.CB_PRICING||A?.cb_pricing)?.[c]?.quality||'')]));
+    if(sourceQuality.EUR!=='DIRECT_LEVELS_HISTORY_WITHHELD') issues.push('EUR_SOURCE_REGISTRY:'+sourceQuality.EUR);
+    if(!/^WITHHELD_/.test(sourceQuality.USD)) issues.push('USD_SOURCE_REGISTRY:'+sourceQuality.USD);
+    if(!/^WITHHELD_/.test(sourceQuality.JPY)) issues.push('JPY_SOURCE_REGISTRY:'+sourceQuality.JPY);
+    if(!/^WITHHELD_/.test(sourceQuality.CHF)) issues.push('CHF_SOURCE_REGISTRY:'+sourceQuality.CHF);
+    if(!/^WITHHELD_/.test(sourceQuality.NZD)) issues.push('NZD_SOURCE_REGISTRY:'+sourceQuality.NZD);
+
+    window.GMFQ_POST_GATE_FINAL_AUDIT={
+      status:issues.length?'FAIL':'PASS',
+      as_of:'2026-09-30',
+      counts:{currencies:Number(cq?.currencies||0),pairs:Number(cq?.pairs||0)},
+      canonical:{consistency_ok:cq?.ok??null,view_ok:vq?.ok??null},
+      rates:{basis_ok:rb?.ok??null,visible_ok:rv?.ok??null},
+      ois,
+      gates,
+      source_quality:sourceQuality,
+      issues
+    };
+    document.documentElement.setAttribute('data-post-gate-final-audit',window.GMFQ_POST_GATE_FINAL_AUDIT.status);
+  }catch(e){
+    window.GMFQ_POST_GATE_FINAL_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-post-gate-final-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
 
