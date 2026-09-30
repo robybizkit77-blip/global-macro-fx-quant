@@ -1,0 +1,31 @@
+name: JPY TONA archive probe
+
+on:
+  push:
+    branches:
+      - test-jpy-tona-archive-2026-09-30
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe JPX settlement data links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import requests,re,html
+          urls=[
+            "https://www.jpx.co.jp/english/markets/derivatives/settlement-price/index.html",
+            "https://port.jpx.co.jp/jpxhp/main/index.aspx?F=e_future&disptype=day_through"
+          ]
+          for url in urls:
+              r=requests.get(url,timeout=30,headers={"User-Agent":"Mozilla/5.0"})
+              print("\nURL",url,"STATUS",r.status_code,"LEN",len(r.content))
+              txt=r.content.decode("utf-8","ignore")
+              for line in txt.splitlines():
+                  if re.search(r'csv|settlement|tona|download|file|\.zip|derivative',line,re.I):
+                      line=re.sub(r'\s+',' ',line).strip()
+                      if line: print(line[:1800])
+          PY
