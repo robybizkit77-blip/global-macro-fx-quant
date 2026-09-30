@@ -9,18 +9,21 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           python - <<'PY'
-          import requests,re
-          from bs4 import BeautifulSoup
+          import requests,re,html
           u="https://port.jpx.co.jp/jpxhp/main/index.aspx?F=e_future&disptype=day_through"
           r=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
-          print("STATUS",r.status_code,"LEN",len(r.text),"FINAL",r.url)
-          s=BeautifulSoup(r.text,"html.parser")
-          f=s.find("form")
-          print("FORM",f.get("method") if f else None,f.get("action") if f else None)
-          for x in s.find_all(["input","select","button"]):
-              print("FIELD",x.name,x.get("name"),x.get("id"),x.get("value"),[o.get("value") for o in x.find_all("option")][:20] if x.name=="select" else "")
-          for a in s.find_all("a",href=True):
-              h=a["href"]
-              if "date" in h.lower() or "future" in h.lower() or "day" in h.lower():
+          t=r.text
+          print("STATUS",r.status_code,"LEN",len(t),"FINAL",r.url)
+          fm=re.search(r'<form[^>]*?(?:method="([^"]*)")?[^>]*?(?:action="([^"]*)")?[^>]*>',t,re.I)
+          print("FORM",fm.groups() if fm else None)
+          for m in re.finditer(r'<(?:input|select|button)\b[^>]*>',t,re.I):
+              tag=m.group(0)
+              name=re.search(r'name="([^"]*)"',tag,re.I)
+              iid=re.search(r'id="([^"]*)"',tag,re.I)
+              val=re.search(r'value="([^"]*)"',tag,re.I)
+              print("FIELD",name.group(1) if name else None,iid.group(1) if iid else None,val.group(1) if val else None,tag[:600])
+          for m in re.finditer(r'href="([^"]+)"',t,re.I):
+              h=html.unescape(m.group(1))
+              if re.search(r'date|future|day|csv|download',h,re.I):
                   print("LINK",h)
           PY
