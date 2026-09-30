@@ -1,0 +1,76 @@
+name: Engine Logic Audit
+
+on:
+  push:
+    branches: [staging-engine-logic-audit-2026-09-30]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inspect engine source and runtime
+        run: |
+          echo "=== SOURCE DEFINITIONS ==="
+          grep -RniE "function (changeBuckets|derivePairDecisionFrame|v475MacroTutorModel|v232CountrySnapshot|stableModelRefresh|rebuildCanonicalState)|const (changeBuckets|derivePairDecisionFrame)|FX · Sta migliorando" payload index.html | head -300 || true
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          const fs=require('fs');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const safe=(fn,fb=null)=>{try{return fn()}catch(e){return {error:String(e?.message||e),fallback:fb}}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const per={};
+              for(const c of ccys){
+                const snap=safe(()=>v232CountrySnapshot(c));
+                const tutor=safe(()=>v475MacroTutorModel(c,snap));
+                const ois=safe(()=>window.GMFQ_OIS?.currency?.(c));
+                per[c]={snap,tutor,ois};
+              }
+              return {
+                per,
+                canonical:safe(()=>window.GMFQ_CANONICAL_STATE),
+                dashboard:safe(()=>window.DASHBOARD_DATA||window.D),
+                fullAudit:safe(()=>window.GMFQ_FULL_SYSTEM_AUDIT),
+                postGate:safe(()=>window.GMFQ_POST_GATE_FINAL_AUDIT),
+                functions:{
+                  changeBuckets:safe(()=>changeBuckets.toString()),
+                  derivePairDecisionFrame:safe(()=>derivePairDecisionFrame.toString()),
+                  v475MacroTutorModel:safe(()=>v475MacroTutorModel.toString()),
+                  v232CountrySnapshot:safe(()=>v232CountrySnapshot.toString()),
+                  stableModelRefresh:safe(()=>stableModelRefresh.toString()),
+                  rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
+                },
+                eur:{
+                  nativeMacro:safe(()=>NATIVE_MACRO_DATA?.EUR),
+                  nativeRates:safe(()=>NATIVE_RATES_DATA?.EUR),
+                  nativeCb:safe(()=>NATIVE_CB_DATA?.EUR),
+                  canonicalCurrency:safe(()=>window.GMFQ_CANONICAL_STATE?.currencies?.EUR),
+                  pairFrames:safe(()=>['EURUSD','EURGBP','EURJPY','EURCHF','EURCAD','EURAUD','EURNZD'].map(p=>({p,f:derivePairDecisionFrame(p)})))
+                }
+              };
+            });
+            console.log('===RUNTIME_JSON_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===RUNTIME_JSON_END===');
+            console.log('===ERRORS===',JSON.stringify(errors));
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
