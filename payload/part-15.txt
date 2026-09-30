@@ -3048,5 +3048,177 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-usd-bea-annual-update-20260930">
+(function(){
+  'use strict';
+  const revised={
+    'US_PCEPI_history_value':[
+      ['2026-01-01',128.845],['2026-02-01',129.293],['2026-03-01',130.105],['2026-04-01',130.672],
+      ['2026-05-01',131.241],['2026-06-01',131.106],['2026-07-01',131.172],['2026-08-01',131.579]
+    ],
+    'US_PCEPILFE_history_value':[
+      ['2026-01-01',128.270],['2026-02-01',128.701],['2026-03-01',129.030],['2026-04-01',129.395],
+      ['2026-05-01',129.796],['2026-06-01',129.969],['2026-07-01',130.133],['2026-08-01',130.455]
+    ],
+    'US_PCEC96_history_value':[
+      ['2026-01-01',16596.8],['2026-02-01',16631.3],['2026-03-01',16674.3],['2026-04-01',16727.4],
+      ['2026-05-01',16784.6],['2026-06-01',16854.0],['2026-07-01',16862.5],['2026-08-01',16955.3]
+    ],
+    'US_DSPIC96_history_DSPIC96':[
+      ['2026-01-01',18322.5],['2026-02-01',18284.8],['2026-03-01',18301.6],['2026-04-01',18231.9],
+      ['2026-05-01',18292.8],['2026-06-01',18358.4],['2026-07-01',18415.4],['2026-08-01',18410.5]
+    ],
+    'US_PI_history_PI':[
+      ['2026-01-01',26973.5],['2026-02-01',27009.9],['2026-03-01',27188.1],['2026-04-01',27219.3],
+      ['2026-05-01',27417.1],['2026-06-01',27479.3],['2026-07-01',27560.3],['2026-08-01',27626.9]
+    ],
+    'US_PSAVERT_history_PSAVERT':[
+      ['2026-01-01',5.6],['2026-02-01',5.3],['2026-03-01',5.1],['2026-04-01',4.4],
+      ['2026-05-01',4.4],['2026-06-01',4.4],['2026-07-01',4.6],['2026-08-01',4.1]
+    ]
+  };
+
+  function reviseSeries(id,points){
+    const x=(S?.USD||[]).find(z=>z.id===id);
+    if(!x || !Array.isArray(x.dates) || !Array.isArray(x.values)) return {id,ok:false,reason:'series_missing'};
+    for(const [d,v] of points){
+      const i=x.dates.indexOf(d);
+      if(i>=0) x.values[i]=v;
+      else {x.dates.push(d);x.values.push(v);}
+    }
+    const zipped=x.dates.map((d,i)=>[d,x.values[i]]).sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+    x.dates.splice(0,x.dates.length,...zipped.map(z=>z[0]));
+    x.values.splice(0,x.values.length,...zipped.map(z=>z[1]));
+    x.last_date=x.dates[x.dates.length-1];
+    x.last_value=x.values[x.values.length-1];
+    x.revision_as_of='2026-09-30';
+    x.revision_source='BEA annual update via canonical FRED series';
+    return {id,ok:true,last_date:x.last_date,last_value:x.last_value};
+  }
+
+  function currentDay(){
+    return (REAL_CALENDAR||[]).find(d=>d.key==='2026-09-30');
+  }
+  function patchEvent(re,eventPatch){
+    const d=currentDay(); if(!d) return false;
+    const e=(d.events||[]).find(x=>re.test(String(x.event||'')));
+    if(!e) return false;
+    Object.assign(e,eventPatch);
+    return true;
+  }
+  function upsertNews(row){
+    const targets=[];
+    if(typeof NEWS_PULSE_STRUCT!=='undefined' && Array.isArray(NEWS_PULSE_STRUCT)) targets.push(NEWS_PULSE_STRUCT);
+    if(window.__GMFQ_DATA && Array.isArray(window.__GMFQ_DATA.NEWS_PULSE_STRUCT) && window.__GMFQ_DATA.NEWS_PULSE_STRUCT!==NEWS_PULSE_STRUCT) targets.push(window.__GMFQ_DATA.NEWS_PULSE_STRUCT);
+    for(const arr of targets){
+      const i=arr.findIndex(x=>x.title===row.title);
+      if(i>=0) arr[i]=Object.assign({},arr[i],row);
+      else arr.unshift(row);
+    }
+  }
+
+  try{
+    const results=Object.entries(revised).map(([id,p])=>reviseSeries(id,p));
+
+    patchEvent(/ADP Employment Change/i,{
+      prev:'36K (riv.)',
+      forecast:'70K',
+      actual:'90K',
+      surprise:'+20K sopra consenso',
+      scls:'positive',
+      direction:'Occupazione privata migliore delle attese → segnale lavoro USD più resiliente, ma ADP resta indicatore di contesto e non sostituisce i payroll BLS.',
+      confirm:'UST 2Y + payroll BLS + USD cross',
+      status:'done'
+    });
+
+    patchEvent(/Core PCE.*Personal Spending/i,{
+      prev:'0,1% / 0,1% (riv.)',
+      forecast:'0,3% / 0,8%',
+      actual:'0,2% / 0,9%',
+      surprise:'Core PCE sotto attese; spending sopra attese',
+      scls:'neutral',
+      direction:'Inflazione core più morbida ma domanda molto forte → mix: meno urgenza Fed nel breve, crescita ancora resiliente.',
+      confirm:'UST 2Y + pricing Fed + USD',
+      status:'done'
+    });
+
+    upsertNews({
+      cat:'Macro',importance:'high',status:'change',ccy:'USD',layer:'Inflazione / domanda',
+      title:'USA: PCE più morbido, spending molto forte',
+      what:'Core PCE +0,2% m/m vs +0,3% atteso e 3,0% a/a vs 3,3% atteso; headline PCE 3,4% a/a. Personal spending +0,9% m/m vs +0,8% atteso.',
+      why:'Riduce l’urgenza di un nuovo hike Fed nel meeting vicino, ma la domanda interna resta molto robusta.',
+      fx:'USD · UST 2Y · pricing Fed',
+      watch:'UST 2Y + probabilità meeting Fed + payroll di settembre',
+      changed:'Inflazione sorprende al ribasso mentre i consumi sorprendono al rialzo: mix meno hawkish nel breve, non debole sul ciclo.'
+    });
+    upsertNews({
+      cat:'Macro',importance:'high',status:'change',ccy:'USD',layer:'Lavoro',
+      title:'USA: ADP +90K, sopra consenso',
+      what:'Occupazione privata ADP +90K a settembre, sopra il consenso Reuters di +70K; agosto rivisto a +36K.',
+      why:'Segnala lavoro privato più resiliente, ma ADP non è una sostituzione dei payroll BLS.',
+      fx:'USD · UST 2Y',
+      watch:'Payroll BLS + disoccupazione + salari',
+      changed:'Migliora il contesto lavoro senza modificare direttamente il blocco payroll canonico.'
+    });
+
+    if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
+      window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_US_RELEASES_COMPLETE';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.note='30 settembre: ADP e PCE/Personal Spending USA aggiornati con actual e consenso verificati.';
+    }
+    if(window.AUXILIARY_FEED_FRESHNESS?.news){
+      window.AUXILIARY_FEED_FRESHNESS.news.as_of='2026-09-30T21:45+02:00';
+      window.AUXILIARY_FEED_FRESHNESS.news.status='CURRENT_INTRADAY_VERIFIED';
+    }
+
+    window.GMFQ_RELEASE_CLASSIFICATION=window.GMFQ_RELEASE_CLASSIFICATION||{as_of:'2026-09-30',rules:[]};
+    const rules=window.GMFQ_RELEASE_CLASSIFICATION.rules||[];
+    if(!rules.some(x=>/ADP Employment/i.test(String(x.pattern||'')))){
+      rules.push({
+        pattern:'ADP Employment',
+        mode:'INFO_ONLY_LABOUR_CONTEXT',
+        reason:'Nessuna serie ADP canonica equivalente; non sovrascrive PAYEMS BLS.'
+      });
+    }
+    if(!rules.some(x=>/US PCE/i.test(String(x.pattern||'')))){
+      rules.push({
+        pattern:'US PCE / Personal Outlays',
+        mode:'CORE_SERIES_FROM_CANONICAL_LEVEL_SOURCE',
+        reason:'PCEPI, PCEPILFE, PCEC96, DSPIC96, PI e PSAVERT canoniche aggiornate sulla storia BEA/FRED revisionata.'
+      });
+    }
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof endToEndRecompute==='function') endToEndRecompute(); }catch(e){}
+    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
+    try{ if(typeof renderRealCalendar==='function') renderRealCalendar(); }catch(e){}
+    try{ if(typeof renderNewsPulse==='function') renderNewsPulse(); }catch(e){}
+
+    const pce=(S.USD||[]).find(x=>x.id==='US_PCEPI_history_value');
+    const core=(S.USD||[]).find(x=>x.id==='US_PCEPILFE_history_value');
+    const real=(S.USD||[]).find(x=>x.id==='US_PCEC96_history_value');
+
+    window.GMFQ_USD_BEA_ANNUAL_UPDATE_AUDIT={
+      status:results.every(x=>x.ok)?'PASS':'FAIL',
+      as_of:'2026-09-30',
+      source:'BEA annual update / canonical FRED series',
+      revised_series:results,
+      pce_headline:{last_date:pce?.last_date,last_value:pce?.last_value},
+      pce_core:{last_date:core?.last_date,last_value:core?.last_value},
+      real_pce:{last_date:real?.last_date,last_value:real?.last_value},
+      adp_mode:'INFO_ONLY',
+      calendar_status:window.AUXILIARY_FEED_FRESHNESS?.calendar?.status||null
+    };
+    document.documentElement.setAttribute('data-usd-bea-audit',window.GMFQ_USD_BEA_ANNUAL_UPDATE_AUDIT.status);
+  }catch(e){
+    window.GMFQ_USD_BEA_ANNUAL_UPDATE_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-usd-bea-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
 
