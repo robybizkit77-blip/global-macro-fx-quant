@@ -15,32 +15,84 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Extract ASX IB settlement history
+      - name: Extract ASX IB matched curve
         run: |
-          pip install requests beautifulsoup4 pandas lxml
+          pip install requests beautifulsoup4
           python - <<'PY'
-          import requests, pandas as pd, io, json, re
-          dates=['260929','260928','260922']
-          out={}
+          import requests, bs4, re, json
+          dates=['260922','260928','260929']
+          wanted=['Dec 2026','Mar 2027','Sep 2027']
+          result={}
           for d in dates:
               url=f'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{d}SFD.htm'
               r=requests.get(url,timeout=120,headers={'User-Agent':'Mozilla/5.0'})
-              print('HTTP',d,r.status_code,len(r.content),url)
-              if r.status_code!=200:
-                  print('HEAD',r.text[:1000]); continue
-              text=r.text
-              print('TITLE',re.findall(r'<title[^>]*>(.*?)</title>',text,re.I|re.S)[:3])
-              try:
-                  tables=pd.read_html(io.StringIO(text))
-              except Exception as e:
-                  print('READ_HTML_FAIL',d,repr(e)); continue
-              print('TABLES',d,len(tables))
-              hits=[]
-              for ti,df in enumerate(tables):
-                  s=' '.join(map(str,df.astype(str).values.flatten()))
-                  if '30 Day Interbank Cash Rate' in s or re.search(r'\bIB\b',s):
-                      print('TABLE_HIT',d,ti,df.to_string(index=False))
-                      hits.append((ti,df))
-              out[d]=len(hits)
-          print('SUMMARY',json.dumps(out))
+              print('HTTP',d,r.status_code,len(r.content))
+              r.raise_for_status()
+              soup=bs4.BeautifulSoup(r.text,'html.parser')
+              # Locate IB table by heading text and collect rows.
+              table=None
+              for t in soup.find_all('table'):
+                  txt=' '.join(t.stripped_strings)
+                  if 'IB - 30 Day Interbank Cash Rate' in txt:
+                      table=t; break
+              if not table:
+                  print('NO_IB_TABLE',d); continue
+              rows=[]
+              for tr in table.find_all('tr'):
+                  cells=[c.get_text(' ',strip=True) for c in tr.find_all(['th','td'])]
+                  if cells:
+                      rows.append(cells)
+              print('ROWS',d,len(rows))
+              for row in rows:
+                  if row and any(w in row[0] for w in wanted):
+                      print('MATCH',d,json.dumps(row,ensure_ascii=False))
+              result[d]=rows
+          # Heuristic parse by header names from row structure.
+          parsed={}
+          for d,rows in result.items():
+              parsed[d]={}
+              for row in rows:
+                  if not row: continue
+                  expiry=row[0]
+                  if expiry not in wanted: continue
+                  # Expected order: Expiry, Open, High, Low, Last, Sett, Sett Chg, Op Int, Op Int Chg, Volume
+                  vals=row + ['']*10
+                  def num(x):
+                      x=x.replace(',','').replace('$','').strip()
+                      if x in ('','-','--','---'): return None
+                      try:return float(x)
+                      except:return None
+                  parsed[d][expiry]={
+                      'open':num(vals[1]),'high':num(vals[2]),'low':num(vals[3]),'last':num(vals[4]),
+                      'settlement':num(vals[5]),'settlement_change':num(vals[6]),
+                      'open_interest':num(vals[7]),'open_interest_change':num(vals[8]),'volume':num(vals[9])
+                  }
+          print('PARSED='+json.dumps(parsed,sort_keys=True))
+          # Build 3m/6m/12m implied-rate curve using 100-settlement.
+          labels={'3m':'Dec 2026','6m':'Mar 2027','12m':'Sep 2027'}
+          out={}
+          for h,expiry in labels.items():
+              cur=parsed.get('260929',{}).get(expiry)
+              d1=parsed.get('260928',{}).get(expiry)
+              w1=parsed.get('260922',{}).get(expiry)
+              if not all([cur,d1,w1]) or any(x.get('settlement') is None for x in [cur,d1,w1]):
+                  out[h]={'error':'missing settlement','expiry':expiry,'cur':cur,'d1':d1,'w1':w1}
+                  continue
+              cr=100-cur['settlement']; r1=100-d1['settlement']; rw=100-w1['settlement']
+              out[h]={
+                'expiry':expiry,
+                'current_rate':round(cr,6),
+                'rate_1d':round(r1,6),
+                'rate_1w':round(rw,6),
+                'change_1d_bp':round((cr-r1)*100,6),
+                'change_1w_bp':round((cr-rw)*100,6),
+                'current_settlement':cur['settlement'],
+                'settlement_1d':d1['settlement'],
+                'settlement_1w':w1['settlement'],
+                'current_volume':cur['volume'],
+                'current_open_interest':cur['open_interest'],
+                'prev_volume':d1['volume'],
+                'prev_open_interest':d1['open_interest']
+              }
+          print('FINAL='+json.dumps(out,sort_keys=True))
           PY
