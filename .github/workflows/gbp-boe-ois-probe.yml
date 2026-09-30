@@ -1,0 +1,81 @@
+name: GBP BoE OIS data probe
+
+on:
+  push:
+    branches:
+      - test-gbp-boe-ois-2026-09-30
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and inspect BoE OIS latest curve
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import io, re, zipfile, requests, openpyxl, json
+          url="https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
+          r=requests.get(url,timeout=60,headers={"User-Agent":"Mozilla/5.0"})
+          print("HTTP",r.status_code,"bytes",len(r.content),"type",r.headers.get("content-type"))
+          r.raise_for_status()
+          z=zipfile.ZipFile(io.BytesIO(r.content))
+          names=z.namelist()
+          print("FILES")
+          for n in names: print(n)
+          cand=[n for n in names if "OIS" in n.upper() and "daily" in n.lower() and n.lower().endswith((".xlsx",".xlsm",".xls"))]
+          if not cand:
+              cand=[n for n in names if "OIS" in n.upper() and n.lower().endswith((".xlsx",".xlsm"))]
+          assert cand, "NO_OIS_WORKBOOK"
+          name=cand[0]
+          print("OIS_WORKBOOK",name)
+          data=z.read(name)
+          wb=openpyxl.load_workbook(io.BytesIO(data),data_only=True,read_only=True)
+          print("SHEETS",wb.sheetnames)
+          hits=[s for s in wb.sheetnames if "short" in s.lower() and ("spot" in s.lower() or "fwd" in s.lower())]
+          print("SHORT_SHEETS",hits)
+          for s in hits:
+              ws=wb[s]
+              rows=list(ws.iter_rows(values_only=True))
+              print("SHEET",s,"rows",len(rows),"cols",max(len(x) for x in rows))
+              for i,row in enumerate(rows[:8],1):
+                  print("ROW",i,repr(row[:16]))
+              # find maturity row: positive numeric sequence
+              mat_i=None
+              for i,row in enumerate(rows[:8]):
+                  nums=[]
+                  for v in row[1:]:
+                      try:
+                          fv=float(v)
+                          if fv>0: nums.append(fv)
+                      except: pass
+                  if len(nums)>=6 and all(nums[j] <= nums[j+1] for j in range(len(nums)-1)):
+                      mat_i=i; break
+              print("MAT_ROW",mat_i+1 if mat_i is not None else None)
+              if mat_i is None: continue
+              mats=[]
+              for v in rows[mat_i][1:]:
+                  try: mats.append(float(v))
+                  except: mats.append(None)
+              data_rows=[]
+              for row in rows[mat_i+1:]:
+                  d=row[0]
+                  if d is None: continue
+                  vals=[]
+                  for v in row[1:1+len(mats)]:
+                      try: vals.append(float(v))
+                      except: vals.append(None)
+                  if any(v is not None for v in vals):
+                      data_rows.append((d,vals))
+              if not data_rows: continue
+              d,vals=data_rows[-1]
+              print("LATEST_DATE",d)
+              out={}
+              for target,label in [(0.25,"3M"),(0.5,"6M"),(1.0,"12M")]:
+                  pairs=[(abs(m-target),m,v) for m,v in zip(mats,vals) if m is not None and v is not None]
+                  if pairs:
+                      _,m,v=min(pairs)
+                      out[label]={"maturity_years":m,"rate_pct":v}
+              print("LATEST_POINTS",json.dumps(out,default=str,sort_keys=True))
+          PY
