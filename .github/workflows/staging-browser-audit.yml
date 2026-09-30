@@ -31,7 +31,7 @@ jobs:
 
       - name: Run browser audit
         run: |
-          cat > /tmp/browser-audit.js <<'EOF'
+          cat > browser-audit.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
             const browser = await chromium.launch({headless:true});
@@ -93,7 +93,7 @@ jobs:
             await browser.close();
           })().catch(e=>{ console.error(e); process.exit(1); });
           EOF
-          node /tmp/browser-audit.js
+          node browser-audit.js
 
       - name: Upload screenshot and server log
         if: always()
