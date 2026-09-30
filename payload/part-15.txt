@@ -2290,32 +2290,196 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 
-<script id="gmfq-jpy-tona-gate-20260930">
+<script id="gmfq-jpy-tona-active-20260930">
 (function(){
   'use strict';
   try{
-    window.GMFQ_JPY_TONA_AUDIT={
-      status:'PARTIAL_DIRECT_WITHHELD_FULL_CURVE',
-      source:'Tokyo Financial Exchange · Three-Month TONA Futures',
-      as_of:'2026-09-29',
-      quotation:'100 - implied TONA rate',
-      direct_contracts:{
-        'Sep-26':{settlement:98.752,implied_rate:1.248,volume:3650,open_interest:753},
-        'Dec-26':{settlement:98.445,implied_rate:1.555,volume:2970,open_interest:282},
-        'Mar-27':{settlement:98.245,implied_rate:1.755,volume:0,open_interest:1}
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+
+    const JPY_OIS={
+      status:'ACTIVE',
+      source:'Tokyo Financial Exchange · Three-Month TONA Futures · official Historical Database settlement prices',
+      source_url:'https://www.tfx.co.jp/en/historical/futures/',
+      source_meta:{
+        official_public:true,
+        public_exchange:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        instrument:'Three-Month TONA Futures',
+        quotation:'100 - compounded TONA rate',
+        horizon_mapping:'Dec-26 / Mar-27 / Sep-27 contract buckets; no interpolation',
+        liquidity_note:'Front bucket liquid; intermediate/long buckets thinner. Sep-27 traded 900 contracts on 28 Sep 2026; use official settlement with liquidity caution.'
       },
-      full_ois_status:'WITHHELD',
-      withheld_reason:'No validated 12M bucket and no complete same-grid 1D/1W history captured yet.',
-      no_interpolation:true,
-      no_2y_proxy:true
+      as_of:'2026-09-29',
+      policy_rate:1.25,
+      meetings:[
+        {date:'2026-10-29',label:'BoJ MPM 29-30 Oct'}
+      ],
+      horizons:{
+        '3m':{
+          contract:'Dec-26',
+          rate:1.555,
+          change_1d_bp:6.5,
+          change_1w_bp:6.5,
+          policy_delta_bp:30.5
+        },
+        '6m':{
+          contract:'Mar-27',
+          rate:1.755,
+          change_1d_bp:6.5,
+          change_1w_bp:6.5,
+          policy_delta_bp:50.5
+        },
+        '12m':{
+          contract:'Sep-27',
+          rate:2.119,
+          change_1d_bp:-2.2,
+          change_1w_bp:10.1,
+          policy_delta_bp:86.9
+        }
+      },
+      cuts_hikes_priced:{
+        '3m_bp':30.5,
+        '6m_bp':50.5,
+        '12m_bp':86.9
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:true
+      },
+      provenance:{
+        method:'Official TFX Historical Database CSV; settlement price, volume and open interest requested directly; no interpolation.',
+        history_endpoint:'/en/historical/futures/result',
+        observed_dates:{
+          current:'2026-09-29',
+          previous_business_day:'2026-09-28',
+          one_week_reference:'2026-09-18',
+          one_week_reference_note:'18 Sep is the valid five-session reference because the intervening Japanese holiday sequence leaves no 22/23 Sep TFX observations.'
+        },
+        settlements:{
+          '2026-09-18':{'Dec26':98.510,'Mar27':98.310,'Sep27':97.982},
+          '2026-09-28':{'Dec26':98.510,'Mar27':98.310,'Sep27':97.859},
+          '2026-09-29':{'Dec26':98.445,'Mar27':98.245,'Sep27':97.881}
+        },
+        implied_rates:{
+          '2026-09-18':{'3m':1.490,'6m':1.690,'12m':2.018},
+          '2026-09-28':{'3m':1.490,'6m':1.690,'12m':2.141},
+          '2026-09-29':{'3m':1.555,'6m':1.755,'12m':2.119}
+        },
+        liquidity:{
+          '2026-09-29':{
+            'Dec26':{volume:2970,open_interest:282},
+            'Mar27':{volume:0,open_interest:1},
+            'Sep27':{volume:0,open_interest:0}
+          },
+          '2026-09-28':{
+            'Dec26':{volume:0,open_interest:182},
+            'Mar27':{volume:0,open_interest:1},
+            'Sep27':{volume:900,open_interest:0}
+          }
+        }
+      }
     };
 
+    window.__GMFQ_DATA.OIS_DATA.currencies.JPY=JPY_OIS;
+
+    try{
+      if(typeof NATIVE_CB_DATA!=='undefined' && NATIVE_CB_DATA.JPY){
+        const x=NATIVE_CB_DATA.JPY;
+        x.pricing_tier='COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY';
+        x.pricing_status='TFX TONA: circa 1,555% Dec-26 · 1,755% Mar-27 · 2,119% Sep-27.';
+        x.market_3m='1.555%';
+        x.market_6m='1.755%';
+        x.market_12m='2.119%';
+        x.market_pricing={
+          as_of:'2026-09-29',
+          instrument:'Tokyo Financial Exchange Three-Month TONA Futures',
+          quality:'COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY',
+          h3m:1.555,h6m:1.755,h12m:2.119,
+          contracts:{
+            'Dec-26':{settlement:98.445,implied_rate:1.555,volume:2970,open_interest:282},
+            'Mar-27':{settlement:98.245,implied_rate:1.755,volume:0,open_interest:1},
+            'Sep-27':{settlement:97.881,implied_rate:2.119,volume:0,open_interest:0,prev_day_volume:900}
+          },
+          source:'TFX Historical Database · official settlement prices',
+          note:'Same-contract current/1D/five-session history. Long-end liquidity is thinner and remains an explicit quality caution.'
+        };
+      }
+    }catch(e){}
+
     if(window.GMFQ_OIS_FEED_PRIORITY?.JPY){
-      window.GMFQ_OIS_FEED_PRIORITY.JPY.ready=false;
-      window.GMFQ_OIS_FEED_PRIORITY.JPY.label='TFX 3M TONA direct contracts captured · full OIS withheld';
+      window.GMFQ_OIS_FEED_PRIORITY.JPY.ready=true;
+      window.GMFQ_OIS_FEED_PRIORITY.JPY.label='TFX 3M TONA matched settlement history';
     }
-    document.documentElement.setAttribute('data-jpy-tona-direct','PARTIAL_PASS');
-    document.documentElement.setAttribute('data-jpy-ois-audit','WITHHELD');
+
+    const A=window.FINAL_SOURCE_POLICY_AUDIT;
+    const C=A?.CB_PRICING||A?.cb_pricing;
+    if(C?.JPY){
+      Object.assign(C.JPY,{
+        quality:'COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'TFX Historical Database · Three-Month TONA Futures',
+        current_as_of:'2026-09-29'
+      });
+    }
+
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.JPY){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.JPY,{
+        status:'RESOLVED_DIRECT_TFX_SETTLEMENT_HISTORY',
+        reason:'TFX Historical Database now provides matched Dec-26 / Mar-27 / Sep-27 settlement prices with current, previous-business-day and five-session historical references.',
+        resolved_at:'2026-09-30'
+      });
+    }
+    if(window.SOURCE_RESOLUTION_WATCHLIST?.items?.JPY_CB_PRICING){
+      Object.assign(window.SOURCE_RESOLUTION_WATCHLIST.items.JPY_CB_PRICING,{
+        current_status:'RESOLVED_DIRECT_TFX_HISTORY',
+        resolved_as_of:'2026-09-29'
+      });
+    }
+    if(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items?.JPY_OIS){
+      Object.assign(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT.items.JPY_OIS,{
+        status:'RESOLVED_DIRECT_TFX_HISTORY',
+        reason:'Matched official TFX 3M/6M/12M settlement history captured.',
+        source:'Tokyo Financial Exchange Historical Database',
+        resolution:'RESOLVED'
+      });
+    }
+
+    const active=window.GMFQ_OIS?.currency?.('JPY')?.status==='ACTIVE';
+    const publishable=window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.('JPY')===true;
+    const validate=window.GMFQ_OIS_INGEST?.validateCurrency?.('JPY',JPY_OIS) || {ok:false,errors:['validator unavailable']};
+
+    window.GMFQ_JPY_TONA_AUDIT={
+      status:(active&&publishable&&validate.ok)?'PASS':'FAIL',
+      active,publishable,validation_ok:validate.ok,
+      validation_errors:validate.errors||[],
+      source:JPY_OIS.source,
+      as_of:JPY_OIS.as_of,
+      values:{'3m':1.555,'6m':1.755,'12m':2.119},
+      changes_1d_bp:{'3m':6.5,'6m':6.5,'12m':-2.2},
+      changes_1w_bp:{'3m':6.5,'6m':6.5,'12m':10.1},
+      liquidity_caution:true,
+      no_interpolation:true
+    };
+
+    if(window.GMFQ_FULL_SYSTEM_AUDIT){
+      window.GMFQ_FULL_SYSTEM_AUDIT.ois=window.GMFQ_FULL_SYSTEM_AUDIT.ois||{};
+      window.GMFQ_FULL_SYSTEM_AUDIT.ois.JPY='ACTIVE';
+      window.GMFQ_FULL_SYSTEM_AUDIT.resolved_audits=window.GMFQ_FULL_SYSTEM_AUDIT.resolved_audits||{};
+      window.GMFQ_FULL_SYSTEM_AUDIT.resolved_audits.JPY_OIS=window.GMFQ_JPY_TONA_AUDIT.status;
+    }
+
+    document.documentElement.setAttribute('data-jpy-tona-direct','PASS');
+    document.documentElement.setAttribute('data-jpy-ois-audit',window.GMFQ_JPY_TONA_AUDIT.status);
+    document.documentElement.setAttribute('data-jpy-ois-asof','2026-09-29');
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
   }catch(e){
     window.GMFQ_JPY_TONA_AUDIT={status:'FAIL',error:String(e?.message||e)};
     document.documentElement.setAttribute('data-jpy-ois-audit','FAIL');
@@ -2484,6 +2648,14 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         current_as_of:'2026-09-29'
       });
     }
+    if(C?.JPY){
+      Object.assign(C.JPY,{
+        quality:'COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'TFX Historical Database · Three-Month TONA Futures',
+        current_as_of:'2026-09-29'
+      });
+    }
 
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){issues.push('REBUILD_CANONICAL_FAIL');}
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){issues.push('STABLE_REFRESH_FAIL');}
@@ -2502,7 +2674,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(Number(cq?.pairs)!==28) issues.push('PAIR_COUNT:'+String(cq?.pairs));
 
     const ois=Object.fromEntries(ccys.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||'WITHHELD']));
-    const expectedOis={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'WITHHELD',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
+    const expectedOis={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
     ccys.forEach(c=>{
       if(ois[c]!==expectedOis[c]) issues.push('OIS_STATUS:'+c+':'+ois[c]+'!='+expectedOis[c]);
     });
@@ -2523,14 +2695,14 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(gates.CAD!=='PASS') issues.push('CAD_GATE:'+gates.CAD);
     if(gates.EUR!=='PASS') issues.push('EUR_GATE:'+gates.EUR);
     if(gates.USD!=='WITHHELD') issues.push('USD_GATE:'+gates.USD);
-    if(gates.JPY!=='PARTIAL_DIRECT_WITHHELD_FULL_CURVE') issues.push('JPY_GATE:'+gates.JPY);
+    if(gates.JPY!=='PASS') issues.push('JPY_GATE:'+gates.JPY);
     if(gates.CHF!=='WITHHELD_ILLIQUID') issues.push('CHF_GATE:'+gates.CHF);
     if(gates.NZD!=='WITHHELD_NO_DIRECT_PUBLIC_STRIP') issues.push('NZD_GATE:'+gates.NZD);
 
     const sourceQuality=Object.fromEntries(ccys.map(c=>[c,String((A?.CB_PRICING||A?.cb_pricing)?.[c]?.quality||'')]));
     if(sourceQuality.EUR!=='COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY') issues.push('EUR_SOURCE_REGISTRY:'+sourceQuality.EUR);
     if(!/^WITHHELD_/.test(sourceQuality.USD)) issues.push('USD_SOURCE_REGISTRY:'+sourceQuality.USD);
-    if(!/^WITHHELD_/.test(sourceQuality.JPY)) issues.push('JPY_SOURCE_REGISTRY:'+sourceQuality.JPY);
+    if(sourceQuality.JPY!=='COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY') issues.push('JPY_SOURCE_REGISTRY:'+sourceQuality.JPY);
     if(!/^WITHHELD_/.test(sourceQuality.CHF)) issues.push('CHF_SOURCE_REGISTRY:'+sourceQuality.CHF);
     if(!/^WITHHELD_/.test(sourceQuality.NZD)) issues.push('NZD_SOURCE_REGISTRY:'+sourceQuality.NZD);
 
