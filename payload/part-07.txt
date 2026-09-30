@@ -537,12 +537,21 @@ window.v271StructuralPairFrame=function(pair){
 const [a,b]=pair.split('/');
 const A=deriveCurrencyState(a)||{};
 const B=deriveCurrencyState(b)||{};
-const macroSide=sideFromValues(a,b,A.macro,B.macro);
+const rawPair=D.pairStates?.[pair]||{};
+const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
+const macroSide=rawMacro==='A'||rawMacro===a?a:rawMacro==='B'||rawMacro===b?b:/mix|mist/i.test(String(rawMacro||''))?null:sideFromValues(a,b,A.macro,B.macro);
 const policySide=sideFromValues(a,b,A.policy,B.policy);
+const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
+const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
+const materialRateSpread=twoYearSpreadBp!=null&&Math.abs(twoYearSpreadBp)>=75;
+const rateGapSide=!materialRateSpread?null:twoYearSpreadBp>0?a:b;
 let fav='—';
 let quality='NESSUN CONTRASTO';
 let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
-if(macroSide && policySide && macroSide===policySide){
+if(materialRateSpread && !macroSide){
+quality='SEPARAZIONE RATES MATERIALE';
+relation=`Il differenziale 2Y osservato è ${twoYearSpreadBp>=0?'+':''}${fmt(twoYearSpreadBp,0)} pb verso ${rateGapSide}. Separa il layer Rates, ma Macro non conferma un bias direzionale di coppia.`;
+}else if(macroSide && policySide && macroSide===policySide){
 fav=macroSide;
 quality='CONTRASTO STRUTTURALE FORTE';
 relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: il vantaggio relativo è strutturalmente allineato.`;
@@ -590,6 +599,8 @@ fav,quality,relation,timing,priceReading,priceNote,missing,watch,macroSide,polic
 structural:{
 macro:{a:Number(A.macro)||0,b:Number(B.macro)||0,side:macroSide===a?'A':macroSide===b?'B':'TIE'},
 policy:{a:Number(A.policy)||0,b:Number(B.policy)||0,side:policySide===a?'A':policySide===b?'B':'TIE'}
+,
+ratesGap:{bp:twoYearSpreadBp,material:materialRateSpread,side:rateGapSide}
 }
 };
 };
@@ -604,6 +615,8 @@ return {side:frame.macroSide,text:`La struttura Macro favorisce ${frame.macroSid
 };
 window.v271RatesRow=function(pair,frame){
 const [a,b]=pair.split('/');
+const gap=frame?.structural?.ratesGap||{};
+if(gap.material) return {side:gap.side,text:`Differenziale 2Y osservato: ${gap.bp>=0?'+':''}${fmt(gap.bp,0)} pb verso ${gap.side}. Separa nettamente il layer Rates, ma da solo non assegna un bias direzionale alla coppia.`,cls:'warn'};
 if(!frame.policySide) return {side:'Nessuno',text:`Tassi/CB: ${a} e ${b} non mostrano un vantaggio relativo netto.`,cls:'neu'};
 const cls=frame.fav==='—'?'warn':frame.policySide===frame.fav?'pos':'neg';
 return {side:frame.policySide,text:`La struttura Tassi/CB favorisce ${frame.policySide} nel confronto relativo.`,cls};
