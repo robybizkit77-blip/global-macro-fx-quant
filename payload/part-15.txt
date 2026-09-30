@@ -1344,4 +1344,4 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-</body></html>
+<script id="gmfq-main-health-inspect">(function(){function out(){try{const h=typeof productionHealthCheck==='function'?productionHealthCheck():null;const p=document.createElement('pre');p.id='mainHealthInspect';p.textContent=JSON.stringify(h);document.body.appendChild(p);}catch(e){const p=document.createElement('pre');p.id='mainHealthInspect';p.textContent='ERR:'+e;document.body.appendChild(p);}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(out,1200));else setTimeout(out,1200);})();</script></body></html>
