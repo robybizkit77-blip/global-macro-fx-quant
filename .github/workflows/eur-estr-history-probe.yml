@@ -1,4 +1,4 @@
-name: EUR ESTR Widget Script Probe
+name: EUR ESTR Eurex API Probe
 
 on:
   push:
@@ -9,27 +9,41 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
-      - name: Inspect Eurex prices-statistics widget source
+          node-version: 22
+      - name: Install browser
         run: |
-          pip install requests
-          python - <<'PY'
-          import requests,re
-          url='https://www.eurex.com/resource/themes/eurex-facelift/js/prices-statistics-3466696-63.js'
-          s=requests.get(url,timeout=120).text
-          print('SIZE',len(s))
-          pats=['fullOrderBook','contractDate','contract-date','Fetch Data','fetchData','datepicker','histor','quote','settlement','marketData']
-          for pat in pats:
-              poss=[m.start() for m in re.finditer(re.escape(pat),s,re.I)]
-              print('PATTERN',pat,'COUNT',len(poss))
-              for p in poss[:30]:
-                  print('CTX',pat,p,s[max(0,p-3000):p+8000])
-          # surface strings that look like dynamic action URLs
-          urls=sorted(set(re.findall(r'["\']([^"\']*![-A-Za-z0-9_/?=&.]+)["\']',s)))
-          print('ACTION_STRINGS',urls[:500])
-          PY
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Capture Eurex API traffic
+        run: |
+          cat > probe.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            page.on('request',req=>{
+              const u=req.url();
+              if(/\/api\/v\d+\//i.test(u)) console.log('API_REQ',req.method(),u,'POST',req.postData()||'');
+            });
+            page.on('response',async res=>{
+              const u=res.url();
+              if(/\/api\/v\d+\//i.test(u)){
+                let body='';
+                try{body=(await res.text()).slice(0,50000)}catch(e){}
+                console.log('API_RESP',res.status(),u,'BODY',body);
+              }
+            });
+            const url='https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480';
+            await page.goto(url,{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(5000);
+            console.log('PAGE_URL',page.url());
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node probe.js
