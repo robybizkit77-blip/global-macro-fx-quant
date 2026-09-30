@@ -1,0 +1,53 @@
+name: EUR ECB AAA rates browser test
+on:
+  push:
+    branches: [test-eur-rates-ecb-aaa-2026-09-30]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and render
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find payload -maxdepth 1 -type f -name 'part-*.txt' | wc -l)" -eq 16
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/s.log 2>&1 &
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > rendered.html 2> chrome.log
+          ! grep -q "Errore caricamento dashboard" rendered.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html
+          grep -q 'data-eur-rates-audit="PASS"' rendered.html
+          grep -q 'data-eur-rates-asof="2026-09-29"' rendered.html
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+      - name: Runtime integrity
+        shell: bash
+        run: |
+          cat > check.html <<'EOF'
+          <html><body><iframe id="f" src="http://127.0.0.1:8000/" style="width:1200px;height:800px"></iframe>
+          <script>
+          setTimeout(()=>{
+            const w=document.getElementById('f').contentWindow;
+            const r=w.NATIVE_RATES_DATA?.EUR||{};
+            const bi=w.ratesCanonicalBasisIntegrity?.();
+            const vi=w.visibleRatesSnapshotIntegrity?.();
+            const h=w.productionHealthCheck?.();
+            const out={
+              date:r.date,y2:r['2Y'],y10:r['10Y'],curve:r.curve_bp,
+              weekly:r.weekly2_validation,
+              basis_ok:bi?.ok,visible_ok:vi?.ok,health:h?.status,
+              audit:w.GMFQ_EUR_RATES_AUDIT
+            };
+            const p=document.createElement('pre');p.id='result';p.textContent=JSON.stringify(out);document.body.appendChild(p);
+          },9000);
+          </script></body></html>
+          EOF
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=13000 --dump-dom file://$PWD/check.html > check-rendered.html 2>/tmp/check.log
+          grep -q '"date":"2026-09-29"' check-rendered.html
+          grep -q '"basis_ok":true' check-rendered.html
+          grep -q '"visible_ok":true' check-rendered.html
+          ! grep -q '"health":"FAIL"' check-rendered.html
+          grep 'id="result"' check-rendered.html
+          echo "PASS: EUR ECB AAA rates runtime coherent"
