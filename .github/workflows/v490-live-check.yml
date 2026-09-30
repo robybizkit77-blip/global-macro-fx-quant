@@ -1,0 +1,56 @@
+name: V490 live site check
+
+on:
+  push:
+    branches:
+      - test-v490-browser-2026-09-30
+
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check public GitHub Pages source
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://robybizkit77-blip.github.io/global-macro-fx-quant/"
+          curl -fsSL --retry 3 --retry-delay 2 "$URL" -o live-source.html
+          echo "Live source bytes: $(wc -c < live-source.html)"
+          head -c 500 live-source.html || true
+          echo
+          grep -q "payload/part-15.txt" live-source.html
+          curl -fsSL --retry 3 "$URL/payload/part-00.txt" -o /tmp/part00.txt
+          curl -fsSL --retry 3 "$URL/payload/part-15.txt" -o /tmp/part15.txt
+          test -s /tmp/part00.txt
+          test -s /tmp/part15.txt
+
+      - name: Render public site in Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://robybizkit77-blip.github.io/global-macro-fx-quant/"
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME"             --headless=new             --no-sandbox             --disable-gpu             --disable-dev-shm-usage             --virtual-time-budget=20000             --dump-dom             "$URL" > live-rendered.html 2> live-chrome.log
+
+          if grep -q "Errore caricamento dashboard" live-rendered.html; then
+            echo "FAIL: public loader error"
+            exit 1
+          fi
+          if grep -q "Caricamento GLOBAL MACRO FX QUANT" live-rendered.html; then
+            echo "FAIL: public loader did not finish"
+            exit 1
+          fi
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" live-rendered.html
+          test "$(wc -c < live-rendered.html)" -gt 500000
+          echo "PASS: public site loaded and rendered"
+          echo "Public rendered bytes: $(wc -c < live-rendered.html)"
+
+      - name: Save live diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v490-live-site-check
+          path: |
+            live-source.html
+            live-rendered.html
+            live-chrome.log
