@@ -1,0 +1,30 @@
+name: AUD RBA tracker probe
+on:
+  push:
+    branches: [test-aud-rba-tracker-probe-2026-09-30]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe ASX RBA tracker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import requests,re,json
+          urls=[
+            "https://www.asx.com.au/markets/trade-our-derivatives-market/derivatives-market-prices/short-term-derivatives",
+            "https://www.asx.com.au/markets/trade-our-derivatives-market/derivatives-market-prices/short-term-derivatives/rba-rate-tracker"
+          ]
+          for u in urls:
+            r=requests.get(u,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+            print("\nURL",u,"STATUS",r.status_code,"LEN",len(r.text),"FINAL",r.url)
+            t=r.text
+            for pat in [r'RBA Rate Tracker',r'Interbank Cash',r'cash rate',r'4\.60',r'IB[A-Z0-9]{0,8}',r'__NEXT_DATA__',r'application/json',r'api']:
+              if re.search(pat,t,re.I):
+                print("MATCH",pat)
+            for line in t.splitlines():
+              if re.search(r'RBA Rate Tracker|Interbank Cash|cash rate|4\.60|api|json|IB[A-Z0-9]{0,8}',line,re.I):
+                print(re.sub(r'\s+',' ',line).strip()[:2500])
+          PY
