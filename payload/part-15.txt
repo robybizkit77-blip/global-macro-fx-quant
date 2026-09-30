@@ -2056,56 +2056,168 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-<script id="gmfq-eur-estr-history-gate-20260930">
+<script id="gmfq-eur-estr-ois-active-20260930">
 (function(){
   'use strict';
   try{
-    const eurCb=(typeof NATIVE_CB_DATA!=='undefined' && NATIVE_CB_DATA.EUR) ? NATIVE_CB_DATA.EUR : null;
-    if(!eurCb?.market_pricing) throw new Error('EUR_CB_PRICING_MISSING');
+    if(typeof NATIVE_CB_DATA==='undefined' || !NATIVE_CB_DATA.EUR) throw new Error('EUR_CB_DATA_MISSING');
 
-    const current={
+    const EUR_OIS={
+      status:'ACTIVE',
+      source:'Eurex · Three-Month Euro STR Futures (FST3) · official overall statistics D.Settle',
+      source_url:'https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480',
+      source_meta:{
+        official_public:true,
+        public_exchange:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        instrument:'Three-Month Euro STR Futures (FST3)',
+        quotation:'100 - compounded €STR',
+        measure:'Daily settlement price (D.Settle)',
+        horizon_mapping:'Dec-26 / Mar-27 / Sep-27 quarterly buckets; no interpolation'
+      },
       as_of:'2026-09-29',
-      source:'Eurex Three-Month Euro STR Futures',
-      levels:{
-        '3m':Number(eurCb.market_pricing.h3m),
-        '6m':Number(eurCb.market_pricing.h6m),
-        '12m':Number(eurCb.market_pricing.h12m)
+      policy_rate:2.50,
+      meetings:[
+        {date:'2026-10-29',label:'ECB'}
+      ],
+      horizons:{
+        '3m':{
+          contract:'16 Dec 2026',
+          rate:2.7975,
+          change_1d_bp:-2.50,
+          change_1w_bp:-6.75,
+          policy_delta_bp:29.75
+        },
+        '6m':{
+          contract:'17 Mar 2027',
+          rate:3.1300,
+          change_1d_bp:-3.75,
+          change_1w_bp:-5.75,
+          policy_delta_bp:63.00
+        },
+        '12m':{
+          contract:'15 Sep 2027',
+          rate:3.3975,
+          change_1d_bp:-4.50,
+          change_1w_bp:-3.25,
+          policy_delta_bp:89.75
+        }
+      },
+      cuts_hikes_priced:{
+        '3m_bp':29.75,
+        '6m_bp':63.00,
+        '12m_bp':89.75
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:true
+      },
+      provenance:{
+        method:'Official Eurex FST3 overallstatistics API; matched contracts and daily settlement prices; no interpolation.',
+        api_path:'/api/v1/overallstatistics/3402482?busdate=YYYYMMDD&filtertype=overview',
+        observed_dates:{
+          current:'2026-09-29',
+          previous_business_day:'2026-09-28',
+          one_week_reference:'2026-09-23'
+        },
+        settlements:{
+          '2026-09-23':{'Dec26':97.1350,'Mar27':96.8125,'Sep27':96.5700},
+          '2026-09-28':{'Dec26':97.1775,'Mar27':96.8325,'Sep27':96.5575},
+          '2026-09-29':{'Dec26':97.2025,'Mar27':96.8700,'Sep27':96.6025}
+        },
+        implied_rates:{
+          '2026-09-23':{'3m':2.8650,'6m':3.1875,'12m':3.4300},
+          '2026-09-28':{'3m':2.8225,'6m':3.1675,'12m':3.4425},
+          '2026-09-29':{'3m':2.7975,'6m':3.1300,'12m':3.3975}
+        },
+        liquidity_20260929:{
+          'Dec26':{volume:6182,open_interest:76053},
+          'Mar27':{volume:2282,open_interest:75890},
+          'Sep27':{volume:28477,open_interest:177293}
+        }
       }
     };
 
-    window.GMFQ_EUR_ESTR_HISTORY_AUDIT={
-      status:'WITHHELD_HISTORY_VALUES_NOT_PARSED',
-      current_level_status:'PASS_DIRECT_EXCHANGE',
-      current,
-      history_files:{
-        '1d':{
-          date:'2026-09-28',
-          source:'Eurex Trading statistics daily file',
-          file:'dailystat_20260928.xls',
-          values_status:'WITHHELD'
-        },
-        '1w':{
-          date:'2026-09-23',
-          source:'Eurex Trading statistics daily file',
-          file:'dailystat_20260923.xls',
-          values_status:'WITHHELD'
-        }
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+    window.__GMFQ_DATA.OIS_DATA.currencies.EUR=EUR_OIS;
+
+    const x=NATIVE_CB_DATA.EUR;
+    x.pricing_tier='COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY';
+    x.pricing_status='Eurex FST3 D.Settle: circa 2,80% Dec-26 · 3,13% Mar-27 · 3,40% Sep-27.';
+    x.market_3m='2.798%';
+    x.market_6m='3.130%';
+    x.market_12m='3.398%';
+    x.market_pricing={
+      as_of:'2026-09-29',
+      instrument:'Eurex Three-Month Euro STR Futures (FST3)',
+      quality:'COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY',
+      h3m:2.7975,
+      h6m:3.1300,
+      h12m:3.3975,
+      contracts:{
+        'Dec-26':{expiry:'2026-12-16',settlement:97.2025,implied_rate:2.7975,volume:6182,open_interest:76053},
+        'Mar-27':{expiry:'2027-03-17',settlement:96.8700,implied_rate:3.1300,volume:2282,open_interest:75890},
+        'Sep-27':{expiry:'2027-09-15',settlement:96.6025,implied_rate:3.3975,volume:28477,open_interest:177293}
       },
-      rule:'Do not derive 1D/1W from nominal 2Y, secondary quotes, or mismatched contracts. Activate only after same-contract Eurex daily settlement values are parsed and validated.',
+      near_term:'La curva €STR Eurex resta sopra il deposito BCE al 2,50%, ma il 29 settembre si è abbassata rispetto sia al 28 sia al 23 settembre.',
+      source:'Eurex FST3 official overallstatistics API · D.Settle',
+      note:'Same-contract settlement basis for current, previous business day and weekly reference. Prior quote snapshot replaced because it was not on this matched D.Settle basis.',
+      freshness_status:'DIRECT_EXCHANGE_MATCHED_SETTLEMENT_HISTORY'
+    };
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.EUR){
+      window.GMFQ_OIS_FEED_PRIORITY.EUR.ready=true;
+      window.GMFQ_OIS_FEED_PRIORITY.EUR.label='Eurex FST3 matched D.Settle curve';
+    }
+
+    const A=window.FINAL_SOURCE_POLICY_AUDIT;
+    const C=A?.CB_PRICING||A?.cb_pricing;
+    if(C?.EUR){
+      Object.assign(C.EUR,{
+        quality:'COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'Eurex FST3 official overallstatistics API · D.Settle',
+        current_as_of:'2026-09-29'
+      });
+    }
+
+    const active=window.GMFQ_OIS?.currency?.('EUR')?.status==='ACTIVE';
+    const publishable=window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.('EUR')===true;
+    const validate=window.GMFQ_OIS_INGEST?.validateCurrency?.('EUR',EUR_OIS) || {ok:false,errors:['validator unavailable']};
+
+    window.GMFQ_EUR_ESTR_HISTORY_AUDIT={
+      status:(active&&publishable&&validate.ok)?'PASS':'FAIL',
+      active,publishable,validation_ok:validate.ok,
+      validation_errors:validate.errors||[],
+      source:'Eurex FST3 official overallstatistics API · D.Settle',
+      as_of:'2026-09-29',
+      history_status:'PASS_MATCHED_CONTRACTS',
+      values:{
+        '3m':2.7975,
+        '6m':3.1300,
+        '12m':3.3975
+      },
+      changes_1d_bp:{'3m':-2.50,'6m':-3.75,'12m':-4.50},
+      changes_1w_bp:{'3m':-6.75,'6m':-5.75,'12m':-3.25},
       no_proxy:true,
       no_interpolation:true
     };
 
-    if(window.GMFQ_OIS_FEED_PRIORITY?.EUR){
-      window.GMFQ_OIS_FEED_PRIORITY.EUR.ready=false;
-      window.GMFQ_OIS_FEED_PRIORITY.EUR.label='Eurex €STR direct levels validati · storico 1D/1W withheld';
-    }
-
     document.documentElement.setAttribute('data-eur-estr-current','PASS');
-    document.documentElement.setAttribute('data-eur-estr-history','WITHHELD');
+    document.documentElement.setAttribute('data-eur-estr-history','PASS');
+    document.documentElement.setAttribute('data-eur-ois-audit',window.GMFQ_EUR_ESTR_HISTORY_AUDIT.status);
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
   }catch(e){
     window.GMFQ_EUR_ESTR_HISTORY_AUDIT={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-eur-estr-history','FAIL');
+    document.documentElement.setAttribute('data-eur-ois-audit','FAIL');
   }
 })();
 </script>
@@ -2316,9 +2428,9 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     const C=A?.CB_PRICING||A?.cb_pricing;
     if(C?.EUR){
       Object.assign(C.EUR,{
-        quality:'DIRECT_LEVELS_HISTORY_WITHHELD',
-        policy:'DIRECT_LEVELS_VALIDATED_KEEP_1D_1W_WITHHELD',
-        source:'Eurex Three-Month Euro STR Futures',
+        quality:'COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'Eurex FST3 official overallstatistics API · D.Settle',
         current_as_of:'2026-09-29'
       });
     }
@@ -2340,7 +2452,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(Number(cq?.pairs)!==28) issues.push('PAIR_COUNT:'+String(cq?.pairs));
 
     const ois=Object.fromEntries(ccys.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||'WITHHELD']));
-    const expectedOis={USD:'WITHHELD',EUR:'WITHHELD',GBP:'ACTIVE',JPY:'WITHHELD',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
+    const expectedOis={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'WITHHELD',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
     ccys.forEach(c=>{
       if(ois[c]!==expectedOis[c]) issues.push('OIS_STATUS:'+c+':'+ois[c]+'!='+expectedOis[c]);
     });
@@ -2359,14 +2471,14 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(gates.AUD!=='PASS') issues.push('AUD_GATE:'+gates.AUD);
     if(gates.GBP!=='PASS') issues.push('GBP_GATE:'+gates.GBP);
     if(gates.CAD!=='PASS') issues.push('CAD_GATE:'+gates.CAD);
-    if(!/^WITHHELD_/.test(String(gates.EUR||''))) issues.push('EUR_GATE:'+gates.EUR);
+    if(gates.EUR!=='PASS') issues.push('EUR_GATE:'+gates.EUR);
     if(gates.USD!=='WITHHELD') issues.push('USD_GATE:'+gates.USD);
     if(gates.JPY!=='PARTIAL_DIRECT_WITHHELD_FULL_CURVE') issues.push('JPY_GATE:'+gates.JPY);
     if(gates.CHF!=='WITHHELD_ILLIQUID') issues.push('CHF_GATE:'+gates.CHF);
     if(gates.NZD!=='WITHHELD_NO_DIRECT_PUBLIC_STRIP') issues.push('NZD_GATE:'+gates.NZD);
 
     const sourceQuality=Object.fromEntries(ccys.map(c=>[c,String((A?.CB_PRICING||A?.cb_pricing)?.[c]?.quality||'')]));
-    if(sourceQuality.EUR!=='DIRECT_LEVELS_HISTORY_WITHHELD') issues.push('EUR_SOURCE_REGISTRY:'+sourceQuality.EUR);
+    if(sourceQuality.EUR!=='COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY') issues.push('EUR_SOURCE_REGISTRY:'+sourceQuality.EUR);
     if(!/^WITHHELD_/.test(sourceQuality.USD)) issues.push('USD_SOURCE_REGISTRY:'+sourceQuality.USD);
     if(!/^WITHHELD_/.test(sourceQuality.JPY)) issues.push('JPY_SOURCE_REGISTRY:'+sourceQuality.JPY);
     if(!/^WITHHELD_/.test(sourceQuality.CHF)) issues.push('CHF_SOURCE_REGISTRY:'+sourceQuality.CHF);
