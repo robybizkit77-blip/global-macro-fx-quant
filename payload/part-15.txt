@@ -2056,8 +2056,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-</body></html>
-
 <script id="gmfq-eur-estr-history-gate-20260930">
 (function(){
   'use strict';
@@ -2111,3 +2109,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+</body></html>
+
