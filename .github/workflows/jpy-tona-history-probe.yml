@@ -24,7 +24,7 @@ jobs:
             ('HistoricalFuturesData[period_start_type]','date'),
             ('HistoricalFuturesData[period_start][year]','2026'),
             ('HistoricalFuturesData[period_start][month]','9'),
-            ('HistoricalFuturesData[period_start][day]','22'),
+            ('HistoricalFuturesData[period_start][day]','18'),
             ('HistoricalFuturesData[period_end_type]','date'),
             ('HistoricalFuturesData[period_end][year]','2026'),
             ('HistoricalFuturesData[period_end][month]','9'),
@@ -40,7 +40,6 @@ jobs:
           r=requests.get('https://www.tfx.co.jp/en/historical/futures/result',params=q,timeout=120)
           r.raise_for_status()
           rows=list(csv.reader(io.StringIO(r.content.decode('cp932','replace'))))
-          header=rows[3]
           data=[]
           for row in rows[4:]:
               if len(row)<8 or row[1] != 'Three-month TONA Futures': continue
@@ -52,23 +51,19 @@ jobs:
                 'open_interest':int(row[7].replace(',','') or 0)
               })
           wanted=['26.12','27.03','27.09']
-          dates=['2026-09-22','2026-09-28','2026-09-29']
+          dates=['2026-09-18','2026-09-28','2026-09-29']
           grid={}
           for d in dates:
               grid[d]={}
               for con in wanted:
-                  x=next((z for z in data if z['date']==d and z['contract']==con),None)
-                  grid[d][con]=x
+                  grid[d][con]=next((z for z in data if z['date']==d and z['contract']==con),None)
           print('GRID='+json.dumps(grid,ensure_ascii=False,sort_keys=True))
           labels={'3m':'26.12','6m':'27.03','12m':'27.09'}
           out={}
           for h,con in labels.items():
-              cur=grid['2026-09-29'][con]
-              d1=grid['2026-09-28'][con]
-              w1=grid['2026-09-22'][con]
-              if not all([cur,d1,w1]): 
-                  out[h]={'error':'missing row','contract':con}
-                  continue
+              cur=grid['2026-09-29'][con]; d1=grid['2026-09-28'][con]; w1=grid['2026-09-18'][con]
+              if not all([cur,d1,w1]):
+                  out[h]={'error':'missing row','contract':con}; continue
               cr=100-cur['settlement']; r1=100-d1['settlement']; rw=100-w1['settlement']
               out[h]={
                 'contract':con,
@@ -83,7 +78,9 @@ jobs:
                 'current_volume':cur['volume'],
                 'current_open_interest':cur['open_interest'],
                 'prev_volume':d1['volume'],
-                'prev_open_interest':d1['open_interest']
+                'prev_open_interest':d1['open_interest'],
+                'week_ref_volume':w1['volume'],
+                'week_ref_open_interest':w1['open_interest']
               }
           print('FINAL='+json.dumps(out,ensure_ascii=False,sort_keys=True))
           PY
