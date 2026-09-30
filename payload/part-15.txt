@@ -1344,6 +1344,175 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+<script id="gmfq-aud-asx-ois-active-20260930">
+(function(){
+  'use strict';
+  try{
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+
+    const AUD_OIS={
+      status:'ACTIVE',
+      source:'ASX · 30 Day Interbank Cash Rate Futures (IB) · official End-of-Day settlement data',
+      source_url:'https://www.asx.com.au/markets/trade-our-derivatives-market/derivatives-market-prices/short-term-derivatives',
+      source_meta:{
+        official_public:true,
+        public_exchange:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        instrument:'ASX 30 Day Interbank Cash Rate Futures (IB)',
+        quotation:'100 - implied average monthly Interbank Overnight Cash Rate',
+        horizon_mapping:'Dec-26 / Mar-27 / Sep-27 settlement buckets; no interpolation',
+        methodology:'ASX RBA Rate Tracker uses these 30-day cash-rate futures implied yields to derive policy expectations.'
+      },
+      as_of:'2026-09-29',
+      policy_rate:4.60,
+      meetings:[
+        {date:'2026-11-03',label:'RBA'}
+      ],
+      horizons:{
+        '3m':{
+          contract:'Dec-26',
+          rate:4.740,
+          change_1d_bp:-0.5,
+          change_1w_bp:-0.5,
+          policy_delta_bp:14.0
+        },
+        '6m':{
+          contract:'Mar-27',
+          rate:4.855,
+          change_1d_bp:-3.5,
+          change_1w_bp:-2.0,
+          policy_delta_bp:25.5
+        },
+        '12m':{
+          contract:'Sep-27',
+          rate:4.960,
+          change_1d_bp:-7.0,
+          change_1w_bp:-4.0,
+          policy_delta_bp:36.0
+        }
+      },
+      cuts_hikes_priced:{
+        '3m_bp':14.0,
+        '6m_bp':25.5,
+        '12m_bp':36.0
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:true
+      },
+      provenance:{
+        method:'Official ASX EODWebMarketSummary daily files; IB section only; settlement yields derived as 100 - settlement; no interpolation.',
+        observed_dates:{
+          current:'2026-09-29',
+          previous_business_day:'2026-09-28',
+          one_week_reference:'2026-09-22'
+        },
+        settlements:{
+          '2026-09-22':{'Dec26':95.255,'Mar27':95.125,'Sep27':95.000},
+          '2026-09-28':{'Dec26':95.255,'Mar27':95.110,'Sep27':94.970},
+          '2026-09-29':{'Dec26':95.260,'Mar27':95.145,'Sep27':95.040}
+        },
+        implied_rates:{
+          '2026-09-22':{'3m':4.745,'6m':4.875,'12m':5.000},
+          '2026-09-28':{'3m':4.745,'6m':4.890,'12m':5.030},
+          '2026-09-29':{'3m':4.740,'6m':4.855,'12m':4.960}
+        },
+        liquidity:{
+          '2026-09-29':{
+            'Dec26':{volume:200,open_interest:1311},
+            'Mar27':{volume:null,open_interest:251},
+            'Sep27':{volume:null,open_interest:null}
+          },
+          note:'Longer buckets have thinner visible activity, but ASX publishes official daily settlement marks and the Rate Tracker uses the same IB implied-yield curve.'
+        }
+      }
+    };
+
+    window.__GMFQ_DATA.OIS_DATA.currencies.AUD=AUD_OIS;
+
+    if(typeof NATIVE_CB_DATA!=='undefined' && NATIVE_CB_DATA.AUD){
+      const x=NATIVE_CB_DATA.AUD;
+      x.pricing_tier='COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY';
+      x.market_3m='4.740%';
+      x.market_6m='4.855%';
+      x.market_12m='4.960%';
+      x.market_pricing=x.market_pricing||{};
+      Object.assign(x.market_pricing,{
+        as_of:'2026-09-29',
+        quality:'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY',
+        h3m:4.740,h6m:4.855,h12m:4.960,
+        matched_history:{
+          current:'2026-09-29',
+          previous_business_day:'2026-09-28',
+          one_week_reference:'2026-09-22',
+          change_1d_bp:{h3m:-0.5,h6m:-3.5,h12m:-7.0},
+          change_1w_bp:{h3m:-0.5,h6m:-2.0,h12m:-4.0}
+        },
+        source:'ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data / RBA Rate Tracker',
+        freshness_status:'DIRECT_ASX_MATCHED_SETTLEMENT_HISTORY'
+      });
+    }
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.AUD){
+      window.GMFQ_OIS_FEED_PRIORITY.AUD.ready=true;
+      window.GMFQ_OIS_FEED_PRIORITY.AUD.label='ASX IB matched settlement history';
+    }
+
+    const A=window.FINAL_SOURCE_POLICY_AUDIT;
+    const C=A?.CB_PRICING||A?.cb_pricing;
+    if(C?.AUD){
+      Object.assign(C.AUD,{
+        quality:'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data',
+        current_as_of:'2026-09-29'
+      });
+    }
+
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.AUD){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.AUD,{
+        status:'RESOLVED_DIRECT_ASX_SETTLEMENT_HISTORY',
+        reason:'ASX official EOD IB settlements captured on matched current, prior-business-day and weekly reference dates.',
+        resolved_at:'2026-09-30'
+      });
+    }
+
+    const active=window.GMFQ_OIS?.currency?.('AUD')?.status==='ACTIVE';
+    const publishable=window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.('AUD')===true;
+    const validate=window.GMFQ_OIS_INGEST?.validateCurrency?.('AUD',AUD_OIS) || {ok:false,errors:['validator unavailable']};
+
+    window.GMFQ_AUD_POST_RBA_PRICING_AUDIT={
+      ...(window.GMFQ_AUD_POST_RBA_PRICING_AUDIT||{}),
+      status:(active&&publishable&&validate.ok)?'PASS':'FAIL',
+      active,publishable,validation_ok:validate.ok,
+      validation_errors:validate.errors||[],
+      as_of:'2026-09-29',
+      source:'ASX official EOD IB settlements / RBA Rate Tracker',
+      levels:{'3m':4.740,'6m':4.855,'12m':4.960},
+      change_1d_bp:{'3m':-0.5,'6m':-3.5,'12m':-7.0},
+      change_1w_bp:{'3m':-0.5,'6m':-2.0,'12m':-4.0},
+      ois_weekly_comparison:'PASS_MATCHED_ASX_IB_HISTORY'
+    };
+
+    document.documentElement.setAttribute('data-aud-post-rba-pricing',window.GMFQ_AUD_POST_RBA_PRICING_AUDIT.status);
+    document.documentElement.setAttribute('data-aud-ois-audit',window.GMFQ_AUD_POST_RBA_PRICING_AUDIT.status);
+    document.documentElement.setAttribute('data-aud-ois-asof','2026-09-29');
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+  }catch(e){
+    window.GMFQ_AUD_POST_RBA_PRICING_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-aud-ois-audit','FAIL');
+  }
+})();
+</script>
+
 
 <script id="gmfq-eur-rates-ecb-aaa-20260930">
 (function(){
@@ -2672,7 +2841,16 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
         source:'TFX Historical Database · Three-Month TONA Futures',
         current_as_of:'2026-09-29'
+      }
+    if(C?.AUD){
+      Object.assign(C.AUD,{
+        quality:'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY',
+        policy:'AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT',
+        source:'ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data',
+        current_as_of:'2026-09-29'
       });
+    }
+);
     }
 
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){issues.push('REBUILD_CANONICAL_FAIL');}
@@ -2692,7 +2870,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(Number(cq?.pairs)!==28) issues.push('PAIR_COUNT:'+String(cq?.pairs));
 
     const ois=Object.fromEntries(ccys.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||'WITHHELD']));
-    const expectedOis={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'WITHHELD',NZD:'WITHHELD'};
+    const expectedOis={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
     ccys.forEach(c=>{
       if(ois[c]!==expectedOis[c]) issues.push('OIS_STATUS:'+c+':'+ois[c]+'!='+expectedOis[c]);
     });
