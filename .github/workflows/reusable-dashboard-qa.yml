@@ -1,0 +1,92 @@
+name: Reusable dashboard QA
+
+on:
+  push:
+    branches:
+      - qa-validator
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test "$(find payload -maxdepth 1 -type f -name 'part-*.txt' | wc -l)" -eq 16
+          for i in $(seq -w 0 15); do test -f "payload/part-${i}.txt"; done
+
+      - name: Render dashboard once
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-server.log 2>&1 &
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage             --virtual-time-budget=16000 --dump-dom http://127.0.0.1:8000/             > rendered.html 2> chrome.log
+          ! grep -q "Errore caricamento dashboard" rendered.html
+          ! grep -q "Caricamento GLOBAL MACRO FX QUANT" rendered.html
+          grep -q "GMFQ_RUNTIME_VALIDATION_MANIFEST" rendered.html
+          ! grep -q 'data-[^=]*-audit="FAIL"' rendered.html
+          test "$(wc -c < rendered.html)" -gt 500000
+
+      - name: Runtime integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          cat > qa-runtime.html <<'EOF'
+          <!doctype html><html><body>
+          <iframe id="f" src="/" style="width:1200px;height:800px"></iframe>
+          <script>
+          setTimeout(()=>{
+            const w=document.getElementById('f').contentWindow;
+            const health=typeof w.productionHealthCheck==='function' ? w.productionHealthCheck() : null;
+            const basis=typeof w.ratesCanonicalBasisIntegrity==='function' ? w.ratesCanonicalBasisIntegrity() : null;
+            const visible=typeof w.visibleRatesSnapshotIntegrity==='function' ? w.visibleRatesSnapshotIntegrity() : null;
+            const audits={};
+            Object.keys(w).filter(k=>/^GMFQ_.*_AUDIT$/.test(k)).sort().forEach(k=>audits[k]=w[k]);
+            const allowed=new Set([
+              'RENDERER_CHANGED:renderCurrency',
+              'FINAL_WRITER_CHANGED:runProductionDailyRefresh'
+            ]);
+            const hard=(health?.hard_errors||[]);
+            const unexpected=hard.filter(x=>!allowed.has(x));
+            const out={
+              basis_ok:basis?.ok===true,
+              visible_ok:visible?.ok===true,
+              health_status:health?.status||null,
+              hard_errors:hard,
+              unexpected_hard_errors:unexpected,
+              audit_failures:Object.entries(audits).filter(([k,v])=>v?.status==='FAIL').map(([k])=>k),
+              audit_passes:Object.entries(audits).filter(([k,v])=>v?.status==='PASS').map(([k])=>k)
+            };
+            const p=document.createElement('pre');
+            p.id='qaResult';
+            p.textContent=JSON.stringify(out);
+            document.body.appendChild(p);
+          },10000);
+          </script></body></html>
+          EOF
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage             --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/qa-runtime.html             > qa-runtime-rendered.html 2> qa-runtime-chrome.log
+          grep -q '"basis_ok":true' qa-runtime-rendered.html
+          grep -q '"visible_ok":true' qa-runtime-rendered.html
+          grep -q '"unexpected_hard_errors":\[\]' qa-runtime-rendered.html
+          grep -q '"audit_failures":\[\]' qa-runtime-rendered.html
+          grep 'id="qaResult"' qa-runtime-rendered.html
+          echo "PASS: reusable dashboard QA"
+
+      - name: Save diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reusable-dashboard-qa
+          path: |
+            rendered.html
+            qa-runtime-rendered.html
+            chrome.log
+            qa-runtime-chrome.log
+            /tmp/gmfq-server.log
