@@ -1135,4 +1135,116 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-cad-corra-20260930">
+(function(){
+  'use strict';
+  try{
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+
+    const CAD_CORRA={
+      status:'ACTIVE',
+      source:'Montréal Exchange · Three-Month CORRA Futures (CRA)',
+      source_url:'https://www.m-x.ca/en/trading/data/quotes?symbol=CRA',
+      source_meta:{
+        official_public:true,
+        paid:false,
+        subscription_required:false,
+        licensed_feed_required:false,
+        instrument:'Three-Month CORRA Futures',
+        quotation:'100 - compounded CORRA',
+        horizon_mapping:'quarterly bucket, no interpolation'
+      },
+      as_of:'2026-09-29',
+      policy_rate:2.25,
+      meetings:[
+        {date:'2026-10-28',label:'BoC'},
+        {date:'2026-12-09',label:'BoC'}
+      ],
+      horizons:{
+        '3m':{
+          contract:'December 2026',
+          rate:2.75,
+          change_1d_bp:-0.5,
+          change_1w_bp:1.0,
+          policy_delta_bp:50.0
+        },
+        '6m':{
+          contract:'March 2027',
+          rate:3.105,
+          change_1d_bp:-0.5,
+          change_1w_bp:4.0,
+          policy_delta_bp:85.5
+        },
+        '12m':{
+          contract:'September 2027',
+          rate:3.515,
+          change_1d_bp:0.0,
+          change_1w_bp:10.5,
+          policy_delta_bp:126.5
+        }
+      },
+      cuts_hikes_priced:{
+        '3m_bp':50.0,
+        '6m_bp':85.5,
+        '12m_bp':126.5
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:true
+      },
+      provenance:{
+        method:'Direct quarterly futures buckets; no interpolation and no synthetic curve.',
+        current_market_review_id:6192,
+        one_week_market_review_id:6187,
+        previous_business_day_market_review_id:6191,
+        settlements:{
+          '2026-09-22':{'Dec26':97.260,'Mar27':96.935,'Sep27':96.590},
+          '2026-09-28':{'Dec26':97.245,'Mar27':96.885,'Sep27':96.480},
+          '2026-09-29':{'Dec26':97.250,'Mar27':96.895,'Sep27':96.485}
+        },
+        liquidity_20260929:{
+          'Dec26':{volume:25258,open_interest:287936},
+          'Mar27':{volume:29177,open_interest:321262},
+          'Sep27':{volume:40878,open_interest:147235}
+        }
+      }
+    };
+
+    window.__GMFQ_DATA.OIS_DATA.currencies.CAD=CAD_CORRA;
+    if(window.GMFQ_OIS_FEED_PRIORITY?.CAD){
+      window.GMFQ_OIS_FEED_PRIORITY.CAD.ready=true;
+      window.GMFQ_OIS_FEED_PRIORITY.CAD.label='Montréal Exchange 3M CORRA futures';
+    }
+
+    const active=window.GMFQ_OIS?.currency?.('CAD')?.status==='ACTIVE';
+    const publishable=window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.('CAD')===true;
+    const validate=window.GMFQ_OIS_INGEST?.validateCurrency?.('CAD',CAD_CORRA) || {ok:false,errors:['validator unavailable']};
+
+    window.GMFQ_CAD_CORRA_AUDIT={
+      status:(active&&publishable&&validate.ok)?'PASS':'FAIL',
+      active,publishable,validation_ok:validate.ok,
+      validation_errors:validate.errors||[],
+      as_of:CAD_CORRA.as_of,
+      source:CAD_CORRA.source,
+      no_interpolation:true,
+      values:{
+        '3m':CAD_CORRA.horizons['3m'].rate,
+        '6m':CAD_CORRA.horizons['6m'].rate,
+        '12m':CAD_CORRA.horizons['12m'].rate
+      }
+    };
+    document.documentElement.setAttribute('data-cad-corra-audit',window.GMFQ_CAD_CORRA_AUDIT.status);
+    document.documentElement.setAttribute('data-cad-corra-asof',CAD_CORRA.as_of);
+  }catch(e){
+    window.GMFQ_CAD_CORRA_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-cad-corra-audit','FAIL');
+  }
+})();
+</script>
+
 </body></html>
