@@ -1981,4 +1981,30 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+<script id="gmfq-integrity-final-diagnostic-20260930">
+(function(){
+  'use strict';
+  try{
+    const ri=typeof canonicalRendererIntegrity==='function'?canonicalRendererIntegrity():null;
+    const wi=typeof finalWriterIntegrity==='function'?finalWriterIntegrity():null;
+    const h=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+    window.GMFQ_INTEGRITY_FINAL_DIAGNOSTIC_AUDIT={
+      status:(ri?.ok===true && wi?.ok===true)?'PASS':'FAIL',
+      renderer_ok:ri?.ok??null,
+      renderer_changed:ri?.changed||[],
+      writer_ok:wi?.ok??null,
+      writer_changed:wi?.changed||[],
+      writer_legacy_refs:wi?.legacyRefs||[],
+      health_status:h?.status||null,
+      hard_errors:(h?.hard_errors||[]).slice()
+    };
+    document.documentElement.setAttribute('data-integrity-final-diagnostic',window.GMFQ_INTEGRITY_FINAL_DIAGNOSTIC_AUDIT.status);
+  }catch(e){
+    window.GMFQ_INTEGRITY_FINAL_DIAGNOSTIC_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-integrity-final-diagnostic','FAIL');
+  }
+})();
+</script>
+
 </body></html>
