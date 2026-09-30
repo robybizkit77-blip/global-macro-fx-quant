@@ -55,6 +55,9 @@ jobs:
                   v475MacroTutorModel:safe(()=>v475MacroTutorModel.toString()),
                   v232CountrySnapshot:safe(()=>v232CountrySnapshot.toString()),
                   stableModelRefresh:safe(()=>stableModelRefresh.toString()),
+                  deriveCurrencyState:safe(()=>deriveCurrencyState.toString()),
+                  currencyImprovementDiagnostic:safe(()=>currencyImprovementDiagnostic.toString()),
+                  buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
                 eur:{
@@ -62,6 +65,8 @@ jobs:
                   nativeRates:safe(()=>NATIVE_RATES_DATA?.EUR),
                   nativeCb:safe(()=>NATIVE_CB_DATA?.EUR),
                   canonicalCurrency:safe(()=>window.GMFQ_CANONICAL_STATE?.currencies?.EUR),
+                  improvement:safe(()=>currencyImprovementDiagnostic('EUR')),
+                  derived:safe(()=>deriveCurrencyState('EUR')),
                   pairFrames:safe(()=>['EURUSD','EURGBP','EURJPY','EURCHF','EURCAD','EURAUD','EURNZD'].map(p=>({p,f:derivePairDecisionFrame(p)})))
                 }
               };
