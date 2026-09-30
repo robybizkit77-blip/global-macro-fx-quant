@@ -1,0 +1,40 @@
+name: CHF SARON API Probe
+
+on:
+  push:
+    branches:
+      - staging-chf-saron-probe-2026-09-30
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe Eurex SARON overallstatistics
+        run: |
+          pip install requests
+          python - <<'PY'
+          import requests, re, json
+          page='https://www.eurex.com/ex-en/markets/int/mon/saron-futures/saron/3M-SARON-Futures-1410330'
+          s=requests.get(page,timeout=120).text
+          print('PAGE',len(s))
+          # Try to find API/product ids in page source.
+          for pat in ['overallstatistics','productId','1410330','1410332','FSR3','productIsin']:
+              for m in re.finditer(pat,s,re.I):
+                  print('CTX',pat,s[max(0,m.start()-1000):m.start()+2500])
+                  break
+          ids=['1410330','1410331','1410332','1410333','1410334']
+          for pid in ids:
+              for d in ['20260929','20260928','20260923']:
+                  url=f'https://www.eurex.com/api/v1/overallstatistics/{pid}'
+                  r=requests.get(url,params={'busdate':d,'filtertype':'overview'},timeout=120)
+                  print('HTTP',pid,d,r.status_code,r.url)
+                  body=r.text[:30000]
+                  if r.status_code==200:
+                      print('BODY',pid,d,body)
+          PY
