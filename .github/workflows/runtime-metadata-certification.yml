@@ -1,0 +1,118 @@
+name: Runtime Metadata Certification Gate
+
+on:
+  push:
+    branches: [staging-runtime-metadata-2026-10-01]
+    paths:
+      - 'payload/part-15.txt'
+      - '.github/workflows/runtime-metadata-certification.yml'
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Certify metadata and unchanged engine
+        run: |
+          cat > certify.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const core=[];
+              for(const c of ccys){
+                for(const s of ((typeof S!=='undefined'&&S[c])||[])){
+                  if(['Crescita','Lavoro','Inflazione'].includes(s.category)) core.push({ccy:c,id:s.id,source:s.source||null,frequency:s.frequency||null,unit:s.unit||null,source_file:s.source_file||null});
+                }
+              }
+              const liq=[];
+              if(typeof NATIVE_LIQ_DATA!=='undefined'){
+                for(const c of ccys){
+                  const root=NATIVE_LIQ_DATA[c];
+                  if(!root) continue;
+                  for(const [k,node] of Object.entries(root)){
+                    if(node&&typeof node==='object'&&!Array.isArray(node)&&('values' in node)){
+                      liq.push({ccy:c,path:k,source:node.source||null,frequency:node.frequency||null,unit:node.unit||null,quality:node.quality||null,status:node.metadata_status||null});
+                    }
+                  }
+                }
+              }
+              const states=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                const imp=currencyImprovementDiagnostic(c)||{};
+                return [c,{base:s.base||null,macro:Number(s.macro),policy:Number(s.policy),improvement:s.improvementState||imp.state||null,driver:deriveCurrencyDriver(c)||null}];
+              }));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const pairStates=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{favored:f.fav||null,quality:f.quality||null,macro_side:f.structural?.macro?.side||null,policy_side:f.structural?.policy?.side||null}];
+              }));
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {
+                core,liq,states,pairStates,pair_count:pairs.length,
+                fingerprint:fwd?.current_rules_fingerprint||null,
+                health_status:health?.status||null,
+                hard_errors:health?.hard_errors||[]
+              };
+            });
+            await browser.close();srv.kill();
+            const issues=[];
+            if(out.core.length!==79) issues.push('core_count='+out.core.length);
+            for(const x of out.core){
+              if(!x.source) issues.push('core missing source '+x.ccy+' '+x.id);
+              if(!x.frequency) issues.push('core missing frequency '+x.ccy+' '+x.id);
+              if(!x.unit) issues.push('core missing unit '+x.ccy+' '+x.id);
+              if(!x.source_file) issues.push('core missing source_file '+x.ccy+' '+x.id);
+            }
+            for(const x of out.liq){
+              if(!x.source) issues.push('liq missing source '+x.ccy+' '+x.path+' status='+x.status);
+              if(!x.frequency) issues.push('liq missing frequency '+x.ccy+' '+x.path+' status='+x.status);
+              if(!x.unit) issues.push('liq missing unit '+x.ccy+' '+x.path+' status='+x.status);
+              if(!x.quality) issues.push('liq missing quality '+x.ccy+' '+x.path);
+            }
+            if(out.fingerprint!=='3356baf0') issues.push('fingerprint='+out.fingerprint);
+            if(out.pair_count!==28) issues.push('pair_count='+out.pair_count);
+            if((out.hard_errors||[]).length) issues.push('hard_errors='+JSON.stringify(out.hard_errors));
+            const expected={
+              USD:{base:'FORTE',macro:1,policy:1,improvement:'MIGLIORA',driver:'Macro + Rates / aspettative CB'},
+              EUR:{base:'COSTRUTTIVA',macro:0,policy:1,improvement:'TURNING POINT',driver:'Rates / aspettative CB'},
+              GBP:{base:'COSTRUTTIVA',macro:0,policy:1,improvement:'TURNING POINT',driver:'Rates / aspettative CB'},
+              JPY:{base:'MISTA',macro:0,policy:0,improvement:'EARLY SHIFT POSITIVO',driver:'Non determinato'},
+              CHF:{base:'MISTA',macro:0,policy:0,improvement:'MIGLIORA',driver:'Non determinato'},
+              CAD:{base:'COSTRUTTIVA',macro:1,policy:0,improvement:'EARLY SHIFT POSITIVO',driver:'Macro'},
+              AUD:{base:'FORTE',macro:1,policy:1,improvement:'TURNING POINT',driver:'Macro + Rates / aspettative CB'},
+              NZD:{base:'COSTRUTTIVA',macro:0,policy:1,improvement:'EARLY SHIFT POSITIVO',driver:'Rates / aspettative CB'}
+            };
+            for(const [c,e] of Object.entries(expected)){
+              const a=out.states[c]||{};
+              for(const k of Object.keys(e)) if(a[k]!==e[k]) issues.push(c+'.'+k+'='+JSON.stringify(a[k])+' expected '+JSON.stringify(e[k]));
+            }
+            const result={
+              status:issues.length?'FAIL':'PASS',
+              core_count:out.core.length,
+              liquidity_count:out.liq.length,
+              fingerprint:out.fingerprint,
+              pair_count:out.pair_count,
+              health_status:out.health_status,
+              issues,
+              liquidity:out.liq
+            };
+            console.log(JSON.stringify(result,null,2));
+            if(issues.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node certify.js
