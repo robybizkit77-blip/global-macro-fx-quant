@@ -1,0 +1,59 @@
+name: Runtime Provenance Inventory
+
+on:
+  push:
+    branches: [staging-provenance-audit-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inventory runtime series metadata
+        run: |
+          cat > inventory.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[];
+              for(const c of ccys){
+                for(const x of (typeof S!=='undefined'?(S[c]||[]):[])){
+                  rows.push({
+                    ccy:c,
+                    id:x.id??null,
+                    label:x.label??x.name??null,
+                    keys:Object.keys(x).sort(),
+                    source:x.source??null,
+                    provider:x.provider??null,
+                    frequency:x.frequency??x.freq??null,
+                    unit:x.unit??x.units??null,
+                    last_date:x.last_date??null,
+                    n:Array.isArray(x.values)?x.values.length:(Array.isArray(x.history)?x.history.length:null)
+                  });
+                }
+              }
+              const globals=Object.keys(window).filter(k=>/source|manifest|meta|proven|raw/i.test(k)).sort();
+              return {rows,globals};
+            });
+            console.log('===PROVENANCE_INVENTORY_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===PROVENANCE_INVENTORY_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node inventory.js
