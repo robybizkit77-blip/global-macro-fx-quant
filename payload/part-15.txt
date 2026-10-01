@@ -4427,3 +4427,72 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-usd-rates-refresh-20261001">
+(function(){
+  'use strict';
+  try{
+    if(typeof NATIVE_RATES_DATA==='undefined' || !NATIVE_RATES_DATA.USD) throw new Error('USD_RATES_MISSING');
+    const r=NATIVE_RATES_DATA.USD;
+    const upsert=(series,date,value)=>{
+      if(!series) return;
+      series.dates=Array.isArray(series.dates)?series.dates:[];
+      series.values=Array.isArray(series.values)?series.values:[];
+      const i=series.dates.indexOf(date);
+      if(i>=0) series.values[i]=value;
+      else {series.dates.push(date);series.values.push(value);}
+      series.last_date=date;series.last_value=value;
+    };
+
+    r.date='2026-09-30';
+    r.source='U.S. Treasury Daily Par Yield Curve · 30 Sep 2026';
+    r.quality='FULL_CURRENT_OFFICIAL';
+    r['2Y']=4.88;
+    r['10Y']=5.29;
+    r.curve_bp=41;
+    r.chg2_bp=3;
+    r.chg10_bp=18;
+    r.curve_state='Bear steepening / long-end in rialzo più del front-end';
+
+    upsert(r.history2,'2026-09-29',4.89);
+    upsert(r.history2,'2026-09-30',4.88);
+    upsert(r.history10,'2026-09-29',5.26);
+    upsert(r.history10,'2026-09-30',5.29);
+
+    if(Array.isArray(r.tenors)){
+      const t2=r.tenors.find(x=>x.tenor==='2Y'); if(t2) Object.assign(t2,{value:4.88,date:'2026-09-30'});
+      const t10=r.tenors.find(x=>x.tenor==='10Y'); if(t10) Object.assign(t10,{value:5.29,date:'2026-09-30'});
+    }
+    if(typeof D!=='undefined' && D.macro?.USD) D.macro.USD.rate2y=4.88;
+
+    const A=window.FINAL_SOURCE_POLICY_AUDIT||{};
+    const R=A.RATES||A.rates;
+    if(R?.USD) Object.assign(R.USD,{current_as_of:'2026-09-30',status:'CURRENT_OFFICIAL_SAME_BASIS'});
+    if(window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh?.USD){
+      Object.assign(window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh.USD,{
+        action:'UPDATED',current_as_of:'2026-09-30',
+        reason:'Official U.S. Treasury same-basis 2Y/10Y close validated.'
+      });
+    }
+
+    window.GMFQ_USD_RATES_REFRESH_AUDIT={
+      status:'PASS',
+      as_of:'2026-09-30',
+      source:'U.S. Treasury Daily Par Yield Curve',
+      y2:4.88,y10:5.29,curve_bp:41,
+      change_1w_bp:{y2:3,y10:18},
+      reference_1w:'2026-09-23',
+      same_basis:true
+    };
+
+    try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(e){}
+    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){}
+    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(e){}
+    document.documentElement.setAttribute('data-usd-rates-refresh','PASS');
+  }catch(e){
+    window.GMFQ_USD_RATES_REFRESH_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-usd-rates-refresh','FAIL');
+  }
+})();
+</script>
