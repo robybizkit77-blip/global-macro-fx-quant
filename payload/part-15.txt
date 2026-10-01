@@ -3404,3 +3404,28 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+<script id="gmfq-secondary-data-withheld-20261001">
+(function(){
+  'use strict';
+  const quarantined=[
+    {currency:'USD',category:'Credito',label:'SLOOS — standard credito imprese',reason:'duplicate dates with conflicting values; source-column mapping requires reconstruction'},
+    {currency:'CHF',category:'Lead / survey',label:'SECO — consumer sentiment',reason:'duplicate dates with conflicting values; source-column mapping requires reconstruction'}
+  ];
+  for(const q of quarantined){
+    const x=(S?.[q.currency]||[]).find(r=>r.category===q.category&&r.label===q.label);
+    if(x){
+      x.data_quality='WITHHELD_CONFLICTING_DUPLICATES';
+      x.validation_status='WITHHELD';
+      x.validation_note=q.reason;
+      x.exclude_from_decision=true;
+    }
+  }
+  window.GMFQ_SECONDARY_DATA_QUARANTINE={
+    status:'ACTIVE',
+    date:'2026-10-01',
+    rule:'Conflicting duplicate secondary series are withheld from decision use; no arbitrary deduplication.',
+    series:quarantined
+  };
+})();
+</script>
