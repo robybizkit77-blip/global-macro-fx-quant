@@ -39,14 +39,24 @@ jobs:
                   const dupes=dates.length-new Set(dates).size;
                   const parseDate=(v)=>{
                     const z=String(v||'').trim();
-                    let m=z.match(/^(\\d{4})[-\\/](\\d{1,2})[-\\/](\\d{1,2})$/);
-                    if(m) return Date.UTC(+m[1],+m[2]-1,+m[3]);
-                    m=z.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);
-                    if(m) return Date.UTC(+m[3],+m[2]-1,+m[1]);
-                    m=z.match(/^(\\d{4})[-\\/](\\d{1,2})$/);
-                    if(m) return Date.UTC(+m[1],+m[2]-1,1);
-                    m=z.match(/^(\\d{4})[-\\/]?Q([1-4])$/i);
-                    if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);
+                    const parts=z.split('/');
+                    if(parts.length===3 && parts[0].length<=2){
+                      return Date.UTC(Number(parts[2]),Number(parts[1])-1,Number(parts[0]));
+                    }
+                    if(parts.length===3 && parts[0].length===4){
+                      return Date.UTC(Number(parts[0]),Number(parts[1])-1,Number(parts[2]));
+                    }
+                    if(z.includes('Q')){
+                      const q=z.replace('-','').split('Q');
+                      if(q.length===2) return Date.UTC(Number(q[0]),(Number(q[1])-1)*3,1);
+                    }
+                    const dash=z.split('-');
+                    if(dash.length===3 && dash[0].length===4){
+                      return Date.UTC(Number(dash[0]),Number(dash[1])-1,Number(dash[2]));
+                    }
+                    if(dash.length===2 && dash[0].length===4){
+                      return Date.UTC(Number(dash[0]),Number(dash[1])-1,1);
+                    }
                     const t=Date.parse(z); return Number.isFinite(t)?t:null;
                   };
                   const ts=dates.map(parseDate);
