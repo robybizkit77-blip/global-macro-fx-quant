@@ -1,0 +1,54 @@
+name: Walkforward Coverage Diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging-historical-walkforward-v93-2026-10-01]
+    paths:
+      - '.github/workflows/walkforward-coverage-diagnostic.yml'
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Diagnose historical readiness
+        run: |
+          cat > diag.js <<'EOF'
+          const {chromium}=require('playwright'); const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const b=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const p=await b.newPage(); await p.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await p.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const parse=v=>{const z=String(v||'').trim();let m;if((m=z.match(/^(\d{4})-(\d{2})-(\d{2})$/)))return Date.UTC(+m[1],+m[2]-1,+m[3]);if((m=z.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)))return Date.UTC(+m[3],+m[2]-1,+m[1]);if((m=z.match(/^(\d{4})-(\d{2})$/)))return Date.UTC(+m[1],+m[2]-1,1);if((m=z.match(/^(\d{4})Q([1-4])$/i)))return Date.UTC(+m[1],(+m[2]-1)*3,1);const t=Date.parse(z);return Number.isFinite(t)?t:null};
+              const iso=t=>t==null?null:new Date(t).toISOString().slice(0,10);
+              const res={};
+              for(const c of ccys){
+                const cats={};
+                for(const cat of ['Crescita','Lavoro']){
+                  const ss=(S?.[c]||[]).filter(x=>x.category===cat);
+                  cats[cat]=ss.map(x=>{
+                    const ds=(x.dates||[]).map(parse).filter(t=>t!=null).sort((a,b)=>a-b);
+                    return {label:x.label,id:x.id,n:(x.values||[]).length,first:iso(ds[0]),eighth:iso(ds[7]),last:iso(ds.at(-1))};
+                  });
+                }
+                let rs=null;try{rs=rate2YSeries(c)}catch(e){}
+                const rds=(rs?.dates||[]).map(parse).filter(t=>t!=null).sort((a,b)=>a-b);
+                res[c]={growth:cats.Crescita,labour:cats.Lavoro,rates:{n:(rs?.values||[]).length,first:iso(rds[0]),tenth:iso(rds[9]),last:iso(rds.at(-1))}};
+              }
+              return res;
+            });
+            console.log('===COVERAGE_START==='); console.log(JSON.stringify(out,null,2)); console.log('===COVERAGE_END===');
+            await b.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node diag.js
