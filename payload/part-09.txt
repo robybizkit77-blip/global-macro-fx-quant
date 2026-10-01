@@ -85,15 +85,25 @@ as_of:d.as_of||null
 };
 function updateMemory(c,layer,candidate,current){
 const key=`${c}:${layer}`;
+const sourceDate=layer==='cb'
+? String(NATIVE_CB_DATA?.[c]?.last_date||'')
+: layer==='liq'
+? String(NATIVE_LIQ_DATA?.[c]?.as_of||'')
+: '';
 const mem=window.CB_LIQ_CHANGE_MEMORY[key]||{
 candidate:null,streak:0,lastCurrent:current,lastSourceDate:null
 };
 if(candidate===current){
-mem.candidate=null; mem.streak=0; mem.lastCurrent=current;
+mem.candidate=null; mem.streak=0; mem.lastCurrent=current; mem.lastSourceDate=sourceDate;
 }else if(mem.candidate===candidate){
-mem.streak+=1; mem.lastCurrent=current;
+// Re-evaluating the same source observation must not count as a new confirmation.
+if(sourceDate && sourceDate!==mem.lastSourceDate){
+mem.streak+=1;
+mem.lastSourceDate=sourceDate;
+}
+mem.lastCurrent=current;
 }else{
-mem.candidate=candidate; mem.streak=1; mem.lastCurrent=current;
+mem.candidate=candidate; mem.streak=1; mem.lastCurrent=current; mem.lastSourceDate=sourceDate;
 }
 window.CB_LIQ_CHANGE_MEMORY[key]=mem;
 return mem;
