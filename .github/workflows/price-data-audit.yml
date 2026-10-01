@@ -27,6 +27,7 @@ jobs:
             const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
             const page=await browser.newPage();
             await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof pairSeries==='function' && typeof D!=='undefined',{timeout:120000});
             const out=await page.evaluate(()=>{
               const ccys=['USD','GBP','JPY','CHF','CAD','AUD','NZD'];
               const rows=(D?.prices||[]).filter(r=>r?.Date);
