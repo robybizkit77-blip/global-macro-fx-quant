@@ -45,11 +45,13 @@ jobs:
               const lead=typeof deriveLeadStructure==='function'?deriveLeadStructure(c):null;
               const plan=typeof deriveCurrencyActionPlan==='function'?deriveCurrencyActionPlan(c):null;
               const cb=(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.EUR:null)||null;
+              const intel=(typeof currencyIntelData!=='undefined'?currencyIntelData?.EUR:null)||null;
+              const macroSnapshot=D?.macro?.EUR||null;
               const pairs=(D?.pairs||[]).map(x=>x.pair).filter(p=>p.startsWith('EUR/')||p.endsWith('/EUR')).map(p=>({
                 pair:p,
                 frame:derivePairDecisionFrame(p)
               }));
-              return {core,dyn,imp,state,driver,lead,plan,cb,pairs};
+              return {core,dyn,imp,state,driver,lead,plan,cb,intel,macroSnapshot,pairs};
             });
             console.log('===EUR_E2E_START===');
             console.log(JSON.stringify(out,null,2));
