@@ -1,0 +1,88 @@
+name: Runtime Metadata Audit Clean
+
+on:
+  push:
+    branches: [staging-metadata-audit-clean-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit runtime metadata
+        run: |
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const coreCats=new Set(['Crescita','Lavoro','Inflazione']);
+              const rows=[];
+              for(const c of ccys){
+                for(const s of ((typeof S!=='undefined'&&S[c])||[])){
+                  if(!coreCats.has(s.category)) continue;
+                  rows.push({
+                    ccy:c,id:s.id||null,label:s.label||null,category:s.category||null,
+                    source:s.source||null,source_file:s.source_file||null,provider:s.provider||null,
+                    provenance_file:s.provenance_file||null,provenance_status:s.provenance_status||null,
+                    frequency:s.frequency||null,unit:s.unit||null,metadata_status:s.metadata_status||null
+                  });
+                }
+              }
+              const miss=k=>rows.filter(x=>!x[k]).map(x=>({ccy:x.ccy,id:x.id,label:x.label}));
+              const liq=[];
+              if(typeof NATIVE_LIQ_DATA!=='undefined'){
+                for(const c of ccys){
+                  const root=NATIVE_LIQ_DATA[c]||{};
+                  for(const [key,node] of Object.entries(root)){
+                    if(!node||typeof node!=='object'||Array.isArray(node)||!('values' in node)) continue;
+                    liq.push({
+                      ccy:c,key,source:node.source||null,provenance_file:node.provenance_file||null,
+                      frequency:node.frequency||null,unit:node.unit||null,quality:node.quality||null,
+                      metadata_status:node.metadata_status||null
+                    });
+                  }
+                }
+              }
+              const liqMiss=k=>liq.filter(x=>!x[k]).map(x=>({ccy:x.ccy,key:x.key}));
+              return {
+                core_count:rows.length,
+                core_missing:{
+                  source:miss('source'),frequency:miss('frequency'),unit:miss('unit'),
+                  provenance_file:miss('provenance_file'),metadata_status:miss('metadata_status')
+                },
+                liquidity_count:liq.length,
+                liquidity_missing:{
+                  source:liqMiss('source'),frequency:liqMiss('frequency'),unit:liqMiss('unit'),
+                  provenance_file:liqMiss('provenance_file'),quality:liqMiss('quality'),metadata_status:liqMiss('metadata_status')
+                },
+                withheld_liquidity:liq.filter(x=>String(x.quality||'').includes('WITHHELD')||String(x.metadata_status||'').includes('WITHHELD')),
+                sample_core:rows.slice(0,12)
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            const hard=[];
+            if(out.core_count!==79) hard.push('core_count='+out.core_count);
+            if(out.core_missing.source.length) hard.push('core_source_missing='+out.core_missing.source.length);
+            if(out.core_missing.frequency.length) hard.push('core_frequency_missing='+out.core_missing.frequency.length);
+            if(out.core_missing.unit.length) hard.push('core_unit_missing='+out.core_missing.unit.length);
+            if(out.core_missing.provenance_file.length) hard.push('core_provenance_file_missing='+out.core_missing.provenance_file.length);
+            if(hard.length){console.error('HARD_FAIL',hard.join(';'));process.exitCode=1}
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
