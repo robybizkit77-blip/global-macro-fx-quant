@@ -1,0 +1,86 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "END_TO_END_DATA_ENGINE_VALIDATION_2026-10-01",
+  "status": "PASS",
+  "issue_count": 0,
+  "health": {
+    "status": "PASS_WITH_WARNINGS",
+    "hard_errors": 0
+  },
+  "current_states": {
+    "USD": {
+      "base": "FORTE",
+      "macro": 1,
+      "policy": 1,
+      "change": "MIGLIORA"
+    },
+    "EUR": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "change": "TURNING POINT"
+    },
+    "GBP": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "change": "TURNING POINT"
+    },
+    "JPY": {
+      "base": "MISTA",
+      "macro": 0,
+      "policy": 0,
+      "change": "EARLY SHIFT POSITIVO"
+    },
+    "CHF": {
+      "base": "MISTA",
+      "macro": 0,
+      "policy": 0,
+      "change": "MIGLIORA"
+    },
+    "CAD": {
+      "base": "COSTRUTTIVA",
+      "macro": 1,
+      "policy": 0,
+      "change": "EARLY SHIFT POSITIVO"
+    },
+    "AUD": {
+      "base": "FORTE",
+      "macro": 1,
+      "policy": 1,
+      "change": "TURNING POINT"
+    },
+    "NZD": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "change": "EARLY SHIFT POSITIVO"
+    }
+  },
+  "pair_quality_counts": {
+    "CONTRASTO STRUTTURALE FORTE": 4,
+    "VANTAGGIO RELATIVO PARZIALE": 16,
+    "PILASTRI DIVISI": 3,
+    "NESSUN CONTRASTO": 3,
+    "SEPARAZIONE RATES MATERIALE": 2
+  },
+  "isolation_tests": {
+    "price_cot_liquidity_shocks": "PASS — no structural currency or pair winner/quality changes",
+    "legacy_pair_source": "PASS — D.pairStates not used by canonical pair decision frame",
+    "currency_rule_reconstruction": "PASS — 8/8"
+  },
+  "data_summary": {
+    "price_asof": "2026-09-30",
+    "cot_asof": "2026-09-22",
+    "eur_rates_mode": "WEEKLY_VALIDATION_ONLY",
+    "jpy_2y_points": 339
+  },
+  "oos_t0_integrity": {
+    "currencies_same": true,
+    "pairs_same": true,
+    "price_asof_same": true,
+    "rules_fingerprint_same": true,
+    "fingerprint": "3356baf0",
+    "result": "T0 remains valid after historical JPY repair"
+  }
+}
