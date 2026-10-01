@@ -3268,3 +3268,47 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+<script id="gmfq-jpy-rates-history-gap-repair-20261001">
+(function(){
+  'use strict';
+  try{
+    const d=NATIVE_RATES_DATA?.JPY;
+    if(!d?.history2 || !d?.history10) throw new Error('JPY_HISTORY_MISSING');
+    const repair=[{"date":"2025-10-01","y2":0.954,"y10":1.663},{"date":"2025-10-02","y2":0.955,"y10":1.675},{"date":"2025-10-03","y2":0.945,"y10":1.667},{"date":"2025-10-06","y2":0.899,"y10":1.677},{"date":"2025-10-07","y2":0.909,"y10":1.682},{"date":"2025-10-08","y2":0.93,"y10":1.701},{"date":"2025-10-09","y2":0.93,"y10":1.697},{"date":"2025-10-10","y2":0.925,"y10":1.697},{"date":"2025-10-14","y2":0.895,"y10":1.67},{"date":"2025-10-15","y2":0.9,"y10":1.662},{"date":"2025-10-16","y2":0.92,"y10":1.663},{"date":"2025-10-17","y2":0.909,"y10":1.638},{"date":"2025-10-20","y2":0.95,"y10":1.676},{"date":"2025-10-21","y2":0.94,"y10":1.667},{"date":"2025-10-22","y2":0.929,"y10":1.663},{"date":"2025-10-23","y2":0.933,"y10":1.667},{"date":"2025-10-24","y2":0.932,"y10":1.667},{"date":"2025-10-27","y2":0.943,"y10":1.683},{"date":"2025-10-28","y2":0.94,"y10":1.654},{"date":"2025-10-29","y2":0.943,"y10":1.664},{"date":"2025-10-30","y2":0.929,"y10":1.66},{"date":"2025-10-31","y2":0.928,"y10":1.67},{"date":"2025-11-04","y2":0.945,"y10":1.684},{"date":"2025-11-05","y2":0.93,"y10":1.676},{"date":"2025-11-06","y2":0.941,"y10":1.694},{"date":"2025-11-07","y2":0.941,"y10":1.688},{"date":"2025-11-10","y2":0.948,"y10":1.712},{"date":"2025-11-11","y2":0.937,"y10":1.704},{"date":"2025-11-12","y2":0.942,"y10":1.7},{"date":"2025-11-13","y2":0.932,"y10":1.705},{"date":"2025-11-14","y2":0.932,"y10":1.714},{"date":"2025-11-17","y2":0.938,"y10":1.745},{"date":"2025-11-18","y2":0.928,"y10":1.759},{"date":"2025-11-19","y2":0.934,"y10":1.779},{"date":"2025-11-20","y2":0.965,"y10":1.824},{"date":"2025-11-21","y2":0.959,"y10":1.792},{"date":"2025-11-25","y2":0.975,"y10":1.811},{"date":"2025-11-26","y2":0.985,"y10":1.825},{"date":"2025-11-27","y2":0.977,"y10":1.807},{"date":"2025-11-28","y2":0.992,"y10":1.812},{"date":"2025-12-01","y2":1.02,"y10":1.881},{"date":"2025-12-02","y2":1.005,"y10":1.864},{"date":"2025-12-03","y2":1.016,"y10":1.897},{"date":"2025-12-04","y2":1.021,"y10":1.939},{"date":"2025-12-05","y2":1.052,"y10":1.951},{"date":"2025-12-08","y2":1.063,"y10":1.966},{"date":"2025-12-09","y2":1.069,"y10":1.962},{"date":"2025-12-10","y2":1.074,"y10":1.958},{"date":"2025-12-11","y2":1.054,"y10":1.933},{"date":"2025-12-12","y2":1.07,"y10":1.956},{"date":"2025-12-15","y2":1.071,"y10":1.961},{"date":"2025-12-16","y2":1.067,"y10":1.957},{"date":"2025-12-17","y2":1.077,"y10":1.98},{"date":"2025-12-18","y2":1.073,"y10":1.972},{"date":"2025-12-19","y2":1.101,"y10":2.021},{"date":"2025-12-22","y2":1.129,"y10":2.073},{"date":"2025-12-23","y2":1.111,"y10":2.039},{"date":"2025-12-24","y2":1.111,"y10":2.044},{"date":"2025-12-25","y2":1.147,"y10":2.042},{"date":"2025-12-26","y2":1.141,"y10":2.039},{"date":"2025-12-29","y2":1.15,"y10":2.052},{"date":"2025-12-30","y2":1.167,"y10":2.066}];
+    const iso=(x)=>{
+      const z=new Date(String(x));
+      if(!Number.isFinite(z.getTime())) return null;
+      return z.toISOString().slice(0,10);
+    };
+    const merge=(h,key)=>{
+      const m=new Map();
+      (h.dates||[]).forEach((dt,i)=>{
+        const k=iso(dt),v=Number(h.values?.[i]);
+        if(k&&Number.isFinite(v)) m.set(k,v);
+      });
+      repair.forEach(r=>m.set(r.date,Number(r[key])));
+      const rows=[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+      h.dates=rows.map(x=>x[0]);
+      h.values=rows.map(x=>x[1]);
+      h.last_date=rows.at(-1)?.[0]||h.last_date;
+      h.last_value=rows.at(-1)?.[1]??h.last_value;
+      return rows.length;
+    };
+    const before2=d.history2.values?.length||0;
+    const before10=d.history10.values?.length||0;
+    const after2=merge(d.history2,'y2');
+    const after10=merge(d.history10,'y10');
+    window.GMFQ_JPY_RATES_HISTORY_REPAIR={
+      status:'PASS',
+      source:'Japan Ministry of Finance JGB curve · validated physical JPY_RATES_2016_2026.csv',
+      repaired_period:'2025-10-01/2025-12-30',
+      points:repair.length,
+      before:{history2:before2,history10:before10},
+      after:{history2:after2,history10:after10}
+    };
+    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(e){}
+    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){}
+  }catch(e){window.GMFQ_JPY_RATES_HISTORY_REPAIR={status:'FAIL',error:String(e?.message||e)};}
+})();
+</script>
