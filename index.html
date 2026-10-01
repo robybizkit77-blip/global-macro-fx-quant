@@ -4,13 +4,12 @@
 <script>
 (async()=>{
  const parts=["payload/part-00.txt","payload/part-01.txt","payload/part-02.txt","payload/part-03.txt","payload/part-04.txt","payload/part-05.txt","payload/part-06.txt","payload/part-07.txt","payload/part-08.txt","payload/part-09.txt","payload/part-10.txt","payload/part-11.txt","payload/part-12.txt","payload/part-13.txt","payload/part-14.txt","payload/part-15.txt"];
- const chunks=[];
- for(const p of parts){
+ const responses=await Promise.all(parts.map(async p=>{
    const r=await fetch(p,{cache:'no-store'});
    if(!r.ok) throw new Error('Impossibile caricare '+p);
-   chunks.push(await r.text());
- }
- const html=chunks.join('\n');
+   return r.text();
+ }));
+ const html=responses.join('\n');
  if(!html.includes('GMFQ_RUNTIME_VALIDATION_MANIFEST')) throw new Error('Payload v490 non validato');
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
