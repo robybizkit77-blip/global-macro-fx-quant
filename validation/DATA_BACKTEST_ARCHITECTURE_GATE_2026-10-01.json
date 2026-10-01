@@ -1,0 +1,25 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "gate": "DATA_BACKTEST_ARCHITECTURE_GATE_2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS__NO_RULE_CHANGE_RECOMMENDED",
+  "decisions": {
+    "Macro": "KEEP_CORE_PILLAR",
+    "Rates": "KEEP_CORE_ONLY_IN_CONTEXT_WITH_MACRO_CB__DO_NOT_PROMOTE_STANDALONE_MOMENTUM",
+    "COT": "KEEP_POSITIONING_OVERLAY",
+    "Liquidity": "KEEP_OVERLAY",
+    "Price": "KEEP_CONFIRMATION_DIVERGENCE_LAYER",
+    "CentralBank_OIS": "KEEP_CURRENT_LAYER__HISTORICAL_PIT_WITHHELD",
+    "FullEngine": "CONTINUE_CLEAN_FORWARD_OOS"
+  },
+  "reasons": [
+    "Macro retrospective 4W basket relationship is positive overall but weaker in 2023-2026; insufficient for standalone signal promotion.",
+    "Rates-alone continuation is not supported in the available same-basis history.",
+    "COT weekly flow does not show a reliable continuation edge at 1W/4W.",
+    "Liquidity direct-direction results are weak and unstable in the recent sample.",
+    "Macro + Rates alignment is encouraging at 4W but based on only 10 recent checkpoints.",
+    "Current architecture already prevents COT, Liquidity and raw 2Y spread from overriding the canonical structural core."
+  ],
+  "anti_tuning_rule": "No thresholds, category definitions or pair rules are changed as a result of this backtest. Any future rule change must start a new OOS regime.",
+  "next_step": "Complete provenance metadata linkage for runtime series, then continue forward OOS checkpoints for the canonical engine."
+}
