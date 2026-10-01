@@ -56,6 +56,34 @@
   });
 })();
 </script>
+<script>
+(() => {
+  let fullMacroLoad;
+  window.loadFullMacroSeries = () => fullMacroLoad ||= fetch('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js', { cache: 'force-cache' })
+    .then(r => {
+      if (!r.ok) throw new Error('Storico macro non disponibile');
+      return r.text();
+    })
+    .then(source => {
+      const json = source.replace(/^window\.__GMFQ_DATA\.MACRO_SERIES=/, '').replace(/;\s*$/, '');
+      const full = JSON.parse(json);
+      Object.keys(S).forEach(key => delete S[key]);
+      Object.assign(S, full);
+      return S;
+    });
+
+  const renderView = window.showView;
+  window.showView = function(view) {
+    const result = renderView(view);
+    if (view === 'macro' || view === 'inflationlabour') {
+      window.loadFullMacroSeries().then(() => {
+        if (activeView === view) renderView(view);
+      }).catch(error => console.warn('Storico macro differito non caricato', error));
+    }
+    return result;
+  };
+})();
+</script>
 
 <script id="gmfq-price-pair-tutor-wrapper-20261001">
 /*
