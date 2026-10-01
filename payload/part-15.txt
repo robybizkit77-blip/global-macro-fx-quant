@@ -4011,3 +4011,116 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-current-data-gap-reconciliation-20261001">
+(function(){
+  'use strict';
+  try{
+    const previous=window.sourceResolutionWatchlist;
+    window.sourceResolutionWatchlist=function(){
+      const rows=typeof previous==='function'
+        ? previous()
+        : Object.entries(window.SOURCE_RESOLUTION_WATCHLIST?.items||{}).map(([id,x])=>Object.assign({id,resolved:false},x));
+      return rows.map(row=>{
+        const c=row?.currency;
+        let oisActive=false;
+        try{
+          oisActive=window.GMFQ_OIS?.currency?.(c)?.status==='ACTIVE'
+            && window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.(c)===true;
+        }catch(e){}
+        if(oisActive && row?.layer==='CB_PRICING'){
+          return Object.assign({},row,{
+            resolved:true,
+            current_status:'RESOLVED_BY_VALIDATED_ACTIVE_OIS',
+            resolution_basis:'Current OIS runtime is ACTIVE and publishable under the canonical validator.'
+          });
+        }
+        return row;
+      });
+    };
+    window.unresolvedSourceChecks=function(){
+      return window.sourceResolutionWatchlist().filter(x=>x.check_each_refresh && !x.resolved);
+    };
+
+    const d=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT;
+    if(d?.items){
+      for(const c of ['EUR','GBP','JPY','CAD','AUD']){
+        const key=c+'_OIS';
+        const cbKey=c+'_CB_PRICING';
+        let active=false;
+        try{
+          active=window.GMFQ_OIS?.currency?.(c)?.status==='ACTIVE'
+            && window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.(c)===true;
+        }catch(e){}
+        if(active){
+          if(d.items[key]) d.items[key]={
+            status:'RESOLVED_VALIDATED_ACTIVE',
+            reason:'Current runtime OIS path is active and passes the canonical publication validator.',
+            resolved_at:'2026-10-01'
+          };
+          if(d.items[cbKey]) d.items[cbKey]={
+            status:'RESOLVED_VALIDATED_ACTIVE',
+            reason:'Current runtime OIS/market-pricing path is active and passes the canonical publication validator.',
+            resolved_at:'2026-10-01'
+          };
+        }
+      }
+      d.as_of='2026-10-01';
+    }
+
+    window.GMFQ_CURRENT_DATA_GAP_RECONCILIATION={
+      status:'PASS',
+      as_of:'2026-10-01',
+      ois_active:window.GMFQ_OIS_SOURCE_MONITOR?.activationState?.()||null,
+      unresolved:window.unresolvedSourceChecks(),
+      rule:'Validated ACTIVE OIS closes legacy CB-pricing source warnings; WITHHELD currencies remain unresolved.'
+    };
+    document.documentElement.setAttribute('data-current-data-gap-reconciliation','PASS');
+  }catch(e){
+    window.GMFQ_CURRENT_DATA_GAP_RECONCILIATION={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-current-data-gap-reconciliation','FAIL');
+  }
+})();
+</script>
+
+
+<script id="gmfq-health-warning-reconciliation-20261001">
+(function(){
+  'use strict';
+  try{
+    const previous=window.productionHealthCheck;
+    if(typeof previous!=='function') throw new Error('PRODUCTION_HEALTH_CHECK_MISSING');
+    window.productionHealthCheck=function(){
+      const r=previous();
+      const unresolved=typeof window.unresolvedSourceChecks==='function'
+        ? window.unresolvedSourceChecks()
+        : [];
+      const open=new Set(unresolved.map(x=>x.currency));
+      const warnings=(r.warnings||[]).filter(w=>{
+        const s=String(w);
+        const m=s.match(/^CB_PRICING_(?:SECONDARY|PARTIAL|STALE):([A-Z]{3})$/);
+        return !m || open.has(m[1]);
+      });
+      for(const x of unresolved){
+        if(x.currency==='NZD') warnings.push('CB_PRICING_PARTIAL:NZD');
+        else warnings.push('CB_PRICING_SECONDARY:'+x.currency);
+      }
+      r.warnings=[...new Set(warnings)];
+      r.status=(r.hard_errors||[]).length?'FAIL':r.warnings.length?'PASS_WITH_WARNINGS':'PASS';
+      r.source_resolution_reconciled=true;
+      return r;
+    };
+    window.GMFQ_HEALTH_WARNING_RECONCILIATION={
+      status:'PASS',
+      unresolved:typeof window.unresolvedSourceChecks==='function'
+        ? window.unresolvedSourceChecks().map(x=>x.id)
+        : []
+    };
+    document.documentElement.setAttribute('data-health-warning-reconciliation','PASS');
+  }catch(e){
+    window.GMFQ_HEALTH_WARNING_RECONCILIATION={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-health-warning-reconciliation','FAIL');
+  }
+})();
+</script>
