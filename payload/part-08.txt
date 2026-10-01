@@ -201,14 +201,14 @@ text:`Estensione non elevata · 1M ${current>=0?'+':''}${current.toFixed(1)}% ·
 function recentChangeSignal(c){
 const st=safe(()=>deriveCurrencyState(c),null);
 const x=String(st?.improvementState||'').toUpperCase();
-if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')){
+if(x==='MIGLIORA'){
 return {side:'POS', text:`${c} sta migliorando`};
 }
-if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')){
+if(x==='PEGGIORA'){
 return {side:'NEG', text:`${c} sta peggiorando`};
 }
-if(x.includes('TURNING POINT')){
-return {side:'TRANSITION', text:`${c} è in possibile svolta`};
+if(x.includes('EARLY SHIFT') || x.includes('TURNING POINT')){
+return {side:'TRANSITION', text:`${c} è in possibile svolta da confermare`};
 }
 if(x.includes('STABILE')){
 return {side:'NEUTRAL', text:`${c} è stabile`};
