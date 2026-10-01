@@ -10,13 +10,13 @@ function theoreticalScenarios(e){
 const n=(e.event||'').toLowerCase();
 const normal=(strong,weak)=>({strong,weak});
 const hawkish=(ccy)=>normal(
-`Più forte / sopra attese → pricing più hawkish → ${ccy} teoricamente favorito`,
-`Più debole / sotto attese → pricing più dovish → ${ccy} teoricamente sfavorito`
+`Più forte / sopra attese → può spingere il pricing più hawkish; ${ccy} è favorito solo se 2Y/OIS confermano`,
+`Più debole / sotto attese → può spingere il pricing più dovish; ${ccy} è sfavorito solo se 2Y/OIS confermano`
 );
 if(n.includes('rate statement') || n.includes('press conference') || n.includes('speaks') || n.includes('minutes') || n.includes('summary of opinions')){
 return normal(
-`Tono più hawkish del previsto → ${e.ccy} teoricamente favorito`,
-`Tono più dovish del previsto → ${e.ccy} teoricamente sfavorito`
+`Tono più hawkish del previsto → possibile supporto a ${e.ccy}, da confermare con pricing e 2Y`,
+`Tono più dovish del previsto → possibile pressione su ${e.ccy}, da confermare con pricing e 2Y`
 );
 }
 if(n.includes('bond auction')){
@@ -27,8 +27,8 @@ return normal(
 }
 if(n.includes('unemployment rate')){
 return normal(
-`Disoccupazione più bassa del previsto → mercato del lavoro più forte → ${e.ccy} teoricamente favorito`,
-`Disoccupazione più alta del previsto → mercato del lavoro più debole → ${e.ccy} teoricamente sfavorito`
+`Disoccupazione più bassa del previsto → lavoro più forte; possibile supporto a ${e.ccy} se il front-end conferma`,
+`Disoccupazione più alta del previsto → lavoro più debole; possibile pressione su ${e.ccy} se il front-end conferma`
 );
 }
 if(n.includes('unemployment change')){
@@ -51,13 +51,13 @@ return normal(
 );
 }
 return normal(
-`Dato più forte / sopra attese → crescita o domanda più forti → ${e.ccy} teoricamente favorito`,
-`Dato più debole / sotto attese → crescita o domanda più deboli → ${e.ccy} teoricamente sfavorito`
+`Dato più forte / sopra attese → crescita o domanda potenzialmente più forti; ${e.ccy} va confermato da Rates e prezzo`,
+`Dato più debole / sotto attese → crescita o domanda potenzialmente più deboli; ${e.ccy} va confermato da Rates e prezzo`
 );
 }
 return normal(
-`Scenario più forte / più hawkish → ${e.ccy} teoricamente favorito`,
-`Scenario più debole / più dovish → ${e.ccy} teoricamente sfavorito`
+`Scenario più forte / più hawkish → possibile supporto a ${e.ccy}, non un bias automatico`,
+`Scenario più debole / più dovish → possibile pressione su ${e.ccy}, non un bias automatico`
 );
 }
 function renderRealCalendar(){
@@ -146,7 +146,7 @@ const card=(e)=>{
 const sc=scenario(e);
 return `<div class="cal394Event ${e.impact==='high'?'high':''}"><div class="cal394Main"><div class="cal394Time">${e.time||'—'}</div><div class="cal394Ccy">${typeof flagSvg==='function'?flagSvg(e.ccy):''}<span>${e.ccy||''}</span></div><div class="cal394Name">${cleanEvent(e.event)}</div><div class="cal394Impact ${e.impact==='high'?'high':''}">${e.impact==='high'?'ALTO IMPATTO':'MEDIO'}</div></div>
 ${metricBlock(e)}
-<div class="cal394Meaning"><div class="cal394Scenario ${sc.leftCls}"><span>${sc.leftLabel}</span><b>${sc.left}</b></div><div class="cal394Scenario ${sc.rightCls}"><span>${sc.rightLabel}</span><b>${sc.right}</b></div></div><div class="cal394Confirm"><b>Prima cosa da controllare:</b> ${e.confirm||'tassi a breve e prezzo FX'}</div></div>`;
+<div class="cal394Meaning"><div class="cal394Scenario ${sc.leftCls}"><span>${sc.leftLabel}</span><b>${sc.left}</b></div><div class="cal394Scenario ${sc.rightCls}"><span>${sc.rightLabel}</span><b>${sc.right}</b></div></div><div class="cal394Confirm"><b>Prima cosa da controllare:</b> ${e.confirm||'tassi a breve e prezzo FX'}<br><small>Scenario teorico, non bias automatico: conta la sorpresa vs consenso e la conferma del mercato.</small></div></div>`;
 };
 tabs.innerHTML=REAL_CALENDAR.map((d,i)=>`<button class="cal394Tab ${i===calendarDay?'active':''}" data-i="${i}">${d.label}</button>`).join('');
 tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{calendarDay=+b.dataset.i;renderRealCalendar();});
