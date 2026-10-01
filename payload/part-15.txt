@@ -3164,6 +3164,15 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   #overview .gmfqWatchGrid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
+  .shell>#nav.nav{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
+    display:flex!important;flex-wrap:nowrap!important;
+    box-sizing:border-box!important;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none
+  }
+  .shell>#nav.nav::-webkit-scrollbar{display:none}
+  .shell>#nav.nav button{flex:0 0 auto!important}
   #overview .gmfqOverviewExecutive{gap:10px}
   #overview .gmfqReportPanel{padding:14px 13px 15px;border-radius:15px}
   #overview .gmfqReportPanel .panelHead{display:block;margin-bottom:11px}
