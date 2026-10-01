@@ -25,8 +25,8 @@ jobs:
             const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
             const page=await browser.newPage();
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
-            await page.waitForTimeout(2200);
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForTimeout(3500);
             const out=await page.evaluate(()=>({
               fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
               pairs:(D?.pairs||[]).length,
