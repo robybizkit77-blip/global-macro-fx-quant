@@ -1,0 +1,94 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "LAYER_BEHAVIOR_BACKTEST_2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "methodology": {
+    "horizons_calendar_days": [
+      7,
+      28,
+      84
+    ],
+    "pair_rule": "favor the currency with the higher layer signal; ties skipped",
+    "macro": "retrospective diagnostic using the runtime Growth + Labour normalization logic; not full PIT because release-date/vintage history is incomplete",
+    "rates": "market-history point-in-time; EUR excluded because historical 2Y basis is withheld",
+    "cot": "weekly net-position flow; signal activation delayed by 3 calendar days to respect CFTC publication timing",
+    "liquidity": "retrospective diagnostic using the primary liquidity series; NZD excluded",
+    "combined": "Macro + Rates only when both currency-level directions are aligned; EUR excluded"
+  },
+  "headline": {
+    "macro_4w": {
+      "pair_hit": 0.5048,
+      "basket_hit": 0.5769,
+      "basket_mean_pct": 0.0971,
+      "n_checkpoints": 104
+    },
+    "macro_12w_nonoverlap": {
+      "basket_hit": 0.5882,
+      "basket_mean_pct": 0.416,
+      "n": 34
+    },
+    "rates_weekly_4w": {
+      "pair_hit": 0.508,
+      "basket_hit": 0.439,
+      "basket_mean_pct": -0.1013,
+      "n_checkpoints": 41
+    },
+    "cot_flow_weekly_4w": {
+      "pair_hit": 0.4707,
+      "basket_hit": 0.4891,
+      "basket_mean_pct": -0.0279,
+      "n_checkpoints": 92
+    },
+    "liquidity_4w": {
+      "pair_hit": 0.5062,
+      "basket_hit": 0.5484,
+      "basket_mean_pct": 0.0234,
+      "n_checkpoints": 93
+    },
+    "macro_rates_aligned_4w": {
+      "pair_hit": 0.55,
+      "basket_hit": 0.6,
+      "basket_mean_pct": 0.3495,
+      "n_checkpoints": 10
+    }
+  },
+  "stability_4w": {
+    "macro": {
+      "DEV_2018_2022": {
+        "n": 60,
+        "basket_hit": 0.6167,
+        "basket_mean_pct": 0.1954
+      },
+      "RECENT_2023_2026": {
+        "n": 44,
+        "basket_hit": 0.5227,
+        "basket_mean_pct": -0.0369
+      }
+    },
+    "liquidity": {
+      "DEV_2018_2022": {
+        "n": 50,
+        "basket_hit": 0.6,
+        "basket_mean_pct": 0.1091
+      },
+      "RECENT_2023_2026": {
+        "n": 43,
+        "basket_hit": 0.4884,
+        "basket_mean_pct": -0.0763
+      }
+    }
+  },
+  "interpretation": [
+    "Macro has a positive retrospective relationship at 4W/12W, but the edge weakens materially in 2023-2026 and cannot be treated as validated PIT alpha.",
+    "Rates direction by itself shows no stable continuation edge in the available same-basis history.",
+    "COT weekly flow does not support continuation at 1W/4W; this supports keeping COT as positioning/context rather than a core directional engine.",
+    "Liquidity is weak as a direct directional signal and loses effectiveness in the recent sample; keep it as overlay.",
+    "Macro + Rates alignment is the most encouraging recent combination at 4W, but the sample is only 10 checkpoints and is not sufficient for a validated claim."
+  ],
+  "model_implications": [
+    "Do not promote Rates-alone, COT-flow or Liquidity-alone to structural drivers.",
+    "Keep Macro as a core pillar but do not treat its historical relationship as a standalone trading signal.",
+    "Keep COT and Liquidity as overlays/context, consistent with the current architecture.",
+    "Continue the clean forward OOS for the full canonical engine before any further rule promotion or threshold change."
+  ]
+}
