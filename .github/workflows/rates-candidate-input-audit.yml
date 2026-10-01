@@ -1,0 +1,57 @@
+name: Rates Candidate Input Audit
+
+on:
+  push:
+    branches: [staging-queue-impact-sim-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inspect GBP JPY rates candidate inputs
+        run: |
+          cat > inputs.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof structuralRatesChangeCandidate==='function'&&typeof evaluateSourceAwareGuards==='function',{timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const pick=c=>{
+                const cb=NATIVE_CB_DATA?.[c]||{};
+                const rates=NATIVE_RATES_DATA?.[c]||{};
+                let dyn=null,cls=null,cand=null,guard=null;
+                try{dyn=currencyDynamics(c)?.rates||null}catch(e){}
+                try{cls=v234StanceClass(cb)}catch(e){}
+                try{cand=structuralRatesChangeCandidate(c)}catch(e){}
+                try{guard=evaluateSourceAwareGuards(c)?.rates||null}catch(e){}
+                return {
+                  cb:{last_date:cb.last_date||null,stance:cb.stance||null,action:cb.action||null,impulse:cb.impulse||null,official_bias:cb.official_bias||null,stance_class:cls,
+                    market_pricing:{as_of:cb.market_pricing?.as_of||null,quality:cb.market_pricing?.quality||cb.pricing_tier||null,source:cb.market_pricing?.source||null}},
+                  rates:{date:rates.date||null,y2:rates.y2??rates.current2??null,history2_last:rates.history2?.values?.at(-1)??null,history2_prev:rates.history2?.values?.at(-2)??null},
+                  dynamics:dyn,
+                  candidate:cand,
+                  guard
+                };
+              };
+              return {GBP:pick('GBP'),JPY:pick('JPY')};
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node inputs.js
