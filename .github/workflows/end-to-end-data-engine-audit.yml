@@ -1,0 +1,103 @@
+name: End to End Data Engine Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit end-to-end propagation
+        run: |
+          cat > e2e-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pairs=(D?.pairs||[]).map(x=>x.pair);
+              const issues=[];
+              const stateNow=()=>Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                return [c,{base:s.base,macro:s.macro,policy:s.policy,change:s.improvementState}];
+              }));
+              const pairNow=()=>Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{fav:f.fav,quality:f.quality,macro:f.structural?.macro?.side,policy:f.structural?.policy?.side,price:f.priceReading}];
+              }));
+              const baselineStates=stateNow();
+              const baselinePairs=pairNow();
+              // Recompute expected currency structure directly from canonical macro/policy signs.
+              for(const c of ccys){
+                const x=baselineStates[c];
+                let expected='MISTA';
+                if(x.macro>0&&x.policy>0) expected='FORTE';
+                else if(x.macro<0&&x.policy<0) expected='FRAGILE';
+                else if((x.macro>0&&x.policy===0)||(x.policy>0&&x.macro===0)) expected='COSTRUTTIVA';
+                else if((x.macro<0&&x.policy===0)||(x.policy<0&&x.macro===0)) expected='DEBOLE';
+                if(x.base!==expected) issues.push({type:'CURRENCY_STRUCTURE_MISMATCH',c,actual:x.base,expected,macro:x.macro,policy:x.policy});
+              }
+              // Overlay shock isolation: Price/COT/Liquidity must not alter structural state or pair fav/quality.
+              for(const c of ccys){
+                const intel=currencyIntelData?.[c];
+                if(!intel) continue;
+                const saved={
+                  price:Array.isArray(intel.price)?intel.price.slice():intel.price,
+                  cot:Array.isArray(intel.cot)?intel.cot.slice():intel.cot,
+                  liq:Array.isArray(intel.liq)?intel.liq.slice():intel.liq
+                };
+                try{
+                  intel.price=['Contrario','stateNeg','AUDIT_SHOCK'];
+                  intel.cot=['ESTREMO','stateMix','AUDIT_SHOCK'];
+                  intel.liq=['Contrario','stateNeg','AUDIT_SHOCK'];
+                  const st=stateNow(), pp=pairNow();
+                  for(const k of ccys){
+                    if(st[k].base!==baselineStates[k].base||st[k].macro!==baselineStates[k].macro||st[k].policy!==baselineStates[k].policy)
+                      issues.push({type:'OVERLAY_CHANGED_CURRENCY_CORE',shock_currency:c,affected:k,before:baselineStates[k],after:st[k]});
+                  }
+                  for(const p of pairs){
+                    if(pp[p].fav!==baselinePairs[p].fav||pp[p].quality!==baselinePairs[p].quality||pp[p].macro!==baselinePairs[p].macro||pp[p].policy!==baselinePairs[p].policy)
+                      issues.push({type:'OVERLAY_CHANGED_PAIR_CORE',shock_currency:c,pair:p,before:baselinePairs[p],after:pp[p]});
+                  }
+                }finally{
+                  intel.price=saved.price;intel.cot=saved.cot;intel.liq=saved.liq;
+                }
+              }
+              const source=Function.prototype.toString.call(derivePairDecisionFrame);
+              if(/D\.pairStates/.test(source)) issues.push({type:'LEGACY_PAIR_SOURCE_REINTRODUCED'});
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              if((health?.hard_errors||[]).length) issues.push({type:'PRODUCTION_HEALTH_HARD_ERRORS',errors:health.hard_errors});
+              return {
+                issues,
+                currencies:baselineStates,
+                pairs:baselinePairs,
+                health:{status:health?.status,hard_errors:health?.hard_errors||[],warnings:health?.warnings||[]},
+                data_summary:{
+                  price_asof:D?.prices?.at(-1)?.Date||null,
+                  cot_asof:D?.cot?.USD?.as_of||D?.cot?.USD?.date||null,
+                  eur_rates_mode:rate2YSeries('EUR')?.same_basis_mode||'FULL_HISTORY',
+                  jpy_2y_points:rate2YSeries('JPY')?.values?.length||0
+                }
+              };
+            });
+            console.log('===E2E_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===E2E_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node e2e-audit.js
