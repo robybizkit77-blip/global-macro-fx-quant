@@ -1,0 +1,72 @@
+name: Macro Data Semantics Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit macro series semantics
+        run: |
+          cat > macro-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[];
+              for(const c of ccys){
+                for(const x of (S?.[c]||[])){
+                  if(!['Crescita','Lavoro','Inflazione','Liquidità'].includes(x.category)) continue;
+                  const pol=typeof macroSeriesPolarity==='function'?macroSeriesPolarity(x.category,x.label):null;
+                  const vals=(x.values||[]).map(Number).filter(Number.isFinite);
+                  rows.push({
+                    ccy:c,category:x.category,label:x.label||'',frequency:x.frequency||null,
+                    observations:vals.length,last_date:x.last_date||x.dates?.at(-1)||null,
+                    polarity:pol,
+                    last:vals.length?vals.at(-1):null,
+                    prev:vals.length>1?vals.at(-2):null
+                  });
+                }
+              }
+              const issues=[];
+              rows.forEach(r=>{
+                const l=String(r.label).toLowerCase();
+                if(r.category==='Lavoro' && /(unemployment|disoccup|claims|sussidi)/i.test(l) && r.polarity!==-1)
+                  issues.push({type:'LABOUR_BAD_SIGN',...r});
+                if(r.category==='Lavoro' && /(employment|occupazione|payroll|job)/i.test(l) && !/(unemployment|disoccup|claims|sussidi)/i.test(l) && r.polarity===-1)
+                  issues.push({type:'LABOUR_BAD_SIGN',...r});
+                if(['Crescita','Lavoro'].includes(r.category) && r.observations<8)
+                  issues.push({type:'INSUFFICIENT_HISTORY',...r});
+                if(r.polarity===0 && !/(risparmio|saving|costo unitario|unit labour cost)/i.test(l) && ['Crescita','Lavoro'].includes(r.category))
+                  issues.push({type:'UNEXPECTED_NEUTRAL_POLARITY',...r});
+              });
+              const blocks=Object.fromEntries(ccys.map(c=>[c,{
+                growth:typeof blockDynamics==='function'?blockDynamics(c,'Crescita'):null,
+                labour:typeof blockDynamics==='function'?blockDynamics(c,'Lavoro'):null,
+                inflation:typeof blockDynamics==='function'?blockDynamics(c,'Inflazione'):null
+              }]));
+              return {rows,issues,blocks};
+            });
+            console.log('===MACRO_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===MACRO_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node macro-audit.js
