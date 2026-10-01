@@ -3795,3 +3795,64 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   else build();
 })();
 </script>
+
+
+<script id="gmfq-runtime-secondary-metadata-completion-20261001">
+(function(){
+  'use strict';
+  try{
+    if(typeof S==='undefined') return;
+    const set=(x,f,u)=>{
+      if(!x.frequency&&f) x.frequency=f;
+      if(!x.unit&&u) x.unit=u;
+      if((!x.freq)&&x.frequency) x.freq=x.frequency;
+      if((!x.units)&&x.unit) x.units=x.unit;
+    };
+    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    for(const c of ccys){
+      for(const x of (S[c]||[])){
+        const id=String(x.id||'');
+        if(x.frequency&&x.unit) continue;
+
+        if(c==='USD'){
+          if(/US_HOUST/.test(id)) set(x,'M','Thousands of units, SAAR');
+          else if(/US_MORTGAGE30US/.test(id)) set(x,'W','Percent');
+          else if(/US_PERMIT/.test(id)) set(x,'M','Thousands of units, SAAR');
+          else if(/US_HSN1F/.test(id)) set(x,'M','Thousands of units, SAAR');
+          else if(/US_(T10YIE|DFII10|THREEFYTP10|DGS2|DGS5|DGS10|DGS30)/.test(id)) set(x,'D','Percent');
+          else if(/US_CFNAI_LEAD_INDICATOR/.test(id)) set(x,'M','Index');
+        } else if(c==='EUR'){
+          if(/EA_(HH_LOANS|NFC_LOANS|M3)_history/.test(id)) set(x,'M','EUR millions, source-native outstanding amount');
+          else if(/EA_ZC_(2Y|5Y|10Y|30Y)/.test(id)) set(x,'D','Percent per annum');
+          else if(/EA_ECFIN_BCS_LEAD_INDICATORS_history_(ESI|EEI)/.test(id)) set(x,'M','Index, long-term average=100');
+          else if(/EA_ECFIN_BCS_LEAD_INDICATORS_history_/.test(id)) set(x,'M','Balance, percentage points');
+        } else if(c==='GBP'){
+          if(/GBP_RATES_2016_2026_/.test(id)) set(x,'D','Percent per annum');
+          else if(/UK_BOE_DMP_LEAD_INDICATORS_history_/.test(id)) set(x,'M','Percent');
+        } else if(c==='JPY'){
+          if(/JPY_RATES_2016_2026_/.test(id)) set(x,'D','Percent per annum');
+          else if(/JP_BOJ_TANKAN_LEAD_INDICATORS_history_/.test(id)) set(x,'Q','Diffusion index, percentage points');
+        } else if(c==='CHF'){
+          if(/CH_CONFED_SPOT_/.test(id)) set(x,'D','Percent per annum');
+          else if(/CH_SECO_CONSUMER_SENTIMENT_LEAD_history_/.test(id)) set(x,'Q','Index points');
+        } else if(c==='CAD'){
+          if(/CAD_RATES_2016_2026_/.test(id)) set(x,'D','Percent per annum');
+          else if(/CA_BOC_BOS_LEAD_INDICATORS_history_/.test(id)) set(x,'Q','Standardized survey indicator');
+        } else if(c==='AUD'){
+          if(/AU_FCMYGBAG/.test(id)) set(x,'D','Percent per annum');
+          else if(/AU_OECD_CLI_LEAD_INDICATOR_history_/.test(id)) set(x,'M','Index, long-term average=100');
+        } else if(c==='NZD'){
+          if(/NZD_RATES_2016_2026_RBNZ_B2_/.test(id)) set(x,'D','Percent per annum');
+        }
+      }
+    }
+    window.GMFQ_RUNTIME_SECONDARY_METADATA_COMPLETION={
+      status:'APPLIED',
+      date:'2026-10-01',
+      policy:'METADATA_ONLY__NO_VALUES_DATES_RULES_CHANGED'
+    };
+  }catch(e){
+    window.GMFQ_RUNTIME_SECONDARY_METADATA_COMPLETION={status:'FAIL',error:String(e)};
+  }
+})();
+</script>
