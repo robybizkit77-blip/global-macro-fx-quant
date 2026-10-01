@@ -523,8 +523,8 @@ hook.textContent=`${ch} · ${pr}`;
 }
 function executiveNarrative(){
 const xs=CCYS.map(currentLayerSnapshot);
-const improve=xs.filter(x=>x.imp.state==='MIGLIORA'||x.imp.state==='EARLY SHIFT POSITIVO').map(x=>x.c);
-const worsen=xs.filter(x=>x.imp.state==='PEGGIORA'||x.imp.state==='EARLY SHIFT NEGATIVO').map(x=>x.c);
+const improve=xs.filter(x=>x.imp.state==='MIGLIORA').map(x=>x.c);
+const worsen=xs.filter(x=>x.imp.state==='PEGGIORA').map(x=>x.c);
 const rates=xs.map(x=>({c:x.c,v:Number(x.rates.chg2_bp)})).filter(x=>Number.isFinite(x.v)).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
 const r0=rates[0];
 const risk=safe(()=>deriveGlobalRiskState(),{state:'MISTO'})||{state:'MISTO'};
@@ -532,6 +532,8 @@ let main='Il quadro G8 resta misto: non c’è una singola narrativa valida per 
 const parts=[];
 if(improve.length) parts.push(`${improve.join(' e ')} mostrano supporto in aumento`);
 if(worsen.length) parts.push(`${worsen.join(' e ')} mostrano supporto in calo`);
+const transition=xs.filter(x=>String(x.imp.state||'').includes('EARLY SHIFT')||String(x.imp.state||'').includes('TURNING POINT')).map(x=>x.c);
+if(transition.length) parts.push(`${transition.join(' e ')} mostrano una possibile svolta ancora da confermare`);
 if(r0) parts.push(`il movimento 2Y più ampio è ${r0.c} ${r0.v>=0?'+':''}${r0.v.toFixed(1)} bp`);
 if(parts.length) main=parts.join(' · ')+'.';
 const sub=`Giornata operativa ${prettyDate(businessDate())}: Macro + Rates/CB definiscono la struttura; Liquidità e Risk sono overlay; COT modifica il rischio; Price (${prettyDate(priceDate())}) conferma o diverge. Ogni layer mantiene il proprio as-of. Rischio globale: ${risk.state||'misto'}.`;
