@@ -61,12 +61,15 @@ jobs:
                 }];
               }));
               const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
-              const rules=window.MODEL_RULES||null;
+              const rules=(typeof MODEL_RULES!=='undefined'?MODEL_RULES:null);
+              const fwd=(typeof forwardValidationSummary==='function'?forwardValidationSummary():null);
               return {
                 schema:'GMFQ_CANONICAL_OOS_T0_V2',
                 captured_at:new Date().toISOString(),
                 data_as_of:String(D?.asOf||''),
+                price_as_of:String(D?.prices?.at(-1)?.Date||''),
                 model_rules_version:rules?.version||null,
+                rules_fingerprint:fwd?.current_rules_fingerprint||null,
                 oos_rule:rules?.freeze?.oosRule||null,
                 horizons_days:rules?.backtestProtocol?.horizonsDays||[7,28,84],
                 health_status:health?.status||null,
