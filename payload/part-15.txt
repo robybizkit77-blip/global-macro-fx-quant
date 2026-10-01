@@ -3514,3 +3514,64 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   };
 })();
 </script>
+
+<script id="gmfq-usd-bea-annual-data-only-20261001">
+(function(){
+  'use strict';
+  const revised={
+    'US_PCEPI_history_value':[
+      ['2026-01-01',128.845],['2026-02-01',129.293],['2026-03-01',130.105],['2026-04-01',130.672],
+      ['2026-05-01',131.241],['2026-06-01',131.106],['2026-07-01',131.172],['2026-08-01',131.579]
+    ],
+    'US_PCEPILFE_history_value':[
+      ['2026-01-01',128.270],['2026-02-01',128.701],['2026-03-01',129.030],['2026-04-01',129.395],
+      ['2026-05-01',129.796],['2026-06-01',129.969],['2026-07-01',130.133],['2026-08-01',130.455]
+    ],
+    'US_PCEC96_history_value':[
+      ['2026-01-01',16596.8],['2026-02-01',16631.3],['2026-03-01',16674.3],['2026-04-01',16727.4],
+      ['2026-05-01',16784.6],['2026-06-01',16854.0],['2026-07-01',16862.5],['2026-08-01',16955.3]
+    ],
+    'US_DSPIC96_history_DSPIC96':[
+      ['2026-01-01',18322.5],['2026-02-01',18284.8],['2026-03-01',18301.6],['2026-04-01',18231.9],
+      ['2026-05-01',18292.8],['2026-06-01',18358.4],['2026-07-01',18415.4],['2026-08-01',18410.5]
+    ],
+    'US_PI_history_PI':[
+      ['2026-01-01',26973.5],['2026-02-01',27009.9],['2026-03-01',27188.1],['2026-04-01',27219.3],
+      ['2026-05-01',27417.1],['2026-06-01',27479.3],['2026-07-01',27560.3],['2026-08-01',27626.9]
+    ],
+    'US_PSAVERT_history_PSAVERT':[
+      ['2026-01-01',5.6],['2026-02-01',5.3],['2026-03-01',5.1],['2026-04-01',4.4],
+      ['2026-05-01',4.4],['2026-06-01',4.4],['2026-07-01',4.6],['2026-08-01',4.1]
+    ]
+  };
+  function reviseSeries(id,points){
+    const x=(S?.USD||[]).find(z=>z.id===id);
+    if(!x||!Array.isArray(x.dates)||!Array.isArray(x.values)) throw new Error('Missing series '+id);
+    const map=new Map(x.dates.map((d,i)=>[String(d),Number(x.values[i])]));
+    for(const [d,v] of points) map.set(d,Number(v));
+    const rows=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+    x.dates.splice(0,x.dates.length,...rows.map(z=>z[0]));
+    x.values.splice(0,x.values.length,...rows.map(z=>z[1]));
+    x.last_date=rows.at(-1)[0];
+    x.last_value=rows.at(-1)[1];
+    x.revision_as_of='2026-09-30';
+    x.revision_source='BEA 2026 annual update via canonical FRED series';
+    x.data_status='REVISED_OFFICIAL';
+  }
+  try{
+    for(const [id,p] of Object.entries(revised)) reviseSeries(id,p);
+    window.GMFQ_USD_BEA_ANNUAL_DATA_ONLY={
+      status:'PASS',
+      as_of:'2026-09-30',
+      source:'U.S. Bureau of Economic Analysis · 2026 Annual Update / FRED',
+      series:Object.keys(revised),
+      rule:'DATA_ONLY_NO_CALENDAR_NEWS_OR_RULE_CHANGE'
+    };
+    try{if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();}catch(e){}
+    try{if(typeof stableModelRefresh==='function') stableModelRefresh();}catch(e){}
+  }catch(e){
+    window.GMFQ_USD_BEA_ANNUAL_DATA_ONLY={status:'FAIL',error:String(e?.message||e)};
+    console.error('GMFQ BEA data-only update',e);
+  }
+})();
+</script>
