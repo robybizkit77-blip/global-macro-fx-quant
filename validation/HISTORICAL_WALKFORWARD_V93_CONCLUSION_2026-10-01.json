@@ -1,0 +1,65 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "HISTORICAL_WALKFORWARD_V93_CONCLUSION_2026-10-01",
+  "source": "validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "status": "NO_RULE_CHANGE__PSEUDO_OOS_ONLY",
+  "findings": {
+    "short_horizon": "No continuation edge at 1W or 4W for CONTRASTO STRUTTURALE FORTE; both hit rates are below 50% and mean signed returns are negative.",
+    "strong_12w": {
+      "monthly_pair_level": {
+        "n": 313,
+        "hit": 0.5463258785942492,
+        "mean_pct": 0.18855289675144257,
+        "median_pct": 0.4649024727875428
+      },
+      "recent_2023_2026": {
+        "n": 169,
+        "hit": 0.5502958579881657,
+        "mean_pct": 0.15477463836275115,
+        "median_pct": 0.33112387152709477
+      },
+      "monthly_basket": {
+        "n_checkpoints": 78,
+        "hit": 0.5769230769230769,
+        "mean_pct": 0.3442418698525326,
+        "median_pct": 0.6187469219562831
+      },
+      "nonoverlap_quarterly_pair": {
+        "n": 115,
+        "hit": 0.5304347826086957,
+        "mean_pct": -0.17032493864182924,
+        "median_pct": 0.3057527913076896
+      },
+      "nonoverlap_quarterly_basket": {
+        "n_checkpoints": 28,
+        "hit": 0.5357142857142857,
+        "mean_pct": -0.002065687149641187,
+        "median_pct": 0.3207102188719932
+      },
+      "interpretation": "Suggestive medium-horizon directional structure, but not robust alpha: non-overlap mean collapses to approximately zero and pair-level mean turns negative."
+    },
+    "partial_12w": {
+      "n": 937,
+      "hit": 0.48772678762006405,
+      "mean_pct": -0.1367199631523525,
+      "median_pct": -0.14433705727665558,
+      "recent_mean_pct": -0.2354453337951508,
+      "interpretation": "No evidence supporting promotion of VANTAGGIO RELATIVO PARZIALE to a directional signal."
+    }
+  },
+  "limitations": [
+    "Macro histories are current-revised observation histories, not release-date vintage PIT.",
+    "EUR historical Rates remain WITHHELD because the legacy chain is not certified same-basis with the current validated ECB curve.",
+    "Historical CB/OIS expectations are not reconstructed because homogeneous G8 PIT snapshots are unavailable.",
+    "Cross-sectional pair observations are dependent; basket and non-overlap checks are therefore required."
+  ],
+  "decision": [
+    "Keep current engine architecture unchanged.",
+    "Keep CONTRASTO STRUTTURALE FORTE as a research/attention hierarchy, not an automatic trade signal.",
+    "Keep VANTAGGIO RELATIVO PARZIALE as monitor-only.",
+    "Do not tune thresholds from this historical exercise.",
+    "Use the clean forward OOS T0 V3 as the decisive validation path."
+  ]
+}
