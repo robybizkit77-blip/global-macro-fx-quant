@@ -3256,9 +3256,9 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     const out={up:[],down:[],turn:[],stable:[]};
     rows.forEach(x=>{
       const v=x.change;
-      if(v==='MIGLIORA'||v.includes('EARLY SHIFT POSITIVO')) out.up.push(x.c);
-      else if(v==='PEGGIORA'||v.includes('EARLY SHIFT NEGATIVO')) out.down.push(x.c);
-      else if(v.includes('TURNING POINT')) out.turn.push(x.c);
+      if(v==='MIGLIORA') out.up.push(x.c);
+      else if(v==='PEGGIORA') out.down.push(x.c);
+      else if(v.includes('EARLY SHIFT')||v.includes('TURNING POINT')) out.turn.push(x.c);
       else out.stable.push(x.c);
     });
     return out;
