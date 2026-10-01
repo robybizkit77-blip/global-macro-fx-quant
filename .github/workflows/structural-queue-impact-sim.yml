@@ -1,0 +1,64 @@
+name: Structural Queue Impact Simulation
+
+on:
+  push:
+    branches: [staging-queue-impact-sim-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Simulate queued structural commits
+        run: |
+          cat > sim.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof commitQueuedStructuralChanges==='function'&&typeof rebuildStructuralChangeQueue==='function',{timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const snap=()=>({
+                states:Object.fromEntries(ccys.map(c=>{const s=deriveCurrencyState(c)||{};return[c,{base:s.base||null,macro:s.macro??null,policy:s.policy??null,improvement:s.improvementState||null,driver:deriveCurrencyDriver(c)||null}]})),
+                pairs:Object.fromEntries(pairs.map(p=>{const f=derivePairDecisionFrame(p)||{};return[p,{fav:f.fav||null,quality:f.quality||null,macro:f.structural?.macro?.side||null,policy:f.structural?.policy?.side||null}]})),
+                queue:rebuildStructuralChangeQueue()
+              });
+              const before=snap();
+              const gbp=commitQueuedStructuralChanges('GBP',['rates']);
+              const afterGbp=snap();
+              const jpy=commitQueuedStructuralChanges('JPY',['rates']);
+              const afterBoth=snap();
+              const diffStates=(a,b)=>Object.fromEntries(ccys.filter(c=>JSON.stringify(a.states[c])!==JSON.stringify(b.states[c])).map(c=>[c,{before:a.states[c],after:b.states[c]}]));
+              const diffPairs=(a,b)=>Object.fromEntries(pairs.filter(p=>JSON.stringify(a.pairs[p])!==JSON.stringify(b.pairs[p])).map(p=>[p,{before:a.pairs[p],after:b.pairs[p]}]));
+              return {
+                before_queue:before.queue,
+                gbp_commit:gbp,
+                jpy_commit:jpy,
+                gbp_state_diff:diffStates(before,afterGbp),
+                gbp_pair_diff:diffPairs(before,afterGbp),
+                both_state_diff:diffStates(before,afterBoth),
+                both_pair_diff:diffPairs(before,afterBoth),
+                final_queue:afterBoth.queue,
+                fingerprint:(typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null)
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node sim.js
