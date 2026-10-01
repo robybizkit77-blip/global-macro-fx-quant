@@ -1,0 +1,74 @@
+name: CB OIS Data Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit CB and OIS data
+        run: |
+          cat > cb-ois-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[],issues=[];
+              for(const c of ccys){
+                const cb=NATIVE_CB_DATA?.[c]||{};
+                const pricing=cb.market_pricing||{};
+                const ois=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c]||window.GMFQ_OIS?.currency?.(c)||null;
+                const intel=(typeof currencyIntelData!=='undefined'?currencyIntelData?.[c]:null)||{};
+                const policy=typeof policyFamilyPolarity==='function'?policyFamilyPolarity(intel):null;
+                const row={
+                  c,
+                  cb_date:cb.last_date||cb.date||cb.as_of||null,
+                  rate:Number.isFinite(Number(cb.rate))?Number(cb.rate):null,
+                  action:cb.action||null,
+                  stance:cb.stance||null,
+                  pricing_asof:pricing.as_of||ois?.as_of||null,
+                  pricing_quality:pricing.quality||cb.pricing_tier||ois?.status||null,
+                  pricing_source:pricing.source||ois?.source||null,
+                  pricing_present:!!(pricing.as_of||ois),
+                  policy_polarity:policy,
+                  intel_cb:Array.isArray(intel.cb)?intel.cb[0]:null,
+                  intel_rates:Array.isArray(intel.rates)?intel.rates[0]:null,
+                  ois
+                };
+                rows.push(row);
+                if(!row.cb_date) issues.push({type:'MISSING_CB_DATE',...row});
+                if(row.rate==null) issues.push({type:'MISSING_CB_RATE',...row});
+                if(!row.action) issues.push({type:'MISSING_CB_ACTION',...row});
+                if(!Array.isArray(intel.cb)) issues.push({type:'MISSING_CB_INTEL',...row});
+                const q=String(row.pricing_quality||'').toUpperCase();
+                const unresolved=/WITHHELD|UNRESOLVED|MISSING|PARTIAL|INDIRECT|NOT_COMPARABLE/.test(q);
+                if(!row.pricing_present) issues.push({type:'PRICING_WITHHELD_OR_MISSING',severity:'INFO',...row});
+                if(unresolved && policy!==0 && String(intel.rates?.[0]||'').toLowerCase().includes('favorevole'))
+                  issues.push({type:'CHECK_PRICING_NOT_PROMOTED_TO_CORE',severity:'REVIEW',...row});
+              }
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {rows,issues,health:{status:health?.status,hard_errors:health?.hard_errors||[],warnings:health?.warnings||[]}};
+            });
+            console.log('===CB_OIS_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===CB_OIS_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cb-ois-audit.js
