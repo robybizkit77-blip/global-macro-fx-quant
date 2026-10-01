@@ -1,0 +1,74 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "MACRO_DATA_VALIDATION_2026-10-01",
+  "status": "PASS_WITH_TARGETED_REVIEW",
+  "scope": "G8 Macro data validation: historical stable-state quality + live series semantics feeding Growth/Labour/Inflation blocks.",
+  "historical_stability": {
+    "currencies": 8,
+    "blocks": 52,
+    "monthly_currencies": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD"
+    ],
+    "quarterly_currencies": [
+      "NZD"
+    ],
+    "median_switches_per_year": 1.81,
+    "one_period_flip_result": "PASS",
+    "note": "No A→B→A one-period flips detected in current stable histories."
+  },
+  "semantic_runtime_audit": {
+    "series_checked": 104,
+    "bad_sign_errors": 0,
+    "insufficient_history_flags": 4,
+    "insufficient_history": [
+      "NZD · RBNZ survey — disoccupazione 1Y · 6 obs",
+      "NZD · RBNZ survey — disoccupazione 2Y · 6 obs",
+      "NZD · RBNZ survey — salari 1Y · 6 obs",
+      "NZD · RBNZ survey — salari 2Y · 6 obs"
+    ],
+    "protection": "normalizedSeriesImpulse requires >=8 observations, therefore these 4 series are automatically excluded from blockDynamics and do not contaminate the current Macro signal."
+  },
+  "targeted_reviews": [
+    {
+      "currency": "AUD",
+      "block": "wages",
+      "flag": "TOO_STICKY_REVIEW",
+      "evidence": "~0.1 switches/year; median stable duration ~58 months.",
+      "decision": "Keep as targeted review; do not alter threshold ad hoc."
+    },
+    {
+      "currency": "CHF",
+      "flag": "HIGH_RAW_TO_STABLE_TRANSFORMATION",
+      "evidence": "Stable filter differs frequently from raw, especially activity/domestic demand.",
+      "decision": "Not rejected: country interpreter explicitly uses two-confirmation hysteresis; historical reversal within 2 periods ~7.5%."
+    },
+    {
+      "currency": "GBP",
+      "flag": "HIGH_RAW_TO_STABLE_TRANSFORMATION",
+      "evidence": "Stable filter differs frequently from raw, especially activity/consumer demand.",
+      "decision": "Not rejected: country interpreter explicitly uses two-confirmation hysteresis; historical reversal within 2 periods ~3.0%."
+    },
+    {
+      "currency": "NZD",
+      "flag": "SHORT_SURVEY_HISTORY",
+      "evidence": "4 labour survey series have only 6 observations.",
+      "decision": "WITHHELD from dynamics until >=8 observations; NZD historical stable states remain evaluated at native quarterly frequency."
+    }
+  ],
+  "safeguards": [
+    "No interpolation",
+    "No forward fill of source values",
+    "Missing != zero",
+    "Quarterly NZD evaluated at native frequency",
+    "No cross-layer aggregate score",
+    "Candidate/early-warning states cannot overturn stable state alone",
+    "Short history <8 observations excluded from normalized dynamics"
+  ],
+  "conclusion": "Macro data layer is structurally usable for the next validation stage. No sign bug or contamination found. Proceed to Rates data validation while retaining AUD wages and NZD short-history flags."
+}
