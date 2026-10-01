@@ -947,7 +947,7 @@ window.v413DrawOisCurve=function(c){
 };
 
 window.v401RatesOriginDiagnostic=function(c,d){
-  const n=x=>Number.isFinite(Number(x))?Number(x):null;
+  const n=x=>(x===null||x===undefined||x==='')?null:(Number.isFinite(Number(x))?Number(x):null);
   const ch2=n(d?.chg2_bp), ch10=n(d?.chg10_bp);
   const minMove=3;
   const gap=3;
