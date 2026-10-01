@@ -3072,6 +3072,16 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(!xs||!xs.length)return 'Nessuna';
     return xs.map(c=>'<span class="ccy">'+safe(()=>flagSvg(c),'')+' '+c+'</span>').join(' · ');
   }
+  function structuralBuckets(){
+    const out={fav:[],weak:[],mixed:[]};
+    CCYS.forEach(c=>{
+      const base=String(safe(()=>deriveCurrencyState(c)?.base,'MISTA')||'MISTA').toUpperCase();
+      if(base==='FORTE'||base==='COSTRUTTIVA') out.fav.push(c);
+      else if(base==='FRAGILE'||base==='DEBOLE') out.weak.push(c);
+      else out.mixed.push(c);
+    });
+    return out;
+  }
   function changeBuckets(){
     const out={up:[],down:[],turn:[],stable:[]};
     CCYS.forEach(c=>{
@@ -3111,6 +3121,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       if(grid) grid.insertAdjacentElement('beforebegin',host);
       else view.prepend(host);
     }
+    const structure=structuralBuckets();
     const b=changeBuckets();
     const pairs=topPairs();
     const pairText=pairs.length
@@ -3122,11 +3133,16 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     const pairNote=pairs.length
       ? pairs.map(x=>String(x.f?.quality||'').replace('VANTAGGIO RELATIVO ','')).join(' · ')
       : 'Aspettare maggiore differenziazione Macro + Tassi/CB';
+    const structureText=
+      '<b>Favorevoli:</b> '+humanList(structure.fav)+
+      '<br><b>Deboli:</b> '+humanList(structure.weak)+
+      '<br><b>Miste:</b> '+humanList(structure.mixed);
     host.innerHTML=
-      '<div class="gmfqExecCard pos"><div class="k">FX · Sta migliorando</div><div class="v">'+humanList(b.up)+'</div><div class="n">Sintesi complessiva: Macro + Tassi/CB; il prezzo resta conferma.</div></div>'+
-      '<div class="gmfqExecCard neg"><div class="k">FX · Sta peggiorando</div><div class="v">'+humanList(b.down)+'</div><div class="n">Sintesi complessiva: Macro + Tassi/CB; il prezzo resta conferma.</div></div>'+
-      '<div class="gmfqExecCard warn"><div class="k">FX · Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Segnale complessivo iniziale: serve conferma da Macro/Rates e prezzo.</div></div>'+
-      '<div class="gmfqExecCard neu"><div class="k">Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
+      '<div class="gmfqExecCard neu"><div class="k">FX · Struttura attuale</div><div class="v">'+structureText+'</div><div class="n">Livello strutturale: Macro + Tassi/CB. Questo è lo stesso stato usato dal motore dei pair.</div></div>'+
+      '<div class="gmfqExecCard pos"><div class="k">FX · Migliora di recente</div><div class="v">'+humanList(b.up)+'</div><div class="n">Cambiamento recente, non sinonimo di valuta già forte.</div></div>'+
+      '<div class="gmfqExecCard neg"><div class="k">FX · Peggiora di recente</div><div class="v">'+humanList(b.down)+'</div><div class="n">Cambiamento recente, separato dal livello strutturale attuale.</div></div>'+
+      '<div class="gmfqExecCard warn"><div class="k">FX · Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Transizione Macro/Rates non ancora pienamente allineata.</div></div>'+
+      '<div class="gmfqExecCard neu"><div class="k">Pair · Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
   }
   const old=window.v302ConsolidatedSync;
   window.v302ConsolidatedSync=function(){
