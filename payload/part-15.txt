@@ -4791,3 +4791,77 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-macro-surprise-panel-20261001">
+(function(){
+  'use strict';
+  function esc(s){return String(s??'—').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+  function cls(x){
+    x=String(x||'').toUpperCase();
+    if(x==='POSITIVE') return 'pos';
+    if(x==='NEGATIVE') return 'neg';
+    if(x==='NEUTRAL') return 'neu';
+    return 'warn';
+  }
+  function ensureStyle(){
+    if(document.getElementById('gmfqMacroSurpriseStyle')) return;
+    const s=document.createElement('style');
+    s.id='gmfqMacroSurpriseStyle';
+    s.textContent=`
+      .gmfqMacroSurprise{margin:10px 0 12px;padding:11px 12px;border:1px solid rgba(90,115,130,.22);border-radius:14px;background:rgba(255,255,255,.72)}
+      .gmfqMacroSurprise .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+      .gmfqMacroSurprise .lab{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#718691;font-weight:800}
+      .gmfqMacroSurprise .title{font-size:13px;font-weight:800;color:#1e3038;margin-top:2px}
+      .gmfqMacroSurprise .badge{font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;background:#eef3f5;color:#506773;white-space:nowrap}
+      .gmfqMacroSurprise .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+      .gmfqMacroSurprise .cell{padding:8px;border-radius:10px;background:rgba(244,247,248,.9)}
+      .gmfqMacroSurprise .cell span{display:block;font-size:8px;color:#718691;text-transform:uppercase;font-weight:800}
+      .gmfqMacroSurprise .cell b{display:block;font-size:13px;margin-top:2px}
+      .gmfqMacroSurprise .events{display:grid;gap:6px;margin-top:9px}
+      .gmfqMacroSurprise .ev{font-size:9px;line-height:1.35;padding:7px 8px;border-radius:9px;background:#f7f9fa}
+      .gmfqMacroSurprise .ev b{font-size:9.5px}
+      .gmfqMacroSurprise .pos b{color:#237a57}.gmfqMacroSurprise .neg b{color:#a43f55}.gmfqMacroSurprise .neu b{color:#667b84}.gmfqMacroSurprise .warn b{color:#9a6a22}
+      .gmfqMacroSurprise .note{margin-top:8px;font-size:8.5px;color:#6f838c;line-height:1.35}
+      @media(max-width:640px){.gmfqMacroSurprise .grid{grid-template-columns:repeat(3,1fr)}.gmfqMacroSurprise{padding:10px}.gmfqMacroSurprise .title{font-size:12px}}
+    `;
+    document.head.appendChild(s);
+  }
+  function selected(){
+    try{return window.v232MacroCurrency||'USD'}catch(e){return 'USD'}
+  }
+  function render(c){
+    ensureStyle();
+    const host=document.querySelector('#macro .v232CountryTop') || document.querySelector('#macro .v232MacroThesis') || document.querySelector('#macro');
+    if(!host) return;
+    let box=document.getElementById('gmfqMacroSurprisePanel');
+    if(!box){box=document.createElement('div');box.id='gmfqMacroSurprisePanel';box.className='gmfqMacroSurprise';host.insertAdjacentElement('afterend',box);}
+    const D=window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC;
+    const rows=(D?.events?.[c]||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    const applicable=rows.filter(x=>x.consensus_applicable!==false);
+    const usable=applicable.filter(x=>x.consensus_available);
+    const pos=usable.filter(x=>x.surprise_class==='POSITIVE').length;
+    const neg=usable.filter(x=>x.surprise_class==='NEGATIVE').length;
+    const neu=usable.filter(x=>x.surprise_class==='NEUTRAL').length;
+    const recent=rows.slice(0,3);
+    const status=!D?'WITHHELD':(D.status||'—');
+    box.innerHTML=`
+      <div class="top"><div><div class="lab">Sorprese recenti vs consenso</div><div class="title">${esc(c)} · ultimi 7 giorni</div></div><div class="badge">${esc(status)}</div></div>
+      <div class="grid">
+        <div class="cell pos"><span>Positive</span><b>${pos}</b></div>
+        <div class="cell neg"><span>Negative</span><b>${neg}</b></div>
+        <div class="cell neu"><span>Neutre / miste</span><b>${neu}</b></div>
+      </div>
+      <div class="events">${recent.length?recent.map(x=>`<div class="ev ${cls(x.surprise_class)}"><b>${esc(x.date)} · ${esc(x.event)}</b><br>Prec. ${esc(x.previous)} · Cons. ${esc(x.consensus)} · Uscito ${esc(x.actual)}<br>${esc(x.surprise||x.direction||'Nessuna sorpresa classificata')}</div>`).join(''):'<div class="ev warn"><b>Nessun rilascio recente classificabile.</b></div>'}</div>
+      <div class="note"><b>Ruolo:</b> diagnostica di timing. Non modifica Macro strutturale, Pair o forward OOS finché non viene validata e promossa separatamente.</div>
+    `;
+  }
+  const base=window.renderMacroLab;
+  if(typeof base==='function'){
+    window.renderMacroLab=function(){const r=base.apply(this,arguments);try{render(selected())}catch(e){}return r;};
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{try{render(selected())}catch(e){}},{once:true});
+  else try{render(selected())}catch(e){}
+  window.GMFQ_MACRO_SURPRISE_PANEL={render};
+})();
+</script>
