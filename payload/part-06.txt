@@ -172,11 +172,41 @@ set('ovDriverMacro',macroPresence);
 bar('ovDriverRatesBar',policyPresence);
 bar('ovDriverCbBar',0);
 bar('ovDriverMacroBar',macroPresence);
-const shortPairs=['USD/AUD','EUR/CHF'];
-const structuralPairs=['GBP/JPY','JPY/CAD'];
+const qWeight={
+'CONTRASTO STRUTTURALE FORTE':4,
+'VANTAGGIO RELATIVO FORTE':4,
+'VANTAGGIO RELATIVO PARZIALE':3,
+'SEPARAZIONE RATES MATERIALE':2,
+'PILASTRI DIVISI':1,
+'NESSUN CONTRASTO':0,
+'MISTO / NON RISOLUTIVO':0
+};
+const rankedPairs=(D.pairs||[]).map(x=>{
+const f=derivePairDecisionFrame(x.pair)||{};
+return {pair:x.pair,frame:f,w:qWeight[f.quality]??0};
+}).filter(x=>x.w>=2)
+.sort((x,y)=>y.w-x.w || String(x.pair).localeCompare(String(y.pair)));
+const shortPairs=rankedPairs
+.filter(x=>x.frame.priceReading==='MERCATO GIÀ ALLINEATO')
+.slice(0,2)
+.map(x=>x.pair);
+if(shortPairs.length<2){
+for(const x of rankedPairs){
+if(shortPairs.length>=2) break;
+if(!shortPairs.includes(x.pair)) shortPairs.push(x.pair);
+}
+}
+const structuralPairs=rankedPairs
+.filter(x=>!shortPairs.includes(x.pair))
+.slice(0,2)
+.map(x=>x.pair);
 const a=document.getElementById('ovPairsShort'), b=document.getElementById('ovPairsStructural');
-if(a)a.innerHTML=shortPairs.map(overviewPairCard).join('');
-if(b)b.innerHTML=structuralPairs.map(overviewPairCard).join('');
+if(a)a.innerHTML=shortPairs.length
+? shortPairs.map(overviewPairCard).join('')
+: '<div class="muted">Nessun pair con conferma sufficiente.</div>';
+if(b)b.innerHTML=structuralPairs.length
+? structuralPairs.map(overviewPairCard).join('')
+: '<div class="muted">Nessun altro contrasto strutturale pulito.</div>';
 const hero=document.querySelector('.heroTitle');
 const top=[['Rates / aspettative CB',policyPresence],['Macro',macroPresence]].sort((x,y)=>y[1]-x[1])[0];
 if(hero) hero.textContent=`Nello snapshot canonico prevale ${top[0].toLowerCase()} come famiglia presente nei contrasti relativi`;
