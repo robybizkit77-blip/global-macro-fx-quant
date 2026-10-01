@@ -3233,3 +3233,38 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   [0,250,750,1500,2100,3500].forEach(ms=>setTimeout(finalRebase,ms));
 })();
 </script>
+
+<script id="gmfq-oos-price-anchor-20260930">
+(function(){
+  'use strict';
+  const row={
+    Date:'2026-09-30',
+    EUR:1,
+    USD:1.1355,
+    GBP:0.85463,
+    JPY:178.27,
+    CHF:0.9478,
+    CAD:1.6105,
+    AUD:1.6297,
+    NZD:2.0115
+  };
+  try{
+    if(Array.isArray(D?.prices)){
+      const i=D.prices.findIndex(x=>String(x?.Date)==='2026-09-30');
+      if(i>=0) D.prices[i]=row;
+      else D.prices.push(row);
+      D.prices.sort((a,b)=>String(a.Date).localeCompare(String(b.Date)));
+    }
+    window.GMFQ_OOS_PRICE_ANCHOR={
+      status:'ACTIVE',
+      as_of:'2026-09-30',
+      source:'ECB euro foreign exchange reference rates',
+      row
+    };
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+  }catch(e){
+    window.GMFQ_OOS_PRICE_ANCHOR={status:'ERROR',error:String(e?.message||e)};
+  }
+})();
+</script>
