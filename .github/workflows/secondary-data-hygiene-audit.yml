@@ -49,10 +49,12 @@ jobs:
                   });
                   const dup=Object.entries(by).filter(([,arr])=>arr.length>1);
                   const conflicting=dup.filter(([,arr])=>new Set(arr.map(z=>String(z.v))).size>1);
+                  const quarantined=x.exclude_from_decision===true && x.validation_status==='WITHHELD';
                   const row={c,category:x.category,label:x.label||'',n:dates.length,duplicate_dates:dup.length,conflicting_dates:conflicting.length,
+                    quarantined,validation_status:x.validation_status||null,data_quality:x.data_quality||null,
                     sample_conflicts:conflicting.slice(0,5).map(([date,arr])=>({date,values:arr.map(z=>z.v),raw_dates:arr.map(z=>z.raw)}))};
                   rows.push(row);
-                  if(conflicting.length)issues.push({type:'SECONDARY_CONFLICTING_DUPLICATES',...row});
+                  if(conflicting.length&&!quarantined)issues.push({type:'SECONDARY_CONFLICTING_DUPLICATES_UNQUARANTINED',...row});
                 }
               }
               return {rows,issues};
