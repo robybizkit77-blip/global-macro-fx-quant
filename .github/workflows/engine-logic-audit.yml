@@ -60,6 +60,30 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                pairConsistency:safe(()=>{
+                  const rows=[...(D?.pairs||[])].map(x=>{
+                    const p=x.pair, [a,b]=String(p).split('/');
+                    const sa=deriveCurrencyState(a), sb=deriveCurrencyState(b);
+                    const absoluteMacroSide=(Number(sa?.macro||0)>Number(sb?.macro||0))?'A':
+                      (Number(sb?.macro||0)>Number(sa?.macro||0))?'B':'TIE';
+                    const rawPair=D?.pairStates?.[p]||{};
+                    const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
+                    const rawSide=rawMacro==='A'||rawMacro===a?'A':
+                      rawMacro==='B'||rawMacro===b?'B':
+                      /mix|mist/i.test(String(rawMacro||''))?'TIE':'NONE';
+                    const frame=derivePairDecisionFrame(p);
+                    return {
+                      pair:p,a,b,
+                      currencyMacro:{a:Number(sa?.macro||0),b:Number(sb?.macro||0),side:absoluteMacroSide},
+                      pairRawMacro:{raw:rawMacro??null,side:rawSide},
+                      frameMacroSide:frame?.structural?.macro?.side??null,
+                      fav:frame?.fav??null,
+                      quality:frame?.quality??null,
+                      mismatch:rawSide!=='NONE'&&rawSide!==absoluteMacroSide
+                    };
+                  });
+                  return {rows,mismatches:rows.filter(x=>x.mismatch),count:rows.filter(x=>x.mismatch).length};
+                }),
                 eur:{
                   nativeMacro:safe(()=>NATIVE_MACRO_DATA?.EUR),
                   nativeRates:safe(()=>NATIVE_RATES_DATA?.EUR),
