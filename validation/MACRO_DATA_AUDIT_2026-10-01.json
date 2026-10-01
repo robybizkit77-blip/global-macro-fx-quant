@@ -1,0 +1,118 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "MACRO_DATA_BACKTEST_PHASE_1",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS_WITH_DATA_GOVERNANCE_WARNINGS",
+  "scope": {
+    "currencies": 8,
+    "runtime_core_series": 79,
+    "categories": [
+      "Crescita",
+      "Lavoro",
+      "Inflazione"
+    ]
+  },
+  "runtime_integrity": {
+    "duplicate_dates": 0,
+    "unordered_dates_after_real_parsing": 0,
+    "future_dates": 0,
+    "nonfinite_values": 0,
+    "length_mismatches": 0,
+    "synthetic_core_detected": 0
+  },
+  "polarity_audit": {
+    "status": "PASS",
+    "zero_polarity_intended": [
+      {
+        "ccy": "USD",
+        "label": "Tasso di risparmio",
+        "reason": "ambiguous contemporaneous demand signal"
+      },
+      {
+        "ccy": "USD",
+        "label": "Costo unitario del lavoro",
+        "reason": "labour-cost/inflation signal, not clean labour-health direction"
+      }
+    ],
+    "unintended_zero_polarity": 0
+  },
+  "minimum_history_gate": {
+    "status": "PASS",
+    "excluded_short_series": 8,
+    "note": "All are recent RBNZ NZD expectation-survey series with n=6; normalized macro impulse requires at least 8 observations, so they do not affect the current directional engine."
+  },
+  "stable_state_history": {
+    "AUD": {
+      "sectors": 8,
+      "missing_cells": 0,
+      "avg_switches_per_year": 1.099,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.059
+    },
+    "CAD": {
+      "sectors": 7,
+      "missing_cells": 0,
+      "avg_switches_per_year": 1.759,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.091
+    },
+    "CHF": {
+      "sectors": 7,
+      "missing_cells": 48,
+      "avg_switches_per_year": 1.89,
+      "min_median_run_months": 4,
+      "max_one_month_run_share": 0
+    },
+    "EUR": {
+      "sectors": 6,
+      "missing_cells": 0,
+      "avg_switches_per_year": 1.983,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.038
+    },
+    "GBP": {
+      "sectors": 6,
+      "missing_cells": 0,
+      "avg_switches_per_year": 1.724,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.091
+    },
+    "JPY": {
+      "sectors": 7,
+      "missing_cells": 0,
+      "avg_switches_per_year": 2.32,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.04
+    },
+    "NZD": {
+      "sectors": 4,
+      "missing_cells": 6,
+      "avg_switches_per_year": 1.482,
+      "min_median_run_months": 4,
+      "max_one_month_run_share": 0,
+      "native_frequency_note": "Quarterly-dominant; must not be forced into a monthly grid."
+    },
+    "USD": {
+      "sectors": 7,
+      "missing_cells": 0,
+      "avg_switches_per_year": 1.862,
+      "min_median_run_months": 3,
+      "max_one_month_run_share": 0.056
+    }
+  },
+  "governance_warnings": {
+    "runtime_source_metadata_missing": 79,
+    "runtime_frequency_missing": 18,
+    "runtime_unit_missing": 18,
+    "interpretation": "This is a runtime payload metadata gap, not evidence that the underlying raw sources are absent. Canonical raw files/manifests exist for many affected series and must be linked rather than inferred.",
+    "hard_data_quality_failure": false
+  },
+  "specific_watchpoints": [
+    "CHF historical stable-state panel has explicit gaps; preserve missing values and do not fill.",
+    "NZD stable history is much shorter/coarser than the monthly G8 panels; preserve native quarterly frequency.",
+    "Eight recent NZD RBNZ expectation-survey series have only six observations and are correctly gated out of the directional impulse.",
+    "Complete runtime provenance/source metadata before treating the runtime payload itself as a self-contained certified dataset."
+  ],
+  "conclusion": "Macro values and directional transformations pass structural integrity and polarity checks. The remaining issue is provenance/metadata completeness in the runtime payload, plus documented CHF/NZD coverage limitations."
+}
