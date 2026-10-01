@@ -64,7 +64,9 @@ jobs:
                   delta_native:deltaNative,
                   delta_visible:deltaVisible,
                   native_quality:native.quality||null,
-                  native_source:native.source||null
+                  native_source:native.source||null,
+                  rates_dynamics:(typeof currencyDynamics==='function'?(currencyDynamics(c)?.rates||null):null),
+                  improvement:(typeof currencyImprovementDiagnostic==='function'?currencyImprovementDiagnostic(c):null)
                 };
                 rows.push(row);
                 if(!rs) issues.push({type:'MISSING_2Y_SERIES',ccy:c});
