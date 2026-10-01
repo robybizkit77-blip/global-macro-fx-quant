@@ -579,7 +579,7 @@ function modelRuleSummary(){
 return {
 analysisOrder: 'Macro → Rates/CB expectations → COT → Price',
 leadRule: 'nessuna priorità fissa: può fare lead qualunque layer con evidenza temporale',
-driverRule: 'fattore che spiega meglio il repricing corrente; non coincide necessariamente con il lead',
+driverRule: 'pilastro strutturale che sostiene meglio la lettura corrente; non coincide necessariamente con il lead temporale e non prova causalità',
 currencyStateRule: 'Macro + Rates/CB definiscono lo stato base; Liquidità overlay, Prezzo conferma, COT contesto',
 cotWarning: `P${MODEL_RULES.cot.warningHigh}/P${MODEL_RULES.cot.warningLow}`,
 cotExtreme: `P${MODEL_RULES.cot.extremeHigh}/P${MODEL_RULES.cot.extremeLow}`,
@@ -841,7 +841,7 @@ const cot=cotEarlyWarning(c);
 const bits=[];
 bits.push(driver==='Non determinato'
 ? 'Perché si muove non ancora identificato'
-: `${driver} è il driver dominante`);
+: `${driver} sostiene la struttura`);
 // Macro/Rates confirmation can be narrated here.
 // Price is handled once, separately below, to avoid duplicate messages.
 const nonPriceConfirm=(lead.confirm||'')
