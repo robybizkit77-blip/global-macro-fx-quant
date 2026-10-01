@@ -483,8 +483,8 @@ if(ch) ch.innerHTML=changeItems.length
 const s=x.d.state;
 const cls=s==='MIGLIORA'?'up':s==='PEGGIORA'?'down':'turn';
 const arrow=cls==='up'?'↑':cls==='down'?'↓':'↕';
-const word=s==='MIGLIORA'?'sta migliorando':s==='PEGGIORA'?'sta peggiorando':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva da confermare':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa da confermare':'possibile svolta da confermare';
-return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Apri la valuta per vedere quali dati stanno cambiando.</span></div>`;
+const word=s==='MIGLIORA'?'miglioramento recente':s==='PEGGIORA'?'peggioramento recente':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva da confermare':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa da confermare':'possibile svolta da confermare';
+return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Cambiamento recente: apri la valuta per distinguere cosa sta cambiando dallo stato strutturale.</span></div>`;
 }).join('')
 : '<div class="ov387Empty">Nessun cambiamento recente abbastanza importante da evidenziare.</div>';
 // Risk, only if active, translated to plain language.
