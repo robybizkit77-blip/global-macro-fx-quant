@@ -1,0 +1,964 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "RUNTIME_PROVENANCE_AUDIT_2026-10-01",
+  "branch": "staging-provenance-audit-clean-2026-10-01",
+  "status": "INCOMPLETE_PROVENANCE",
+  "summary": {
+    "macro_series": 79,
+    "macro_missing_source": 79,
+    "macro_missing_frequency": 18,
+    "macro_missing_unit": 18,
+    "macro_missing_series_id": 0,
+    "rates_missing_source": [],
+    "liquidity_missing_source": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ],
+    "liquidity_missing_quality": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ],
+    "cb_pricing_missing_source": [],
+    "ois_missing_source": [
+      "CHF",
+      "NZD"
+    ]
+  },
+  "macro_missing": {
+    "source": [
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Consumi reali",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Ordini beni capitali core",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Produzione industriale",
+        "observations": 140
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito disponibile reale",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito personale",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Retail sales reali",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Tasso di risparmio",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Inflazione",
+        "label": "CPI core",
+        "observations": 139
+      },
+      {
+        "ccy": "USD",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 139
+      },
+      {
+        "ccy": "USD",
+        "category": "Inflazione",
+        "label": "Core PCE",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Inflazione",
+        "label": "PCE headline",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Costo unitario del lavoro",
+        "observations": 42
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — hires",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — job openings",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — quits",
+        "observations": 127
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Payrolls",
+        "observations": 128
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Produttività",
+        "observations": 42
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Salari orari medi (AHE)",
+        "observations": 128
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Sussidi disoccupazione continuativi",
+        "observations": 558
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Sussidi disoccupazione iniziali",
+        "observations": 3115
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 127
+      },
+      {
+        "ccy": "EUR",
+        "category": "Crescita",
+        "label": "Produzione industriale",
+        "observations": 127
+      },
+      {
+        "ccy": "EUR",
+        "category": "Crescita",
+        "label": "Vendite al dettaglio reali",
+        "observations": 127
+      },
+      {
+        "ccy": "EUR",
+        "category": "Inflazione",
+        "label": "HICP core",
+        "observations": 128
+      },
+      {
+        "ccy": "EUR",
+        "category": "Inflazione",
+        "label": "HICP headline",
+        "observations": 128
+      },
+      {
+        "ccy": "EUR",
+        "category": "Inflazione",
+        "label": "HICP servizi",
+        "observations": 128
+      },
+      {
+        "ccy": "EUR",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 127
+      },
+      {
+        "ccy": "EUR",
+        "category": "Lavoro",
+        "label": "Occupazione",
+        "observations": 42
+      },
+      {
+        "ccy": "EUR",
+        "category": "Lavoro",
+        "label": "Salari negoziati",
+        "observations": 42
+      },
+      {
+        "ccy": "GBP",
+        "category": "Crescita",
+        "label": "Produzione",
+        "observations": 127
+      },
+      {
+        "ccy": "GBP",
+        "category": "Crescita",
+        "label": "Retail volume",
+        "observations": 128
+      },
+      {
+        "ccy": "GBP",
+        "category": "Inflazione",
+        "label": "CPI core",
+        "observations": 128
+      },
+      {
+        "ccy": "GBP",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 128
+      },
+      {
+        "ccy": "GBP",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 126
+      },
+      {
+        "ccy": "GBP",
+        "category": "Lavoro",
+        "label": "PAYE payroll employees",
+        "observations": 128
+      },
+      {
+        "ccy": "GBP",
+        "category": "Lavoro",
+        "label": "Tasso di occupazione",
+        "observations": 126
+      },
+      {
+        "ccy": "JPY",
+        "category": "Crescita",
+        "label": "Produzione industriale",
+        "observations": 103
+      },
+      {
+        "ccy": "JPY",
+        "category": "Crescita",
+        "label": "Retail sales",
+        "observations": 127
+      },
+      {
+        "ccy": "JPY",
+        "category": "Inflazione",
+        "label": "CPI core",
+        "observations": 128
+      },
+      {
+        "ccy": "JPY",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 128
+      },
+      {
+        "ccy": "JPY",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 127
+      },
+      {
+        "ccy": "JPY",
+        "category": "Lavoro",
+        "label": "Occupati",
+        "observations": 127
+      },
+      {
+        "ccy": "CHF",
+        "category": "Crescita",
+        "label": "Produzione industriale",
+        "observations": 126
+      },
+      {
+        "ccy": "CHF",
+        "category": "Crescita",
+        "label": "Retail reale",
+        "observations": 127
+      },
+      {
+        "ccy": "CHF",
+        "category": "Inflazione",
+        "label": "CPI core",
+        "observations": 128
+      },
+      {
+        "ccy": "CHF",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 128
+      },
+      {
+        "ccy": "CHF",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 128
+      },
+      {
+        "ccy": "CHF",
+        "category": "Lavoro",
+        "label": "Occupazione",
+        "observations": 42
+      },
+      {
+        "ccy": "CAD",
+        "category": "Crescita",
+        "label": "PIL reale mensile",
+        "observations": 126
+      },
+      {
+        "ccy": "CAD",
+        "category": "Crescita",
+        "label": "Retail volume",
+        "observations": 114
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "BoC BOS — prezzi",
+        "observations": 42
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 128
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "CPI median",
+        "observations": 128
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "CPI trim",
+        "observations": 128
+      },
+      {
+        "ccy": "CAD",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 128
+      },
+      {
+        "ccy": "CAD",
+        "category": "Lavoro",
+        "label": "Occupazione",
+        "observations": 128
+      },
+      {
+        "ccy": "AUD",
+        "category": "Crescita",
+        "label": "PIL reale QoQ",
+        "observations": 33
+      },
+      {
+        "ccy": "AUD",
+        "category": "Crescita",
+        "label": "Spesa famiglie",
+        "observations": 127
+      },
+      {
+        "ccy": "AUD",
+        "category": "Inflazione",
+        "label": "CPI headline mensile",
+        "observations": 16
+      },
+      {
+        "ccy": "AUD",
+        "category": "Inflazione",
+        "label": "CPI headline trimestrale",
+        "observations": 42
+      },
+      {
+        "ccy": "AUD",
+        "category": "Inflazione",
+        "label": "CPI trimmed mean mensile",
+        "observations": 16
+      },
+      {
+        "ccy": "AUD",
+        "category": "Inflazione",
+        "label": "CPI trimmed mean trimestrale",
+        "observations": 42
+      },
+      {
+        "ccy": "AUD",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 127
+      },
+      {
+        "ccy": "AUD",
+        "category": "Lavoro",
+        "label": "Occupazione",
+        "observations": 127
+      },
+      {
+        "ccy": "AUD",
+        "category": "Lavoro",
+        "label": "Wage Price Index YoY",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Crescita",
+        "label": "PIL reale YoY",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Crescita",
+        "label": "Retail volume",
+        "observations": 41
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "CPI headline",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "Core inflation SFM",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 10Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 1Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 2Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 5Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "Disoccupazione",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "Occupati",
+        "observations": 42
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 1Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 2Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 1Y",
+        "observations": 6
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 2Y",
+        "observations": 6
+      }
+    ],
+    "frequency": [
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Ordini beni capitali core"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito disponibile reale"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito personale"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Tasso di risparmio"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Costo unitario del lavoro"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — hires"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — quits"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Produttività"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Sussidi disoccupazione continuativi"
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "BoC BOS — prezzi"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 10Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 2Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 5Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 2Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 2Y"
+      }
+    ],
+    "unit": [
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Ordini beni capitali core"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito disponibile reale"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Reddito personale"
+      },
+      {
+        "ccy": "USD",
+        "category": "Crescita",
+        "label": "Tasso di risparmio"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Costo unitario del lavoro"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — hires"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "JOLTS — quits"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Produttività"
+      },
+      {
+        "ccy": "USD",
+        "category": "Lavoro",
+        "label": "Sussidi disoccupazione continuativi"
+      },
+      {
+        "ccy": "CAD",
+        "category": "Inflazione",
+        "label": "BoC BOS — prezzi"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 10Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 2Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Inflazione",
+        "label": "RBNZ survey — CPI 5Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — disoccupazione 2Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 1Y"
+      },
+      {
+        "ccy": "NZD",
+        "category": "Lavoro",
+        "label": "RBNZ survey — salari 2Y"
+      }
+    ],
+    "series_id": []
+  },
+  "rates": [
+    {
+      "ccy": "USD",
+      "source": "U.S. Treasury Daily Par Yield Curve · 28 Sep 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "as_of": "2026-09-28",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 262
+    },
+    {
+      "ccy": "EUR",
+      "source": "ECB AAA Svensson spot curve · official ECB Data Portal",
+      "quality": "FULL_CURRENT_VALIDATED",
+      "as_of": "2026-09-29",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 1
+    },
+    {
+      "ccy": "GBP",
+      "source": "Bank of England · UK nominal government zero-coupon spot curve · official latest yield curve data",
+      "quality": "FULL_CURRENT_VALIDATED",
+      "as_of": "2026-09-29",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 265
+    },
+    {
+      "ccy": "JPY",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 28 Sep 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "as_of": "2026-09-28",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 339
+    },
+    {
+      "ccy": "CHF",
+      "source": "Market close 25 Sep 2026; storico SNB",
+      "quality": "CURRENT_MARKET_CLOSE",
+      "as_of": "2026-09-25",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 261
+    },
+    {
+      "ccy": "CAD",
+      "source": "Bank of Canada · selected benchmark Government of Canada bond yields",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "as_of": "2026-09-28",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 262
+    },
+    {
+      "ccy": "AUD",
+      "source": "Market close 25 Sep 2026; storico RBA",
+      "quality": "CURRENT_MARKET_CLOSE",
+      "as_of": "2026-09-25",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 261
+    },
+    {
+      "ccy": "NZD",
+      "source": "RBNZ B2 Wholesale interest rates · government bond close · 28 Sep 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "as_of": "2026-09-28",
+      "series_frequency": null,
+      "series_unit": null,
+      "series_id": null,
+      "observations": 262
+    }
+  ],
+  "cb_ois": [
+    {
+      "ccy": "USD",
+      "cb_as_of": "2026-09-16",
+      "pricing_source": "CBOT contract quotes surfaced via TradingView; CME confirms Fed Funds futures reflect policy expectations.",
+      "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+      "pricing_as_of": "2026-09 (latest surfaced)",
+      "ois_source": "CME 30-Day Fed Funds / Three-Month SOFR futures",
+      "ois_status": "WITHHELD",
+      "ois_as_of": null
+    },
+    {
+      "ccy": "EUR",
+      "cb_as_of": "2026-09-10",
+      "pricing_source": "Eurex FST3 official overallstatistics API · D.Settle",
+      "pricing_quality": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+      "pricing_as_of": "2026-09-29",
+      "ois_source": "Eurex · Three-Month Euro STR Futures (FST3) · official overall statistics D.Settle",
+      "ois_status": "ACTIVE",
+      "ois_as_of": "2026-09-29"
+    },
+    {
+      "ccy": "GBP",
+      "cb_as_of": "2026-09-17",
+      "pricing_source": "ICE SONIA contracts surfaced via TradingView; BoE independently notes the UK OIS curve peaks near 4.9% by end-2027.",
+      "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+      "pricing_as_of": "2026-09 surfaced",
+      "ois_source": "Bank of England · Sterling OIS (SONIA) instantaneous forward curve · short end",
+      "ois_status": "ACTIVE",
+      "ois_as_of": "2026-09-29"
+    },
+    {
+      "ccy": "JPY",
+      "cb_as_of": "2026-09-18",
+      "pricing_source": "TFX Historical Database · official settlement prices",
+      "pricing_quality": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+      "pricing_as_of": "2026-09-29",
+      "ois_source": "Tokyo Financial Exchange · Three-Month TONA Futures · official Historical Database settlement prices",
+      "ois_status": "ACTIVE",
+      "ois_as_of": "2026-09-29"
+    },
+    {
+      "ccy": "CHF",
+      "cb_as_of": "2026-09-24",
+      "pricing_source": "ICE SARON contracts verified on ICE; current prices surfaced via TradingView contract chain.",
+      "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+      "pricing_as_of": "2026-09-29 surfaced",
+      "ois_source": null,
+      "ois_status": "WITHHELD",
+      "ois_as_of": null
+    },
+    {
+      "ccy": "CAD",
+      "cb_as_of": "2026-09-02",
+      "pricing_source": "TMX Montréal Exchange · Canadian Interest Rate Expectations",
+      "pricing_quality": "COMPLETO",
+      "pricing_as_of": "2026-09-29",
+      "ois_source": "Montréal Exchange · Three-Month CORRA Futures (CRA)",
+      "ois_status": "ACTIVE",
+      "ois_as_of": "2026-09-29"
+    },
+    {
+      "ccy": "AUD",
+      "cb_as_of": "2026-09-29",
+      "pricing_source": "ASX RBA Rate Tracker / official ASX yield_curve.csv",
+      "pricing_quality": "COMPLETO_DIRECT_EXCHANGE_POST_DECISION",
+      "pricing_as_of": "2026-09-29",
+      "ois_source": "ASX · 30 Day Interbank Cash Rate Futures (IB) · official End-of-Day settlement data",
+      "ois_status": "ACTIVE",
+      "ois_as_of": "2026-09-29"
+    },
+    {
+      "ccy": "NZD",
+      "cb_as_of": "2026-09-02",
+      "pricing_source": "RBNZ Monetary Policy Statement Sep 2026",
+      "pricing_quality": "PARZIALE_OFFICIAL",
+      "pricing_as_of": "2026-09-02",
+      "ois_source": null,
+      "ois_status": "WITHHELD",
+      "ois_as_of": null
+    }
+  ],
+  "liquidity": [
+    {
+      "ccy": "USD",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-08"
+    },
+    {
+      "ccy": "EUR",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-09-25"
+    },
+    {
+      "ccy": "GBP",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-09-16"
+    },
+    {
+      "ccy": "JPY",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-08"
+    },
+    {
+      "ccy": "CHF",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-07"
+    },
+    {
+      "ccy": "CAD",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-08-01"
+    },
+    {
+      "ccy": "AUD",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-09-16"
+    },
+    {
+      "ccy": "NZD",
+      "source": null,
+      "quality": null,
+      "as_of": "2026-07 · released 2026-08-31"
+    }
+  ],
+  "cot": [
+    {
+      "ccy": "USD",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "EUR",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "GBP",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "JPY",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "CHF",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "CAD",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "AUD",
+      "as_of": "2026-09-22",
+      "observations": 105
+    },
+    {
+      "ccy": "NZD",
+      "as_of": "2026-09-22",
+      "observations": 105
+    }
+  ],
+  "price": {
+    "as_of": "2026-09-30",
+    "observations": 2750,
+    "pair_count": 28
+  },
+  "rule": "Missing provenance remains missing; no source, unit, frequency or identifier is inferred."
+}
