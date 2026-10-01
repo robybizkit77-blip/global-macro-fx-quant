@@ -35,7 +35,7 @@ const cards=[
 v233RateCard('Origine del movimento Rates',origin.title,origin.detail,origin.why,origin.cls),
 v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
 v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
-v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
+v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',Math.abs(d.chg10_bp||0)>=3?'warn':'neu'),
 v233RateCard('Pendenza · 10Y−2Y',d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb',curve.name,curve.why,curve.cls)
 ];
 if(d.real){
@@ -60,7 +60,7 @@ const rows=[];
 const curve=v233CurveInterpretation(d), driver=v233Driver(d), div=v233Divergence(d);
 const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp);
 if(Math.abs(d.chg2_bp||0)>=3) rows.push({k:'Front-end 2Y',v:m2.txt,why:'Il front-end sta cambiando il pricing della policy attesa.',cls:m2.cls});
-if(Math.abs(d.chg10_bp||0)>=3) rows.push({k:'Long-end 10Y',v:m10.txt,why:'Il tratto lungo sta cambiando e va scomposto prima di attribuirgli una causa.',cls:m10.cls});
+if(Math.abs(d.chg10_bp||0)>=3) rows.push({k:'Long-end 10Y',v:m10.txt,why:'Il tratto lungo sta cambiando e va scomposto prima di attribuirgli una causa.',cls:'warn'});
 if(Math.abs(v233SlopeChange(d)||0)>=3) rows.push({k:'Curva 10Y−2Y',v:curve.name,why:curve.why,cls:curve.cls});
 if(div.name!=='Nessuna divergenza forte') rows.push({k:'Divergenza',v:div.name,why:div.why,cls:'warn'});
 if(!rows.length) return `<div class="v233NoChange">Nessun cambiamento Rates abbastanza ampio da modificare la lettura corrente.</div>`;
@@ -207,10 +207,10 @@ function v478RatesTutor(c,d){
 
   const drivers=[
     {label:'Front-end · 2Y',txt:`${d['2Y']==null?'—':fmt(d['2Y'],2)+'%'} · ${m2.txt}`,cls:m2.cls==='pos'?'v478Pos':m2.cls==='neg'?'v478Neg':'v478Neu'},
-    {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:m10.cls==='pos'?'v478Pos':m10.cls==='neg'?'v478Neg':'v478Neu'},
+    {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:Math.abs(d.chg10_bp||0)>2?'v478Warn':'v478Neu'},
     {label:'Curva 10Y−2Y',txt:`${d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb'} · ${curve.name}`,cls:curve.cls==='pos'?'v478Pos':curve.cls==='neg'?'v478Neg':curve.cls==='warn'?'v478Warn':'v478Neu'}
   ];
-  if(real1w!=null) drivers.push({label:'Real yield · 1W',txt:fmt1w(real1w),cls:real1w>3?'v478Pos':real1w<-3?'v478Neg':'v478Neu'});
+  if(real1w!=null) drivers.push({label:'Real yield · 1W',txt:fmt1w(real1w),cls:Math.abs(real1w)>3?'v478Warn':'v478Neu'});
   if(be1w!=null) drivers.push({label:'Breakeven · 1W',txt:fmt1w(be1w),cls:Math.abs(be1w)>3?'v478Warn':'v478Neu'});
   if(tp1w!=null) drivers.push({label:'Term premium · 1W',txt:fmt1w(tp1w),cls:Math.abs(tp1w)>3?'v478Warn':'v478Neu'});
 
