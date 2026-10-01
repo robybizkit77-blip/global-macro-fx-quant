@@ -1,0 +1,89 @@
+name: Rates Data Integrity Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit rates series
+        run: |
+          cat > rates-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[];
+              const issues=[];
+              for(const c of ccys){
+                const rs=rate2YSeries(c);
+                const dates=Array.isArray(rs?.dates)?rs.dates.map(String):[];
+                const vals=Array.isArray(rs?.values)?rs.values.map(Number):[];
+                const finite=vals.filter(Number.isFinite);
+                const last=finite.length?finite.at(-1):null;
+                const native=(typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA?.[c]:null)||{};
+                const native2=Number(native['2Y']??native['2y']??native.two_year??native.rate2y);
+                const visible=Number(D?.macro?.[c]?.rate2y);
+                const deltaNative=(Number.isFinite(last)&&Number.isFinite(native2))?Math.abs(last-native2):null;
+                const deltaVisible=(Number.isFinite(last)&&Number.isFinite(visible))?Math.abs(last-visible):null;
+                let unordered=0;
+                for(let i=1;i<dates.length;i++){
+                  const a=Date.parse(dates[i-1]),b=Date.parse(dates[i]);
+                  if(Number.isFinite(a)&&Number.isFinite(b)&&b<a) unordered++;
+                }
+                const row={
+                  ccy:c,
+                  label:rs?.label||null,
+                  frequency:rs?.frequency||null,
+                  unit:rs?.unit||null,
+                  series_id:rs?.series_id||rs?.id||null,
+                  n_dates:dates.length,n_values:vals.length,n_finite:finite.length,
+                  first:dates[0]||null,last_date:dates.at(-1)||null,last_value:last,
+                  unordered_dates:unordered,
+                  duplicate_dates:dates.length-new Set(dates).size,
+                  nonfinite_values:vals.length-finite.length,
+                  native_date:native.date||native.as_of||null,
+                  native_2y:Number.isFinite(native2)?native2:null,
+                  visible_2y:Number.isFinite(visible)?visible:null,
+                  delta_native:deltaNative,
+                  delta_visible:deltaVisible,
+                  native_quality:native.quality||null,
+                  native_source:native.source||null
+                };
+                rows.push(row);
+                if(!rs) issues.push({type:'MISSING_2Y_SERIES',ccy:c});
+                if(row.n_dates!==row.n_values) issues.push({type:'LENGTH_MISMATCH',...row});
+                if(row.duplicate_dates) issues.push({type:'DUPLICATE_DATES',...row});
+                if(row.unordered_dates) issues.push({type:'UNORDERED_DATES',...row});
+                if(row.nonfinite_values) issues.push({type:'NONFINITE_VALUES',...row});
+                if(row.n_finite<20) issues.push({type:'SHORT_2Y_HISTORY',...row});
+                if(deltaNative!=null&&deltaNative>0.000001) issues.push({type:'SERIES_NATIVE_LAST_MISMATCH',...row});
+                if(deltaVisible!=null&&deltaVisible>0.000001) issues.push({type:'SERIES_VISIBLE_LAST_MISMATCH',...row});
+                if(!row.native_source) issues.push({type:'MISSING_NATIVE_SOURCE',...row});
+                if(!row.native_date) issues.push({type:'MISSING_NATIVE_DATE',...row});
+              }
+              return {rows,issues};
+            });
+            console.log('===RATES_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===RATES_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node rates-audit.js
