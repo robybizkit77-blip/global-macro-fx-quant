@@ -1,0 +1,44 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "CB_OIS_DATA_BACKTEST_PHASE_3",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "CURRENT_DATA_PASS__HISTORICAL_PIT_BACKTEST_WITHHELD",
+  "current_cb_coverage": {
+    "currencies": 8,
+    "decisions_present": 8,
+    "rate_present": 8,
+    "action_present": 8,
+    "stance_present": 8
+  },
+  "ois_current": {
+    "active": [
+      "EUR",
+      "GBP",
+      "JPY",
+      "CAD",
+      "AUD"
+    ],
+    "withheld": [
+      "USD",
+      "CHF",
+      "NZD"
+    ]
+  },
+  "pricing_quality": {
+    "USD": "COMPLETO_SECONDARY_QUOTE",
+    "EUR": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+    "GBP": "current official BoE OIS curve active; secondary contract quote also surfaced",
+    "JPY": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+    "CHF": "COMPLETO_SECONDARY_QUOTE; OIS layer withheld",
+    "CAD": "COMPLETO / Montréal Exchange CORRA",
+    "AUD": "COMPLETO_DIRECT_EXCHANGE_POST_DECISION",
+    "NZD": "PARZIALE_OFFICIAL"
+  },
+  "historical_gate": {
+    "full_point_in_time_cb_expectations_backtest": false,
+    "reason": "Runtime objects preserve current CB decisions and current/near-current pricing snapshots, but not a homogeneous append-only historical path for all 8 currencies on the same basis.",
+    "rule": "Do not reconstruct missing historical policy expectations from later information. Missing PIT history remains WITHHELD."
+  },
+  "conclusion": "Current CB and market-pricing layers are usable with explicit quality tiers. A homogeneous historical CB/OIS backtest across G8 is not presently defensible; future OOS snapshots must accumulate prospectively."
+}
