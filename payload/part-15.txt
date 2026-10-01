@@ -4348,3 +4348,82 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-ois-gap-closure-20261001">
+(function(){
+  'use strict';
+  try{
+    window.GMFQ_OIS_GAP_CLOSURE={
+      as_of:'2026-10-01',
+      status:'PASS',
+      policy:'WITHHELD_IS_A_VALID_FINAL_STATE_WHEN_THE_PUBLIC_SOURCE_CANNOT_MEET_THE_CANONICAL_VALIDATION_STANDARD',
+      currencies:{
+        USD:{
+          status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
+          source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin',
+          current_and_1d:true,
+          one_week:false,
+          action:'HOLD_UNTIL_MATCHED_1W_HISTORY'
+        },
+        CHF:{
+          status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+          source:'Eurex · 3M SARON Futures (FSR3)',
+          reason:'Correct direct instrument exists, but useful maturities show no reliable current price discovery: cumulative volume and open interest are zero. Do not activate a canonical 3M/6M/12M path from non-traded marks.',
+          action:'NO_DAILY_RETRY_UNLESS_LIQUIDITY_OR_PUBLIC_SETTLEMENT_QUALITY_CHANGES'
+        },
+        NZD:{
+          status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+          source:'RBNZ public statistics / Monetary Policy Statement',
+          reason:'RBNZ confirms OIS is the market-expectations measure, but the public official statistics feed does not publish a reproducible current 3M/6M/12M OIS curve with matched 1D/1W history. Public B2 bills/swaps are not relabelled as OIS.',
+          action:'NO_DAILY_RETRY_UNLESS_DIRECT_PUBLIC_OIS_CURVE_BECOMES_AVAILABLE'
+        }
+      },
+      active_expected:['EUR','GBP','JPY','CAD','AUD'],
+      withheld_expected:['USD','CHF','NZD']
+    };
+
+    const DWA=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT;
+    if(DWA?.items){
+      if(DWA.items.CHF_CB_PRICING) Object.assign(DWA.items.CHF_CB_PRICING,{
+        status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+        reason:'Eurex 3M SARON is the correct direct instrument, but the useful maturities do not provide reliable current price discovery; volume and open interest are zero.',
+        resolution:'Re-open only if direct public SARON futures/OIS liquidity or settlement quality materially improves.'
+      });
+      if(DWA.items.NZD_CB_PRICING) Object.assign(DWA.items.NZD_CB_PRICING,{
+        status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+        reason:'RBNZ public material confirms OIS as the relevant market-expectations measure, but no direct public reproducible 3M/6M/12M OIS curve with matched 1D/1W history is available.',
+        resolution:'Re-open only if RBNZ/NZX/another official public source exposes a direct OIS curve; do not substitute bills or generic swaps.'
+      });
+    }
+
+    if(window.SOURCE_RESOLUTION_WATCHLIST?.items){
+      const I=window.SOURCE_RESOLUTION_WATCHLIST.items;
+      if(I.CHF_CB_PRICING) Object.assign(I.CHF_CB_PRICING,{
+        current_status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+        check_each_refresh:false,
+        resolved:false
+      });
+      if(I.NZD_CB_PRICING) Object.assign(I.NZD_CB_PRICING,{
+        current_status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
+        check_each_refresh:false,
+        resolved:false
+      });
+      if(I.USD_CB_PRICING) Object.assign(I.USD_CB_PRICING,{
+        current_status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
+        check_each_refresh:true
+      });
+    }
+
+    window.GMFQ_OIS_GAP_CLOSURE.unresolved_daily_checks=
+      typeof window.unresolvedSourceChecks==='function'
+        ? window.unresolvedSourceChecks().map(x=>x.id)
+        : [];
+
+    document.documentElement.setAttribute('data-ois-gap-closure','PASS');
+  }catch(e){
+    window.GMFQ_OIS_GAP_CLOSURE={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-ois-gap-closure','FAIL');
+  }
+})();
+</script>
