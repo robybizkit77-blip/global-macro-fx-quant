@@ -1,0 +1,105 @@
+name: Final Data Hygiene Gate
+
+on:
+  push:
+    branches: [staging-final-data-hygiene-2026-10-01]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Verify metadata BEA data and engine integrity
+        run: |
+          cat > verify.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const core=[];
+              for(const c of ccys) for(const s of ((typeof S!=='undefined'&&S[c])||[])){
+                if(['Crescita','Lavoro','Inflazione'].includes(s.category)) core.push({ccy:c,id:s.id,source:s.source||null,frequency:s.frequency||null,unit:s.unit||null});
+              }
+              const liq=[];
+              if(typeof NATIVE_LIQ_DATA!=='undefined') for(const c of ccys){
+                for(const [k,node] of Object.entries(NATIVE_LIQ_DATA[c]||{})){
+                  if(node&&typeof node==='object'&&!Array.isArray(node)&&('values' in node)){
+                    liq.push({ccy:c,path:k,source:node.source||null,frequency:node.frequency||null,unit:node.unit||null,quality:node.quality||null});
+                  }
+                }
+              }
+              const ids=['US_PCEPI_history_value','US_PCEPILFE_history_value','US_PCEC96_history_value','US_DSPIC96_history_DSPIC96','US_PI_history_PI','US_PSAVERT_history_PSAVERT'];
+              const bea=Object.fromEntries(ids.map(id=>{
+                const s=(S.USD||[]).find(x=>x.id===id)||{};
+                return [id,{last_date:s.last_date||null,last_value:s.last_value??null,revision_as_of:s.revision_as_of||null}];
+              }));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const frames=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{favored:f.fav||null,quality:f.quality||null,macro:f.structural?.macro?.side||null,policy:f.structural?.policy?.side||null}];
+              }));
+              const states=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                return [c,{base:s.base||null,macro:Number(s.macro),policy:Number(s.policy)}];
+              }));
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {core,liq,bea,pairs,frames,states,fingerprint:fwd?.current_rules_fingerprint||null,health};
+            });
+            await browser.close();srv.kill();
+            const issues=[];
+            if(errors.length) issues.push('page_errors='+JSON.stringify(errors));
+            if(out.core.length!==79) issues.push('core_count='+out.core.length);
+            for(const x of out.core){
+              if(!x.source||!x.frequency||!x.unit) issues.push('core metadata '+x.ccy+' '+x.id);
+            }
+            if(out.liq.length!==26) issues.push('liq_count='+out.liq.length);
+            for(const x of out.liq){
+              if(!x.source||!x.frequency||!x.unit||!x.quality) issues.push('liq metadata '+x.ccy+' '+x.path);
+            }
+            const expected={
+              US_PCEPI_history_value:131.579,
+              US_PCEPILFE_history_value:130.455,
+              US_PCEC96_history_value:16955.3,
+              US_DSPIC96_history_DSPIC96:18410.5,
+              US_PI_history_PI:27626.9,
+              US_PSAVERT_history_PSAVERT:4.1
+            };
+            for(const [id,v] of Object.entries(expected)){
+              const x=out.bea[id]||{};
+              if(x.last_date!=='2026-08-01'||Math.abs(Number(x.last_value)-v)>1e-9||x.revision_as_of!=='2026-09-30'){
+                issues.push('BEA '+id+'='+JSON.stringify(x));
+              }
+            }
+            if(out.fingerprint!=='3356baf0') issues.push('fingerprint='+out.fingerprint);
+            if(out.pairs.length!==28) issues.push('pair_count='+out.pairs.length);
+            if(Object.keys(out.states).length!==8) issues.push('currency_count='+Object.keys(out.states).length);
+            if((out.health?.hard_errors||[]).length) issues.push('hard_errors='+JSON.stringify(out.health.hard_errors));
+            console.log(JSON.stringify({
+              status:issues.length?'FAIL':'PASS',
+              fingerprint:out.fingerprint,
+              currencies:out.states,
+              pair_count:out.pairs.length,
+              health_status:out.health?.status,
+              bea:out.bea,
+              issues
+            },null,2));
+            if(issues.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node verify.js
