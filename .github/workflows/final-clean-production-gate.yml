@@ -1,0 +1,71 @@
+name: Final Clean Production Gate
+on:
+  push:
+    branches: [staging-production-clean-2026-10-01]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Run final runtime gate
+        run: |
+          cat > gate.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(4500);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pairs=(D?.pairs||[]).map(x=>x.pair);
+              const h=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              const states=Object.fromEntries(ccys.map(c=>[c,deriveCurrencyState(c)]));
+              const pairIssues=[];
+              for(const p of pairs){
+                const f=derivePairDecisionFrame(p)||{};
+                const [a,b]=p.split('/');
+                const sa=states[a]||{},sb=states[b]||{};
+                const em=sa.macro>sb.macro?'A':sb.macro>sa.macro?'B':'TIE';
+                const ep=sa.policy>sb.policy?'A':sb.policy>sa.policy?'B':'TIE';
+                if(f.structural?.macro?.side!==em) pairIssues.push(p+':MACRO');
+                if(f.structural?.policy?.side!==ep) pairIssues.push(p+':POLICY');
+              }
+              const usdU=(S?.USD||[]).find(x=>x.label==='Disoccupazione');
+              const ud=usdU?.dates||[];
+              const duplicateUsd=ud.length-new Set(ud.map(String)).size;
+              return {
+                health:h?.status||null,
+                hard_errors:h?.hard_errors||[],
+                warnings:h?.warnings||[],
+                currencies:Object.fromEntries(ccys.map(c=>[c,{base:states[c]?.base,change:states[c]?.improvementState}])),
+                pairCount:pairs.length,
+                pairIssues,
+                jpy1:window.GMFQ_JPY_RATES_HISTORY_REPAIR||null,
+                jpy2:window.GMFQ_JPY_RATES_HISTORY_REPAIR2||null,
+                hygiene:window.GMFQ_DATA_HYGIENE_AUDIT||null,
+                quarantine:window.GMFQ_SECONDARY_DATA_QUARANTINE||null,
+                integrityBaseline:window.GMFQ_FINAL_INTEGRITY_BASELINE||null,
+                usdUnemploymentDuplicateDates:duplicateUsd
+              };
+            });
+            console.log('===FINAL_GATE_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===FINAL_GATE_END===');
+            const ok=(out.hard_errors||[]).length===0 && out.pairCount===28 && (out.pairIssues||[]).length===0 &&
+              out.jpy1?.status==='PASS' && out.jpy2?.status==='PASS' &&
+              out.hygiene?.status==='ACTIVE' && out.quarantine?.status==='ACTIVE' &&
+              out.usdUnemploymentDuplicateDates===0;
+            await browser.close(); srv.kill();
+            if(!ok) process.exit(2);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node gate.js
