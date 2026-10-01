@@ -1,0 +1,67 @@
+name: Runtime Provenance Summary
+
+on:
+  push:
+    branches: [staging-provenance-audit-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Summarize provenance coverage
+        run: |
+          cat > summary.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const perCcy={};
+              const sourceFiles={};
+              for(const c of ccys){
+                const xs=(typeof S!=='undefined'?(S[c]||[]):[]);
+                perCcy[c]={
+                  series:xs.length,
+                  source_file_present:xs.filter(x=>!!x.source_file).length,
+                  source_present:xs.filter(x=>!!x.source).length,
+                  frequency_present:xs.filter(x=>!!(x.frequency||x.freq)).length,
+                  unit_present:xs.filter(x=>!!(x.unit||x.units)).length,
+                  missing_frequency:xs.filter(x=>!(x.frequency||x.freq)).map(x=>({id:x.id,label:x.label,source_file:x.source_file||null})),
+                  missing_unit:xs.filter(x=>!(x.unit||x.units)).map(x=>({id:x.id,label:x.label,source_file:x.source_file||null}))
+                };
+                sourceFiles[c]=[...new Set(xs.map(x=>x.source_file).filter(Boolean))].sort();
+              }
+              const pick=(name)=>{
+                try{
+                  const v=window[name];
+                  if(v==null) return null;
+                  return JSON.parse(JSON.stringify(v));
+                }catch(e){return String(window[name]);}
+              };
+              const registries={};
+              for(const n of ['FINAL_SOURCE_POLICY_AUDIT','GMFQ_SOURCE_AUDIT_CLEANUP','GMFQ_SOURCE_REGISTRY_REALIGNMENT','SOURCE_RESOLUTION_WATCHLIST','DAILY_SOURCE_CHECK_LOG']){
+                registries[n]=pick(n);
+              }
+              return {perCcy,sourceFiles,registries};
+            });
+            console.log('===PROVENANCE_SUMMARY_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===PROVENANCE_SUMMARY_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node summary.js
