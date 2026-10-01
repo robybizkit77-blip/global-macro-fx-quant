@@ -1,0 +1,99 @@
+name: G8 End-to-End Logic Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit G8 propagation
+        run: |
+          cat > g8-e2e.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows={};
+              const issues=[];
+              for(const c of ccys){
+                const st=deriveCurrencyState(c)||{};
+                const imp=currencyImprovementDiagnostic(c)||{};
+                const intel=(typeof currencyIntelData!=='undefined'?currencyIntelData?.[c]:null)||{};
+                const macroPol=layerPolarity(intel.macro);
+                const ratesPol=layerPolarity(intel.rates);
+                const cbPol=layerPolarity(intel.cb);
+                const policy=policyFamilyPolarity(intel);
+                const pricePol=layerPolarity(intel.price);
+                const liqPol=layerPolarity(intel.liq);
+                const expectedBase=
+                  macroPol>0&&policy>0?'FORTE':
+                  macroPol<0&&policy<0?'FRAGILE':
+                  ((macroPol>0&&policy===0)||(policy>0&&macroPol===0))?'COSTRUTTIVA':
+                  ((macroPol<0&&policy===0)||(policy<0&&macroPol===0))?'DEBOLE':'MISTA';
+                const expectedStructDir=expectedBase==='FORTE'||expectedBase==='COSTRUTTIVA'?1:expectedBase==='FRAGILE'||expectedBase==='DEBOLE'?-1:0;
+                const expectedPrice=
+                  pricePol===0?'PREZZO NON RISOLUTIVO':
+                  expectedStructDir===0?'PREZZO SENZA STRUTTURA':
+                  pricePol===expectedStructDir?'PREZZO CONFERMA':'PREZZO DIVERGE';
+                const checks={
+                  base:st.base===expectedBase,
+                  macro:st.macro===macroPol,
+                  policy:st.policy===policy,
+                  confirmation:st.confirmation===expectedPrice,
+                  liquidity_not_structural:true,
+                  cot_not_structural:true,
+                  improvement_separate:!(imp.improving===true && imp.state!=='MIGLIORA')
+                };
+                const bad=Object.entries(checks).filter(([,v])=>!v).map(([k])=>k);
+                if(bad.length) issues.push({ccy:c,bad});
+                rows[c]={
+                  macro_layer:intel.macro||null,
+                  rates_layer:intel.rates||null,
+                  cb_layer:intel.cb||null,
+                  price_layer:intel.price||null,
+                  liq_layer:intel.liq||null,
+                  macroPol,ratesPol,cbPol,policy,pricePol,liqPol,
+                  base:st.base,
+                  improvement:imp.state,
+                  improving:!!imp.improving,
+                  confirmation:st.confirmation,
+                  driver:st.driver,
+                  checks
+                };
+              }
+              const pairs=(D?.pairs||[]).map(x=>x.pair);
+              const pairIssues=[];
+              for(const p of pairs){
+                const f=derivePairDecisionFrame(p)||{};
+                const [a,b]=p.split('/');
+                const sa=deriveCurrencyState(a)||{}, sb=deriveCurrencyState(b)||{};
+                const expMacro=sa.macro>sb.macro?'A':sb.macro>sa.macro?'B':'TIE';
+                const expPolicy=sa.policy>sb.policy?'A':sb.policy>sa.policy?'B':'TIE';
+                if(f.structural?.macro?.side!==expMacro) pairIssues.push({pair:p,type:'MACRO_SIDE',expected:expMacro,actual:f.structural?.macro?.side});
+                if(f.structural?.policy?.side!==expPolicy) pairIssues.push({pair:p,type:'POLICY_SIDE',expected:expPolicy,actual:f.structural?.policy?.side});
+              }
+              return {rows,issues,pairIssues,pairCount:pairs.length};
+            });
+            console.log('===G8_E2E_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===G8_E2E_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node g8-e2e.js
