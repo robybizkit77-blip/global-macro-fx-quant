@@ -1,0 +1,115 @@
+name: Runtime Provenance Certification
+
+on:
+  push:
+    branches: [staging-runtime-provenance-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Certify metadata and engine invariance
+        run: |
+          git fetch origin staging-oos-forward-clean-2026-10-01
+          git show origin/staging-oos-forward-clean-2026-10-01:validation/CANONICAL_ENGINE_OOS_T0_2026-10-01.json > baseline.json
+          cat > certify.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          const baseline=JSON.parse(fs.readFileSync('baseline.json','utf8'));
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const jsErrors=[];
+            page.on('pageerror',e=>jsErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=(window.GMFQ_RUNTIME_PROVENANCE?.rows||[]);
+              const missing=rows.filter(x=>!x.source||!x.frequency||!x.unit||x.provenance_status!=='CERTIFIED_RUNTIME_METADATA');
+              const currencies=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                const imp=currencyImprovementDiagnostic(c)||{};
+                return [c,{
+                  base:s.base||null,
+                  macro:Number.isFinite(Number(s.macro))?Number(s.macro):null,
+                  policy:Number.isFinite(Number(s.policy))?Number(s.policy):null,
+                  improvement:s.improvementState||imp.state||null,
+                  driver:deriveCurrencyDriver(c)||null
+                }];
+              }));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const pairStates=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{
+                  favored:f.fav||null,
+                  quality:f.quality||null,
+                  macro_side:f.structural?.macro?.side||null,
+                  policy_side:f.structural?.policy?.side||null
+                }];
+              }));
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {
+                provenance:window.GMFQ_RUNTIME_PROVENANCE||null,
+                rows_count:rows.length,
+                missing,
+                currencies,
+                pairs:pairStates,
+                pair_count:pairs.length,
+                rules_fingerprint:fwd?.current_rules_fingerprint||null,
+                health_status:health?.status||null,
+                hard_errors:health?.hard_errors||[]
+              };
+            });
+            await browser.close(); srv.kill();
+
+            const issues=[];
+            if(out.rows_count!==79) issues.push('provenance rows '+out.rows_count+' != 79');
+            if(out.missing.length) issues.push('metadata incomplete '+JSON.stringify(out.missing));
+            if(out.rules_fingerprint!==baseline.rules_fingerprint) issues.push('fingerprint '+out.rules_fingerprint+' != '+baseline.rules_fingerprint);
+            if(out.pair_count!==28) issues.push('pair count '+out.pair_count+' != 28');
+            if((out.hard_errors||[]).length) issues.push('hard errors '+JSON.stringify(out.hard_errors));
+            if(jsErrors.length) issues.push('javascript errors '+JSON.stringify(jsErrors));
+            const cf=['base','macro','policy','improvement','driver'];
+            for(const [ccy,b] of Object.entries(baseline.currencies)){
+              const cur=out.currencies[ccy]||{};
+              for(const f of cf) if(cur[f]!==b[f]) issues.push(ccy+'.'+f+' '+JSON.stringify(cur[f])+' != '+JSON.stringify(b[f]));
+            }
+            const pf=['favored','quality','macro_side','policy_side'];
+            for(const [p,b] of Object.entries(baseline.pairs)){
+              const cur=out.pairs[p]||{};
+              for(const f of pf) if(cur[f]!==b[f]) issues.push(p+'.'+f+' '+JSON.stringify(cur[f])+' != '+JSON.stringify(b[f]));
+            }
+            const result={
+              status:issues.length?'FAIL':'PASS',
+              provenance_series:out.rows_count,
+              certified:out.provenance?.certified_count||0,
+              withheld:out.provenance?.withheld_count??null,
+              rules_fingerprint:out.rules_fingerprint,
+              baseline_fingerprint:baseline.rules_fingerprint,
+              currency_count:Object.keys(out.currencies).length,
+              pair_count:out.pair_count,
+              health_status:out.health_status,
+              issues
+            };
+            console.log('===PROVENANCE_CERT_START===');
+            console.log(JSON.stringify(result,null,2));
+            console.log('===PROVENANCE_CERT_END===');
+            if(issues.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node certify.js
