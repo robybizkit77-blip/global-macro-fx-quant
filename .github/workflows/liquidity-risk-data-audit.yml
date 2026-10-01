@@ -1,0 +1,76 @@
+name: Liquidity Risk Data Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit liquidity and risk
+        run: |
+          cat > liq-risk-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const liquidity=ccys.map(c=>{
+                const d=(typeof NATIVE_LIQ_DATA!=='undefined'?NATIVE_LIQ_DATA?.[c]:null)||{};
+                const arrays=[];
+                const scan=(obj,path='',depth=0)=>{
+                  if(!obj||typeof obj!=='object'||depth>4)return;
+                  Object.entries(obj).forEach(([k,v])=>{
+                    const p=path?path+'.'+k:k;
+                    if(Array.isArray(v)) arrays.push({path:p,n:v.length});
+                    else if(v&&typeof v==='object') scan(v,p,depth+1);
+                  });
+                };
+                scan(d,'liq');
+                return {
+                  ccy:c,asof:d.as_of||d.date||d.period||null,
+                  quality:d.quality||null,source:d.source||null,
+                  keys:Object.keys(d),arrays
+                };
+              });
+              const risk=[];
+              for(const [name,x] of Object.entries(D?.risk||{})){
+                const dates=Array.isArray(x?.dates)?x.dates.map(String):[];
+                const vals=Array.isArray(x?.values)?x.values.map(Number):[];
+                let unordered=0;
+                for(let i=1;i<dates.length;i++){
+                  const a=Date.parse(dates[i-1]),b=Date.parse(dates[i]);
+                  if(Number.isFinite(a)&&Number.isFinite(b)&&b<a) unordered++;
+                }
+                risk.push({
+                  name,n_dates:dates.length,n_values:vals.length,
+                  n_finite:vals.filter(Number.isFinite).length,
+                  first:dates[0]||null,last:dates.at(-1)||null,
+                  duplicate_dates:dates.length-new Set(dates).size,
+                  unordered_dates:unordered,
+                  nonfinite:vals.length-vals.filter(Number.isFinite).length
+                });
+              }
+              return {liquidity,risk};
+            });
+            console.log('===LIQ_RISK_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===LIQ_RISK_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node liq-risk-audit.js
