@@ -1,0 +1,87 @@
+name: Leftovers Runtime Audit
+
+on:
+  push:
+    branches: [staging-leftovers-audit-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit current runtime leftovers
+        run: |
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const pageErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof D!=='undefined'&&typeof S!=='undefined',{timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const day=(typeof REAL_CALENDAR!=='undefined'?REAL_CALENDAR:[]).find(d=>d.key==='2026-09-30');
+              const events=(day?.events||[]).filter(e=>/ADP Employment Change|Core PCE|Personal Spending/i.test(String(e.event||''))).map(e=>({
+                event:e.event,prev:e.prev,forecast:e.forecast,actual:e.actual,surprise:e.surprise,status:e.status
+              }));
+              const news=(typeof NEWS_PULSE_STRUCT!=='undefined'?NEWS_PULSE_STRUCT:[]).filter(n=>/PCE|ADP|Payroll|USD sostenuto/i.test(String(n.title||''))).map(n=>({
+                title:n.title,what:n.what,changed:n.changed,status:n.status
+              }));
+              const px=(D?.prices||[]).find(x=>String(x?.Date)==='2026-09-30')||null;
+              const q=[];
+              for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+                for(const x of (S?.[c]||[])){
+                  if(x?.validation_status==='WITHHELD'||x?.exclude_from_decision===true||String(x?.data_quality||'').includes('WITHHELD')){
+                    q.push({ccy:c,category:x.category,label:x.label,validation_status:x.validation_status||null,data_quality:x.data_quality||null,exclude:!!x.exclude_from_decision,n:Array.isArray(x.values)?x.values.length:null});
+                  }
+                }
+              }
+              const nzd={};
+              try{
+                for(const [k,node] of Object.entries(NATIVE_LIQ_DATA?.NZD||{})){
+                  if(node&&typeof node==='object'&&!Array.isArray(node)&&Array.isArray(node.values)) nzd[k]={n:node.values.length,last_date:node.last_date||null,status:node.metadata_status||null,quality:node.quality||null};
+                }
+              }catch(e){}
+              const eurRates=(()=>{try{
+                const d=NATIVE_RATES_DATA?.EUR||{};
+                return {mode:d.mode||d.validation_mode||null,h2n:d.history2?.values?.length||0,h10n:d.history10?.values?.length||0,current2:d.y2??d.current2??d.history2?.last_value??null};
+              }catch(e){return null}})();
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              return {
+                data_as_of:D?.asOf||null,
+                price_as_of:D?.prices?.at(-1)?.Date||null,
+                price_20260930:px,
+                calendar_events:events,
+                news,
+                refresh_manifest:window.GMFQ_REFRESH_MANIFEST_20260930_1318||null,
+                freshness:window.AUXILIARY_FEED_FRESHNESS||null,
+                withheld:q,
+                nzd_liquidity:nzd,
+                eur_rates:eurRates,
+                metadata_linkage:window.GMFQ_RUNTIME_METADATA_LINKAGE||null,
+                bea_update:window.GMFQ_USD_BEA_ANNUAL_DATA_ONLY||null,
+                data_hygiene:window.GMFQ_DATA_HYGIENE_AUDIT||null,
+                secondary_quarantine:window.GMFQ_SECONDARY_DATA_QUARANTINE||null,
+                fingerprint:fwd?.current_rules_fingerprint||null,
+                health
+              };
+            });
+            console.log(JSON.stringify({pageErrors,...out},null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
