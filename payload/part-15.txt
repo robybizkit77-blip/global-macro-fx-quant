@@ -3480,7 +3480,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   try{
     const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
     for(const ccy of ccys){
-      for(const x of (window.S?.[ccy]||[])){
+      for(const x of ((typeof S!=='undefined' && S?.[ccy]) ? S[ccy] : [])){
         if(!['Crescita','Lavoro','Inflazione'].includes(x.category)) continue;
         const e=exact[x.id]||{};
         if(!x.source) x.source=e.source||familySource(ccy,x);
