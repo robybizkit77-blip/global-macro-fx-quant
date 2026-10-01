@@ -933,8 +933,8 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
   function statusFrom(d){
     if(!d) return {txt:'NON DISPONIBILE',cls:'neu'};
     const crowded=Math.abs(Number(d.net_oi||0))>=30;
-    if(d.state_label==='EXTREME LONG') return {txt:crowded?'ESTREMO LONG · AFFOLLATO':'ESTREMO LONG',cls:'pos'};
-    if(d.state_label==='EXTREME SHORT') return {txt:crowded?'ESTREMO SHORT · AFFOLLATO':'ESTREMO SHORT',cls:'neg'};
+    if(d.state_label==='EXTREME LONG') return {txt:crowded?'ESTREMO LONG · AFFOLLATO':'ESTREMO LONG',cls:'warn'};
+    if(d.state_label==='EXTREME SHORT') return {txt:crowded?'ESTREMO SHORT · AFFOLLATO':'ESTREMO SHORT',cls:'warn'};
     if(crowded) return {txt:'AFFOLLATO',cls:'warn'};
     return {txt:'NEUTRO',cls:'neu'};
   }
@@ -957,7 +957,7 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
         : 'Il posizionamento è estremo rispetto alla propria storia. Il punto non è inseguire automaticamente il long: conta vedere se nuovi flussi continuano ad arrivare e se il prezzo conferma.';
       confirm='Nuovi long continuano a entrare e il prezzo continua a muoversi nella stessa direzione.';
       reverse='Il flusso si gira, iniziano liquidazioni long oppure il prezzo smette di confermare.';
-      fx=`Per ${c}, il COT è favorevole come contesto ma il rischio di affollamento aumenta: non va usato da solo come segnale long.`;
+      fx=`Per ${c}, il COT descrive un posizionamento molto orientato al long. Non è un voto bullish: se è già estremo, aumenta anche il rischio di liquidazioni e prese di profitto.`;
     }else if(d?.state_label==='EXTREME SHORT'){
       title=`${c} è già molto carico sul lato short`;
       text=crowded
@@ -965,7 +965,7 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
         : 'Il posizionamento è molto short rispetto alla propria storia. Il punto è capire se entrano ancora short oppure se il mercato comincia a ricoprirli.';
       confirm='Continuano a entrare short e il prezzo continua a sottoperformare.';
       reverse='Parte short covering, il flusso smette di peggiorare oppure il prezzo recupera senza nuovi minimi.';
-      fx=`Per ${c}, il COT resta un vento contrario ma con rischio crescente di short covering: non va inseguito meccanicamente.`;
+      fx=`Per ${c}, il COT descrive un posizionamento molto orientato allo short. Non è un voto bearish: se è già estremo, aumenta anche il rischio di short covering.`;
     }else{
       title=`Il posizionamento su ${c} non è ancora a un estremo`;
       text=crowded
@@ -980,7 +980,7 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
     const noi=Number.isFinite(Number(d?.net_oi)) ? `${Number(d.net_oi).toFixed(1)}%${crowded?' · ⚠ affollato':''}` : '—';
     const w1=Number.isFinite(Number(d?.chg_net_1w)) ? `${Number(d.chg_net_1w)>=0?'+':''}${Math.round(Number(d.chg_net_1w)).toLocaleString('it-IT')} contratti` : '—';
     const drivers=[
-      {label:'Percentile 104W',txt:pct,cls:(Number(d?.pct)>=80?'pos':Number(d?.pct)<=20?'neg':'neu')},
+      {label:'Percentile 104W',txt:pct,cls:(Number(d?.pct)>=80||Number(d?.pct)<=20?'warn':'neu')},
       {label:'Net / Open Interest',txt:noi,cls:crowded?'warn':'neu'},
       {label:'Flusso ultima settimana',txt:w1,cls:Number(d?.chg_net_1w)>0?'pos':Number(d?.chg_net_1w)<0?'neg':'neu'}
     ];
