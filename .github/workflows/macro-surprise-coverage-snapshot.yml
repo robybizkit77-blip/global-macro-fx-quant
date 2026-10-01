@@ -1,0 +1,47 @@
+name: Macro Surprise Coverage Snapshot
+on:
+  push:
+    branches: [staging-macro-surprise-coverage-audit-2026-10-01]
+  workflow_dispatch:
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Snapshot surprise coverage
+        run: |
+          cat > snap.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,900));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const d=window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC||{};
+              return {
+                fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
+                status:d.status||null,
+                totals:d.totals||null,
+                summary:d.summary||null,
+                gaps:d.coverage_gaps||null,
+                events:d.events||null,
+                hard:(typeof productionHealthCheck==='function'?productionHealthCheck()?.hard_errors:[])||[]
+              };
+            });
+            console.log('===SURPRISE_COVERAGE===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===END_SURPRISE_COVERAGE===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node snap.js
