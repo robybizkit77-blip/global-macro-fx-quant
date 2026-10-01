@@ -1,0 +1,263 @@
+name: Historical Walkforward V93
+
+on:
+  push:
+    branches: [staging-historical-walkforward-v93-2026-10-01]
+    paths-ignore:
+      - 'validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Run historical walk-forward
+        run: |
+          cat > walkforward.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const pageErrors=[]; page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(2500);
+
+            const out=await page.evaluate(()=>{
+              const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const H=[7,28,84];
+              const MS=86400000;
+
+              function parseDate(v){
+                const z=String(v||'').trim();
+                if(!z) return null;
+                let m=z.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if(m) return Date.UTC(+m[1],+m[2]-1,+m[3]);
+                m=z.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                if(m) return Date.UTC(+m[3],+m[2]-1,+m[1]);
+                m=z.match(/^(\d{4})-(\d{2})$/);
+                if(m) return Date.UTC(+m[1],+m[2]-1,1);
+                m=z.match(/^(\d{4})Q([1-4])$/i);
+                if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);
+                m=z.match(/^(\d{4})-Q([1-4])$/i);
+                if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);
+                const t=Date.parse(z); return Number.isFinite(t)?t:null;
+              }
+              function iso(t){return new Date(t).toISOString().slice(0,10)}
+              function med(a){
+                const x=a.filter(Number.isFinite).slice().sort((p,q)=>p-q);
+                if(!x.length)return null; const n=x.length, m=Math.floor(n/2);
+                return n%2?x[m]:(x[m-1]+x[m])/2;
+              }
+              function macroPol(cat,label){
+                const l=String(label||'').toLowerCase();
+                if(cat==='Lavoro'){
+                  if(l.includes('disoccup')||l.includes('sussidi disoccupazione')||l.includes('claims')) return -1;
+                  if(l.includes('costo unitario')) return 0;
+                  return 1;
+                }
+                if(cat==='Crescita'){
+                  if(l.includes('tasso di risparmio')) return 0;
+                  return 1;
+                }
+                return 0;
+              }
+              function truncSeries(x,t){
+                const ds=Array.isArray(x?.dates)?x.dates:[];
+                const vs=Array.isArray(x?.values)?x.values:[];
+                const rows=[];
+                for(let i=0;i<Math.min(ds.length,vs.length);i++){
+                  const tt=parseDate(ds[i]), v=Number(vs[i]);
+                  if(tt!=null&&tt<=t&&Number.isFinite(v)) rows.push([tt,v]);
+                }
+                rows.sort((a,b)=>a[0]-b[0]);
+                return rows;
+              }
+              function impulse(x,cat,t){
+                const rows=truncSeries(x,t), vals=rows.map(r=>r[1]);
+                if(vals.length<8)return null;
+                const pol=macroPol(cat,x.label);
+                if(pol===0)return null;
+                const diffs=[];
+                const vv=vals.slice(-80);
+                for(let i=1;i<vv.length;i++) diffs.push(Math.abs(vv[i]-vv[i-1]));
+                const scale=med(diffs);
+                if(!scale||!Number.isFinite(scale)||scale<=0)return null;
+                const n=vals.length;
+                return {current:(vals[n-1]-vals[n-2])*pol/scale,previous:(vals[n-2]-vals[n-3])*pol/scale};
+              }
+              function block(c,cat,t){
+                const z=(S?.[c]||[]).filter(x=>x.category===cat).map(x=>impulse(x,cat,t)).filter(Boolean);
+                if(!z.length)return null;
+                const cur=med(z.map(x=>x.current)), prv=med(z.map(x=>x.previous));
+                if(cur==null||prv==null)return null;
+                return {direction:Math.abs(cur)<0.20?0:Math.sign(cur),n:z.length};
+              }
+              function macroSignal(c,t){
+                const g=block(c,'Crescita',t), l=block(c,'Lavoro',t);
+                if(!g||!l||g.n<2||l.n<2)return null;
+                const s=(g.direction||0)+(l.direction||0);
+                return s>0?1:s<0?-1:0;
+              }
+              function seriesDyn(rows){
+                const vals=rows.map(r=>r[1]);
+                if(vals.length<10)return null;
+                const n=vals.length, fast=Math.min(5,Math.floor(n/3));
+                const slope=(end,len)=>{
+                  const st=end-len+1; if(st<0)return null;
+                  return (vals[end]-vals[st])/(len-1);
+                };
+                const recent=slope(n-1,fast), prior=slope(n-fast,fast);
+                if(recent==null||prior==null)return null;
+                const diffs=[];
+                for(let i=Math.max(1,n-52);i<n;i++) diffs.push(Math.abs(vals[i]-vals[i-1]));
+                const typ=med(diffs)||0;
+                return {dir:Math.abs(recent)<typ*0.15?0:Math.sign(recent)};
+              }
+              function rateRows(c,t){
+                if(c==='EUR') return null;
+                let rs=null; try{rs=rate2YSeries(c)}catch(e){}
+                if(!rs?.values?.length)return null;
+                const rows=[];
+                const ds=rs.dates||[], vs=rs.values||[];
+                for(let i=0;i<Math.min(ds.length,vs.length);i++){
+                  const tt=parseDate(ds[i]),v=Number(vs[i]);
+                  if(tt!=null&&tt<=t&&Number.isFinite(v))rows.push([tt,v]);
+                }
+                rows.sort((a,b)=>a[0]-b[0]); return rows;
+              }
+              function rateSignal(c,t){
+                const rows=rateRows(c,t); if(!rows)return null;
+                return seriesDyn(rows)?.dir??null;
+              }
+              const prices=(D?.prices||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);
+              function pxAt(pair,t){
+                const row=prices.find(x=>x.t>=t);
+                if(!row)return null;
+                const [a,b]=pair.split('/');
+                const qa=a==='EUR'?1:Number(row.r[a]), qb=b==='EUR'?1:Number(row.r[b]);
+                if(!Number.isFinite(qa)||!Number.isFinite(qb)||qa===0)return null;
+                return {t:row.t,p:qb/qa};
+              }
+              function pairClass(pair,t){
+                const [a,b]=pair.split('/');
+                const ma=macroSignal(a,t), mb=macroSignal(b,t), ra=rateSignal(a,t), rb=rateSignal(b,t);
+                if(ma==null||mb==null||ra==null||rb==null) return {quality:'WITHHELD',fav:null,ma,mb,ra,rb};
+                const ms=ma>mb?'A':mb>ma?'B':'TIE';
+                const rs=ra>rb?'A':rb>ra?'B':'TIE';
+                let quality='NESSUN CONTRASTO',fav=null;
+                if(ms!=='TIE'&&ms===rs){quality='CONTRASTO STRUTTURALE FORTE';fav=ms==='A'?a:b;}
+                else if(ms!=='TIE'&&rs==='TIE'){quality='VANTAGGIO RELATIVO PARZIALE';fav=ms==='A'?a:b;}
+                else if(rs!=='TIE'&&ms==='TIE'){quality='VANTAGGIO RELATIVO PARZIALE';fav=rs==='A'?a:b;}
+                else if(ms!=='TIE'&&rs!=='TIE'&&ms!==rs){quality='PILASTRI DIVISI';}
+                return {quality,fav,ms,rs,ma,mb,ra,rb};
+              }
+
+              // Monthly checkpoints, first calendar day of month, from 2018 through latest date
+              // that permits the requested forward horizon. This is pseudo-PIT because macro
+              // observation dates are not release/vintage timestamps.
+              const maxT=prices.at(-1)?.t||Date.UTC(2026,8,30);
+              const checkpoints=[];
+              for(let y=2018;y<=2026;y++) for(let m=0;m<12;m++){
+                const t=Date.UTC(y,m,1);
+                if(t>=Date.UTC(2018,0,1)&&t<=maxT-7*MS) checkpoints.push(t);
+              }
+
+              const pairs=(D?.pairs||[]).map(x=>x.pair).sort();
+              const rows=[];
+              for(const t of checkpoints){
+                for(const pair of pairs){
+                  const s=pairClass(pair,t);
+                  for(const h of H){
+                    if(t+h*MS>maxT)continue;
+                    const p0=pxAt(pair,t), p1=pxAt(pair,t+h*MS);
+                    if(!p0||!p1||p1.t<=p0.t)continue;
+                    const raw=(p1.p/p0.p-1)*100;
+                    const [a,b]=pair.split('/');
+                    const signed=s.fav?(s.fav===a?raw:-raw):null;
+                    rows.push({date:iso(t),pair,h,quality:s.quality,fav:s.fav,ret:signed,raw,macro_side:s.ms||null,rates_side:s.rs||null});
+                  }
+                }
+              }
+              function stats(filter){
+                const z=rows.filter(filter).filter(x=>x.ret!=null&&Number.isFinite(x.ret));
+                if(!z.length)return {n:0,hit:null,mean:null,median:null};
+                const vals=z.map(x=>x.ret);
+                return {n:z.length,hit:z.filter(x=>x.ret>0).length/z.length,mean:vals.reduce((a,b)=>a+b,0)/vals.length,median:med(vals)};
+              }
+              const byH={};
+              for(const h of H){
+                byH[h]={
+                  strong:stats(x=>x.h===h&&x.quality==='CONTRASTO STRUTTURALE FORTE'),
+                  partial:stats(x=>x.h===h&&x.quality==='VANTAGGIO RELATIVO PARZIALE'),
+                  favored_all:stats(x=>x.h===h&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE')),
+                  recent_2023_2026:stats(x=>x.h===h&&x.date>='2023-01-01'&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE')),
+                  dev_2018_2022:stats(x=>x.h===h&&x.date<'2023-01-01'&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE'))
+                };
+              }
+              const qualityCounts={};
+              for(const q of ['CONTRASTO STRUTTURALE FORTE','VANTAGGIO RELATIVO PARZIALE','PILASTRI DIVISI','NESSUN CONTRASTO','WITHHELD']){
+                qualityCounts[q]=rows.filter(x=>x.h===28&&x.quality===q).length;
+              }
+              const byYear={};
+              for(let y=2018;y<=2026;y++){
+                byYear[y]=stats(x=>x.h===28&&x.date.startsWith(String(y))&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE'));
+              }
+              return {
+                project:'GLOBAL MACRO FX QUANT',
+                test:'HISTORICAL_WALKFORWARD_V93_2026-10-01',
+                model_rules_version:'9.3-pair-attention-hierarchy',
+                rules_fingerprint:(typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null),
+                status:'PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY',
+                methodology:{
+                  checkpoints:'monthly, 2018 onward',
+                  horizons_calendar_days:H,
+                  macro:'Growth + Labour historical directional proxy using the current normalizedSeriesImpulse/blockDynamics logic on data truncated at each checkpoint. Current-revised observation history; release-date vintages unavailable.',
+                  rates:'2Y historical direction using current seriesDynamics logic, truncated at checkpoint.',
+                  pair_hierarchy:'Exact current v9.3 hierarchy: aligned Macro+Rates => CONTRASTO STRUTTURALE FORTE; one pillar only => VANTAGGIO RELATIVO PARZIALE; opposing pillars => PILASTRI DIVISI.',
+                  price:'Canonical 28-pair reconstruction from ECB-based price matrix; first observation on/after checkpoint and horizon.',
+                  no_tuning:true,
+                  exclusions:['EUR Rates historical same-basis chain WITHHELD','Historical CB/OIS PIT not reconstructed','COT and Liquidity excluded from structural direction exactly as current architecture requires']
+                },
+                caveat:'This is not a full historical replay of deriveCurrencyState/policyFamilyPolarity because historical CB/OIS PIT and macro release vintages are unavailable. It tests the reconstructible Macro+Rates pair hierarchy without look-ahead in the series truncation.',
+                sample:{checkpoint_count:checkpoints.length,first:iso(checkpoints[0]),last:iso(checkpoints.at(-1)),price_last:iso(maxT),pair_count:pairs.length},
+                quality_counts_4w:qualityCounts,
+                results:byH,
+                stability_4w_by_year:byYear,
+                javascript_errors:pageErrors
+              };
+            });
+
+            await browser.close(); srv.kill();
+            fs.mkdirSync('validation',{recursive:true});
+            fs.writeFileSync('validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json',JSON.stringify(out,null,2)+'\n');
+            console.log('===WALKFORWARD_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===WALKFORWARD_END===');
+            if(out.javascript_errors?.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node walkforward.js
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Freeze v9.3 historical walk-forward"
+          git push
