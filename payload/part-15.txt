@@ -4496,3 +4496,119 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-macro-surprise-diagnostic-20261001">
+(function(){
+  'use strict';
+  try{
+    const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    const parseDate=s=>{const d=new Date(String(s||'')+'T00:00:00Z');return Number.isFinite(d.getTime())?d:null;};
+    const current=String(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||'2026-09-30');
+    const curDate=parseDate(current);
+    const minDate=curDate?new Date(curDate.getTime()-7*86400000):null;
+    const days=(typeof REAL_CALENDAR!=='undefined'&&Array.isArray(REAL_CALENDAR))?REAL_CALENDAR:[];
+    const byCurrency=Object.fromEntries(CCYS.map(c=>[c,[]]));
+
+    const hasConsensus=v=>{
+      const s=String(v??'').trim();
+      return !!s && s!=='—' && s!=='-' && !/nessun consenso|n\/a|na$/i.test(s);
+    };
+    const cls=v=>{
+      const s=String(v||'').toLowerCase();
+      if(s==='positive'||s==='pos') return 'POSITIVE';
+      if(s==='negative'||s==='neg') return 'NEGATIVE';
+      if(s==='neutral'||s==='mixed'||s==='warn') return 'NEUTRAL';
+      return 'UNCLASSIFIED';
+    };
+
+    days.forEach(day=>{
+      const d=parseDate(day?.key);
+      if(!d) return;
+      if(curDate && d>curDate) return;
+      if(minDate && d<minDate) return;
+      (day.events||[]).forEach(e=>{
+        if(e?.status!=='done') return;
+        const c=String(e.ccy||'').toUpperCase();
+        if(!byCurrency[c]) return;
+        const actual=e.actual??null;
+        const forecast=e.forecast??e.consensus??null;
+        const previous=e.prev??e.previous??null;
+        const consensusOk=hasConsensus(forecast);
+        byCurrency[c].push({
+          date:day.key,
+          event:e.event||'—',
+          previous,
+          consensus:forecast,
+          actual,
+          surprise:e.surprise??null,
+          surprise_class:consensusOk?cls(e.scls):'NO_CONSENSUS',
+          consensus_available:consensusOk,
+          direction:e.direction??null,
+          confirmation:e.confirm??null,
+          signal_impact:'NONE_DIAGNOSTIC_ONLY'
+        });
+      });
+    });
+
+    const summary={};
+    for(const c of CCYS){
+      const rows=byCurrency[c];
+      const withConsensus=rows.filter(x=>x.consensus_available);
+      const pos=withConsensus.filter(x=>x.surprise_class==='POSITIVE').length;
+      const neg=withConsensus.filter(x=>x.surprise_class==='NEGATIVE').length;
+      const neu=withConsensus.filter(x=>x.surprise_class==='NEUTRAL').length;
+      const unc=withConsensus.filter(x=>x.surprise_class==='UNCLASSIFIED').length;
+      const noConsensus=rows.length-withConsensus.length;
+      summary[c]={
+        events:rows.length,
+        with_consensus:withConsensus.length,
+        without_consensus:noConsensus,
+        positive_surprises:pos,
+        negative_surprises:neg,
+        neutral_or_mixed:neu,
+        unclassified:unc,
+        balance:pos-neg,
+        coverage_pct:rows.length?Math.round(withConsensus.length/rows.length*100):0,
+        interpretation:'DIAGNOSTIC_ONLY__NOT_USED_IN_STRUCTURAL_MACRO_STATE'
+      };
+    }
+
+    const totalEvents=Object.values(summary).reduce((a,x)=>a+x.events,0);
+    const totalConsensus=Object.values(summary).reduce((a,x)=>a+x.with_consensus,0);
+    const missing=Object.entries(summary).filter(([,x])=>x.events>0&&x.coverage_pct<100).map(([c,x])=>({currency:c,coverage_pct:x.coverage_pct,without_consensus:x.without_consensus}));
+
+    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={
+      version:'1.0',
+      as_of:current,
+      window_days:7,
+      status:totalEvents===0?'WITHHELD_NO_EVENTS':(missing.length?'PASS_WITH_COVERAGE_GAPS':'PASS'),
+      policy:{
+        role:'DIAGNOSTIC_ONLY',
+        changes_structural_macro:false,
+        changes_pair_direction:false,
+        changes_model_rules:false,
+        oos_restart_required:false,
+        rule:'Actual/consensus/previous and surprise are observed alongside canonical macro series. They cannot alter structural Macro until separately validated and explicitly promoted.'
+      },
+      totals:{
+        events:totalEvents,
+        with_consensus:totalConsensus,
+        coverage_pct:totalEvents?Math.round(totalConsensus/totalEvents*100):0
+      },
+      summary,
+      events:byCurrency,
+      coverage_gaps:missing
+    };
+
+    window.macroSurpriseDiagnostic=function(){
+      return JSON.parse(JSON.stringify(window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC));
+    };
+
+    document.documentElement.setAttribute('data-macro-surprise-diagnostic',window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC.status);
+  }catch(e){
+    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-macro-surprise-diagnostic','FAIL');
+  }
+})();
+</script>
