@@ -3474,6 +3474,39 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     }
   }catch(e){console.error('GMFQ metadata linkage liquidity',e);}
 
+
+  // Explicit liquidity metadata where value-based runtime matching is unavailable
+  // or where provenance must remain intentionally WITHHELD.
+  try{
+    if(typeof NATIVE_LIQ_DATA!=='undefined'){
+      const usdCond=NATIVE_LIQ_DATA?.USD?.conditions;
+      if(usdCond){
+        usdCond.source='Legacy runtime SLOOS snapshot · canonical source mapping WITHHELD due conflicting duplicates';
+        usdCond.frequency='Q';
+        usdCond.unit='Percent, not seasonally adjusted';
+        usdCond.quality='WITHHELD_PROVENANCE_CONFLICT';
+        usdCond.provenance_file='US_SLOOS_CI_LARGE_MIDDLE_history.csv';
+        usdCond.metadata_status='WITHHELD_CONFLICTING_DUPLICATES';
+      }
+      const eurMoney=NATIVE_LIQ_DATA?.EUR?.money;
+      if(eurMoney){
+        eurMoney.source=eurMoney.source||'Canonical source file · EA_M3_history.csv';
+        eurMoney.frequency=eurMoney.frequency||'M';
+        eurMoney.unit=eurMoney.unit||'EUR millions';
+        eurMoney.provenance_file=eurMoney.provenance_file||'EA_M3_history.csv';
+        eurMoney.metadata_status='LINKED_CANONICAL_SOURCE_FILE';
+      }
+      const eurCredit=NATIVE_LIQ_DATA?.EUR?.credit;
+      if(eurCredit){
+        eurCredit.source=eurCredit.source||'Canonical source file · EA_NFC_LOANS_history.csv';
+        eurCredit.frequency=eurCredit.frequency||'M';
+        eurCredit.unit=eurCredit.unit||'EUR millions';
+        eurCredit.provenance_file=eurCredit.provenance_file||'EA_NFC_LOANS_history.csv';
+        eurCredit.metadata_status='LINKED_CANONICAL_SOURCE_FILE';
+      }
+    }
+  }catch(e){console.error('GMFQ explicit liquidity metadata',e);}
+
   window.GMFQ_RUNTIME_METADATA_LINKAGE={
     version:'2026-10-01',
     policy:'LINK_EXISTING_PROVENANCE__NO_INFERENCE_EXCEPT_EXPLICIT_VERIFIED_OVERRIDES',
