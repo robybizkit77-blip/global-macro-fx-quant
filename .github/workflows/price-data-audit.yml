@@ -1,0 +1,95 @@
+name: Price Data Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit price data
+        run: |
+          cat > price-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=(D?.prices||[]).filter(r=>r?.Date);
+              const issues=[];
+              const dates=rows.map(r=>String(r.Date));
+              const duplicateDates=[...new Set(dates.filter((d,i)=>dates.indexOf(d)!==i))];
+              let sorted=true;
+              for(let i=1;i<dates.length;i++){
+                const a=new Date(dates[i-1]),b=new Date(dates[i]);
+                if(Number.isFinite(a.getTime())&&Number.isFinite(b.getTime())&&b<a) sorted=false;
+              }
+              const missing={};
+              const nonpositive={};
+              const jumpFlags=[];
+              for(const c of ccys){
+                missing[c]=0; nonpositive[c]=0;
+                let prev=null;
+                for(const r of rows){
+                  const v=Number(r[c]);
+                  if(!Number.isFinite(v)){missing[c]++;continue;}
+                  if(v<=0) nonpositive[c]++;
+                  if(Number.isFinite(prev)&&prev!==0){
+                    const ch=(v/prev-1)*100;
+                    if(Math.abs(ch)>10) jumpFlags.push({c,date:r.Date,change_pct:ch,prev,curr:v});
+                  }
+                  prev=v;
+                }
+              }
+              const pairChecks=[];
+              for(const p of (D?.pairs||[])){
+                const pair=p.pair;
+                const [a,b]=pair.split('/');
+                const last=rows.at(-1);
+                const qa=a==='EUR'?1:Number(last?.[a]);
+                const qb=b==='EUR'?1:Number(last?.[b]);
+                const formula=(Number.isFinite(qa)&&Number.isFinite(qb)&&qa!==0)?qb/qa:null;
+                const ps=pairSeries(pair,2);
+                const actual=Number(ps?.values?.at(-1));
+                const diff=Number.isFinite(formula)&&Number.isFinite(actual)?actual-formula:null;
+                pairChecks.push({pair,formula,actual,diff});
+                if(diff!=null&&Math.abs(diff)>1e-10) issues.push({type:'PAIR_ORIENTATION_MISMATCH',pair,formula,actual,diff});
+              }
+              if(duplicateDates.length) issues.push({type:'PRICE_DUPLICATE_DATES',duplicateDates});
+              if(!sorted) issues.push({type:'PRICE_UNSORTED_DATES'});
+              for(const c of ccys){
+                if(missing[c]) issues.push({type:'PRICE_MISSING_VALUES',c,count:missing[c]});
+                if(nonpositive[c]) issues.push({type:'PRICE_NONPOSITIVE_VALUES',c,count:nonpositive[c]});
+              }
+              if(jumpFlags.length) issues.push({type:'PRICE_GT10PCT_DAILY_JUMPS',count:jumpFlags.length,sample:jumpFlags.slice(0,20)});
+              return {
+                observations:rows.length,
+                first_date:dates[0]||null,
+                last_date:dates.at(-1)||null,
+                duplicate_dates:duplicateDates,
+                sorted,missing,nonpositive,jumpFlags,
+                pairChecks,issues,
+                latest:rows.at(-1)||null
+              };
+            });
+            console.log('===PRICE_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===PRICE_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node price-audit.js
