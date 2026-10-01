@@ -79,10 +79,17 @@ jobs:
                       frameMacroSide:frame?.structural?.macro?.side??null,
                       fav:frame?.fav??null,
                       quality:frame?.quality??null,
-                      mismatch:rawSide!=='NONE'&&rawSide!==absoluteMacroSide
+                      legacyMismatch:rawSide!=='NONE'&&rawSide!==absoluteMacroSide,
+                      engineMismatch:(frame?.structural?.macro?.side??null)!==absoluteMacroSide
                     };
                   });
-                  return {rows,mismatches:rows.filter(x=>x.mismatch),count:rows.filter(x=>x.mismatch).length};
+                  return {
+                    rows,
+                    legacyMismatches:rows.filter(x=>x.legacyMismatch),
+                    legacyCount:rows.filter(x=>x.legacyMismatch).length,
+                    engineMismatches:rows.filter(x=>x.engineMismatch),
+                    engineCount:rows.filter(x=>x.engineMismatch).length
+                  };
                 }),
                 eur:{
                   nativeMacro:safe(()=>NATIVE_MACRO_DATA?.EUR),
