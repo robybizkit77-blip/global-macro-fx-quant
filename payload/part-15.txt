@@ -3050,65 +3050,166 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 <style id="gmfq-overview-ux-strip-style">
-#overview .gmfqOverviewExecutive{margin:0 0 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-#overview .gmfqExecCard{background:rgba(255,255,255,.035);border:1px solid rgba(143,167,181,.18);border-radius:14px;padding:12px 13px;min-height:86px}
-#overview .gmfqExecCard .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7f98a6;font-weight:800}
-#overview .gmfqExecCard .v{margin-top:6px;font-size:15px;line-height:1.25;font-weight:800;color:#eaf4f8}
-#overview .gmfqExecCard .n{margin-top:5px;font-size:11px;line-height:1.35;color:#8da3af}
-#overview .gmfqExecCard.pos{border-color:rgba(61,190,122,.28)}
-#overview .gmfqExecCard.neg{border-color:rgba(194,92,111,.28)}
-#overview .gmfqExecCard.warn{border-color:rgba(214,161,70,.28)}
-#overview .gmfqExecCard.neu{border-color:rgba(108,157,187,.24)}
-#overview .gmfqOverviewExecutive .ccy{white-space:nowrap}
-@media(max-width:900px){#overview .gmfqOverviewExecutive{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){#overview .gmfqOverviewExecutive{grid-template-columns:1fr}}
+#overview .gmfqOverviewExecutive{
+  margin:0 0 18px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+#overview .gmfqReportPanel{
+  background:linear-gradient(180deg,rgba(14,39,52,.96),rgba(10,31,43,.96));
+  border:1px solid rgba(90,178,214,.26);
+  border-radius:18px;
+  padding:16px 18px;
+  overflow:hidden;
+}
+#overview .gmfqReportPanel .panelHead{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+  margin-bottom:12px;
+}
+#overview .gmfqReportPanel .eyebrow{
+  font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:#57cfff;font-weight:900;
+}
+#overview .gmfqReportPanel .panelTitle{
+  margin-top:3px;font-size:20px;line-height:1.15;font-weight:900;color:#f1f7fa;
+}
+#overview .gmfqReportPanel .panelHint{
+  font-size:11px;line-height:1.35;color:#89a6b4;text-align:right;max-width:520px;
+}
+#overview .gmfqStateGrid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;
+}
+#overview .gmfqStateBox{
+  background:rgba(255,255,255,.03);border:1px solid rgba(143,167,181,.16);
+  border-radius:13px;padding:11px 12px;min-width:0;
+}
+#overview .gmfqStateBox .label{
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:900;color:#91a9b5;
+}
+#overview .gmfqStateBox .items{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+#overview .gmfqStateBox.strong{border-color:rgba(58,206,130,.34)}
+#overview .gmfqStateBox.constructive{border-color:rgba(94,178,222,.34)}
+#overview .gmfqStateBox.mixed{border-color:rgba(221,169,71,.34)}
+#overview .gmfqStateBox.weak{border-color:rgba(202,91,117,.34)}
+#overview .gmfqCcyChip{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  padding:5px 8px;border-radius:9px;background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.08);font-size:13px;font-weight:850;color:#edf6f9;
+}
+#overview .gmfqEmpty{font-size:12px;color:#78929f;font-weight:650}
+#overview .gmfqChangeGrid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;
+}
+#overview .gmfqChangeBox{
+  border-radius:13px;padding:11px 12px;background:rgba(255,255,255,.025);
+  border:1px solid rgba(143,167,181,.16);
+}
+#overview .gmfqChangeBox .label{
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:900;color:#91a9b5;
+}
+#overview .gmfqChangeBox .items{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}
+#overview .gmfqChangeBox.up{border-color:rgba(58,206,130,.30)}
+#overview .gmfqChangeBox.down{border-color:rgba(202,91,117,.30)}
+#overview .gmfqChangeBox.turn{border-color:rgba(221,169,71,.34)}
+#overview .gmfqWatchGrid{
+  display:grid;grid-template-columns:1.2fr 1fr;gap:10px;
+}
+#overview .gmfqWatchBox{
+  border-radius:13px;padding:12px 13px;background:rgba(255,255,255,.025);
+  border:1px solid rgba(143,167,181,.16);
+}
+#overview .gmfqWatchBox .label{
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:900;color:#91a9b5;
+}
+#overview .gmfqWatchBox .main{
+  margin-top:6px;font-size:15px;line-height:1.35;font-weight:850;color:#edf6f9;
+}
+#overview .gmfqWatchBox .note{
+  margin-top:5px;font-size:11px;line-height:1.4;color:#8da5b1;
+}
+#overview .gmfqPairLine{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+#overview .gmfqPairChip{
+  display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:9px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  font-size:13px;font-weight:850;color:#edf6f9;
+}
+#overview .gmfqOverviewExecutive svg{width:18px;height:13px;vertical-align:-2px}
+@media(max-width:1000px){
+  #overview .gmfqStateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #overview .gmfqWatchGrid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  #overview .gmfqReportPanel{padding:14px}
+  #overview .gmfqReportPanel .panelHead{display:block}
+  #overview .gmfqReportPanel .panelHint{text-align:left;margin-top:5px}
+  #overview .gmfqStateGrid,#overview .gmfqChangeGrid{grid-template-columns:1fr}
+}
 </style>
 <script id="gmfq-overview-ux-strip-20260930">
 (function(){
   'use strict';
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
-  function humanList(xs){
-    if(!xs||!xs.length)return 'Nessuna';
-    return xs.map(c=>'<span class="ccy">'+safe(()=>flagSvg(c),'')+' '+c+'</span>').join(' · ');
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function chip(c){
+    return '<span class="gmfqCcyChip">'+safe(()=>flagSvg(c),'')+' '+esc(c)+'</span>';
   }
-  function structuralBuckets(){
-    const out={fav:[],weak:[],mixed:[]};
-    CCYS.forEach(c=>{
-      const base=String(safe(()=>deriveCurrencyState(c)?.base,'MISTA')||'MISTA').toUpperCase();
-      if(base==='FORTE'||base==='COSTRUTTIVA') out.fav.push(c);
-      else if(base==='FRAGILE'||base==='DEBOLE') out.weak.push(c);
-      else out.mixed.push(c);
+  function list(xs){
+    if(!xs||!xs.length)return '<span class="gmfqEmpty">Nessuna</span>';
+    return xs.map(chip).join('');
+  }
+  function currencyRows(){
+    return CCYS.map(c=>{
+      const s=safe(()=>deriveCurrencyState(c),{})||{};
+      return {
+        c,
+        base:String(s.base||'MISTA').toUpperCase(),
+        change:String(s.improvementState||s.improvement||'STABILE').toUpperCase(),
+        driver:String(s.driver||s.dominantDriver||'Non determinato'),
+        confirmation:String(s.confirmation||s.priceReading||'PREZZO NON RISOLUTIVO')
+      };
+    });
+  }
+  function structuralBuckets(rows){
+    const out={strong:[],constructive:[],mixed:[],weak:[]};
+    rows.forEach(x=>{
+      if(x.base==='FORTE') out.strong.push(x.c);
+      else if(x.base==='COSTRUTTIVA') out.constructive.push(x.c);
+      else if(x.base==='FRAGILE'||x.base==='DEBOLE') out.weak.push(x.c);
+      else out.mixed.push(x.c);
     });
     return out;
   }
-  function changeBuckets(){
+  function changeBuckets(rows){
     const out={up:[],down:[],turn:[],stable:[]};
-    CCYS.forEach(c=>{
-      const x=String(safe(()=>deriveCurrencyState(c)?.improvementState,'')||'').toUpperCase();
-      if(x==='MIGLIORA'||x.includes('EARLY SHIFT POSITIVO')) out.up.push(c);
-      else if(x==='PEGGIORA'||x.includes('EARLY SHIFT NEGATIVO')) out.down.push(c);
-      else if(x.includes('TURNING POINT')) out.turn.push(c);
-      else out.stable.push(c);
+    rows.forEach(x=>{
+      const v=x.change;
+      if(v==='MIGLIORA'||v.includes('EARLY SHIFT POSITIVO')) out.up.push(x.c);
+      else if(v==='PEGGIORA'||v.includes('EARLY SHIFT NEGATIVO')) out.down.push(x.c);
+      else if(v.includes('TURNING POINT')) out.turn.push(x.c);
+      else out.stable.push(x.c);
     });
     return out;
   }
-  function topPairs(){
-    const weights={
+  function pairRows(){
+    const weight={
       'CONTRASTO STRUTTURALE FORTE':4,
       'VANTAGGIO RELATIVO FORTE':4,
       'VANTAGGIO RELATIVO PARZIALE':3,
+      'SEPARAZIONE RATES MATERIALE':2,
       'PILASTRI DIVISI':1,
       'NESSUN CONTRASTO':0,
       'MISTO / NON RISOLUTIVO':0
     };
-    const rows=(D?.pairs||[]).map(p=>{
+    return (D?.pairs||[]).map(p=>{
       const f=safe(()=>derivePairDecisionFrame(p.pair),{})||{};
-      return {pair:p.pair,f,w:weights[f.quality]??0};
-    }).filter(x=>x.w>=3)
-      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair)))
-      .slice(0,2);
-    return rows;
+      return {pair:p.pair,f,w:weight[f.quality]??0};
+    });
+  }
+  function pairChip(x){
+    const fav=x.f?.fav&&x.f.fav!=='—'?' · '+esc(x.f.fav):'';
+    return '<span class="gmfqPairChip">'+esc(x.pair)+fav+'</span>';
   }
   function render(){
     const view=document.getElementById('overview');
@@ -3121,28 +3222,46 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       if(grid) grid.insertAdjacentElement('beforebegin',host);
       else view.prepend(host);
     }
-    const structure=structuralBuckets();
-    const b=changeBuckets();
-    const pairs=topPairs();
-    const pairText=pairs.length
-      ? pairs.map(x=>{
-          const fav=x.f?.fav&&x.f.fav!=='—'?(' · '+x.f.fav):'';
-          return '<span class="ccy">'+x.pair+fav+'</span>';
-        }).join(' · ')
-      : 'Nessuna coppia con separazione strutturale forte/parziale';
-    const pairNote=pairs.length
-      ? pairs.map(x=>String(x.f?.quality||'').replace('VANTAGGIO RELATIVO ','')).join(' · ')
-      : 'Aspettare maggiore differenziazione Macro + Tassi/CB';
-    const structureText=
-      '<b>Favorevoli:</b> '+humanList(structure.fav)+
-      '<br><b>Deboli:</b> '+humanList(structure.weak)+
-      '<br><b>Miste:</b> '+humanList(structure.mixed);
+    const rows=currencyRows();
+    const s=structuralBuckets(rows);
+    const ch=changeBuckets(rows);
+    const pairs=pairRows();
+    const clean=pairs.filter(x=>x.w>=3)
+      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair))).slice(0,3);
+    const divergences=pairs.filter(x=>x.f?.priceReading==='DIVERGENZA DA MONITORARE')
+      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair))).slice(0,3);
+    const lead=clean.length
+      ? clean.map(x=>pairChip(x)).join('')
+      : '<span class="gmfqEmpty">Nessun contrasto strutturale abbastanza pulito</span>';
+    const divs=divergences.length
+      ? divergences.map(x=>pairChip(x)).join('')
+      : '<span class="gmfqEmpty">Nessuna divergenza prezzo rilevante</span>';
+
     host.innerHTML=
-      '<div class="gmfqExecCard neu"><div class="k">FX · Struttura attuale</div><div class="v">'+structureText+'</div><div class="n">Livello strutturale: Macro + Tassi/CB. Questo è lo stesso stato usato dal motore dei pair.</div></div>'+
-      '<div class="gmfqExecCard pos"><div class="k">FX · Migliora di recente</div><div class="v">'+humanList(b.up)+'</div><div class="n">Cambiamento recente, non sinonimo di valuta già forte.</div></div>'+
-      '<div class="gmfqExecCard neg"><div class="k">FX · Peggiora di recente</div><div class="v">'+humanList(b.down)+'</div><div class="n">Cambiamento recente, separato dal livello strutturale attuale.</div></div>'+
-      '<div class="gmfqExecCard warn"><div class="k">FX · Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Transizione Macro/Rates non ancora pienamente allineata.</div></div>'+
-      '<div class="gmfqExecCard neu"><div class="k">Pair · Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
+      '<section class="gmfqReportPanel">'+
+        '<div class="panelHead"><div><div class="eyebrow">1 · Stato attuale</div><div class="panelTitle">Chi è forte e chi è debole?</div></div><div class="panelHint">Struttura FX = Macro + Tassi/aspettative banca centrale. Qui non mischiamo il cambiamento recente.</div></div>'+
+        '<div class="gmfqStateGrid">'+
+          '<div class="gmfqStateBox strong"><div class="label">Forti</div><div class="items">'+list(s.strong)+'</div></div>'+
+          '<div class="gmfqStateBox constructive"><div class="label">Costruttive</div><div class="items">'+list(s.constructive)+'</div></div>'+
+          '<div class="gmfqStateBox mixed"><div class="label">Miste / neutrali</div><div class="items">'+list(s.mixed)+'</div></div>'+
+          '<div class="gmfqStateBox weak"><div class="label">Deboli</div><div class="items">'+list(s.weak)+'</div></div>'+
+        '</div>'+
+      '</section>'+
+      '<section class="gmfqReportPanel">'+
+        '<div class="panelHead"><div><div class="eyebrow">2 · Cosa sta cambiando</div><div class="panelTitle">Dove si sta muovendo il quadro?</div></div><div class="panelHint">Una valuta può essere debole ma migliorare, oppure forte ma peggiorare. Stato e direzione restano separati.</div></div>'+
+        '<div class="gmfqChangeGrid">'+
+          '<div class="gmfqChangeBox up"><div class="label">Migliora</div><div class="items">'+list(ch.up)+'</div></div>'+
+          '<div class="gmfqChangeBox down"><div class="label">Peggiora</div><div class="items">'+list(ch.down)+'</div></div>'+
+          '<div class="gmfqChangeBox turn"><div class="label">Possibile svolta</div><div class="items">'+list(ch.turn)+'</div></div>'+
+        '</div>'+
+      '</section>'+
+      '<section class="gmfqReportPanel">'+
+        '<div class="panelHead"><div><div class="eyebrow">3 · Dove guardare</div><div class="panelTitle">Cosa merita davvero attenzione?</div></div><div class="panelHint">Prima il contrasto Macro + Tassi/CB; poi il Prezzo ci dice se il mercato conferma o diverge.</div></div>'+
+        '<div class="gmfqWatchGrid">'+
+          '<div class="gmfqWatchBox"><div class="label">Pair con separazione più pulita</div><div class="gmfqPairLine">'+lead+'</div><div class="note">Non è un segnale automatico: sono i pair in cui la struttura relativa è più leggibile.</div></div>'+
+          '<div class="gmfqWatchBox"><div class="label">Divergenze prezzo da monitorare</div><div class="gmfqPairLine">'+divs+'</div><div class="note">La struttura e il prezzo non sono ancora allineati: qui serve conferma prima di inseguire il movimento.</div></div>'+
+        '</div>'+
+      '</section>';
   }
   const old=window.v302ConsolidatedSync;
   window.v302ConsolidatedSync=function(){
@@ -3155,7 +3274,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   else setTimeout(render,60);
 })();
 </script>
-
 
 <script id="gmfq-overview-semantic-fix-20260930">
 (function(){
