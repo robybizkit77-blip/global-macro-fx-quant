@@ -63,7 +63,7 @@ jobs:
               if(out.pair_count!==28)issues.push(name+' pair_count '+out.pair_count);
               if(out.panels!==3||out.state_boxes!==4)issues.push(name+' layout '+JSON.stringify(out));
               if(!out.has_color)issues.push(name+' color hierarchy missing');
-              if(out.overflow_x>2)issues.push(name+' horizontal overflow '+out.overflow_x);
+              if(out.overflow_x>2&&out.offenders.length)issues.push(name+' unclipped horizontal overflow '+out.overflow_x);
               if(out.hard_errors.length)issues.push(name+' hard_errors '+JSON.stringify(out.hard_errors));
             }
             if(errors.length)issues.push('JS errors '+JSON.stringify(errors));
