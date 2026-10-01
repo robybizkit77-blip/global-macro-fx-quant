@@ -985,7 +985,7 @@ function v461OperationalRead(c){
   let priced='Il prezzo non sta ancora incorporando in modo pulito la storia strutturale.';
   if(st.confirmation==='PREZZO CONFERMA') priced='Il prezzo è già allineato a Macro + Tassi/CB: una parte della storia è già riflessa.';
   else if(st.confirmation==='PREZZO DIVERGE') priced='La struttura e il prezzo sono ancora separati: la storia non è pienamente prezzata.';
-  let surprise='Una sorpresa sarebbe un movimento netto di Macro o Tassi/CB contro il driver dominante.';
+  let surprise='Una sorpresa sarebbe un movimento netto di Macro o Tassi/CB contro il pilastro strutturale che oggi sostiene la lettura.';
   if(st.base==='MISTA') surprise='La vera sorpresa sarebbe vedere Macro e Tassi/CB finalmente convergere nella stessa direzione.';
   const profit=ext.state==='EXTENDED'||ext.state==='ADVANCED'
     ? ext.text+' Il rischio di presa di profitto è quindi più alto.'
