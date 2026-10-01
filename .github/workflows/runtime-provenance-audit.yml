@@ -1,0 +1,147 @@
+name: Runtime Provenance Audit
+
+on:
+  push:
+    branches: [staging-provenance-audit-clean-2026-10-01]
+    paths-ignore:
+      - 'validation/RUNTIME_PROVENANCE_AUDIT_2026-10-01.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Build provenance audit
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const coreCats=new Set(['Crescita','Lavoro','Inflazione']);
+              const macro=[];
+              for(const c of ccys){
+                for(const x of (S?.[c]||[]).filter(x=>coreCats.has(x.category))){
+                  macro.push({
+                    ccy:c, category:x.category, label:x.label||null,
+                    source:x.source||null, frequency:x.frequency||null,
+                    unit:x.unit||null, series_id:x.series_id||x.id||null,
+                    observations:Array.isArray(x.values)?x.values.length:0
+                  });
+                }
+              }
+              const rates=ccys.map(c=>{
+                const rs=rate2YSeries(c)||{};
+                const n=(typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA?.[c]:null)||{};
+                return {
+                  ccy:c,
+                  source:n.source||null,
+                  quality:n.quality||null,
+                  as_of:n.date||n.as_of||null,
+                  series_frequency:rs.frequency||null,
+                  series_unit:rs.unit||null,
+                  series_id:rs.series_id||rs.id||null,
+                  observations:Array.isArray(rs.values)?rs.values.length:0
+                };
+              });
+              const cb_ois=ccys.map(c=>{
+                const cb=(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.[c]:null)||{};
+                const mp=cb.market_pricing||{};
+                const ois=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c]||window.GMFQ_OIS?.currency?.(c)||null;
+                return {
+                  ccy:c,
+                  cb_as_of:cb.last_date||cb.as_of||null,
+                  pricing_source:mp.source||null,
+                  pricing_quality:mp.quality||cb.pricing_tier||null,
+                  pricing_as_of:mp.as_of||null,
+                  ois_source:ois?.source||null,
+                  ois_status:ois?.status||null,
+                  ois_as_of:ois?.as_of||null
+                };
+              });
+              const liquidity=ccys.map(c=>{
+                const d=(typeof NATIVE_LIQ_DATA!=='undefined'?NATIVE_LIQ_DATA?.[c]:null)||{};
+                return {ccy:c,source:d.source||null,quality:d.quality||null,as_of:d.as_of||d.date||d.period||null};
+              });
+              const cot=ccys.map(c=>{
+                const x=D?.cot?.[c]||{};
+                return {ccy:c,as_of:x.as_of||x.date||D?.cotAsOf||null,observations:Array.isArray(x.net_series)?x.net_series.length:0};
+              });
+              const price={
+                as_of:Array.isArray(D?.prices)&&D.prices.length?String(D.prices.at(-1)?.Date||''):null,
+                observations:Array.isArray(D?.prices)?D.prices.length:0,
+                pair_count:Array.isArray(D?.pairs)?D.pairs.length:0
+              };
+              const macroMissing={
+                source:macro.filter(x=>!x.source),
+                frequency:macro.filter(x=>!x.frequency),
+                unit:macro.filter(x=>!x.unit),
+                series_id:macro.filter(x=>!x.series_id)
+              };
+              const summary={
+                macro_series:macro.length,
+                macro_missing_source:macroMissing.source.length,
+                macro_missing_frequency:macroMissing.frequency.length,
+                macro_missing_unit:macroMissing.unit.length,
+                macro_missing_series_id:macroMissing.series_id.length,
+                rates_missing_source:rates.filter(x=>!x.source).map(x=>x.ccy),
+                liquidity_missing_source:liquidity.filter(x=>!x.source).map(x=>x.ccy),
+                liquidity_missing_quality:liquidity.filter(x=>!x.quality).map(x=>x.ccy),
+                cb_pricing_missing_source:cb_ois.filter(x=>!x.pricing_source).map(x=>x.ccy),
+                ois_missing_source:cb_ois.filter(x=>!x.ois_source).map(x=>x.ccy)
+              };
+              const hard_complete = summary.macro_missing_source===0 &&
+                summary.macro_missing_frequency===0 &&
+                summary.macro_missing_unit===0 &&
+                summary.macro_missing_series_id===0 &&
+                summary.rates_missing_source.length===0 &&
+                summary.liquidity_missing_source.length===0;
+              return {
+                project:'GLOBAL MACRO FX QUANT',
+                audit:'RUNTIME_PROVENANCE_AUDIT_2026-10-01',
+                branch:'staging-provenance-audit-clean-2026-10-01',
+                status:hard_complete?'PASS':'INCOMPLETE_PROVENANCE',
+                summary,
+                macro_missing:{
+                  source:macroMissing.source.map(({ccy,category,label,observations})=>({ccy,category,label,observations})),
+                  frequency:macroMissing.frequency.map(({ccy,category,label})=>({ccy,category,label})),
+                  unit:macroMissing.unit.map(({ccy,category,label})=>({ccy,category,label})),
+                  series_id:macroMissing.series_id.map(({ccy,category,label})=>({ccy,category,label}))
+                },
+                rates, cb_ois, liquidity, cot, price,
+                rule:'Missing provenance remains missing; no source, unit, frequency or identifier is inferred.'
+              };
+            });
+            await browser.close(); srv.kill();
+            fs.mkdirSync('validation',{recursive:true});
+            fs.writeFileSync('validation/RUNTIME_PROVENANCE_AUDIT_2026-10-01.json',JSON.stringify(out,null,2)+'\n');
+            console.log(JSON.stringify(out.summary,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - name: Commit audit artifact
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/RUNTIME_PROVENANCE_AUDIT_2026-10-01.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Add runtime provenance audit"
+          git push
