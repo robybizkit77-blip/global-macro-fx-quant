@@ -946,11 +946,93 @@ window.v413DrawOisCurve=function(c){
   series.forEach((s,si)=>{ctx.strokeStyle=`rgba(96,165,250,${styles[si].a})`;ctx.lineWidth=styles[si].w;ctx.beginPath();s.forEach((v,i)=>{if(i===0)ctx.moveTo(X(i),Y(v));else ctx.lineTo(X(i),Y(v));});ctx.stroke();});
 };
 
+window.v401RatesOriginDiagnostic=function(c,d){
+  const n=x=>Number.isFinite(Number(x))?Number(x):null;
+  const ch2=n(d?.chg2_bp), ch10=n(d?.chg10_bp);
+  const minMove=3;
+  const gap=3;
+  const fmtBp=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
+
+  if(ch2==null || ch10==null){
+    return {
+      title:'Misto / non determinato',
+      cls:'neu',
+      why:'Mancano variazioni comparabili di 2Y e 10Y. Il modello non forza una causa.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+    };
+  }
+
+  const a2=Math.abs(ch2), a10=Math.abs(ch10);
+
+  if(a2<minMove && a10<minMove){
+    return {
+      title:'Misto / non determinato',
+      cls:'neu',
+      why:'Il movimento settimanale è troppo piccolo per attribuire un driver rates affidabile.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+    };
+  }
+
+  if(ch2>0 && ch2>=ch10+gap){
+    return {
+      title:'Policy / front-end',
+      cls:'up',
+      why:'Il 2Y sale più del 10Y: domina il repricing della banca centrale e della policy attesa.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+    };
+  }
+
+  if(ch2<0 && ch2<=ch10-gap){
+    return {
+      title:'Policy / front-end',
+      cls:'down',
+      why:'Il 2Y scende più del 10Y: domina un repricing più dovish della policy attesa.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+    };
+  }
+
+  if(ch10>0 && ch10>=ch2+gap){
+    return {
+      title:'Long-end · origine da verificare',
+      cls:'warn',
+      why:'Il 10Y sale più del 2Y. Prima di leggerlo come positivo per FX bisogna separare crescita + real yield, breakeven, term premium e fiscal/supply.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`
+    };
+  }
+
+  if(ch10<0 && ch10<=ch2-gap){
+    return {
+      title:'Long-end · origine da verificare',
+      cls:'info',
+      why:'Il 10Y scende più del 2Y. Il movimento nasce soprattutto dalla parte lunga e va separato tra crescita, real yield, inflazione attesa e premio per la duration.',
+      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`
+    };
+  }
+
+  return {
+    title:'Misto / policy + long-end',
+    cls:'neu',
+    why:'2Y e 10Y si muovono senza una dominanza abbastanza netta. La lettura resta mista finché real yield, breakeven o term premium non danno una conferma dinamica comparabile.',
+    detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+  };
+};
+
+window.v401RatesOriginCard=function(c,d){
+  const x=window.v401RatesOriginDiagnostic(c,d);
+  return v233RateCard(
+    'Origine del movimento Rates',
+    x.title,
+    x.detail,
+    x.why,
+    x.cls
+  );
+};
+
 window.v401RenderRatesLayers=function(c,d){
   const ng=document.querySelector('#v233RatesGrid');
   const dg=document.querySelector('#v401RatesDecompGrid');
   if(ng) ng.innerHTML=window.v401NominalCards(c,d);
-  if(dg) dg.innerHTML=window.v401DecompCards(c,d);
+  if(dg) dg.innerHTML=window.v401RatesOriginCard(c,d)+window.v401DecompCards(c,d);
   window.v401RenderOis(c);
 };
 })();
