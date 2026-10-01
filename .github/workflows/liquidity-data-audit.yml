@@ -30,9 +30,18 @@ jobs:
             const out=await page.evaluate(()=>{
               const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
               const rows=[],issues=[];
+              const coverage=(typeof productionRefreshCoverageMatrix==='function'?productionRefreshCoverageMatrix():null);
               for(const c of ccys){
-                const d=(typeof currentLayerSnapshot==='function'?currentLayerSnapshot(c)?.liq:null)||{};
+                const cov=coverage?.currencies?.[c]?.liquidity||{};
+                const cand=(typeof liquidityStructuralChangeCandidate==='function'?liquidityStructuralChangeCandidate(c):null)||{};
                 const intel=currencyIntelData?.[c]||{};
+                const d={
+                  as_of:cov.as_of||cand.as_of||null,
+                  quality:cov.quality||cand.status||null,
+                  source:cov.source||null,
+                  liquidity_dir:cand.candidate>0?'IN AUMENTO':cand.candidate<0?'IN CALO':cand.status==='CANDIDATE'?'STABILE':'NON DISPONIBILE',
+                  status:cand.status||null
+                };
                 const before=deriveCurrencyState(c)?.base||null;
                 const old=Array.isArray(intel.liq)?intel.liq.slice():intel.liq;
                 let afterPos=null,afterNeg=null;
