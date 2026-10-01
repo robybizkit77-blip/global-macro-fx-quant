@@ -3395,3 +3395,122 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   };
 })();
 </script>
+
+
+<script id="gmfq-runtime-metadata-linkage-20261001">
+(function(){
+  'use strict';
+  const overrides={
+    'US_NEWORDER_history_NEWORDER':{frequency:'M',unit:'Millions of Dollars, Seasonally Adjusted',provider:'U.S. Census Bureau via FRED'},
+    'US_DSPIC96_history_DSPIC96':{frequency:'M',unit:'Billions of Chained 2017 Dollars, Seasonally Adjusted Annual Rate',provider:'U.S. Bureau of Economic Analysis via FRED'},
+    'US_PI_history_PI':{frequency:'M',unit:'Billions of Dollars, Seasonally Adjusted Annual Rate',provider:'U.S. Bureau of Economic Analysis via FRED'},
+    'US_PSAVERT_history_PSAVERT':{frequency:'M',unit:'Percent',provider:'U.S. Bureau of Economic Analysis via FRED'},
+    'US_ULCNFB_history_ULCNFB':{frequency:'Q',unit:'Index 2017=100, Seasonally Adjusted',provider:'U.S. Bureau of Labor Statistics via FRED'},
+    'US_JTSHIR_history_JTSHIR':{frequency:'M',unit:'Rate, Seasonally Adjusted',provider:'U.S. Bureau of Labor Statistics via FRED'},
+    'US_JTSQUR_history_JTSQUR':{frequency:'M',unit:'Rate, Seasonally Adjusted',provider:'U.S. Bureau of Labor Statistics via FRED'},
+    'US_OPHNFB_history_OPHNFB':{frequency:'Q',unit:'Index 2017=100, Seasonally Adjusted',provider:'U.S. Bureau of Labor Statistics via FRED'},
+    'US_CCSA_history_CCSA':{frequency:'W',unit:'Number, Seasonally Adjusted',provider:'U.S. Employment and Training Administration via FRED'},
+    'CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Price_Indicator':{frequency:'Q',unit:'Standardized summary indicator (dimensionless)',provider:'Bank of Canada · Business Outlook Survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_10Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_1Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_2Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_5Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_2Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'},
+    'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_2Y':{frequency:'Q',unit:'Percent',provider:'Reserve Bank of New Zealand · expectations survey'}
+  };
+  const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  function linkSeries(s){
+    if(!s||typeof s!=='object') return;
+    if(s.source_file){
+      if(!s.source) s.source='Canonical source file · '+s.source_file;
+      s.provenance_file=s.source_file;
+      s.provenance_status='LINKED_CANONICAL_SOURCE_FILE';
+    }
+    const o=overrides[s.id];
+    if(o){
+      if(!s.frequency) s.frequency=o.frequency;
+      if(!s.unit) s.unit=o.unit;
+      s.provider=s.provider||o.provider;
+      s.metadata_status='VERIFIED_METADATA_PATCH_2026-10-01';
+    }else{
+      s.metadata_status=s.metadata_status||'SOURCE_LINKED_EXISTING_METADATA';
+    }
+  }
+  try{
+    for(const c of ccys) for(const s of ((typeof S!=='undefined'&&S[c])||[])) linkSeries(s);
+  }catch(e){console.error('GMFQ metadata linkage S',e);}
+
+  function sameValue(a,b){
+    const x=Number(a),y=Number(b);
+    return Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x-y)<=1e-9;
+  }
+  try{
+    if(typeof NATIVE_LIQ_DATA!=='undefined'){
+      for(const c of ccys){
+        const root=NATIVE_LIQ_DATA[c];
+        if(!root) continue;
+        for(const [k,node] of Object.entries(root)){
+          if(!node||typeof node!=='object'||Array.isArray(node)||!('values' in node)) continue;
+          const candidates=((typeof S!=='undefined'&&S[c])||[]).filter(s=>
+            s&&s.last_date===node.last_date&&sameValue(s.last_value,node.last_value)
+          );
+          if(candidates.length===1){
+            const s=candidates[0];
+            linkSeries(s);
+            node.source=node.source||s.source||null;
+            node.provenance_file=node.provenance_file||s.source_file||null;
+            node.frequency=node.frequency||s.frequency||null;
+            node.unit=node.unit||s.unit||null;
+            node.metadata_match_id=s.id||null;
+            node.metadata_status='LINKED_UNIQUE_RUNTIME_SERIES';
+          }else{
+            node.metadata_status=node.metadata_status||(candidates.length>1?'AMBIGUOUS_RUNTIME_MATCH':'NO_RUNTIME_MATCH');
+          }
+          node.quality=node.quality||(c==='NZD'?'CURRENT_ONLY_SHALLOW_HISTORY':'HISTORICALLY_USABLE');
+        }
+      }
+    }
+  }catch(e){console.error('GMFQ metadata linkage liquidity',e);}
+
+
+  // Explicit liquidity metadata where value-based runtime matching is unavailable
+  // or where provenance must remain intentionally WITHHELD.
+  try{
+    if(typeof NATIVE_LIQ_DATA!=='undefined'){
+      const usdCond=NATIVE_LIQ_DATA?.USD?.conditions;
+      if(usdCond){
+        usdCond.source='Legacy runtime SLOOS snapshot · canonical source mapping WITHHELD due conflicting duplicates';
+        usdCond.frequency='Q';
+        usdCond.unit='Percent, not seasonally adjusted';
+        usdCond.quality='WITHHELD_PROVENANCE_CONFLICT';
+        usdCond.provenance_file='US_SLOOS_CI_LARGE_MIDDLE_history.csv';
+        usdCond.metadata_status='WITHHELD_CONFLICTING_DUPLICATES';
+      }
+      const eurMoney=NATIVE_LIQ_DATA?.EUR?.money;
+      if(eurMoney){
+        eurMoney.source=eurMoney.source||'Canonical source file · EA_M3_history.csv';
+        eurMoney.frequency=eurMoney.frequency||'M';
+        eurMoney.unit=eurMoney.unit||'EUR millions';
+        eurMoney.provenance_file=eurMoney.provenance_file||'EA_M3_history.csv';
+        eurMoney.metadata_status='LINKED_CANONICAL_SOURCE_FILE';
+      }
+      const eurCredit=NATIVE_LIQ_DATA?.EUR?.credit;
+      if(eurCredit){
+        eurCredit.source=eurCredit.source||'Canonical source file · EA_NFC_LOANS_history.csv';
+        eurCredit.frequency=eurCredit.frequency||'M';
+        eurCredit.unit=eurCredit.unit||'EUR millions';
+        eurCredit.provenance_file=eurCredit.provenance_file||'EA_NFC_LOANS_history.csv';
+        eurCredit.metadata_status='LINKED_CANONICAL_SOURCE_FILE';
+      }
+    }
+  }catch(e){console.error('GMFQ explicit liquidity metadata',e);}
+
+  window.GMFQ_RUNTIME_METADATA_LINKAGE={
+    version:'2026-10-01',
+    policy:'LINK_EXISTING_PROVENANCE__NO_INFERENCE_EXCEPT_EXPLICIT_VERIFIED_OVERRIDES',
+    explicit_overrides:Object.keys(overrides).length
+  };
+})();
+</script>
