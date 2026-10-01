@@ -1,0 +1,60 @@
+name: EUR End-to-End Logic Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit EUR propagation
+        run: |
+          cat > eur-e2e.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const c='EUR';
+              const series=(S?.[c]||[]).filter(x=>['Crescita','Lavoro','Inflazione','Rates'].includes(x.category));
+              const core=series.map(x=>({
+                category:x.category,label:x.label,
+                last:x.values?.at?.(-1)??x.values?.[x.values?.length-1]??null,
+                prev:x.values?.at?.(-2)??x.values?.[x.values?.length-2]??null,
+                last_date:x.dates?.at?.(-1)??x.dates?.[x.dates?.length-1]??x.last_date??null,
+                n:x.values?.length||0,
+                polarity:(typeof macroSeriesPolarity==='function'&&x.category!=='Rates')?macroSeriesPolarity(x.category,x.label):null
+              }));
+              const dyn=typeof currencyDynamics==='function'?currencyDynamics(c):null;
+              const imp=typeof currencyImprovementDiagnostic==='function'?currencyImprovementDiagnostic(c):null;
+              const state=typeof deriveCurrencyState==='function'?deriveCurrencyState(c):null;
+              const driver=typeof deriveCurrencyDriver==='function'?deriveCurrencyDriver(c):null;
+              const lead=typeof deriveLeadStructure==='function'?deriveLeadStructure(c):null;
+              const plan=typeof deriveCurrencyActionPlan==='function'?deriveCurrencyActionPlan(c):null;
+              const cb=(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.EUR:null)||null;
+              const pairs=(D?.pairs||[]).map(x=>x.pair).filter(p=>p.startsWith('EUR/')||p.endsWith('/EUR')).map(p=>({
+                pair:p,
+                frame:derivePairDecisionFrame(p)
+              }));
+              return {core,dyn,imp,state,driver,lead,plan,cb,pairs};
+            });
+            console.log('===EUR_E2E_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===EUR_E2E_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node eur-e2e.js
