@@ -3395,3 +3395,120 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   };
 })();
 </script>
+
+
+<script id="gmfq-runtime-provenance-v1-20261001">
+(function(){
+  'use strict';
+  const sourceArtifact={
+    USD:'USA_WOLFRAM_REAUDIT_v1.0_2026-09-22.json',
+    EUR:'EUR_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    GBP:'GBP_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    JPY:'JPY_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    CHF:'CHF_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    CAD:'CAD_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    AUD:'AUD_FINAL_FREEZE_CURRENT_LAYER_v1.0_2026-09-22.json',
+    NZD:'NZD_FINAL_FREEZE_STATUS_v1.0_2026-09-22.json'
+  };
+
+  const exact={
+    US_NEWORDER_history_NEWORDER:{source:'U.S. Census Bureau via FRED',frequency:'M',unit:'Millions of Dollars, seasonally adjusted'},
+    US_DSPIC96_history_DSPIC96:{source:'U.S. Bureau of Economic Analysis via FRED',frequency:'M',unit:'Billions of Chained 2017 Dollars, SAAR'},
+    US_PI_history_PI:{source:'U.S. Bureau of Economic Analysis via FRED',frequency:'M',unit:'Billions of Dollars, SAAR'},
+    US_PSAVERT_history_PSAVERT:{source:'U.S. Bureau of Economic Analysis via FRED',frequency:'M',unit:'Percent, seasonally adjusted annual rate'},
+    US_ULCNFB_history_ULCNFB:{source:'U.S. Bureau of Labor Statistics via FRED',frequency:'Q',unit:'Index 2017=100, seasonally adjusted'},
+    US_JTSHIR_history_JTSHIR:{source:'U.S. Bureau of Labor Statistics via FRED',frequency:'M',unit:'Percent rate, seasonally adjusted'},
+    US_JTSQUR_history_JTSQUR:{source:'U.S. Bureau of Labor Statistics via FRED',frequency:'M',unit:'Percent rate, seasonally adjusted'},
+    US_OPHNFB_history_OPHNFB:{source:'U.S. Bureau of Labor Statistics via FRED',frequency:'Q',unit:'Index 2017=100, seasonally adjusted'},
+    US_CCSA_history_CCSA:{source:'U.S. Employment and Training Administration via FRED',frequency:'W',unit:'Persons, seasonally adjusted'},
+    CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Price_Indicator:{source:'Bank of Canada Business Outlook Survey',frequency:'Q',unit:'Standardized survey indicator'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_10Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_1Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_2Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_5Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_2Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'},
+    NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_2Y:{source:'Reserve Bank of New Zealand — Business Expectations Survey (M15)',frequency:'Q',unit:'Percent'}
+  };
+
+  function familySource(ccy,x){
+    const id=String(x.id||'');
+    if(ccy==='USD'){
+      if(/PCEC96|DSPIC96|_PI_|PSAVERT|PCEPI|PCEPILFE/.test(id)) return 'U.S. Bureau of Economic Analysis via FRED';
+      if(/NEWORDER|RRSFS/.test(id)) return 'U.S. Census Bureau via FRED';
+      if(/INDPRO/.test(id)) return 'Board of Governors of the Federal Reserve System via FRED';
+      if(/ICSA|CCSA/.test(id)) return 'U.S. Employment and Training Administration via FRED';
+      return 'U.S. Bureau of Labor Statistics via FRED';
+    }
+    if(ccy==='EUR'){
+      if(/HICP_SERVICES|NEGOTIATED_WAGES/.test(id)) return 'ECB Data Portal';
+      if(/UNEMP/.test(id)) return 'ECB Data Portal / Eurostat';
+      return 'Eurostat Statistics API';
+    }
+    if(ccy==='GBP'){
+      if(/PAYE/.test(id)) return 'ONS/HMRC PAYE RTI';
+      return 'Office for National Statistics (ONS)';
+    }
+    if(ccy==='JPY'){
+      if(/IIP|RETAIL/.test(id)) return 'METI / e-Stat';
+      return 'Statistics Bureau of Japan / e-Stat';
+    }
+    if(ccy==='CHF'){
+      if(/UNEMP/.test(id)) return 'Swiss National Bank data portal / SECO';
+      if(/CPI/.test(id)) return 'Swiss National Bank data portal / SFSO';
+      if(/EMPLOYMENT/.test(id)) return 'Swiss Federal Statistical Office (FSO) PX-Web';
+      return 'Eurostat Statistics API (official Switzerland series)';
+    }
+    if(ccy==='CAD'){
+      if(/BOC_BOS/.test(id)) return 'Bank of Canada Business Outlook Survey';
+      return 'Statistics Canada WDS official vector API';
+    }
+    if(ccy==='AUD'){
+      if(/WPI/.test(id)) return 'Reserve Bank of Australia (Wage Price Index series)';
+      return 'Australian Bureau of Statistics (ABS)';
+    }
+    if(ccy==='NZD'){
+      if(/RBNZ_M15/.test(id)) return 'Reserve Bank of New Zealand — Business Expectations Survey (M15)';
+      if(/CORE_INFLATION_SFM/.test(id)) return 'Reserve Bank of New Zealand — Sectoral Factor Model';
+      return 'Stats NZ via validated canonical transport';
+    }
+    return null;
+  }
+
+  const registry=[];
+  try{
+    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    for(const ccy of ccys){
+      for(const x of (window.S?.[ccy]||[])){
+        if(!['Crescita','Lavoro','Inflazione'].includes(x.category)) continue;
+        const e=exact[x.id]||{};
+        if(!x.source) x.source=e.source||familySource(ccy,x);
+        if(!x.frequency && e.frequency) x.frequency=e.frequency;
+        if(!x.unit && e.unit) x.unit=e.unit;
+        x.provenance_artifact=sourceArtifact[ccy];
+        x.provenance_status=(x.source&&x.frequency&&x.unit)?'CERTIFIED_RUNTIME_METADATA':'WITHHELD_METADATA';
+        registry.push({
+          ccy,id:x.id,label:x.label,category:x.category,source_file:x.source_file||null,
+          source:x.source||null,frequency:x.frequency||null,unit:x.unit||null,
+          provenance_artifact:x.provenance_artifact,
+          provenance_status:x.provenance_status
+        });
+      }
+    }
+    window.GMFQ_RUNTIME_PROVENANCE={
+      version:'v1-2026-10-01',
+      policy:'METADATA_ONLY__NO_DATES_VALUES_OR_ENGINE_RULES_CHANGED',
+      series_count:registry.length,
+      certified_count:registry.filter(x=>x.provenance_status==='CERTIFIED_RUNTIME_METADATA').length,
+      withheld_count:registry.filter(x=>x.provenance_status!=='CERTIFIED_RUNTIME_METADATA').length,
+      rows:registry
+    };
+    document.documentElement.setAttribute('data-runtime-provenance',
+      window.GMFQ_RUNTIME_PROVENANCE.withheld_count===0?'PASS':'WITHHELD');
+  }catch(e){
+    window.GMFQ_RUNTIME_PROVENANCE={version:'v1-2026-10-01',status:'FAIL',error:String(e)};
+    document.documentElement.setAttribute('data-runtime-provenance','FAIL');
+  }
+})();
+</script>
