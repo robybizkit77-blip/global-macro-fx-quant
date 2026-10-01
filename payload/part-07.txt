@@ -151,6 +151,25 @@ function v478RatesTutor(c,d){
   const m2=v233Move(d?.chg2_bp), m10=v233Move(d?.chg10_bp);
   const driver=v233Driver(d), curve=v233CurveInterpretation(d), div=v233Divergence(d);
 
+  const weeklyBp=series=>{
+    if(!series || !Array.isArray(series.dates) || !Array.isArray(series.values) || series.dates.length<2) return null;
+    const rows=series.dates.map((z,i)=>({t:Date.parse(String(z)),v:Number(series.values[i])}))
+      .filter(x=>Number.isFinite(x.t)&&Number.isFinite(x.v)).sort((a,b)=>a.t-b.t);
+    if(rows.length<2) return null;
+    const last=rows.at(-1), target=last.t-7*86400000;
+    const prior=[...rows].reverse().find(x=>x.t<=target);
+    if(!prior) return null;
+    const days=(last.t-prior.t)/86400000;
+    if(days<5 || days>12) return null;
+    return (last.v-prior.v)*100;
+  };
+  const real1w=weeklyBp(d?.real);
+  const be1w=weeklyBp(d?.breakeven);
+  const tp1w=weeklyBp(d?.term_premium);
+  let growthDir=null;
+  try{ growthDir=Number(blockDynamics?.(c,'Crescita')?.direction); }catch(e){}
+  const fmt1w=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
+
   let now={txt:'MISTO / DA INTERPRETARE',cls:'warn'};
   if(driver.name==='Front-end / 2Y'){
     if((d.chg2_bp||0)>2) now={txt:'FAVOREVOLE',cls:'pos'};
@@ -191,6 +210,9 @@ function v478RatesTutor(c,d){
     {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:m10.cls==='pos'?'v478Pos':m10.cls==='neg'?'v478Neg':'v478Neu'},
     {label:'Curva 10Y−2Y',txt:`${d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb'} · ${curve.name}`,cls:curve.cls==='pos'?'v478Pos':curve.cls==='neg'?'v478Neg':curve.cls==='warn'?'v478Warn':'v478Neu'}
   ];
+  if(real1w!=null) drivers.push({label:'Real yield · 1W',txt:fmt1w(real1w),cls:real1w>3?'v478Pos':real1w<-3?'v478Neg':'v478Neu'});
+  if(be1w!=null) drivers.push({label:'Breakeven · 1W',txt:fmt1w(be1w),cls:Math.abs(be1w)>3?'v478Warn':'v478Neu'});
+  if(tp1w!=null) drivers.push({label:'Term premium · 1W',txt:fmt1w(tp1w),cls:Math.abs(tp1w)>3?'v478Warn':'v478Neu'});
 
   let confirm,reverse;
   if(now.cls==='pos'){
@@ -205,9 +227,24 @@ function v478RatesTutor(c,d){
   }
 
   let origin={label:'MISTO / NON DETERMINATO',cls:'warn'};
-  if(driver.name==='Front-end / 2Y') origin={label:'POLICY / FRONT-END',cls:now.cls};
-  else if(driver.name==='Long-end / 10Y') origin={label:'LONG-END · ORIGINE DA VERIFICARE',cls:'warn'};
-  else if(driver.name==='Movimento condiviso') origin={label:'MISTO / POLICY + LONG-END',cls:'warn'};
+  if(driver.name==='Front-end / 2Y'){
+    origin={label:'POLICY / FRONT-END',cls:now.cls};
+  }else if(driver.name==='Long-end / 10Y'){
+    const ar=real1w==null?null:Math.abs(real1w);
+    const ab=be1w==null?null:Math.abs(be1w);
+    const at=tp1w==null?null:Math.abs(tp1w);
+    if(tp1w!=null && at>=5 && (ar==null||at>=ar+2) && (ab==null||at>=ab+2)){
+      origin={label:'TERM PREMIUM / FISCAL / SUPPLY',cls:'warn'};
+    }else if(be1w!=null && ab>=5 && (ar==null||ab>=ar+2)){
+      origin={label:'INFLAZIONE / BREAKEVEN',cls:'warn'};
+    }else if(real1w!=null && real1w>=5 && growthDir>0 && (ab==null||ar>=ab)){
+      origin={label:'CRESCITA + REAL YIELDS',cls:'pos'};
+    }else{
+      origin={label:'LONG-END · ORIGINE DA VERIFICARE',cls:'warn'};
+    }
+  }else if(driver.name==='Movimento condiviso'){
+    origin={label:'MISTO / POLICY + LONG-END',cls:'warn'};
+  }
 
   const fx=v233FxRead(c,d);
   return {now,dir,title,text,drivers,confirm,reverse,fx,div,origin};
