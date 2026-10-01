@@ -1,0 +1,327 @@
+{
+  "schema": "GMFQ_CANONICAL_OOS_T0_V2",
+  "captured_at": "2026-10-01T06:13:46.202Z",
+  "data_as_of": "2026-09-25",
+  "price_as_of": "2026-09-30",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "oos_rule": "ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE",
+  "horizons_days": [
+    7,
+    28,
+    84
+  ],
+  "health_status": "PASS_WITH_WARNINGS",
+  "hard_errors": [],
+  "currencies": {
+    "USD": {
+      "base": "FORTE",
+      "macro": 1,
+      "policy": 1,
+      "improvement": "MIGLIORA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Macro + Rates / aspettative CB"
+    },
+    "EUR": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "improvement": "TURNING POINT",
+      "confirmation": "PREZZO DIVERGE",
+      "driver": "Rates / aspettative CB"
+    },
+    "GBP": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "improvement": "TURNING POINT",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Rates / aspettative CB"
+    },
+    "JPY": {
+      "base": "MISTA",
+      "macro": 0,
+      "policy": 0,
+      "improvement": "EARLY SHIFT POSITIVO",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Non determinato"
+    },
+    "CHF": {
+      "base": "MISTA",
+      "macro": 0,
+      "policy": 0,
+      "improvement": "MIGLIORA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Non determinato"
+    },
+    "CAD": {
+      "base": "COSTRUTTIVA",
+      "macro": 1,
+      "policy": 0,
+      "improvement": "EARLY SHIFT POSITIVO",
+      "confirmation": "PREZZO CONFERMA",
+      "driver": "Macro"
+    },
+    "AUD": {
+      "base": "FORTE",
+      "macro": 1,
+      "policy": 1,
+      "improvement": "TURNING POINT",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Macro + Rates / aspettative CB"
+    },
+    "NZD": {
+      "base": "COSTRUTTIVA",
+      "macro": 0,
+      "policy": 1,
+      "improvement": "EARLY SHIFT POSITIVO",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "driver": "Rates / aspettative CB"
+    }
+  },
+  "pairs": {
+    "AUD/CAD": {
+      "favored": "AUD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 0.9882186905565442
+    },
+    "AUD/CHF": {
+      "favored": "AUD",
+      "quality": "CONTRASTO STRUTTURALE FORTE",
+      "macro_side": "A",
+      "policy_side": "A",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 0.5815794317972633
+    },
+    "AUD/JPY": {
+      "favored": "AUD",
+      "quality": "CONTRASTO STRUTTURALE FORTE",
+      "macro_side": "A",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 109.3882309627539
+    },
+    "AUD/NZD": {
+      "favored": "AUD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "A",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.2342762471620543
+    },
+    "AUD/USD": {
+      "favored": "—",
+      "quality": "NESSUN CONTRASTO",
+      "macro_side": "TIE",
+      "policy_side": "TIE",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 0.6967540038043811
+    },
+    "CAD/CHF": {
+      "favored": "CAD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "A",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 0.5885128841974542
+    },
+    "CAD/JPY": {
+      "favored": "CAD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "A",
+      "policy_side": "TIE",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 110.69233157404533
+    },
+    "CHF/JPY": {
+      "favored": "—",
+      "quality": "SEPARAZIONE RATES MATERIALE",
+      "macro_side": "TIE",
+      "policy_side": "TIE",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 188.08820426250264
+    },
+    "EUR/AUD": {
+      "favored": "AUD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "B",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.6297
+    },
+    "EUR/CAD": {
+      "favored": "—",
+      "quality": "PILASTRI DIVISI",
+      "macro_side": "B",
+      "policy_side": "A",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 1.6105
+    },
+    "EUR/CHF": {
+      "favored": "EUR",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 0.9478
+    },
+    "EUR/GBP": {
+      "favored": "—",
+      "quality": "SEPARAZIONE RATES MATERIALE",
+      "macro_side": "TIE",
+      "policy_side": "TIE",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 0.85463
+    },
+    "EUR/JPY": {
+      "favored": "EUR",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 178.27
+    },
+    "EUR/NZD": {
+      "favored": "—",
+      "quality": "NESSUN CONTRASTO",
+      "macro_side": "TIE",
+      "policy_side": "TIE",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 2.0115
+    },
+    "EUR/USD": {
+      "favored": "USD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "B",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.1355
+    },
+    "GBP/AUD": {
+      "favored": "AUD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "B",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.9069070825971473
+    },
+    "GBP/CAD": {
+      "favored": "—",
+      "quality": "PILASTRI DIVISI",
+      "macro_side": "B",
+      "policy_side": "A",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 1.8844412201771528
+    },
+    "GBP/CHF": {
+      "favored": "GBP",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 1.109017937587026
+    },
+    "GBP/JPY": {
+      "favored": "GBP",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 208.59319237564796
+    },
+    "GBP/NZD": {
+      "favored": "—",
+      "quality": "NESSUN CONTRASTO",
+      "macro_side": "TIE",
+      "policy_side": "TIE",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 2.3536501175947486
+    },
+    "GBP/USD": {
+      "favored": "USD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "B",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.328645144682494
+    },
+    "NZD/CAD": {
+      "favored": "—",
+      "quality": "PILASTRI DIVISI",
+      "macro_side": "B",
+      "policy_side": "A",
+      "price_reading": "PREZZO NON RISOLUTIVO",
+      "anchor_price": 0.8006462838677605
+    },
+    "NZD/CHF": {
+      "favored": "NZD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 0.47119065374098934
+    },
+    "NZD/JPY": {
+      "favored": "NZD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 88.62540392741737
+    },
+    "NZD/USD": {
+      "favored": "USD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "B",
+      "policy_side": "TIE",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 0.5645041014168531
+    },
+    "USD/CAD": {
+      "favored": "USD",
+      "quality": "VANTAGGIO RELATIVO PARZIALE",
+      "macro_side": "TIE",
+      "policy_side": "A",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 1.4183179216204316
+    },
+    "USD/CHF": {
+      "favored": "USD",
+      "quality": "CONTRASTO STRUTTURALE FORTE",
+      "macro_side": "A",
+      "policy_side": "A",
+      "price_reading": "MERCATO GIÀ ALLINEATO",
+      "anchor_price": 0.834698370761779
+    },
+    "USD/JPY": {
+      "favored": "USD",
+      "quality": "CONTRASTO STRUTTURALE FORTE",
+      "macro_side": "A",
+      "policy_side": "A",
+      "price_reading": "DIVERGENZA DA MONITORARE",
+      "anchor_price": 156.99691765741966
+    }
+  },
+  "t0_effective_date": "2026-10-01",
+  "price_anchor_source": "ECB euro foreign exchange reference rates",
+  "price_anchor_as_of": "2026-09-30",
+  "checkpoints": {
+    "1W": {
+      "days": 7,
+      "evaluation_date": "2026-10-08"
+    },
+    "4W": {
+      "days": 28,
+      "evaluation_date": "2026-10-29"
+    },
+    "12W": {
+      "days": 84,
+      "evaluation_date": "2026-12-24"
+    }
+  },
+  "evaluation_rule": "Use the first available ECB reference-rate observation on or after each evaluation date; no threshold tuning and no rule changes within the OOS regime.",
+  "historical_validation_note": "Full historical point-in-time replay of the current Rates/CB structural classification is unavailable. Retrospective tests remain limited to historically reconstructible layers; this T0 starts the clean full-engine OOS regime."
+}
