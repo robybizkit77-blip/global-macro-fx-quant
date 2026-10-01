@@ -1,0 +1,195 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "test": "HISTORICAL_WALKFORWARD_V93_2026-10-01",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "status": "PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY",
+  "methodology": {
+    "checkpoints": "monthly, 2018 onward",
+    "horizons_calendar_days": [
+      7,
+      28,
+      84
+    ],
+    "macro": "Growth + Labour historical directional proxy using the current normalizedSeriesImpulse/blockDynamics logic on data truncated at each checkpoint. Current-revised observation history; release-date vintages unavailable.",
+    "rates": "2Y historical direction using current seriesDynamics logic, truncated at checkpoint.",
+    "pair_hierarchy": "Exact current v9.3 hierarchy: aligned Macro+Rates => CONTRASTO STRUTTURALE FORTE; one pillar only => VANTAGGIO RELATIVO PARZIALE; opposing pillars => PILASTRI DIVISI.",
+    "price": "Canonical 28-pair reconstruction from ECB-based price matrix; first observation on/after checkpoint and horizon.",
+    "no_tuning": true,
+    "exclusions": [
+      "EUR Rates historical same-basis chain WITHHELD",
+      "Historical CB/OIS PIT not reconstructed",
+      "COT and Liquidity excluded from structural direction exactly as current architecture requires"
+    ]
+  },
+  "caveat": "This is not a full historical replay of deriveCurrencyState/policyFamilyPolarity because historical CB/OIS PIT and macro release vintages are unavailable. It tests the reconstructible Macro+Rates pair hierarchy without look-ahead in the series truncation.",
+  "sample": {
+    "checkpoint_count": 105,
+    "first": "2018-01-01",
+    "last": "2026-09-01",
+    "price_last": "2026-09-30",
+    "pair_count": 28
+  },
+  "quality_counts_4w": {
+    "CONTRASTO STRUTTURALE FORTE": 56,
+    "VANTAGGIO RELATIVO PARZIALE": 123,
+    "PILASTRI DIVISI": 15,
+    "NESSUN CONTRASTO": 58,
+    "WITHHELD": 2688
+  },
+  "results": {
+    "7": {
+      "strong": {
+        "n": 56,
+        "hit": 0.44642857142857145,
+        "mean": -0.09531832676803349,
+        "median": -0.07230530756384135
+      },
+      "partial": {
+        "n": 123,
+        "hit": 0.4715447154471545,
+        "mean": -0.1820677156464962,
+        "median": -0.11948363155067643
+      },
+      "favored_all": {
+        "n": 179,
+        "hit": 0.46368715083798884,
+        "mean": -0.1549282420308878,
+        "median": -0.09939606240706444
+      },
+      "recent_2023_2026": {
+        "n": 179,
+        "hit": 0.46368715083798884,
+        "mean": -0.1549282420308878,
+        "median": -0.09939606240706444
+      },
+      "dev_2018_2022": {
+        "n": 0,
+        "hit": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "28": {
+      "strong": {
+        "n": 56,
+        "hit": 0.5357142857142857,
+        "mean": 0.25260368051699894,
+        "median": 0.2370511649132212
+      },
+      "partial": {
+        "n": 123,
+        "hit": 0.44715447154471544,
+        "mean": -0.1635543270281542,
+        "median": -0.33110125823003766
+      },
+      "favored_all": {
+        "n": 179,
+        "hit": 0.4748603351955307,
+        "mean": -0.03335964310341354,
+        "median": -0.13137896575388108
+      },
+      "recent_2023_2026": {
+        "n": 179,
+        "hit": 0.4748603351955307,
+        "mean": -0.03335964310341354,
+        "median": -0.13137896575388108
+      },
+      "dev_2018_2022": {
+        "n": 0,
+        "hit": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "84": {
+      "strong": {
+        "n": 53,
+        "hit": 0.5283018867924528,
+        "mean": 0.25503901829024905,
+        "median": 0.07292310986083406
+      },
+      "partial": {
+        "n": 99,
+        "hit": 0.494949494949495,
+        "mean": -0.06236775707768617,
+        "median": -0.026619664348248584
+      },
+      "favored_all": {
+        "n": 152,
+        "hit": 0.506578947368421,
+        "mean": 0.048306973807186064,
+        "median": 0.004496625033700852
+      },
+      "recent_2023_2026": {
+        "n": 152,
+        "hit": 0.506578947368421,
+        "mean": 0.048306973807186064,
+        "median": 0.004496625033700852
+      },
+      "dev_2018_2022": {
+        "n": 0,
+        "hit": null,
+        "mean": null,
+        "median": null
+      }
+    }
+  },
+  "stability_4w_by_year": {
+    "2018": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2019": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2020": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2021": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2022": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2023": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2024": {
+      "n": 0,
+      "hit": null,
+      "mean": null,
+      "median": null
+    },
+    "2025": {
+      "n": 52,
+      "hit": 0.4230769230769231,
+      "mean": -0.2804595249097706,
+      "median": -0.1328494976761352
+    },
+    "2026": {
+      "n": 127,
+      "hit": 0.49606299212598426,
+      "mean": 0.0678151116519452,
+      "median": -0.12444531309951934
+    }
+  },
+  "javascript_errors": []
+}
