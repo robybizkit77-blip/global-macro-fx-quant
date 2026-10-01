@@ -1,0 +1,65 @@
+name: Structural Queue Diagnostic
+
+on:
+  push:
+    branches: [audit-t0-queue-replay-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inspect structural queue memory
+        run: |
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            async function snap(){
+              const page=await browser.newPage();
+              await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+              await page.waitForFunction(()=>typeof evaluateSourceAwareGuards==='function'&&typeof rebuildStructuralChangeQueue==='function',{timeout:120000});
+              await page.waitForTimeout(3500);
+              const out=await page.evaluate(()=>{
+                const ccys=['GBP','JPY'];
+                return {
+                  memory:JSON.parse(JSON.stringify(window.SOURCE_AWARE_GUARD_MEMORY||{})),
+                  guards:Object.fromEntries(ccys.map(c=>[c,evaluateSourceAwareGuards(c)])),
+                  queue:rebuildStructuralChangeQueue(),
+                  rates:Object.fromEntries(ccys.map(c=>[c,{
+                    date:NATIVE_RATES_DATA?.[c]?.date||null,
+                    y2:NATIVE_RATES_DATA?.[c]?.y2??NATIVE_RATES_DATA?.[c]?.['2Y']??null,
+                    history_last:NATIVE_RATES_DATA?.[c]?.history2?.last_date||NATIVE_RATES_DATA?.[c]?.history2?.dates?.at(-1)||null
+                  }])),
+                  cb:Object.fromEntries(ccys.map(c=>[c,{
+                    last_date:NATIVE_CB_DATA?.[c]?.last_date||null,
+                    stance:NATIVE_CB_DATA?.[c]?.stance||null,
+                    action:NATIVE_CB_DATA?.[c]?.action||null,
+                    pricing_asof:NATIVE_CB_DATA?.[c]?.market_pricing?.as_of||null,
+                    pricing_quality:NATIVE_CB_DATA?.[c]?.market_pricing?.quality||null
+                  }])),
+                  generation:window.REFRESH_GENERATION,
+                  production_generation:window.PRODUCTION_REFRESH_GENERATION
+                };
+              });
+              await page.close();
+              return out;
+            }
+            const first=await snap();
+            const second=await snap();
+            console.log(JSON.stringify({first,second},null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
