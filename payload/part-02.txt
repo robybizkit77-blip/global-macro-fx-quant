@@ -330,7 +330,7 @@ story:'La BoJ ha alzato la guideline a settembre, ma il quadro domestico resta m
 lead:'Macro e front-end',confirm:'Nessuno',diverge:'Macro / Tassi',lag:'Prezzo',
 macro:['Divergente','stateMix','attività e domanda miste; lavoro e inflazione non danno un segnale unico'],
 cb:['Favorevole','statePos','BoJ: overnight call rate guidato intorno all’1,25% dal 18 settembre'],
-rates:['Favorevole','statePos','pricing TONA/stance BoJ e front-end restano strutturalmente favorevoli; il movimento settimanale di 2Y e 10Y è quasi condiviso e non richiede una causa long-end separata'],
+rates:['Divergente','stateMix','la BoJ è meno accomodante, ma il front-end non dà ancora una conferma conclusiva e il pricing TONA resta WITHHELD finché manca la storia 1W validata; il layer Rates non assegna quindi un vantaggio strutturale autonomo a JPY'],
 liq:['Contrario','stateNeg','liquidità in diminuzione mentre il credito cresce: divergenza da monitorare'],
 cot:['ATTENZIONE LONG','stateMix','P70: fascia alta ma non estrema; flusso settimanale in deterioramento'],
 price:['Neutrale','stateNeu','non sempre conferma il miglioramento macro'],
