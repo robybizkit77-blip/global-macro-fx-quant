@@ -219,7 +219,7 @@ cls:'neu'
 }
 return v228RelativeRow(
 pair,frame.fav,side,
-`Struttura Tassi/CB: ${side} ha il vantaggio relativo (${a}: ${words(aVal)} · ${b}: ${words(bVal)}).`,
+`Struttura Tassi/CB: ${side} ha il vantaggio relativo (${a}: ${words(aVal)} · ${b}: ${words(bVal)}). Questa è una lettura strutturale del front-end/policy, separata dal movimento recente del long-end.`, 
 'core'
 );
 }
@@ -273,7 +273,7 @@ if(macro.cls==='pos' && rates.cls==='pos'){
 return {driver:'Macro + Tassi/CB',why:`Entrambi i pilastri strutturali favoriscono ${frame.fav}.`};
 }
 if(rates.cls==='pos'){
-return {driver:'Tassi/CB',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto da Tassi/CB.`};
+return {driver:'Tassi/CB strutturali',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto da front-end/policy. Il movimento recente del long-end non aggiunge automaticamente un nuovo vantaggio.`};
 }
 if(macro.cls==='pos'){
 return {driver:'Macro',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto dalla Macro.`};
@@ -305,7 +305,7 @@ const missing=macro.cls==='pos'?'Tassi/CB':'Macro';
 watch=`${frame.fav} ha un vantaggio parziale: guarda se anche ${missing} inizierà a separare le due valute.`;
 }
 const confirm=frame.quality==='CONTRASTO STRUTTURALE FORTE'
-? `Macro e Tassi/CB devono continuare a favorire ${frame.fav}; Prezzo/COT/Liquidità restano qualificatori del setup.`
+? `Macro e Tassi/CB strutturali devono continuare a favorire ${frame.fav}; Prezzo/COT/Liquidità restano qualificatori del setup. Il long-end recente resta diagnostico finché non ne è verificata l’origine.`
 : `Il pilastro oggi favorevole a ${frame.fav} deve restare valido e l'altro deve eventualmente convergere.`;
 const invalidate=`Il vantaggio strutturale di ${frame.fav} si indebolisce se il pilastro che oggi lo sostiene torna neutrale o passa a favore di ${other}; cambia davvero lato solo quando Macro/Tassi-CB lo giustificano.`;
 return {watch,confirm,invalidate};
