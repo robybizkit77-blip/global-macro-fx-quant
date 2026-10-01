@@ -37,9 +37,17 @@ jobs:
                 const finite=vals.filter(Number.isFinite);
                 const duplicateDates=dates.filter((d,i)=>dates.indexOf(d)!==i);
                 let sorted=true;
-                for(let i=1;i<dates.length;i++) if(String(dates[i])<String(dates[i-1])) sorted=false;
+                const parsedDates=dates.map(d=>new Date(d));
+                const parsedInversions=[];
+                for(let i=1;i<dates.length;i++){
+                  const prev=parsedDates[i-1], curr=parsedDates[i];
+                  if(Number.isFinite(prev.getTime())&&Number.isFinite(curr.getTime())&&curr<prev){
+                    sorted=false;
+                    parsedInversions.push({i,prev:dates[i-1],curr:dates[i]});
+                  }
+                }
                 let maxGapDays=null;
-                const ds=dates.map(d=>new Date(d)).filter(d=>Number.isFinite(d.getTime())).sort((a,b)=>a-b);
+                const ds=parsedDates.filter(d=>Number.isFinite(d.getTime())).slice().sort((a,b)=>a-b);
                 for(let i=1;i<ds.length;i++){
                   const g=(ds[i]-ds[i-1])/86400000;
                   if(maxGapDays==null||g>maxGapDays) maxGapDays=g;
@@ -54,7 +62,9 @@ jobs:
                   c,label:s?.label||null,observations:finite.length,date_count:dates.length,
                   first_date:dates[0]||null,last_date:latestDate,
                   latest_value:latest,duplicate_dates:[...new Set(duplicateDates)],
-                  sorted,max_gap_days:maxGapDays,
+                  sorted,parsed_inversion_count:parsedInversions.length,parsed_inversions:parsedInversions.slice(0,20),
+                  first_20_dates:dates.slice(0,20),last_20_dates:dates.slice(-20),
+                  max_gap_days:maxGapDays,
                   native_date:native.date||native.as_of||null,
                   native_2y:Number.isFinite(native2)?native2:null,
                   native_minus_history_bp:diffBp,
