@@ -824,7 +824,7 @@ PRICE:{
 as_of:D?.prices?.length ? (D.prices[D.prices.length-1].Date||D.prices[D.prices.length-1].date||null) : null
 },
 RATES:{per_currency:rateDates},
-COT:{as_of:(typeof D!=='undefined' && D?.cotAsOf)||null},
+COT:{as_of:(typeof D!=='undefined' && D?.cotAsOf)||window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of||window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of||null},
 CB_PRICING:{per_currency:cbPricing},
 LIQUIDITY:{per_currency:liquidity}
 };
