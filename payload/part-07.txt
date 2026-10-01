@@ -537,9 +537,8 @@ window.v271StructuralPairFrame=function(pair){
 const [a,b]=pair.split('/');
 const A=deriveCurrencyState(a)||{};
 const B=deriveCurrencyState(b)||{};
-const rawPair=D.pairStates?.[pair]||{};
-const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
-const macroSide=rawMacro==='A'||rawMacro===a?a:rawMacro==='B'||rawMacro===b?b:/mix|mist/i.test(String(rawMacro||''))?null:sideFromValues(a,b,A.macro,B.macro);
+// Keep this structural helper aligned with the canonical pair engine.
+const macroSide=sideFromValues(a,b,A.macro,B.macro);
 const policySide=sideFromValues(a,b,A.policy,B.policy);
 const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
 const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
