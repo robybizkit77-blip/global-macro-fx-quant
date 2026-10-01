@@ -31,7 +31,7 @@ jobs:
               const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
               const rows=[],issues=[];
               for(const c of ccys){
-                const d=NATIVE_LIQ_DATA?.[c]||{};
+                const d=(typeof currentLayerSnapshot==='function'?currentLayerSnapshot(c)?.liq:null)||{};
                 const intel=currencyIntelData?.[c]||{};
                 const before=deriveCurrencyState(c)?.base||null;
                 const old=Array.isArray(intel.liq)?intel.liq.slice():intel.liq;
