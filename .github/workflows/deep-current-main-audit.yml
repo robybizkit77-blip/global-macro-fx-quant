@@ -1,0 +1,150 @@
+name: Deep Current Main Audit
+
+on:
+  push:
+    branches: [staging-deep-audit-post-metadata-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit latest canonical runtime
+        run: |
+          git fetch origin staging-oos-forward-clean-2026-10-01
+          git show origin/staging-oos-forward-clean-2026-10-01:validation/CANONICAL_ENGINE_OOS_T0_2026-10-01.json > baseline.json
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          const baseline=JSON.parse(fs.readFileSync('baseline.json','utf8'));
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const currencies=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                const imp=currencyImprovementDiagnostic(c)||{};
+                return [c,{
+                  base:s.base||null,
+                  macro:Number.isFinite(Number(s.macro))?Number(s.macro):null,
+                  policy:Number.isFinite(Number(s.policy))?Number(s.policy):null,
+                  improvement:s.improvementState||imp.state||null,
+                  confirmation:s.confirmation||null,
+                  driver:deriveCurrencyDriver(c)||null
+                }];
+              }));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const pairStates=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{
+                  favored:f.fav||null,
+                  quality:f.quality||null,
+                  macro_side:f.structural?.macro?.side||null,
+                  policy_side:f.structural?.policy?.side||null,
+                  price_reading:f.priceReading||null
+                }];
+              }));
+              const withheld=[];
+              if(typeof S!=='undefined'){
+                for(const c of ccys) for(const x of (S[c]||[])){
+                  const txt=[x.validation_status,x.data_quality,x.provenance_status,x.status].filter(Boolean).join(' | ');
+                  if(/WITHHELD|QUARANT|FAIL/i.test(txt)||x.exclude_from_decision===true){
+                    withheld.push({ccy:c,id:x.id||null,label:x.label||null,category:x.category||null,status:txt||null,exclude:!!x.exclude_from_decision,source_file:x.source_file||null,frequency:x.frequency||x.freq||null,unit:x.unit||x.units||null});
+                  }
+                }
+              }
+              const prov=window.GMFQ_RUNTIME_PROVENANCE_MANIFEST||null;
+              const incompleteProv=[];
+              if(prov?.series){
+                for(const [c,rows] of Object.entries(prov.series)){
+                  for(const x of rows||[]) if(x.metadata_status!=='COMPLETE_RUNTIME_METADATA') incompleteProv.push({ccy:c,...x});
+                }
+              }
+              const ois={};
+              const oc=window.__GMFQ_DATA?.OIS_DATA?.currencies||{};
+              for(const c of ccys){
+                const x=oc[c]||null;
+                ois[c]=x?{status:x.status||null,source:x.source||null,as_of:x.as_of||null}:null;
+              }
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {
+                data_as_of:String(D?.asOf||''),
+                price_as_of:String(D?.prices?.at(-1)?.Date||''),
+                rules_fingerprint:fwd?.current_rules_fingerprint||null,
+                currencies,
+                pairs:pairStates,
+                pair_count:pairs.length,
+                health:health||null,
+                provenance_coverage:prov?.coverage||null,
+                provenance_policy:prov?.policy||null,
+                provenance_incomplete:incompleteProv,
+                withheld_series:withheld,
+                secondary_quarantine:window.GMFQ_SECONDARY_DATA_QUARANTINE||null,
+                source_policy:(typeof FINAL_SOURCE_POLICY_AUDIT!=='undefined'?FINAL_SOURCE_POLICY_AUDIT:null),
+                ois,
+                usd_closeout:window.GMFQ_USD_SEP30_CLOSEOUT||null
+              };
+            });
+            await browser.close(); srv.kill();
+            const structural=[];
+            if(out.rules_fingerprint!==baseline.rules_fingerprint) structural.push({field:'rules_fingerprint',current:out.rules_fingerprint,baseline:baseline.rules_fingerprint});
+            const cf=['base','macro','policy','improvement','driver'];
+            for(const [ccy,b] of Object.entries(baseline.currencies)){
+              const cur=out.currencies[ccy]||{};
+              for(const f of cf) if(cur[f]!==b[f]) structural.push({field:ccy+'.'+f,current:cur[f],baseline:b[f]});
+            }
+            const pf=['favored','quality','macro_side','policy_side'];
+            for(const [p,b] of Object.entries(baseline.pairs)){
+              const cur=out.pairs[p]||{};
+              for(const f of pf) if(cur[f]!==b[f]) structural.push({field:p+'.'+f,current:cur[f],baseline:b[f]});
+            }
+            const result={
+              audit_status:(errors.length||(out.health?.hard_errors||[]).length)?'FAIL':'PASS_WITH_DECLARED_GAPS',
+              baseline_captured_at:baseline.captured_at,
+              current_data_as_of:out.data_as_of,
+              current_price_as_of:out.price_as_of,
+              fingerprint_current:out.rules_fingerprint,
+              fingerprint_baseline:baseline.rules_fingerprint,
+              structural_differences:structural,
+              currency_count:Object.keys(out.currencies).length,
+              pair_count:out.pair_count,
+              health_status:out.health?.status||null,
+              hard_errors:out.health?.hard_errors||[],
+              provenance_coverage:out.provenance_coverage,
+              provenance_policy:out.provenance_policy,
+              provenance_incomplete_count:out.provenance_incomplete.length,
+              provenance_incomplete:out.provenance_incomplete,
+              withheld_series_count:out.withheld_series.length,
+              withheld_series:out.withheld_series,
+              secondary_quarantine:out.secondary_quarantine,
+              ois:out.ois,
+              source_policy:out.source_policy,
+              usd_closeout:out.usd_closeout,
+              javascript_errors:errors
+            };
+            console.log('===DEEP_AUDIT_START===');
+            console.log(JSON.stringify(result,null,2));
+            console.log('===DEEP_AUDIT_END===');
+            if(errors.length||(out.health?.hard_errors||[]).length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
