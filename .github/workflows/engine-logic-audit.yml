@@ -60,6 +60,20 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                allPairFrames:safe(()=>{
+                  const rows=[...(D?.pairs||[])].map(x=>{
+                    const p=x.pair, f=derivePairDecisionFrame(p)||{};
+                    const ms=f.structural?.macro?.side??null, ps=f.structural?.policy?.side??null;
+                    let expectedFav='—', expectedQuality='NESSUN CONTRASTO';
+                    if(ms!=='TIE' && ms===ps){ expectedFav=ms==='A'?p.split('/')[0]:p.split('/')[1]; expectedQuality='CONTRASTO STRUTTURALE FORTE'; }
+                    else if(ms!=='TIE' && ps==='TIE'){ expectedFav=ms==='A'?p.split('/')[0]:p.split('/')[1]; expectedQuality='VANTAGGIO RELATIVO PARZIALE'; }
+                    else if(ps!=='TIE' && ms==='TIE'){ expectedFav=ps==='A'?p.split('/')[0]:p.split('/')[1]; expectedQuality='VANTAGGIO RELATIVO PARZIALE'; }
+                    else if(ms!=='TIE' && ps!=='TIE' && ms!==ps){ expectedFav='—'; expectedQuality='PILASTRI DIVISI'; }
+                    return {pair:p,fav:f.fav,quality:f.quality,macroSide:ms,policySide:ps,expectedFav,expectedQuality,
+                      ruleMismatch:f.fav!==expectedFav || !([expectedQuality,'SEPARAZIONE RATES MATERIALE','NESSUN CONTRASTO'].includes(f.quality) || f.quality===expectedQuality)};
+                  });
+                  return {rows,issues:rows.filter(x=>x.ruleMismatch)};
+                }),
                 pairConsistency:safe(()=>{
                   const rows=[...(D?.pairs||[])].map(x=>{
                     const p=x.pair, [a,b]=String(p).split('/');
