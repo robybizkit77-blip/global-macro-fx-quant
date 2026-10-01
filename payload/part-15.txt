@@ -3728,3 +3728,70 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   },2600);
 })();
 </script>
+
+<script id="gmfq-runtime-provenance-manifest-20261001">
+(function(){
+  'use strict';
+  function build(){
+    try{
+      if(typeof S==='undefined') return null;
+      const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+      const series={};
+      let total=0, sourceFilePresent=0, frequencyPresent=0, unitPresent=0;
+      for(const c of ccys){
+        series[c]=(S[c]||[]).map(x=>{
+          total++;
+          const source_file=x.source_file||null;
+          const frequency=x.frequency||x.freq||null;
+          const unit=x.unit||x.units||null;
+          if(source_file) sourceFilePresent++;
+          if(frequency) frequencyPresent++;
+          if(unit) unitPresent++;
+          return {
+            id:x.id||null,
+            label:x.label||x.name||null,
+            category:x.category||null,
+            source_file,
+            frequency,
+            unit,
+            metadata_status:source_file
+              ? ((frequency&&unit)?'COMPLETE_RUNTIME_METADATA':'PROVENANCE_LINKED__FREQUENCY_OR_UNIT_WITHHELD')
+              : 'PROVENANCE_WITHHELD'
+          };
+        });
+      }
+      const layerSources=(typeof FINAL_SOURCE_POLICY_AUDIT!=='undefined'&&FINAL_SOURCE_POLICY_AUDIT)
+        ? {
+            PRICE:FINAL_SOURCE_POLICY_AUDIT.PRICE||null,
+            COT:FINAL_SOURCE_POLICY_AUDIT.COT||null,
+            RATES:FINAL_SOURCE_POLICY_AUDIT.RATES||null,
+            CB:FINAL_SOURCE_POLICY_AUDIT.CB||null,
+            CB_PRICING:FINAL_SOURCE_POLICY_AUDIT.CB_PRICING||null,
+            LIQUIDITY:FINAL_SOURCE_POLICY_AUDIT.LIQUIDITY||null,
+            MACRO:FINAL_SOURCE_POLICY_AUDIT.MACRO||null
+          } : null;
+      const manifest={
+        version:'2026-10-01',
+        policy:'NO_INFERENCE__MISSING_METADATA_REMAINS_WITHHELD',
+        numerical_data_changed:false,
+        model_rules_changed:false,
+        coverage:{
+          series_total:total,
+          source_file_present:sourceFilePresent,
+          frequency_present:frequencyPresent,
+          unit_present:unitPresent
+        },
+        series,
+        layer_sources:layerSources
+      };
+      window.GMFQ_RUNTIME_PROVENANCE_MANIFEST=manifest;
+      return manifest;
+    }catch(e){
+      window.GMFQ_RUNTIME_PROVENANCE_MANIFEST={status:'ERROR',message:String(e)};
+      return null;
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build,{once:true});
+  else build();
+})();
+</script>
