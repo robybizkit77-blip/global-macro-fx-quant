@@ -1,0 +1,65 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "RATES_DATA_VALIDATION_2026-10-01",
+  "status": "PASS_WITH_EUR_HISTORICAL_WITHHELD",
+  "scope": "G8 current 2Y runtime histories, chronology, snapshot alignment, dynamics input quality.",
+  "results": {
+    "USD": {
+      "observations": 262,
+      "max_gap_days": 4,
+      "status": "PASS"
+    },
+    "EUR": {
+      "observations": 1,
+      "status": "WITHHELD_HISTORICAL",
+      "mode": "WEEKLY_VALIDATION_ONLY",
+      "reason": "Legacy history is not same-basis with the validated current snapshot; current weekly 2Y change remains usable, full historical dynamics do not."
+    },
+    "GBP": {
+      "observations": 265,
+      "max_gap_days": 5,
+      "status": "PASS"
+    },
+    "JPY": {
+      "observations": 339,
+      "max_gap_days": 7,
+      "status": "PASS_AFTER_REPAIR",
+      "repair": "Inserted validated official JGB 2Y/10Y points for missing 2025-05-12/2025-05-30 and 2025-10-01/2025-12-30 runtime gaps."
+    },
+    "CHF": {
+      "observations": 261,
+      "max_gap_days": 6,
+      "status": "PASS"
+    },
+    "CAD": {
+      "observations": 262,
+      "max_gap_days": 5,
+      "status": "PASS"
+    },
+    "AUD": {
+      "observations": 261,
+      "max_gap_days": 9,
+      "status": "PASS"
+    },
+    "NZD": {
+      "observations": 262,
+      "max_gap_days": 6,
+      "status": "PASS"
+    }
+  },
+  "integrity": {
+    "duplicate_dates": 0,
+    "true_chronological_inversions": 0,
+    "snapshot_history_value_mismatches": 0,
+    "implausible_yield_scale_flags": 0
+  },
+  "rules": [
+    "No interpolation",
+    "No forward fill",
+    "Current snapshot must equal last bound same-basis history point where full history is active",
+    "EUR legacy different-basis history must not leak into dynamics",
+    "Limited weekly validation may provide direction only; speed/acceleration/turning remain unavailable",
+    "Sovereign rates remain separate from OIS/market pricing"
+  ],
+  "conclusion": "Rates data is fit for current engine use after JPY runtime-history repair. Full historical Rates backtest remains 7/8 because EUR same-basis history is intentionally withheld."
+}
