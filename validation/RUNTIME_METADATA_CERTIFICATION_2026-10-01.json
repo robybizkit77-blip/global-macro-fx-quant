@@ -1,0 +1,254 @@
+{
+  "status": "FAIL",
+  "core_count": 79,
+  "liquidity_count": 26,
+  "fingerprint": "3356baf0",
+  "pair_count": 28,
+  "health_status": "PASS_WITH_WARNINGS",
+  "issues": [
+    "liq missing source USD conditions status=NO_RUNTIME_MATCH",
+    "liq missing frequency USD conditions status=NO_RUNTIME_MATCH",
+    "liq missing unit USD conditions status=NO_RUNTIME_MATCH",
+    "liq missing source EUR money status=NO_RUNTIME_MATCH",
+    "liq missing frequency EUR money status=NO_RUNTIME_MATCH",
+    "liq missing unit EUR money status=NO_RUNTIME_MATCH",
+    "liq missing frequency EUR credit status=LINKED_UNIQUE_RUNTIME_SERIES",
+    "liq missing unit EUR credit status=LINKED_UNIQUE_RUNTIME_SERIES"
+  ],
+  "liquidity": [
+    {
+      "ccy": "USD",
+      "path": "liquidity",
+      "source": "Canonical source file · US_M2SL_history.csv",
+      "frequency": "M",
+      "unit": "Billions of U.S. dollars, seasonally adjusted",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "USD",
+      "path": "credit",
+      "source": "Canonical source file · US_TOTBKCR_history.csv",
+      "frequency": "W",
+      "unit": "Billions of U.S. Dollars",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "USD",
+      "path": "conditions",
+      "source": null,
+      "frequency": null,
+      "unit": null,
+      "quality": "HISTORICALLY_USABLE",
+      "status": "NO_RUNTIME_MATCH"
+    },
+    {
+      "ccy": "EUR",
+      "path": "liquidity",
+      "source": "Canonical source file · EA_EXCESS_LIQUIDITY_history.csv",
+      "frequency": "D",
+      "unit": "EUR millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "EUR",
+      "path": "money",
+      "source": null,
+      "frequency": null,
+      "unit": null,
+      "quality": "HISTORICALLY_USABLE",
+      "status": "NO_RUNTIME_MATCH"
+    },
+    {
+      "ccy": "EUR",
+      "path": "credit",
+      "source": "Canonical source file · EA_NFC_LOANS_history.csv",
+      "frequency": null,
+      "unit": null,
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "EUR",
+      "path": "conditions",
+      "source": "Canonical source file · EA_BLS_CREDIT_STANDARDS_ENTERPRISES_history.csv",
+      "frequency": "Q",
+      "unit": "Net percentage",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "GBP",
+      "path": "liquidity",
+      "source": "Canonical source file · UK_BOE_RESERVE_BALANCES_history.csv",
+      "frequency": "W",
+      "unit": "GBP millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "GBP",
+      "path": "credit",
+      "source": "Canonical source file · UK_SECURED_LENDING_YOY_history.csv",
+      "frequency": "M",
+      "unit": "Percent",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "GBP",
+      "path": "conditions",
+      "source": "Canonical source file · UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history.csv",
+      "frequency": "Q",
+      "unit": "Net percentage balance",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "JPY",
+      "path": "liquidity",
+      "source": "Canonical source file · JP_BOJ_RESERVE_BALANCES_history.csv",
+      "frequency": "M",
+      "unit": "100 million yen",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "JPY",
+      "path": "money",
+      "source": "Canonical source file · JP_M3_SA_history.csv",
+      "frequency": "M",
+      "unit": "100 million yen",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "JPY",
+      "path": "credit",
+      "source": "Canonical source file · JP_BANK_CREDIT_DOMESTIC_BANKS_history.csv",
+      "frequency": "M",
+      "unit": "100 million yen",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "JPY",
+      "path": "conditions",
+      "source": "Canonical source file · JP_TANKAN_LENDING_ATTITUDE_history.csv",
+      "frequency": "Q",
+      "unit": "% points",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CHF",
+      "path": "liquidity",
+      "source": "Canonical source file · CH_SNB_SIGHT_DEPOSITS_DOMESTIC_BANKS_history.csv",
+      "frequency": "M",
+      "unit": "CHF millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CHF",
+      "path": "money",
+      "source": "Canonical source file · CH_M3_history.csv",
+      "frequency": "M",
+      "unit": "CHF millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CHF",
+      "path": "credit",
+      "source": "Canonical source file · CH_BANK_CREDIT_CUSTOMERS_history.csv",
+      "frequency": "M",
+      "unit": "CHF millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CAD",
+      "path": "liquidity",
+      "source": "Canonical source file · CA_SETTLEMENT_BALANCES_history.csv",
+      "frequency": "M",
+      "unit": "CAD millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CAD",
+      "path": "money",
+      "source": "Canonical source file · CA_M2PP_SA_history.csv",
+      "frequency": "M",
+      "unit": "CAD millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "CAD",
+      "path": "conditions",
+      "source": "Canonical source file · CA_SLOS_BUSINESS_LENDING_history.csv",
+      "frequency": "Q",
+      "unit": "Balance of opinion",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "AUD",
+      "path": "liquidity",
+      "source": "Canonical source file · AU_EXCHANGE_SETTLEMENT_BALANCES_history.csv",
+      "frequency": "W",
+      "unit": "AUD millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "AUD",
+      "path": "money",
+      "source": "Canonical source file · AU_BROAD_MONEY_SA_history.csv",
+      "frequency": "M",
+      "unit": "AUD millions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "AUD",
+      "path": "credit",
+      "source": "Canonical source file · AU_CREDIT_BUSINESS_CURRENT_SA_history.csv",
+      "frequency": "M",
+      "unit": "AUD billions",
+      "quality": "HISTORICALLY_USABLE",
+      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+    },
+    {
+      "ccy": "NZD",
+      "path": "liquidity",
+      "source": "RBNZ D10 · Influences on settlement cash",
+      "frequency": "M",
+      "unit": "NZD mln",
+      "quality": "CURRENT_ONLY_SHALLOW_HISTORY",
+      "status": "NO_RUNTIME_MATCH"
+    },
+    {
+      "ccy": "NZD",
+      "path": "money",
+      "source": "RBNZ C50 · Depository corporations money and credit aggregates",
+      "frequency": "M",
+      "unit": "NZD mln",
+      "quality": "CURRENT_ONLY_SHALLOW_HISTORY",
+      "status": "NO_RUNTIME_MATCH"
+    },
+    {
+      "ccy": "NZD",
+      "path": "credit",
+      "source": "RBNZ C50 · Depository corporations money and credit aggregates",
+      "frequency": "M",
+      "unit": "NZD mln",
+      "quality": "CURRENT_ONLY_SHALLOW_HISTORY",
+      "status": "NO_RUNTIME_MATCH"
+    }
+  ]
+}
