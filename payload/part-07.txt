@@ -204,8 +204,13 @@ function v478RatesTutor(c,d){
     reverse=`Se continua a guidare soprattutto il 10Y o 2Y e 10Y divergono, evitiamo di tradurre il movimento in un segnale FX semplice.`;
   }
 
+  let origin={label:'MISTO / NON DETERMINATO',cls:'warn'};
+  if(driver.name==='Front-end / 2Y') origin={label:'POLICY / FRONT-END',cls:now.cls};
+  else if(driver.name==='Long-end / 10Y') origin={label:'LONG-END · ORIGINE DA VERIFICARE',cls:'warn'};
+  else if(driver.name==='Movimento condiviso') origin={label:'MISTO / POLICY + LONG-END',cls:'warn'};
+
   const fx=v233FxRead(c,d);
-  return {now,dir,title,text,drivers,confirm,reverse,fx,div};
+  return {now,dir,title,text,drivers,confirm,reverse,fx,div,origin};
 }
 renderNativeRatesDesk=function(){
 const c=v233RatesCurrency;
@@ -223,6 +228,22 @@ const rDir=document.querySelector('#v478RatesDir');
 if(rDir){rDir.className=`v478Ticker ${tutor.dir.cls}`;const v=rDir.querySelector('.v');if(v)v.textContent=tutor.dir.txt;}
 const rTitle=document.querySelector('#v478StoryTitle');if(rTitle)rTitle.textContent=tutor.title;
 const rText=document.querySelector('#v478StoryText');if(rText)rText.textContent=tutor.text;
+if(rText){
+  let rOrigin=document.querySelector('#v478RatesOrigin');
+  if(!rOrigin){
+    rOrigin=document.createElement('div');
+    rOrigin.id='v478RatesOrigin';
+    rOrigin.style.margin='16px 0 18px';
+    rOrigin.style.padding='12px 14px';
+    rOrigin.style.border='1px solid rgba(126,215,255,.22)';
+    rOrigin.style.borderRadius='12px';
+    rOrigin.style.background='rgba(126,215,255,.06)';
+    rOrigin.innerHTML='<div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:#7ed7ff;margin-bottom:5px">ORIGINE DEL MOVIMENTO RATES</div><div class="v" style="font-size:14px;font-weight:800;line-height:1.35"></div>';
+    rText.insertAdjacentElement('afterend',rOrigin);
+  }
+  const ov=rOrigin.querySelector('.v');
+  if(ov) ov.textContent=tutor.origin?.label||'MISTO / NON DETERMINATO';
+}
 const rDrivers=document.querySelector('#v478Drivers');
 if(rDrivers)rDrivers.innerHTML=tutor.drivers.map(x=>`<div class="v478Driver"><strong>${x.label}</strong><span class="${x.cls}">${x.txt}</span></div>`).join('');
 const rConfirm=document.querySelector('#v478Confirm');if(rConfirm)rConfirm.textContent=tutor.confirm;
