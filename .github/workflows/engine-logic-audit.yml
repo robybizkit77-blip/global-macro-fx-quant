@@ -60,6 +60,26 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                uiSemanticAudit:safe(()=>{
+                  const issues=[];
+                  const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+                  const expected={};
+                  ccys.forEach(c=>{
+                    const x=deriveCurrencyState(c)||{};
+                    expected[c]={base:x.base||null,change:x.improvementState||null};
+                  });
+                  const overviewText=document.getElementById('overview')?.innerText||'';
+                  const currencyText=document.getElementById('currency')?.innerText||document.body.innerText||'';
+                  // Semantic guardrails: recent change must never be presented as structural strength.
+                  if(/FX\s*·\s*Sta migliorando/i.test(overviewText)) issues.push('OVERVIEW_OLD_AMBIGUOUS_FX_IMPROVING_LABEL');
+                  if(/FX\s*·\s*Sta peggiorando/i.test(overviewText)) issues.push('OVERVIEW_OLD_AMBIGUOUS_FX_WORSENING_LABEL');
+                  if(!/FX\s*·\s*Struttura attuale/i.test(overviewText)) issues.push('OVERVIEW_MISSING_STRUCTURAL_STATE_SECTION');
+                  if(!/FX\s*·\s*Migliora di recente/i.test(overviewText)) issues.push('OVERVIEW_MISSING_RECENT_IMPROVEMENT_SECTION');
+                  // Pair desk must expose the canonical pillars, not legacy directional wording.
+                  const pairText=document.getElementById('pairs')?.innerText||document.body.innerText||'';
+                  if(!/Macro/i.test(pairText) || !/Tassi\s*\/\s*CB|Tassi\/CB/i.test(pairText)) issues.push('PAIR_DESK_MISSING_CANONICAL_PILLARS');
+                  return {ok:issues.length===0,issues,expected};
+                }),
                 currencyRules:safe(()=>{
                   const rows=ccys.map(c=>{
                     const x=deriveCurrencyState(c)||{};
