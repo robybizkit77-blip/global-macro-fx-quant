@@ -1030,9 +1030,12 @@ window.v401RatesOriginCard=function(c,d){
 
 window.v401RenderRatesLayers=function(c,d){
   const ng=document.querySelector('#v233RatesGrid');
-  const dg=document.querySelector('#v401RatesDecompGrid');
-  if(ng) ng.innerHTML=window.v401NominalCards(c,d);
-  if(dg) dg.innerHTML=window.v401RatesOriginCard(c,d)+window.v401DecompCards(c,d);
+  if(ng){
+    const existing=(typeof v233Cards==='function')
+      ? v233Cards(c,d)
+      : window.v401NominalCards(c,d)+window.v401DecompCards(c,d);
+    ng.innerHTML=window.v401RatesOriginCard(c,d)+existing;
+  }
   window.v401RenderOis(c);
 };
 })();
