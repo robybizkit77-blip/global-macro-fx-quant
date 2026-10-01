@@ -1,0 +1,32 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "DATA_VALIDATION_MASTER_2026-10-01",
+  "status": "PASS_WITH_DECLARED_LIMITATIONS",
+  "gates": {
+    "macro": "PASS_WITH_TARGETED_REVIEW",
+    "rates": "PASS_WITH_EUR_HISTORICAL_WITHHELD",
+    "central_bank_ois": "PASS_WITH_SOURCE_QUALITY_WARNINGS",
+    "cot": "PASS",
+    "price": "PASS",
+    "liquidity": "PASS_CURRENT_WITH_NZD_HISTORICAL_LIMIT",
+    "end_to_end": "PASS"
+  },
+  "corrections_made_on_staging": [
+    "Repaired missing JPY 2Y/10Y runtime history for 2025-05-12/2025-05-30.",
+    "Repaired missing JPY 2Y/10Y runtime history for 2025-10-01/2025-12-30.",
+    "Rebaselined integrity guards after approved delayed runtime wrappers settle."
+  ],
+  "retained_limits": [
+    "Macro histories are current-revised rather than full point-in-time vintages.",
+    "EUR historical 2Y same-basis chain is withheld; only validated weekly direction is used.",
+    "Full historical CB/OIS point-in-time pricing is not available homogeneously across G8.",
+    "NZD labour survey sub-series with 6 observations are excluded from normalized dynamics until >=8 observations.",
+    "NZD liquidity/credit runtime history is shallow (6–7 observations), so historical liquidity validation is withheld.",
+    "USD/GBP/CHF CB pricing uses secondary surfaced quotes; NZD pricing is partial official and remains qualified."
+  ],
+  "no_tuning": true,
+  "no_interpolation": true,
+  "no_forward_fill": true,
+  "missing_not_zero": true,
+  "conclusion": "Current data pipeline is internally coherent and fit to feed the canonical engine. Remaining historical limitations are explicitly withheld rather than reconstructed."
+}
