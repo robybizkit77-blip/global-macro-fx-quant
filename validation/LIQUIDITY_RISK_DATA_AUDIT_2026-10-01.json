@@ -1,0 +1,36 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "LIQUIDITY_RISK_DATA_BACKTEST_PHASE_5",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS_WITH_NZD_AND_SHORT_RISK_SERIES_WITHHELD",
+  "liquidity": {
+    "historically_usable": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD"
+    ],
+    "historical_withheld": [
+      "NZD"
+    ],
+    "nzd_reason": "Only 6-7 observations per liquidity/money/credit component in runtime.",
+    "provenance_runtime_warning": "Top-level source/quality metadata is not embedded consistently in NATIVE_LIQ_DATA."
+  },
+  "global_risk": {
+    "historically_usable": {
+      "VIX": 2732,
+      "Brent": 2725,
+      "China_CLI": 128
+    },
+    "current_only": {
+      "WTI": 4,
+      "Gold": 4
+    },
+    "integrity": "No duplicates, ordering errors or nonfinite values in the audited risk series."
+  },
+  "conclusion": "Liquidity can be tested historically for 7/8 currencies; NZD must remain withheld. VIX, Brent and China CLI are suitable for historical contextual tests, while WTI and Gold are current-context-only in the runtime payload."
+}
