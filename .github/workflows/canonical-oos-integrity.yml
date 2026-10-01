@@ -1,0 +1,103 @@
+name: Canonical OOS Integrity Check
+
+on:
+  push:
+    branches: [staging-provenance-latest-main-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Verify current canonical engine against frozen OOS T0
+        run: |
+          git fetch origin staging-backtest-canonical-core-2026-10-01
+          git show origin/staging-backtest-canonical-core-2026-10-01:validation/CANONICAL_ENGINE_OOS_T0_2026-10-01.json > baseline.json
+          cat > verify.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          const baseline=JSON.parse(fs.readFileSync('baseline.json','utf8'));
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const current=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const currencies=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                const imp=currencyImprovementDiagnostic(c)||{};
+                return [c,{
+                  base:s.base||null,
+                  macro:Number.isFinite(Number(s.macro))?Number(s.macro):null,
+                  policy:Number.isFinite(Number(s.policy))?Number(s.policy):null,
+                  improvement:s.improvementState||imp.state||null,
+                  driver:deriveCurrencyDriver(c)||null
+                }];
+              }));
+              const pairStates=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{
+                  favored:f.fav||null,
+                  quality:f.quality||null,
+                  macro_side:f.structural?.macro?.side||null,
+                  policy_side:f.structural?.policy?.side||null
+                }];
+              }));
+              const fwd=(typeof forwardValidationSummary==='function'?forwardValidationSummary():null);
+              const health=(typeof productionHealthCheck==='function'?productionHealthCheck():null);
+              return {
+                rules_fingerprint:fwd?.current_rules_fingerprint||null,
+                currencies,
+                pairs:pairStates,
+                pair_count:pairs.length,
+                health_status:health?.status||null,
+                hard_errors:health?.hard_errors||[]
+              };
+            });
+            await browser.close(); srv.kill();
+
+            const issues=[];
+            if(current.rules_fingerprint!==baseline.rules_fingerprint) issues.push(`fingerprint ${current.rules_fingerprint} != ${baseline.rules_fingerprint}`);
+            if(current.pair_count!==28) issues.push(`pair_count ${current.pair_count} != 28`);
+            if((current.hard_errors||[]).length) issues.push(`hard_errors: ${JSON.stringify(current.hard_errors)}`);
+
+            const cFields=['base','macro','policy','improvement','driver'];
+            for(const [ccy,b] of Object.entries(baseline.currencies)){
+              const c=current.currencies[ccy]||{};
+              for(const f of cFields) if(c[f]!==b[f]) issues.push(`${ccy}.${f}: ${JSON.stringify(c[f])} != ${JSON.stringify(b[f])}`);
+            }
+            const pFields=['favored','quality','macro_side','policy_side'];
+            for(const [pair,b] of Object.entries(baseline.pairs)){
+              const c=current.pairs[pair]||{};
+              for(const f of pFields) if(c[f]!==b[f]) issues.push(`${pair}.${f}: ${JSON.stringify(c[f])} != ${JSON.stringify(b[f])}`);
+            }
+
+            const result={
+              status:issues.length?'FAIL':'PASS',
+              baseline_captured_at:baseline.captured_at,
+              baseline_fingerprint:baseline.rules_fingerprint,
+              current_fingerprint:current.rules_fingerprint,
+              currency_count:Object.keys(current.currencies).length,
+              pair_count:current.pair_count,
+              health_status:current.health_status,
+              issues
+            };
+            console.log(JSON.stringify(result,null,2));
+            if(issues.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node verify.js
