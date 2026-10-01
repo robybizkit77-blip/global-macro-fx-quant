@@ -1,0 +1,64 @@
+name: NZD Data Refresh Gate
+on:
+  push:
+    branches: [staging-nzd-data-refresh-2026-10-01]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Verify NZD refresh
+        run: |
+          cat > verify.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(2500);
+            const out=await page.evaluate(()=>({
+              fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
+              pairs:(D?.pairs||[]).length,
+              rates:typeof NATIVE_RATES_DATA!=='undefined'?{
+                date:NATIVE_RATES_DATA.NZD?.date,y2:NATIVE_RATES_DATA.NZD?.['2Y'],y10:NATIVE_RATES_DATA.NZD?.['10Y'],
+                c2:NATIVE_RATES_DATA.NZD?.chg2_bp,c10:NATIVE_RATES_DATA.NZD?.chg10_bp,curve:NATIVE_RATES_DATA.NZD?.curve_bp
+              }:null,
+              liq:typeof NATIVE_LIQ_DATA!=='undefined'?{
+                asof:NATIVE_LIQ_DATA.NZD?.as_of,
+                p:NATIVE_LIQ_DATA.NZD?.primary?.last_value,
+                m:NATIVE_LIQ_DATA.NZD?.money?.last_value,
+                c:NATIVE_LIQ_DATA.NZD?.credit?.last_value,
+                ld:NATIVE_LIQ_DATA.NZD?.liquidity_dir,
+                cd:NATIVE_LIQ_DATA.NZD?.credit_dir
+              }:null,
+              audit:window.GMFQ_NZD_DATA_REFRESH_AUDIT||null,
+              ois:window.GMFQ_OIS?.currency?.('NZD')?.status||null,
+              hard:(typeof productionHealthCheck==='function'?productionHealthCheck()?.hard_errors:[])||[]
+            }));
+            out.js=errors;
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+            const issues=[];
+            if(out.fp!=='3356baf0')issues.push('fingerprint');
+            if(out.pairs!==28)issues.push('pairs');
+            if(JSON.stringify(out.rates)!==JSON.stringify({date:'2026-09-29',y2:3.94,y10:5.12,c2:7,c10:17,curve:118}))issues.push('rates '+JSON.stringify(out.rates));
+            if(out.liq?.p!==26460||out.liq?.m!==454671||out.liq?.c!==624663||out.liq?.ld!=='IN DIMINUZIONE'||out.liq?.cd!=='IN AUMENTO')issues.push('liq '+JSON.stringify(out.liq));
+            if(out.audit?.status!=='PASS')issues.push('audit');
+            if(out.ois!=='WITHHELD')issues.push('ois '+out.ois);
+            if(out.hard.length)issues.push('hard '+JSON.stringify(out.hard));
+            if(out.js.length)issues.push('js '+JSON.stringify(out.js));
+            if(issues.length){console.error(issues);process.exit(1);}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node verify.js
