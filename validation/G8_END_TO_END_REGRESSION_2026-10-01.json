@@ -1,0 +1,68 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "validation": "G8_END_TO_END_REGRESSION_2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS",
+  "currency_issues": [],
+  "pair_issues": [],
+  "pair_count": 28,
+  "rules_verified": [
+    "Structural state is driven only by Macro + Rates/CB.",
+    "Improvement/turning is separate from structural state.",
+    "Price confirms/diverges but does not decide structural direction.",
+    "COT does not decide structural direction.",
+    "Liquidity remains an overlay and does not decide structural direction.",
+    "Pair Macro and Policy sides are derived from the canonical currency states."
+  ],
+  "observed_states": {
+    "USD": {
+      "base": "FORTE",
+      "change": "MIGLIORA",
+      "driver": "Macro + Rates / aspettative CB"
+    },
+    "EUR": {
+      "base": "COSTRUTTIVA",
+      "change": "TURNING POINT",
+      "driver": "Rates / aspettative CB"
+    },
+    "GBP": {
+      "base": "COSTRUTTIVA",
+      "change": "TURNING POINT",
+      "driver": "Rates / aspettative CB"
+    },
+    "JPY": {
+      "base": "MISTA",
+      "change": "EARLY SHIFT POSITIVO",
+      "driver": "Non determinato"
+    },
+    "CHF": {
+      "base": "MISTA",
+      "change": "MIGLIORA",
+      "driver": "Non determinato"
+    },
+    "CAD": {
+      "base": "COSTRUTTIVA",
+      "change": "EARLY SHIFT POSITIVO",
+      "driver": "Macro"
+    },
+    "AUD": {
+      "base": "FORTE",
+      "change": "TURNING POINT",
+      "driver": "Macro + Rates / aspettative CB"
+    },
+    "NZD": {
+      "base": "COSTRUTTIVA",
+      "change": "EARLY SHIFT POSITIVO",
+      "driver": "Rates / aspettative CB"
+    }
+  },
+  "eur_regression_case": {
+    "macro_layer": "Divergente",
+    "macro_note": "struttura macro ancora mista; crescita e lavoro stanno peggiorando nel dato recente",
+    "policy": "Favorevole",
+    "structural_state": "COSTRUTTIVA",
+    "recent_change": "TURNING POINT",
+    "improving": false
+  },
+  "conclusion": "The new architecture propagates coherently from currency layers to all 28 pairs. The EUR example behaves as intended and is now frozen as a regression case."
+}
