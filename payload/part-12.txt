@@ -743,7 +743,7 @@ if(robust){
 let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Basket mean</div><div>Errore standard</div><div>95% CI</div><div>Affidabilità</div></div>`;
 ['1D','3D','1W','2W'].forEach(h=>{
 const st=window.snapshotStats(outcomes,h);
-const rel=reliabilityLabel(st);
+const rel=!st.n?{label:'In attesa',cls:'fwdNeu'}:st.n<10?{label:'Troppo presto',cls:'fwdWarn'}:st.n<20?{label:'Preliminare',cls:'fwdWarn'}:st.n<40?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};
 const ci=(Number.isFinite(st.ciLow)&&Number.isFinite(st.ciHigh))
 ? `${fmtN(st.ciLow)}% / ${fmtN(st.ciHigh)}%`
 : '—';
@@ -755,7 +755,7 @@ const risk=document.getElementById('fwdRiskTable');
 if(risk){
 let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Vol basket</div><div>Sharpe desc.</div><div>Sortino desc.</div><div>Max DD</div></div>`;
 ['1D','3D','1W','2W'].forEach(h=>{
-const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));
+const rs=window.pathRiskStats(window.snapshotBasketSeries(outcomes,h));
 html+=`<div class="fwdRow"><b>${h}</b><div>${rs.n}</div><div>${fmtN(rs.vol)}%</div><div class="${rs.sharpe>0?'fwdPos':rs.sharpe<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sharpe)}</div><div class="${rs.sortino>0?'fwdPos':rs.sortino<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sortino)}</div><div class="${rs.maxDD<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.maxDD)}%</div></div>`;
 });
 risk.innerHTML=html;
@@ -772,7 +772,7 @@ const defs=[
 ];
 let html=`<div class="fwdRow head"><div>Overlay · 1W</div><div>N snapshot</div><div>Δ medio vs Core</div><div>Δ mediano</div><div>% snapshot > Core</div><div>Lettura</div></div>`;
 defs.forEach(([lab,k,v])=>{
-const s=pairedOverlayStats(outcomes,'1W',k,v);
+const s=window.pairedOverlayStats(outcomes,'1W',k,v);
 const read=s.n<10?'Troppo presto':
 s.deltaMean>0 && s.positiveShare>0.55?'Valore aggiunto preliminare':
 s.deltaMean<0 && s.positiveShare<0.45?'Peggiora Core preliminarmente':'Misto';
