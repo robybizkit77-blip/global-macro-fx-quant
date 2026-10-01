@@ -76,6 +76,13 @@ jobs:
                   });
                 }
               }
+              const polarityAudit=rows.map(r=>{
+                let pol=null;
+                try{pol=macroSeriesPolarity(r.category,r.label)}catch(e){}
+                return {...r,polarity:pol};
+              });
+              const zeroPolarity=polarityAudit.filter(r=>r.polarity===0);
+              const shortSeries=polarityAudit.filter(r=>r.n_values<8);
               const issues=[];
               for(const r of rows){
                 if(r.n_dates!==r.n_values) issues.push({type:'LENGTH_MISMATCH',...r});
@@ -96,7 +103,7 @@ jobs:
                 inflation:rows.filter(r=>r.ccy===c&&r.category==='Inflazione').length,
                 issues:issues.filter(r=>r.ccy===c).length
               }]));
-              return {rows,issues,byCcy};
+              return {rows,issues,byCcy,zeroPolarity,shortSeries};
             });
             console.log('===MACRO_AUDIT_START===');
             console.log(JSON.stringify(out,null,2));
