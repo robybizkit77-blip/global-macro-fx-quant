@@ -1,20 +1,11 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "core_count": 79,
   "liquidity_count": 26,
   "fingerprint": "3356baf0",
   "pair_count": 28,
   "health_status": "PASS_WITH_WARNINGS",
-  "issues": [
-    "liq missing source USD conditions status=NO_RUNTIME_MATCH",
-    "liq missing frequency USD conditions status=NO_RUNTIME_MATCH",
-    "liq missing unit USD conditions status=NO_RUNTIME_MATCH",
-    "liq missing source EUR money status=NO_RUNTIME_MATCH",
-    "liq missing frequency EUR money status=NO_RUNTIME_MATCH",
-    "liq missing unit EUR money status=NO_RUNTIME_MATCH",
-    "liq missing frequency EUR credit status=LINKED_UNIQUE_RUNTIME_SERIES",
-    "liq missing unit EUR credit status=LINKED_UNIQUE_RUNTIME_SERIES"
-  ],
+  "issues": [],
   "liquidity": [
     {
       "ccy": "USD",
@@ -37,11 +28,11 @@
     {
       "ccy": "USD",
       "path": "conditions",
-      "source": null,
-      "frequency": null,
-      "unit": null,
-      "quality": "HISTORICALLY_USABLE",
-      "status": "NO_RUNTIME_MATCH"
+      "source": "Legacy runtime SLOOS snapshot · canonical source mapping WITHHELD due conflicting duplicates",
+      "frequency": "Q",
+      "unit": "Percent, not seasonally adjusted",
+      "quality": "WITHHELD_PROVENANCE_CONFLICT",
+      "status": "WITHHELD_CONFLICTING_DUPLICATES"
     },
     {
       "ccy": "EUR",
@@ -55,20 +46,20 @@
     {
       "ccy": "EUR",
       "path": "money",
-      "source": null,
-      "frequency": null,
-      "unit": null,
+      "source": "Canonical source file · EA_M3_history.csv",
+      "frequency": "M",
+      "unit": "EUR millions",
       "quality": "HISTORICALLY_USABLE",
-      "status": "NO_RUNTIME_MATCH"
+      "status": "LINKED_CANONICAL_SOURCE_FILE"
     },
     {
       "ccy": "EUR",
       "path": "credit",
       "source": "Canonical source file · EA_NFC_LOANS_history.csv",
-      "frequency": null,
-      "unit": null,
+      "frequency": "M",
+      "unit": "EUR millions",
       "quality": "HISTORICALLY_USABLE",
-      "status": "LINKED_UNIQUE_RUNTIME_SERIES"
+      "status": "LINKED_CANONICAL_SOURCE_FILE"
     },
     {
       "ccy": "EUR",
