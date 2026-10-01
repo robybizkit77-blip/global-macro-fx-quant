@@ -114,9 +114,9 @@ return 'OTHER';
 }
 function improvementBucket(s){
 const x=String(s||'').toUpperCase();
-if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')) return 'IMPROVING';
-if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')) return 'WORSENING';
-if(x.includes('TURNING')) return 'TURNING';
+if(x==='MIGLIORA') return 'IMPROVING';
+if(x==='PEGGIORA') return 'WORSENING';
+if(x.includes('EARLY SHIFT') || x.includes('TURNING')) return 'TURNING';
 return 'NEUTRAL_OTHER';
 }
 function reading(st){
@@ -481,9 +481,9 @@ const ch=document.getElementById('ov387Changes');
 if(ch) ch.innerHTML=changeItems.length
 ? changeItems.map(x=>{
 const s=x.d.state;
-const cls=(s==='MIGLIORA'||s==='EARLY SHIFT POSITIVO')?'up':(s==='PEGGIORA'||s==='EARLY SHIFT NEGATIVO')?'down':'turn';
+const cls=s==='MIGLIORA'?'up':s==='PEGGIORA'?'down':'turn';
 const arrow=cls==='up'?'↑':cls==='down'?'↓':'↕';
-const word=s==='MIGLIORA'?'sta migliorando':s==='PEGGIORA'?'sta peggiorando':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa':'possibile svolta';
+const word=s==='MIGLIORA'?'sta migliorando':s==='PEGGIORA'?'sta peggiorando':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva da confermare':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa da confermare':'possibile svolta da confermare';
 return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Apri la valuta per vedere quali dati stanno cambiando.</span></div>`;
 }).join('')
 : '<div class="ov387Empty">Nessun cambiamento recente abbastanza importante da evidenziare.</div>';
