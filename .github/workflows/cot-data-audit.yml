@@ -1,0 +1,75 @@
+name: COT Data Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit COT data
+        run: |
+          cat > cot-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[],issues=[];
+              for(const c of ccys){
+                const d=D?.cot?.[c]||{};
+                const vals=(d.net_series||[]).map(Number).filter(Number.isFinite);
+                const dates=(d.dates||[]).map(String);
+                const cur=vals.length?vals.at(-1):null;
+                const prev=vals.length>1?vals.at(-2):null;
+                const recomputedPct=vals.length&&Number.isFinite(cur)
+                  ?100*vals.filter(v=>v<=cur).length/vals.length:null;
+                const pct=Number(d.pct);
+                const pctDiff=Number.isFinite(pct)&&Number.isFinite(recomputedPct)?pct-recomputedPct:null;
+                const chg=Number(d.chg_net_1w);
+                const rawChange=Number.isFinite(cur)&&Number.isFinite(prev)?cur-prev:null;
+                const row={
+                  c,as_of:d.as_of||d.date||D?.cotAsOf||null,
+                  observations:vals.length,date_count:dates.length,
+                  current_net:cur,previous_net:prev,
+                  reported_pct:Number.isFinite(pct)?pct:null,recomputed_pct:recomputedPct,pct_diff:pctDiff,
+                  reported_net_oi:Number.isFinite(Number(d.net_oi))?Number(d.net_oi):null,
+                  reported_chg_net_1w:Number.isFinite(chg)?chg:null,
+                  raw_last_change:rawChange,
+                  duplicate_dates:[...new Set(dates.filter((x,i)=>dates.indexOf(x)!==i))]
+                };
+                rows.push(row);
+                if(vals.length<100) issues.push({type:'COT_HISTORY_LT_100',...row});
+                if(dates.length!==vals.length) issues.push({type:'COT_DATE_VALUE_LENGTH_MISMATCH',...row});
+                if(row.duplicate_dates.length) issues.push({type:'COT_DUPLICATE_DATES',...row});
+                if(Number.isFinite(pct)&&(pct<0||pct>100)) issues.push({type:'COT_PERCENTILE_OUT_OF_RANGE',...row});
+                if(Number.isFinite(pctDiff)&&Math.abs(pctDiff)>2.0) issues.push({type:'COT_PERCENTILE_RECALC_MISMATCH',...row});
+                if(Number.isFinite(row.reported_net_oi)&&Math.abs(row.reported_net_oi)>100) issues.push({type:'COT_NET_OI_OUT_OF_RANGE',...row});
+              }
+              return {
+                cot_asof:D?.cotAsOf||null,
+                thresholds:{warningHigh:MODEL_RULES?.cot?.warningHigh,warningLow:MODEL_RULES?.cot?.warningLow,extremeHigh:MODEL_RULES?.cot?.extremeHigh,extremeLow:MODEL_RULES?.cot?.extremeLow,netOi:MODEL_RULES?.cot?.netOiConcentration},
+                rows,issues
+              };
+            });
+            console.log('===COT_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===COT_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cot-audit.js
