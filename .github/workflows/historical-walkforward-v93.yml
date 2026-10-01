@@ -239,10 +239,10 @@ jobs:
                 quality_counts_4w:qualityCounts,
                 results:byH,
                 stability_4w_by_year:byYear,
-                javascript_errors:pageErrors
               };
             });
 
+            out.javascript_errors=pageErrors;
             await browser.close(); srv.kill();
             fs.mkdirSync('validation',{recursive:true});
             fs.writeFileSync('validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json',JSON.stringify(out,null,2)+'\n');
