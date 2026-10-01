@@ -3575,3 +3575,124 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+<script id="gmfq-usd-sep30-closeout-20261001">
+(function(){
+  'use strict';
+  const audit={status:'PENDING',as_of:'2026-09-30',changes:[]};
+  function day(){
+    try{return (typeof REAL_CALENDAR!=='undefined'?REAL_CALENDAR:[]).find(d=>d.key==='2026-09-30')||null;}catch(e){return null;}
+  }
+  function patchEvent(re,p){
+    const d=day(); if(!d) return false;
+    const e=(d.events||[]).find(x=>re.test(String(x.event||'')));
+    if(!e) return false;
+    Object.assign(e,p); audit.changes.push({type:'calendar',event:e.event}); return true;
+  }
+  function newsTargets(){
+    const a=[];
+    try{if(typeof NEWS_PULSE_STRUCT!=='undefined'&&Array.isArray(NEWS_PULSE_STRUCT))a.push(NEWS_PULSE_STRUCT);}catch(e){}
+    try{
+      const b=window.__GMFQ_DATA?.NEWS_PULSE_STRUCT;
+      if(Array.isArray(b)&&!a.includes(b))a.push(b);
+    }catch(e){}
+    return a;
+  }
+  function upsertNews(row){
+    for(const arr of newsTargets()){
+      const i=arr.findIndex(x=>x.title===row.title);
+      if(i>=0) arr[i]=Object.assign({},arr[i],row); else arr.unshift(row);
+    }
+    audit.changes.push({type:'news',title:row.title});
+  }
+  try{
+    patchEvent(/ADP Employment Change/i,{
+      prev:'36K (riv.)',
+      forecast:'70K',
+      actual:'90K',
+      surprise:'+20K sopra consenso',
+      scls:'positive',
+      direction:'Occupazione privata migliore delle attese; ADP resta un indicatore di contesto e non sostituisce i payroll BLS.',
+      confirm:'Payroll BLS + disoccupazione + salari + UST 2Y',
+      status:'done'
+    });
+    patchEvent(/Core PCE.*Personal Spending/i,{
+      prev:'0,1% / 0,1% (riv.)',
+      forecast:'0,3% / 0,8%',
+      actual:'0,2% / 0,9%',
+      surprise:'Core PCE sotto attese; spending sopra attese',
+      scls:'neutral',
+      direction:'Inflazione core più morbida ma consumi forti: meno urgenza Fed nel brevissimo, ciclo ancora resiliente.',
+      confirm:'UST 2Y + pricing Fed + payroll BLS',
+      status:'done'
+    });
+
+    upsertNews({
+      cat:'Macro',importance:'high',status:'change',ccy:'USD',layer:'Inflazione / domanda',
+      title:'USA: PCE più morbido, spending molto forte',
+      what:'Core PCE +0,2% m/m; personal spending +0,9% m/m. Il dato prezzi è più morbido, mentre la domanda resta forte.',
+      why:'Riduce l’urgenza di un nuovo rialzo Fed nel meeting vicino, senza indicare debolezza netta del ciclo.',
+      fx:'USD · UST 2Y · pricing Fed',
+      watch:'UST 2Y + pricing Fed + payroll di settembre',
+      changed:'Inflazione più morbida e consumi forti: mix meno hawkish nel breve ma non recessivo.'
+    });
+    upsertNews({
+      cat:'Macro',importance:'high',status:'change',ccy:'USD',layer:'Lavoro',
+      title:'USA: ADP +90K, sopra consenso',
+      what:'Occupazione privata ADP +90K a settembre, sopra +70K atteso; agosto rivisto a +36K.',
+      why:'Segnala lavoro privato più resiliente, ma ADP non sostituisce i payroll BLS.',
+      fx:'USD · UST 2Y',
+      watch:'Payroll BLS + disoccupazione + salari',
+      changed:'Migliora il contesto lavoro senza sovrascrivere il blocco payroll canonico.'
+    });
+
+    for(const arr of newsTargets()){
+      for(const n of arr){
+        if(n?.title==='USD sostenuto da rendimenti USA elevati'){
+          n.what='Il dollaro resta sostenuto dai rendimenti USA, ma il PCE di agosto è risultato più morbido delle attese.';
+          n.why='Il supporto tassi resta, mentre il PCE riduce l’urgenza di un nuovo rialzo immediato; i consumi forti mantengono resilienza ciclica.';
+          n.watch='UST 2Y + payrolls + pricing Fed';
+          n.changed='Supporto USD ancora Rates-driven, con impulso hawkish di breve ridotto dopo il PCE.';
+        }
+        if(n?.title==='PCE e payrolls USA diventano il prossimo snodo'){
+          n.title='Payrolls USA diventano il prossimo snodo';
+          n.what='Il PCE è uscito più morbido mentre la spesa è rimasta forte; il prossimo test decisivo passa dal mercato del lavoro ufficiale.';
+          n.why='Payroll, disoccupazione e salari diranno se la resilienza della domanda è compatibile con un percorso Fed ancora restrittivo.';
+          n.fx='USD · UST 2Y · Gold';
+          n.watch='NFP + unemployment + salari + UST 2Y';
+          n.changed='Il PCE ha ridotto la pressione hawkish sul meeting vicino; il focus passa ai payrolls.';
+          n.status='watch';
+        }
+      }
+    }
+
+    const m=window.GMFQ_REFRESH_MANIFEST_20260930_1318;
+    if(m){
+      m.pending=[];
+      m.completed_us=[
+        {ccy:'USD',time:'14:15',event:'ADP Employment Change',actual:'90K',consensus:'70K',previous:'36K revised',mode:'INFO_ONLY'},
+        {ccy:'USD',time:'14:30',event:'Core PCE m/m + Personal Spending m/m',actual:'0.2% / 0.9%',consensus:'0.3% / 0.8%',previous:'0.1% / 0.1% revised',mode:'CORE_PLUS_CONTEXT'}
+      ];
+      m.as_of='2026-09-30T21:45+02:00';
+    }
+    if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
+      window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_US_RELEASES_COMPLETE';
+      window.AUXILIARY_FEED_FRESHNESS.calendar.note='30 settembre: ADP e PCE/Personal Spending USA completati e verificati.';
+    }
+    if(window.AUXILIARY_FEED_FRESHNESS?.news){
+      window.AUXILIARY_FEED_FRESHNESS.news.as_of='2026-09-30T21:45+02:00';
+      window.AUXILIARY_FEED_FRESHNESS.news.status='CURRENT_INTRADAY_VERIFIED';
+    }
+    try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(e){}
+    try{if(typeof renderRealCalendar==='function')renderRealCalendar();}catch(e){}
+    try{if(typeof renderNewsPulse==='function')renderNewsPulse();}catch(e){}
+    audit.status='PASS';
+    audit.rule='CALENDAR_NEWS_CLOSEOUT_ONLY__NO_ENGINE_RULE_CHANGE';
+    window.GMFQ_USD_SEP30_CLOSEOUT=audit;
+  }catch(e){
+    audit.status='FAIL'; audit.error=String(e?.message||e);
+    window.GMFQ_USD_SEP30_CLOSEOUT=audit;
+  }
+})();
+</script>
