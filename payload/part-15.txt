@@ -4916,10 +4916,18 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   function render(c){
     ensureStyle();
     const m=model(c); if(!m) return;
-    const host=document.querySelector('#cbdesk .v234CountryTop')||document.querySelector('#cbdesk .v234Hero')||document.querySelector('#cbdesk');
-    if(!host) return;
+    const cbRoot=document.getElementById('cbdesk');
+    const host=document.querySelector('#cbdesk .v234CountryTop')||document.querySelector('#cbdesk .v234Hero');
+    if(!cbRoot || !host) return;
     let box=document.getElementById('gmfqCbVsMarketPanel');
-    if(!box){box=document.createElement('div');box.id='gmfqCbVsMarketPanel';box.className='gmfqCbVsMarket';host.insertAdjacentElement('afterend',box);}
+    if(!box){
+      box=document.createElement('div');
+      box.id='gmfqCbVsMarketPanel';
+      box.className='gmfqCbVsMarket';
+      host.insertAdjacentElement('afterend',box);
+    }else if(!cbRoot.contains(box)){
+      host.insertAdjacentElement('afterend',box);
+    }
     const marketTxt=m.market?.label||m.market?.headline||'—';
     const marketWhy=m.market?.why||m.market?.detail||m.d?.pricing_status||'—';
     box.innerHTML=`
