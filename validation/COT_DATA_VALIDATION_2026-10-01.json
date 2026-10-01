@@ -1,0 +1,34 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "COT_DATA_VALIDATION_2026-10-01",
+  "status": "PASS",
+  "scope": "CFTC G8 positioning runtime validation.",
+  "as_of": "2026-09-22",
+  "coverage": {
+    "currencies": 8,
+    "observations_per_currency": 105,
+    "duplicate_dates": 0
+  },
+  "thresholds": {
+    "warning_high": 70,
+    "warning_low": 30,
+    "extreme_high": 80,
+    "extreme_low": 20,
+    "net_oi_concentration_pct": 30
+  },
+  "integrity": {
+    "percentile_recalculation": "PASS — all displayed percentiles within 2 points of direct rank recomputation",
+    "weekly_net_change": "PASS — 8/8 reported changes equal last-series differences",
+    "net_oi_scale": "PASS — all within ±100%",
+    "history_length": "PASS — all >=100 observations"
+  },
+  "current_flags": {
+    "GBP": "P5 · Net/OI -33.7% — extreme short and concentrated",
+    "CAD": "P81 — extreme percentile, Net/OI not concentrated",
+    "USD": "P78 — warning-high region",
+    "NZD": "P78 — warning-high region",
+    "JPY": "P70 — warning threshold"
+  },
+  "role": "Positioning/context/crowding only; never structural winner source.",
+  "conclusion": "COT data layer is internally consistent and fit for use."
+}
