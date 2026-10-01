@@ -1,0 +1,32 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "PRICE_DATA_VALIDATION_2026-10-01",
+  "status": "PASS",
+  "scope": "ECB-based G8 FX price matrix and canonical pair orientation.",
+  "coverage": {
+    "observations": 2750,
+    "first_date": "2016-01-04",
+    "last_date": "2026-09-30",
+    "currencies": 8,
+    "pairs": 28
+  },
+  "integrity": {
+    "duplicate_dates": 0,
+    "missing_values": 0,
+    "nonpositive_values": 0,
+    "daily_jumps_gt_10pct": 0,
+    "pair_orientation_mismatches": 0
+  },
+  "latest_anchor": {
+    "EUR": 1,
+    "USD": 1.1355,
+    "GBP": 0.85463,
+    "JPY": 178.27,
+    "CHF": 0.9478,
+    "CAD": 1.6105,
+    "AUD": 1.6297,
+    "NZD": 2.0115
+  },
+  "rule": "For pair A/B, price = ECB units-of-B-per-EUR divided by units-of-A-per-EUR; 28/28 runtime pairSeries last values match this formula.",
+  "conclusion": "Price layer is internally consistent and safe for confirmation/divergence and OOS outcome measurement."
+}
