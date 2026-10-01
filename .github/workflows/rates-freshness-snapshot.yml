@@ -1,10 +1,10 @@
-name: Rates Freshness Snapshot
+name: USD Rates Refresh Gate
 on:
   push:
     branches: [staging-rates-freshness-audit-2026-10-01]
   workflow_dispatch:
 jobs:
-  snapshot:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -13,9 +13,9 @@ jobs:
         with:
           node-version: 22
       - run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
-      - name: Snapshot rates
+      - name: Verify USD rates refresh
         run: |
-          cat > snap.js <<'EOF'
+          cat > verify.js <<'EOF'
           const {chromium}=require('playwright');
           const {execSync,spawn}=require('child_process');
           (async()=>{
@@ -24,21 +24,29 @@ jobs:
             const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
             const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
             const page=await browser.newPage();
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
             await page.waitForTimeout(2200);
-            const out=await page.evaluate(()=>{
-              const C=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-              return {
-                fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
-                rates:Object.fromEntries(C.map(c=>{
-                  const d=NATIVE_RATES_DATA?.[c]||{};
-                  const src=(window.FINAL_SOURCE_POLICY_AUDIT?.RATES||window.FINAL_SOURCE_POLICY_AUDIT?.rates||{})?.[c]||{};
-                  return [c,{date:d.date||null,y2:d['2Y']??null,y10:d['10Y']??null,c2:d.chg2_bp??null,c10:d.chg10_bp??null,source:d.source||null,registry:src.current_as_of||null,status:src.status||null}];
-                }))
-              };
-            });
+            const out=await page.evaluate(()=>({
+              fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
+              pairs:(D?.pairs||[]).length,
+              rate:{date:NATIVE_RATES_DATA?.USD?.date,y2:NATIVE_RATES_DATA?.USD?.['2Y'],y10:NATIVE_RATES_DATA?.USD?.['10Y'],c2:NATIVE_RATES_DATA?.USD?.chg2_bp,c10:NATIVE_RATES_DATA?.USD?.chg10_bp,curve:NATIVE_RATES_DATA?.USD?.curve_bp},
+              audit:window.GMFQ_USD_RATES_REFRESH_AUDIT||null,
+              registry:(window.FINAL_SOURCE_POLICY_AUDIT?.RATES||window.FINAL_SOURCE_POLICY_AUDIT?.rates||{})?.USD||null,
+              hard:(typeof productionHealthCheck==='function'?productionHealthCheck()?.hard_errors:[])||[]
+            }));
+            out.js=errors;
             console.log(JSON.stringify(out,null,2));
             await browser.close();srv.kill();
+            const issues=[];
+            if(out.fp!=='3356baf0')issues.push('fingerprint');
+            if(out.pairs!==28)issues.push('pairs');
+            if(out.rate?.date!=='2026-09-30'||out.rate?.y2!==4.88||out.rate?.y10!==5.29||out.rate?.c2!==3||out.rate?.c10!==18||out.rate?.curve!==41)issues.push('rates '+JSON.stringify(out.rate));
+            if(out.audit?.status!=='PASS')issues.push('audit');
+            if(out.registry?.current_as_of!=='2026-09-30')issues.push('registry');
+            if(out.hard.length)issues.push('hard '+JSON.stringify(out.hard));
+            if(out.js.length)issues.push('js '+JSON.stringify(out.js));
+            if(issues.length){console.error(issues);process.exit(1);}
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
-          node snap.js
+          node verify.js
