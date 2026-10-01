@@ -33,12 +33,12 @@
         "rates_current": "ACTIVE",
         "cb_ois_pricing": "WITHHELD_PARTIAL_DIRECT_VALIDATED",
         "cot": "ACTIVE",
-        "price": "WITHHELD_DIRECT_USD_BENCHMARK",
+        "price": "WITHHELD_CANONICAL__DIAGNOSTIC_FED_BROAD_ACTIVE",
         "liquidity_current": "ACTIVE"
       },
       "gaps": [
         "OIS: direct CME current + 1D validated, matched same-contract 1W history still missing",
-        "Price: DXY or validated external USD basket not yet connected; USD is not evaluated against itself"
+        "Price: Federal Reserve H.10 Nominal Broad U.S. Dollar Index is now connected as a validated diagnostic benchmark, but canonical promotion is withheld to preserve the frozen OOS baseline"
       ]
     },
     "EUR": {
@@ -152,7 +152,7 @@
   },
   "next_priority": [
     "USD: capture matched same-contract 1W CME Fed Funds futures history",
-    "USD: connect a validated DXY or coherent external USD basket for the Price layer",
+    "After current OOS regime or with an explicit new baseline: consider promoting the validated Fed broad USD benchmark from diagnostic to canonical Price confirmation",
     "Rates decomposition: add comparable weekly changes for real yield / breakeven / term premium where official data supports them",
     "Do not force CHF or NZD OIS activation unless direct public source quality materially improves"
   ],
@@ -161,5 +161,17 @@
     "changes_currency_state": false,
     "changes_pair_direction": false,
     "oos_restart_required": false
-  }
+  },
+  "progress_updates": [
+    {
+      "date": "2026-10-01",
+      "item": "USD price benchmark",
+      "status": "DIAGNOSTIC_VALIDATED_NOT_CANONICAL",
+      "source": "Federal Reserve H.10 Nominal Broad U.S. Dollar Index",
+      "as_of": "2026-09-25",
+      "latest": 120.33,
+      "one_week_change_pct": 0.68,
+      "oos_impact": "NONE"
+    }
+  ]
 }
