@@ -4954,3 +4954,44 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
+
+
+<script id="gmfq-view-scoped-diagnostic-panels-20261001">
+(function(){
+  'use strict';
+  function currentView(){
+    try{
+      if(typeof activeView!=='undefined' && activeView) return String(activeView);
+    }catch(e){}
+    const x=document.querySelector('.view.active[id], section.view.active[id]');
+    return x?.id||'';
+  }
+  function sync(v){
+    const view=String(v||currentView()||'');
+    const macro=document.getElementById('gmfqMacroSurprisePanel');
+    const cb=document.getElementById('gmfqCbVsMarketPanel');
+    if(macro) macro.style.display=view==='macro'?'':'none';
+    if(cb) cb.style.display=view==='cbdesk'?'':'none';
+  }
+  const prev=window.showView;
+  if(typeof prev==='function' && !prev.__gmfqScopedPanels){
+    const wrapped=function(v){
+      const out=prev.apply(this,arguments);
+      try{sync(v);}catch(e){}
+      return out;
+    };
+    wrapped.__gmfqScopedPanels=true;
+    wrapped.__gmfqOriginal=prev;
+    window.showView=wrapped;
+    try{showView=wrapped;}catch(e){}
+  }
+  const obs=new MutationObserver(()=>{try{sync()}catch(e){}});
+  if(document.body) obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',()=>{try{sync()}catch(e){}},{once:true});
+  }else{
+    try{sync()}catch(e){}
+  }
+  window.GMFQ_VIEW_SCOPED_DIAGNOSTIC_PANELS={sync,currentView};
+})();
+</script>
