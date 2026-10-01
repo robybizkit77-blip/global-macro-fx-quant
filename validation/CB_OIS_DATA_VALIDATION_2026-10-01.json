@@ -1,0 +1,47 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "CB_OIS_DATA_VALIDATION_2026-10-01",
+  "status": "PASS_WITH_SOURCE_QUALITY_WARNINGS",
+  "scope": "G8 realized central-bank data + market-pricing/OIS runtime integrity.",
+  "central_bank_coverage": {
+    "currencies": 8,
+    "missing_dates": 0,
+    "missing_rates": 0,
+    "missing_actions": 0,
+    "missing_intel": 0
+  },
+  "pricing_quality": {
+    "direct_or_complete": [
+      "EUR",
+      "JPY",
+      "CAD",
+      "AUD"
+    ],
+    "secondary_quote": [
+      "USD",
+      "GBP",
+      "CHF"
+    ],
+    "partial_official": [
+      "NZD"
+    ]
+  },
+  "core_isolation": {
+    "status": "PASS",
+    "rule": "Rates/front-end is the primary market translation; realized CB may fill a genuinely neutral rates state; market-pricing/OIS quality does not become a separate core vote.",
+    "health_hard_errors": 0
+  },
+  "warnings": [
+    "USD CB pricing uses a surfaced secondary quote.",
+    "GBP CB pricing uses a surfaced secondary quote.",
+    "CHF CB pricing uses a surfaced secondary quote.",
+    "NZD CB pricing is partial official and must remain explicitly qualified."
+  ],
+  "safeguards": [
+    "Pricing source quality is visible.",
+    "Incomplete/secondary pricing does not receive an extra vote.",
+    "Sovereign Rates and OIS remain separate datasets.",
+    "No historical CB/OIS values are fabricated where point-in-time data is unavailable."
+  ],
+  "conclusion": "Current CB/OIS layer is usable. Historical full-engine backtest remains limited by point-in-time pricing depth; current runtime does not hide this limitation."
+}
