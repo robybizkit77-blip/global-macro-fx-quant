@@ -36,7 +36,7 @@ jobs:
               }:null,
               liq:typeof NATIVE_LIQ_DATA!=='undefined'?{
                 asof:NATIVE_LIQ_DATA.NZD?.as_of,
-                p:NATIVE_LIQ_DATA.NZD?.primary?.last_value,
+                p:NATIVE_LIQ_DATA.NZD?.liquidity?.last_value,
                 m:NATIVE_LIQ_DATA.NZD?.money?.last_value,
                 c:NATIVE_LIQ_DATA.NZD?.credit?.last_value,
                 ld:NATIVE_LIQ_DATA.NZD?.liquidity_dir,
