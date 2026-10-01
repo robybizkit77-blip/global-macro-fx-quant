@@ -1033,8 +1033,8 @@ window.v401RenderRatesLayers=function(c,d){
   if(ng){
     const existing=(typeof v233Cards==='function')
       ? v233Cards(c,d)
-      : window.v401NominalCards(c,d)+window.v401DecompCards(c,d);
-    ng.innerHTML=window.v401RatesOriginCard(c,d)+existing;
+      : window.v401RatesOriginCard(c,d)+window.v401NominalCards(c,d)+window.v401DecompCards(c,d);
+    ng.innerHTML=existing;
   }
   window.v401RenderOis(c);
 };
