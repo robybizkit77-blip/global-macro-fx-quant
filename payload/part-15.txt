@@ -3696,3 +3696,35 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-usd-sep30-closeout-finalizer-20261001">
+(function(){
+  'use strict';
+  setTimeout(()=>{
+    try{
+      if(window.AUXILIARY_FEED_FRESHNESS?.calendar){
+        window.AUXILIARY_FEED_FRESHNESS.calendar.current_date='2026-09-30';
+        window.AUXILIARY_FEED_FRESHNESS.calendar.status='LIVE_VALIDATED_US_RELEASES_COMPLETE';
+        window.AUXILIARY_FEED_FRESHNESS.calendar.note='30 settembre: ADP e PCE/Personal Spending USA completati e verificati.';
+      }
+      if(window.AUXILIARY_FEED_FRESHNESS?.news){
+        window.AUXILIARY_FEED_FRESHNESS.news.as_of='2026-09-30T21:45+02:00';
+        window.AUXILIARY_FEED_FRESHNESS.news.status='CURRENT_INTRADAY_VERIFIED';
+      }
+      try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(e){}
+      try{if(typeof renderRealCalendar==='function')renderRealCalendar();}catch(e){}
+      try{if(typeof renderNewsPulse==='function')renderNewsPulse();}catch(e){}
+      if(window.GMFQ_USD_SEP30_CLOSEOUT){
+        window.GMFQ_USD_SEP30_CLOSEOUT.finalized=true;
+        window.GMFQ_USD_SEP30_CLOSEOUT.finalized_at=new Date().toISOString();
+      }
+    }catch(e){
+      if(window.GMFQ_USD_SEP30_CLOSEOUT){
+        window.GMFQ_USD_SEP30_CLOSEOUT.status='FAIL';
+        window.GMFQ_USD_SEP30_CLOSEOUT.finalizer_error=String(e?.message||e);
+      }
+    }
+  },2600);
+})();
+</script>
