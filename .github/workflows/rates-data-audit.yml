@@ -47,10 +47,11 @@ jobs:
                   }
                 }
                 let maxGapDays=null;
+                let maxGapPair=null;
                 const ds=parsedDates.filter(d=>Number.isFinite(d.getTime())).slice().sort((a,b)=>a-b);
                 for(let i=1;i<ds.length;i++){
                   const g=(ds[i]-ds[i-1])/86400000;
-                  if(maxGapDays==null||g>maxGapDays) maxGapDays=g;
+                  if(maxGapDays==null||g>maxGapDays){maxGapDays=g;maxGapPair={from:ds[i-1].toISOString().slice(0,10),to:ds[i].toISOString().slice(0,10)};}
                 }
                 const native=NATIVE_RATES_DATA?.[c]||{};
                 const latest=finite.length?finite.at(-1):null;
@@ -64,7 +65,7 @@ jobs:
                   latest_value:latest,duplicate_dates:[...new Set(duplicateDates)],
                   sorted,parsed_inversion_count:parsedInversions.length,parsed_inversions:parsedInversions.slice(0,20),
                   first_20_dates:dates.slice(0,20),last_20_dates:dates.slice(-20),
-                  max_gap_days:maxGapDays,
+                  max_gap_days:maxGapDays,max_gap_pair:maxGapPair,
                   native_date:native.date||native.as_of||null,
                   native_2y:Number.isFinite(native2)?native2:null,
                   native_minus_history_bp:diffBp,
