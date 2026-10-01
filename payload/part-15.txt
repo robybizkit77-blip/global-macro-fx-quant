@@ -4124,3 +4124,125 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-usd-cme-direct-partial-20261001">
+(function(){
+  'use strict';
+  try{
+    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
+    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
+    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
+    const prior=window.__GMFQ_DATA.OIS_DATA.currencies.USD||{};
+
+    const USD_PARTIAL={
+      ...prior,
+      status:'WITHHELD',
+      partial_status:'DIRECT_CURRENT_AND_1D_VALIDATED__1W_WITHHELD',
+      source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin PG10',
+      source_url:'https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf',
+      as_of:'2026-09-30',
+      policy_target_range:[3.75,4.00],
+      policy_rate_midpoint:3.875,
+      horizon_mapping:'Dec-26 / Mar-27 / Sep-27; no interpolation',
+      horizons:{
+        '3m':{
+          contract:'Dec-26',
+          settlement:95.8750,
+          rate:4.125,
+          prior_settlement:95.8450,
+          prior_rate:4.155,
+          change_1d_bp:-3.0,
+          change_1w_bp:null
+        },
+        '6m':{
+          contract:'Mar-27',
+          settlement:95.5950,
+          rate:4.405,
+          prior_settlement:95.5650,
+          prior_rate:4.435,
+          change_1d_bp:-3.0,
+          change_1w_bp:null
+        },
+        '12m':{
+          contract:'Sep-27',
+          settlement:95.2050,
+          rate:4.795,
+          prior_settlement:95.2000,
+          prior_rate:4.800,
+          change_1d_bp:-0.5,
+          change_1w_bp:null
+        }
+      },
+      validation:{
+        source_validated:true,
+        asof_validated:true,
+        meeting_path_validated:true,
+        changes_validated:false,
+        current_levels_validated:true,
+        change_1d_validated:true,
+        change_1w_validated:false
+      },
+      provenance:{
+        bulletin_date:'2026-09-30',
+        bulletin_page:'PG10',
+        instrument:'30D FED FD FUT',
+        direct_exchange:true,
+        formula:'implied_rate = 100 - settlement; prior settlement = current settlement - CME PT.CHGE',
+        current_contracts:['DEC26','MAR27','SEP27'],
+        weekly_reference:'WITHHELD',
+        weekly_reason:'Matched same-contract 1W CME Daily Bulletin history not reproducibly accessible through the current anonymous public path.'
+      },
+      withheld_reason:'CME current and prior-business-day settlements are now directly validated for the 3m/6m/12m buckets, but matched 1W history on the same contracts is still missing.',
+      rule:'Keep USD OIS withheld until same-contract 1W CME settlement history is captured and validated; do not substitute FedWatch probabilities, 2Y yields or secondary curves.',
+      no_2y_proxy:true,
+      no_secondary_curve:true,
+      no_mixed_basis:true,
+      no_paid_feed_used:true
+    };
+    window.__GMFQ_DATA.OIS_DATA.currencies.USD=USD_PARTIAL;
+
+    if(window.GMFQ_OIS_FEED_PRIORITY?.USD){
+      window.GMFQ_OIS_FEED_PRIORITY.USD.ready=false;
+      window.GMFQ_OIS_FEED_PRIORITY.USD.label='CME Fed Funds direct current + 1D validati · 1W history withheld';
+    }
+    if(window.SOURCE_RESOLUTION_WATCHLIST?.items?.USD_CB_PRICING){
+      Object.assign(window.SOURCE_RESOLUTION_WATCHLIST.items.USD_CB_PRICING,{
+        current_status:'WITHHELD_DIRECT_CME_1W_HISTORY_GAP',
+        resolution_condition:'Capture matched same-contract CME 1W settlement history for Dec-26 / Mar-27 / Sep-27.'
+      });
+    }
+    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.USD){
+      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.USD,{
+        status:'DIRECT_CURRENT_1D_VALIDATED__1W_WITHHELD',
+        reason:'Official CME PG10 provides current settlements and point changes for matched Fed Funds contracts; only same-contract 1W history remains unresolved.',
+        resolution_rule:'Activate only after matched 1W CME settlement history is directly validated.'
+      });
+    }
+    if(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items?.USD_CB_PRICING){
+      Object.assign(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT.items.USD_CB_PRICING,{
+        status:'WITHHELD_DIRECT_CME_1W_HISTORY_ONLY',
+        reason:'Current and prior-business-day direct CME Fed Funds settlements are validated; only matched 1W history remains unavailable through the current public path.',
+        source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin PG10',
+        resolution:'Capture the same Dec-26 / Mar-27 / Sep-27 settlements at the one-week reference date.'
+      });
+    }
+    window.GMFQ_USD_OIS_AUDIT={
+      status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
+      as_of:'2026-09-30',
+      source:'CME Group · Daily Bulletin PG10',
+      current_levels_validated:true,
+      change_1d_validated:true,
+      change_1w_validated:false,
+      values:{'3m':4.125,'6m':4.405,'12m':4.795},
+      changes_1d_bp:{'3m':-3.0,'6m':-3.0,'12m':-0.5},
+      missing:['matched_same_contract_1w_history'],
+      no_activation:true
+    };
+    document.documentElement.setAttribute('data-usd-ois-audit','WITHHELD_PARTIAL_DIRECT');
+  }catch(e){
+    window.GMFQ_USD_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-usd-ois-audit','FAIL');
+  }
+})();
+</script>
