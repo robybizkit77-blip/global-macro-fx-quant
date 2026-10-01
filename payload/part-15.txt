@@ -260,10 +260,10 @@
       const other=frame.fav===a?b:a;
       if(frame.quality==='CONTRASTO STRUTTURALE FORTE'){
         title=`${frame.fav} ha un vantaggio strutturale chiaro su ${other}`;
-        text=`Macro e Tassi/CB puntano entrambi verso ${frame.fav}. Questo è il tipo di contrasto relativo più pulito: il pair ha una direzione strutturale, mentre prezzo e COT servono soprattutto a capire timing e rischio.`;
+        text=`Macro e Tassi/CB strutturali puntano entrambi verso ${frame.fav}. Questo è il tipo di contrasto relativo più pulito: il pair ha una direzione strutturale. Il movimento recente dei rendimenti resta separato: se guida il long-end, va prima scomposto e non aggiunge automaticamente un nuovo vantaggio FX.`;
       }else{
         title=`${frame.fav} è avanti, ma il vantaggio non è ancora completo`;
-        text=`Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.`;
+        text=`Solo uno tra Macro e Tassi/CB strutturali separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita. Il movimento recente del 10Y non viene usato come seconda conferma automatica.`;
       }
     }else{
       title=`${pair} non ha ancora un vantaggio strutturale chiaro`;
@@ -276,18 +276,18 @@
     const priceCls=frame?.priceReading==='MERCATO GIÀ ALLINEATO'?'pos':frame?.priceReading==='DIVERGENZA DA MONITORARE'?'warn':'neu';
     const drivers=[
       {label:'Macro',txt:macroSide==='nessuna delle due'?'Non separa le due valute':`Favorisce ${macroSide}`,cls:macroSide===frame.fav?'pos':macroSide==='nessuna delle due'?'neu':'warn'},
-      {label:'Tassi / CB',txt:policySide==='nessuna delle due'?'Non separano le due valute':`Favoriscono ${policySide}`,cls:policySide===frame.fav?'pos':policySide==='nessuna delle due'?'neu':'warn'},
+      {label:'Tassi / CB strutturali',txt:policySide==='nessuna delle due'?'Non separano le due valute':`Favoriscono ${policySide}`,cls:policySide===frame.fav?'pos':policySide==='nessuna delle due'?'neu':'warn'},
       {label:'Prezzo',txt:priceTxt,cls:priceCls}
     ];
 
     let confirm,reverse;
     if(frame.fav && frame.fav!=='—'){
       confirm=frame.quality==='CONTRASTO STRUTTURALE FORTE'
-        ? `Il vantaggio si rafforza se Macro e Tassi/CB restano allineati su ${frame.fav} e il prezzo continua o inizia a confermare.`
+        ? `Il vantaggio si rafforza se Macro e Tassi/CB strutturali restano allineati su ${frame.fav} e il prezzo continua o inizia a confermare. Un movimento del long-end conta solo dopo averne verificato l’origine.`
         : `Il vantaggio diventa più credibile quando anche il pilastro oggi neutro si allinea a ${frame.fav}.`;
       reverse=`Dobbiamo rivedere la view se il vantaggio Macro/Tassi si perde, se i due pilastri iniziano a favorire valute opposte o se la divergenza di prezzo persiste mentre il core si deteriora.`;
     }else{
-      confirm='Serve che Macro e Tassi/CB inizino a favorire la stessa valuta. Finché non succede, il pair resta da aspettare.';
+      confirm='Serve che Macro e Tassi/CB strutturali inizino a favorire la stessa valuta. Finché non succede, il pair resta da aspettare; il solo movimento recente del 10Y non basta.';
       reverse='Se Macro e Tassi/CB continuano a essere divisi, non c’è una view strutturale da invalidare: semplicemente non c’è ancora un setup.';
     }
 
