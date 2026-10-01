@@ -4285,7 +4285,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
     if(typeof NATIVE_LIQ_DATA==='undefined' || !NATIVE_LIQ_DATA.NZD) throw new Error('NZD_LIQ_MISSING');
     const l=NATIVE_LIQ_DATA.NZD;
-    upsert(l.primary,'2026-08',26460);
+    upsert(l.liquidity,'2026-08',26460);
     upsert(l.money,'2026-08',454671);
     upsert(l.credit,'2026-08',624663);
     l.liquidity_dir='IN DIMINUZIONE';
