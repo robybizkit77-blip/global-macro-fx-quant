@@ -4413,8 +4413,8 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
           action:'NO_DAILY_RETRY_UNLESS_DIRECT_PUBLIC_OIS_CURVE_BECOMES_AVAILABLE'
         }
       },
-      active_expected:['EUR','GBP','JPY','CAD','AUD'],
-      withheld_expected:['USD','CHF','NZD']
+      active_expected:['EUR','GBP','CAD','AUD'],
+      withheld_expected:['USD','JPY','CHF','NZD']
     };
 
     const DWA=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT;
