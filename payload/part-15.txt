@@ -29,6 +29,34 @@
   window.GMFQ_COT_TUTOR={render,model,ensureUi,statusFrom,flowFrom};
 })();
 
+<script id="gmfq-usd-fed-broad-price-diagnostic-20261001">
+(function(){
+  'use strict';
+  window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC=Object.freeze({
+    status:'ACTIVE_DIAGNOSTIC_ONLY',
+    canonical_price_state_changed:false,
+    oos_restart_required:false,
+    source:'Federal Reserve Board · H.10 · Nominal Broad U.S. Dollar Index',
+    series_id:'JRXWTFB_N.B / DTWEXBGS',
+    as_of:'2026-09-25',
+    latest:120.3300,
+    references:{
+      '1w':{date:'2026-09-18',value:119.5133,change_pct:0.68},
+      '1m':{date:'2026-08-25',value:118.2283,change_pct:1.78},
+      '3m':{date:'2026-06-25',value:121.0559,change_pct:-0.60},
+      '6m':{date:'2026-03-25',value:120.1282,change_pct:0.17}
+    },
+    role:'USD price benchmark for diagnostic display only. It does not alter deriveCurrencyState, pair direction, structural quality or the frozen OOS baseline.',
+    provenance:{
+      release:'Federal Reserve H.10 Foreign Exchange Rates',
+      current_release_date:'2026-09-28',
+      current_week:['2026-09-21','2026-09-22','2026-09-23','2026-09-24','2026-09-25'],
+      current_values:[119.4014,119.5933,120.1169,120.5521,120.3300]
+    }
+  });
+})();
+</script>
+
 /*
   Price Tutor UI module
   Reads canonical currency state + existing price dynamics.
@@ -82,17 +110,21 @@
     const p1=move(c,22), p3=move(c,66), p6=move(c,132);
 
     if(c==='USD'){
-      status={txt:'NON DETERMINATO',cls:'neu'};
-      direction={txt:'DXY / BASKET NECESSARIO',cls:'neu'};
+      const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
+      status={txt:u?.status==='ACTIVE_DIAGNOSTIC_ONLY'?'BENCHMARK VALIDATO · DIAGNOSTICO':'NON DETERMINATO',cls:u?'warn':'neu'};
+      direction={txt:u?.status==='ACTIVE_DIAGNOSTIC_ONLY'?'USD BROAD +0,7% · 1W':'BASKET USD NECESSARIO',cls:u?'pos':'neu'};
     }
 
     let title,text,confirm,reverse,fx;
     if(c==='USD'){
-      title='Prezzo USD non determinato';
-      text='Non usiamo più USD contro se stesso. Finché non colleghiamo un DXY o un basket USD validato, il layer Prezzo resta volutamente neutro e non conferma né diverge.';
-      confirm='Il layer diventa utilizzabile quando viene collegato un riferimento USD esterno e validato, come DXY o un basket coerente.';
-      reverse='Nessuna conclusione direzionale dal prezzo USD finché manca quel riferimento.';
-      fx='Per USD, Macro e Tassi/CB restano leggibili; il Prezzo non aggiunge conferma finché non viene validato un benchmark esterno.';
+      const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
+      title='Prezzo USD · benchmark Fed disponibile';
+      text=u
+        ? 'Usiamo il Nominal Broad U.S. Dollar Index della Federal Reserve come riferimento esterno: 120,3300 al 25 settembre. Nell’ultima settimana il dollaro broad è salito di circa +0,7%. Per proteggere il forward OOS, questa lettura resta diagnostica e non cambia ancora la conferma canonica del modello.'
+        : 'Il benchmark USD esterno non è disponibile: il layer Prezzo resta neutro.';
+      confirm='Il benchmark è già validato come dato. Per promuoverlo a conferma canonica servirebbe una nuova baseline OOS o la chiusura dell’attuale regime di validazione.';
+      reverse='Finché resta diagnostico, non può ribaltare né confermare da solo la view strutturale USD.';
+      fx='Per USD ora vediamo finalmente il prezzo su un basket esterno coerente, senza usare USD contro se stesso; il motore v9.3 e il forward OOS restano invariati.';
     }else if(status.txt==='CONFERMA'){
       title=`Il prezzo sta confermando la storia su ${c}`;
       text='Il mercato si sta muovendo nella stessa direzione indicata dal quadro principale. È una conferma utile, ma non è il motivo originario della view.';
@@ -114,10 +146,11 @@
     }
 
     const cls=v=>v==null?'neu':v>0?'pos':v<0?'neg':'neu';
+    const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
     const drivers=c==='USD' ? [
-      {label:'Benchmark prezzo',txt:'DXY / basket USD non ancora validato',cls:'neu'},
-      {label:'1M / 3M / 6M',txt:'WITHHELD: non usare USD contro se stesso',cls:'neu'},
-      {label:'Regola',txt:'Il prezzo USD non modifica la view finché manca il benchmark',cls:'neu'}
+      {label:'Fed Broad USD',txt:u?('120,3300 · 25/09 · 1W +0,7%'):'—',cls:'pos'},
+      {label:'1M / 3M / 6M',txt:u?('+1,8% · −0,6% · +0,2%'):'—',cls:'neu'},
+      {label:'Uso nel modello',txt:'DIAGNOSTICO · non modifica il forward OOS',cls:'warn'}
     ] : [
       {label:'1 mese',txt:fmtMove(p1),cls:cls(p1)},
       {label:'3 mesi',txt:fmtMove(p3),cls:cls(p3)},
