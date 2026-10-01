@@ -823,10 +823,12 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
 
   function directionFrom(d){
     if(!d || d.status==='PARZIALE') return {txt:'DIREZIONE INCERTA',cls:'warn'};
-    if(d.liquidity_dir==='IN AUMENTO') return {txt:'MIGLIORA ↗',cls:'pos'};
-    if(d.liquidity_dir==='IN CALO') return {txt:'PEGGIORA ↘',cls:'neg'};
-    if(d.credit_dir==='IN AUMENTO') return {txt:'STABILE, CREDITO MIGLIORA',cls:'pos'};
-    if(d.credit_dir==='IN CALO') return {txt:'STABILE, CREDITO PEGGIORA',cls:'neg'};
+    const cc=window.v243CreditConfirm ? window.v243CreditConfirm(d) : 'PARZIALE / NEUTRALE';
+    if(d.liquidity_dir==='IN AUMENTO' && cc==='CONFERMA') return {txt:'MIGLIORA ↗',cls:'pos'};
+    if(d.liquidity_dir==='IN CALO' && cc==='CONFERMA') return {txt:'PEGGIORA ↘',cls:'neg'};
+    if(d.liquidity_dir==='IN AUMENTO' || d.liquidity_dir==='IN CALO') return {txt:'MOVIMENTO DA CONFERMARE',cls:'warn'};
+    if(d.credit_dir==='IN AUMENTO') return {txt:'STABILE, CREDITO MIGLIORA',cls:'neu'};
+    if(d.credit_dir==='IN CALO') return {txt:'STABILE, CREDITO PEGGIORA',cls:'warn'};
     return {txt:'STABILE →',cls:'neu'};
   }
 
@@ -846,7 +848,7 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
       text='Liquidità e credito si stanno muovendo in modo coerente. In parole semplici, il sistema finanziario sta offrendo più supporto all’attività e alla trasmissione del credito.';
       confirm='La lettura si rafforza se liquidità e credito continuano a crescere insieme e le lending conditions non peggiorano.';
       reverse='Va rivista se il credito smette di confermare oppure le condizioni di prestito si irrigidiscono.';
-      fx=`Per ${c}, questo è un vento di fondo favorevole, ma resta un overlay: Macro, Rates/CB e prezzo devono confermare.`;
+      fx=`Per ${c}, questo può diventare un vento di fondo favorevole solo se credito e condizioni finanziarie confermano. Resta comunque un overlay: Macro, Rates/CB e prezzo decidono la struttura.`;
     } else if(tone.cls==='neg'){
       title='La liquidità sta diventando più restrittiva';
       text='Liquidità e credito stanno rallentando insieme. In parole semplici, le condizioni finanziarie stanno offrendo meno supporto e la restrizione si sta trasmettendo.';
