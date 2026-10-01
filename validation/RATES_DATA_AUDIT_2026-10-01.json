@@ -1,0 +1,55 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "RATES_DATA_BACKTEST_PHASE_2",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS_WITH_EUR_HISTORICAL_WITHHELD",
+  "scope": {
+    "currencies": 8,
+    "core_tenor": "2Y/front-end"
+  },
+  "runtime_integrity": {
+    "current_native_visible_mismatches": 0,
+    "duplicate_dates": 0,
+    "unordered_dates": 0,
+    "nonfinite_values": 0,
+    "current_sources_missing": 0
+  },
+  "full_same_basis_history": {
+    "USD": 262,
+    "GBP": 265,
+    "JPY": 262,
+    "CHF": 261,
+    "CAD": 262,
+    "AUD": 261,
+    "NZD": 262
+  },
+  "EUR": {
+    "canonical_current_2y": 3.2105877756,
+    "canonical_date": "2026-09-29",
+    "mode": "WEEKLY_VALIDATION_ONLY",
+    "runtime_points": 1,
+    "historical_backtest": "WITHHELD",
+    "reason": "Legacy EUR 2Y history is explicitly marked as not same-basis as the validated current ECB AAA Svensson spot curve. The engine refuses to splice the legacy history and uses only the validated weekly move.",
+    "current_weekly_direction_can_be_used": true,
+    "historical_speed_acceleration_turning_can_be_used": false
+  },
+  "current_sources": {
+    "USD": "U.S. Treasury Daily Par Yield Curve",
+    "EUR": "ECB AAA Svensson spot curve / ECB Data Portal",
+    "GBP": "Bank of England nominal government zero-coupon spot curve",
+    "JPY": "Japan Ministry of Finance JGB curve",
+    "CHF": "Swiss Confederation / SNB historical basis",
+    "CAD": "Bank of Canada government benchmark yields",
+    "AUD": "RBA government bond yield history",
+    "NZD": "RBNZ B2 wholesale interest rates"
+  },
+  "dynamics_gate": {
+    "full_history_currencies": 7,
+    "limited_weekly_only_currencies": [
+      "EUR"
+    ],
+    "rule": "Do not infer speed, acceleration or Rates turning point from a one-point/weekly-only same-basis validation."
+  },
+  "conclusion": "Current G8 2Y snapshots are internally synchronized and source-tagged. Historical front-end dynamics are backtestable on the canonical basis for 7/8 currencies; EUR historical dynamics remain withheld until a same-basis ECB 2Y history is materialized."
+}
