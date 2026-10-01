@@ -1,0 +1,78 @@
+name: Liquidity Data Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit liquidity data
+        run: |
+          cat > liq-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[],issues=[];
+              for(const c of ccys){
+                const d=NATIVE_LIQ_DATA?.[c]||{};
+                const intel=currencyIntelData?.[c]||{};
+                const before=deriveCurrencyState(c)?.base||null;
+                const old=Array.isArray(intel.liq)?intel.liq.slice():intel.liq;
+                let afterPos=null,afterNeg=null;
+                try{
+                  intel.liq=['Favorevole','statePos','AUDIT_SHOCK'];
+                  afterPos=deriveCurrencyState(c)?.base||null;
+                  intel.liq=['Contrario','stateNeg','AUDIT_SHOCK'];
+                  afterNeg=deriveCurrencyState(c)?.base||null;
+                }finally{intel.liq=old;}
+                const arrays=[];
+                const scan=(obj,prefix='',depth=0)=>{
+                  if(!obj||typeof obj!=='object'||depth>3)return;
+                  for(const [k,v] of Object.entries(obj)){
+                    const key=prefix?prefix+'.'+k:k;
+                    if(v&&typeof v==='object'&&Array.isArray(v.dates)&&Array.isArray(v.values)){
+                      arrays.push({key,n_dates:v.dates.length,n_values:v.values.length,last_date:v.last_date||v.dates.at(-1)||null});
+                    }else if(v&&typeof v==='object'&&!Array.isArray(v)) scan(v,key,depth+1);
+                  }
+                };
+                scan(d);
+                const row={
+                  c,as_of:d.as_of||d.date||d.period||d.last_date||null,
+                  quality:d.quality||d.status||null,source:d.source||null,
+                  intel_liq:Array.isArray(intel.liq)?intel.liq[0]:null,
+                  polarity:layerPolarity(intel.liq),
+                  series:arrays,
+                  core_before:before,core_after_positive_shock:afterPos,core_after_negative_shock:afterNeg
+                };
+                rows.push(row);
+                if(!row.as_of) issues.push({type:'LIQ_MISSING_ASOF',...row});
+                if(!Array.isArray(intel.liq)) issues.push({type:'LIQ_MISSING_INTEL',...row});
+                for(const a of arrays) if(a.n_dates!==a.n_values) issues.push({type:'LIQ_DATE_VALUE_LENGTH_MISMATCH',c,...a});
+                if(before!==afterPos||before!==afterNeg) issues.push({type:'LIQUIDITY_LEAKS_INTO_CORE_STATE',...row});
+              }
+              return {rows,issues};
+            });
+            console.log('===LIQ_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===LIQ_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node liq-audit.js
