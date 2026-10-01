@@ -1,0 +1,41 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "validation": "EUR_END_TO_END_REGRESSION_CASE_2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS",
+  "expected_logic": {
+    "macro": "Mixed/divergent when growth and labour do not support a clean positive state, even if inflation is elevated.",
+    "inflation": "Context/policy-sensitive; cannot by itself turn Macro positive.",
+    "rates_cb": "May support EUR structurally even while Macro remains mixed.",
+    "improvement": "Must remain separate from structure; a positive front-end alone must not label EUR as improving.",
+    "price": "Confirmation/divergence only.",
+    "cot": "Positioning/risk only."
+  },
+  "observed": {
+    "macro_layer": [
+      "Divergente",
+      "stateMix",
+      "struttura macro ancora mista; crescita e lavoro stanno peggiorando nel dato recente"
+    ],
+    "macro_snapshot": {
+      "growth": -0.45,
+      "labour": 1.19,
+      "inflation": 0.84
+    },
+    "structural_macro_polarity": 0,
+    "policy_polarity": 1,
+    "structural_state": "COSTRUTTIVA",
+    "improvement_state": "TURNING POINT",
+    "improving": false,
+    "driver": "Rates / aspettative CB",
+    "price": "PREZZO DIVERGE",
+    "cot_risk": "ESTREMO SHORT"
+  },
+  "pass_conditions": {
+    "elevated_inflation_does_not_force_positive_macro": true,
+    "positive_rates_do_not_force_improving_label": true,
+    "structure_and_recent_change_are_separate": true,
+    "price_does_not_decide_structure": true,
+    "cot_does_not_decide_structure": true
+  }
+}
