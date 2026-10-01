@@ -37,10 +37,7 @@ jobs:
                   const vals=Array.isArray(x.values)?x.values.map(Number):[];
                   const finite=vals.filter(Number.isFinite);
                   const dupes=dates.length-new Set(dates).size;
-                  let unordered=0;
-                  for(let i=1;i<dates.length;i++) if(dates[i]<dates[i-1]) unordered++;
-                  let future=0;
-                  for(const d of dates) if(/^\d{4}-\d{2}/.test(d) && d>'2026-10-01') future++;
+                  const parseDate=(v)=>{\n                    const z=String(v||'').trim();\n                    let m=z.match(/^(\\d{4})[-\\/](\\d{1,2})[-\\/](\\d{1,2})$/);\n                    if(m) return Date.UTC(+m[1],+m[2]-1,+m[3]);\n                    m=z.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);\n                    if(m) return Date.UTC(+m[3],+m[2]-1,+m[1]);\n                    m=z.match(/^(\\d{4})[-\\/](\\d{1,2})$/);\n                    if(m) return Date.UTC(+m[1],+m[2]-1,1);\n                    m=z.match(/^(\\d{4})[-\\/]?Q([1-4])$/i);\n                    if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);\n                    const t=Date.parse(z); return Number.isFinite(t)?t:null;\n                  };\n                  const ts=dates.map(parseDate);\n                  let unordered=0;\n                  for(let i=1;i<ts.length;i++) if(ts[i]!=null&&ts[i-1]!=null&&ts[i]<ts[i-1]) unordered++;\n                  const futureCut=Date.UTC(2026,9,1);\n                  let future=ts.filter(t=>t!=null&&t>futureCut).length;
                   rows.push({
                     ccy:c,category:x.category,label:x.label||null,
                     frequency:x.frequency||null,unit:x.unit||null,
@@ -60,7 +57,7 @@ jobs:
                 if(r.unordered_dates) issues.push({type:'UNORDERED_DATES',...r});
                 if(r.future_dates) issues.push({type:'FUTURE_DATES',...r});
                 if(r.nonfinite_values) issues.push({type:'NONFINITE_VALUES',...r});
-                if(r.synthetic===true) issues.push({type:'SYNTHETIC_CORE',...r});
+                if(r.synthetic===true) issues.push({type:'SYNTHETIC_CORE',...r});\n                if(!r.frequency) issues.push({type:'MISSING_FREQUENCY',...r});\n                if(!r.unit) issues.push({type:'MISSING_UNIT',...r});\n                if(!r.series_id) issues.push({type:'MISSING_SERIES_ID',...r});\n                if(!r.source) issues.push({type:'MISSING_SOURCE_METADATA',...r});
               }
               const byCcy=Object.fromEntries(ccys.map(c=>[c,{
                 series:rows.filter(r=>r.ccy===c).length,
