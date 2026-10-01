@@ -68,10 +68,10 @@ jobs:
                 refresh_health:window.GMFQ_REFRESH_HEALTH?.report?.()||null,
                 ois_activation:window.GMFQ_OIS_SOURCE_MONITOR?.activationState?.()||null,
                 unresolved:(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks():[]),
-                ois,rates,liq,cb,
-                js_errors:errors
+                ois,rates,liq,cb
               };
             });
+            out.js_errors=errors;
             console.log('===DATA_GAPS_AUDIT===');
             console.log(JSON.stringify(out,null,2));
             console.log('===END_DATA_GAPS_AUDIT===');
