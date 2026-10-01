@@ -1,0 +1,98 @@
+name: Pre-OOS Governance Leftovers Gate
+
+on:
+  push:
+    branches: [staging-pre-oos-governance-leftovers-fix-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Verify governance fixes are structurally neutral
+        run: |
+          cat > verify.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const pageErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(4500);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const states=Object.fromEntries(ccys.map(c=>{
+                const s=deriveCurrencyState(c)||{};
+                return [c,{base:s.base||null,macro:Number(s.macro),policy:Number(s.policy),improvement:s.improvementState||null,driver:deriveCurrencyDriver(c)||null}];
+              }));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const frames=Object.fromEntries(pairs.map(p=>{
+                const f=derivePairDecisionFrame(p)||{};
+                return [p,{fav:f.fav||null,quality:f.quality||null,macro:f.structural?.macro?.side||null,policy:f.structural?.policy?.side||null}];
+              }));
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const beforeLegacy=typeof evaluateCbLiquidityHysteresis==='function'?evaluateCbLiquidityHysteresis('CHF'):null;
+              const repeat1=typeof evaluateCbLiquidityHysteresis==='function'?evaluateCbLiquidityHysteresis('CHF'):null;
+              const repeat2=typeof evaluateCbLiquidityHysteresis==='function'?evaluateCbLiquidityHysteresis('CHF'):null;
+              const queue=typeof rebuildStructuralChangeQueue==='function'?rebuildStructuralChangeQueue():{};
+              const fresh=typeof syncCoreFreshnessRegistryFromLive==='function'?syncCoreFreshnessRegistryFromLive():window.DATA_FRESHNESS_REGISTRY;
+              const integrity=typeof freshnessRegistryIntegrity==='function'?freshnessRegistryIntegrity():null;
+              const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {
+                states,frames,pair_count:pairs.length,
+                fingerprint:fwd?.current_rules_fingerprint||null,
+                beforeLegacy,repeat1,repeat2,queue,
+                cot_live:fresh?.live?.COT?.as_of||null,
+                cot_headline:fresh?.COT?.as_of||null,
+                freshness_integrity:integrity,
+                health
+              };
+            });
+            await browser.close();srv.kill();
+
+            const issues=[];
+            if(pageErrors.length) issues.push('page_errors='+JSON.stringify(pageErrors));
+            if(out.fingerprint!=='3356baf0') issues.push('fingerprint='+out.fingerprint);
+            if(out.pair_count!==28) issues.push('pair_count='+out.pair_count);
+            if((out.health?.hard_errors||[]).length) issues.push('hard_errors='+JSON.stringify(out.health.hard_errors));
+            if(out.cot_live!=='2026-09-22'||out.cot_headline!=='2026-09-22') issues.push('cot freshness='+out.cot_live+'/'+out.cot_headline);
+            if(out.freshness_integrity && !out.freshness_integrity.ok) issues.push('freshness='+JSON.stringify(out.freshness_integrity));
+            if(Object.keys(out.queue||{}).length) issues.push('structural_queue='+JSON.stringify(out.queue));
+            const j=out.states.JPY||{};
+            if(j.base!=='COSTRUTTIVA'||j.policy!==1||j.macro!==0) issues.push('JPY='+JSON.stringify(j));
+            const g=out.states.GBP||{};
+            if(g.base!=='COSTRUTTIVA'||g.policy!==1||g.macro!==0) issues.push('GBP='+JSON.stringify(g));
+
+            const b=out.beforeLegacy?.cb?.streak, r1=out.repeat1?.cb?.streak, r2=out.repeat2?.cb?.streak;
+            if(!(b===r1 && r1===r2)) issues.push('CHF legacy CB streak advanced '+[b,r1,r2].join('>'));
+            const bl=out.beforeLegacy?.liquidity?.streak, l1=out.repeat1?.liquidity?.streak, l2=out.repeat2?.liquidity?.streak;
+            if(!(bl===l1 && l1===l2)) issues.push('CHF legacy liquidity streak advanced '+[bl,l1,l2].join('>'));
+            if(out.repeat2?.cb?.status==='AUTO_ELIGIBLE'||out.repeat2?.liquidity?.status==='AUTO_ELIGIBLE') issues.push('CHF false legacy AUTO_ELIGIBLE '+JSON.stringify(out.repeat2));
+
+            console.log(JSON.stringify({
+              status:issues.length?'FAIL':'PASS',
+              fingerprint:out.fingerprint,
+              cot:{live:out.cot_live,headline:out.cot_headline},
+              legacy_chf:{before:out.beforeLegacy,repeat1:out.repeat1,repeat2:out.repeat2},
+              queue:out.queue,
+              JPY:out.states.JPY,
+              GBP:out.states.GBP,
+              health_status:out.health?.status||null,
+              issues
+            },null,2));
+            if(issues.length) process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node verify.js
