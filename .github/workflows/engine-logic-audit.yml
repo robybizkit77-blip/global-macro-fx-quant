@@ -60,6 +60,23 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                refreshStability:safe(()=>{
+                  const before={
+                    currencies:Object.fromEntries(ccys.map(c=>{const x=deriveCurrencyState(c)||{};return [c,{base:x.base,macro:x.macro,policy:x.policy,change:x.improvementState}]})),
+                    pairs:Object.fromEntries([...(D?.pairs||[])].map(x=>{const f=derivePairDecisionFrame(x.pair)||{};return [x.pair,{fav:f.fav,quality:f.quality,macro:f.structural?.macro?.side,policy:f.structural?.policy?.side}]}))
+                  };
+                  for(let i=0;i<3;i++){
+                    try{rebuildCanonicalState();}catch(e){}
+                    try{stableModelRefresh();}catch(e){}
+                    try{window.v302ConsolidatedSync?.();}catch(e){}
+                  }
+                  const after={
+                    currencies:Object.fromEntries(ccys.map(c=>{const x=deriveCurrencyState(c)||{};return [c,{base:x.base,macro:x.macro,policy:x.policy,change:x.improvementState}]})),
+                    pairs:Object.fromEntries([...(D?.pairs||[])].map(x=>{const f=derivePairDecisionFrame(x.pair)||{};return [x.pair,{fav:f.fav,quality:f.quality,macro:f.structural?.macro?.side,policy:f.structural?.policy?.side}]}))
+                  };
+                  const same=JSON.stringify(before)===JSON.stringify(after);
+                  return {ok:same,before,after};
+                }),
                 uiSemanticAudit:safe(()=>{
                   const issues=[];
                   const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
