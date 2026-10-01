@@ -7,7 +7,32 @@ function v233Cards(c,d){
 const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp), curve=v233CurveInterpretation(d);
 const ten5=(d.tenors||[]).find(x=>x.tenor==='5Y');
 const long=(d.tenors||[]).slice(-1)[0];
+const num=x=>(x===null||x===undefined||x==='')?null:(Number.isFinite(Number(x))?Number(x):null);
+const ch2=num(d?.chg2_bp), ch10=num(d?.chg10_bp), minMove=3, gap=3;
+const fmtBp=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
+let origin={
+title:'Misto / non determinato',cls:'neu',
+why:'Mancano variazioni comparabili di 2Y e 10Y. Il modello non forza una causa.',
+detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
+};
+if(ch2!=null && ch10!=null){
+  const a2=Math.abs(ch2), a10=Math.abs(ch10);
+  if(a2<minMove && a10<minMove){
+    origin={title:'Misto / non determinato',cls:'neu',why:'Il movimento settimanale è troppo piccolo per attribuire un driver rates affidabile.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
+  }else if(ch2>0 && ch2>=ch10+gap){
+    origin={title:'Policy / front-end',cls:'up',why:'Il 2Y sale più del 10Y: domina il repricing della banca centrale e della policy attesa.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
+  }else if(ch2<0 && ch2<=ch10-gap){
+    origin={title:'Policy / front-end',cls:'down',why:'Il 2Y scende più del 10Y: domina un repricing più dovish della policy attesa.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
+  }else if(ch10>0 && ch10>=ch2+gap){
+    origin={title:'Long-end · origine da verificare',cls:'warn',why:'Il 10Y sale più del 2Y. Prima di leggerlo come positivo per FX bisogna separare crescita + real yield, breakeven, term premium e fiscal/supply.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`};
+  }else if(ch10<0 && ch10<=ch2-gap){
+    origin={title:'Long-end · origine da verificare',cls:'info',why:'Il 10Y scende più del 2Y. Il movimento nasce soprattutto dalla parte lunga e va separato tra crescita, real yield, inflazione attesa e premio per la duration.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`};
+  }else{
+    origin={title:'Misto / policy + long-end',cls:'neu',why:'2Y e 10Y si muovono senza una dominanza abbastanza netta. La lettura resta mista finché real yield, breakeven o term premium non danno una conferma dinamica comparabile.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
+  }
+}
 const cards=[
+v233RateCard('Origine del movimento Rates',origin.title,origin.detail,origin.why,origin.cls),
 v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
 v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
 v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
