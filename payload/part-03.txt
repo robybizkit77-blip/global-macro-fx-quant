@@ -49,10 +49,7 @@ const rateGapSide=!materialRateSpread?'—':twoYearSpreadBp>0?a:b;
 let fav='—';
 let quality='MISTO / NON RISOLUTIVO';
 let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
-if(materialRateSpread && macroSide==='TIE'){
-quality='SEPARAZIONE RATES MATERIALE';
-relation=`Il differenziale 2Y osservato è ${twoYearSpreadBp>=0?'+':''}${fmt(twoYearSpreadBp,0)} pb verso ${rateGapSide}. Separa il layer Rates, ma Macro non conferma un bias direzionale di coppia.`;
-}else if(macroSide!=='TIE' && macroSide===policySide){
+if(macroSide!=='TIE' && macroSide===policySide){
 fav=macroSide==='A'?a:b;
 quality='CONTRASTO STRUTTURALE FORTE';
 relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: contrasto strutturale pieno.`;
@@ -67,6 +64,9 @@ relation=`Tassi/CB favoriscono ${fav}, mentre la Macro non separa le due valute:
 }else if(macroSide!=='TIE' && policySide!=='TIE' && macroSide!==policySide){
 quality='PILASTRI DIVISI';
 relation='Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.';
+}else if(materialRateSpread && macroSide==='TIE' && policySide==='TIE'){
+quality='SEPARAZIONE RATES MATERIALE';
+relation=`Il differenziale 2Y osservato è ${twoYearSpreadBp>=0?'+':''}${fmt(twoYearSpreadBp,0)} pb verso ${rateGapSide}. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.`;
 }else{
 quality='NESSUN CONTRASTO';
 }
