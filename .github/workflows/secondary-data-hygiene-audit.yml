@@ -1,0 +1,66 @@
+name: Secondary Data Hygiene Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit secondary series duplicates
+        run: |
+          cat > secondary-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof S!=='undefined',{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const parse=(raw)=>{
+                const s=String(raw||'');
+                let m=s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+                if(m)return `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}`;
+                m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if(m)return `${m[3]}-${String(+m[2]).padStart(2,'0')}-${String(+m[1]).padStart(2,'0')}`;
+                return s;
+              };
+              const rows=[],issues=[];
+              for(const c of ccys){
+                for(const x of (S?.[c]||[])){
+                  if(['Crescita','Lavoro','Inflazione','Rates'].includes(x.category)) continue;
+                  const dates=x.dates||[], vals=x.values||[];
+                  const by={};
+                  dates.forEach((d,i)=>{
+                    const k=parse(d); (by[k]||(by[k]=[])).push({raw:d,v:vals[i]});
+                  });
+                  const dup=Object.entries(by).filter(([,arr])=>arr.length>1);
+                  const conflicting=dup.filter(([,arr])=>new Set(arr.map(z=>String(z.v))).size>1);
+                  const row={c,category:x.category,label:x.label||'',n:dates.length,duplicate_dates:dup.length,conflicting_dates:conflicting.length,
+                    sample_conflicts:conflicting.slice(0,5).map(([date,arr])=>({date,values:arr.map(z=>z.v),raw_dates:arr.map(z=>z.raw)}))};
+                  rows.push(row);
+                  if(conflicting.length)issues.push({type:'SECONDARY_CONFLICTING_DUPLICATES',...row});
+                }
+              }
+              return {rows,issues};
+            });
+            console.log('===SECONDARY_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===SECONDARY_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node secondary-audit.js
