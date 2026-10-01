@@ -1,0 +1,79 @@
+name: Rates Data Audit
+
+on:
+  push:
+    branches: [staging-backtest-canonical-core-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit rates data
+        run: |
+          cat > rates-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[],issues=[];
+              for(const c of ccys){
+                const s=rate2YSeries(c);
+                const dates=(s?.dates||[]).map(String);
+                const vals=(s?.values||[]).map(Number);
+                const finite=vals.filter(Number.isFinite);
+                const duplicateDates=dates.filter((d,i)=>dates.indexOf(d)!==i);
+                let sorted=true;
+                for(let i=1;i<dates.length;i++) if(String(dates[i])<String(dates[i-1])) sorted=false;
+                let maxGapDays=null;
+                const ds=dates.map(d=>new Date(d)).filter(d=>Number.isFinite(d.getTime())).sort((a,b)=>a-b);
+                for(let i=1;i<ds.length;i++){
+                  const g=(ds[i]-ds[i-1])/86400000;
+                  if(maxGapDays==null||g>maxGapDays) maxGapDays=g;
+                }
+                const native=NATIVE_RATES_DATA?.[c]||{};
+                const latest=finite.length?finite.at(-1):null;
+                const latestDate=dates.length?dates.at(-1):null;
+                const native2=Number(native['2Y']??native.y2??native.rate2y);
+                const diffBp=Number.isFinite(latest)&&Number.isFinite(native2)?(native2-latest)*100:null;
+                const dyn=currencyDynamics(c)?.rates||null;
+                const row={
+                  c,label:s?.label||null,observations:finite.length,date_count:dates.length,
+                  first_date:dates[0]||null,last_date:latestDate,
+                  latest_value:latest,duplicate_dates:[...new Set(duplicateDates)],
+                  sorted,max_gap_days:maxGapDays,
+                  native_date:native.date||native.as_of||null,
+                  native_2y:Number.isFinite(native2)?native2:null,
+                  native_minus_history_bp:diffBp,
+                  dynamics:dyn
+                };
+                rows.push(row);
+                if(!s||finite.length<10) issues.push({type:'INSUFFICIENT_2Y_HISTORY',...row});
+                if(duplicateDates.length) issues.push({type:'DUPLICATE_DATES',...row});
+                if(!sorted) issues.push({type:'UNSORTED_DATES',...row});
+                if(finite.some(v=>Math.abs(v)>30)) issues.push({type:'IMPLAUSIBLE_YIELD_SCALE',...row});
+                if(dates.length!==vals.length) issues.push({type:'DATE_VALUE_LENGTH_MISMATCH',...row});
+                if(Number.isFinite(diffBp)&&Math.abs(diffBp)>100) issues.push({type:'CURRENT_HISTORY_GAP_GT_100BP',...row});
+              }
+              return {rows,issues};
+            });
+            console.log('===RATES_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===RATES_AUDIT_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node rates-audit.js
