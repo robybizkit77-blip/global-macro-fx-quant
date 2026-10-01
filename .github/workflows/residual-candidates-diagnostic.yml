@@ -1,0 +1,77 @@
+name: Residual Candidates Diagnostic
+
+on:
+  push:
+    branches: [staging-post-provenance-leftovers-audit-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inspect residual candidates
+        run: |
+          cat > residual.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(4000);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const guards={};
+              for(const c of ccys){
+                try{guards[c]=typeof evaluateSourceAwareGuards==='function'?evaluateSourceAwareGuards(c):null}catch(e){guards[c]={error:String(e)}}
+              }
+              const cot={};
+              for(const c of ccys){
+                const x=(typeof NATIVE_COT_DATA!=='undefined'&&NATIVE_COT_DATA)?NATIVE_COT_DATA[c]:null;
+                if(x){
+                  const dates=x.dates||x.history?.dates||[];
+                  cot[c]={
+                    keys:Object.keys(x),
+                    as_of:x.as_of||x.date||x.last_date||null,
+                    last_date:Array.isArray(dates)&&dates.length?dates.at(-1):null,
+                    n:Array.isArray(dates)?dates.length:null
+                  };
+                }else cot[c]=null;
+              }
+              const latestCotDates=Object.values(cot).filter(Boolean).map(x=>x.as_of||x.last_date).filter(Boolean);
+              return {
+                queue:typeof rebuildStructuralChangeQueue==='function'?rebuildStructuralChangeQueue():null,
+                guard_memory:JSON.parse(JSON.stringify(window.SOURCE_AWARE_GUARD_MEMORY||{})),
+                guards,
+                cot,
+                cot_inferred_latest:latestCotDates.sort().at(-1)||null,
+                freshness:JSON.parse(JSON.stringify(window.CORE_FRESHNESS_REGISTRY||window.AUXILIARY_FEED_FRESHNESS||{})),
+                chf:{
+                  state:typeof deriveCurrencyState==='function'?deriveCurrencyState('CHF'):null,
+                  cb:(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.CHF:null),
+                  liq:(typeof NATIVE_LIQ_DATA!=='undefined'?NATIVE_LIQ_DATA?.CHF:null)
+                },
+                jpy:{
+                  state:typeof deriveCurrencyState==='function'?deriveCurrencyState('JPY'):null,
+                  rates:(typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA?.JPY:null),
+                  cb:(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.JPY:null)
+                }
+              };
+            });
+            console.log('===RESIDUAL_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===RESIDUAL_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node residual.js
