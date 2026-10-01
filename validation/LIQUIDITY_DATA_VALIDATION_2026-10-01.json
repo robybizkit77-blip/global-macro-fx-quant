@@ -1,0 +1,28 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "artifact": "LIQUIDITY_DATA_VALIDATION_2026-10-01",
+  "status": "PASS_CURRENT_WITH_NZD_HISTORICAL_LIMIT",
+  "scope": "G8 liquidity/credit/financial-conditions data integrity and core-isolation test.",
+  "current_coverage": {
+    "currencies": 8,
+    "missing_asof": 0,
+    "missing_intel": 0,
+    "date_value_mismatches": 0
+  },
+  "core_isolation": {
+    "status": "PASS",
+    "test": "Artificial positive/negative liquidity shocks applied to each currency.",
+    "result": "8/8 structural currency states unchanged."
+  },
+  "historical_depth_notes": {
+    "NZD": "Only 6–7 observations in current liquidity/money/credit runtime series; current reading usable, historical backtest WITHHELD.",
+    "others": "Sufficient current runtime depth for diagnostic overlay validation; cadence differs by component."
+  },
+  "rules": [
+    "Liquidity is overlay only.",
+    "Credit/financial conditions do not create a core vote.",
+    "Missing is not zero.",
+    "Different native cadences remain visible."
+  ],
+  "conclusion": "Liquidity overlay is correctly isolated and usable for current context. NZD historical liquidity evidence is too shallow for retrospective validation."
+}
