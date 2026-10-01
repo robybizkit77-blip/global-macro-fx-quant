@@ -1,0 +1,80 @@
+name: Macro Data Integrity Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit macro series
+        run: |
+          cat > macro-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const coreCats=new Set(['Crescita','Lavoro','Inflazione']);
+              const rows=[];
+              for(const c of ccys){
+                for(const x of (S?.[c]||[]).filter(x=>coreCats.has(x.category))){
+                  const dates=Array.isArray(x.dates)?x.dates.map(String):[];
+                  const vals=Array.isArray(x.values)?x.values.map(Number):[];
+                  const finite=vals.filter(Number.isFinite);
+                  const dupes=dates.length-new Set(dates).size;
+                  let unordered=0;
+                  for(let i=1;i<dates.length;i++) if(dates[i]<dates[i-1]) unordered++;
+                  let future=0;
+                  for(const d of dates) if(/^\d{4}-\d{2}/.test(d) && d>'2026-10-01') future++;
+                  rows.push({
+                    ccy:c,category:x.category,label:x.label||null,
+                    frequency:x.frequency||null,unit:x.unit||null,
+                    source:x.source||null,series_id:x.series_id||x.id||null,
+                    n_dates:dates.length,n_values:vals.length,n_finite:finite.length,
+                    first:dates[0]||null,last:dates.at(-1)||null,
+                    duplicate_dates:dupes,unordered_dates:unordered,future_dates:future,
+                    nonfinite_values:vals.length-finite.length,
+                    synthetic:x.synthetic??null
+                  });
+                }
+              }
+              const issues=[];
+              for(const r of rows){
+                if(r.n_dates!==r.n_values) issues.push({type:'LENGTH_MISMATCH',...r});
+                if(r.duplicate_dates) issues.push({type:'DUPLICATE_DATES',...r});
+                if(r.unordered_dates) issues.push({type:'UNORDERED_DATES',...r});
+                if(r.future_dates) issues.push({type:'FUTURE_DATES',...r});
+                if(r.nonfinite_values) issues.push({type:'NONFINITE_VALUES',...r});
+                if(r.synthetic===true) issues.push({type:'SYNTHETIC_CORE',...r});
+              }
+              const byCcy=Object.fromEntries(ccys.map(c=>[c,{
+                series:rows.filter(r=>r.ccy===c).length,
+                growth:rows.filter(r=>r.ccy===c&&r.category==='Crescita').length,
+                labour:rows.filter(r=>r.ccy===c&&r.category==='Lavoro').length,
+                inflation:rows.filter(r=>r.ccy===c&&r.category==='Inflazione').length,
+                issues:issues.filter(r=>r.ccy===c).length
+              }]));
+              return {rows,issues,byCcy};
+            });
+            console.log('===MACRO_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===MACRO_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node macro-audit.js
