@@ -1,0 +1,53 @@
+name: Residual Warning Diagnostic
+
+on:
+  push:
+    branches: [staging-final-leftovers-current-main-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Diagnose residual warnings
+        run: |
+          cat > residual.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof productionHealthCheck==='function',{timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const safe=(fn)=>{try{return fn()}catch(e){return {error:String(e)}}};
+              return {
+                business_date:safe(()=>currentProductionBusinessDate()),
+                closeout_status:safe(()=>productionDailyCloseoutStatus()),
+                last_closeout:window.LAST_DAILY_CLOSEOUT||null,
+                production_generation:window.PRODUCTION_REFRESH_GENERATION||0,
+                auxiliary_freshness:window.AUXILIARY_FEED_FRESHNESS||null,
+                health:productionHealthCheck(),
+                chf_source_aware:safe(()=>evaluateSourceAwareGuards('CHF')),
+                chf_legacy_cb_liq:safe(()=>evaluateCbLiquidityHysteresis('CHF')),
+                chf_legacy_memory:window.CB_LIQ_CHANGE_MEMORY?.['CHF:cb']||null,
+                chf_source_memory:window.SOURCE_AWARE_GUARD_MEMORY?.['CHF:cb']||null,
+                queue:safe(()=>rebuildStructuralChangeQueue())
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node residual.js
