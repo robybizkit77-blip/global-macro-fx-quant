@@ -56,6 +56,8 @@ jobs:
                 if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);
                 m=z.match(/^(\d{4})-Q([1-4])$/i);
                 if(m) return Date.UTC(+m[1],(+m[2]-1)*3,1);
+                m=z.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+                if(m) return Date.UTC(+m[1],+m[2]-1,+m[3]);
                 const t=Date.parse(z); return Number.isFinite(t)?t:null;
               }
               function iso(t){return new Date(t).toISOString().slice(0,10)}
@@ -129,9 +131,19 @@ jobs:
                 const typ=med(diffs)||0;
                 return {dir:Math.abs(recent)<typ*0.15?0:Math.sign(recent)};
               }
+              const HIST_2Y_IDS={
+                USD:'US_DGS2_history_DGS2',
+                GBP:'GBP_RATES_2016_2026_2Y',
+                JPY:'JPY_RATES_2016_2026_2Y',
+                CHF:'CH_CONFED_SPOT_2Y_history_value_pct',
+                CAD:'CAD_RATES_2016_2026_2Y',
+                AUD:'AU_FCMYGBAG2D_history_FCMYGBAG2D',
+                NZD:'NZD_RATES_2016_2026_RBNZ_B2_2Y'
+              };
               function rateRows(c,t){
                 if(c==='EUR') return null;
-                let rs=null; try{rs=rate2YSeries(c)}catch(e){}
+                const id=HIST_2Y_IDS[c];
+                const rs=(S?.[c]||[]).find(x=>x.id===id);
                 if(!rs?.values?.length)return null;
                 const rows=[];
                 const ds=rs.dates||[], vs=rs.values||[];
@@ -228,10 +240,11 @@ jobs:
                   checkpoints:'monthly, 2018 onward',
                   horizons_calendar_days:H,
                   macro:'Growth + Labour historical directional proxy using the current normalizedSeriesImpulse/blockDynamics logic on data truncated at each checkpoint. Current-revised observation history; release-date vintages unavailable.',
-                  rates:'2Y historical direction using current seriesDynamics logic, truncated at checkpoint.',
+                  rates:'Validated same-basis 2Y historical series from S, 2016-2026, using current seriesDynamics logic truncated at checkpoint. EUR remains WITHHELD.',
                   pair_hierarchy:'Exact current v9.3 hierarchy: aligned Macro+Rates => CONTRASTO STRUTTURALE FORTE; one pillar only => VANTAGGIO RELATIVO PARZIALE; opposing pillars => PILASTRI DIVISI.',
                   price:'Canonical 28-pair reconstruction from ECB-based price matrix; first observation on/after checkpoint and horizon.',
                   no_tuning:true,
+                  historical_2y_ids:HIST_2Y_IDS,
                   exclusions:['EUR Rates historical same-basis chain WITHHELD','Historical CB/OIS PIT not reconstructed','COT and Liquidity excluded from structural direction exactly as current architecture requires']
                 },
                 caveat:'This is not a full historical replay of deriveCurrencyState/policyFamilyPolarity because historical CB/OIS PIT and macro release vintages are unavailable. It tests the reconstructible Macro+Rates pair hierarchy without look-ahead in the series truncation.',
