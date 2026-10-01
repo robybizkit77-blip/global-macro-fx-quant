@@ -1,0 +1,100 @@
+name: Final Leftovers Current Main Audit
+
+on:
+  push:
+    branches: [staging-post-provenance-leftovers-audit-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit current main-derived runtime
+        run: |
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            const pageErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>typeof D!=='undefined'&&typeof S!=='undefined'&&typeof productionHealthCheck==='function',{timeout:120000});
+            await page.waitForTimeout(3500);
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const coreCats=new Set(['Crescita','Lavoro','Inflazione']);
+              const core=[];
+              for(const c of ccys) for(const s of (S[c]||[])) if(coreCats.has(s.category)) core.push({
+                ccy:c,id:s.id||null,source:s.source||null,source_file:s.source_file||null,
+                frequency:s.frequency||null,unit:s.unit||null,metadata_status:s.metadata_status||null
+              });
+              const missing={source:[],source_file:[],frequency:[],unit:[]};
+              for(const x of core) for(const k of Object.keys(missing)) if(!x[k]) missing[k].push({ccy:x.ccy,id:x.id});
+
+              const withheld=[];
+              for(const c of ccys) for(const x of (S[c]||[])){
+                if(x?.validation_status==='WITHHELD'||x?.exclude_from_decision===true||String(x?.data_quality||'').includes('WITHHELD')){
+                  withheld.push({ccy:c,category:x.category,label:x.label,status:x.validation_status||null,quality:x.data_quality||null,exclude:!!x.exclude_from_decision,n:Array.isArray(x.values)?x.values.length:null});
+                }
+              }
+
+              const health=productionHealthCheck();
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const queue=typeof rebuildStructuralChangeQueue==='function'?rebuildStructuralChangeQueue():{};
+              const states=Object.fromEntries(ccys.map(c=>[c,deriveCurrencyState(c)]));
+              const pairs=[...(D?.pairs||[])].map(x=>x.pair).sort();
+              const frames=Object.fromEntries(pairs.map(p=>[p,derivePairDecisionFrame(p)]));
+              const nzd={};
+              for(const [k,node] of Object.entries(NATIVE_LIQ_DATA?.NZD||{})){
+                if(node&&typeof node==='object'&&!Array.isArray(node)&&Array.isArray(node.values)) nzd[k]={n:node.values.length,last_date:node.last_date||null,status:node.metadata_status||null,quality:node.quality||null};
+              }
+              const rates=Object.fromEntries(ccys.map(c=>{
+                const d=NATIVE_RATES_DATA?.[c]||{};
+                return [c,{date:d.date||null,y2:d.y2??d.current2??d.history2?.last_value??null,h2n:d.history2?.values?.length||0,mode:d.mode||d.validation_mode||null}];
+              }));
+              return {
+                pageErrors:[],
+                data_as_of:D?.asOf||null,
+                price_as_of:D?.prices?.at(-1)?.Date||null,
+                cot_as_of:D?.cotAsOf||null,
+                core_count:core.length,
+                core_missing:missing,
+                metadata_linkage:window.GMFQ_RUNTIME_METADATA_LINKAGE||null,
+                withheld,
+                nzd_liquidity:nzd,
+                structural_queue:queue,
+                rates,
+                states:Object.fromEntries(ccys.map(c=>[c,{base:states[c]?.base||null,macro:states[c]?.macro??null,policy:states[c]?.policy??null,improvement:states[c]?.improvementState||null}])),
+                pair_count:pairs.length,
+                pair_quality_counts:pairs.reduce((a,p)=>{const q=frames[p]?.quality||'UNKNOWN';a[q]=(a[q]||0)+1;return a;},{}),
+                fingerprint:fwd?.current_rules_fingerprint||null,
+                health
+              };
+            });
+            out.pageErrors=pageErrors;
+            console.log(JSON.stringify(out,null,2));
+            const hard=[];
+            if(pageErrors.length) hard.push('pageErrors='+pageErrors.length);
+            if(out.core_count!==79) hard.push('core_count='+out.core_count);
+            for(const [k,v] of Object.entries(out.core_missing)) if(v.length) hard.push('core_'+k+'_missing='+v.length);
+            if(out.pair_count!==28) hard.push('pair_count='+out.pair_count);
+            if(out.fingerprint!=='3356baf0') hard.push('fingerprint='+out.fingerprint);
+            if((out.health?.hard_errors||[]).length) hard.push('health_hard_errors='+JSON.stringify(out.health.hard_errors));
+            console.log(JSON.stringify({gate:hard.length?'FAIL':'PASS',hard},null,2));
+            if(hard.length) process.exitCode=1;
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
