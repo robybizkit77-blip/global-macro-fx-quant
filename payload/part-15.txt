@@ -3312,3 +3312,26 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }catch(e){window.GMFQ_JPY_RATES_HISTORY_REPAIR={status:'FAIL',error:String(e?.message||e)};}
 })();
 </script>
+
+<script id="gmfq-jpy-rates-history-gap-repair2-20261001">
+(function(){
+  'use strict';
+  try{
+    const d=NATIVE_RATES_DATA?.JPY;
+    if(!d?.history2 || !d?.history10) throw new Error('JPY_HISTORY_MISSING');
+    const repair=[{"date":"2025-05-12","y2":0.66,"y10":1.405},{"date":"2025-05-13","y2":0.718,"y10":1.46},{"date":"2025-05-14","y2":0.706,"y10":1.466},{"date":"2025-05-15","y2":0.717,"y10":1.489},{"date":"2025-05-16","y2":0.707,"y10":1.466},{"date":"2025-05-19","y2":0.718,"y10":1.494},{"date":"2025-05-20","y2":0.728,"y10":1.53},{"date":"2025-05-21","y2":0.72,"y10":1.53},{"date":"2025-05-22","y2":0.737,"y10":1.573},{"date":"2025-05-23","y2":0.731,"y10":1.559},{"date":"2025-05-26","y2":0.728,"y10":1.522},{"date":"2025-05-27","y2":0.739,"y10":1.479},{"date":"2025-05-28","y2":0.753,"y10":1.531},{"date":"2025-05-29","y2":0.758,"y10":1.532},{"date":"2025-05-30","y2":0.75,"y10":1.518}];
+    const iso=(x)=>{const z=new Date(String(x));return Number.isFinite(z.getTime())?z.toISOString().slice(0,10):null;};
+    const merge=(h,key)=>{
+      const m=new Map();
+      (h.dates||[]).forEach((dt,i)=>{const k=iso(dt),v=Number(h.values?.[i]);if(k&&Number.isFinite(v))m.set(k,v);});
+      repair.forEach(r=>m.set(r.date,Number(r[key])));
+      const rows=[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+      h.dates=rows.map(x=>x[0]);h.values=rows.map(x=>x[1]);h.last_date=rows.at(-1)?.[0]||h.last_date;h.last_value=rows.at(-1)?.[1]??h.last_value;
+    };
+    merge(d.history2,'y2');merge(d.history10,'y10');
+    window.GMFQ_JPY_RATES_HISTORY_REPAIR2={status:'PASS',source:'Japan Ministry of Finance JGB curve · validated physical JPY_RATES_2016_2026.csv',repaired_period:'2025-05-12/2025-05-30',points:repair.length};
+    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(e){}
+    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){}
+  }catch(e){window.GMFQ_JPY_RATES_HISTORY_REPAIR2={status:'FAIL',error:String(e?.message||e)};}
+})();
+</script>
