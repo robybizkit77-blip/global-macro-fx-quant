@@ -212,14 +212,33 @@ jobs:
                 const vals=z.map(x=>x.ret);
                 return {n:z.length,hit:z.filter(x=>x.ret>0).length/z.length,mean:vals.reduce((a,b)=>a+b,0)/vals.length,median:med(vals)};
               }
+              function basketStats(filter){
+                const z=rows.filter(filter).filter(x=>x.ret!=null&&Number.isFinite(x.ret));
+                const g={};
+                for(const x of z)(g[x.date]??=[]).push(x.ret);
+                const baskets=Object.values(g).map(v=>v.reduce((a,b)=>a+b,0)/v.length);
+                if(!baskets.length)return {n_checkpoints:0,hit:null,mean:null,median:null};
+                return {
+                  n_checkpoints:baskets.length,
+                  hit:baskets.filter(x=>x>0).length/baskets.length,
+                  mean:baskets.reduce((a,b)=>a+b,0)/baskets.length,
+                  median:med(baskets)
+                };
+              }
               const byH={};
               for(const h of H){
                 byH[h]={
                   strong:stats(x=>x.h===h&&x.quality==='CONTRASTO STRUTTURALE FORTE'),
+                  strong_recent_2023_2026:stats(x=>x.h===h&&x.date>='2023-01-01'&&x.quality==='CONTRASTO STRUTTURALE FORTE'),
+                  strong_dev_2018_2022:stats(x=>x.h===h&&x.date<'2023-01-01'&&x.quality==='CONTRASTO STRUTTURALE FORTE'),
                   partial:stats(x=>x.h===h&&x.quality==='VANTAGGIO RELATIVO PARZIALE'),
+                  partial_recent_2023_2026:stats(x=>x.h===h&&x.date>='2023-01-01'&&x.quality==='VANTAGGIO RELATIVO PARZIALE'),
+                  partial_dev_2018_2022:stats(x=>x.h===h&&x.date<'2023-01-01'&&x.quality==='VANTAGGIO RELATIVO PARZIALE'),
                   favored_all:stats(x=>x.h===h&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE')),
                   recent_2023_2026:stats(x=>x.h===h&&x.date>='2023-01-01'&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE')),
-                  dev_2018_2022:stats(x=>x.h===h&&x.date<'2023-01-01'&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE'))
+                  dev_2018_2022:stats(x=>x.h===h&&x.date<'2023-01-01'&&(x.quality==='CONTRASTO STRUTTURALE FORTE'||x.quality==='VANTAGGIO RELATIVO PARZIALE')),
+                  strong_basket:basketStats(x=>x.h===h&&x.quality==='CONTRASTO STRUTTURALE FORTE'),
+                  partial_basket:basketStats(x=>x.h===h&&x.quality==='VANTAGGIO RELATIVO PARZIALE')
                 };
               }
               const qualityCounts={};
@@ -252,6 +271,12 @@ jobs:
                 quality_counts_4w:qualityCounts,
                 results:byH,
                 stability_4w_by_year:byYear,
+                robustness:{
+                  strong_12w_nonoverlap_quarterly:stats(x=>x.h===84&&x.quality==='CONTRASTO STRUTTURALE FORTE'&&['01','04','07','10'].includes(x.date.slice(5,7))),
+                  strong_12w_nonoverlap_quarterly_basket:basketStats(x=>x.h===84&&x.quality==='CONTRASTO STRUTTURALE FORTE'&&['01','04','07','10'].includes(x.date.slice(5,7))),
+                  partial_12w_nonoverlap_quarterly:stats(x=>x.h===84&&x.quality==='VANTAGGIO RELATIVO PARZIALE'&&['01','04','07','10'].includes(x.date.slice(5,7))),
+                  partial_12w_nonoverlap_quarterly_basket:basketStats(x=>x.h===84&&x.quality==='VANTAGGIO RELATIVO PARZIALE'&&['01','04','07','10'].includes(x.date.slice(5,7)))
+                }
               };
             });
 
