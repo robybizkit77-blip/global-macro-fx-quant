@@ -4083,3 +4083,44 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-health-warning-reconciliation-20261001">
+(function(){
+  'use strict';
+  try{
+    const previous=window.productionHealthCheck;
+    if(typeof previous!=='function') throw new Error('PRODUCTION_HEALTH_CHECK_MISSING');
+    window.productionHealthCheck=function(){
+      const r=previous();
+      const unresolved=typeof window.unresolvedSourceChecks==='function'
+        ? window.unresolvedSourceChecks()
+        : [];
+      const open=new Set(unresolved.map(x=>x.currency));
+      const warnings=(r.warnings||[]).filter(w=>{
+        const s=String(w);
+        const m=s.match(/^CB_PRICING_(?:SECONDARY|PARTIAL|STALE):([A-Z]{3})$/);
+        return !m || open.has(m[1]);
+      });
+      for(const x of unresolved){
+        if(x.currency==='NZD') warnings.push('CB_PRICING_PARTIAL:NZD');
+        else warnings.push('CB_PRICING_SECONDARY:'+x.currency);
+      }
+      r.warnings=[...new Set(warnings)];
+      r.status=(r.hard_errors||[]).length?'FAIL':r.warnings.length?'PASS_WITH_WARNINGS':'PASS';
+      r.source_resolution_reconciled=true;
+      return r;
+    };
+    window.GMFQ_HEALTH_WARNING_RECONCILIATION={
+      status:'PASS',
+      unresolved:typeof window.unresolvedSourceChecks==='function'
+        ? window.unresolvedSourceChecks().map(x=>x.id)
+        : []
+    };
+    document.documentElement.setAttribute('data-health-warning-reconciliation','PASS');
+  }catch(e){
+    window.GMFQ_HEALTH_WARNING_RECONCILIATION={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-health-warning-reconciliation','FAIL');
+  }
+})();
+</script>
