@@ -28,6 +28,7 @@
 
   window.GMFQ_COT_TUTOR={render,model,ensureUi,statusFrom,flowFrom};
 })();
+</script>
 
 <script id="gmfq-usd-fed-broad-price-diagnostic-20261001">
 (function(){
