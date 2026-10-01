@@ -482,8 +482,7 @@ var v245ChartKey='net';
 const V247_COT_STORIES=window.__GMFQ_DATA.V247_COT_STORIES;
 const V247_COT_FOCUS=[{"ccy":"GBP","title":"GBP · short molto affollato","why":"5° percentile e ⚠ Net/OI −33,7%.","change":"Entrano ancora nuovi short.","confirm":"GBP continua a sottoperformare.","lose":"Parte short covering e il prezzo smette di fare nuovi minimi."},{"ccy":"JPY","title":"JPY · cambio di impulso","why":"Net long ancora positivo, ma −48,4K in 1W.","change":"Il flusso settimanale si gira contro JPY.","confirm":"Altra liquidazione long / nuovi short.","lose":"Riprendono i long e il prezzo recupera."},{"ccy":"NZD","title":"NZD · deterioramento rapido","why":"Percentile 100° → 78°, ΔNet/OI −21,6%.","change":"Da positioning forte a flusso nettamente negativo.","confirm":"Persistono liquidazione long / nuovi short.","lose":"Il Net si stabilizza e NZD recupera."}];
 function v247SignalClass(sig){
-if(sig==='EXTREME SHORT')return 'neg';
-if(sig==='EXTREME LONG')return 'pos';
+if(sig==='EXTREME SHORT'||sig==='EXTREME LONG')return 'warn';
 return 'neu';
 }
 function v245RenderCards(){
