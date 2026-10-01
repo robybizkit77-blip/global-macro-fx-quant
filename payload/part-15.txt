@@ -57,6 +57,7 @@
 })();
 </script>
 
+<script id="gmfq-price-pair-tutor-wrapper-20261001">
 /*
   Price Tutor UI module
   Reads canonical currency state + existing price dynamics.
