@@ -3335,3 +3335,72 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }catch(e){window.GMFQ_JPY_RATES_HISTORY_REPAIR2={status:'FAIL',error:String(e?.message||e)};}
 })();
 </script>
+
+<script id="gmfq-data-hygiene-core-20261001">
+(function(){
+  'use strict';
+  const audit={status:'ACTIVE',changes:[],withheld:[]};
+  const parseDate=(raw)=>{
+    const s=String(raw||'');
+    let m=s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+    if(m) return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+    m=s.match(/^(\d{4})-(\d{2})$/);
+    if(m) return new Date(Date.UTC(+m[1],+m[2]-1,1));
+    return null;
+  };
+  const sortSeries=(x)=>{
+    if(!x||!Array.isArray(x.dates)||!Array.isArray(x.values)||x.dates.length!==x.values.length) return false;
+    const rows=x.dates.map((d,i)=>({d,v:x.values[i],t:parseDate(d)?.getTime()}));
+    if(rows.some(r=>!Number.isFinite(r.t))) return false;
+    rows.sort((a,b)=>a.t-b.t);
+    x.dates=rows.map(r=>r.d);
+    x.values=rows.map(r=>r.v);
+    x.last_date=x.dates.at(-1)||x.last_date;
+    x.last_value=x.values.at(-1)??x.last_value;
+    return true;
+  };
+  try{
+    // USD unemployment: remove only duplicate calendar observations carrying the same value.
+    const u=(S?.USD||[]).find(x=>x.label==='Disoccupazione');
+    if(u&&Array.isArray(u.dates)&&Array.isArray(u.values)&&u.dates.length===u.values.length){
+      const keep=new Map();
+      let safe=true, removed=0;
+      u.dates.forEach((d,i)=>{
+        const dt=parseDate(d);
+        const key=dt?dt.toISOString().slice(0,10):String(d);
+        const row={d,v:u.values[i],i};
+        if(keep.has(key)){
+          const prev=keep.get(key);
+          if(Number(prev.v)!==Number(row.v)) safe=false;
+          else removed++;
+        }
+        keep.set(key,row); // keep latest representation
+      });
+      if(safe&&removed>0){
+        const rows=[...keep.values()].sort((a,b)=>(parseDate(a.d)?.getTime()||0)-(parseDate(b.d)?.getTime()||0));
+        u.dates=rows.map(r=>r.d);
+        u.values=rows.map(r=>r.v);
+        u.last_date=u.dates.at(-1)||u.last_date;
+        u.last_value=u.values.at(-1)??u.last_value;
+        audit.changes.push({series:'USD:Disoccupazione',action:'DEDUP_SAME_VALUE',removed});
+      }else if(!safe){
+        audit.withheld.push({series:'USD:Disoccupazione',reason:'conflicting duplicate values'});
+      }
+    }
+
+    // JPY raw sovereign curves: preserve values, only restore chronological order.
+    for(const x of (S?.JPY||[]).filter(x=>x.category==='Rates')){
+      const before=x.dates?.at(-1)||null;
+      if(sortSeries(x)){
+        const after=x.dates?.at(-1)||null;
+        if(before!==after) audit.changes.push({series:'JPY:'+x.label,action:'SORT_CHRONOLOGICALLY',before_last:before,after_last:after});
+      }
+    }
+
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    window.GMFQ_DATA_HYGIENE_AUDIT=audit;
+  }catch(e){
+    window.GMFQ_DATA_HYGIENE_AUDIT={status:'ERROR',error:String(e?.message||e),changes:audit.changes,withheld:audit.withheld};
+  }
+})();
+</script>
