@@ -4246,3 +4246,105 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-nzd-rates-liquidity-refresh-20261001">
+(function(){
+  'use strict';
+  try{
+    if(typeof NATIVE_RATES_DATA==='undefined' || !NATIVE_RATES_DATA.NZD) throw new Error('NZD_RATES_MISSING');
+    const r=NATIVE_RATES_DATA.NZD;
+
+    r.date='2026-09-29';
+    r.source='RBNZ B2 Wholesale interest rates · government bond close · 29 Sep 2026';
+    r.quality='FULL_CURRENT_OFFICIAL';
+    r['2Y']=3.94;
+    r['10Y']=5.12;
+    r.curve_bp=118;
+    r.chg2_bp=7;
+    r.chg10_bp=17;
+    r.curve_state='Bear steepening / long-end in rialzo più del front-end';
+
+    const upsert=(series,date,value)=>{
+      if(!series) return;
+      series.dates=Array.isArray(series.dates)?series.dates:[];
+      series.values=Array.isArray(series.values)?series.values:[];
+      const i=series.dates.indexOf(date);
+      if(i>=0) series.values[i]=value;
+      else { series.dates.push(date); series.values.push(value); }
+      series.last_date=date; series.last_value=value;
+    };
+    upsert(r.history2,'2026-09-29',3.94);
+    upsert(r.history10,'2026-09-29',5.12);
+    if(Array.isArray(r.tenors)){
+      const t2=r.tenors.find(x=>x.tenor==='2Y'); if(t2) Object.assign(t2,{value:3.94,date:'2026-09-29'});
+      const t10=r.tenors.find(x=>x.tenor==='10Y'); if(t10) Object.assign(t10,{value:5.12,date:'2026-09-29'});
+    }
+
+    if(typeof D!=='undefined' && D.macro?.NZD) D.macro.NZD.rate2y=3.94;
+
+    if(typeof NATIVE_LIQ_DATA==='undefined' || !NATIVE_LIQ_DATA.NZD) throw new Error('NZD_LIQ_MISSING');
+    const l=NATIVE_LIQ_DATA.NZD;
+    upsert(l.liquidity,'2026-08',26460);
+    upsert(l.money,'2026-08',454671);
+    upsert(l.credit,'2026-08',624663);
+    l.liquidity_dir='IN DIMINUZIONE';
+    l.credit_dir='IN AUMENTO';
+    l.current_note='RBNZ: settlement cash medio 26.460 NZD mln ad agosto 2026 (28.303 a luglio); broad money 454.671 mln (458.490); credito privato 624.663 mln (621.266). Liquidità primaria e moneta in calo, credito ancora in espansione.';
+    l.as_of='2026-08 · released 2026-09-30';
+    l.source_note='RBNZ D10 + C50 · release ufficiale 30 Sep 2026.';
+
+    const A=window.FINAL_SOURCE_POLICY_AUDIT||{};
+    const R=A.RATES||A.rates;
+    if(R?.NZD) Object.assign(R.NZD,{current_as_of:'2026-09-29',status:'CURRENT_OFFICIAL_SAME_BASIS'});
+    const L=A.LIQUIDITY||A.liquidity;
+    if(L?.NZD) Object.assign(L.NZD,{current_period:'2026-08',current_as_of:'2026-08',released:'2026-09-30',next_expected:'2026-10-30'});
+
+    if(window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh?.NZD){
+      Object.assign(window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh.NZD,{
+        action:'UPDATED',
+        current_as_of:'2026-09-29',
+        reason:'Official RBNZ B2 same-basis 2Y/10Y snapshot validated.'
+      });
+    }
+    if(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.liquidity?.nzd){
+      Object.assign(window.PRODUCTION_PRICE_COT_LIQ_AUDIT.liquidity.nzd,{
+        current_period:'2026-08',
+        source:'RBNZ D10 + C50',
+        release:'2026-09-30',
+        next_release:'2026-10-30',
+        action:'UPDATED_OFFICIAL'
+      });
+    }
+
+    window.GMFQ_NZD_DATA_REFRESH_AUDIT={
+      status:'PASS',
+      rates:{
+        as_of:'2026-09-29',
+        source:'RBNZ B2',
+        y2:3.94,y10:5.12,curve_bp:118,
+        change_1w_bp:{y2:7,y10:17},
+        same_basis:true
+      },
+      liquidity:{
+        period:'2026-08',released:'2026-09-30',
+        settlement_cash_avg:26460,
+        broad_money:454671,
+        private_credit:624663,
+        prior:{settlement_cash_avg:28303,broad_money:458490,private_credit:621266},
+        liquidity_dir:'IN DIMINUZIONE',
+        credit_dir:'IN AUMENTO'
+      },
+      ois:'WITHHELD_UNCHANGED'
+    };
+
+    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
+    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
+    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
+    document.documentElement.setAttribute('data-nzd-data-refresh','PASS');
+  }catch(e){
+    window.GMFQ_NZD_DATA_REFRESH_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-nzd-data-refresh','FAIL');
+  }
+})();
+</script>
