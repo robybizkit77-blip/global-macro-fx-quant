@@ -956,28 +956,28 @@ const r=ratesTrend(c);
 let priority=99, bucket='stable', cls='flat', label='Nessun cambiamento', status='—';
 let changed='', why='', watch='';
 if(d.state==='MIGLIORA'){
-priority=1; bucket='active'; cls='up'; label='Sta migliorando'; status='CAMBIAMENTO CONFERMATO';
+priority=1; bucket='active'; cls='up'; label='Miglioramento recente'; status='CAMBIAMENTO RECENTE CONFERMATO';
 changed='Macro e tassi stanno migliorando insieme.';
-why='Economia e tassi stanno diventando più favorevoli nello stesso momento: è il cambiamento più completo.';
+why='Macro e front-end stanno migliorando insieme: è un cambiamento recente più completo, ma non equivale automaticamente a dire che la valuta è strutturalmente forte.';
 watch=s.price===1
 ? 'Il prezzo sta già confermando. Controlla che Macro e tassi mantengano il miglioramento.'
 : 'Manca soprattutto la conferma del prezzo.';
 }else if(d.state==='PEGGIORA'){
-priority=1; bucket='active'; cls='down'; label='Sta peggiorando'; status='CAMBIAMENTO CONFERMATO';
+priority=1; bucket='active'; cls='down'; label='Peggioramento recente'; status='CAMBIAMENTO RECENTE CONFERMATO';
 changed='Macro e tassi stanno peggiorando insieme.';
-why='Economia e tassi stanno diventando meno favorevoli nello stesso momento: il deterioramento è più completo.';
+why='Macro e front-end stanno peggiorando insieme: è un deterioramento recente più completo, ma va distinto dallo stato strutturale della valuta.';
 watch=s.price===-1
 ? 'Il prezzo sta già confermando. Controlla che Macro e tassi non recuperino.'
 : 'Manca soprattutto la conferma del prezzo.';
 }else if(d.state==='EARLY SHIFT POSITIVO'){
 priority=2; bucket='active'; cls='warn'; label='Possibile miglioramento'; status='DA CONFERMARE';
 changed='I tassi stanno migliorando, ma la Macro non ha ancora confermato.';
-why='È il segnale preliminare più vicino a diventare un miglioramento vero.';
+why='È un segnale preliminare di miglioramento recente; non modifica da solo lo stato strutturale della valuta.';
 watch='Serve una conferma dai dati Macro oppure una continuazione chiara del movimento dei tassi.';
 }else if(d.state==='EARLY SHIFT NEGATIVO'){
 priority=2; bucket='active'; cls='warn'; label='Possibile peggioramento'; status='DA CONFERMARE';
 changed='I tassi stanno peggiorando, ma la Macro non ha ancora confermato.';
-why='È il segnale preliminare più vicino a diventare un peggioramento vero.';
+why='È un segnale preliminare di peggioramento recente; non modifica da solo lo stato strutturale della valuta.';
 watch='Serve un peggioramento dei dati Macro oppure una continuazione chiara del movimento dei tassi.';
 }else if(d.state==='TURNING POINT'){
 priority=3; bucket='active'; cls='warn'; status='PRIMO SEGNALE';
