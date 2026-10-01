@@ -4833,10 +4833,18 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
   function render(c){
     ensureStyle();
-    const host=document.querySelector('#macro .v232CountryTop') || document.querySelector('#macro .v232MacroThesis') || document.querySelector('#macro');
-    if(!host) return;
+    const macroRoot=document.getElementById('macro');
+    const host=document.querySelector('#macro .v232CountryTop') || document.querySelector('#macro .v232MacroThesis');
+    if(!macroRoot || !host) return;
     let box=document.getElementById('gmfqMacroSurprisePanel');
-    if(!box){box=document.createElement('div');box.id='gmfqMacroSurprisePanel';box.className='gmfqMacroSurprise';host.insertAdjacentElement('afterend',box);}
+    if(!box){
+      box=document.createElement('div');
+      box.id='gmfqMacroSurprisePanel';
+      box.className='gmfqMacroSurprise';
+      host.insertAdjacentElement('afterend',box);
+    }else if(!macroRoot.contains(box)){
+      host.insertAdjacentElement('afterend',box);
+    }
     const D=window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC;
     const rows=(D?.events?.[c]||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     const applicable=rows.filter(x=>x.consensus_applicable!==false);
