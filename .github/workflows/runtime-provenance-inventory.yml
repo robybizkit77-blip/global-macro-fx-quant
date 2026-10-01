@@ -1,0 +1,62 @@
+name: Runtime Provenance Inventory
+
+on:
+  push:
+    branches: [staging-runtime-provenance-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inspect runtime macro provenance fields
+        run: |
+          cat > inventory.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=[];
+              for(const c of ccys){
+                for(const x of (S?.[c]||[])){
+                  if(!['Crescita','Lavoro','Inflazione'].includes(x.category)) continue;
+                  const obj={};
+                  for(const k of Object.keys(x)){
+                    if(['dates','values'].includes(k)) continue;
+                    const v=x[k];
+                    if(v==null || typeof v==='string' || typeof v==='number' || typeof v==='boolean') obj[k]=v;
+                  }
+                  rows.push({
+                    currency:c,
+                    category:x.category,
+                    label:x.label,
+                    n:Array.isArray(x.values)?x.values.length:null,
+                    first_date:Array.isArray(x.dates)?x.dates[0]:null,
+                    last_date:Array.isArray(x.dates)?x.dates.at(-1):null,
+                    fields:obj
+                  });
+                }
+              }
+              return {count:rows.length,rows};
+            });
+            console.log('===PROVENANCE_INVENTORY_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===PROVENANCE_INVENTORY_END===');
+            await browser.close(); srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node inventory.js
