@@ -1,0 +1,104 @@
+name: COT Price Data Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit COT and price
+        run: |
+          cat > cot-price-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const cotRows=[],cotIssues=[];
+              for(const c of ccys){
+                const x=D?.cot?.[c]||{};
+                const dates=Array.isArray(x.dates)?x.dates.map(String):[];
+                const net=Array.isArray(x.net_series)?x.net_series.map(Number):[];
+                let unordered=0;
+                for(let i=1;i<dates.length;i++){
+                  const a=Date.parse(dates[i-1]),b=Date.parse(dates[i]);
+                  if(Number.isFinite(a)&&Number.isFinite(b)&&b<a) unordered++;
+                }
+                const row={
+                  ccy:c,asof:x.as_of||x.date||D?.cotAsOf||null,
+                  pct:Number.isFinite(Number(x.pct))?Number(x.pct):null,
+                  net_oi:Number.isFinite(Number(x.net_oi))?Number(x.net_oi):null,
+                  chg_net_1w:Number.isFinite(Number(x.chg_net_1w))?Number(x.chg_net_1w):null,
+                  n_dates:dates.length,n_net:net.length,n_finite:net.filter(Number.isFinite).length,
+                  first:dates[0]||null,last:dates.at(-1)||null,
+                  duplicate_dates:dates.length-new Set(dates).size,unordered_dates:unordered,
+                  nonfinite_net:net.length-net.filter(Number.isFinite).length
+                };
+                cotRows.push(row);
+                if(row.n_dates!==row.n_net) cotIssues.push({type:'COT_LENGTH_MISMATCH',...row});
+                if(row.duplicate_dates) cotIssues.push({type:'COT_DUPLICATE_DATES',...row});
+                if(row.unordered_dates) cotIssues.push({type:'COT_UNORDERED_DATES',...row});
+                if(row.nonfinite_net) cotIssues.push({type:'COT_NONFINITE',...row});
+                if(row.pct!=null&&(row.pct<0||row.pct>100)) cotIssues.push({type:'COT_PERCENTILE_RANGE',...row});
+                if(row.n_finite<104) cotIssues.push({type:'COT_HISTORY_LT_104W',...row});
+              }
+              const prices=Array.isArray(D?.prices)?D.prices:[];
+              const priceDates=prices.map(x=>String(x.Date||''));
+              let unordered=0;
+              for(let i=1;i<priceDates.length;i++){
+                const a=Date.parse(priceDates[i-1]),b=Date.parse(priceDates[i]);
+                if(Number.isFinite(a)&&Number.isFinite(b)&&b<a) unordered++;
+              }
+              const priceIssues=[];
+              if(priceDates.length-new Set(priceDates).size) priceIssues.push('PRICE_DUPLICATE_DATES');
+              if(unordered) priceIssues.push('PRICE_UNORDERED_DATES');
+              const last=prices.at(-1)||{};
+              const pairRows=[];
+              for(const p of (D?.pairs||[]).map(x=>x.pair)){
+                const [a,b]=p.split('/');
+                const qa=a==='EUR'?1:Number(last[a]);
+                const qb=b==='EUR'?1:Number(last[b]);
+                const expected=(Number.isFinite(qa)&&Number.isFinite(qb)&&qa!==0)?qb/qa:null;
+                let actual=null;
+                try{
+                  const ps=pairSeries(p,2);
+                  const vals=(ps?.values||[]).map(Number).filter(Number.isFinite);
+                  actual=vals.length?vals.at(-1):null;
+                }catch(e){}
+                const err=(expected!=null&&actual!=null)?Math.abs(expected-actual):null;
+                const row={pair:p,expected,actual,error:err};
+                pairRows.push(row);
+                if(err!=null&&err>1e-10) priceIssues.push('PAIR_ORIENTATION_MISMATCH:'+p);
+              }
+              return {
+                cot:{rows:cotRows,issues:cotIssues},
+                price:{
+                  rows:prices.length,first:priceDates[0]||null,last:priceDates.at(-1)||null,
+                  duplicate_dates:priceDates.length-new Set(priceDates).size,
+                  unordered_dates:unordered,
+                  issues:priceIssues,pairs:pairRows
+                }
+              };
+            });
+            console.log('===COT_PRICE_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===COT_PRICE_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cot-price-audit.js
