@@ -38,11 +38,9 @@ const macroA=Number(stateA?.macro||0);
 const macroB=Number(stateB?.macro||0);
 const policyA=Number(stateA?.policy||0);
 const policyB=Number(stateB?.policy||0);
-// A pair may carry a validated relative Macro reading which is more specific
-// than the two absolute currency cards.  Do not overwrite an explicit MISTO.
-const rawPair=D.pairStates?.[pair]||{};
-const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
-const macroSide = rawMacro==='A'||rawMacro===a ? 'A' : rawMacro==='B'||rawMacro===b ? 'B' : /mix|mist/i.test(String(rawMacro||'')) ? 'TIE' : macroA>macroB ? 'A' : macroB>macroA ? 'B' : 'TIE';
+// Single source of truth: pair Macro is derived only from the two canonical currency Macro states.
+// Legacy D.pairStates relative Macro readings must not override the canonical currency engine.
+const macroSide = macroA>macroB ? 'A' : macroB>macroA ? 'B' : 'TIE';
 const policySide = policyA>policyB ? 'A' : policyB>policyA ? 'B' : 'TIE';
 const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
 const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
