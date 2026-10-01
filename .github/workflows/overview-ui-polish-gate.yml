@@ -38,7 +38,7 @@ jobs:
                 const html=document.documentElement;
                 const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
                 const health=typeof productionHealthCheck==='function'?productionHealthCheck():null;
-                const boxes=[...document.querySelectorAll('#overview .gmfqStateBox')];
+                const boxes=[...document.querySelectorAll('#overview .gmfqStateBox')]; const nav=document.getElementById('nav'); const nr=nav?.getBoundingClientRect(); const np=nav?.parentElement?.getBoundingClientRect(); const cs=nav?getComputedStyle(nav):null;
                 return {
                   fingerprint:fwd?.current_rules_fingerprint||null,
                   pair_count:(D?.pairs||[]).length,
@@ -47,7 +47,7 @@ jobs:
                   has_color:boxes.some(b=>getComputedStyle(b).borderColor!=='rgba(143, 167, 181, 0.18)'),
                   overflow_x:Math.max(html.scrollWidth,document.body.scrollWidth)-window.innerWidth, offenders:[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,cls:String(el.className||'').slice(0,100),id:el.id||'',text:String(el.textContent||'').trim().slice(0,60),parent_tag:el.parentElement?.tagName||'',parent_cls:String(el.parentElement?.className||'').slice(0,120),parent_id:el.parentElement?.id||'',left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width)}}).filter(x=>x.right>window.innerWidth+2||x.left<-2).sort((a,b)=>Math.max(b.right-window.innerWidth,-b.left)-Math.max(a.right-window.innerWidth,-a.left)).slice(0,12),
                   host_width:rect?.width||0,
-                  hard_errors:health?.hard_errors||[]
+                  hard_errors:health?.hard_errors||[], nav_diag:nav?{tag:nav.tagName,parent_tag:nav.parentElement?.tagName||'',parent_cls:String(nav.parentElement?.className||''),left:Math.round(nr.left),right:Math.round(nr.right),width:Math.round(nr.width),scrollWidth:nav.scrollWidth,overflowX:cs.overflowX,display:cs.display,parent_left:Math.round(np.left),parent_right:Math.round(np.right),parent_width:Math.round(np.width)}:null
                 };
               });
               await page.screenshot({path,fullPage:false});
