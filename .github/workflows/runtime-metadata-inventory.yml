@@ -47,7 +47,7 @@ jobs:
                     id:s.id||null,
                     label:s.label||s.name||s.title||null,
                     category:s.category||s.group||s.sector||null,
-                    source:pick(s,['source','provider','provenance','vendor']),
+                    source:pick(s,['source','provider','provenance','vendor']),\n                    source_file:s.source_file||null,\n                    data_quality:s.data_quality||null,\n                    validation_status:s.validation_status||null,\n                    validation_note:s.validation_note||null,\n                    exclude_from_decision:s.exclude_from_decision??null,
                     frequency:pick(s,['frequency','freq']),
                     unit:pick(s,['unit','units']),
                     last_date:s.last_date||null,
@@ -95,7 +95,7 @@ jobs:
                 project:'GLOBAL MACRO FX QUANT',
                 audit:'RUNTIME_METADATA_INVENTORY_2026-10-01',
                 captured_at:new Date().toISOString(),
-                macro_summary:summarize(macro),
+                macro_summary:summarize(macro),\n                core_macro_summary:summarize(macro.filter(x=>['Crescita','Lavoro','Inflazione'].includes(x.category))),
                 liquidity_summary:{...summarize(liq),missing_quality:liq.filter(x=>!x.quality).length},
                 macro,
                 liquidity:liq
