@@ -12,10 +12,19 @@
       84
     ],
     "macro": "Growth + Labour historical directional proxy using the current normalizedSeriesImpulse/blockDynamics logic on data truncated at each checkpoint. Current-revised observation history; release-date vintages unavailable.",
-    "rates": "2Y historical direction using current seriesDynamics logic, truncated at checkpoint.",
+    "rates": "Validated same-basis 2Y historical series from S, 2016-2026, using current seriesDynamics logic truncated at checkpoint. EUR remains WITHHELD.",
     "pair_hierarchy": "Exact current v9.3 hierarchy: aligned Macro+Rates => CONTRASTO STRUTTURALE FORTE; one pillar only => VANTAGGIO RELATIVO PARZIALE; opposing pillars => PILASTRI DIVISI.",
     "price": "Canonical 28-pair reconstruction from ECB-based price matrix; first observation on/after checkpoint and horizon.",
     "no_tuning": true,
+    "historical_2y_ids": {
+      "USD": "US_DGS2_history_DGS2",
+      "GBP": "GBP_RATES_2016_2026_2Y",
+      "JPY": "JPY_RATES_2016_2026_2Y",
+      "CHF": "CH_CONFED_SPOT_2Y_history_value_pct",
+      "CAD": "CAD_RATES_2016_2026_2Y",
+      "AUD": "AU_FCMYGBAG2D_history_FCMYGBAG2D",
+      "NZD": "NZD_RATES_2016_2026_RBNZ_B2_2Y"
+    },
     "exclusions": [
       "EUR Rates historical same-basis chain WITHHELD",
       "Historical CB/OIS PIT not reconstructed",
@@ -31,158 +40,158 @@
     "pair_count": 28
   },
   "quality_counts_4w": {
-    "CONTRASTO STRUTTURALE FORTE": 56,
-    "VANTAGGIO RELATIVO PARZIALE": 123,
-    "PILASTRI DIVISI": 15,
-    "NESSUN CONTRASTO": 58,
-    "WITHHELD": 2688
+    "CONTRASTO STRUTTURALE FORTE": 316,
+    "VANTAGGIO RELATIVO PARZIALE": 961,
+    "PILASTRI DIVISI": 340,
+    "NESSUN CONTRASTO": 397,
+    "WITHHELD": 926
   },
   "results": {
     "7": {
       "strong": {
-        "n": 56,
-        "hit": 0.44642857142857145,
-        "mean": -0.09531832676803349,
-        "median": -0.07230530756384135
+        "n": 316,
+        "hit": 0.47151898734177217,
+        "mean": -0.052889186538895,
+        "median": -0.05247623147417446
       },
       "partial": {
-        "n": 123,
-        "hit": 0.4715447154471545,
-        "mean": -0.1820677156464962,
-        "median": -0.11948363155067643
+        "n": 961,
+        "hit": 0.4724245577523413,
+        "mean": -0.07640094233011845,
+        "median": -0.1002692669787697
       },
       "favored_all": {
-        "n": 179,
-        "hit": 0.46368715083798884,
-        "mean": -0.1549282420308878,
-        "median": -0.09939606240706444
+        "n": 1277,
+        "hit": 0.4722004698512138,
+        "mean": -0.07058284144521101,
+        "median": -0.08214419819406737
       },
       "recent_2023_2026": {
-        "n": 179,
-        "hit": 0.46368715083798884,
-        "mean": -0.1549282420308878,
-        "median": -0.09939606240706444
+        "n": 626,
+        "hit": 0.4584664536741214,
+        "mean": -0.18140251444934533,
+        "median": -0.11845841950707259
       },
       "dev_2018_2022": {
-        "n": 0,
-        "hit": null,
-        "mean": null,
-        "median": null
+        "n": 651,
+        "hit": 0.48540706605222733,
+        "mean": 0.03598108374770464,
+        "median": -0.03438164198997784
       }
     },
     "28": {
       "strong": {
-        "n": 56,
-        "hit": 0.5357142857142857,
-        "mean": 0.25260368051699894,
-        "median": 0.2370511649132212
+        "n": 316,
+        "hit": 0.48417721518987344,
+        "mean": -0.10259913446550911,
+        "median": -0.12587913944271945
       },
       "partial": {
-        "n": 123,
-        "hit": 0.44715447154471544,
-        "mean": -0.1635543270281542,
-        "median": -0.33110125823003766
+        "n": 961,
+        "hit": 0.4890738813735692,
+        "mean": 0.0013758042681298824,
+        "median": -0.04878992536053728
       },
       "favored_all": {
-        "n": 179,
-        "hit": 0.4748603351955307,
-        "mean": -0.03335964310341354,
-        "median": -0.13137896575388108
+        "n": 1277,
+        "hit": 0.4878621769772905,
+        "mean": -0.024353311346458854,
+        "median": -0.06292712580979742
       },
       "recent_2023_2026": {
-        "n": 179,
-        "hit": 0.4748603351955307,
-        "mean": -0.03335964310341354,
-        "median": -0.13137896575388108
+        "n": 626,
+        "hit": 0.4520766773162939,
+        "mean": -0.16888873860384498,
+        "median": -0.22621634060713824
       },
       "dev_2018_2022": {
-        "n": 0,
-        "hit": null,
-        "mean": null,
-        "median": null
+        "n": 651,
+        "hit": 0.522273425499232,
+        "mean": 0.11463160027124274,
+        "median": 0.13404814914050878
       }
     },
     "84": {
       "strong": {
-        "n": 53,
-        "hit": 0.5283018867924528,
-        "mean": 0.25503901829024905,
-        "median": 0.07292310986083406
+        "n": 313,
+        "hit": 0.5463258785942492,
+        "mean": 0.18855289675144257,
+        "median": 0.4649024727875428
       },
       "partial": {
-        "n": 99,
-        "hit": 0.494949494949495,
-        "mean": -0.06236775707768617,
-        "median": -0.026619664348248584
+        "n": 937,
+        "hit": 0.48772678762006405,
+        "mean": -0.1367199631523525,
+        "median": -0.14433705727665558
       },
       "favored_all": {
-        "n": 152,
-        "hit": 0.506578947368421,
-        "mean": 0.048306973807186064,
-        "median": 0.004496625033700852
+        "n": 1250,
+        "hit": 0.5024,
+        "mean": -0.05527163903244221,
+        "median": 0.004638973043535888
       },
       "recent_2023_2026": {
-        "n": 152,
-        "hit": 0.506578947368421,
-        "mean": 0.048306973807186064,
-        "median": 0.004496625033700852
+        "n": 599,
+        "hit": 0.4974958263772955,
+        "mean": -0.1253498825519364,
+        "median": -0.011578672504652943
       },
       "dev_2018_2022": {
-        "n": 0,
-        "hit": null,
-        "mean": null,
-        "median": null
+        "n": 651,
+        "hit": 0.5069124423963134,
+        "mean": 0.009208956771209156,
+        "median": 0.07950369390818945
       }
     }
   },
   "stability_4w_by_year": {
     "2018": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 92,
+      "hit": 0.5434782608695652,
+      "mean": 0.12089928608419406,
+      "median": 0.21755340122218692
     },
     "2019": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 121,
+      "hit": 0.5041322314049587,
+      "mean": 0.17496727883500707,
+      "median": 0.07786538041001378
     },
     "2020": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 126,
+      "hit": 0.5,
+      "mean": -0.21485751924164095,
+      "median": -0.014073145354043248
     },
     "2021": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 166,
+      "hit": 0.5301204819277109,
+      "mean": 0.14145932098566874,
+      "median": 0.1755515012471065
     },
     "2022": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 146,
+      "hit": 0.5342465753424658,
+      "mean": 0.3145287456070071,
+      "median": 0.15262787060194016
     },
     "2023": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 163,
+      "hit": 0.4723926380368098,
+      "mean": -0.17641697288162378,
+      "median": -0.09677136370864758
     },
     "2024": {
-      "n": 0,
-      "hit": null,
-      "mean": null,
-      "median": null
+      "n": 165,
+      "hit": 0.4303030303030303,
+      "mean": -0.167079608137343,
+      "median": -0.31058582311807026
     },
     "2025": {
-      "n": 52,
-      "hit": 0.4230769230769231,
-      "mean": -0.2804595249097706,
-      "median": -0.1328494976761352
+      "n": 171,
+      "hit": 0.42105263157894735,
+      "mean": -0.33925595101425626,
+      "median": -0.29126072681300297
     },
     "2026": {
       "n": 127,
