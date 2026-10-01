@@ -1,0 +1,71 @@
+name: CB OIS Data Audit
+
+on:
+  push:
+    branches: [staging-data-backtest-macro-2026-10-01]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Audit CB and OIS
+        run: |
+          cat > cb-ois-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=ccys.map(c=>{
+                const cb=(typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA?.[c]:null)||{};
+                const mp=cb.market_pricing||{};
+                const ois=window.__GMFQ_DATA?.OIS_DATA?.currencies?.[c]||window.GMFQ_OIS?.currency?.(c)||null;
+                const arrays=[];
+                const scan=(obj,path='',depth=0)=>{
+                  if(!obj||typeof obj!=='object'||depth>3)return;
+                  Object.entries(obj).forEach(([k,v])=>{
+                    const p=path?path+'.'+k:k;
+                    if(Array.isArray(v)) arrays.push({path:p,n:v.length});
+                    else if(v&&typeof v==='object') scan(v,p,depth+1);
+                  });
+                };
+                scan(cb,'cb');scan(ois,'ois');
+                return {
+                  ccy:c,
+                  cb_date:cb.last_date||cb.as_of||null,
+                  rate:cb.rate??null,
+                  action:cb.action||null,
+                  stance:cb.stance||null,
+                  cb_keys:Object.keys(cb),
+                  pricing_asof:mp.as_of||null,
+                  pricing_quality:mp.quality||cb.pricing_tier||null,
+                  pricing_source:mp.source||null,
+                  ois_status:ois?.status||null,
+                  ois_asof:ois?.as_of||null,
+                  ois_source:ois?.source||null,
+                  ois_horizons:ois?.horizons?Object.keys(ois.horizons):[],
+                  arrays
+                };
+              });
+              return {rows};
+            });
+            console.log('===CB_OIS_AUDIT_START===');
+            console.log(JSON.stringify(out,null,2));
+            console.log('===CB_OIS_AUDIT_END===');
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cb-ois-audit.js
