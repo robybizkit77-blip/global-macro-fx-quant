@@ -1,10 +1,6 @@
 name: Historical Walkforward V93
 
 on:
-  push:
-    branches: [staging-historical-walkforward-v93-2026-10-01]
-    paths-ignore:
-      - 'validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json'
   workflow_dispatch:
 
 permissions:
