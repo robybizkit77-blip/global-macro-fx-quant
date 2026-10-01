@@ -1,0 +1,44 @@
+name: Rates Freshness Snapshot
+on:
+  push:
+    branches: [staging-rates-freshness-audit-2026-10-01]
+  workflow_dispatch:
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Snapshot rates
+        run: |
+          cat > snap.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(2200);
+            const out=await page.evaluate(()=>{
+              const C=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              return {
+                fp:typeof forwardValidationSummary==='function'?forwardValidationSummary()?.current_rules_fingerprint:null,
+                rates:Object.fromEntries(C.map(c=>{
+                  const d=NATIVE_RATES_DATA?.[c]||{};
+                  const src=(window.FINAL_SOURCE_POLICY_AUDIT?.RATES||window.FINAL_SOURCE_POLICY_AUDIT?.rates||{})?.[c]||{};
+                  return [c,{date:d.date||null,y2:d['2Y']??null,y10:d['10Y']??null,c2:d.chg2_bp??null,c10:d.chg10_bp??null,source:d.source||null,registry:src.current_as_of||null,status:src.status||null}];
+                }))
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node snap.js
