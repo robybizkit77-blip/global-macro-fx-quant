@@ -1,0 +1,117 @@
+name: Runtime Metadata Inventory
+
+on:
+  push:
+    branches: [staging-runtime-metadata-2026-10-01]
+    paths:
+      - '.github/workflows/runtime-metadata-inventory.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-runtime-metadata-2026-10-01
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Inventory runtime metadata
+        run: |
+          cat > inventory.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pick=(o,keys)=>{for(const k of keys){if(o&&o[k]!=null&&String(o[k]).trim()!=='')return o[k]}return null};
+              const macro=[];
+              for(const c of ccys){
+                for(const s of ((typeof S!=='undefined'&&S[c])||[])){
+                  macro.push({
+                    ccy:c,
+                    id:s.id||null,
+                    label:s.label||s.name||s.title||null,
+                    category:s.category||s.group||s.sector||null,
+                    source:pick(s,['source','provider','provenance','vendor']),
+                    frequency:pick(s,['frequency','freq']),
+                    unit:pick(s,['unit','units']),
+                    last_date:s.last_date||null,
+                    last_value:s.last_value??null,
+                    keys:Object.keys(s).sort()
+                  });
+                }
+              }
+              const liq=[];
+              const ld=(typeof NATIVE_LIQ_DATA!=='undefined'?NATIVE_LIQ_DATA:null);
+              if(ld){
+                for(const c of ccys){
+                  const o=ld[c];
+                  if(!o) continue;
+                  const walk=(node,path=[])=>{
+                    if(!node||typeof node!=='object') return;
+                    if(Array.isArray(node)) return;
+                    const vals=Object.values(node);
+                    const looksSeries=('dates' in node)||('values' in node)||('last' in node)||('latest' in node);
+                    if(looksSeries){
+                      liq.push({
+                        ccy:c,
+                        path:path.join('.'),
+                        source:pick(node,['source','provider','provenance','vendor']),
+                        frequency:pick(node,['frequency','freq']),
+                        unit:pick(node,['unit','units']),
+                        quality:pick(node,['quality','status','tier']),
+                        keys:Object.keys(node).sort()
+                      });
+                    }
+                    for(const [k,v] of Object.entries(node)){
+                      if(v&&typeof v==='object'&&!Array.isArray(v)) walk(v,path.concat(k));
+                    }
+                  };
+                  walk(o,[]);
+                }
+              }
+              const summarize=(rows)=>({
+                rows:rows.length,
+                missing_source:rows.filter(x=>!x.source).length,
+                missing_frequency:rows.filter(x=>!x.frequency).length,
+                missing_unit:rows.filter(x=>!x.unit).length
+              });
+              return {
+                project:'GLOBAL MACRO FX QUANT',
+                audit:'RUNTIME_METADATA_INVENTORY_2026-10-01',
+                captured_at:new Date().toISOString(),
+                macro_summary:summarize(macro),
+                liquidity_summary:{...summarize(liq),missing_quality:liq.filter(x=>!x.quality).length},
+                macro,
+                liquidity:liq
+              };
+            });
+            await browser.close(); srv.kill();
+            fs.mkdirSync('validation',{recursive:true});
+            fs.writeFileSync('validation/RUNTIME_METADATA_INVENTORY_2026-10-01.json',JSON.stringify(out,null,2)+'\n');
+            console.log(JSON.stringify({macro_summary:out.macro_summary,liquidity_summary:out.liquidity_summary},null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node inventory.js
+      - name: Commit inventory
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/RUNTIME_METADATA_INVENTORY_2026-10-01.json
+          git commit -m "Add runtime metadata inventory" || exit 0
+          git push origin HEAD:staging-runtime-metadata-2026-10-01
