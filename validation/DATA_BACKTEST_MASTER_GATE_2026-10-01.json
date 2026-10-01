@@ -1,0 +1,79 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "DATA_BACKTEST_MASTER_GATE_2026-10-01",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS_WITH_EXPLICIT_WITHHELD_COMPONENTS",
+  "blocks": {
+    "Macro": {
+      "status": "PASS_WITH_GOVERNANCE_WARNINGS",
+      "backtestable": "Yes, with native frequency preserved",
+      "limits": [
+        "CHF explicit historical gaps",
+        "NZD quarterly-dominant / shorter panel",
+        "runtime provenance metadata incomplete"
+      ]
+    },
+    "Rates": {
+      "status": "PASS_7_OF_8__EUR_HISTORICAL_WITHHELD",
+      "backtestable": "7 currencies full same-basis; EUR current weekly direction only",
+      "limits": [
+        "EUR legacy 2Y history not same-basis as current ECB AAA curve"
+      ]
+    },
+    "CentralBank_OIS": {
+      "status": "CURRENT_PASS__HISTORICAL_PIT_WITHHELD",
+      "backtestable": "No homogeneous G8 historical PIT path",
+      "limits": [
+        "OIS current active 5/8",
+        "historical policy-expectation snapshots incomplete"
+      ]
+    },
+    "COT": {
+      "status": "PASS",
+      "backtestable": "Yes",
+      "coverage": "105 weeks for all 8 currencies"
+    },
+    "Price": {
+      "status": "PASS",
+      "backtestable": "Yes",
+      "coverage": "2750 trading observations 2016-01-04 to 2026-09-30",
+      "pair_orientation": "28/28 exact"
+    },
+    "Liquidity": {
+      "status": "PASS_7_OF_8__NZD_WITHHELD",
+      "backtestable": "7 currencies",
+      "limits": [
+        "NZD runtime history only 6-7 observations"
+      ]
+    },
+    "GlobalRisk": {
+      "status": "PARTIAL_PASS",
+      "backtestable": [
+        "VIX",
+        "Brent",
+        "China CLI"
+      ],
+      "current_only": [
+        "WTI",
+        "Gold"
+      ]
+    }
+  },
+  "hard_findings": [
+    "No synthetic core Macro histories detected in runtime audit.",
+    "No duplicate, unordered or nonfinite core Macro values after real date parsing.",
+    "No unintended Macro polarity-zero series; only US savings rate and unit labor cost are deliberately neutral.",
+    "No current 2Y mismatch between canonical history/snapshot and visible value across G8.",
+    "EUR 2Y historical dynamics are correctly prevented from using a legacy not-same-basis history.",
+    "COT and Price datasets pass structural integrity tests.",
+    "All 28 pair price orientations reconstruct exactly from the canonical EUR-based price matrix."
+  ],
+  "governance_findings": [
+    "Runtime Macro series lack embedded source metadata for 79/79 audited core series, although canonical raw files/manifests exist for many series.",
+    "18 Macro runtime series lack embedded frequency/unit metadata.",
+    "Top-level liquidity source/quality metadata is inconsistent.",
+    "These are provenance/governance gaps, not evidence of corrupted numeric values."
+  ],
+  "next_validation_step": "Historical behavior test of each backtestable layer versus subsequent FX returns, using only components marked backtestable and keeping WITHHELD components out."
+}
