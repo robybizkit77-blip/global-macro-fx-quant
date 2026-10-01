@@ -1,0 +1,69 @@
+name: USD OIS Partial Direct Gate
+on:
+  push:
+    branches: [staging-usd-ois-partial-direct-2026-10-01]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Verify USD partial direct data
+        run: |
+          cat > verify.js <<'EOF'
+          const {chromium}=require('playwright');
+          const {execSync,spawn}=require('child_process');
+          (async()=>{
+            const srv=spawn('python3',['-m','http.server','8765'],{stdio:'ignore'});
+            await new Promise(r=>setTimeout(r,1000));
+            const cp=execSync('command -v google-chrome-stable || command -v google-chrome || command -v chromium').toString().trim();
+            const browser=await chromium.launch({headless:true,executablePath:cp,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1600,height:1000}});
+            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(3000);
+            const out=await page.evaluate(()=>{
+              const u=window.__GMFQ_DATA?.OIS_DATA?.currencies?.USD||null;
+              const act=window.GMFQ_OIS_SOURCE_MONITOR?.activationState?.()||null;
+              const fwd=typeof forwardValidationSummary==='function'?forwardValidationSummary():null;
+              const h=typeof productionHealthCheck==='function'?productionHealthCheck():null;
+              return {
+                fingerprint:fwd?.current_rules_fingerprint||null,
+                pair_count:(D?.pairs||[]).length,
+                status:u?.status||null,
+                partial_status:u?.partial_status||null,
+                as_of:u?.as_of||null,
+                h3:u?.horizons?.['3m']||null,
+                h6:u?.horizons?.['6m']||null,
+                h12:u?.horizons?.['12m']||null,
+                validation:u?.validation||null,
+                activation:act,
+                unresolved:(typeof unresolvedSourceChecks==='function'?unresolvedSourceChecks().map(x=>x.id):[]),
+                hard_errors:h?.hard_errors||[]
+              };
+            });
+            out.js_errors=errors;
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();srv.kill();
+            const issues=[];
+            if(out.fingerprint!=='3356baf0')issues.push('fingerprint');
+            if(out.pair_count!==28)issues.push('pairs');
+            if(out.status!=='WITHHELD')issues.push('USD should remain withheld');
+            if(out.as_of!=='2026-09-30')issues.push('asof');
+            if(out.h3?.rate!==4.125||out.h6?.rate!==4.405||out.h12?.rate!==4.795)issues.push('levels');
+            if(out.h3?.change_1d_bp!==-3||out.h6?.change_1d_bp!==-3||out.h12?.change_1d_bp!==-0.5)issues.push('1d');
+            if(out.validation?.change_1w_validated!==false||out.validation?.changes_validated!==false)issues.push('weekly must remain withheld');
+            if(out.activation?.active!==5||out.activation?.withheld!==3)issues.push('activation '+JSON.stringify(out.activation));
+            if(JSON.stringify(out.unresolved)!==JSON.stringify(['USD_CB_PRICING','CHF_CB_PRICING','NZD_CB_PRICING']))issues.push('unresolved '+JSON.stringify(out.unresolved));
+            if(out.hard_errors.length)issues.push('hard errors');
+            if(out.js_errors.length)issues.push('js');
+            if(issues.length){console.error(issues);process.exit(1);}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node verify.js
