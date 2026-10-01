@@ -1,0 +1,28 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "audit": "COT_PRICE_DATA_BACKTEST_PHASE_4",
+  "date": "2026-10-01",
+  "branch": "staging-data-backtest-macro-2026-10-01",
+  "status": "PASS",
+  "cot": {
+    "currencies": 8,
+    "observations_per_currency": 105,
+    "window_start": "2024-09-24",
+    "window_end": "2026-09-22",
+    "duplicate_dates": 0,
+    "unordered_dates": 0,
+    "nonfinite_values": 0,
+    "percentile_range_errors": 0,
+    "minimum_104w_gate": "PASS"
+  },
+  "price": {
+    "rows": 2750,
+    "start": "2016-01-04",
+    "end": "2026-09-30",
+    "duplicate_dates": 0,
+    "unordered_dates": 0,
+    "pair_orientation_test": "28/28 PASS",
+    "max_pair_reconstruction_error": 0
+  },
+  "conclusion": "COT and FX price datasets are structurally suitable for historical testing. Pair orientation is exact across the full 28-pair matrix, eliminating base/quote inversion as a source of backtest error."
+}
