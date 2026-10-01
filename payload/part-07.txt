@@ -527,84 +527,19 @@ setTimeout(endToEndRecompute,350);
 
 (function(){
 'use strict';
-function sideFromValues(a,b,va,vb){
-va=Number(va)||0; vb=Number(vb)||0;
-if(va>vb) return a;
-if(vb>va) return b;
-return null;
-}
+const canonicalPairDecisionFrame=derivePairDecisionFrame;
 window.v271StructuralPairFrame=function(pair){
 const [a,b]=pair.split('/');
-const A=deriveCurrencyState(a)||{};
-const B=deriveCurrencyState(b)||{};
-const rawPair=D.pairStates?.[pair]||{};
-const rawMacro=rawPair.layers?.macro??rawPair.layer_directions?.macro;
-const macroSide=rawMacro==='A'||rawMacro===a?a:rawMacro==='B'||rawMacro===b?b:/mix|mist/i.test(String(rawMacro||''))?null:sideFromValues(a,b,A.macro,B.macro);
-const policySide=sideFromValues(a,b,A.policy,B.policy);
-const a2y=Number(D.macro?.[a]?.rate2y), b2y=Number(D.macro?.[b]?.rate2y);
-const twoYearSpreadBp=Number.isFinite(a2y)&&Number.isFinite(b2y)?(a2y-b2y)*100:null;
-const materialRateSpread=twoYearSpreadBp!=null&&Math.abs(twoYearSpreadBp)>=75;
-const rateGapSide=!materialRateSpread?null:twoYearSpreadBp>0?a:b;
-let fav='—';
-let quality='NESSUN CONTRASTO';
-let relation='Macro e Tassi/CB non separano abbastanza le due valute.';
-if(materialRateSpread && !macroSide){
-quality='SEPARAZIONE RATES MATERIALE';
-relation=`Il differenziale 2Y osservato è ${twoYearSpreadBp>=0?'+':''}${fmt(twoYearSpreadBp,0)} pb verso ${rateGapSide}. Separa il layer Rates, ma Macro non conferma un bias direzionale di coppia.`;
-}else if(macroSide && policySide && macroSide===policySide){
-fav=macroSide;
-quality='CONTRASTO STRUTTURALE FORTE';
-relation=`Macro e Tassi/CB favoriscono entrambi ${fav}: il vantaggio relativo è strutturalmente allineato.`;
-}else if((macroSide && !policySide)||(!macroSide && policySide)){
-fav=macroSide||policySide;
-quality='VANTAGGIO RELATIVO PARZIALE';
-relation=`${fav} è avanti su uno dei due elementi principali; l’altro non separa ancora abbastanza le valute.`;
-}else if(macroSide && policySide && macroSide!==policySide){
-quality='NESSUN CONTRASTO';
-relation=`Macro e Tassi/CB favoriscono lati opposti: nessun vantaggio strutturale pulito.`;
-}
-let priceSide=null;
-try{
-const certified=typeof certifiedPairForMarket==='function' ? certifiedPairForMarket(pair) : CERT53?.pairs?.[pair];
-const raw=certified?.layer_directions?.price;
-const side=normalizePairSide(raw);
-priceSide=side==='A'?a:side==='B'?b:null;
-}catch(e){}
-let priceReading='PREZZO NON RISOLUTIVO';
-let priceNote='Il Prezzo non aggiunge ancora una conferma relativa abbastanza chiara.';
-if(fav!=='—' && priceSide){
-if(priceSide===fav){
-priceReading='MERCATO GIÀ ALLINEATO';
-priceNote=`Il Prezzo conferma il vantaggio strutturale di ${fav}. È conferma, non il motivo del segnale.`;
-}else{
-priceReading='DIVERGENZA DA MONITORARE';
-priceNote=`La struttura favorisce ${fav}, ma il Prezzo favorisce ${priceSide}. La divergenza va monitorata senza cambiare la lettura principale.`;
-}
-}
-const impA=currencyImprovementDiagnostic(a)||{};
-const impB=currencyImprovementDiagnostic(b)||{};
-const timing=`${a}: ${impA.state||'STABILE / MISTA'} · ${b}: ${impB.state||'STABILE / MISTA'}`;
-const missing=quality==='CONTRASTO STRUTTURALE FORTE'
-? 'Macro e Tassi/CB sono pienamente allineati: va verificato che Macro + Tassi/CB restino allineati.'
-: quality==='VANTAGGIO RELATIVO PARZIALE'
-? 'Manca l’allineamento del secondo elemento principale per avere un contrasto pieno.'
-: 'Serve che Macro e Tassi/CB inizino a favorire la stessa valuta prima di considerare il pair strutturalmente pulito.';
-const watch=priceReading==='DIVERGENZA DA MONITORARE'
-? `${priceNote} Controllare se il Prezzo si riallinea senza deterioramento di Macro + Tassi/CB.`
-: priceReading==='MERCATO GIÀ ALLINEATO'
-? `${priceNote} Evitare di inseguire il movimento solo perché il Prezzo è già allineato.`
-: `${priceNote} La priorità resta Macro + Tassi/CB.`;
+const frame=canonicalPairDecisionFrame(pair)||{};
+const ms=frame?.structural?.macro?.side;
+const ps=frame?.structural?.policy?.side;
 return {
-fav,quality,relation,timing,priceReading,priceNote,missing,watch,macroSide,policySide,
-structural:{
-macro:{a:Number(A.macro)||0,b:Number(B.macro)||0,side:macroSide===a?'A':macroSide===b?'B':'TIE'},
-policy:{a:Number(A.policy)||0,b:Number(B.policy)||0,side:policySide===a?'A':policySide===b?'B':'TIE'}
-,
-ratesGap:{bp:twoYearSpreadBp,material:materialRateSpread,side:rateGapSide}
-}
+...frame,
+macroSide:ms==='A'?a:ms==='B'?b:null,
+policySide:ps==='A'?a:ps==='B'?b:null
 };
 };
-// Replace only the decision function used by Pair Desk / ranking.
+// Compatibility wrapper for Pair Desk / ranking: adds UI fields, but delegates all decisions to the canonical engine.
 try{ derivePairDecisionFrame=window.v271StructuralPairFrame; }catch(e){ window.derivePairDecisionFrame=window.v271StructuralPairFrame; }
 // Pair-detail rows must describe CURRENT STRUCTURE, not recent acceleration.
 window.v271MacroRow=function(pair,frame){
