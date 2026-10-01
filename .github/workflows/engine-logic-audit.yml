@@ -60,6 +60,20 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                currencyRules:safe(()=>{
+                  const rows=ccys.map(c=>{
+                    const x=deriveCurrencyState(c)||{};
+                    const m=Number(x.macro||0), p=Number(x.policy||0);
+                    let expected='MISTA';
+                    if(m>0&&p>0) expected='FORTE';
+                    else if(m<0&&p<0) expected='FRAGILE';
+                    else if((m>0&&p===0)||(p>0&&m===0)) expected='COSTRUTTIVA';
+                    else if((m<0&&p===0)||(p<0&&m===0)) expected='DEBOLE';
+                    return {c,macro:m,policy:p,base:x.base,expected,improvement:x.improvementState,
+                      mismatch:x.base!==expected};
+                  });
+                  return {rows,issues:rows.filter(x=>x.mismatch)};
+                }),
                 allPairFrames:safe(()=>{
                   const rows=[...(D?.pairs||[])].map(x=>{
                     const p=x.pair, f=derivePairDecisionFrame(p)||{};
