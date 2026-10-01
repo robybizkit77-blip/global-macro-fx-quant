@@ -4612,3 +4612,149 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   }
 })();
 </script>
+
+
+<script id="gmfq-macro-surprise-diagnostic-reconciler-20261001">
+(function(){
+  'use strict';
+  try{
+    const days=(typeof REAL_CALENDAR!=='undefined'&&Array.isArray(REAL_CALENDAR))?REAL_CALENDAR:[];
+    const findEvent=(date,re)=>{
+      const d=days.find(x=>x.key===date);
+      return d?.events?.find(e=>re.test(String(e.event||'')))||null;
+    };
+
+    const sp=findEvent('2026-09-29',/Spanish Flash CPI/i);
+    if(sp){
+      sp.forecast='4,6%';
+      sp.surprise='+0,3 pp sopra consenso';
+      sp.scls='positive';
+    }
+
+    const it=findEvent('2026-09-30',/Italy HICP/i);
+    if(it){
+      it.forecast='3,8% / 1,8%';
+      it.surprise='+0,3 pp a/a e +0,2 pp m/m sopra consenso';
+      it.scls='positive';
+    }
+
+    const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    const current=String(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||'2026-09-30');
+    const curDate=new Date(current+'T00:00:00Z');
+    const minDate=new Date(curDate.getTime()-7*86400000);
+    const byCurrency=Object.fromEntries(CCYS.map(c=>[c,[]]));
+
+    const qualitative=/press conference|conference|speech|testimony|minutes|statement only/i;
+    const hasConsensus=v=>{
+      const s=String(v??'').trim();
+      return !!s && s!=='—' && s!=='-' && !/nessun consenso|n\/a|na$/i.test(s);
+    };
+    const cls=v=>{
+      const s=String(v||'').toLowerCase();
+      if(s==='positive'||s==='pos') return 'POSITIVE';
+      if(s==='negative'||s==='neg') return 'NEGATIVE';
+      if(s==='neutral'||s==='mixed'||s==='warn') return 'NEUTRAL';
+      return 'UNCLASSIFIED';
+    };
+
+    days.forEach(day=>{
+      const dt=new Date(String(day?.key||'')+'T00:00:00Z');
+      if(!Number.isFinite(dt.getTime())||dt>curDate||dt<minDate) return;
+      (day.events||[]).forEach(e=>{
+        if(e?.status!=='done') return;
+        const c=String(e.ccy||'').toUpperCase();
+        if(!byCurrency[c]) return;
+        const qualitativeEvent=qualitative.test(String(e.event||''));
+        const consensus=e.forecast??e.consensus??null;
+        const consensusApplicable=!qualitativeEvent;
+        const consensusAvailable=consensusApplicable&&hasConsensus(consensus);
+        byCurrency[c].push({
+          date:day.key,
+          event:e.event||'—',
+          previous:e.prev??e.previous??null,
+          consensus,
+          actual:e.actual??null,
+          surprise:e.surprise??null,
+          surprise_class:consensusAvailable?cls(e.scls):(consensusApplicable?'NO_CONSENSUS':'NOT_APPLICABLE'),
+          consensus_applicable:consensusApplicable,
+          consensus_available:consensusAvailable,
+          direction:e.direction??null,
+          confirmation:e.confirm??null,
+          signal_impact:'NONE_DIAGNOSTIC_ONLY'
+        });
+      });
+    });
+
+    const summary={};
+    for(const c of CCYS){
+      const rows=byCurrency[c];
+      const applicable=rows.filter(x=>x.consensus_applicable);
+      const withConsensus=applicable.filter(x=>x.consensus_available);
+      const pos=withConsensus.filter(x=>x.surprise_class==='POSITIVE').length;
+      const neg=withConsensus.filter(x=>x.surprise_class==='NEGATIVE').length;
+      const neu=withConsensus.filter(x=>x.surprise_class==='NEUTRAL').length;
+      const unc=withConsensus.filter(x=>x.surprise_class==='UNCLASSIFIED').length;
+      const noConsensus=applicable.length-withConsensus.length;
+      const qualitativeCount=rows.length-applicable.length;
+      summary[c]={
+        events_total:rows.length,
+        numeric_releases:applicable.length,
+        qualitative_events:qualitativeCount,
+        with_consensus:withConsensus.length,
+        without_consensus:noConsensus,
+        positive_surprises:pos,
+        negative_surprises:neg,
+        neutral_or_mixed:neu,
+        unclassified:unc,
+        balance:pos-neg,
+        coverage_pct:applicable.length?Math.round(withConsensus.length/applicable.length*100):null,
+        state:applicable.length===0?(rows.length?'QUALITATIVE_ONLY':'NO_RECENT_RELEASE'):(noConsensus?'PARTIAL':'COMPLETE'),
+        interpretation:'DIAGNOSTIC_ONLY__NOT_USED_IN_STRUCTURAL_MACRO_STATE'
+      };
+    }
+
+    const numeric=Object.values(summary).reduce((a,x)=>a+x.numeric_releases,0);
+    const withConsensus=Object.values(summary).reduce((a,x)=>a+x.with_consensus,0);
+    const qualitativeEvents=Object.values(summary).reduce((a,x)=>a+x.qualitative_events,0);
+    const gaps=Object.entries(summary)
+      .filter(([,x])=>x.numeric_releases>0&&x.without_consensus>0)
+      .map(([currency,x])=>({currency,coverage_pct:x.coverage_pct,without_consensus:x.without_consensus}));
+
+    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={
+      version:'1.1',
+      as_of:current,
+      window_days:7,
+      status:gaps.length?'PASS_WITH_COVERAGE_GAPS':'PASS',
+      policy:{
+        role:'DIAGNOSTIC_ONLY',
+        changes_structural_macro:false,
+        changes_pair_direction:false,
+        changes_model_rules:false,
+        oos_restart_required:false,
+        qualitative_events_excluded_from_consensus_denominator:true,
+        rule:'Actual/consensus/previous and surprise are diagnostic only. Qualitative events do not count as missing consensus.'
+      },
+      totals:{
+        events_total:numeric+qualitativeEvents,
+        numeric_releases:numeric,
+        qualitative_events:qualitativeEvents,
+        with_consensus:withConsensus,
+        coverage_pct:numeric?Math.round(withConsensus/numeric*100):0
+      },
+      summary,
+      events:byCurrency,
+      coverage_gaps:gaps,
+      reconciliations:[
+        {event:'Spanish Flash CPI y/y',date:'2026-09-29',consensus:'4,6%',actual:'4,9%',source_note:'Market calendar consensus; official actual from INE.'},
+        {event:'Italy HICP y/y + m/m',date:'2026-09-30',consensus:'3,8% / 1,8%',actual:'4,1% / 2,0%',source_note:'Reuters poll consensus; official actual from ISTAT.'},
+        {event:'RBA Press Conference',date:'2026-09-29',consensus:'NOT_APPLICABLE',source_note:'Qualitative event excluded from numeric consensus coverage.'}
+      ]
+    };
+
+    document.documentElement.setAttribute('data-macro-surprise-diagnostic',window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC.status);
+  }catch(e){
+    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-macro-surprise-diagnostic','FAIL');
+  }
+})();
+</script>
