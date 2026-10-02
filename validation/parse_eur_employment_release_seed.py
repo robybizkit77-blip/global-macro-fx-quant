@@ -1,60 +1,85 @@
 #!/usr/bin/env python3
-import json,re,urllib.request
+import io,json,re,urllib.request
 from pathlib import Path
+from pypdf import PdfReader
 
 SEED=Path("validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_OFFICIAL_RELEASE_SEED_V1_2026-10-02.json")
 OUT=Path("validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V1_2026-10-02.json")
 seed=json.loads(SEED.read_text(encoding="utf-8"))
 
-def fetch(url):
-    req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 GMFQ-validation/1.0"})
+def fetch_bytes(url):
+    req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 GMFQ-validation/2.0"})
     with urllib.request.urlopen(req,timeout=30) as r:
-        return r.read().decode("utf-8","ignore")
+        return r.read(), (r.headers.get("Content-Type") or "").lower()
 
-def clean(s):
+def html_to_text(raw):
+    s=raw.decode("utf-8","ignore")
     s=re.sub(r"<script.*?</script>"," ",s,flags=re.S|re.I)
     s=re.sub(r"<style.*?</style>"," ",s,flags=re.S|re.I)
     s=re.sub(r"<[^>]+>"," ",s)
-    s=re.sub(r"\\s+"," ",s)
-    return s
+    return re.sub(r"\s+"," ",s).strip()
+
+def pdf_to_text(raw):
+    reader=PdfReader(io.BytesIO(raw))
+    return re.sub(r"\s+"," "," ".join((p.extract_text() or "") for p in reader.pages)).strip()
+
+def extract_qoq(txt):
+    # Primary official wording seen in Eurostat flash releases:
+    # "The number of employed persons increased by 0.2% in both the euro area and the EU..."
+    patterns=[
+      r'(?:number of employed persons|employment)\s+(increased|decreased|remained stable).*?by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area',
+      r'(?:number of employed persons|employment).*?(?:euro area).*?(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%',
+      r'GDP\s+(?:up|down).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+the euro area'
+    ]
+    for p in patterns:
+        m=re.search(p,txt,re.I|re.S)
+        if not m:
+            continue
+        direction=m.group(1).lower()
+        try:
+            val=float(m.group(2).replace(",","."))
+        except Exception:
+            continue
+        if direction in ("decreased","down"):
+            val=-abs(val)
+        elif direction=="remained stable":
+            val=0.0
+        else:
+            val=abs(val)
+        return val,m.group(0)[:700]
+    return None,None
 
 rows=[]
 for x in seed["releases"]:
     try:
-        raw=fetch(x["url"])
-        txt=clean(raw)
-        low=txt.lower()
-        # Capture first explicit q/q employment growth sentence for euro area.
-        pats=[
-          r'(?:number of employed persons|employment).*?(?:increased|decreased|remained stable).*?by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in the euro area',
-          r'employment.*?euro area.*?([+-]?\\d+(?:[.,]\\d+)?)'
-        ]
-        val=None
-        matched=None
-        for p in pats:
-            m=re.search(p,txt,re.I)
-            if m:
-                try: val=float(m.group(1).replace(",",".")); matched=m.group(0)[:500]
-                except: pass
-                if val is not None: break
-        # Infer sign from wording when first pattern is used.
-        if matched and val is not None and "decreased" in matched.lower():
-            val=-abs(val)
-        rows.append({**x,"fetch_ok":True,"employment_qoq_pct":val,"match_text":matched})
+        raw,ctype=fetch_bytes(x["url"])
+        is_pdf=("pdf" in ctype) or raw[:4]==b"%PDF"
+        txt=pdf_to_text(raw) if is_pdf else html_to_text(raw)
+        val,matched=extract_qoq(txt)
+        rows.append({
+          **x,
+          "fetch_ok":True,
+          "content_type":ctype,
+          "parsed_as":"pdf" if is_pdf else "html",
+          "text_chars":len(txt),
+          "employment_qoq_pct":val,
+          "match_text":matched
+        })
     except Exception as e:
         rows.append({**x,"fetch_ok":False,"error":str(e),"employment_qoq_pct":None,"match_text":None})
 
 ok=[r for r in rows if r.get("fetch_ok")]
 parsed=[r for r in rows if r.get("employment_qoq_pct") is not None]
 report={
- "schema":"GMFQ_EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V1",
+ "schema":"GMFQ_EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V2",
  "created_at":"2026-10-02",
  "seed_count":len(rows),
  "fetch_ok":len(ok),
  "parsed_qoq":len(parsed),
+ "coverage_pct":round(100*len(parsed)/len(rows),2) if rows else 0,
  "rows":rows,
- "status":"PARSER_VALIDATED_PARTIAL" if len(parsed)>=5 else "PARSER_NOT_YET_VALIDATED",
+ "status":"PARSER_VALIDATED_PARTIAL" if len(parsed)>=8 else "PARSER_NOT_YET_VALIDATED",
  "guardrail":"Parsed q/q flash growth rates are release-time observables. Do not equate them mechanically to the runtime level series until the level-path transformation and parity test are completed."
 }
 OUT.write_text(json.dumps(report,indent=2),encoding="utf-8")
-print(json.dumps({"seed_count":len(rows),"fetch_ok":len(ok),"parsed_qoq":len(parsed),"status":report["status"]},indent=2))
+print(json.dumps({"seed_count":len(rows),"fetch_ok":len(ok),"parsed_qoq":len(parsed),"coverage_pct":report["coverage_pct"],"status":report["status"]},indent=2))
