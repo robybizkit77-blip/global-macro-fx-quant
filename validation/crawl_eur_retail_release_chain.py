@@ -5,7 +5,7 @@ from pypdf import PdfReader
 
 OUT=Path("validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_CHAIN_PIT_V1_2026-10-02.json")
 SEED="https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-04092026-ap"
-UA={"User-Agent":"Mozilla/5.0 GMFQ-retail-chain/5.0"}
+UA={"User-Agent":"Mozilla/5.0 GMFQ-retail-chain/6.0"}
 MONTHS="January February March April May June July August September October November December".split()
 MM={m:i+1 for i,m in enumerate(MONTHS)}
 
@@ -70,9 +70,23 @@ def parse_reference_month(txt):
 
 def parse_mom(txt):
     txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)',lambda m:m.group(0)[0],txt)
+    # Headline stable/unchanged must win before any broad narrative fallback.
+    for p in [
+      r'Volume of retail trade\s+(?:remained\s+)?stable\s+in\s+(?:both\s+)?(?:the\s+)?euro area',
+      r'retail trade volume\s+(?:remained\s+)?stable\s+in\s+(?:both\s+)?(?:the\s+)?euro area',
+      r'Volume of retail trade\s+unchanged\s+in\s+(?:both\s+)?(?:the\s+)?euro area'
+    ]:
+        m=re.search(p,txt,re.I)
+        if m: return 0.0,m.group(0)
+    # Exact headline directional wording.
+    m=re.search(r'Volume of retail trade\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?(?:the\s+)?euro area',txt,re.I)
+    if m:
+        d=m.group(1).lower(); v=float(m.group(2).replace(",","."))
+        return (-abs(v) if d=="down" else abs(v)),m.group(0)[:700]
+    # Narrative fallbacks are deliberately bounded so they cannot jump from the
+    # release title to a later country/EU sentence and capture the wrong number.
     pats=[
-      r'Volume of retail trade\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?(?:the\s+)?euro area',
-      r'volume of retail trade.*?(increased|decreased|rose|fell)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:the\s+)?euro area.*?compared with',
+      r'volume of retail trade.{0,500}?(increased|decreased|rose|fell)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:the\s+)?euro area.{0,250}?compared with',
       r'seasonally adjusted (?:volume of )?retail trade(?: volume)?\s+(increased|decreased|rose|fell)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:the\s+)?euro area'
     ]
     for p in pats:
@@ -81,12 +95,6 @@ def parse_mom(txt):
         d=m.group(1).lower()
         v=float(m.group(2).replace(",","."))
         return (-abs(v) if d in ("down","decreased","fell") else abs(v)),m.group(0)[:700]
-    for p in [
-      r'Volume of retail trade\s+(?:remained\s+)?stable\s+in\s+(?:the\s+)?euro area',
-      r'retail trade volume\s+(?:remained\s+)?stable\s+in\s+(?:the\s+)?euro area'
-    ]:
-        m=re.search(p,txt,re.I)
-        if m: return 0.0,m.group(0)
     return None,None
 
 def previous_release_date(txt):
@@ -171,7 +179,18 @@ resume_date=None
 if OUT.exists():
     try:
         old=json.loads(OUT.read_text())
-        rows=[x for x in old.get("rows",[]) if x.get("reference_month") and x.get("retail_volume_mom_pct") is not None]
+        rows=[]
+        for x in old.get("rows",[]):
+            if not (x.get("reference_month") and x.get("retail_volume_mom_pct") is not None):
+                continue
+            # Sanitize rows produced by the older permissive parser: if the
+            # captured text itself says the headline was stable, the correct
+            # release-time monthly change is mechanically 0.0.
+            mt=(x.get("match_text") or "").lower()
+            if "stable" in mt or "unchanged" in mt:
+                x["retail_volume_mom_pct"]=0.0
+                x["parser_sanitized_v6"]=True
+            rows.append(x)
         if rows and old.get("summary",{}).get("complete") is not True:
             resume_date=rows[-1].get("previous_release_date")
     except Exception:
