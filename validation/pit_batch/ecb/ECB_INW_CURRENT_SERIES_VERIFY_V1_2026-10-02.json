@@ -1,0 +1,179 @@
+{
+  "schema": "GMFQ_ECB_INW_CURRENT_SERIES_VERIFY_V1",
+  "created_at": "2026-10-02",
+  "runtime_id": "EA_NEGOTIATED_WAGES_YOY_history_value",
+  "dataset": "INW",
+  "series_key": "INW.Q.I9.N.INWR.000000.4F0.GY.IX",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/INW/Q.I9.N.INWR.000000.4F0.GY.IX?startPeriod=2016-Q1&format=csvdata",
+  "frequency": "Q",
+  "transformation": "YoY growth rate",
+  "rows": [
+    {
+      "period": "2016-Q1",
+      "value": 1.31
+    },
+    {
+      "period": "2016-Q2",
+      "value": 1.34
+    },
+    {
+      "period": "2016-Q3",
+      "value": 1.42
+    },
+    {
+      "period": "2016-Q4",
+      "value": 1.4
+    },
+    {
+      "period": "2017-Q1",
+      "value": 1.54
+    },
+    {
+      "period": "2017-Q2",
+      "value": 1.43
+    },
+    {
+      "period": "2017-Q3",
+      "value": 1.42
+    },
+    {
+      "period": "2017-Q4",
+      "value": 1.47
+    },
+    {
+      "period": "2018-Q1",
+      "value": 1.75
+    },
+    {
+      "period": "2018-Q2",
+      "value": 2.19
+    },
+    {
+      "period": "2018-Q3",
+      "value": 2.11
+    },
+    {
+      "period": "2018-Q4",
+      "value": 2.07
+    },
+    {
+      "period": "2019-Q1",
+      "value": 2.22
+    },
+    {
+      "period": "2019-Q2",
+      "value": 1.96
+    },
+    {
+      "period": "2019-Q3",
+      "value": 2.55
+    },
+    {
+      "period": "2019-Q4",
+      "value": 1.95
+    },
+    {
+      "period": "2020-Q1",
+      "value": 1.93
+    },
+    {
+      "period": "2020-Q2",
+      "value": 1.66
+    },
+    {
+      "period": "2020-Q3",
+      "value": 1.63
+    },
+    {
+      "period": "2020-Q4",
+      "value": 1.89
+    },
+    {
+      "period": "2021-Q1",
+      "value": 1.31
+    },
+    {
+      "period": "2021-Q2",
+      "value": 1.64
+    },
+    {
+      "period": "2021-Q3",
+      "value": 1.11
+    },
+    {
+      "period": "2021-Q4",
+      "value": 1.36
+    },
+    {
+      "period": "2022-Q1",
+      "value": 3.02
+    },
+    {
+      "period": "2022-Q2",
+      "value": 2.58
+    },
+    {
+      "period": "2022-Q3",
+      "value": 3.02
+    },
+    {
+      "period": "2022-Q4",
+      "value": 3.11
+    },
+    {
+      "period": "2023-Q1",
+      "value": 4.32
+    },
+    {
+      "period": "2023-Q2",
+      "value": 4.36
+    },
+    {
+      "period": "2023-Q3",
+      "value": 4.65
+    },
+    {
+      "period": "2023-Q4",
+      "value": 4.49
+    },
+    {
+      "period": "2024-Q1",
+      "value": 4.85
+    },
+    {
+      "period": "2024-Q2",
+      "value": 3.63
+    },
+    {
+      "period": "2024-Q3",
+      "value": 5.41
+    },
+    {
+      "period": "2024-Q4",
+      "value": 4.16
+    },
+    {
+      "period": "2025-Q1",
+      "value": 2.49
+    },
+    {
+      "period": "2025-Q2",
+      "value": 4.02
+    },
+    {
+      "period": "2025-Q3",
+      "value": 1.89
+    },
+    {
+      "period": "2025-Q4",
+      "value": 2.95
+    }
+  ],
+  "qa": {
+    "rows": 40,
+    "start": "2016-Q1",
+    "end": "2025-Q4"
+  },
+  "status": "CURRENT_SERIES_MATCH_VERIFIED__NOT_PIT_READY",
+  "guardrail": "This verifies the exact current ECB series identity only. Do not treat current historical values as first-release vintages."
+}
