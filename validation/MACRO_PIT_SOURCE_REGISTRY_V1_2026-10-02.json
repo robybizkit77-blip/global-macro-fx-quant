@@ -1,0 +1,253 @@
+{
+  "schema": "GMFQ_MACRO_PIT_SOURCE_REGISTRY_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "purpose": "Map frozen Macro Core series to official release mechanisms so observation-period histories can be converted into market-availability histories without generic guessed lags.",
+  "policy": {
+    "pit_timestamp_rule": "An observation becomes usable no earlier than its official public release time/date. When exact historical timestamps are unavailable, mark the observation or series WITHHELD_PIT rather than invent a lag.",
+    "vintage_rule": "Use first-public-release values where an official real-time/vintage archive exists. If only revised history is available, keep REVISED_ONLY and do not call the series full PIT.",
+    "timezone_rule": "Preserve source-local release time and normalize to UTC only in the final historical panel.",
+    "revision_rule": "A revised value may enter only on the revision publication date; it must not overwrite the value that was known before that date in a PIT replay."
+  },
+  "official_source_registry": {
+    "USD": {
+      "agencies": [
+        {
+          "agency": "U.S. Bureau of Economic Analysis",
+          "series_groups": [
+            "Personal income",
+            "Disposable personal income",
+            "Real personal consumption"
+          ],
+          "official_release_mechanism": "Personal Income and Outlays release schedule and dated historical releases",
+          "verified_example": "December 2025 released 2026-02-20; release page explicitly notes revisions to prior months.",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-december-2025",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "U.S. Bureau of Labor Statistics",
+          "series_groups": [
+            "Payrolls",
+            "Average hourly earnings",
+            "JOLTS hires/openings/quits"
+          ],
+          "official_release_mechanism": "BLS release calendar / dated Employment Situation and JOLTS releases",
+          "status": "SOURCE_MECHANISM_IDENTIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "Federal Reserve Board",
+          "series_groups": [
+            "Industrial production"
+          ],
+          "official_release_mechanism": "G.17 release schedule with historical release dates and previous releases",
+          "verified_example": "2026 monthly release dates are published by the Board; previous releases and historical release dates are available.",
+          "source_url": "https://www.federalreserve.gov/releases/g17/default.htm",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "U.S. Census Bureau",
+          "series_groups": [
+            "Retail sales proxy/source components",
+            "Core capital goods orders"
+          ],
+          "official_release_mechanism": "Economic Indicator Release Schedule plus program-specific historical release dates",
+          "verified_example": "Advance Monthly Retail Trade schedule maps each data month to an exact release date/time; Census also exposes historical release dates.",
+          "source_url": "https://www.census.gov/retail/release_schedule.html",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        }
+      ]
+    },
+    "EUR": {
+      "agencies": [
+        {
+          "agency": "Eurostat",
+          "series_groups": [
+            "Industrial production",
+            "Retail trade",
+            "Unemployment",
+            "Employment"
+          ],
+          "official_release_mechanism": "Euro indicators release calendar plus dated Euro-indicator releases",
+          "verified_example": "Calendar provides indicator-specific releases and uses Europe/Luxembourg timezone; 2026 calendar is published and weekly planning is confirmed.",
+          "source_url": "https://ec.europa.eu/eurostat/news/euro-indicators/release-calendar",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "ECB/Euro-area wage statistics source",
+          "series_groups": [
+            "Negotiated wages"
+          ],
+          "official_release_mechanism": "ECB/Euro-area wage publication source must be mapped to exact historical release dates for the stored series.",
+          "status": "SERIES_SOURCE_MAPPING_PENDING"
+        }
+      ]
+    },
+    "GBP": {
+      "agencies": [
+        {
+          "agency": "Office for National Statistics",
+          "series_groups": [
+            "Production",
+            "Retail sales",
+            "Unemployment",
+            "Employment rate",
+            "PAYE payroll employees"
+          ],
+          "official_release_mechanism": "ONS release calendar with exact release date/time and archived published releases",
+          "verified_examples": [
+            "Index of Production, July 2026 released 2026-09-11 07:00 local",
+            "UK Labour Market, September 2026 released 2026-09-15 07:00 local",
+            "Retail Sales, August 2026 released 2026-09-18 07:00 local"
+          ],
+          "source_url": "https://www.ons.gov.uk/releasecalendar",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        }
+      ]
+    },
+    "JPY": {
+      "agencies": [
+        {
+          "agency": "Statistics Bureau of Japan",
+          "series_groups": [
+            "Unemployment",
+            "Employment"
+          ],
+          "official_release_mechanism": "Labour Force Survey release schedule",
+          "verified_example": "2026 reference months are explicitly mapped to release dates; August 2026 -> 2026-10-02.",
+          "source_url": "https://www.stat.go.jp/english/data/roudou/1543.html",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "Ministry of Economy, Trade and Industry",
+          "series_groups": [
+            "Industrial production",
+            "Retail sales/current survey of commerce"
+          ],
+          "official_release_mechanism": "Monthly list of presentation dates and preliminary/revised releases",
+          "verified_example": "METI lists preliminary and revised presentation dates/times and explicitly distinguishes revised reports and annual adjustments.",
+          "source_url": "https://www.meti.go.jp/english/statistics/kohyo.html",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        }
+      ]
+    },
+    "CHF": {
+      "agencies": [
+        {
+          "agency": "Swiss Federal Statistical Office",
+          "series_groups": [
+            "Retail real",
+            "Employment",
+            "Industrial production"
+          ],
+          "official_release_mechanism": "FSO release/press-release archive and dataset metadata",
+          "verified_examples": [
+            "Retail Trade Turnover metadata states provisional results are published one month after the survey period and final results five months after.",
+            "Employment-barometer quality documentation states quarterly aggregated results are disseminated within less than 60 days."
+          ],
+          "source_url": "https://www.pxweb-r.bfs.admin.ch/pxweb/en/px-x-0603020000_101/-/px-x-0603020000_101.px/",
+          "status": "SOURCE_MECHANISM_PARTLY_VERIFIED__EXACT_HISTORICAL_DATE_EXTRACTION_PENDING"
+        },
+        {
+          "agency": "Swiss labour-market / FSO release channel",
+          "series_groups": [
+            "Unemployment"
+          ],
+          "official_release_mechanism": "Exact source series in runtime must be matched to its release archive before PIT promotion.",
+          "status": "SERIES_SOURCE_MAPPING_PENDING"
+        }
+      ]
+    },
+    "CAD": {
+      "agencies": [
+        {
+          "agency": "Statistics Canada",
+          "series_groups": [
+            "Monthly GDP",
+            "Retail volume",
+            "Unemployment",
+            "Employment"
+          ],
+          "official_release_mechanism": "The Daily dated releases and annual release-date calendar",
+          "verified_examples": [
+            "Retail trade July 2026 released 2026-09-24.",
+            "GDP by industry July 2026 released 2026-09-29.",
+            "Statistics Canada publishes a 2026-2027 release-date calendar.",
+            "Statistics Canada exposes historical real-time retail and GDP tables for some series."
+          ],
+          "source_url": "https://www150.statcan.gc.ca/n1/release-diffusion/2026-eng.pdf",
+          "status": "SOURCE_MECHANISM_VERIFIED__REAL_TIME_TABLE_OPPORTUNITY"
+        }
+      ]
+    },
+    "AUD": {
+      "agencies": [
+        {
+          "agency": "Australian Bureau of Statistics",
+          "series_groups": [
+            "Real GDP",
+            "Household spending",
+            "Unemployment",
+            "Employment",
+            "Wage Price Index"
+          ],
+          "official_release_mechanism": "ABS release calendar with reference period, exact date and local release time",
+          "verified_examples": [
+            "Labour Force August 2026 released 2026-09-24 11:30 AEST.",
+            "Monthly Household Spending August 2026 released 2026-09-29 11:30 AEST.",
+            "Wage Price Index September 2026 appears on the November 2026 release calendar."
+          ],
+          "source_url": "https://www.abs.gov.au/release-calendar/future-releases/202609",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        }
+      ]
+    },
+    "NZD": {
+      "agencies": [
+        {
+          "agency": "Stats NZ",
+          "series_groups": [
+            "Real GDP",
+            "Retail volume",
+            "Unemployment",
+            "Employment"
+          ],
+          "official_release_mechanism": "Dated information-release archive / publication pages",
+          "verified_examples": [
+            "Labour market statistics June 2026 quarter released 2026-08-05.",
+            "Retail trade survey June 2026 quarter released 2026-08-25.",
+            "GDP June 2026 quarter released 2026-09-17."
+          ],
+          "source_url": "https://www.stats.govt.nz/information-releases/",
+          "status": "SOURCE_MECHANISM_VERIFIED__HISTORICAL_DATE_EXTRACTION_PENDING"
+        }
+      ]
+    }
+  },
+  "current_assessment": {
+    "jurisdictions_with_verified_official_release_mechanism": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ],
+    "full_series_level_pit_ready": false,
+    "reason": "The official release channels are now identified, but exact historical release-date/vintage mapping has not yet been materialized for every one of the 55 active Core Macro series.",
+    "positive_change": "We no longer need to guess generic lags. Each currency now has an official release mechanism to anchor the reconstruction."
+  },
+  "next_actions": [
+    "Create per-series mapping from each of the 55 Core Macro IDs to agency/release family.",
+    "Extract exact historical release dates for the common backtest window, prioritizing 2019-2026.",
+    "Exploit official real-time tables where available (notably Statistics Canada retail/GDP) rather than reconstructing vintages manually.",
+    "Mark series REVISED_ONLY where first-release vintage values cannot be recovered and quantify how much of the Macro Core remains usable without them.",
+    "After the PIT date map is complete, compute the earliest common full-G8 Macro checkpoint and coverage by checkpoint."
+  ]
+}
