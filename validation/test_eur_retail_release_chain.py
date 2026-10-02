@@ -27,6 +27,7 @@ def textify(raw,ctype):
 
 def previous_release_date(txt):
     pats=[
+      r'Compared with the data issued in the News Release of\s+(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
       r'revised compared to those issued in the News Release of\s+(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
       r'revised compared to the News Release of\s+(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
       r'News Release\s+\d+/\d+\s+of\s+(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})'
