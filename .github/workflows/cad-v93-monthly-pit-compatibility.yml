@@ -1,0 +1,39 @@
+name: CAD v9.3 Monthly PIT Compatibility
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/build_cad_v93_monthly_pit_compatibility.py'
+      - '.github/workflows/cad-v93-monthly-pit-compatibility.yml'
+      - 'validation/PIT_REPLAY_CA_CORE_MACRO_RATES_2020_2026_V1_2026-10-02.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build monthly compatibility audit
+        run: python validation/build_cad_v93_monthly_pit_compatibility.py
+      - name: Commit audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/PIT_REPLAY_CA_V93_MONTHLY_COMPATIBILITY_2021_2026_V1_2026-10-02.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build CAD monthly v9.3 PIT compatibility audit"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
