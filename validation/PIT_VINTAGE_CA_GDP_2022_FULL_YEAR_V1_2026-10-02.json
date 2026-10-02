@@ -1,0 +1,128 @@
+{
+  "schema": "GMFQ_PIT_VINTAGE_CA_GDP_2022_FULL_YEAR_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "series": {
+    "runtime_id": "CA_REAL_GDP_M_history_value",
+    "currency": "CAD",
+    "category": "Crescita"
+  },
+  "methodology": {
+    "first_release": "Official monthly GDP growth reported in contemporaneous Statistics Canada The Daily releases.",
+    "revised": "Month-over-month growth recomputed from the current runtime historical level series."
+  },
+  "rows": [
+    {
+      "month": "2022-01",
+      "release_date": "2022-03-31",
+      "first_release_mom_pct": 0.2,
+      "current_revised_mom_pct": -0.2433,
+      "delta_pp": -0.4433,
+      "same_direction": false
+    },
+    {
+      "month": "2022-02",
+      "release_date": "2022-04-29",
+      "first_release_mom_pct": 1.1,
+      "current_revised_mom_pct": 1.0658,
+      "delta_pp": -0.0342,
+      "same_direction": true
+    },
+    {
+      "month": "2022-03",
+      "release_date": "2022-05-31",
+      "first_release_mom_pct": 0.7,
+      "current_revised_mom_pct": 0.5977,
+      "delta_pp": -0.1023,
+      "same_direction": true
+    },
+    {
+      "month": "2022-04",
+      "release_date": "2022-06-30",
+      "first_release_mom_pct": 0.3,
+      "current_revised_mom_pct": 0.0183,
+      "delta_pp": -0.2817,
+      "same_direction": true
+    },
+    {
+      "month": "2022-05",
+      "release_date": "2022-07-29",
+      "first_release_mom_pct": 0,
+      "current_revised_mom_pct": 0.2326,
+      "delta_pp": 0.2326,
+      "same_direction": false
+    },
+    {
+      "month": "2022-06",
+      "release_date": "2022-08-31",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.4167,
+      "delta_pp": 0.3167,
+      "same_direction": true
+    },
+    {
+      "month": "2022-07",
+      "release_date": "2022-09-29",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.1485,
+      "delta_pp": 0.0485,
+      "same_direction": true
+    },
+    {
+      "month": "2022-08",
+      "release_date": "2022-10-28",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.2977,
+      "delta_pp": 0.1977,
+      "same_direction": true
+    },
+    {
+      "month": "2022-09",
+      "release_date": "2022-11-29",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.2185,
+      "delta_pp": 0.1185,
+      "same_direction": true
+    },
+    {
+      "month": "2022-10",
+      "release_date": "2022-12-23",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": -0.1104,
+      "delta_pp": -0.2104,
+      "same_direction": false
+    },
+    {
+      "month": "2022-11",
+      "release_date": "2023-01-31",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": -0.1132,
+      "delta_pp": -0.2132,
+      "same_direction": false
+    },
+    {
+      "month": "2022-12",
+      "release_date": "2023-02-28",
+      "first_release_mom_pct": -0.1,
+      "current_revised_mom_pct": -0.2922,
+      "delta_pp": -0.1922,
+      "same_direction": true
+    }
+  ],
+  "result": {
+    "months_compared": 12,
+    "direction_flips": 4,
+    "flip_months": [
+      "2022-01",
+      "2022-05",
+      "2022-10",
+      "2022-11"
+    ],
+    "max_abs_revision_pp": 0.4433
+  },
+  "source_note": "First-release values mapped to archived Statistics Canada The Daily pages for each reference month."
+}
