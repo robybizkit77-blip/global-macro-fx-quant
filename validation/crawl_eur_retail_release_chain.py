@@ -5,18 +5,18 @@ from pypdf import PdfReader
 
 OUT=Path("validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_CHAIN_PIT_V1_2026-10-02.json")
 SEED="https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-04092026-ap"
-UA={"User-Agent":"Mozilla/5.0 GMFQ-retail-chain/4.0"}
+UA={"User-Agent":"Mozilla/5.0 GMFQ-retail-chain/5.0"}
 MONTHS="January February March April May June July August September October November December".split()
 MM={m:i+1 for i,m in enumerate(MONTHS)}
 
-def fetch(url,tries=2,timeout=8):
+def fetch(url,tries=5,timeout=15):
     for attempt in range(tries):
         req=urllib.request.Request(url,headers=UA)
         try:
             with urllib.request.urlopen(req,timeout=timeout) as r:
                 return r.read(),(r.headers.get("Content-Type") or "").lower(),r.geturl()
         except Exception:
-            time.sleep(0.5*(attempt+1))
+            time.sleep(1.0*(attempt+1))
     return None,None,None
 
 def textify(raw,ctype):
@@ -60,7 +60,7 @@ def parse_release_date(txt):
 def parse_reference_month(txt):
     pats=[
       r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\s+compared with',
-      r'In\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2}),'
+      r'In\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2}),',
     ]
     for p in pats:
         m=re.search(p,txt,re.I)
@@ -114,16 +114,19 @@ def candidates(ds):
     return [f"{b}4-{code}-{s}" for b in bases for s in ("ap","bp")]
 
 def load_candidate(ds):
-    for u in candidates(ds):
-        raw,ctype,final=fetch(u)
-        if raw is None: continue
-        try:
-            txt=textify(raw,ctype)
-        except Exception:
-            continue
-        low=txt.lower()
-        if "volume of retail trade" in low or "retail trade volume" in low:
-            return raw,ctype,final or u,txt
+    # Two complete passes protect the deterministic chain from transient Eurostat timeouts.
+    for _pass in range(2):
+        for u in candidates(ds):
+            raw,ctype,final=fetch(u,tries=4,timeout=15)
+            if raw is None: continue
+            try:
+                txt=textify(raw,ctype)
+            except Exception:
+                continue
+            low=txt.lower()
+            if "volume of retail trade" in low or "retail trade volume" in low:
+                return raw,ctype,final or u,txt
+        time.sleep(2)
     return None,None,None,None
 
 def build_report(rows):
@@ -141,7 +144,7 @@ def build_report(rows):
       "schema":"GMFQ_EUR_RETAIL_VOLUME_CHAIN_PIT_V1",
       "created_at":"2026-10-02",
       "source":"Eurostat official Volume of retail trade releases",
-      "method":"Backward deterministic chain. Each release identifies the preceding News Release date in its revisions section; summary pages are expanded through their official PDF download when needed.",
+      "method":"Backward deterministic chain with persistent checkpoints. Each release identifies the preceding News Release date in its revisions section; transient fetch failures do not discard completed history.",
       "rows":rows,
       "summary":{
         "chain_rows":len(rows),
@@ -162,12 +165,28 @@ def save_progress(rows):
     OUT.write_text(json.dumps(report,indent=2)+"\n")
     return report
 
+# Resume from the oldest successfully parsed checkpoint if a partial chain exists.
 rows=[]
-raw,ctype,final=fetch(SEED)
-txt=textify(raw,ctype) if raw else None
-url=SEED
-guard=0
+resume_date=None
+if OUT.exists():
+    try:
+        old=json.loads(OUT.read_text())
+        rows=[x for x in old.get("rows",[]) if x.get("reference_month") and x.get("retail_volume_mom_pct") is not None]
+        if rows and old.get("summary",{}).get("complete") is not True:
+            resume_date=rows[-1].get("previous_release_date")
+    except Exception:
+        rows=[]
+        resume_date=None
 
+if resume_date:
+    raw,ctype,final,txt=load_candidate(resume_date)
+    url=final or (candidates(resume_date)[0] if resume_date else SEED)
+else:
+    raw,ctype,final=fetch(SEED)
+    txt=textify(raw,ctype) if raw else None
+    url=SEED
+
+guard=0
 while txt and guard<90:
     guard+=1
     rd=parse_release_date(txt)
@@ -185,22 +204,24 @@ while txt and guard<90:
             pd2,pm2=previous_release_date(combo)
             pd=pd2 or pd
             pm=pm2 or pm
-    rows.append({
-      "release_date":rd,
-      "reference_month":ref,
-      "retail_volume_mom_pct":val,
-      "url":final or url,
-      "pdf_url":pdf_url,
-      "content_type":ctype,
-      "match_text":matched,
-      "previous_release_date":pd,
-      "previous_match":pm
-    })
+    # Avoid duplicating a checkpoint already present after a retry/resume.
+    if not any(x.get("release_date")==rd for x in rows):
+        rows.append({
+          "release_date":rd,
+          "reference_month":ref,
+          "retail_volume_mom_pct":val,
+          "url":final or url,
+          "pdf_url":pdf_url,
+          "content_type":ctype,
+          "match_text":matched,
+          "previous_release_date":pd,
+          "previous_match":pm
+        })
     save_progress(rows)
     if ref and ref<="2020-06":
         break
     if not pd:
-        rows[-1]["error"]="PREVIOUS_RELEASE_DATE_NOT_PARSED"
+        rows.append({"release_date":rd,"reference_month":None,"retail_volume_mom_pct":None,"url":final or url,"error":"PREVIOUS_RELEASE_DATE_NOT_PARSED"})
         save_progress(rows)
         break
     raw2,ctype2,final2,txt2=load_candidate(pd)
@@ -210,13 +231,13 @@ while txt and guard<90:
           "reference_month":None,
           "retail_volume_mom_pct":None,
           "url":None,
-          "error":"PREVIOUS_RELEASE_URL_NOT_RESOLVED"
+          "error":"PREVIOUS_RELEASE_URL_NOT_RESOLVED_TRANSIENT_OR_PATTERN"
         })
         save_progress(rows)
         break
     raw,ctype,final,txt=raw2,ctype2,final2,txt2
     url=final2 or url
-    time.sleep(.1)
+    time.sleep(.2)
 
 report=save_progress(rows)
 print(json.dumps(report["summary"],indent=2))
