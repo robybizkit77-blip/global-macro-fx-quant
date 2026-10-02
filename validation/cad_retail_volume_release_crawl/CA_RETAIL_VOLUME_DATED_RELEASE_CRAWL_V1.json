@@ -1,0 +1,79 @@
+{
+  "schema": "GMFQ_CA_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1",
+  "runtime_id": "CA_RETAIL_VOLUME_history_value",
+  "official_measure": "Retail sales in volume terms, seasonally adjusted, chained 2017 dollars",
+  "official_table": "20-10-0067-01",
+  "start_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260924/dq260924a-eng.htm",
+  "target_reference_month": "2020-05",
+  "next_url": "https://www150.statcan.gc.ca/daily-quotidien/260123/dq260123a-eng.htm",
+  "rows": [
+    {
+      "reference_month": "2025-12",
+      "release_date": "2026-02-20",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260220/dq260220a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260123/dq260123a-eng.htm"
+    },
+    {
+      "reference_month": "2026-01",
+      "release_date": "2026-03-20",
+      "first_release_mom_pct": null,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260320/dq260320a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260220/dq260220a-eng.htm"
+    },
+    {
+      "reference_month": "2026-02",
+      "release_date": "2026-04-24",
+      "first_release_mom_pct": 0.3,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260424/dq260424a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260320/dq260320a-eng.htm"
+    },
+    {
+      "reference_month": "2026-03",
+      "release_date": "2026-05-22",
+      "first_release_mom_pct": -0.7,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260522/dq260522a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260424/dq260424a-eng.htm"
+    },
+    {
+      "reference_month": "2026-04",
+      "release_date": "2026-06-19",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260619/dq260619a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260522/dq260522a-eng.htm"
+    },
+    {
+      "reference_month": "2026-05",
+      "release_date": "2026-07-23",
+      "first_release_mom_pct": 0.3,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260723/dq260723a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260619/dq260619a-eng.htm"
+    },
+    {
+      "reference_month": "2026-06",
+      "release_date": "2026-08-21",
+      "first_release_mom_pct": 1.5,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/260821/dq260821a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260723/dq260723a-eng.htm"
+    },
+    {
+      "reference_month": "2026-07",
+      "release_date": "2026-09-24",
+      "first_release_mom_pct": -1.1,
+      "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260924/dq260924a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260821/dq260821a-eng.htm"
+    }
+  ],
+  "summary": {
+    "count": 8,
+    "fetched_this_run": 8,
+    "repaired_nulls_this_run": 0,
+    "from": "2025-12",
+    "to": "2026-07",
+    "missing_values": [
+      "2026-01"
+    ],
+    "stop_reason": "CHUNK_LIMIT",
+    "complete": false
+  }
+}
