@@ -1,0 +1,39 @@
+name: CAD Retail Volume Release Crawl
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/crawl_cad_retail_volume_releases.py'
+      - '.github/workflows/cad-retail-volume-release-crawl.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4
+      - name: Crawl official Statistics Canada retail-trade release pages
+        run: python validation/crawl_cad_retail_volume_releases.py
+      - name: Commit CAD retail volume dated-release panel
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/cad_retail_volume_release_crawl/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Materialize CAD retail volume dated-release PIT crawl"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
