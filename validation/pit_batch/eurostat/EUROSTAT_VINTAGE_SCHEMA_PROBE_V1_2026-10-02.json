@@ -1,0 +1,2918 @@
+{
+  "schema": "GMFQ_EUROSTAT_VINTAGE_SCHEMA_PROBE_V1",
+  "created_at": "2026-10-02",
+  "datasets": {
+    "EI_IS_M_VTG": {
+      "dataset": "EI_IS_M_VTG",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_IS_M_VTG?lang=en&time=2021-01",
+      "label": "Industrial production - monthly data - vintages from 2021 onwards",
+      "updated": "2026-09-14T23:00:00+0200",
+      "id": [
+        "freq",
+        "revdate",
+        "s_adj",
+        "nace_r2",
+        "unit",
+        "geo",
+        "time"
+      ],
+      "size": [
+        1,
+        700,
+        2,
+        1,
+        4,
+        39,
+        1
+      ],
+      "dimensions": [
+        {
+          "id": "freq",
+          "size": 1,
+          "label": "Time frequency",
+          "sample_categories": [
+            {
+              "code": "M",
+              "label": "Monthly"
+            }
+          ]
+        },
+        {
+          "id": "revdate",
+          "size": 700,
+          "label": "Revision date",
+          "sample_categories": [
+            {
+              "code": "2026-08-28",
+              "label": "2026-08-28"
+            },
+            {
+              "code": "2026-08-22",
+              "label": "2026-08-22"
+            },
+            {
+              "code": "2026-08-19",
+              "label": "2026-08-19"
+            },
+            {
+              "code": "2026-08-13",
+              "label": "2026-08-13"
+            },
+            {
+              "code": "2026-08-11",
+              "label": "2026-08-11"
+            },
+            {
+              "code": "2026-08-10",
+              "label": "2026-08-10"
+            },
+            {
+              "code": "2026-08-08",
+              "label": "2026-08-08"
+            },
+            {
+              "code": "2026-08-07",
+              "label": "2026-08-07"
+            },
+            {
+              "code": "2026-08-06",
+              "label": "2026-08-06"
+            },
+            {
+              "code": "2026-08-05",
+              "label": "2026-08-05"
+            },
+            {
+              "code": "2026-08-01",
+              "label": "2026-08-01"
+            },
+            {
+              "code": "2026-07-30",
+              "label": "2026-07-30"
+            },
+            {
+              "code": "2026-07-29",
+              "label": "2026-07-29"
+            },
+            {
+              "code": "2026-07-28",
+              "label": "2026-07-28"
+            },
+            {
+              "code": "2026-07-21",
+              "label": "2026-07-21"
+            },
+            {
+              "code": "2026-07-17",
+              "label": "2026-07-17"
+            },
+            {
+              "code": "2026-07-15",
+              "label": "2026-07-15"
+            },
+            {
+              "code": "2026-07-11",
+              "label": "2026-07-11"
+            },
+            {
+              "code": "2026-07-10",
+              "label": "2026-07-10"
+            },
+            {
+              "code": "2026-07-09",
+              "label": "2026-07-09"
+            },
+            {
+              "code": "2026-07-08",
+              "label": "2026-07-08"
+            },
+            {
+              "code": "2026-07-07",
+              "label": "2026-07-07"
+            },
+            {
+              "code": "2026-07-04",
+              "label": "2026-07-04"
+            },
+            {
+              "code": "2026-07-02",
+              "label": "2026-07-02"
+            },
+            {
+              "code": "2026-07-01",
+              "label": "2026-07-01"
+            },
+            {
+              "code": "2026-06-30",
+              "label": "2026-06-30"
+            },
+            {
+              "code": "2026-06-25",
+              "label": "2026-06-25"
+            },
+            {
+              "code": "2026-06-16",
+              "label": "2026-06-16"
+            },
+            {
+              "code": "2026-06-15",
+              "label": "2026-06-15"
+            },
+            {
+              "code": "2026-06-12",
+              "label": "2026-06-12"
+            },
+            {
+              "code": "2026-06-11",
+              "label": "2026-06-11"
+            },
+            {
+              "code": "2026-06-10",
+              "label": "2026-06-10"
+            },
+            {
+              "code": "2026-06-09",
+              "label": "2026-06-09"
+            },
+            {
+              "code": "2026-06-06",
+              "label": "2026-06-06"
+            },
+            {
+              "code": "2026-06-05",
+              "label": "2026-06-05"
+            },
+            {
+              "code": "2026-06-04",
+              "label": "2026-06-04"
+            },
+            {
+              "code": "2026-06-03",
+              "label": "2026-06-03"
+            },
+            {
+              "code": "2026-06-02",
+              "label": "2026-06-02"
+            },
+            {
+              "code": "2026-05-30",
+              "label": "2026-05-30"
+            },
+            {
+              "code": "2026-05-29",
+              "label": "2026-05-29"
+            },
+            {
+              "code": "2026-05-27",
+              "label": "2026-05-27"
+            },
+            {
+              "code": "2026-05-21",
+              "label": "2026-05-21"
+            },
+            {
+              "code": "2026-05-19",
+              "label": "2026-05-19"
+            },
+            {
+              "code": "2026-05-13",
+              "label": "2026-05-13"
+            },
+            {
+              "code": "2026-05-12",
+              "label": "2026-05-12"
+            },
+            {
+              "code": "2026-05-09",
+              "label": "2026-05-09"
+            },
+            {
+              "code": "2026-05-08",
+              "label": "2026-05-08"
+            },
+            {
+              "code": "2026-05-07",
+              "label": "2026-05-07"
+            },
+            {
+              "code": "2026-05-05",
+              "label": "2026-05-05"
+            },
+            {
+              "code": "2026-05-01",
+              "label": "2026-05-01"
+            },
+            {
+              "code": "2026-04-30",
+              "label": "2026-04-30"
+            },
+            {
+              "code": "2026-04-29",
+              "label": "2026-04-29"
+            },
+            {
+              "code": "2026-04-24",
+              "label": "2026-04-24"
+            },
+            {
+              "code": "2026-04-21",
+              "label": "2026-04-21"
+            },
+            {
+              "code": "2026-04-11",
+              "label": "2026-04-11"
+            },
+            {
+              "code": "2026-04-10",
+              "label": "2026-04-10"
+            },
+            {
+              "code": "2026-04-09",
+              "label": "2026-04-09"
+            },
+            {
+              "code": "2026-04-08",
+              "label": "2026-04-08"
+            },
+            {
+              "code": "2026-04-04",
+              "label": "2026-04-04"
+            },
+            {
+              "code": "2026-04-02",
+              "label": "2026-04-02"
+            },
+            {
+              "code": "2026-04-01",
+              "label": "2026-04-01"
+            },
+            {
+              "code": "2026-03-28",
+              "label": "2026-03-28"
+            },
+            {
+              "code": "2026-03-26",
+              "label": "2026-03-26"
+            },
+            {
+              "code": "2026-03-13",
+              "label": "2026-03-13"
+            },
+            {
+              "code": "2026-03-12",
+              "label": "2026-03-12"
+            },
+            {
+              "code": "2026-03-11",
+              "label": "2026-03-11"
+            },
+            {
+              "code": "2026-03-10",
+              "label": "2026-03-10"
+            },
+            {
+              "code": "2026-03-07",
+              "label": "2026-03-07"
+            },
+            {
+              "code": "2026-03-06",
+              "label": "2026-03-06"
+            },
+            {
+              "code": "2026-03-03",
+              "label": "2026-03-03"
+            },
+            {
+              "code": "2026-02-28",
+              "label": "2026-02-28"
+            },
+            {
+              "code": "2026-02-20",
+              "label": "2026-02-20"
+            },
+            {
+              "code": "2026-02-19",
+              "label": "2026-02-19"
+            },
+            {
+              "code": "2026-02-16",
+              "label": "2026-02-16"
+            },
+            {
+              "code": "2026-02-13",
+              "label": "2026-02-13"
+            },
+            {
+              "code": "2026-02-11",
+              "label": "2026-02-11"
+            },
+            {
+              "code": "2026-02-10",
+              "label": "2026-02-10"
+            },
+            {
+              "code": "2026-02-07",
+              "label": "2026-02-07"
+            },
+            {
+              "code": "2026-02-06",
+              "label": "2026-02-06"
+            },
+            {
+              "code": "2026-02-05",
+              "label": "2026-02-05"
+            },
+            {
+              "code": "2026-02-03",
+              "label": "2026-02-03"
+            },
+            {
+              "code": "2026-01-31",
+              "label": "2026-01-31"
+            },
+            {
+              "code": "2026-01-27",
+              "label": "2026-01-27"
+            },
+            {
+              "code": "2026-01-15",
+              "label": "2026-01-15"
+            },
+            {
+              "code": "2026-01-13",
+              "label": "2026-01-13"
+            },
+            {
+              "code": "2026-01-10",
+              "label": "2026-01-10"
+            },
+            {
+              "code": "2026-01-09",
+              "label": "2026-01-09"
+            },
+            {
+              "code": "2026-01-08",
+              "label": "2026-01-08"
+            },
+            {
+              "code": "2026-01-07",
+              "label": "2026-01-07"
+            },
+            {
+              "code": "2026-01-06",
+              "label": "2026-01-06"
+            },
+            {
+              "code": "2025-12-15",
+              "label": "2025-12-15"
+            },
+            {
+              "code": "2025-12-12",
+              "label": "2025-12-12"
+            },
+            {
+              "code": "2025-12-11",
+              "label": "2025-12-11"
+            },
+            {
+              "code": "2025-12-10",
+              "label": "2025-12-10"
+            },
+            {
+              "code": "2025-12-09",
+              "label": "2025-12-09"
+            },
+            {
+              "code": "2025-12-06",
+              "label": "2025-12-06"
+            },
+            {
+              "code": "2025-12-05",
+              "label": "2025-12-05"
+            },
+            {
+              "code": "2025-12-04",
+              "label": "2025-12-04"
+            },
+            {
+              "code": "2025-11-29",
+              "label": "2025-11-29"
+            },
+            {
+              "code": "2025-11-27",
+              "label": "2025-11-27"
+            },
+            {
+              "code": "2025-11-17",
+              "label": "2025-11-17"
+            },
+            {
+              "code": "2025-11-13",
+              "label": "2025-11-13"
+            },
+            {
+              "code": "2025-11-12",
+              "label": "2025-11-12"
+            },
+            {
+              "code": "2025-11-11",
+              "label": "2025-11-11"
+            },
+            {
+              "code": "2025-11-10",
+              "label": "2025-11-10"
+            },
+            {
+              "code": "2025-11-08",
+              "label": "2025-11-08"
+            },
+            {
+              "code": "2025-11-07",
+              "label": "2025-11-07"
+            },
+            {
+              "code": "2025-11-06",
+              "label": "2025-11-06"
+            },
+            {
+              "code": "2025-11-04",
+              "label": "2025-11-04"
+            },
+            {
+              "code": "2025-11-01",
+              "label": "2025-11-01"
+            },
+            {
+              "code": "2025-10-31",
+              "label": "2025-10-31"
+            },
+            {
+              "code": "2025-10-29",
+              "label": "2025-10-29"
+            },
+            {
+              "code": "2025-10-18",
+              "label": "2025-10-18"
+            },
+            {
+              "code": "2025-10-15",
+              "label": "2025-10-15"
+            },
+            {
+              "code": "2025-10-11",
+              "label": "2025-10-11"
+            },
+            {
+              "code": "2025-10-09",
+              "label": "2025-10-09"
+            },
+            {
+              "code": "2025-10-08",
+              "label": "2025-10-08"
+            },
+            {
+              "code": "2025-10-07",
+              "label": "2025-10-07"
+            },
+            {
+              "code": "2025-10-04",
+              "label": "2025-10-04"
+            },
+            {
+              "code": "2025-10-03",
+              "label": "2025-10-03"
+            }
+          ]
+        },
+        {
+          "id": "s_adj",
+          "size": 2,
+          "label": "Seasonal adjustment",
+          "sample_categories": [
+            {
+              "code": "CA",
+              "label": "Calendar adjusted data, not seasonally adjusted data"
+            },
+            {
+              "code": "SCA",
+              "label": "Seasonally and calendar adjusted data"
+            }
+          ]
+        },
+        {
+          "id": "nace_r2",
+          "size": 1,
+          "label": "Statistical classification of economic activities in the European Community (NACE Rev. 2)",
+          "sample_categories": [
+            {
+              "code": "B-D",
+              "label": "Mining and quarrying; manufacturing; electricity, gas, steam and air conditioning supply"
+            }
+          ]
+        },
+        {
+          "id": "unit",
+          "size": 4,
+          "label": "Unit of measure",
+          "sample_categories": [
+            {
+              "code": "I21",
+              "label": "Index, 2021=100"
+            },
+            {
+              "code": "I15",
+              "label": "Index, 2015=100"
+            },
+            {
+              "code": "RT1",
+              "label": "Growth rate on previous period (t/t-1)"
+            },
+            {
+              "code": "RT12",
+              "label": "Growth rate (t/t-12)"
+            }
+          ]
+        },
+        {
+          "id": "geo",
+          "size": 39,
+          "label": "Geopolitical entity (reporting)",
+          "sample_categories": [
+            {
+              "code": "EU",
+              "label": "European Union (EU6-1958, EU9-1973, EU10-1981, EU12-1986, EU15-1995, EU25-2004, EU27-2007, EU28-2013, EU27-2020)"
+            },
+            {
+              "code": "EA",
+              "label": "Euro area (EA11-1999, EA12-2001, EA13-2007, EA15-2008, EA16-2009, EA17-2011, EA18-2014, EA19-2015, EA20-2023, EA21-2026)"
+            },
+            {
+              "code": "BE",
+              "label": "Belgium"
+            },
+            {
+              "code": "BG",
+              "label": "Bulgaria"
+            },
+            {
+              "code": "CZ",
+              "label": "Czechia"
+            },
+            {
+              "code": "DK",
+              "label": "Denmark"
+            },
+            {
+              "code": "DE",
+              "label": "Germany"
+            },
+            {
+              "code": "EE",
+              "label": "Estonia"
+            },
+            {
+              "code": "IE",
+              "label": "Ireland"
+            },
+            {
+              "code": "EL",
+              "label": "Greece"
+            },
+            {
+              "code": "ES",
+              "label": "Spain"
+            },
+            {
+              "code": "FR",
+              "label": "France"
+            },
+            {
+              "code": "HR",
+              "label": "Croatia"
+            },
+            {
+              "code": "IT",
+              "label": "Italy"
+            },
+            {
+              "code": "CY",
+              "label": "Cyprus"
+            },
+            {
+              "code": "LV",
+              "label": "Latvia"
+            },
+            {
+              "code": "LT",
+              "label": "Lithuania"
+            },
+            {
+              "code": "LU",
+              "label": "Luxembourg"
+            },
+            {
+              "code": "HU",
+              "label": "Hungary"
+            },
+            {
+              "code": "MT",
+              "label": "Malta"
+            },
+            {
+              "code": "NL",
+              "label": "Netherlands"
+            },
+            {
+              "code": "AT",
+              "label": "Austria"
+            },
+            {
+              "code": "PL",
+              "label": "Poland"
+            },
+            {
+              "code": "PT",
+              "label": "Portugal"
+            },
+            {
+              "code": "RO",
+              "label": "Romania"
+            },
+            {
+              "code": "SI",
+              "label": "Slovenia"
+            },
+            {
+              "code": "SK",
+              "label": "Slovakia"
+            },
+            {
+              "code": "FI",
+              "label": "Finland"
+            },
+            {
+              "code": "SE",
+              "label": "Sweden"
+            },
+            {
+              "code": "NO",
+              "label": "Norway"
+            },
+            {
+              "code": "CH",
+              "label": "Switzerland"
+            },
+            {
+              "code": "UK",
+              "label": "United Kingdom"
+            },
+            {
+              "code": "BA",
+              "label": "Bosnia and Herzegovina"
+            },
+            {
+              "code": "ME",
+              "label": "Montenegro"
+            },
+            {
+              "code": "MK",
+              "label": "North Macedonia"
+            },
+            {
+              "code": "AL",
+              "label": "Albania"
+            },
+            {
+              "code": "RS",
+              "label": "Serbia"
+            },
+            {
+              "code": "TR",
+              "label": "T\u00fcrkiye"
+            },
+            {
+              "code": "UA",
+              "label": "Ukraine"
+            }
+          ]
+        },
+        {
+          "id": "time",
+          "size": 1,
+          "label": "Time",
+          "sample_categories": [
+            {
+              "code": "2021-01",
+              "label": "2021-01"
+            }
+          ]
+        }
+      ],
+      "value_count": 8833
+    },
+    "EI_LM_M_VTG": {
+      "dataset": "EI_LM_M_VTG",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_LM_M_VTG?lang=en&time=2021-01",
+      "label": "Unemployment - monthly data - vintages from 2021 onwards",
+      "updated": "2026-09-14T23:00:00+0200",
+      "id": [
+        "freq",
+        "unit",
+        "s_adj",
+        "sex",
+        "age",
+        "geo",
+        "revdate",
+        "time"
+      ],
+      "size": [
+        1,
+        2,
+        1,
+        1,
+        1,
+        38,
+        312,
+        1
+      ],
+      "dimensions": [
+        {
+          "id": "freq",
+          "size": 1,
+          "label": "Time frequency",
+          "sample_categories": [
+            {
+              "code": "M",
+              "label": "Monthly"
+            }
+          ]
+        },
+        {
+          "id": "unit",
+          "size": 2,
+          "label": "Unit of measure",
+          "sample_categories": [
+            {
+              "code": "THS_PER",
+              "label": "Thousand persons"
+            },
+            {
+              "code": "PC_ACT",
+              "label": "Percentage of population in the labour force"
+            }
+          ]
+        },
+        {
+          "id": "s_adj",
+          "size": 1,
+          "label": "Seasonal adjustment",
+          "sample_categories": [
+            {
+              "code": "SA",
+              "label": "Seasonally adjusted data, not calendar adjusted data"
+            }
+          ]
+        },
+        {
+          "id": "sex",
+          "size": 1,
+          "label": "Sex",
+          "sample_categories": [
+            {
+              "code": "T",
+              "label": "Total"
+            }
+          ]
+        },
+        {
+          "id": "age",
+          "size": 1,
+          "label": "Age class",
+          "sample_categories": [
+            {
+              "code": "TOTAL",
+              "label": "Total"
+            }
+          ]
+        },
+        {
+          "id": "geo",
+          "size": 38,
+          "label": "Geopolitical entity (reporting)",
+          "sample_categories": [
+            {
+              "code": "EU",
+              "label": "European Union (EU6-1958, EU9-1973, EU10-1981, EU12-1986, EU15-1995, EU25-2004, EU27-2007, EU28-2013, EU27-2020)"
+            },
+            {
+              "code": "EA",
+              "label": "Euro area (EA11-1999, EA12-2001, EA13-2007, EA15-2008, EA16-2009, EA17-2011, EA18-2014, EA19-2015, EA20-2023, EA21-2026)"
+            },
+            {
+              "code": "BE",
+              "label": "Belgium"
+            },
+            {
+              "code": "BG",
+              "label": "Bulgaria"
+            },
+            {
+              "code": "CZ",
+              "label": "Czechia"
+            },
+            {
+              "code": "DK",
+              "label": "Denmark"
+            },
+            {
+              "code": "DE",
+              "label": "Germany"
+            },
+            {
+              "code": "EE",
+              "label": "Estonia"
+            },
+            {
+              "code": "IE",
+              "label": "Ireland"
+            },
+            {
+              "code": "EL",
+              "label": "Greece"
+            },
+            {
+              "code": "ES",
+              "label": "Spain"
+            },
+            {
+              "code": "FR",
+              "label": "France"
+            },
+            {
+              "code": "HR",
+              "label": "Croatia"
+            },
+            {
+              "code": "IT",
+              "label": "Italy"
+            },
+            {
+              "code": "CY",
+              "label": "Cyprus"
+            },
+            {
+              "code": "LV",
+              "label": "Latvia"
+            },
+            {
+              "code": "LT",
+              "label": "Lithuania"
+            },
+            {
+              "code": "LU",
+              "label": "Luxembourg"
+            },
+            {
+              "code": "HU",
+              "label": "Hungary"
+            },
+            {
+              "code": "MT",
+              "label": "Malta"
+            },
+            {
+              "code": "NL",
+              "label": "Netherlands"
+            },
+            {
+              "code": "AT",
+              "label": "Austria"
+            },
+            {
+              "code": "PL",
+              "label": "Poland"
+            },
+            {
+              "code": "PT",
+              "label": "Portugal"
+            },
+            {
+              "code": "RO",
+              "label": "Romania"
+            },
+            {
+              "code": "SI",
+              "label": "Slovenia"
+            },
+            {
+              "code": "SK",
+              "label": "Slovakia"
+            },
+            {
+              "code": "FI",
+              "label": "Finland"
+            },
+            {
+              "code": "SE",
+              "label": "Sweden"
+            },
+            {
+              "code": "IS",
+              "label": "Iceland"
+            },
+            {
+              "code": "NO",
+              "label": "Norway"
+            },
+            {
+              "code": "CH",
+              "label": "Switzerland"
+            },
+            {
+              "code": "UK",
+              "label": "United Kingdom"
+            },
+            {
+              "code": "BA",
+              "label": "Bosnia and Herzegovina"
+            },
+            {
+              "code": "MK",
+              "label": "North Macedonia"
+            },
+            {
+              "code": "TR",
+              "label": "T\u00fcrkiye"
+            },
+            {
+              "code": "US",
+              "label": "United States"
+            },
+            {
+              "code": "JP",
+              "label": "Japan"
+            }
+          ]
+        },
+        {
+          "id": "revdate",
+          "size": 312,
+          "label": "Revision date",
+          "sample_categories": [
+            {
+              "code": "2026-08-25",
+              "label": "2026-08-25"
+            },
+            {
+              "code": "2026-08-21",
+              "label": "2026-08-21"
+            },
+            {
+              "code": "2026-08-20",
+              "label": "2026-08-20"
+            },
+            {
+              "code": "2026-08-12",
+              "label": "2026-08-12"
+            },
+            {
+              "code": "2026-07-31",
+              "label": "2026-07-31"
+            },
+            {
+              "code": "2026-07-30",
+              "label": "2026-07-30"
+            },
+            {
+              "code": "2026-07-24",
+              "label": "2026-07-24"
+            },
+            {
+              "code": "2026-07-21",
+              "label": "2026-07-21"
+            },
+            {
+              "code": "2026-07-16",
+              "label": "2026-07-16"
+            },
+            {
+              "code": "2026-07-02",
+              "label": "2026-07-02"
+            },
+            {
+              "code": "2026-06-24",
+              "label": "2026-06-24"
+            },
+            {
+              "code": "2026-06-18",
+              "label": "2026-06-18"
+            },
+            {
+              "code": "2026-06-15",
+              "label": "2026-06-15"
+            },
+            {
+              "code": "2026-06-09",
+              "label": "2026-06-09"
+            },
+            {
+              "code": "2026-06-01",
+              "label": "2026-06-01"
+            },
+            {
+              "code": "2026-05-27",
+              "label": "2026-05-27"
+            },
+            {
+              "code": "2026-05-21",
+              "label": "2026-05-21"
+            },
+            {
+              "code": "2026-05-20",
+              "label": "2026-05-20"
+            },
+            {
+              "code": "2026-04-30",
+              "label": "2026-04-30"
+            },
+            {
+              "code": "2026-04-28",
+              "label": "2026-04-28"
+            },
+            {
+              "code": "2026-04-22",
+              "label": "2026-04-22"
+            },
+            {
+              "code": "2026-04-16",
+              "label": "2026-04-16"
+            },
+            {
+              "code": "2026-04-01",
+              "label": "2026-04-01"
+            },
+            {
+              "code": "2026-03-24",
+              "label": "2026-03-24"
+            },
+            {
+              "code": "2026-03-19",
+              "label": "2026-03-19"
+            },
+            {
+              "code": "2026-03-13",
+              "label": "2026-03-13"
+            },
+            {
+              "code": "2026-03-12",
+              "label": "2026-03-12"
+            },
+            {
+              "code": "2026-03-04",
+              "label": "2026-03-04"
+            },
+            {
+              "code": "2026-02-24",
+              "label": "2026-02-24"
+            },
+            {
+              "code": "2026-02-19",
+              "label": "2026-02-19"
+            },
+            {
+              "code": "2026-02-16",
+              "label": "2026-02-16"
+            },
+            {
+              "code": "2026-01-30",
+              "label": "2026-01-30"
+            },
+            {
+              "code": "2026-01-23",
+              "label": "2026-01-23"
+            },
+            {
+              "code": "2026-01-15",
+              "label": "2026-01-15"
+            },
+            {
+              "code": "2026-01-08",
+              "label": "2026-01-08"
+            },
+            {
+              "code": "2025-12-23",
+              "label": "2025-12-23"
+            },
+            {
+              "code": "2025-12-18",
+              "label": "2025-12-18"
+            },
+            {
+              "code": "2025-12-17",
+              "label": "2025-12-17"
+            },
+            {
+              "code": "2025-12-12",
+              "label": "2025-12-12"
+            },
+            {
+              "code": "2025-12-02",
+              "label": "2025-12-02"
+            },
+            {
+              "code": "2025-11-25",
+              "label": "2025-11-25"
+            },
+            {
+              "code": "2025-11-20",
+              "label": "2025-11-20"
+            },
+            {
+              "code": "2025-11-17",
+              "label": "2025-11-17"
+            },
+            {
+              "code": "2025-11-14",
+              "label": "2025-11-14"
+            },
+            {
+              "code": "2025-10-31",
+              "label": "2025-10-31"
+            },
+            {
+              "code": "2025-10-30",
+              "label": "2025-10-30"
+            },
+            {
+              "code": "2025-10-21",
+              "label": "2025-10-21"
+            },
+            {
+              "code": "2025-10-17",
+              "label": "2025-10-17"
+            },
+            {
+              "code": "2025-10-16",
+              "label": "2025-10-16"
+            },
+            {
+              "code": "2025-10-06",
+              "label": "2025-10-06"
+            },
+            {
+              "code": "2025-10-03",
+              "label": "2025-10-03"
+            },
+            {
+              "code": "2025-10-02",
+              "label": "2025-10-02"
+            },
+            {
+              "code": "2025-09-23",
+              "label": "2025-09-23"
+            },
+            {
+              "code": "2025-09-18",
+              "label": "2025-09-18"
+            },
+            {
+              "code": "2025-09-17",
+              "label": "2025-09-17"
+            },
+            {
+              "code": "2025-09-01",
+              "label": "2025-09-01"
+            },
+            {
+              "code": "2025-08-27",
+              "label": "2025-08-27"
+            },
+            {
+              "code": "2025-08-22",
+              "label": "2025-08-22"
+            },
+            {
+              "code": "2025-08-20",
+              "label": "2025-08-20"
+            },
+            {
+              "code": "2025-08-13",
+              "label": "2025-08-13"
+            },
+            {
+              "code": "2025-08-01",
+              "label": "2025-08-01"
+            },
+            {
+              "code": "2025-07-31",
+              "label": "2025-07-31"
+            },
+            {
+              "code": "2025-07-25",
+              "label": "2025-07-25"
+            },
+            {
+              "code": "2025-07-22",
+              "label": "2025-07-22"
+            },
+            {
+              "code": "2025-07-17",
+              "label": "2025-07-17"
+            },
+            {
+              "code": "2025-07-07",
+              "label": "2025-07-07"
+            },
+            {
+              "code": "2025-07-02",
+              "label": "2025-07-02"
+            },
+            {
+              "code": "2025-06-25",
+              "label": "2025-06-25"
+            },
+            {
+              "code": "2025-06-19",
+              "label": "2025-06-19"
+            },
+            {
+              "code": "2025-06-17",
+              "label": "2025-06-17"
+            },
+            {
+              "code": "2025-06-06",
+              "label": "2025-06-06"
+            },
+            {
+              "code": "2025-06-03",
+              "label": "2025-06-03"
+            },
+            {
+              "code": "2025-05-23",
+              "label": "2025-05-23"
+            },
+            {
+              "code": "2025-05-15",
+              "label": "2025-05-15"
+            },
+            {
+              "code": "2025-05-05",
+              "label": "2025-05-05"
+            },
+            {
+              "code": "2025-05-02",
+              "label": "2025-05-02"
+            },
+            {
+              "code": "2025-04-24",
+              "label": "2025-04-24"
+            },
+            {
+              "code": "2025-04-22",
+              "label": "2025-04-22"
+            },
+            {
+              "code": "2025-04-17",
+              "label": "2025-04-17"
+            },
+            {
+              "code": "2025-04-04",
+              "label": "2025-04-04"
+            },
+            {
+              "code": "2025-04-01",
+              "label": "2025-04-01"
+            },
+            {
+              "code": "2025-03-27",
+              "label": "2025-03-27"
+            },
+            {
+              "code": "2025-03-20",
+              "label": "2025-03-20"
+            },
+            {
+              "code": "2025-03-14",
+              "label": "2025-03-14"
+            },
+            {
+              "code": "2025-03-05",
+              "label": "2025-03-05"
+            },
+            {
+              "code": "2025-03-04",
+              "label": "2025-03-04"
+            },
+            {
+              "code": "2025-02-25",
+              "label": "2025-02-25"
+            },
+            {
+              "code": "2025-02-20",
+              "label": "2025-02-20"
+            },
+            {
+              "code": "2025-02-18",
+              "label": "2025-02-18"
+            },
+            {
+              "code": "2025-02-17",
+              "label": "2025-02-17"
+            },
+            {
+              "code": "2025-02-04",
+              "label": "2025-02-04"
+            },
+            {
+              "code": "2025-01-30",
+              "label": "2025-01-30"
+            },
+            {
+              "code": "2025-01-27",
+              "label": "2025-01-27"
+            },
+            {
+              "code": "2025-01-16",
+              "label": "2025-01-16"
+            },
+            {
+              "code": "2025-01-13",
+              "label": "2025-01-13"
+            },
+            {
+              "code": "2025-01-07",
+              "label": "2025-01-07"
+            },
+            {
+              "code": "2024-12-19",
+              "label": "2024-12-19"
+            },
+            {
+              "code": "2024-12-18",
+              "label": "2024-12-18"
+            },
+            {
+              "code": "2024-12-13",
+              "label": "2024-12-13"
+            },
+            {
+              "code": "2024-12-02",
+              "label": "2024-12-02"
+            },
+            {
+              "code": "2024-11-26",
+              "label": "2024-11-26"
+            },
+            {
+              "code": "2024-11-21",
+              "label": "2024-11-21"
+            },
+            {
+              "code": "2024-11-15",
+              "label": "2024-11-15"
+            },
+            {
+              "code": "2024-11-08",
+              "label": "2024-11-08"
+            },
+            {
+              "code": "2024-10-31",
+              "label": "2024-10-31"
+            },
+            {
+              "code": "2024-10-22",
+              "label": "2024-10-22"
+            },
+            {
+              "code": "2024-10-18",
+              "label": "2024-10-18"
+            },
+            {
+              "code": "2024-10-17",
+              "label": "2024-10-17"
+            },
+            {
+              "code": "2024-10-07",
+              "label": "2024-10-07"
+            },
+            {
+              "code": "2024-10-02",
+              "label": "2024-10-02"
+            },
+            {
+              "code": "2024-09-24",
+              "label": "2024-09-24"
+            },
+            {
+              "code": "2024-09-20",
+              "label": "2024-09-20"
+            },
+            {
+              "code": "2024-09-19",
+              "label": "2024-09-19"
+            },
+            {
+              "code": "2024-09-09",
+              "label": "2024-09-09"
+            },
+            {
+              "code": "2024-09-02",
+              "label": "2024-09-02"
+            },
+            {
+              "code": "2024-08-30",
+              "label": "2024-08-30"
+            },
+            {
+              "code": "2024-08-23",
+              "label": "2024-08-23"
+            },
+            {
+              "code": "2024-08-20",
+              "label": "2024-08-20"
+            },
+            {
+              "code": "2024-08-16",
+              "label": "2024-08-16"
+            },
+            {
+              "code": "2024-08-07",
+              "label": "2024-08-07"
+            }
+          ]
+        },
+        {
+          "id": "time",
+          "size": 1,
+          "label": "Time",
+          "sample_categories": [
+            {
+              "code": "2021-01",
+              "label": "2021-01"
+            }
+          ]
+        }
+      ],
+      "value_count": 4307
+    },
+    "EI_IS_M_VTGFIX": {
+      "dataset": "EI_IS_M_VTGFIX",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_IS_M_VTGFIX?lang=en&time=2021-01",
+      "label": "Industrial production - monthly data - vintages from 2001 to 2020",
+      "updated": "2025-09-05T23:00:00+0200",
+      "id": [
+        "freq",
+        "revdate",
+        "s_adj",
+        "nace_r2",
+        "unit",
+        "geo",
+        "time"
+      ],
+      "size": [
+        1,
+        2619,
+        2,
+        1,
+        7,
+        29,
+        0
+      ],
+      "dimensions": [
+        {
+          "id": "freq",
+          "size": 1,
+          "label": "Time frequency",
+          "sample_categories": [
+            {
+              "code": "M",
+              "label": "Monthly"
+            }
+          ]
+        },
+        {
+          "id": "revdate",
+          "size": 2619,
+          "label": "Revision date",
+          "sample_categories": [
+            {
+              "code": "2020-12-18",
+              "label": "2020-12-18"
+            },
+            {
+              "code": "2020-12-14",
+              "label": "2020-12-14"
+            },
+            {
+              "code": "2020-12-11",
+              "label": "2020-12-11"
+            },
+            {
+              "code": "2020-12-03",
+              "label": "2020-12-03"
+            },
+            {
+              "code": "2020-12-02",
+              "label": "2020-12-02"
+            },
+            {
+              "code": "2020-12-01",
+              "label": "2020-12-01"
+            },
+            {
+              "code": "2020-11-27",
+              "label": "2020-11-27"
+            },
+            {
+              "code": "2020-11-26",
+              "label": "2020-11-26"
+            },
+            {
+              "code": "2020-11-13",
+              "label": "2020-11-13"
+            },
+            {
+              "code": "2020-11-12",
+              "label": "2020-11-12"
+            },
+            {
+              "code": "2020-11-11",
+              "label": "2020-11-11"
+            },
+            {
+              "code": "2020-11-10",
+              "label": "2020-11-10"
+            },
+            {
+              "code": "2020-11-09",
+              "label": "2020-11-09"
+            },
+            {
+              "code": "2020-11-06",
+              "label": "2020-11-06"
+            },
+            {
+              "code": "2020-11-04",
+              "label": "2020-11-04"
+            },
+            {
+              "code": "2020-11-02",
+              "label": "2020-11-02"
+            },
+            {
+              "code": "2020-10-29",
+              "label": "2020-10-29"
+            },
+            {
+              "code": "2020-10-27",
+              "label": "2020-10-27"
+            },
+            {
+              "code": "2020-10-26",
+              "label": "2020-10-26"
+            },
+            {
+              "code": "2020-10-14",
+              "label": "2020-10-14"
+            },
+            {
+              "code": "2020-10-13",
+              "label": "2020-10-13"
+            },
+            {
+              "code": "2020-10-12",
+              "label": "2020-10-12"
+            },
+            {
+              "code": "2020-10-09",
+              "label": "2020-10-09"
+            },
+            {
+              "code": "2020-10-08",
+              "label": "2020-10-08"
+            },
+            {
+              "code": "2020-10-07",
+              "label": "2020-10-07"
+            },
+            {
+              "code": "2020-10-06",
+              "label": "2020-10-06"
+            },
+            {
+              "code": "2020-10-01",
+              "label": "2020-10-01"
+            },
+            {
+              "code": "2020-09-29",
+              "label": "2020-09-29"
+            },
+            {
+              "code": "2020-09-28",
+              "label": "2020-09-28"
+            },
+            {
+              "code": "2020-09-24",
+              "label": "2020-09-24"
+            },
+            {
+              "code": "2020-09-15",
+              "label": "2020-09-15"
+            },
+            {
+              "code": "2020-09-14",
+              "label": "2020-09-14"
+            },
+            {
+              "code": "2020-09-11",
+              "label": "2020-09-11"
+            },
+            {
+              "code": "2020-09-10",
+              "label": "2020-09-10"
+            },
+            {
+              "code": "2020-09-09",
+              "label": "2020-09-09"
+            },
+            {
+              "code": "2020-09-08",
+              "label": "2020-09-08"
+            },
+            {
+              "code": "2020-09-07",
+              "label": "2020-09-07"
+            },
+            {
+              "code": "2020-09-04",
+              "label": "2020-09-04"
+            },
+            {
+              "code": "2020-09-03",
+              "label": "2020-09-03"
+            },
+            {
+              "code": "2020-09-02",
+              "label": "2020-09-02"
+            },
+            {
+              "code": "2020-08-27",
+              "label": "2020-08-27"
+            },
+            {
+              "code": "2020-08-26",
+              "label": "2020-08-26"
+            },
+            {
+              "code": "2020-08-13",
+              "label": "2020-08-13"
+            },
+            {
+              "code": "2020-08-12",
+              "label": "2020-08-12"
+            },
+            {
+              "code": "2020-08-11",
+              "label": "2020-08-11"
+            },
+            {
+              "code": "2020-08-10",
+              "label": "2020-08-10"
+            },
+            {
+              "code": "2020-08-07",
+              "label": "2020-08-07"
+            },
+            {
+              "code": "2020-08-06",
+              "label": "2020-08-06"
+            },
+            {
+              "code": "2020-08-04",
+              "label": "2020-08-04"
+            },
+            {
+              "code": "2020-08-03",
+              "label": "2020-08-03"
+            },
+            {
+              "code": "2020-07-31",
+              "label": "2020-07-31"
+            },
+            {
+              "code": "2020-07-29",
+              "label": "2020-07-29"
+            },
+            {
+              "code": "2020-07-28",
+              "label": "2020-07-28"
+            },
+            {
+              "code": "2020-07-24",
+              "label": "2020-07-24"
+            },
+            {
+              "code": "2020-07-15",
+              "label": "2020-07-15"
+            },
+            {
+              "code": "2020-07-14",
+              "label": "2020-07-14"
+            },
+            {
+              "code": "2020-07-13",
+              "label": "2020-07-13"
+            },
+            {
+              "code": "2020-07-10",
+              "label": "2020-07-10"
+            },
+            {
+              "code": "2020-07-09",
+              "label": "2020-07-09"
+            },
+            {
+              "code": "2020-07-08",
+              "label": "2020-07-08"
+            },
+            {
+              "code": "2020-07-07",
+              "label": "2020-07-07"
+            },
+            {
+              "code": "2020-07-06",
+              "label": "2020-07-06"
+            },
+            {
+              "code": "2020-07-01",
+              "label": "2020-07-01"
+            },
+            {
+              "code": "2020-06-29",
+              "label": "2020-06-29"
+            },
+            {
+              "code": "2020-06-26",
+              "label": "2020-06-26"
+            },
+            {
+              "code": "2020-06-12",
+              "label": "2020-06-12"
+            },
+            {
+              "code": "2020-06-11",
+              "label": "2020-06-11"
+            },
+            {
+              "code": "2020-06-10",
+              "label": "2020-06-10"
+            },
+            {
+              "code": "2020-06-09",
+              "label": "2020-06-09"
+            },
+            {
+              "code": "2020-06-08",
+              "label": "2020-06-08"
+            },
+            {
+              "code": "2020-06-05",
+              "label": "2020-06-05"
+            },
+            {
+              "code": "2020-06-04",
+              "label": "2020-06-04"
+            },
+            {
+              "code": "2020-06-03",
+              "label": "2020-06-03"
+            },
+            {
+              "code": "2020-06-01",
+              "label": "2020-06-01"
+            },
+            {
+              "code": "2020-05-28",
+              "label": "2020-05-28"
+            },
+            {
+              "code": "2020-05-26",
+              "label": "2020-05-26"
+            },
+            {
+              "code": "2020-05-18",
+              "label": "2020-05-18"
+            },
+            {
+              "code": "2020-05-14",
+              "label": "2020-05-14"
+            },
+            {
+              "code": "2020-05-13",
+              "label": "2020-05-13"
+            },
+            {
+              "code": "2020-05-12",
+              "label": "2020-05-12"
+            },
+            {
+              "code": "2020-05-11",
+              "label": "2020-05-11"
+            },
+            {
+              "code": "2020-05-08",
+              "label": "2020-05-08"
+            },
+            {
+              "code": "2020-05-06",
+              "label": "2020-05-06"
+            },
+            {
+              "code": "2020-05-01",
+              "label": "2020-05-01"
+            },
+            {
+              "code": "2020-04-30",
+              "label": "2020-04-30"
+            },
+            {
+              "code": "2020-04-29",
+              "label": "2020-04-29"
+            },
+            {
+              "code": "2020-04-28",
+              "label": "2020-04-28"
+            },
+            {
+              "code": "2020-04-23",
+              "label": "2020-04-23"
+            },
+            {
+              "code": "2020-04-16",
+              "label": "2020-04-16"
+            },
+            {
+              "code": "2020-04-14",
+              "label": "2020-04-14"
+            },
+            {
+              "code": "2020-04-13",
+              "label": "2020-04-13"
+            },
+            {
+              "code": "2020-04-09",
+              "label": "2020-04-09"
+            },
+            {
+              "code": "2020-04-08",
+              "label": "2020-04-08"
+            },
+            {
+              "code": "2020-04-07",
+              "label": "2020-04-07"
+            },
+            {
+              "code": "2020-04-06",
+              "label": "2020-04-06"
+            },
+            {
+              "code": "2020-04-03",
+              "label": "2020-04-03"
+            },
+            {
+              "code": "2020-04-01",
+              "label": "2020-04-01"
+            },
+            {
+              "code": "2020-03-31",
+              "label": "2020-03-31"
+            },
+            {
+              "code": "2020-03-26",
+              "label": "2020-03-26"
+            },
+            {
+              "code": "2020-03-25",
+              "label": "2020-03-25"
+            },
+            {
+              "code": "2020-03-18",
+              "label": "2020-03-18"
+            },
+            {
+              "code": "2020-03-13",
+              "label": "2020-03-13"
+            },
+            {
+              "code": "2020-03-12",
+              "label": "2020-03-12"
+            },
+            {
+              "code": "2020-03-11",
+              "label": "2020-03-11"
+            },
+            {
+              "code": "2020-03-10",
+              "label": "2020-03-10"
+            },
+            {
+              "code": "2020-03-09",
+              "label": "2020-03-09"
+            },
+            {
+              "code": "2020-03-06",
+              "label": "2020-03-06"
+            },
+            {
+              "code": "2020-03-02",
+              "label": "2020-03-02"
+            },
+            {
+              "code": "2020-02-28",
+              "label": "2020-02-28"
+            },
+            {
+              "code": "2020-02-27",
+              "label": "2020-02-27"
+            },
+            {
+              "code": "2020-02-12",
+              "label": "2020-02-12"
+            },
+            {
+              "code": "2020-02-11",
+              "label": "2020-02-11"
+            },
+            {
+              "code": "2020-02-10",
+              "label": "2020-02-10"
+            },
+            {
+              "code": "2020-02-07",
+              "label": "2020-02-07"
+            },
+            {
+              "code": "2020-02-06",
+              "label": "2020-02-06"
+            },
+            {
+              "code": "2020-02-04",
+              "label": "2020-02-04"
+            },
+            {
+              "code": "2020-02-03",
+              "label": "2020-02-03"
+            },
+            {
+              "code": "2020-01-31",
+              "label": "2020-01-31"
+            },
+            {
+              "code": "2020-01-28",
+              "label": "2020-01-28"
+            },
+            {
+              "code": "2020-01-27",
+              "label": "2020-01-27"
+            }
+          ]
+        },
+        {
+          "id": "s_adj",
+          "size": 2,
+          "label": "Seasonal adjustment",
+          "sample_categories": [
+            {
+              "code": "CA",
+              "label": "Calendar adjusted data, not seasonally adjusted data"
+            },
+            {
+              "code": "SCA",
+              "label": "Seasonally and calendar adjusted data"
+            }
+          ]
+        },
+        {
+          "id": "nace_r2",
+          "size": 1,
+          "label": "Statistical classification of economic activities in the European Community (NACE Rev. 2)",
+          "sample_categories": [
+            {
+              "code": "B-D",
+              "label": "Mining and quarrying; manufacturing; electricity, gas, steam and air conditioning supply"
+            }
+          ]
+        },
+        {
+          "id": "unit",
+          "size": 7,
+          "label": "Unit of measure",
+          "sample_categories": [
+            {
+              "code": "I15",
+              "label": "Index, 2015=100"
+            },
+            {
+              "code": "I10",
+              "label": "Index, 2010=100"
+            },
+            {
+              "code": "I05",
+              "label": "Index, 2005=100"
+            },
+            {
+              "code": "I00",
+              "label": "Index, 2000=100"
+            },
+            {
+              "code": "I95",
+              "label": "Index, 1995=100"
+            },
+            {
+              "code": "RT1",
+              "label": "Growth rate on previous period (t/t-1)"
+            },
+            {
+              "code": "RT12",
+              "label": "Growth rate (t/t-12)"
+            }
+          ]
+        },
+        {
+          "id": "geo",
+          "size": 29,
+          "label": "Geopolitical entity (reporting)",
+          "sample_categories": [
+            {
+              "code": "EU",
+              "label": "European Union (EU6-1958, EU9-1973, EU10-1981, EU12-1986, EU15-1995, EU25-2004, EU27-2007, EU28-2013, EU27-2020)"
+            },
+            {
+              "code": "EA",
+              "label": "Euro area (EA11-1999, EA12-2001, EA13-2007, EA15-2008, EA16-2009, EA17-2011, EA18-2014, EA19-2015, EA20-2023, EA21-2026)"
+            },
+            {
+              "code": "BE",
+              "label": "Belgium"
+            },
+            {
+              "code": "BG",
+              "label": "Bulgaria"
+            },
+            {
+              "code": "CZ",
+              "label": "Czechia"
+            },
+            {
+              "code": "DK",
+              "label": "Denmark"
+            },
+            {
+              "code": "DE",
+              "label": "Germany"
+            },
+            {
+              "code": "EE",
+              "label": "Estonia"
+            },
+            {
+              "code": "IE",
+              "label": "Ireland"
+            },
+            {
+              "code": "EL",
+              "label": "Greece"
+            },
+            {
+              "code": "ES",
+              "label": "Spain"
+            },
+            {
+              "code": "FR",
+              "label": "France"
+            },
+            {
+              "code": "HR",
+              "label": "Croatia"
+            },
+            {
+              "code": "IT",
+              "label": "Italy"
+            },
+            {
+              "code": "CY",
+              "label": "Cyprus"
+            },
+            {
+              "code": "LV",
+              "label": "Latvia"
+            },
+            {
+              "code": "LT",
+              "label": "Lithuania"
+            },
+            {
+              "code": "LU",
+              "label": "Luxembourg"
+            },
+            {
+              "code": "HU",
+              "label": "Hungary"
+            },
+            {
+              "code": "MT",
+              "label": "Malta"
+            },
+            {
+              "code": "NL",
+              "label": "Netherlands"
+            },
+            {
+              "code": "AT",
+              "label": "Austria"
+            },
+            {
+              "code": "PL",
+              "label": "Poland"
+            },
+            {
+              "code": "PT",
+              "label": "Portugal"
+            },
+            {
+              "code": "RO",
+              "label": "Romania"
+            },
+            {
+              "code": "SI",
+              "label": "Slovenia"
+            },
+            {
+              "code": "SK",
+              "label": "Slovakia"
+            },
+            {
+              "code": "FI",
+              "label": "Finland"
+            },
+            {
+              "code": "SE",
+              "label": "Sweden"
+            }
+          ]
+        },
+        {
+          "id": "time",
+          "size": 0,
+          "label": "Time",
+          "sample_categories": []
+        }
+      ],
+      "value_count": 0
+    },
+    "EI_LM_M_VTGFIX": {
+      "dataset": "EI_LM_M_VTGFIX",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_LM_M_VTGFIX?lang=en&time=2021-01",
+      "label": "Unemployment - monthly data - vintages from 2001 to 2020",
+      "updated": "2025-08-08T11:00:00+0200",
+      "id": [
+        "freq",
+        "unit",
+        "s_adj",
+        "sex",
+        "age",
+        "geo",
+        "revdate",
+        "time"
+      ],
+      "size": [
+        1,
+        2,
+        1,
+        1,
+        1,
+        29,
+        1319,
+        0
+      ],
+      "dimensions": [
+        {
+          "id": "freq",
+          "size": 1,
+          "label": "Time frequency",
+          "sample_categories": [
+            {
+              "code": "M",
+              "label": "Monthly"
+            }
+          ]
+        },
+        {
+          "id": "unit",
+          "size": 2,
+          "label": "Unit of measure",
+          "sample_categories": [
+            {
+              "code": "THS_PER",
+              "label": "Thousand persons"
+            },
+            {
+              "code": "PC_ACT",
+              "label": "Percentage of population in the labour force"
+            }
+          ]
+        },
+        {
+          "id": "s_adj",
+          "size": 1,
+          "label": "Seasonal adjustment",
+          "sample_categories": [
+            {
+              "code": "SA",
+              "label": "Seasonally adjusted data, not calendar adjusted data"
+            }
+          ]
+        },
+        {
+          "id": "sex",
+          "size": 1,
+          "label": "Sex",
+          "sample_categories": [
+            {
+              "code": "T",
+              "label": "Total"
+            }
+          ]
+        },
+        {
+          "id": "age",
+          "size": 1,
+          "label": "Age class",
+          "sample_categories": [
+            {
+              "code": "TOTAL",
+              "label": "Total"
+            }
+          ]
+        },
+        {
+          "id": "geo",
+          "size": 29,
+          "label": "Geopolitical entity (reporting)",
+          "sample_categories": [
+            {
+              "code": "EU",
+              "label": "European Union (EU6-1958, EU9-1973, EU10-1981, EU12-1986, EU15-1995, EU25-2004, EU27-2007, EU28-2013, EU27-2020)"
+            },
+            {
+              "code": "EA",
+              "label": "Euro area (EA11-1999, EA12-2001, EA13-2007, EA15-2008, EA16-2009, EA17-2011, EA18-2014, EA19-2015, EA20-2023, EA21-2026)"
+            },
+            {
+              "code": "BE",
+              "label": "Belgium"
+            },
+            {
+              "code": "BG",
+              "label": "Bulgaria"
+            },
+            {
+              "code": "CZ",
+              "label": "Czechia"
+            },
+            {
+              "code": "DK",
+              "label": "Denmark"
+            },
+            {
+              "code": "DE",
+              "label": "Germany"
+            },
+            {
+              "code": "EE",
+              "label": "Estonia"
+            },
+            {
+              "code": "IE",
+              "label": "Ireland"
+            },
+            {
+              "code": "EL",
+              "label": "Greece"
+            },
+            {
+              "code": "ES",
+              "label": "Spain"
+            },
+            {
+              "code": "FR",
+              "label": "France"
+            },
+            {
+              "code": "HR",
+              "label": "Croatia"
+            },
+            {
+              "code": "IT",
+              "label": "Italy"
+            },
+            {
+              "code": "CY",
+              "label": "Cyprus"
+            },
+            {
+              "code": "LV",
+              "label": "Latvia"
+            },
+            {
+              "code": "LT",
+              "label": "Lithuania"
+            },
+            {
+              "code": "LU",
+              "label": "Luxembourg"
+            },
+            {
+              "code": "HU",
+              "label": "Hungary"
+            },
+            {
+              "code": "MT",
+              "label": "Malta"
+            },
+            {
+              "code": "NL",
+              "label": "Netherlands"
+            },
+            {
+              "code": "AT",
+              "label": "Austria"
+            },
+            {
+              "code": "PL",
+              "label": "Poland"
+            },
+            {
+              "code": "PT",
+              "label": "Portugal"
+            },
+            {
+              "code": "RO",
+              "label": "Romania"
+            },
+            {
+              "code": "SI",
+              "label": "Slovenia"
+            },
+            {
+              "code": "SK",
+              "label": "Slovakia"
+            },
+            {
+              "code": "FI",
+              "label": "Finland"
+            },
+            {
+              "code": "SE",
+              "label": "Sweden"
+            }
+          ]
+        },
+        {
+          "id": "revdate",
+          "size": 1319,
+          "label": "Revision date",
+          "sample_categories": [
+            {
+              "code": "2020-12-22",
+              "label": "2020-12-22"
+            },
+            {
+              "code": "2020-12-17",
+              "label": "2020-12-17"
+            },
+            {
+              "code": "2020-12-10",
+              "label": "2020-12-10"
+            },
+            {
+              "code": "2020-12-07",
+              "label": "2020-12-07"
+            },
+            {
+              "code": "2020-12-02",
+              "label": "2020-12-02"
+            },
+            {
+              "code": "2020-11-24",
+              "label": "2020-11-24"
+            },
+            {
+              "code": "2020-11-19",
+              "label": "2020-11-19"
+            },
+            {
+              "code": "2020-11-06",
+              "label": "2020-11-06"
+            },
+            {
+              "code": "2020-11-05",
+              "label": "2020-11-05"
+            },
+            {
+              "code": "2020-10-30",
+              "label": "2020-10-30"
+            },
+            {
+              "code": "2020-10-20",
+              "label": "2020-10-20"
+            },
+            {
+              "code": "2020-10-15",
+              "label": "2020-10-15"
+            },
+            {
+              "code": "2020-10-08",
+              "label": "2020-10-08"
+            },
+            {
+              "code": "2020-10-02",
+              "label": "2020-10-02"
+            },
+            {
+              "code": "2020-10-01",
+              "label": "2020-10-01"
+            },
+            {
+              "code": "2020-09-22",
+              "label": "2020-09-22"
+            },
+            {
+              "code": "2020-09-17",
+              "label": "2020-09-17"
+            },
+            {
+              "code": "2020-09-15",
+              "label": "2020-09-15"
+            },
+            {
+              "code": "2020-09-11",
+              "label": "2020-09-11"
+            },
+            {
+              "code": "2020-09-01",
+              "label": "2020-09-01"
+            },
+            {
+              "code": "2020-08-25",
+              "label": "2020-08-25"
+            },
+            {
+              "code": "2020-08-20",
+              "label": "2020-08-20"
+            },
+            {
+              "code": "2020-08-17",
+              "label": "2020-08-17"
+            },
+            {
+              "code": "2020-08-12",
+              "label": "2020-08-12"
+            },
+            {
+              "code": "2020-07-30",
+              "label": "2020-07-30"
+            },
+            {
+              "code": "2020-07-23",
+              "label": "2020-07-23"
+            },
+            {
+              "code": "2020-07-21",
+              "label": "2020-07-21"
+            },
+            {
+              "code": "2020-07-16",
+              "label": "2020-07-16"
+            },
+            {
+              "code": "2020-07-09",
+              "label": "2020-07-09"
+            },
+            {
+              "code": "2020-07-02",
+              "label": "2020-07-02"
+            },
+            {
+              "code": "2020-06-24",
+              "label": "2020-06-24"
+            },
+            {
+              "code": "2020-06-18",
+              "label": "2020-06-18"
+            },
+            {
+              "code": "2020-06-17",
+              "label": "2020-06-17"
+            },
+            {
+              "code": "2020-06-12",
+              "label": "2020-06-12"
+            },
+            {
+              "code": "2020-06-09",
+              "label": "2020-06-09"
+            },
+            {
+              "code": "2020-06-03",
+              "label": "2020-06-03"
+            },
+            {
+              "code": "2020-05-27",
+              "label": "2020-05-27"
+            },
+            {
+              "code": "2020-05-26",
+              "label": "2020-05-26"
+            },
+            {
+              "code": "2020-05-20",
+              "label": "2020-05-20"
+            },
+            {
+              "code": "2020-05-11",
+              "label": "2020-05-11"
+            },
+            {
+              "code": "2020-05-07",
+              "label": "2020-05-07"
+            },
+            {
+              "code": "2020-04-30",
+              "label": "2020-04-30"
+            },
+            {
+              "code": "2020-04-23",
+              "label": "2020-04-23"
+            },
+            {
+              "code": "2020-04-21",
+              "label": "2020-04-21"
+            },
+            {
+              "code": "2020-04-16",
+              "label": "2020-04-16"
+            },
+            {
+              "code": "2020-04-14",
+              "label": "2020-04-14"
+            },
+            {
+              "code": "2020-04-01",
+              "label": "2020-04-01"
+            },
+            {
+              "code": "2020-03-24",
+              "label": "2020-03-24"
+            },
+            {
+              "code": "2020-03-19",
+              "label": "2020-03-19"
+            },
+            {
+              "code": "2020-03-13",
+              "label": "2020-03-13"
+            },
+            {
+              "code": "2020-03-06",
+              "label": "2020-03-06"
+            },
+            {
+              "code": "2020-03-03",
+              "label": "2020-03-03"
+            },
+            {
+              "code": "2020-02-27",
+              "label": "2020-02-27"
+            },
+            {
+              "code": "2020-02-20",
+              "label": "2020-02-20"
+            },
+            {
+              "code": "2020-01-30",
+              "label": "2020-01-30"
+            },
+            {
+              "code": "2020-01-27",
+              "label": "2020-01-27"
+            },
+            {
+              "code": "2020-01-24",
+              "label": "2020-01-24"
+            },
+            {
+              "code": "2020-01-16",
+              "label": "2020-01-16"
+            },
+            {
+              "code": "2020-01-10",
+              "label": "2020-01-10"
+            },
+            {
+              "code": "2020-01-09",
+              "label": "2020-01-09"
+            },
+            {
+              "code": "2019-12-20",
+              "label": "2019-12-20"
+            },
+            {
+              "code": "2019-12-12",
+              "label": "2019-12-12"
+            },
+            {
+              "code": "2019-12-06",
+              "label": "2019-12-06"
+            },
+            {
+              "code": "2019-11-29",
+              "label": "2019-11-29"
+            },
+            {
+              "code": "2019-11-26",
+              "label": "2019-11-26"
+            },
+            {
+              "code": "2019-11-21",
+              "label": "2019-11-21"
+            },
+            {
+              "code": "2019-11-07",
+              "label": "2019-11-07"
+            },
+            {
+              "code": "2019-11-06",
+              "label": "2019-11-06"
+            },
+            {
+              "code": "2019-10-31",
+              "label": "2019-10-31"
+            },
+            {
+              "code": "2019-10-22",
+              "label": "2019-10-22"
+            },
+            {
+              "code": "2019-10-17",
+              "label": "2019-10-17"
+            },
+            {
+              "code": "2019-10-15",
+              "label": "2019-10-15"
+            },
+            {
+              "code": "2019-10-01",
+              "label": "2019-10-01"
+            },
+            {
+              "code": "2019-09-30",
+              "label": "2019-09-30"
+            },
+            {
+              "code": "2019-09-24",
+              "label": "2019-09-24"
+            },
+            {
+              "code": "2019-09-19",
+              "label": "2019-09-19"
+            },
+            {
+              "code": "2019-09-17",
+              "label": "2019-09-17"
+            },
+            {
+              "code": "2019-09-05",
+              "label": "2019-09-05"
+            },
+            {
+              "code": "2019-09-03",
+              "label": "2019-09-03"
+            },
+            {
+              "code": "2019-08-30",
+              "label": "2019-08-30"
+            },
+            {
+              "code": "2019-08-27",
+              "label": "2019-08-27"
+            },
+            {
+              "code": "2019-08-22",
+              "label": "2019-08-22"
+            },
+            {
+              "code": "2019-08-20",
+              "label": "2019-08-20"
+            },
+            {
+              "code": "2019-08-16",
+              "label": "2019-08-16"
+            },
+            {
+              "code": "2019-07-31",
+              "label": "2019-07-31"
+            },
+            {
+              "code": "2019-07-25",
+              "label": "2019-07-25"
+            },
+            {
+              "code": "2019-07-23",
+              "label": "2019-07-23"
+            },
+            {
+              "code": "2019-07-18",
+              "label": "2019-07-18"
+            },
+            {
+              "code": "2019-07-15",
+              "label": "2019-07-15"
+            },
+            {
+              "code": "2019-07-02",
+              "label": "2019-07-02"
+            },
+            {
+              "code": "2019-07-01",
+              "label": "2019-07-01"
+            },
+            {
+              "code": "2019-06-25",
+              "label": "2019-06-25"
+            },
+            {
+              "code": "2019-06-20",
+              "label": "2019-06-20"
+            },
+            {
+              "code": "2019-06-19",
+              "label": "2019-06-19"
+            },
+            {
+              "code": "2019-06-06",
+              "label": "2019-06-06"
+            },
+            {
+              "code": "2019-06-05",
+              "label": "2019-06-05"
+            },
+            {
+              "code": "2019-06-04",
+              "label": "2019-06-04"
+            },
+            {
+              "code": "2019-05-23",
+              "label": "2019-05-23"
+            },
+            {
+              "code": "2019-05-15",
+              "label": "2019-05-15"
+            },
+            {
+              "code": "2019-04-30",
+              "label": "2019-04-30"
+            },
+            {
+              "code": "2019-04-24",
+              "label": "2019-04-24"
+            },
+            {
+              "code": "2019-04-18",
+              "label": "2019-04-18"
+            },
+            {
+              "code": "2019-04-15",
+              "label": "2019-04-15"
+            },
+            {
+              "code": "2019-04-02",
+              "label": "2019-04-02"
+            },
+            {
+              "code": "2019-04-01",
+              "label": "2019-04-01"
+            },
+            {
+              "code": "2019-03-26",
+              "label": "2019-03-26"
+            },
+            {
+              "code": "2019-02-14",
+              "label": "2019-02-14"
+            },
+            {
+              "code": "2019-02-07",
+              "label": "2019-02-07"
+            },
+            {
+              "code": "2019-02-05",
+              "label": "2019-02-05"
+            },
+            {
+              "code": "2019-02-04",
+              "label": "2019-02-04"
+            },
+            {
+              "code": "2019-01-09",
+              "label": "2019-01-09"
+            },
+            {
+              "code": "2018-12-21",
+              "label": "2018-12-21"
+            },
+            {
+              "code": "2018-12-06",
+              "label": "2018-12-06"
+            },
+            {
+              "code": "2018-11-30",
+              "label": "2018-11-30"
+            },
+            {
+              "code": "2018-11-20",
+              "label": "2018-11-20"
+            },
+            {
+              "code": "2018-11-15",
+              "label": "2018-11-15"
+            },
+            {
+              "code": "2018-11-09",
+              "label": "2018-11-09"
+            },
+            {
+              "code": "2018-11-05",
+              "label": "2018-11-05"
+            },
+            {
+              "code": "2018-10-31",
+              "label": "2018-10-31"
+            },
+            {
+              "code": "2018-10-23",
+              "label": "2018-10-23"
+            }
+          ]
+        },
+        {
+          "id": "time",
+          "size": 0,
+          "label": "Time",
+          "sample_categories": []
+        }
+      ],
+      "value_count": 0
+    }
+  }
+}
