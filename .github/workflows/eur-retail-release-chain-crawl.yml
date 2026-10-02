@@ -1,0 +1,39 @@
+name: EUR Retail Release Chain Crawl
+
+on:
+  push:
+    branches: [engine-freeze-v1-2026-10-02]
+    paths:
+      - validation/crawl_eur_retail_release_chain.py
+      - .github/workflows/eur-retail-release-chain-crawl.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdf
+      - name: Crawl deterministic Retail release chain
+        run: python validation/crawl_eur_retail_release_chain.py
+      - name: Commit chain
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_CHAIN_PIT_V1_2026-10-02.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build EUR retail PIT release chain"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
