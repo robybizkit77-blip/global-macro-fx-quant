@@ -2,6 +2,7 @@
 import io,json,re,time,urllib.request
 from pathlib import Path
 from datetime import date,timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pypdf import PdfReader
 
 OUTDIR=Path("validation/pit_batch/eurostat/archive")
@@ -71,61 +72,68 @@ if seed_path.exists():
         if x.get("kind")=="flash":
             seed[x["reference_quarter"]]=x
 
-rows=[]
+def crawl_one(y,q):
+    ref=quarter_label(y,q)
+    candidates=[]
+    if ref in seed:
+        candidates.append((seed[ref]["release_date"],seed[ref]["url"],"seed"))
+    a,b=expected_release_window(y,q)
+    d=a
+    while d<=b:
+        dd=d.strftime("%d%m%Y")
+        ds=d.isoformat()
+        for prefix in [
+          "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/",
+          "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/"
+        ]:
+            candidates.append((ds,f"{prefix}2-{dd}-ap","scan"))
+        d+=timedelta(days=1)
+    seen=set()
+    for ds,url,mode in candidates:
+        if url in seen: continue
+        seen.add(url)
+        raw,ctype,final=fetch_bytes(url)
+        if raw is None: continue
+        try:
+            is_pdf=("pdf" in (ctype or "")) or raw[:4]==b"%PDF"
+            txt=pdf_to_text(raw) if is_pdf else html_to_text(raw)
+        except Exception:
+            continue
+        low=txt.lower()
+        if "employment" not in low or "euro area" not in low: continue
+        qwords={1:"first",2:"second",3:"third",4:"fourth"}
+        if not re.search(rf'{qwords[q]} quarter of {y}',txt,re.I): continue
+        val,matched=extract_qoq(txt)
+        if val is None: continue
+        return {
+          "reference_quarter":ref,
+          "release_date":ds,
+          "employment_qoq_pct":val,
+          "url":final or url,
+          "discovery":mode,
+          "match_text":matched
+        }
+    return {
+      "reference_quarter":ref,
+      "release_date":None,
+      "employment_qoq_pct":None,
+      "url":None,
+      "discovery":"missing"
+    }
+
+targets=[]
 for y in range(2020,2027):
     for q in range(1,5):
         ref=quarter_label(y,q)
-        if ref<"2020-Q2" or ref>"2026-Q2": continue
-        candidates=[]
-        if ref in seed:
-            candidates.append((seed[ref]["release_date"],seed[ref]["url"],"seed"))
-        a,b=expected_release_window(y,q)
-        d=a
-        while d<=b:
-            dd=d.strftime("%d%m%Y")
-            ds=d.isoformat()
-            for prefix in [
-              "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/",
-              "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/"
-            ]:
-                candidates.append((ds,f"{prefix}2-{dd}-ap","scan"))
-            d+=timedelta(days=1)
+        if "2020-Q2" <= ref <= "2026-Q2":
+            targets.append((y,q))
 
-        seen=set(); found=None
-        for ds,url,mode in candidates:
-            if url in seen: continue
-            seen.add(url)
-            raw,ctype,final=fetch_bytes(url)
-            if raw is None: continue
-            try:
-                is_pdf=("pdf" in (ctype or "")) or raw[:4]==b"%PDF"
-                txt=pdf_to_text(raw) if is_pdf else html_to_text(raw)
-            except Exception:
-                continue
-            low=txt.lower()
-            if "employment" not in low or "euro area" not in low: continue
-            # Confirm the page refers to the intended quarter.
-            qwords={1:"first",2:"second",3:"third",4:"fourth"}
-            if not re.search(rf'{qwords[q]} quarter of {y}',txt,re.I): continue
-            val,matched=extract_qoq(txt)
-            if val is None: continue
-            found={
-              "reference_quarter":ref,
-              "release_date":ds,
-              "employment_qoq_pct":val,
-              "url":final or url,
-              "discovery":mode,
-              "match_text":matched
-            }
-            break
-        rows.append(found or {
-          "reference_quarter":ref,
-          "release_date":None,
-          "employment_qoq_pct":None,
-          "url":None,
-          "discovery":"missing"
-        })
-        time.sleep(0.15)
+rows=[]
+with ThreadPoolExecutor(max_workers=6) as ex:
+    futs={ex.submit(crawl_one,y,q):(y,q) for y,q in targets}
+    for fut in as_completed(futs):
+        rows.append(fut.result())
+rows.sort(key=lambda x:x["reference_quarter"])
 
 valid=[x for x in rows if x["employment_qoq_pct"] is not None]
 report={
