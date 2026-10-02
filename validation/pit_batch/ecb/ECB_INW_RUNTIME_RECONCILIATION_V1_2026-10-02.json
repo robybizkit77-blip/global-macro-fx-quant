@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_ECB_INW_RUNTIME_RECONCILIATION_V1",
+  "created_at": "2026-10-02",
+  "runtime_id": "EA_NEGOTIATED_WAGES_YOY_history_value",
+  "candidate_series": "INW.Q.I9.N.INWR.000000.4F0.GY.IX",
+  "findings": {
+    "overlapping_quarters": 40,
+    "exact_numeric_matches": 3,
+    "max_abs_difference_pp": 0.1,
+    "candidate_series_end": "2025-Q4",
+    "runtime_end": "2026-Q2",
+    "runtime_tail": {
+      "2026-Q1": 2.57,
+      "2026-Q2": 2.45
+    },
+    "conclusion": "CLOSE_BUT_NOT_EXACT_SOURCE_MATCH"
+  },
+  "interpretation": "The INW series is conceptually related and numerically close, but cannot be treated as the exact runtime source. Current runtime may reflect another ECB negotiated-wage series, a different composition, or a separate wage-tracker feed. Exact source must be proven before PIT reconstruction.",
+  "guardrail": "Do not use INW current history as a substitute for runtime PIT values."
+}
