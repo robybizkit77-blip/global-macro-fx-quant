@@ -1,6 +1,7 @@
 {
-  "schema": "GMFQ_EUR_PIT_SIGNAL_SENSITIVITY_V1",
+  "schema": "GMFQ_EUR_PIT_SIGNAL_SENSITIVITY_V2",
   "created_at": "2026-10-02",
+  "correction_note": "Supersedes V1 due to unit mismatch in EUR industrial production sensitivity. V2 uses comparable level paths.",
   "freeze": {
     "branch": "engine-freeze-v1-2026-10-02",
     "model_rules_version": "9.3-pair-attention-hierarchy",
@@ -14,12 +15,12 @@
           "checkpoint": "2021-10-13",
           "observation_month": "2021-08",
           "first_release": {
-            "current": -1.7222,
-            "previous": 1,
+            "current": -1.6029,
+            "previous": 1.4805,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 1.7222
+            "speed": 1.6029
           },
           "current_revised": {
             "current": -1.7692,
@@ -37,12 +38,12 @@
           "checkpoint": "2021-11-12",
           "observation_month": "2021-09",
           "first_release": {
-            "current": 0.875,
-            "previous": -1.9375,
-            "direction": 1,
+            "current": -0.2198,
+            "previous": -1.7873,
+            "direction": -1,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.875
+            "turning": false,
+            "speed": 0.2198
           },
           "current_revised": {
             "current": 0.0833,
@@ -53,19 +54,19 @@
             "speed": 0.0833
           },
           "direction_changed": true,
-          "turning_changed": true,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2021-12-14",
           "observation_month": "2021-10",
           "first_release": {
-            "current": 0.9286,
-            "previous": 1,
+            "current": 1.0822,
+            "previous": -0.1972,
             "direction": 1,
-            "accelDir": 0,
-            "turning": false,
-            "speed": 0.9286
+            "accelDir": 1,
+            "turning": true,
+            "speed": 1.0822
           },
           "current_revised": {
             "current": 0.1818,
@@ -76,19 +77,19 @@
             "speed": 0.1818
           },
           "direction_changed": true,
-          "turning_changed": false,
-          "acceleration_direction_changed": false
+          "turning_changed": true,
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2022-01-12",
           "observation_month": "2021-11",
           "first_release": {
-            "current": 0.8889,
-            "previous": 0.963,
+            "current": 2.2865,
+            "previous": 1.0816,
             "direction": 1,
-            "accelDir": 0,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.8889
+            "speed": 2.2865
           },
           "current_revised": {
             "current": 0.7368,
@@ -100,18 +101,18 @@
           },
           "direction_changed": false,
           "turning_changed": false,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-02-16",
           "observation_month": "2021-12",
           "first_release": {
-            "current": -0.8462,
-            "previous": 0.9231,
-            "direction": -1,
+            "current": 1.2197,
+            "previous": 2.2852,
+            "direction": 1,
             "accelDir": -1,
-            "turning": true,
-            "speed": 0.8462
+            "turning": false,
+            "speed": 1.2197
           },
           "current_revised": {
             "current": 1.8182,
@@ -121,20 +122,20 @@
             "turning": false,
             "speed": 1.8182
           },
-          "direction_changed": true,
-          "turning_changed": true,
+          "direction_changed": false,
+          "turning_changed": false,
           "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2022-03-15",
           "observation_month": "2022-01",
           "first_release": {
-            "current": -0.96,
-            "previous": -0.88,
-            "direction": -1,
-            "accelDir": 0,
+            "current": 0,
+            "previous": 1.2204,
+            "direction": 0,
+            "accelDir": -1,
             "turning": false,
-            "speed": 0.96
+            "speed": 0
           },
           "current_revised": {
             "current": -0.8421,
@@ -144,20 +145,20 @@
             "turning": true,
             "speed": 0.8421
           },
-          "direction_changed": false,
+          "direction_changed": true,
           "turning_changed": true,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-04-20",
           "observation_month": "2022-02",
           "first_release": {
-            "current": 0.5833,
-            "previous": -1,
+            "current": 0.7208,
+            "previous": 0,
             "direction": 1,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.5833
+            "turning": false,
+            "speed": 0.7208
           },
           "current_revised": {
             "current": 0.75,
@@ -168,19 +169,19 @@
             "speed": 0.75
           },
           "direction_changed": false,
-          "turning_changed": false,
+          "turning_changed": true,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-05-13",
           "observation_month": "2022-03",
           "first_release": {
-            "current": -2,
-            "previous": 0.56,
+            "current": -1.8655,
+            "previous": 0.7204,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 2
+            "speed": 1.8655
           },
           "current_revised": {
             "current": -1.8947,
@@ -198,12 +199,12 @@
           "checkpoint": "2022-06-15",
           "observation_month": "2022-04",
           "first_release": {
-            "current": 1.6923,
-            "previous": -1.9231,
+            "current": 0.4073,
+            "previous": -1.8665,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.6923
+            "speed": 0.4073
           },
           "current_revised": {
             "current": 0.25,
@@ -221,12 +222,12 @@
           "checkpoint": "2022-07-13",
           "observation_month": "2022-05",
           "first_release": {
-            "current": 0.32,
-            "previous": 1.76,
+            "current": 0.8998,
+            "previous": 0.4481,
             "direction": 1,
-            "accelDir": -1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.32
+            "speed": 0.8998
           },
           "current_revised": {
             "current": 2.2105,
@@ -238,18 +239,18 @@
           },
           "direction_changed": false,
           "turning_changed": false,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-08-12",
           "observation_month": "2022-06",
           "first_release": {
-            "current": -0.0833,
-            "previous": 0.3333,
-            "direction": 0,
-            "accelDir": -1,
+            "current": 0.882,
+            "previous": 1,
+            "direction": 1,
+            "accelDir": 0,
             "turning": false,
-            "speed": 0.0833
+            "speed": 0.882
           },
           "current_revised": {
             "current": -0.125,
@@ -259,20 +260,20 @@
             "turning": false,
             "speed": 0.125
           },
-          "direction_changed": false,
+          "direction_changed": true,
           "turning_changed": false,
-          "acceleration_direction_changed": false
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2022-09-14",
           "observation_month": "2022-07",
           "first_release": {
-            "current": -2.4,
-            "previous": -0.08,
+            "current": -2.6259,
+            "previous": 0.7936,
             "direction": -1,
             "accelDir": -1,
-            "turning": false,
-            "speed": 2.4
+            "turning": true,
+            "speed": 2.6259
           },
           "current_revised": {
             "current": -1.8947,
@@ -283,19 +284,19 @@
             "speed": 1.8947
           },
           "direction_changed": false,
-          "turning_changed": false,
+          "turning_changed": true,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-10-12",
           "observation_month": "2022-08",
           "first_release": {
-            "current": 2.9231,
-            "previous": -2.3077,
+            "current": 1.5208,
+            "previous": -2.3868,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 2.9231
+            "speed": 1.5208
           },
           "current_revised": {
             "current": 1.9091,
@@ -313,12 +314,12 @@
           "checkpoint": "2022-11-14",
           "observation_month": "2022-09",
           "first_release": {
-            "current": -0.48,
-            "previous": 3.04,
-            "direction": -1,
+            "current": 0.9617,
+            "previous": 1.5791,
+            "direction": 1,
             "accelDir": -1,
-            "turning": true,
-            "speed": 0.48
+            "turning": false,
+            "speed": 0.9617
           },
           "current_revised": {
             "current": 1.0435,
@@ -328,20 +329,20 @@
             "turning": false,
             "speed": 1.0435
           },
-          "direction_changed": true,
-          "turning_changed": true,
+          "direction_changed": false,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2022-12-14",
           "observation_month": "2022-10",
           "first_release": {
-            "current": -2.2308,
-            "previous": -0.4615,
+            "current": -2.0767,
+            "previous": 0.9262,
             "direction": -1,
             "accelDir": -1,
-            "turning": false,
-            "speed": 2.2308
+            "turning": true,
+            "speed": 2.0767
           },
           "current_revised": {
             "current": -1,
@@ -352,19 +353,19 @@
             "speed": 1
           },
           "direction_changed": false,
-          "turning_changed": true,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2023-01-13",
           "observation_month": "2022-11",
           "first_release": {
-            "current": 2.2222,
-            "previous": -2.1481,
+            "current": 1.017,
+            "previous": -2.0756,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 2.2222
+            "speed": 1.017
           },
           "current_revised": {
             "current": 0.2727,
@@ -382,12 +383,12 @@
           "checkpoint": "2023-02-15",
           "observation_month": "2022-12",
           "first_release": {
-            "current": -1.4286,
-            "previous": 2.1429,
+            "current": -1.0267,
+            "previous": 1.0165,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 1.4286
+            "speed": 1.0267
           },
           "current_revised": {
             "current": -1.9091,
@@ -405,12 +406,12 @@
           "checkpoint": "2023-03-15",
           "observation_month": "2023-01",
           "first_release": {
-            "current": 1.0968,
-            "previous": -1.2903,
+            "current": 0.7119,
+            "previous": -1.0272,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.0968
+            "speed": 0.7119
           },
           "current_revised": {
             "current": 1.3043,
@@ -428,12 +429,12 @@
           "checkpoint": "2023-04-13",
           "observation_month": "2023-02",
           "first_release": {
-            "current": 0.5714,
-            "previous": 1.2143,
+            "current": 1.5352,
+            "previous": 0.7115,
             "direction": 1,
-            "accelDir": -1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.5714
+            "speed": 1.5352
           },
           "current_revised": {
             "current": 1,
@@ -445,18 +446,18 @@
           },
           "direction_changed": false,
           "turning_changed": false,
-          "acceleration_direction_changed": false
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2023-05-15",
           "observation_month": "2023-03",
           "first_release": {
-            "current": -3.6129,
-            "previous": 0.5161,
+            "current": -4.2245,
+            "previous": 1.5227,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 3.6129
+            "speed": 4.2245
           },
           "current_revised": {
             "current": -2.5217,
@@ -474,12 +475,12 @@
           "checkpoint": "2023-06-14",
           "observation_month": "2023-04",
           "first_release": {
-            "current": 3,
-            "previous": -3.2941,
+            "current": 0.9963,
+            "previous": -4.2593,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 3
+            "speed": 0.9963
           },
           "current_revised": {
             "current": 0.0909,
@@ -497,12 +498,12 @@
           "checkpoint": "2023-07-13",
           "observation_month": "2023-05",
           "first_release": {
-            "current": -0.5161,
-            "previous": 3.2903,
-            "direction": -1,
+            "current": 0.2014,
+            "previous": 0.9968,
+            "direction": 1,
             "accelDir": -1,
-            "turning": true,
-            "speed": 0.5161
+            "turning": false,
+            "speed": 0.2014
           },
           "current_revised": {
             "current": 0.3636,
@@ -512,20 +513,20 @@
             "turning": false,
             "speed": 0.3636
           },
-          "direction_changed": true,
-          "turning_changed": true,
+          "direction_changed": false,
+          "turning_changed": false,
           "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2023-08-16",
           "observation_month": "2023-06",
           "first_release": {
-            "current": 0.2143,
-            "previous": -0.5714,
+            "current": 0.5047,
+            "previous": 0.2015,
             "direction": 1,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.2143
+            "turning": false,
+            "speed": 0.5047
           },
           "current_revised": {
             "current": 0.7273,
@@ -536,19 +537,19 @@
             "speed": 0.7273
           },
           "direction_changed": false,
-          "turning_changed": true,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2023-09-13",
           "observation_month": "2023-07",
           "first_release": {
-            "current": -1.0667,
-            "previous": 0.2,
+            "current": -1.1152,
+            "previous": 0.5044,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 1.0667
+            "speed": 1.1152
           },
           "current_revised": {
             "current": -2.5455,
@@ -566,12 +567,12 @@
           "checkpoint": "2023-10-13",
           "observation_month": "2023-08",
           "first_release": {
-            "current": 1.0625,
-            "previous": -1,
+            "current": 0.6019,
+            "previous": -1.1158,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.0625
+            "speed": 0.6019
           },
           "current_revised": {
             "current": -0.3636,
@@ -589,12 +590,12 @@
           "checkpoint": "2023-11-15",
           "observation_month": "2023-09",
           "first_release": {
-            "current": -1.0303,
-            "previous": 1.0303,
+            "current": -1.1096,
+            "previous": 0.6016,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 1.0303
+            "speed": 1.1096
           },
           "current_revised": {
             "current": -0.1818,
@@ -612,12 +613,12 @@
           "checkpoint": "2023-12-13",
           "observation_month": "2023-10",
           "first_release": {
-            "current": 0.25,
-            "previous": -1.0625,
-            "direction": 1,
+            "current": -0.6987,
+            "previous": -1.1102,
+            "direction": -1,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.25
+            "turning": false,
+            "speed": 0.6987
           },
           "current_revised": {
             "current": -0.5455,
@@ -627,20 +628,20 @@
             "turning": false,
             "speed": 0.5455
           },
-          "direction_changed": true,
-          "turning_changed": true,
+          "direction_changed": false,
+          "turning_changed": false,
           "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2024-01-23",
           "observation_month": "2023-11",
           "first_release": {
-            "current": 0.2667,
-            "previous": 0.2667,
-            "direction": 1,
-            "accelDir": 0,
+            "current": -0.2977,
+            "previous": -0.6996,
+            "direction": -1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.2667
+            "speed": 0.2977
           },
           "current_revised": {
             "current": 0.9,
@@ -650,20 +651,20 @@
             "turning": true,
             "speed": 0.9
           },
-          "direction_changed": false,
+          "direction_changed": true,
           "turning_changed": true,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2024-02-14",
           "observation_month": "2023-12",
           "first_release": {
-            "current": 1.8125,
-            "previous": 0.25,
+            "current": 2.5692,
+            "previous": -0.2973,
             "direction": 1,
             "accelDir": 1,
-            "turning": false,
-            "speed": 1.8125
+            "turning": true,
+            "speed": 2.5692
           },
           "current_revised": {
             "current": -0.1111,
@@ -674,19 +675,19 @@
             "speed": 0.1111
           },
           "direction_changed": true,
-          "turning_changed": false,
+          "turning_changed": true,
           "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2024-03-13",
           "observation_month": "2024-01",
           "first_release": {
-            "current": -3.5152,
-            "previous": 1.7576,
+            "current": -3.2426,
+            "previous": 2.5679,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 3.5152
+            "speed": 3.2426
           },
           "current_revised": {
             "current": -1.2,
@@ -704,12 +705,12 @@
           "checkpoint": "2024-04-15",
           "observation_month": "2024-02",
           "first_release": {
-            "current": 2.3529,
-            "previous": -3.4118,
+            "current": 0.7851,
+            "previous": -3.2444,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 2.3529
+            "speed": 0.7851
           },
           "current_revised": {
             "current": 0.2222,
@@ -727,12 +728,12 @@
           "checkpoint": "2024-05-15",
           "observation_month": "2024-03",
           "first_release": {
-            "current": -0.1212,
-            "previous": 2.4242,
-            "direction": 0,
-            "accelDir": -1,
+            "current": 0.5944,
+            "previous": 0.7862,
+            "direction": 1,
+            "accelDir": 0,
             "turning": false,
-            "speed": 0.1212
+            "speed": 0.5944
           },
           "current_revised": {
             "current": -0.5882,
@@ -744,18 +745,18 @@
           },
           "direction_changed": true,
           "turning_changed": true,
-          "acceleration_direction_changed": false
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2024-06-13",
           "observation_month": "2024-04",
           "first_release": {
-            "current": -0.4375,
-            "previous": -0.125,
-            "direction": -1,
+            "current": -0.0998,
+            "previous": 0.5951,
+            "direction": 0,
             "accelDir": -1,
             "turning": false,
-            "speed": 0.4375
+            "speed": 0.0998
           },
           "current_revised": {
             "current": 0.625,
@@ -773,12 +774,12 @@
           "checkpoint": "2024-07-15",
           "observation_month": "2024-05",
           "first_release": {
-            "current": -0.3333,
-            "previous": -0.4667,
+            "current": -0.6202,
+            "previous": -0.1035,
             "direction": -1,
-            "accelDir": 0,
+            "accelDir": -1,
             "turning": false,
-            "speed": 0.3333
+            "speed": 0.6202
           },
           "current_revised": {
             "current": -1.8824,
@@ -790,18 +791,18 @@
           },
           "direction_changed": false,
           "turning_changed": true,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2024-08-14",
           "observation_month": "2024-06",
           "first_release": {
-            "current": 0.3571,
-            "previous": -0.3571,
-            "direction": 1,
+            "current": -0.1067,
+            "previous": -0.6441,
+            "direction": 0,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.3571
+            "turning": false,
+            "speed": 0.1067
           },
           "current_revised": {
             "current": 1.8889,
@@ -811,20 +812,20 @@
             "turning": true,
             "speed": 1.8889
           },
-          "direction_changed": false,
-          "turning_changed": false,
+          "direction_changed": true,
+          "turning_changed": true,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2024-09-13",
           "observation_month": "2024-07",
           "first_release": {
-            "current": -0.1481,
-            "previous": 0.3704,
-            "direction": 0,
+            "current": -0.3396,
+            "previous": -0.1133,
+            "direction": -1,
             "accelDir": -1,
             "turning": false,
-            "speed": 0.1481
+            "speed": 0.3396
           },
           "current_revised": {
             "current": -0.8235,
@@ -834,7 +835,7 @@
             "turning": true,
             "speed": 0.8235
           },
-          "direction_changed": true,
+          "direction_changed": false,
           "turning_changed": true,
           "acceleration_direction_changed": false
         },
@@ -842,12 +843,12 @@
           "checkpoint": "2024-10-15",
           "observation_month": "2024-08",
           "first_release": {
-            "current": 1.5,
-            "previous": -0.1429,
+            "current": 1.9129,
+            "previous": -0.3198,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.5
+            "speed": 1.9129
           },
           "current_revised": {
             "current": 0.625,
@@ -865,12 +866,12 @@
           "checkpoint": "2024-11-14",
           "observation_month": "2024-09",
           "first_release": {
-            "current": -2.5333,
-            "previous": 1.4,
+            "current": -2.0837,
+            "previous": 1.8422,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 2.5333
+            "speed": 2.0837
           },
           "current_revised": {
             "current": -1.0588,
@@ -888,12 +889,12 @@
           "checkpoint": "2024-12-13",
           "observation_month": "2024-10",
           "first_release": {
-            "current": 1.25,
-            "previous": -2.375,
-            "direction": 1,
+            "current": 0,
+            "previous": -2.1637,
+            "direction": 0,
             "accelDir": 1,
-            "turning": true,
-            "speed": 1.25
+            "turning": false,
+            "speed": 0
           },
           "current_revised": {
             "current": 0.375,
@@ -903,20 +904,20 @@
             "turning": true,
             "speed": 0.375
           },
-          "direction_changed": false,
-          "turning_changed": false,
+          "direction_changed": true,
+          "turning_changed": true,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2025-01-15",
           "observation_month": "2024-11",
           "first_release": {
-            "current": 0.1333,
-            "previous": 1.3333,
-            "direction": 0,
-            "accelDir": -1,
+            "current": 0.2252,
+            "previous": 0,
+            "direction": 1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.1333
+            "speed": 0.2252
           },
           "current_revised": {
             "current": -0.125,
@@ -926,20 +927,20 @@
             "turning": false,
             "speed": 0.125
           },
-          "direction_changed": false,
+          "direction_changed": true,
           "turning_changed": false,
-          "acceleration_direction_changed": false
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2025-02-13",
           "observation_month": "2024-12",
           "first_release": {
-            "current": -0.9286,
-            "previous": 0.1429,
+            "current": -1.1686,
+            "previous": 0.212,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 0.9286
+            "speed": 1.1686
           },
           "current_revised": {
             "current": -0.375,
@@ -957,12 +958,12 @@
           "checkpoint": "2025-03-13",
           "observation_month": "2025-01",
           "first_release": {
-            "current": 1.2667,
-            "previous": -0.8667,
+            "current": 0.8927,
+            "previous": -1.2412,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.2667
+            "speed": 0.8927
           },
           "current_revised": {
             "current": 2,
@@ -980,12 +981,12 @@
           "checkpoint": "2025-04-15",
           "observation_month": "2025-02",
           "first_release": {
-            "current": 0.2143,
-            "previous": 1.3571,
+            "current": 1.165,
+            "previous": 0.8405,
             "direction": 1,
-            "accelDir": -1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.2143
+            "speed": 1.165
           },
           "current_revised": {
             "current": 1,
@@ -997,18 +998,18 @@
           },
           "direction_changed": false,
           "turning_changed": false,
-          "acceleration_direction_changed": false
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2025-05-15",
           "observation_month": "2025-03",
           "first_release": {
-            "current": 1.0345,
-            "previous": 0.2069,
+            "current": 2.6809,
+            "previous": 1.1219,
             "direction": 1,
             "accelDir": 1,
             "turning": false,
-            "speed": 1.0345
+            "speed": 2.6809
           },
           "current_revised": {
             "current": 3.25,
@@ -1026,12 +1027,12 @@
           "checkpoint": "2025-06-13",
           "observation_month": "2025-04",
           "first_release": {
-            "current": -3.3333,
-            "previous": 1,
+            "current": -2.4485,
+            "previous": 2.5853,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 3.3333
+            "speed": 2.4485
           },
           "current_revised": {
             "current": -4.375,
@@ -1049,12 +1050,12 @@
           "checkpoint": "2025-07-15",
           "observation_month": "2025-05",
           "first_release": {
-            "current": 2.6452,
-            "previous": -3.2258,
+            "current": 1.6904,
+            "previous": -2.4452,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 2.6452
+            "speed": 1.6904
           },
           "current_revised": {
             "current": 1.0588,
@@ -1072,12 +1073,12 @@
           "checkpoint": "2025-08-14",
           "observation_month": "2025-06",
           "first_release": {
-            "current": -1.875,
-            "previous": 2.5625,
+            "current": -1.3129,
+            "previous": 1.6882,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 1.875
+            "speed": 1.3129
           },
           "current_revised": {
             "current": -0.25,
@@ -1095,12 +1096,12 @@
           "checkpoint": "2025-09-16",
           "observation_month": "2025-07",
           "first_release": {
-            "current": 1,
-            "previous": -1.875,
+            "current": 0.2994,
+            "previous": -1.3147,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1
+            "speed": 0.2994
           },
           "current_revised": {
             "current": -0.125,
@@ -1118,12 +1119,12 @@
           "checkpoint": "2025-10-15",
           "observation_month": "2025-08",
           "first_release": {
-            "current": -0.9375,
-            "previous": 1,
+            "current": -1.1998,
+            "previous": 0.299,
             "direction": -1,
             "accelDir": -1,
             "turning": true,
-            "speed": 0.9375
+            "speed": 1.1998
           },
           "current_revised": {
             "current": -0.375,
@@ -1141,12 +1142,12 @@
           "checkpoint": "2025-11-13",
           "observation_month": "2025-09",
           "first_release": {
-            "current": 0.9032,
-            "previous": -0.9677,
-            "direction": 1,
+            "current": 0.1978,
+            "previous": -1.2014,
+            "direction": 0,
             "accelDir": 1,
-            "turning": true,
-            "speed": 0.9032
+            "turning": false,
+            "speed": 0.1978
           },
           "current_revised": {
             "current": -0.125,
@@ -1156,20 +1157,20 @@
             "turning": false,
             "speed": 0.125
           },
-          "direction_changed": true,
-          "turning_changed": true,
+          "direction_changed": false,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2025-12-15",
           "observation_month": "2025-10",
           "first_release": {
-            "current": 0.4,
-            "previous": 0.9333,
+            "current": 0.7939,
+            "previous": 0.1981,
             "direction": 1,
-            "accelDir": -1,
+            "accelDir": 1,
             "turning": false,
-            "speed": 0.4
+            "speed": 0.7939
           },
           "current_revised": {
             "current": 0.25,
@@ -1181,18 +1182,18 @@
           },
           "direction_changed": false,
           "turning_changed": true,
-          "acceleration_direction_changed": true
+          "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2026-01-15",
           "observation_month": "2025-11",
           "first_release": {
-            "current": -0.1333,
-            "previous": 0.4,
-            "direction": 0,
+            "current": 0.6224,
+            "previous": 0.8233,
+            "direction": 1,
             "accelDir": -1,
             "turning": false,
-            "speed": 0.1333
+            "speed": 0.6224
           },
           "current_revised": {
             "current": 0.5,
@@ -1202,7 +1203,7 @@
             "turning": false,
             "speed": 0.5
           },
-          "direction_changed": true,
+          "direction_changed": false,
           "turning_changed": false,
           "acceleration_direction_changed": true
         },
@@ -1210,12 +1211,12 @@
           "checkpoint": "2026-02-16",
           "observation_month": "2025-12",
           "first_release": {
-            "current": -1.2667,
-            "previous": -0.1333,
+            "current": -1.3083,
+            "previous": 0.6002,
             "direction": -1,
             "accelDir": -1,
-            "turning": false,
-            "speed": 1.2667
+            "turning": true,
+            "speed": 1.3083
           },
           "current_revised": {
             "current": -0.375,
@@ -1226,19 +1227,19 @@
             "speed": 0.375
           },
           "direction_changed": false,
-          "turning_changed": true,
+          "turning_changed": false,
           "acceleration_direction_changed": false
         },
         {
           "checkpoint": "2026-03-13",
           "observation_month": "2026-01",
           "first_release": {
-            "current": -0.1333,
-            "previous": -1.2667,
-            "direction": 0,
-            "accelDir": 1,
+            "current": -1.4879,
+            "previous": -1.3065,
+            "direction": -1,
+            "accelDir": 0,
             "turning": false,
-            "speed": 0.1333
+            "speed": 1.4879
           },
           "current_revised": {
             "current": -1.625,
@@ -1248,7 +1249,7 @@
             "turning": false,
             "speed": 1.625
           },
-          "direction_changed": true,
+          "direction_changed": false,
           "turning_changed": false,
           "acceleration_direction_changed": true
         },
@@ -1256,12 +1257,12 @@
           "checkpoint": "2026-04-21",
           "observation_month": "2026-02",
           "first_release": {
-            "current": 1.2667,
-            "previous": -0.1333,
+            "current": 0.3914,
+            "previous": -1.4899,
             "direction": 1,
             "accelDir": 1,
             "turning": true,
-            "speed": 1.2667
+            "speed": 0.3914
           },
           "current_revised": {
             "current": 0.5,
@@ -1279,12 +1280,12 @@
           "checkpoint": "2026-05-13",
           "observation_month": "2026-03",
           "first_release": {
-            "current": -0.1333,
-            "previous": 1.2667,
-            "direction": 0,
+            "current": 0.2037,
+            "previous": 0.4058,
+            "direction": 1,
             "accelDir": -1,
             "turning": false,
-            "speed": 0.1333
+            "speed": 0.2037
           },
           "current_revised": {
             "current": 0.5333,
@@ -1294,7 +1295,7 @@
             "turning": false,
             "speed": 0.5333
           },
-          "direction_changed": true,
+          "direction_changed": false,
           "turning_changed": false,
           "acceleration_direction_changed": true
         },
@@ -1302,12 +1303,12 @@
           "checkpoint": "2026-06-15",
           "observation_month": "2026-04",
           "first_release": {
-            "current": -0.0667,
-            "previous": -0.1333,
+            "current": 0.106,
+            "previous": 0.2116,
             "direction": 0,
             "accelDir": 0,
             "turning": false,
-            "speed": 0.0667
+            "speed": 0.106
           },
           "current_revised": {
             "current": 0.4286,
@@ -1325,12 +1326,12 @@
           "checkpoint": "2026-07-15",
           "observation_month": "2026-05",
           "first_release": {
-            "current": -0.2069,
-            "previous": -0.069,
+            "current": -0.2254,
+            "previous": 0.1126,
             "direction": -1,
-            "accelDir": 0,
-            "turning": false,
-            "speed": 0.2069
+            "accelDir": -1,
+            "turning": true,
+            "speed": 0.2254
           },
           "current_revised": {
             "current": 0.2857,
@@ -1341,19 +1342,19 @@
             "speed": 0.2857
           },
           "direction_changed": true,
-          "turning_changed": false,
-          "acceleration_direction_changed": false
+          "turning_changed": true,
+          "acceleration_direction_changed": true
         },
         {
           "checkpoint": "2026-08-13",
           "observation_month": "2026-06",
           "first_release": {
-            "current": 0.1429,
-            "previous": -0.2143,
+            "current": 0,
+            "previous": -0.2403,
             "direction": 0,
             "accelDir": 1,
             "turning": false,
-            "speed": 0.1429
+            "speed": 0
           },
           "current_revised": {
             "current": -0.1429,
@@ -1370,28 +1371,25 @@
       ],
       "summary": {
         "checkpoints": 59,
-        "direction_changes": 20,
-        "turning_changes": 23,
-        "acceleration_direction_changes": 17,
+        "direction_changes": 17,
+        "turning_changes": 21,
+        "acceleration_direction_changes": 18,
         "changed_direction_months": [
           "2021-09",
           "2021-10",
-          "2021-12",
-          "2022-09",
+          "2022-01",
+          "2022-06",
           "2023-04",
-          "2023-05",
           "2023-08",
           "2023-09",
-          "2023-10",
+          "2023-11",
           "2023-12",
           "2024-03",
           "2024-04",
-          "2024-07",
+          "2024-06",
+          "2024-10",
+          "2024-11",
           "2025-07",
-          "2025-09",
-          "2025-11",
-          "2026-01",
-          "2026-03",
           "2026-04",
           "2026-05"
         ]
@@ -2800,5 +2798,5 @@
       }
     }
   },
-  "caveat": "Single-series sensitivities only. EUR blockDynamics is not yet complete because retail volume, employment and negotiated wages PIT panels are still missing."
+  "caveat": "Single-series sensitivities only. Full EUR blockDynamics still requires retail volume, employment, and negotiated wages PIT panels."
 }
