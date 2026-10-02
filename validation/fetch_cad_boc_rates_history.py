@@ -10,7 +10,7 @@ CSV_OUT=OUT/"CA_BOC_BENCHMARK_RATES_DAILY_2020_2026_V1.csv"
 
 START="2020-01-01"
 END="2026-09-30"
-SERIES={"2Y":"BD.CDN.2YR.DQ.YLD","10Y":"BD.CDN.10YR.DQ.YLD"}
+SERIES={"2Y":"BD.CDN.2YR.DQ.YLD","10Y":"BD.CDN.10YR.DQ.YLD","POLICY":"V39079"}
 
 session=requests.Session()
 session.headers.update({"User-Agent":"GMFQ-PIT-validation/1.0"})
@@ -34,7 +34,12 @@ for k,obj in raw.items():
     maps[k]=m
 
 dates=sorted(set(maps["2Y"]) & set(maps["10Y"]))
+policy_dates=sorted(maps["POLICY"])
+def last_policy(d):
+    eligible=[x for x in policy_dates if x<=d]
+    return maps["POLICY"][eligible[-1]] if eligible else None
 rows=[{"date":d,"y2":maps["2Y"][d],"y10":maps["10Y"][d],
+       "policy_rate":last_policy(d),
        "curve_bp":round((maps["10Y"][d]-maps["2Y"][d])*100,6)} for d in dates]
 
 report={
@@ -60,6 +65,6 @@ report={
 }
 JSON_OUT.write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
 with CSV_OUT.open("w",newline="",encoding="utf-8") as f:
-    w=csv.DictWriter(f,fieldnames=["date","y2","y10","curve_bp"])
+    w=csv.DictWriter(f,fieldnames=["date","y2","y10","policy_rate","curve_bp"])
     w.writeheader();w.writerows(rows)
 print(json.dumps(report["summary"],indent=2))
