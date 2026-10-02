@@ -135,9 +135,20 @@ for y in range(2020,2027):
         if "2020-Q2" <= ref <= "2026-Q2":
             targets.append((y,q))
 
-rows=[]
+existing={}
+if OUT.exists():
+    try:
+        old=json.loads(OUT.read_text())
+        for x in old.get("rows",[]):
+            if x.get("employment_qoq_pct") is not None:
+                existing[x["reference_quarter"]]=x
+    except Exception:
+        pass
+
+rows=list(existing.values())
+todo=[(y,q) for y,q in targets if quarter_label(y,q) not in existing]
 with ThreadPoolExecutor(max_workers=3) as ex:
-    futs={ex.submit(crawl_one,y,q):(y,q) for y,q in targets}
+    futs={ex.submit(crawl_one,y,q):(y,q) for y,q in todo}
     for fut in as_completed(futs):
         rows.append(fut.result())
 rows.sort(key=lambda x:x["reference_quarter"])
