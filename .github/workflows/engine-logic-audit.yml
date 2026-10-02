@@ -34,9 +34,16 @@ jobs:
             const page=await browser.newPage();
             const errors=[];
             const httpFailures=[];
-            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
-            page.on('pageerror',e=>errors.push(String(e)));
+            const requestFailures=[];
+            page.on('console',m=>{
+              if(m.type()==='error'){
+                const loc=m.location?.()||{};
+                errors.push({text:m.text(),url:loc.url||null,lineNumber:loc.lineNumber??null,columnNumber:loc.columnNumber??null});
+              }
+            });
+            page.on('pageerror',e=>errors.push({text:String(e),url:null,lineNumber:null,columnNumber:null}));
             page.on('response',res=>{if(res.status()>=400)httpFailures.push({status:res.status(),url:res.url()})});
+            page.on('requestfailed',req=>requestFailures.push({url:req.url(),failure:req.failure()}));
             await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
             const out=await page.evaluate(async()=>{
               const safe=(fn,fb=null)=>{try{return fn()}catch(e){return {error:String(e?.message||e),fallback:fb}}};
@@ -196,7 +203,7 @@ jobs:
               currencyRules:(out?.currencyRules?.issues||[]).length===0,
               pairConsistency:(out?.pairConsistency?.engineCount||0)===0,
               pairFrames:(out?.allPairFrames?.issues||[]).length===0,
-              runtimeErrors:errors.length===0 && httpFailures.length===0
+              runtimeErrors:errors.length===0 && httpFailures.length===0 && requestFailures.length===0
             };
             console.log('===AUDIT_GATES===',JSON.stringify(gates));
             const failed=Object.entries(gates).filter(([,v])=>!v).map(([k])=>k);
@@ -211,7 +218,8 @@ jobs:
               pairConsistency:out?.pairConsistency||null,
               allPairFrames:out?.allPairFrames||null,
               runtimeErrors:errors,
-              httpFailures
+              httpFailures,
+              requestFailures
             };
             fs.mkdirSync('validation',{recursive:true});
             fs.writeFileSync('validation/ENGINE_LOGIC_AUDIT_LATEST.json',JSON.stringify(auditResult,null,2));
