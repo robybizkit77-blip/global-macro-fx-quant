@@ -6,6 +6,8 @@ on:
       - engine-freeze-v1-2026-10-02
     paths:
       - 'validation/cad_retail_volume_release_crawl/CA_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1.json'
+      - 'validation/build_cad_growth_pit_sensitivity.py'
+      - '.github/workflows/cad-growth-pit-sensitivity.yml'
   workflow_dispatch:
 
 permissions:
