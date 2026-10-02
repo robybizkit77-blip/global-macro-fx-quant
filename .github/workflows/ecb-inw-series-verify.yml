@@ -1,0 +1,37 @@
+name: ECB INW Series Verify
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/verify_ecb_inw_series.py'
+      - '.github/workflows/ecb-inw-series-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact ECB negotiated wages series
+        run: python validation/verify_ecb_inw_series.py
+      - name: Commit verification artifact
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/ecb/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Verify ECB negotiated wages current series"
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
