@@ -7,7 +7,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 OUTDIR=Path("validation/pit_batch/eurostat/archive")
 OUTDIR.mkdir(parents=True,exist_ok=True)
 YEAR_FILTER=int(os.environ["CRAWL_YEAR"]) if os.environ.get("CRAWL_YEAR") else None
-OUT=OUTDIR/(f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_V1_2026-10-02.json" if YEAR_FILTER else "EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1_2026-10-02.json")
+MONTH_FILTER=int(os.environ["CRAWL_MONTH"]) if os.environ.get("CRAWL_MONTH") else None
+OUT=OUTDIR/(f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_{MONTH_FILTER:02d}_V1_2026-10-02.json" if YEAR_FILTER and MONTH_FILTER else (f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_V1_2026-10-02.json" if YEAR_FILTER else "EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1_2026-10-02.json"))
 
 UA={"User-Agent":"Mozilla/5.0 GMFQ-PIT-retail/2.0"}
 
@@ -103,6 +104,8 @@ for y in years:
     m0=8 if y==2020 else 1
     m1=10 if y==2026 else 12
     for mo in range(m0,m1+1):
+        if MONTH_FILTER and mo!=MONTH_FILTER:
+            continue
         targets.append((y,mo))
 
 rows=[]
