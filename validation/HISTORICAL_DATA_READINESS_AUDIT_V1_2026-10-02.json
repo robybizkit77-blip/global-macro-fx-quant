@@ -1,0 +1,66 @@
+{
+  "schema": "GMFQ_HISTORICAL_DATA_READINESS_AUDIT_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0",
+    "rule_changes_allowed_during_audit": false
+  },
+  "purpose": "Establish whether the frozen engine has sufficient historical point-in-time data for a full backtest before any re-estimation or threshold tuning.",
+  "current_findings": {
+    "macro": {
+      "status": "PARTIAL_NOT_PIT",
+      "coverage": "Broad 2016-2026 observation histories exist in archived MACRO_SERIES; coverage differs by series/currency.",
+      "blocker": "Histories are current-revised observations, not release-date vintages; publication timing and first-release values are not fully reconstructed.",
+      "implication": "Usable for descriptive/pseudo-OOS research, not yet a clean full point-in-time backtest."
+    },
+    "rates": {
+      "status": "PARTIAL_7_OF_8",
+      "coverage": "Validated same-basis historical 2Y series for USD, GBP, JPY, CHF, CAD, AUD, NZD.",
+      "blocker": "EUR historical rates chain remains WITHHELD because legacy history is not certified same-basis with the current validated ECB curve."
+    },
+    "cb_ois": {
+      "status": "WITHHELD_FOR_FULL_HISTORICAL_REPLAY",
+      "blocker": "Homogeneous G8 historical point-in-time CB/OIS expectations have not been reconstructed."
+    },
+    "cot": {
+      "status": "CURRENT_AND_RECENT_HISTORY_AVAILABLE_REQUIRES_PIT_AUDIT",
+      "blocker": "Before inclusion in a full backtest, effective availability must respect CFTC observation-vs-publication lag and historical depth must be verified against the intended sample."
+    },
+    "price": {
+      "status": "ACTIVE_28_OF_28",
+      "coverage": "Canonical 28-pair ECB-based price matrix exists and was used in the v9.3 pseudo-OOS reconstruction.",
+      "blocker": "None for price direction itself; execution/cost assumptions remain a separate backtest design item."
+    },
+    "liquidity": {
+      "status": "PARTIAL_7_OF_8_HISTORICAL",
+      "blocker": "NZD historical liquidity replay remains WITHHELD."
+    }
+  },
+  "existing_validation": {
+    "file": "validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json",
+    "classification": "PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY",
+    "limitations": [
+      "Macro uses current-revised histories rather than release-date vintages.",
+      "EUR historical Rates withheld.",
+      "Historical CB/OIS PIT not reconstructed.",
+      "COT and Liquidity excluded from structural direction in that exercise."
+    ],
+    "conclusion": "This existing test is useful evidence on the frozen hierarchy but is not a substitute for the full historical point-in-time backtest."
+  },
+  "readiness_gate": {
+    "full_backtest_ready": false,
+    "must_close_before_full_backtest": [
+      "Define exact historical sample and required features per layer.",
+      "Complete/replace EUR historical Rates or formally exclude EUR-containing pair-years from the full-core test.",
+      "Build publication-date/PIT mapping for every macro series used by the engine, with vintage policy documented.",
+      "Reconstruct historical CB/OIS expectations to a homogeneous standard or formally remove CB/OIS from the historical core specification.",
+      "Verify COT historical depth and enforce publication lag.",
+      "Decide whether NZD historical liquidity is completed or excluded from overlay tests.",
+      "Run missing/stale/outlier/frequency alignment QA after the historical panel is built."
+    ]
+  },
+  "next_action": "Build a currency-by-layer historical inventory with start/end dates, frequency, source, publication lag, vintage status, and ACTIVE/PARTIAL/WITHHELD status. No backtest rerun until this gate passes."
+}
