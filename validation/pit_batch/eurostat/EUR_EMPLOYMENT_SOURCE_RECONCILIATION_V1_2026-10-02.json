@@ -1,0 +1,657 @@
+{
+  "schema": "GMFQ_EUR_EMPLOYMENT_SOURCE_RECONCILIATION_V1",
+  "created_at": "2026-10-02",
+  "runtime": {
+    "id": "EA_EMPLOYMENT_history_value",
+    "unit": "Thousands of persons",
+    "frequency": "Q",
+    "rows": 42,
+    "first": [
+      "2016-Q1",
+      154635.09
+    ],
+    "last": [
+      "2026-Q2",
+      176448.17
+    ]
+  },
+  "probe_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&sinceTimePeriod=2016-Q1",
+  "dimensions": {
+    "freq": [
+      {
+        "code": "Q",
+        "label": "Quarterly"
+      }
+    ],
+    "unit": [
+      {
+        "code": "THS_PER",
+        "label": "Thousand persons"
+      }
+    ],
+    "s_adj": [
+      {
+        "code": "SCA",
+        "label": "Seasonally and calendar adjusted data"
+      }
+    ],
+    "na_item": [
+      {
+        "code": "POP_NC",
+        "label": "Total population national concept"
+      },
+      {
+        "code": "EMP_NC",
+        "label": "Total employment national concept"
+      },
+      {
+        "code": "EMP_DC",
+        "label": "Total employment domestic concept"
+      },
+      {
+        "code": "SAL_NC",
+        "label": "Employees national concept"
+      },
+      {
+        "code": "SAL_DC",
+        "label": "Employees domestic concept"
+      },
+      {
+        "code": "SELF_NC",
+        "label": "Self-employed national concept"
+      },
+      {
+        "code": "SELF_DC",
+        "label": "Self-employed domestic concept"
+      }
+    ],
+    "geo": [
+      {
+        "code": "EU27_2020",
+        "label": "European Union - 27 countries (from 2020)"
+      },
+      {
+        "code": "EA",
+        "label": "Euro area (EA11-1999, EA12-2001, EA13-2007, EA15-2008, EA16-2009, EA17-2011, EA18-2014, EA19-2015, EA20-2023, EA21-2026)"
+      },
+      {
+        "code": "EA21",
+        "label": "Euro area \u2013 21 countries (from 2026)"
+      },
+      {
+        "code": "EA20",
+        "label": "Euro area \u2013 20 countries (2023-2025)"
+      },
+      {
+        "code": "EA19",
+        "label": "Euro area - 19 countries  (2015-2022)"
+      },
+      {
+        "code": "EA12",
+        "label": "Euro area - 12 countries (2001-2006)"
+      },
+      {
+        "code": "BE",
+        "label": "Belgium"
+      },
+      {
+        "code": "BG",
+        "label": "Bulgaria"
+      },
+      {
+        "code": "CZ",
+        "label": "Czechia"
+      },
+      {
+        "code": "DK",
+        "label": "Denmark"
+      },
+      {
+        "code": "DE",
+        "label": "Germany"
+      },
+      {
+        "code": "EE",
+        "label": "Estonia"
+      },
+      {
+        "code": "IE",
+        "label": "Ireland"
+      },
+      {
+        "code": "EL",
+        "label": "Greece"
+      },
+      {
+        "code": "ES",
+        "label": "Spain"
+      },
+      {
+        "code": "FR",
+        "label": "France"
+      },
+      {
+        "code": "HR",
+        "label": "Croatia"
+      },
+      {
+        "code": "IT",
+        "label": "Italy"
+      },
+      {
+        "code": "CY",
+        "label": "Cyprus"
+      },
+      {
+        "code": "LV",
+        "label": "Latvia"
+      },
+      {
+        "code": "LT",
+        "label": "Lithuania"
+      },
+      {
+        "code": "LU",
+        "label": "Luxembourg"
+      },
+      {
+        "code": "HU",
+        "label": "Hungary"
+      },
+      {
+        "code": "MT",
+        "label": "Malta"
+      },
+      {
+        "code": "NL",
+        "label": "Netherlands"
+      },
+      {
+        "code": "AT",
+        "label": "Austria"
+      },
+      {
+        "code": "PL",
+        "label": "Poland"
+      },
+      {
+        "code": "PT",
+        "label": "Portugal"
+      },
+      {
+        "code": "RO",
+        "label": "Romania"
+      },
+      {
+        "code": "SI",
+        "label": "Slovenia"
+      },
+      {
+        "code": "SK",
+        "label": "Slovakia"
+      },
+      {
+        "code": "FI",
+        "label": "Finland"
+      },
+      {
+        "code": "SE",
+        "label": "Sweden"
+      },
+      {
+        "code": "IS",
+        "label": "Iceland"
+      },
+      {
+        "code": "NO",
+        "label": "Norway"
+      },
+      {
+        "code": "CH",
+        "label": "Switzerland"
+      },
+      {
+        "code": "UK",
+        "label": "United Kingdom"
+      },
+      {
+        "code": "ME",
+        "label": "Montenegro"
+      },
+      {
+        "code": "MD",
+        "label": "Moldova"
+      },
+      {
+        "code": "MK",
+        "label": "North Macedonia"
+      },
+      {
+        "code": "RS",
+        "label": "Serbia"
+      }
+    ],
+    "time": [
+      {
+        "code": "2016-Q1",
+        "label": "2016-Q1"
+      },
+      {
+        "code": "2016-Q2",
+        "label": "2016-Q2"
+      },
+      {
+        "code": "2016-Q3",
+        "label": "2016-Q3"
+      },
+      {
+        "code": "2016-Q4",
+        "label": "2016-Q4"
+      },
+      {
+        "code": "2017-Q1",
+        "label": "2017-Q1"
+      },
+      {
+        "code": "2017-Q2",
+        "label": "2017-Q2"
+      },
+      {
+        "code": "2017-Q3",
+        "label": "2017-Q3"
+      },
+      {
+        "code": "2017-Q4",
+        "label": "2017-Q4"
+      },
+      {
+        "code": "2018-Q1",
+        "label": "2018-Q1"
+      },
+      {
+        "code": "2018-Q2",
+        "label": "2018-Q2"
+      },
+      {
+        "code": "2018-Q3",
+        "label": "2018-Q3"
+      },
+      {
+        "code": "2018-Q4",
+        "label": "2018-Q4"
+      },
+      {
+        "code": "2019-Q1",
+        "label": "2019-Q1"
+      },
+      {
+        "code": "2019-Q2",
+        "label": "2019-Q2"
+      },
+      {
+        "code": "2019-Q3",
+        "label": "2019-Q3"
+      },
+      {
+        "code": "2019-Q4",
+        "label": "2019-Q4"
+      },
+      {
+        "code": "2020-Q1",
+        "label": "2020-Q1"
+      },
+      {
+        "code": "2020-Q2",
+        "label": "2020-Q2"
+      },
+      {
+        "code": "2020-Q3",
+        "label": "2020-Q3"
+      },
+      {
+        "code": "2020-Q4",
+        "label": "2020-Q4"
+      },
+      {
+        "code": "2021-Q1",
+        "label": "2021-Q1"
+      },
+      {
+        "code": "2021-Q2",
+        "label": "2021-Q2"
+      },
+      {
+        "code": "2021-Q3",
+        "label": "2021-Q3"
+      },
+      {
+        "code": "2021-Q4",
+        "label": "2021-Q4"
+      },
+      {
+        "code": "2022-Q1",
+        "label": "2022-Q1"
+      },
+      {
+        "code": "2022-Q2",
+        "label": "2022-Q2"
+      },
+      {
+        "code": "2022-Q3",
+        "label": "2022-Q3"
+      },
+      {
+        "code": "2022-Q4",
+        "label": "2022-Q4"
+      },
+      {
+        "code": "2023-Q1",
+        "label": "2023-Q1"
+      },
+      {
+        "code": "2023-Q2",
+        "label": "2023-Q2"
+      },
+      {
+        "code": "2023-Q3",
+        "label": "2023-Q3"
+      },
+      {
+        "code": "2023-Q4",
+        "label": "2023-Q4"
+      },
+      {
+        "code": "2024-Q1",
+        "label": "2024-Q1"
+      },
+      {
+        "code": "2024-Q2",
+        "label": "2024-Q2"
+      },
+      {
+        "code": "2024-Q3",
+        "label": "2024-Q3"
+      },
+      {
+        "code": "2024-Q4",
+        "label": "2024-Q4"
+      },
+      {
+        "code": "2025-Q1",
+        "label": "2025-Q1"
+      },
+      {
+        "code": "2025-Q2",
+        "label": "2025-Q2"
+      },
+      {
+        "code": "2025-Q3",
+        "label": "2025-Q3"
+      },
+      {
+        "code": "2025-Q4",
+        "label": "2025-Q4"
+      },
+      {
+        "code": "2026-Q1",
+        "label": "2026-Q1"
+      },
+      {
+        "code": "2026-Q2",
+        "label": "2026-Q2"
+      }
+    ]
+  },
+  "tested_candidates": 20,
+  "status": "NO_EXACT_MATCH_YET",
+  "best_match": {
+    "geo": "EA20",
+    "na_item": "EMP_DC",
+    "label": "Total employment domestic concept",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA20&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+    "rows": 42,
+    "first": [
+      "2016-Q1",
+      154635.09
+    ],
+    "last": [
+      "2026-Q2",
+      172849.01
+    ],
+    "common": 42,
+    "exact": 40,
+    "max_abs_diff": 3610.529999999999,
+    "mean_abs_diff": 171.65928571428577
+  },
+  "top_matches": [
+    {
+      "geo": "EA20",
+      "na_item": "EMP_DC",
+      "label": "Total employment domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA20&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        154635.09
+      ],
+      "last": [
+        "2026-Q2",
+        172849.01
+      ],
+      "common": 42,
+      "exact": 40,
+      "max_abs_diff": 3610.529999999999,
+      "mean_abs_diff": 171.65928571428577
+    },
+    {
+      "geo": "EA",
+      "na_item": "EMP_DC",
+      "label": "Total employment domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        153077.99
+      ],
+      "last": [
+        "2026-Q2",
+        176448.17
+      ],
+      "common": 42,
+      "exact": 14,
+      "max_abs_diff": 1653.4400000000023,
+      "mean_abs_diff": 1062.3759523809533
+    },
+    {
+      "geo": "EA21",
+      "na_item": "EMP_DC",
+      "label": "Total employment domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA21&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        158101.48
+      ],
+      "last": [
+        "2026-Q2",
+        176448.17
+      ],
+      "common": 42,
+      "exact": 2,
+      "max_abs_diff": 3615.540000000008,
+      "mean_abs_diff": 3317.390952380952
+    },
+    {
+      "geo": "EA19",
+      "na_item": "EMP_DC",
+      "label": "Total employment domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA19&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        153077.99
+      ],
+      "last": [
+        "2026-Q2",
+        171051.36
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 5409.720000000001,
+      "mean_abs_diff": 1817.221904761907
+    },
+    {
+      "geo": "EA12",
+      "na_item": "EMP_DC",
+      "label": "Total employment domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA12&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        146346.54
+      ],
+      "last": [
+        "2026-Q2",
+        163547.86
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 12900.310000000027,
+      "mean_abs_diff": 9005.850476190473
+    },
+    {
+      "geo": "EA",
+      "na_item": "SAL_DC",
+      "label": "Employees domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA&na_item=SAL_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        130266.04
+      ],
+      "last": [
+        "2026-Q2",
+        151549.69
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 24938.300000000017,
+      "mean_abs_diff": 24225.944047619047
+    },
+    {
+      "geo": "EA21",
+      "na_item": "SAL_DC",
+      "label": "Employees domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA21&na_item=SAL_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        134143.07
+      ],
+      "last": [
+        "2026-Q2",
+        151549.69
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 24938.300000000017,
+      "mean_abs_diff": 20810.446190476192
+    },
+    {
+      "geo": "EA20",
+      "na_item": "SAL_DC",
+      "label": "Employees domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA20&na_item=SAL_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        131582.52
+      ],
+      "last": [
+        "2026-Q2",
+        148843.99
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 27650.650000000023,
+      "mean_abs_diff": 23436.948333333334
+    },
+    {
+      "geo": "EA19",
+      "na_item": "SAL_DC",
+      "label": "Employees domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA19&na_item=SAL_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        130266.04
+      ],
+      "last": [
+        "2026-Q2",
+        147285.35
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 29208.360000000015,
+      "mean_abs_diff": 24861.164523809526
+    },
+    {
+      "geo": "EA12",
+      "na_item": "SAL_DC",
+      "label": "Employees domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA12&na_item=SAL_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        124463.74
+      ],
+      "last": [
+        "2026-Q2",
+        140835.39
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 35628.600000000006,
+      "mean_abs_diff": 31068.276190476194
+    },
+    {
+      "geo": "EA",
+      "na_item": "SELF_DC",
+      "label": "Self-employed domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA&na_item=SELF_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        22811.95
+      ],
+      "last": [
+        "2026-Q2",
+        24898.48
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 151549.69,
+      "mean_abs_diff": 141351.6561904762
+    },
+    {
+      "geo": "EA21",
+      "na_item": "SELF_DC",
+      "label": "Self-employed domestic concept",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA21&na_item=SELF_DC&sinceTimePeriod=2016-Q1",
+      "rows": 42,
+      "first": [
+        "2016-Q1",
+        23958.41
+      ],
+      "last": [
+        "2026-Q2",
+        24898.48
+      ],
+      "common": 42,
+      "exact": 0,
+      "max_abs_diff": 151549.69,
+      "mean_abs_diff": 140387.38642857145
+    }
+  ],
+  "guardrail": "Do not reconstruct PIT employment releases until exact current-series identity is proven."
+}
