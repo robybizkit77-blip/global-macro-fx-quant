@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Retry after branch concurrency conflict.
 import json
 from pathlib import Path
 
