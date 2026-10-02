@@ -1,8 +1,64 @@
 {
   "schema": "GMFQ_CA_GDP_DATED_RELEASE_CRAWL_V2_CHUNKED",
   "start_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260929/dq260929a-eng.htm",
-  "next_url": "https://www150.statcan.gc.ca/daily-quotidien/240131/dq240131a-eng.htm",
+  "next_url": "https://www150.statcan.gc.ca/daily-quotidien/230531/dq230531b-eng.htm",
   "rows": [
+    {
+      "reference_month": "2023-04",
+      "release_date": "2023-06-30",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/230630/dq230630a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230531/dq230531b-eng.htm"
+    },
+    {
+      "reference_month": "2023-05",
+      "release_date": "2023-07-28",
+      "first_release_mom_pct": 0.3,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/230728/dq230728a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230630/dq230630a-eng.htm"
+    },
+    {
+      "reference_month": "2023-06",
+      "release_date": "2023-09-01",
+      "first_release_mom_pct": null,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/230901/dq230901b-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230728/dq230728a-eng.htm"
+    },
+    {
+      "reference_month": "2023-07",
+      "release_date": "2023-09-29",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/230929/dq230929a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230901/dq230901b-eng.htm"
+    },
+    {
+      "reference_month": "2023-08",
+      "release_date": "2023-10-31",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/231031/dq231031a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230929/dq230929a-eng.htm"
+    },
+    {
+      "reference_month": "2023-09",
+      "release_date": "2023-11-30",
+      "first_release_mom_pct": 0.1,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/231130/dq231130b-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/231031/dq231031a-eng.htm"
+    },
+    {
+      "reference_month": "2023-10",
+      "release_date": "2023-12-22",
+      "first_release_mom_pct": 0.0,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/231222/dq231222a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/231130/dq231130b-eng.htm"
+    },
+    {
+      "reference_month": "2023-11",
+      "release_date": "2024-01-31",
+      "first_release_mom_pct": 0.2,
+      "url": "https://www150.statcan.gc.ca/daily-quotidien/240131/dq240131a-eng.htm",
+      "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/231222/dq231222a-eng.htm"
+    },
     {
       "reference_month": "2023-12",
       "release_date": "2024-02-29",
@@ -229,11 +285,12 @@
     }
   ],
   "summary": {
-    "count": 32,
+    "count": 40,
     "fetched_this_run": 8,
-    "from": "2023-12",
+    "from": "2023-04",
     "to": "2026-07",
     "missing_values": [
+      "2023-06",
       "2023-12",
       "2024-03",
       "2024-06",
