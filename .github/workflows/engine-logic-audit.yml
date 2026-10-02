@@ -246,6 +246,7 @@ jobs:
             echo "No audit result changes"
           else
             git commit -m "Record latest engine logic audit result"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
             git push origin HEAD:engine-freeze-v1-2026-10-02
           fi
       - name: Enforce audit gates
