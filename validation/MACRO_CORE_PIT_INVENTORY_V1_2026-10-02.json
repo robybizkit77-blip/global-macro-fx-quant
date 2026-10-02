@@ -614,10 +614,11 @@
     }
   },
   "summary": {
-    "active_series_count": 55,
+    "active_series_count": 49,
     "excluded_zero_polarity_count": 2,
     "key_result": "The PIT reconstruction task is narrower than the full 204-series dataset: for the frozen historical macro core we only need the eligible Crescita and Lavoro series listed here.",
     "cross_currency_clean_start_caution": "Most monthly core histories begin around 2019-09/11. A common full-G8 sample before late 2019 is not supported by the current stored monthly core set without additional history.",
-    "next_gate": "Map official release availability and vintage treatment for these 55 active series; then recompute exact common PIT sample."
+    "next_gate": "Map official release availability and vintage treatment for these 55 active series; then recompute exact common PIT sample.",
+    "correction_note": "Corrected arithmetic count: 49 active Crescita/Lavoro series are listed in this inventory (not 55). No engine logic changed."
   }
 }
