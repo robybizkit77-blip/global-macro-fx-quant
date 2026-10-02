@@ -69,10 +69,10 @@ def quarter_label(y,q):
 
 def expected_release_window(y,q):
     # Eurostat employment flash: Q1 May, Q2 Aug, Q3 Nov, Q4 following Feb.
-    if q==1: return date(y,5,10),date(y,5,20)
-    if q==2: return date(y,8,10),date(y,8,20)
-    if q==3: return date(y,11,10),date(y,11,20)
-    return date(y+1,2,10),date(y+1,2,20)
+    if q==1: return date(y,5,12),date(y,5,18)
+    if q==2: return date(y,8,12),date(y,8,18)
+    if q==3: return date(y,11,12),date(y,11,18)
+    return date(y+1,2,12),date(y+1,2,18)
 
 # Verified seed URLs override discovery and reduce requests.
 seed_path=OUTDIR/"EUR_EMPLOYMENT_OFFICIAL_RELEASE_SEED_V1_2026-10-02.json"
@@ -93,11 +93,7 @@ def crawl_one(y,q):
     while d<=b:
         dd=d.strftime("%d%m%Y")
         ds=d.isoformat()
-        for prefix in [
-          "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/",
-          "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/"
-        ]:
-            candidates.append((ds,f"{prefix}2-{dd}-ap","scan"))
+        candidates.append((ds,f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-{dd}-ap","scan"))
         d+=timedelta(days=1)
     seen=set()
     for ds,url,mode in candidates:
@@ -140,7 +136,7 @@ for y in range(2020,2027):
             targets.append((y,q))
 
 rows=[]
-with ThreadPoolExecutor(max_workers=6) as ex:
+with ThreadPoolExecutor(max_workers=3) as ex:
     futs={ex.submit(crawl_one,y,q):(y,q) for y,q in targets}
     for fut in as_completed(futs):
         rows.append(fut.result())
