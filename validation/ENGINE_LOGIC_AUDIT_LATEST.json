@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_ENGINE_LOGIC_AUDIT_LATEST_V1",
-  "generated_at": "2026-10-02T09:33:41.618Z",
+  "generated_at": "2026-10-02T09:35:37.418Z",
   "gates": {
     "lazyLoadInvariance": true,
     "refreshStability": true,
@@ -2454,5 +2454,6 @@
   },
   "runtimeErrors": [
     "Failed to load resource: the server responded with a status of 404 (File not found)"
-  ]
+  ],
+  "httpFailures": []
 }
