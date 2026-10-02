@@ -1,0 +1,81 @@
+{
+  "schema": "GMFQ_STRUCTURED_VINTAGE_EXTRACTION_MANIFEST_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "purpose": "Lock exact official vintage datasets and extraction semantics before materializing the first full PIT panel.",
+  "targets": [
+    {
+      "ccy": "EUR",
+      "runtime_id": "EA_IP_history_value",
+      "official_provider": "Eurostat",
+      "current_source_dataset": "ei_isin_m",
+      "vintage_indicator": "Industrial production index, total industry excluding construction",
+      "vintage_split": "older static vintages through 2020 + current vintages from 2021 onward",
+      "vintage_key_requirement": "euro-area aggregate, seasonally/calendar adjusted index matching runtime transformation",
+      "extraction_status": "SOURCE_CONFIRMED__BULK_ROWS_NOT_YET_MATERIALIZED"
+    },
+    {
+      "ccy": "EUR",
+      "runtime_id": "EA_UNEMP_history_value",
+      "official_provider": "Eurostat",
+      "current_source_dataset": "ei_lmhr_m",
+      "vintage_indicator": "Monthly harmonized unemployment rate",
+      "vintage_split": "older static vintages through 2020 + current vintages from 2021 onward",
+      "vintage_key_requirement": "euro-area aggregate, unemployment rate PC_ACT matching runtime",
+      "extraction_status": "SOURCE_CONFIRMED__BULK_ROWS_NOT_YET_MATERIALIZED"
+    },
+    {
+      "ccy": "CAD",
+      "runtime_id": "CA_REAL_GDP_M_history_value",
+      "official_provider": "Statistics Canada",
+      "product_id": "36100491",
+      "table": "36-10-0491-01",
+      "title": "Historical (real-time) releases of GDP at basic prices, by industry, monthly",
+      "csv_url": "https://www150.statcan.gc.ca/n1/tbl/csv/36100491-eng.zip",
+      "extraction_key_requirement": "Canada; All industries; chained-volume monthly GDP matching current runtime level series",
+      "extraction_status": "SOURCE_CONFIRMED__BULK_ROWS_NOT_YET_MATERIALIZED"
+    },
+    {
+      "ccy": "CAD",
+      "runtime_id": "CA_RETAIL_VOLUME_history_value",
+      "official_provider": "Statistics Canada",
+      "product_id": "20100082",
+      "table": "20-10-0082-01",
+      "title": "Historical (real-time) releases of monthly retail sales, price, and volume",
+      "csv_url": "https://www150.statcan.gc.ca/n1/tbl/csv/20100082-eng.zip",
+      "table_status": "archived/inactive as of 2026; valid historical real-time source",
+      "extraction_key_requirement": "Canada total retail volume, seasonally adjusted, chained-dollar/volume concept matching runtime",
+      "extraction_status": "SOURCE_CONFIRMED__VARIANT_MATCH_AND_BULK_ROWS_PENDING"
+    }
+  ],
+  "official_api_notes": {
+    "statcan": "WDS exposes getFullTableDownloadCSV/{pid}/{language}; full-table CSV/SDMX are official supported extraction routes.",
+    "eurostat": "PEEI vintage datasets include a revision-date dimension; IP and unemployment are split between static older vintages and regularly updated recent vintages."
+  },
+  "checkpoint_builder": {
+    "start": "2020-08-31",
+    "cadence": "month-end",
+    "end": "2026-09-30",
+    "first_release_selection": "For each observation period, choose the earliest official vintage that contains a non-missing value for the exact matched series.",
+    "asof_selection": "At each checkpoint, retain only vintages with revision/release date <= checkpoint.",
+    "later_revisions": "May enter only at later checkpoints after their publication date.",
+    "missing": "WITHHELD_PIT"
+  },
+  "integrity_gates": [
+    "Exact unit/seasonal-adjustment/geography match to runtime series.",
+    "No silent rebasing comparison of absolute index levels; use growth/impulse where bases differ.",
+    "First-release value must be traceable to an official vintage/release date.",
+    "Hash/fingerprint the extracted PIT panel before the engine sensitivity run.",
+    "Do not modify production payload while constructing validation panel."
+  ],
+  "current_status": {
+    "panel_materialized": false,
+    "reason": "Source endpoints and table identities are now locked, but raw official bulk vintage rows have not yet been ingested into the repository. No synthetic values will be substituted.",
+    "next_action": "Materialize raw official vintage rows, normalize them to the checkpoint schema, then execute PIT_SIGNAL_SENSITIVITY_HARNESS_V1."
+  }
+}
