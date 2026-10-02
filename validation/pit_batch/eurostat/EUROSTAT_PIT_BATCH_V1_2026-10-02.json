@@ -1,0 +1,847 @@
+{
+  "schema": "GMFQ_EUROSTAT_PIT_BATCH_V1",
+  "created_at": "2026-10-02",
+  "series": {
+    "EA_IP": {
+      "dataset": "EI_IS_M_VTG",
+      "runtime_id": "EA_IP_history_value",
+      "category": "Crescita",
+      "source_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_IS_M_VTG?lang=en&freq=M&s_adj=SCA&nace_r2=B-D&unit=RT1&geo=EA&sinceTimePeriod=2021-01",
+      "filters": {
+        "freq": "M",
+        "s_adj": "SCA",
+        "nace_r2": "B-D",
+        "unit": "RT1",
+        "geo": "EA",
+        "sinceTimePeriod": "2021-01"
+      },
+      "value_semantics": "Monthly growth rate on previous period, seasonally and calendar adjusted.",
+      "rows": [
+        {
+          "observation_month": "2021-01",
+          "first_release_date": "2021-03-12",
+          "first_release_value": 0.8,
+          "vintage_count": 66
+        },
+        {
+          "observation_month": "2021-02",
+          "first_release_date": "2021-04-14",
+          "first_release_value": -1.0,
+          "vintage_count": 65
+        },
+        {
+          "observation_month": "2021-03",
+          "first_release_date": "2021-05-12",
+          "first_release_value": 0.1,
+          "vintage_count": 64
+        },
+        {
+          "observation_month": "2021-04",
+          "first_release_date": "2021-06-14",
+          "first_release_value": 0.8,
+          "vintage_count": 63
+        },
+        {
+          "observation_month": "2021-05",
+          "first_release_date": "2021-07-14",
+          "first_release_value": -1.0,
+          "vintage_count": 62
+        },
+        {
+          "observation_month": "2021-06",
+          "first_release_date": "2021-08-12",
+          "first_release_value": -0.3,
+          "vintage_count": 61
+        },
+        {
+          "observation_month": "2021-07",
+          "first_release_date": "2021-09-15",
+          "first_release_value": 1.5,
+          "vintage_count": 60
+        },
+        {
+          "observation_month": "2021-08",
+          "first_release_date": "2021-10-13",
+          "first_release_value": -1.6,
+          "vintage_count": 59
+        },
+        {
+          "observation_month": "2021-09",
+          "first_release_date": "2021-11-12",
+          "first_release_value": -0.2,
+          "vintage_count": 58
+        },
+        {
+          "observation_month": "2021-10",
+          "first_release_date": "2021-12-14",
+          "first_release_value": 1.1,
+          "vintage_count": 57
+        },
+        {
+          "observation_month": "2021-11",
+          "first_release_date": "2022-01-12",
+          "first_release_value": 2.3,
+          "vintage_count": 56
+        },
+        {
+          "observation_month": "2021-12",
+          "first_release_date": "2022-02-16",
+          "first_release_value": 1.2,
+          "vintage_count": 55
+        },
+        {
+          "observation_month": "2022-01",
+          "first_release_date": "2022-03-15",
+          "first_release_value": 0.0,
+          "vintage_count": 54
+        },
+        {
+          "observation_month": "2022-02",
+          "first_release_date": "2022-04-20",
+          "first_release_value": 0.7,
+          "vintage_count": 53
+        },
+        {
+          "observation_month": "2022-03",
+          "first_release_date": "2022-05-13",
+          "first_release_value": -1.8,
+          "vintage_count": 52
+        },
+        {
+          "observation_month": "2022-04",
+          "first_release_date": "2022-06-15",
+          "first_release_value": 0.4,
+          "vintage_count": 51
+        },
+        {
+          "observation_month": "2022-05",
+          "first_release_date": "2022-07-13",
+          "first_release_value": 0.8,
+          "vintage_count": 50
+        },
+        {
+          "observation_month": "2022-06",
+          "first_release_date": "2022-08-12",
+          "first_release_value": 0.7,
+          "vintage_count": 49
+        },
+        {
+          "observation_month": "2022-07",
+          "first_release_date": "2022-09-14",
+          "first_release_value": -2.3,
+          "vintage_count": 48
+        },
+        {
+          "observation_month": "2022-08",
+          "first_release_date": "2022-10-12",
+          "first_release_value": 1.5,
+          "vintage_count": 47
+        },
+        {
+          "observation_month": "2022-09",
+          "first_release_date": "2022-11-14",
+          "first_release_value": 0.9,
+          "vintage_count": 46
+        },
+        {
+          "observation_month": "2022-10",
+          "first_release_date": "2022-12-14",
+          "first_release_value": -2.0,
+          "vintage_count": 45
+        },
+        {
+          "observation_month": "2022-11",
+          "first_release_date": "2023-01-13",
+          "first_release_value": 1.0,
+          "vintage_count": 44
+        },
+        {
+          "observation_month": "2022-12",
+          "first_release_date": "2023-02-15",
+          "first_release_value": -1.0,
+          "vintage_count": 43
+        },
+        {
+          "observation_month": "2023-01",
+          "first_release_date": "2023-03-15",
+          "first_release_value": 0.7,
+          "vintage_count": 42
+        },
+        {
+          "observation_month": "2023-02",
+          "first_release_date": "2023-04-13",
+          "first_release_value": 1.5,
+          "vintage_count": 41
+        },
+        {
+          "observation_month": "2023-03",
+          "first_release_date": "2023-05-15",
+          "first_release_value": -4.1,
+          "vintage_count": 40
+        },
+        {
+          "observation_month": "2023-04",
+          "first_release_date": "2023-06-14",
+          "first_release_value": 1.0,
+          "vintage_count": 39
+        },
+        {
+          "observation_month": "2023-05",
+          "first_release_date": "2023-07-13",
+          "first_release_value": 0.2,
+          "vintage_count": 38
+        },
+        {
+          "observation_month": "2023-06",
+          "first_release_date": "2023-08-16",
+          "first_release_value": 0.5,
+          "vintage_count": 37
+        },
+        {
+          "observation_month": "2023-07",
+          "first_release_date": "2023-09-13",
+          "first_release_value": -1.1,
+          "vintage_count": 36
+        },
+        {
+          "observation_month": "2023-08",
+          "first_release_date": "2023-10-13",
+          "first_release_value": 0.6,
+          "vintage_count": 35
+        },
+        {
+          "observation_month": "2023-09",
+          "first_release_date": "2023-11-15",
+          "first_release_value": -1.1,
+          "vintage_count": 34
+        },
+        {
+          "observation_month": "2023-10",
+          "first_release_date": "2023-12-13",
+          "first_release_value": -0.7,
+          "vintage_count": 33
+        },
+        {
+          "observation_month": "2023-11",
+          "first_release_date": "2024-01-23",
+          "first_release_value": -0.3,
+          "vintage_count": 32
+        },
+        {
+          "observation_month": "2023-12",
+          "first_release_date": "2024-02-14",
+          "first_release_value": 2.6,
+          "vintage_count": 31
+        },
+        {
+          "observation_month": "2024-01",
+          "first_release_date": "2024-03-13",
+          "first_release_value": -3.2,
+          "vintage_count": 30
+        },
+        {
+          "observation_month": "2024-02",
+          "first_release_date": "2024-04-15",
+          "first_release_value": 0.8,
+          "vintage_count": 29
+        },
+        {
+          "observation_month": "2024-03",
+          "first_release_date": "2024-05-15",
+          "first_release_value": 0.6,
+          "vintage_count": 28
+        },
+        {
+          "observation_month": "2024-04",
+          "first_release_date": "2024-06-13",
+          "first_release_value": -0.1,
+          "vintage_count": 27
+        },
+        {
+          "observation_month": "2024-05",
+          "first_release_date": "2024-07-15",
+          "first_release_value": -0.6,
+          "vintage_count": 26
+        },
+        {
+          "observation_month": "2024-06",
+          "first_release_date": "2024-08-14",
+          "first_release_value": -0.1,
+          "vintage_count": 25
+        },
+        {
+          "observation_month": "2024-07",
+          "first_release_date": "2024-09-13",
+          "first_release_value": -0.3,
+          "vintage_count": 24
+        },
+        {
+          "observation_month": "2024-08",
+          "first_release_date": "2024-10-15",
+          "first_release_value": 1.8,
+          "vintage_count": 23
+        },
+        {
+          "observation_month": "2024-09",
+          "first_release_date": "2024-11-14",
+          "first_release_value": -2.0,
+          "vintage_count": 22
+        },
+        {
+          "observation_month": "2024-10",
+          "first_release_date": "2024-12-13",
+          "first_release_value": 0.0,
+          "vintage_count": 21
+        },
+        {
+          "observation_month": "2024-11",
+          "first_release_date": "2025-01-15",
+          "first_release_value": 0.2,
+          "vintage_count": 20
+        },
+        {
+          "observation_month": "2024-12",
+          "first_release_date": "2025-02-13",
+          "first_release_value": -1.1,
+          "vintage_count": 19
+        },
+        {
+          "observation_month": "2025-01",
+          "first_release_date": "2025-03-13",
+          "first_release_value": 0.8,
+          "vintage_count": 18
+        },
+        {
+          "observation_month": "2025-02",
+          "first_release_date": "2025-04-15",
+          "first_release_value": 1.1,
+          "vintage_count": 17
+        },
+        {
+          "observation_month": "2025-03",
+          "first_release_date": "2025-05-15",
+          "first_release_value": 2.6,
+          "vintage_count": 16
+        },
+        {
+          "observation_month": "2025-04",
+          "first_release_date": "2025-06-13",
+          "first_release_value": -2.4,
+          "vintage_count": 15
+        },
+        {
+          "observation_month": "2025-05",
+          "first_release_date": "2025-07-15",
+          "first_release_value": 1.7,
+          "vintage_count": 14
+        },
+        {
+          "observation_month": "2025-06",
+          "first_release_date": "2025-08-14",
+          "first_release_value": -1.3,
+          "vintage_count": 13
+        },
+        {
+          "observation_month": "2025-07",
+          "first_release_date": "2025-09-16",
+          "first_release_value": 0.3,
+          "vintage_count": 12
+        },
+        {
+          "observation_month": "2025-08",
+          "first_release_date": "2025-10-15",
+          "first_release_value": -1.2,
+          "vintage_count": 11
+        },
+        {
+          "observation_month": "2025-09",
+          "first_release_date": "2025-11-13",
+          "first_release_value": 0.2,
+          "vintage_count": 10
+        },
+        {
+          "observation_month": "2025-10",
+          "first_release_date": "2025-12-15",
+          "first_release_value": 0.8,
+          "vintage_count": 9
+        },
+        {
+          "observation_month": "2025-11",
+          "first_release_date": "2026-01-15",
+          "first_release_value": 0.6,
+          "vintage_count": 8
+        },
+        {
+          "observation_month": "2025-12",
+          "first_release_date": "2026-02-16",
+          "first_release_value": -1.3,
+          "vintage_count": 7
+        },
+        {
+          "observation_month": "2026-01",
+          "first_release_date": "2026-03-13",
+          "first_release_value": -1.5,
+          "vintage_count": 6
+        },
+        {
+          "observation_month": "2026-02",
+          "first_release_date": "2026-04-21",
+          "first_release_value": 0.4,
+          "vintage_count": 5
+        },
+        {
+          "observation_month": "2026-03",
+          "first_release_date": "2026-05-13",
+          "first_release_value": 0.2,
+          "vintage_count": 4
+        },
+        {
+          "observation_month": "2026-04",
+          "first_release_date": "2026-06-15",
+          "first_release_value": 0.1,
+          "vintage_count": 3
+        },
+        {
+          "observation_month": "2026-05",
+          "first_release_date": "2026-07-15",
+          "first_release_value": -0.2,
+          "vintage_count": 2
+        },
+        {
+          "observation_month": "2026-06",
+          "first_release_date": "2026-08-13",
+          "first_release_value": 0.0,
+          "vintage_count": 1
+        }
+      ],
+      "qa": {
+        "rows": 66,
+        "start": "2021-01",
+        "end": "2026-06",
+        "first_release_start": "2021-03-12",
+        "first_release_end": "2026-08-13"
+      }
+    },
+    "EA_UNEMP": {
+      "dataset": "EI_LM_M_VTG",
+      "runtime_id": "EA_UNEMP_history_value",
+      "category": "Lavoro",
+      "source_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/EI_LM_M_VTG?lang=en&freq=M&unit=PC_ACT&s_adj=SA&sex=T&age=TOTAL&geo=EA&sinceTimePeriod=2021-01",
+      "filters": {
+        "freq": "M",
+        "unit": "PC_ACT",
+        "s_adj": "SA",
+        "sex": "T",
+        "age": "TOTAL",
+        "geo": "EA",
+        "sinceTimePeriod": "2021-01"
+      },
+      "value_semantics": "Seasonally adjusted unemployment rate, total sex/age, percentage of labour force.",
+      "rows": [
+        {
+          "observation_month": "2021-01",
+          "first_release_date": "2021-03-04",
+          "first_release_value": 8.1,
+          "vintage_count": 67
+        },
+        {
+          "observation_month": "2021-02",
+          "first_release_date": "2021-04-06",
+          "first_release_value": 8.3,
+          "vintage_count": 66
+        },
+        {
+          "observation_month": "2021-03",
+          "first_release_date": "2021-04-30",
+          "first_release_value": 8.1,
+          "vintage_count": 65
+        },
+        {
+          "observation_month": "2021-04",
+          "first_release_date": "2021-06-01",
+          "first_release_value": 8.0,
+          "vintage_count": 64
+        },
+        {
+          "observation_month": "2021-05",
+          "first_release_date": "2021-07-01",
+          "first_release_value": 7.9,
+          "vintage_count": 63
+        },
+        {
+          "observation_month": "2021-06",
+          "first_release_date": "2021-07-30",
+          "first_release_value": 7.7,
+          "vintage_count": 62
+        },
+        {
+          "observation_month": "2021-07",
+          "first_release_date": "2021-09-01",
+          "first_release_value": 7.6,
+          "vintage_count": 61
+        },
+        {
+          "observation_month": "2021-08",
+          "first_release_date": "2021-09-30",
+          "first_release_value": 7.5,
+          "vintage_count": 60
+        },
+        {
+          "observation_month": "2021-09",
+          "first_release_date": "2021-11-03",
+          "first_release_value": 7.4,
+          "vintage_count": 59
+        },
+        {
+          "observation_month": "2021-10",
+          "first_release_date": "2021-12-02",
+          "first_release_value": 7.3,
+          "vintage_count": 58
+        },
+        {
+          "observation_month": "2021-11",
+          "first_release_date": "2022-01-10",
+          "first_release_value": 7.2,
+          "vintage_count": 57
+        },
+        {
+          "observation_month": "2021-12",
+          "first_release_date": "2022-02-01",
+          "first_release_value": 7.0,
+          "vintage_count": 56
+        },
+        {
+          "observation_month": "2022-01",
+          "first_release_date": "2022-03-03",
+          "first_release_value": 6.8,
+          "vintage_count": 55
+        },
+        {
+          "observation_month": "2022-02",
+          "first_release_date": "2022-03-31",
+          "first_release_value": 6.8,
+          "vintage_count": 54
+        },
+        {
+          "observation_month": "2022-03",
+          "first_release_date": "2022-05-03",
+          "first_release_value": 6.8,
+          "vintage_count": 53
+        },
+        {
+          "observation_month": "2022-04",
+          "first_release_date": "2022-06-01",
+          "first_release_value": 6.8,
+          "vintage_count": 52
+        },
+        {
+          "observation_month": "2022-05",
+          "first_release_date": "2022-07-06",
+          "first_release_value": 6.6,
+          "vintage_count": 51
+        },
+        {
+          "observation_month": "2022-06",
+          "first_release_date": "2022-08-01",
+          "first_release_value": 6.6,
+          "vintage_count": 50
+        },
+        {
+          "observation_month": "2022-07",
+          "first_release_date": "2022-09-01",
+          "first_release_value": 6.6,
+          "vintage_count": 49
+        },
+        {
+          "observation_month": "2022-08",
+          "first_release_date": "2022-09-30",
+          "first_release_value": 6.6,
+          "vintage_count": 48
+        },
+        {
+          "observation_month": "2022-09",
+          "first_release_date": "2022-11-03",
+          "first_release_value": 6.6,
+          "vintage_count": 47
+        },
+        {
+          "observation_month": "2022-10",
+          "first_release_date": "2022-12-01",
+          "first_release_value": 6.5,
+          "vintage_count": 46
+        },
+        {
+          "observation_month": "2022-11",
+          "first_release_date": "2023-01-12",
+          "first_release_value": 6.5,
+          "vintage_count": 45
+        },
+        {
+          "observation_month": "2022-12",
+          "first_release_date": "2023-02-01",
+          "first_release_value": 6.6,
+          "vintage_count": 44
+        },
+        {
+          "observation_month": "2023-01",
+          "first_release_date": "2023-03-03",
+          "first_release_value": 6.6,
+          "vintage_count": 43
+        },
+        {
+          "observation_month": "2023-02",
+          "first_release_date": "2023-03-31",
+          "first_release_value": 6.6,
+          "vintage_count": 42
+        },
+        {
+          "observation_month": "2023-03",
+          "first_release_date": "2023-05-03",
+          "first_release_value": 6.5,
+          "vintage_count": 41
+        },
+        {
+          "observation_month": "2023-04",
+          "first_release_date": "2023-06-01",
+          "first_release_value": 6.5,
+          "vintage_count": 40
+        },
+        {
+          "observation_month": "2023-05",
+          "first_release_date": "2023-06-30",
+          "first_release_value": 6.5,
+          "vintage_count": 39
+        },
+        {
+          "observation_month": "2023-06",
+          "first_release_date": "2023-08-01",
+          "first_release_value": 6.4,
+          "vintage_count": 38
+        },
+        {
+          "observation_month": "2023-07",
+          "first_release_date": "2023-08-31",
+          "first_release_value": 6.4,
+          "vintage_count": 37
+        },
+        {
+          "observation_month": "2023-08",
+          "first_release_date": "2023-10-02",
+          "first_release_value": 6.4,
+          "vintage_count": 36
+        },
+        {
+          "observation_month": "2023-09",
+          "first_release_date": "2023-11-03",
+          "first_release_value": 6.5,
+          "vintage_count": 35
+        },
+        {
+          "observation_month": "2023-10",
+          "first_release_date": "2023-11-30",
+          "first_release_value": 6.5,
+          "vintage_count": 34
+        },
+        {
+          "observation_month": "2023-11",
+          "first_release_date": "2024-01-18",
+          "first_release_value": 6.4,
+          "vintage_count": 32
+        },
+        {
+          "observation_month": "2023-12",
+          "first_release_date": "2024-02-01",
+          "first_release_value": 6.4,
+          "vintage_count": 31
+        },
+        {
+          "observation_month": "2024-01",
+          "first_release_date": "2024-03-01",
+          "first_release_value": 6.4,
+          "vintage_count": 30
+        },
+        {
+          "observation_month": "2024-02",
+          "first_release_date": "2024-04-03",
+          "first_release_value": 6.5,
+          "vintage_count": 29
+        },
+        {
+          "observation_month": "2024-03",
+          "first_release_date": "2024-05-03",
+          "first_release_value": 6.5,
+          "vintage_count": 28
+        },
+        {
+          "observation_month": "2024-04",
+          "first_release_date": "2024-05-30",
+          "first_release_value": 6.4,
+          "vintage_count": 27
+        },
+        {
+          "observation_month": "2024-05",
+          "first_release_date": "2024-07-02",
+          "first_release_value": 6.4,
+          "vintage_count": 26
+        },
+        {
+          "observation_month": "2024-06",
+          "first_release_date": "2024-08-01",
+          "first_release_value": 6.5,
+          "vintage_count": 25
+        },
+        {
+          "observation_month": "2024-07",
+          "first_release_date": "2024-08-30",
+          "first_release_value": 6.4,
+          "vintage_count": 24
+        },
+        {
+          "observation_month": "2024-08",
+          "first_release_date": "2024-10-02",
+          "first_release_value": 6.4,
+          "vintage_count": 23
+        },
+        {
+          "observation_month": "2024-09",
+          "first_release_date": "2024-10-31",
+          "first_release_value": 6.3,
+          "vintage_count": 22
+        },
+        {
+          "observation_month": "2024-10",
+          "first_release_date": "2024-12-02",
+          "first_release_value": 6.3,
+          "vintage_count": 21
+        },
+        {
+          "observation_month": "2024-11",
+          "first_release_date": "2025-01-07",
+          "first_release_value": 6.3,
+          "vintage_count": 20
+        },
+        {
+          "observation_month": "2024-12",
+          "first_release_date": "2025-01-30",
+          "first_release_value": 6.3,
+          "vintage_count": 19
+        },
+        {
+          "observation_month": "2025-01",
+          "first_release_date": "2025-03-04",
+          "first_release_value": 6.2,
+          "vintage_count": 18
+        },
+        {
+          "observation_month": "2025-02",
+          "first_release_date": "2025-04-01",
+          "first_release_value": 6.1,
+          "vintage_count": 17
+        },
+        {
+          "observation_month": "2025-03",
+          "first_release_date": "2025-05-02",
+          "first_release_value": 6.2,
+          "vintage_count": 16
+        },
+        {
+          "observation_month": "2025-04",
+          "first_release_date": "2025-06-03",
+          "first_release_value": 6.2,
+          "vintage_count": 15
+        },
+        {
+          "observation_month": "2025-05",
+          "first_release_date": "2025-07-02",
+          "first_release_value": 6.3,
+          "vintage_count": 14
+        },
+        {
+          "observation_month": "2025-06",
+          "first_release_date": "2025-07-31",
+          "first_release_value": 6.2,
+          "vintage_count": 13
+        },
+        {
+          "observation_month": "2025-07",
+          "first_release_date": "2025-09-01",
+          "first_release_value": 6.2,
+          "vintage_count": 12
+        },
+        {
+          "observation_month": "2025-08",
+          "first_release_date": "2025-10-02",
+          "first_release_value": 6.3,
+          "vintage_count": 11
+        },
+        {
+          "observation_month": "2025-09",
+          "first_release_date": "2025-10-30",
+          "first_release_value": 6.3,
+          "vintage_count": 10
+        },
+        {
+          "observation_month": "2025-10",
+          "first_release_date": "2025-12-02",
+          "first_release_value": 6.4,
+          "vintage_count": 9
+        },
+        {
+          "observation_month": "2025-11",
+          "first_release_date": "2026-01-08",
+          "first_release_value": 6.3,
+          "vintage_count": 8
+        },
+        {
+          "observation_month": "2025-12",
+          "first_release_date": "2026-01-30",
+          "first_release_value": 6.2,
+          "vintage_count": 7
+        },
+        {
+          "observation_month": "2026-01",
+          "first_release_date": "2026-03-04",
+          "first_release_value": 6.1,
+          "vintage_count": 6
+        },
+        {
+          "observation_month": "2026-02",
+          "first_release_date": "2026-04-01",
+          "first_release_value": 6.2,
+          "vintage_count": 5
+        },
+        {
+          "observation_month": "2026-03",
+          "first_release_date": "2026-04-30",
+          "first_release_value": 6.2,
+          "vintage_count": 4
+        },
+        {
+          "observation_month": "2026-04",
+          "first_release_date": "2026-06-01",
+          "first_release_value": 6.3,
+          "vintage_count": 3
+        },
+        {
+          "observation_month": "2026-05",
+          "first_release_date": "2026-07-02",
+          "first_release_value": 6.2,
+          "vintage_count": 2
+        },
+        {
+          "observation_month": "2026-06",
+          "first_release_date": "2026-07-30",
+          "first_release_value": 6.3,
+          "vintage_count": 1
+        }
+      ],
+      "qa": {
+        "rows": 66,
+        "start": "2021-01",
+        "end": "2026-06",
+        "first_release_start": "2021-03-04",
+        "first_release_end": "2026-07-30"
+      }
+    }
+  }
+}
