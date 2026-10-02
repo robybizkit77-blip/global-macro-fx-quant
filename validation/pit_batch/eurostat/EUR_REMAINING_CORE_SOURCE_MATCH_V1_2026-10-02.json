@@ -36,11 +36,18 @@
       "source_dataset_candidates": [
         "NAMQ_10_PE"
       ],
-      "preferred_current_concept": "Quarterly national accounts employment and population, total employment, thousand persons, euro area",
+      "preferred_current_concept": "Euro area total employment, domestic concept",
       "pit_strategy": "DATED_RELEASE_ARCHIVE",
       "structured_vintage_dataset": null,
-      "status": "CURRENT_CONCEPT_MATCHED__PIT_ARCHIVE_REQUIRED",
-      "note": "Quarterly frequency and thousand-person level match the runtime series. Exact indicator/unit/geo keys must be frozen in extractor QA."
+      "status": "EXACT_CURRENT_SOURCE_VERIFIED__PIT_ARCHIVE_REQUIRED",
+      "note": "Exact runtime identity verified 42/42 quarters with zero numerical difference using official euro-area composition: EA20 through 2025-Q4, EA21 from 2026-Q1.",
+      "exact_series_key": {
+        "dataset": "NAMQ_10_PE",
+        "unit": "THS_PER",
+        "s_adj": "SCA",
+        "na_item": "EMP_DC",
+        "composition_rule": "EA20 through 2025-Q4; EA21 from 2026-Q1"
+      }
     },
     {
       "runtime_id": "EA_NEGOTIATED_WAGES_YOY_history_value",
@@ -80,7 +87,7 @@
   "guardrails": [
     "No current revised Eurostat values may be backfilled as first release.",
     "No guessed publication lag.",
-    "Employment extractor must prove the exact national-accounts indicator and unit match.",
-    "Negotiated wages remains WITHHELD_PIT until exact ECB series identity and dated releases are verified."
+    "Negotiated wages remains WITHHELD_PIT until exact ECB series identity and dated releases are verified.",
+    "Employment PIT extractor must preserve the dated euro-area composition rule; current-series identity is verified but historical first-release values are not yet reconstructed."
   ]
 }
