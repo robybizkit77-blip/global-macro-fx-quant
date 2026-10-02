@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
-import io,json,re,urllib.request
+import io,json,re,urllib.request,html as htmlmod,urllib.parse
 from pypdf import PdfReader
 
 URL="https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-06022024-ap"
-req=urllib.request.Request(URL,headers={"User-Agent":"Mozilla/5.0 GMFQ-retail-format-diagnostic/1.0"})
+req=urllib.request.Request(URL,headers={"User-Agent":"Mozilla/5.0 GMFQ-retail-download-diagnostic/1.0"})
 with urllib.request.urlopen(req,timeout=20) as r:
     raw=r.read(); ctype=(r.headers.get("Content-Type") or "").lower(); final=r.geturl()
-if raw[:4]==b"%PDF" or "pdf" in ctype:
-    rd=PdfReader(io.BytesIO(raw))
-    txt=" ".join((p.extract_text() or "") for p in rd.pages)
-else:
-    txt=raw.decode("utf-8","ignore")
-    txt=re.sub(r"<script.*?</script>"," ",txt,flags=re.S|re.I)
-    txt=re.sub(r"<style.*?</style>"," ",txt,flags=re.S|re.I)
-    txt=re.sub(r"<[^>]+>"," ",txt)
-txt=re.sub(r"\s+"," ",txt).strip()
-contexts=[]
-for pat in ["Revisions","revised","News Release","December 2023","January 2024","retail trade"]:
-    m=re.search(pat,txt,re.I)
-    contexts.append({"pattern":pat,"found":bool(m),"context":txt[max(0,m.start()-600):m.start()+1400] if m else None})
-print(json.dumps({"url":final,"ctype":ctype,"chars":len(txt),"head":txt[:1200],"contexts":contexts},indent=2))
+s=raw.decode("utf-8","ignore")
+anchors=[]
+for m in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',s,flags=re.S|re.I):
+    href=htmlmod.unescape(m.group(1)); label=re.sub(r"<[^>]+>"," ",m.group(2)); label=re.sub(r"\s+"," ",htmlmod.unescape(label)).strip()
+    if "download" in label.lower() or "pdf" in href.lower() or "documents/" in href.lower():
+        anchors.append({"label":label,"href":urllib.parse.urljoin(final,href)})
+print(json.dumps({"url":final,"ctype":ctype,"anchors":anchors[:30]},indent=2))
