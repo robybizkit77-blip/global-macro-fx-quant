@@ -1,11 +1,76 @@
 {
   "schema": "GMFQ_EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V2",
   "created_at": "2026-10-02",
-  "seed_count": 12,
-  "fetch_ok": 12,
-  "parsed_qoq": 12,
+  "seed_count": 20,
+  "fetch_ok": 20,
+  "parsed_qoq": 20,
   "coverage_pct": 100.0,
   "rows": [
+    {
+      "reference_quarter": "2020-Q4",
+      "release_date": "2021-02-16",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/11562947/2-16022021-AP-EN.pdf/eb164095-6de4-a6a1-cd87-60c4a645e5e1",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 9567,
+      "employment_qoq_pct": 0.3,
+      "match_text": "number of employed persons increased by 0.3% in both the euro area and in the EU in the fourth quarter of 2020, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2021-Q1",
+      "release_date": "2021-05-18",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/11563087/2-18052021-AP-EN.pdf/c892ab6d-ecc0-8152-00aa-929e2e838db4",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 10047,
+      "employment_qoq_pct": -0.3,
+      "match_text": "number of employed persons decreased by 0.3% in both the euro area and in the EU in the first quarter of 2021, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2021-Q2",
+      "release_date": "2021-08-17",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/11563231/2-17082021-AP-EN.pdf",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 8624,
+      "employment_qoq_pct": 0.5,
+      "match_text": "number of employed persons increased by 0.5% in the euro area and by 0.6% in the EU in the second quarter of 2021, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2021-Q3",
+      "release_date": "2021-11-16",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/11563375/2-16112021-AP-EN.pdf/40627330-2e22-37f4-37c3-fa506afcd073?t=1637055015484",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 9969,
+      "employment_qoq_pct": 0.9,
+      "match_text": "number of employed persons increased by 0.9% in both the euro area and the EU in the third quarter of 2021, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2021-Q4",
+      "release_date": "2022-02-15",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/14245715/2-15022022-AP-EN.pdf/ee77aaf4-8c77-b003-a93d-636530784cda",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 11293,
+      "employment_qoq_pct": 0.5,
+      "match_text": "number of employed persons increased by 0.5% in both the euro area and the EU in the fourth quarter of 2021, compared with the previous quarter",
+      "employment_contexts": []
+    },
     {
       "reference_quarter": "2022-Q1",
       "release_date": "2022-05-17",
@@ -20,6 +85,32 @@
       "employment_contexts": []
     },
     {
+      "reference_quarter": "2022-Q2",
+      "release_date": "2022-08-17",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/14675418/2-17082022-AP-EN.pdf/e2a24cfe-ee79-d042-0a17-be6a117fba1a?t=1660721345061",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 10763,
+      "employment_qoq_pct": 0.6,
+      "match_text": "number of employed persons increased by 0.3% both in the euro area and in the EU in the second quarter of 2022, compared with the previous quarter. In the first quarter of 2022 , employment had increased by 0.6% in the euro area and by 0.5% in the EU. Compared with the same quarter of the previous year, employment increased by 2.4% in the euro area and by 2.3% in the EU in the second quarter of 2022, after +2.9% in euro area and +2.8% in the EU in the first quarter of 2022. These data provide a picture of labour input consistent with the output and incom e measures of national accounts. -4 -3 -2 -1 0 1 2 3 2008Q1 2008Q2 2008Q3 2008Q4 2009Q1 2009Q2 2009Q3 2009Q4 2010Q1 2010Q2 2010Q3 2010Q4 20",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2022-Q3",
+      "release_date": "2022-11-15",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/15265515/2-15112022-AP-EN.pdf/a86b3e33-506e-12bf-6cbb-6c6280490b6c",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 8264,
+      "employment_qoq_pct": 1.7,
+      "match_text": "number of employed persons increased by 0.2% both in the euro area and in the EU in the third quarter of 2022, compared with the previous quarter. In the second quarter of 2022, employment had increased by 0.4% both in the euro area and in the EU. Compared with the same quarter of the previous year, employment increased by 1.7% in the euro area and by 1.5% in the EU in the third quarter of 2022, after + 2.7% in the euro area and +2.4% in the EU in the second quarter of 2022. These data provide a picture of labour input consistent with the output and incom e measures of national accounts. Growth rates of employment in persons Percentage change compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
       "reference_quarter": "2023-Q1",
       "release_date": "2023-05-16",
       "kind": "flash",
@@ -30,6 +121,19 @@
       "text_chars": 8888,
       "employment_qoq_pct": 0.6,
       "match_text": "number of employed persons increased by 0.6% in both the euro area and the EU in the first quarter of 2023, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2023-Q2",
+      "release_date": "2023-08-16",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/17337861/2-16082023-AP-EN.pdf/927cb6f7-c2fa-0e5e-abcd-ceeb40ebed41",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 10408,
+      "employment_qoq_pct": 0.2,
+      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the second quarter of 2023, compared with the previous quarter",
       "employment_contexts": []
     },
     {
