@@ -1,0 +1,37 @@
+name: PIT Batch Plan
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/build_pit_batch_plan.py'
+      - '.github/workflows/pit-batch-plan.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build grouped PIT extraction plan
+        run: python validation/build_pit_batch_plan.py
+      - name: Commit grouped plan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build grouped PIT extraction plan"
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
