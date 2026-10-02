@@ -1,0 +1,62 @@
+{
+  "schema": "GMFQ_STRUCTURED_VINTAGE_EXTRACTION_TARGETS_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "targets": [
+    {
+      "ccy": "EUR",
+      "runtime_id": "EA_IP_history_value",
+      "source": "Eurostat PEEIs vintage database",
+      "source_series_family": "Industrial production",
+      "source_dataset_current": "ei_isin_m",
+      "vintage_structure": "split vintage datasets: 2001-2020 static + 2021 onward current",
+      "vintage_dimension": "revision date",
+      "status": "STRUCTURED_VINTAGE_READY_FOR_EXTRACTION",
+      "note": "Eurostat states vintages are saved as published and include the revision-date dimension."
+    },
+    {
+      "ccy": "EUR",
+      "runtime_id": "EA_UNEMP_history_value",
+      "source": "Eurostat PEEIs vintage database",
+      "source_series_family": "Monthly harmonized unemployment rate",
+      "source_dataset_current": "ei_lmhr_m",
+      "vintage_structure": "split vintage datasets: 2001-2020 static + 2021 onward current",
+      "vintage_dimension": "revision date",
+      "status": "STRUCTURED_VINTAGE_READY_FOR_EXTRACTION"
+    },
+    {
+      "ccy": "CAD",
+      "runtime_id": "CA_REAL_GDP_M_history_value",
+      "source": "Statistics Canada",
+      "source_table": "36-10-0491-01",
+      "title": "Historical (real-time) releases of GDP at basic prices, by industry, monthly",
+      "vintage_dimension": "Release",
+      "status": "STRUCTURED_VINTAGE_READY_FOR_EXTRACTION",
+      "note": "StatsCan explicitly describes this table as tracking estimates since initial release."
+    },
+    {
+      "ccy": "CAD",
+      "runtime_id": "CA_RETAIL_VOLUME_history_value",
+      "source": "Statistics Canada",
+      "source_table": "20-10-0082 (current real-time retail sales/price/volume family; historical inactive predecessors 20-10-0079 / 20-10-0055 as applicable)",
+      "title": "Historical (real-time) releases of monthly retail sales, price and volume",
+      "vintage_dimension": "Release",
+      "status": "SERIES_VARIANT_AND_TABLE_CONTINUITY_CHECK_REQUIRED",
+      "note": "A structured real-time retail family exists; the exact chained-dollar/volume measure must be matched to the runtime series across table transitions."
+    }
+  ],
+  "extraction_rules": {
+    "checkpoint_frequency": "monthly",
+    "start_candidate": "2020-08",
+    "first_release_rule": "For each observation period, select the earliest source vintage/release containing that observation.",
+    "revision_rule": "Later revisions are separate later information events; never overwrite earlier checkpoints.",
+    "scale_rule": "Compare changes/impulses rather than absolute index levels if rebasing/reference-year changes make levels incomparable across vintages.",
+    "missing_rule": "If a vintage is absent in the official archive, mark WITHHELD_PIT for that checkpoint; do not interpolate vintage values."
+  },
+  "next_step": "Materialize first-release-vs-current comparison rows for these four series from 2020 onward, then feed them through normalizedSeriesImpulse to measure signal changes."
+}
