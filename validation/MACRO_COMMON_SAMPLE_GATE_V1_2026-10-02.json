@@ -1,0 +1,82 @@
+{
+  "schema": "GMFQ_MACRO_COMMON_SAMPLE_GATE_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "observation_level_result": {
+    "common_full_g8_gate": "2020-06-01",
+    "meaning": "Using only stored observation-period dates and the frozen engine minimum of 8 observations per eligible series, all 8 currencies have at least one eligible Growth series and one eligible Labour series by June 2020.",
+    "not_pit_ready": true,
+    "warning": "This is NOT yet the backtest start date. Official release lags and first-release/vintage availability must still be applied, which can move the true market-availability gate later."
+  },
+  "currency_gates": {
+    "USD": "2020-05-01",
+    "EUR": "2020-05-01",
+    "GBP": "2020-05-01",
+    "JPY": "2020-05-01",
+    "CHF": "2020-04-01",
+    "CAD": "2020-06-01",
+    "AUD": "2020-03-01",
+    "NZD": "2017-12-01"
+  },
+  "bottleneck": {
+    "currency": "CAD",
+    "block": "Labour",
+    "observation_gate": "2020-06-01",
+    "series": [
+      "CA_UNEMP_RATE_history_value",
+      "CA_EMPLOYMENT_history_value"
+    ]
+  },
+  "source_resolution_update": {
+    "resolved_families": [
+      {
+        "ids": [
+          "US_ICSA_history_value",
+          "US_CCSA_history_CCSA"
+        ],
+        "source": "U.S. Department of Labor / Employment & Training Administration, UI Weekly Claims",
+        "publication_rule": "Weekly Claims release normally Thursday 08:30 Eastern, with federal-holiday exceptions; prior releases are archived.",
+        "status": "RELEASE_FAMILY_VERIFIED"
+      },
+      {
+        "ids": [
+          "EA_NEGOTIATED_WAGES_YOY_history_value"
+        ],
+        "source": "ECB Data Portal, Indicator of Negotiated Wage Rates",
+        "canonical_series_candidates": [
+          "INW.Q.I9.N.INWR.000000.4F0.GY.IX",
+          "legacy STS.Q.I9.N.INWR.000000.3.ANR"
+        ],
+        "publication_rule": "Quarterly ECB negotiated-wage release calendar; exact series-key match to stored runtime values still requires value-level verification.",
+        "status": "RELEASE_FAMILY_VERIFIED__SERIES_KEY_VALUE_MATCH_PENDING"
+      },
+      {
+        "ids": [
+          "CH_PRODUCTION_history_value"
+        ],
+        "source": "Swiss Federal Statistical Office, Secondary Sector Production, Orders and Turnover Statistics",
+        "publication_rule": "Provisional results published 50 days after survey-period end; final results 140 days after period end.",
+        "status": "RELEASE_MECHANISM_VERIFIED__RUNTIME_SERIES_VARIANT_MATCH_PENDING"
+      },
+      {
+        "ids": [
+          "CH_UNEMP_RATE_history_value"
+        ],
+        "source": "SECO Swiss labour-market statistics",
+        "publication_rule": "Monthly labour-market reports with dated publication archive and planned release dates.",
+        "status": "RELEASE_MECHANISM_VERIFIED__SEASONAL_ADJUSTMENT_VARIANT_MATCH_PENDING"
+      }
+    ]
+  },
+  "next_gate": [
+    "Convert observation dates to official market-availability dates for 2020-2026.",
+    "Verify value-level exact series match for ECB negotiated wages and Swiss production/unemployment variants.",
+    "Recompute the common G8 start date after publication lags.",
+    "Then audit first-release vs revised-value availability. Series without recoverable vintages remain REVISED_ONLY and cannot be labeled full PIT."
+  ]
+}
