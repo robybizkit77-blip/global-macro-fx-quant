@@ -12,13 +12,15 @@ permissions:
   contents: write
 
 jobs:
-  crawl-year:
+  crawl-month:
     strategy:
       fail-fast: false
+      max-parallel: 12
       matrix:
         year: [2020, 2021, 2022, 2023, 2024, 2025, 2026]
+        month: [1,2,3,4,5,6,7,8,9,10,11,12]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,17 +28,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Crawl one release year
+      - name: Crawl one release month
         env:
           CRAWL_YEAR: ${{ matrix.year }}
+          CRAWL_MONTH: ${{ matrix.month }}
         run: python validation/crawl_eur_retail_volume_releases.py
       - uses: actions/upload-artifact@v4
         with:
-          name: eur-retail-${{ matrix.year }}
-          path: validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_${{ matrix.year }}_V1_2026-10-02.json
+          name: eur-retail-${{ matrix.year }}-${{ matrix.month }}
+          path: validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_${{ matrix.year }}_*.json
+          if-no-files-found: ignore
 
   aggregate:
-    needs: crawl-year
+    needs: crawl-month
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -51,12 +55,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Aggregate yearly chunks
+      - name: Aggregate monthly chunks
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          files=sorted(Path("/tmp/eur-retail").glob("EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_*_V1_2026-10-02.json"))
+          files=sorted(Path("/tmp/eur-retail").glob("*.json"))
           rows=[]
           for f in files:
               j=json.loads(f.read_text())
@@ -70,7 +74,9 @@ jobs:
           while (y,m)<=(2026,7):
               expected.append(f"{y}-{m:02d}")
               m+=1
-              if m==13: y+=1;m=1
+              if m==13:
+                  y+=1
+                  m=1
           missing=[x for x in expected if x not in by]
           report={
             "schema":"GMFQ_EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1",
