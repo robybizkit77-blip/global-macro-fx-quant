@@ -1,0 +1,10 @@
+{
+  "schema": "GMFQ_EUROSTAT_VINTAGE_DATAFLOW_DISCOVERY_V1",
+  "source": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/all/1.0?detail=allstubs",
+  "priority": [],
+  "fallback": [],
+  "counts": {
+    "priority": 0,
+    "fallback": 0
+  }
+}
