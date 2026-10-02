@@ -1,0 +1,753 @@
+{
+  "schema": "GMFQ_EUROSTAT_DATAFLOW_DISCOVERY_V2",
+  "created_at": "2026-10-02",
+  "source": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/all/latest?detail=allstubs",
+  "official_context": {
+    "vintage_scope": [
+      "industrial production",
+      "unemployment",
+      "GDP"
+    ],
+    "vintage_dimension": "revision date",
+    "split_rule": "industrial production and unemployment use static older vintages through 2020 and updated vintages from 2021 onward"
+  },
+  "strong_candidates": [
+    {
+      "id": "EI_IS_M_VTG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Industrial production - monthly data - vintages from 2021 onwards | Industrieproduktion - monatliche Daten - Jahrg\u00e4nge von 2021 an | Production industrielle - donn\u00e9es mensuelles - mill\u00e9simes \u00e0 partir de 2021"
+    },
+    {
+      "id": "EI_IS_M_VTGFIX",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Industrieproduktion - monatliche Daten - Jahrg\u00e4nge von 2001 bis 2020 | Industrial production - monthly data - vintages from 2001 to 2020 | Production industrielle - donn\u00e9es mensuelles - mill\u00e9simes de 2001 \u00e0 2020"
+    },
+    {
+      "id": "EI_LM_M_VTG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment - monthly data - vintages from 2021 onwards | Arbeitslosigkeit - monatliche Daten - Jahrg\u00e4nge von 2021 an | Ch\u00f4mage - donn\u00e9es mensuelles - mill\u00e9simes \u00e0 partir de 2021"
+    },
+    {
+      "id": "EI_LM_M_VTGFIX",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment - monthly data - vintages from 2001 to 2020 | Arbeitslosigkeit - monatliche Daten - Jahrg\u00e4nge von 2001 bis 2020 | Ch\u00f4mage - donn\u00e9es mensuelles - mill\u00e9simes de 2001 \u00e0 2020"
+    },
+    {
+      "id": "EI_NA_Q_VTG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Gross domestic product (GDP) - quarterly data - vintages based on ESA 2010 | Bruttoinlandsprodukt (BIP) - viertelj\u00e4hrliche Daten - Jahrg\u00e4nge auf der Grundlage des ESVG 2010 | Produit int\u00e9rieur brut (PIB) - donn\u00e9es trimestrielles - mill\u00e9simes bas\u00e9s sur le SEC 2010"
+    }
+  ],
+  "industrial_production_candidates": [
+    {
+      "id": "EI_IS_M_VTG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Industrial production - monthly data - vintages from 2021 onwards | Industrieproduktion - monatliche Daten - Jahrg\u00e4nge von 2021 an | Production industrielle - donn\u00e9es mensuelles - mill\u00e9simes \u00e0 partir de 2021"
+    },
+    {
+      "id": "EI_IS_M_VTGFIX",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Industrieproduktion - monatliche Daten - Jahrg\u00e4nge von 2001 bis 2020 | Industrial production - monthly data - vintages from 2001 to 2020 | Production industrielle - donn\u00e9es mensuelles - mill\u00e9simes de 2001 \u00e0 2020"
+    },
+    {
+      "id": "ENPE_STS_INCOPR",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Produktionsvolumenindex in Industrie und Baugewerbe - kalenderbereinigt - \u00f6stliche ENP-L\u00e4nder | Indice du volume de production industrie et construction - calendrier ajust\u00e9 - PEV-Pays de l'Est | Industrial and construction production volume index - calendar adjusted - ENP-East countries"
+    },
+    {
+      "id": "ENPE_STS_INPPD",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Indice des prix de la production industrielle int\u00e9rieure - PEV-Pays de l'Est | Domestic industrial production price index - ENP-East countries | Preisindex der heimischen Industrieproduktion - \u00f6stliche ENP-L\u00e4nder"
+    }
+  ],
+  "unemployment_candidates": [
+    {
+      "id": "LFSQ_UGAD",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployed persons by duration of unemployment - quarterly data | Arbeitslose nach Dauer der Arbeitslosigkeit - Quartalsdaten | Personnes au ch\u00f4mage par dur\u00e9e de ch\u00f4mage - donn\u00e9es trimestrielles"
+    },
+    {
+      "id": "LFSQ_UGMSW",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployed persons by methods used for seeking work - % of total unemployment - quarterly data | Personnes au ch\u00f4mage par m\u00e9thodes utilis\u00e9es pour trouver un emploi - % du ch\u00f4mage total - donn\u00e9es trimestrielles | Arbeitslose nach Methoden der Arbeitssuche - % der gesamten Arbeitslosigkeit - Quartalsdaten"
+    },
+    {
+      "id": "LFSQ_UPGAL",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Langzeitarbeitslose (12 Monate oder l\u00e4nger) - % der gesamten Arbeitslosigkeit - Quartalsdaten | Personnes en ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) - % du ch\u00f4mage total - donn\u00e9es trimestrielles | Persons in long-term unemployment (12 months or more) - % of total unemployment - quarterly data"
+    },
+    {
+      "id": "LFSQ_URGACOB",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rates by country of birth - quarterly data | Arbeitslosenquoten nach Geburtsland - Quartalsdaten | Taux de ch\u00f4mage par pays de naissance - donn\u00e9es trimestrielles"
+    },
+    {
+      "id": "LFSQ_URGAED",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rates by educational attainment level - quarterly data | Arbeitslosenquoten nach Bildungsabschluss - Quartalsdaten | Taux de ch\u00f4mage par niveau d'\u00e9ducation atteint - donn\u00e9es trimestrielles"
+    },
+    {
+      "id": "LFSQ_URGAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rates by citizenship - quarterly data | Arbeitslosenquoten nach Staatsangeh\u00f6rigkeit - Quartalsdaten | Taux de ch\u00f4mage par nationalit\u00e9 - donn\u00e9es trimestrielles"
+    },
+    {
+      "id": "EDAT_LFSE_25",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rates of young persons not in education and training by educational attainment level and years since completion of highest level of education | Taux de ch\u00f4mage des jeunes n'\u00e9tant ni en \u00e9ducation ni en formation par niveau d'\u00e9ducation atteint et ann\u00e9es depuis l'ach\u00e8vement du plus haut niveau d'\u00e9ducation | Arbeitslosenquoten Jugendlicher, die weder an Bildung noch an Weiterbildung teilnehmen, nach Bildungsabschluss und Jahren seit Bildungsabschluss"
+    },
+    {
+      "id": "LFST_R_LFU2LTU",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par niveau d'\u00e9ducation atteint et r\u00e9gion NUTS 2 | Persons in long-term unemployment (12 months or more) by educational attainment level and NUTS 2 region | Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Bildungsabschluss und NUTS-2-Region"
+    },
+    {
+      "id": "LFST_R_LFU3RT",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par niveau d'\u00e9ducation atteint et r\u00e9gion NUTS 2 | Unemployment rates by educational attainment level and NUTS 2 region | Arbeitslosenquoten nach Bildungsabschluss und NUTS-2-Region"
+    },
+    {
+      "id": "LFST_R_LFUR2GAC",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par pays de naissance et r\u00e9gion NUTS 2 | Unemployment rates by country of birth and NUTS 2 region | Arbeitslosenquoten nach Geburtsland und NUTS-2-Region"
+    },
+    {
+      "id": "LFST_R_LFUR2GACU",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par pays de naissance et degr\u00e9 d'urbanisation | Unemployment rates by country of birth and degree of urbanisation | Arbeitslosenquoten nach Geburtsland und Verst\u00e4dterungsgrad"
+    },
+    {
+      "id": "LFST_R_LFUR2GAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par nationalit\u00e9 et r\u00e9gion NUTS 2 | Unemployment rates by citizenship and NUTS 2 region | Arbeitslosenquoten nach Staatsangeh\u00f6rigkeit und NUTS-2-Region"
+    },
+    {
+      "id": "LFST_R_LFUR2GANU",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par nationalit\u00e9 et degr\u00e9 d'urbanisation | Unemployment rates by citizenship and degree of urbanisation | Arbeitslosenquoten nach Staatsangeh\u00f6rigkeit und Verst\u00e4dterungsgrad"
+    },
+    {
+      "id": "LFST_R_LMDLTU",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Regionale Disparit\u00e4ten bei den Langzeitarbeitslosenquoten (NUTS-Ebene 2) | Disparit\u00e9s r\u00e9gionales des taux de ch\u00f4mage de longue dur\u00e9e (niveau NUTS 2) | Regional disparities in long-term unemployment rates (NUTS level 2)"
+    },
+    {
+      "id": "LFST_R_LMDUR",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Regional disparities in unemployment rates (NUTS level 2, NUTS level 3) | Regionale Disparit\u00e4ten bei den Arbeitslosenquoten (NUTS-Ebene 2; NUTS-Ebene 3) | Disparit\u00e9s r\u00e9gionales des taux de ch\u00f4mage (niveau NUTS 2, niveau NUTS 3)"
+    },
+    {
+      "id": "LFST_R_URGAU",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par degr\u00e9 d'urbanisation | Unemployment rates by degree of urbanisation | Arbeitslosenquoten nach Verst\u00e4dterungsgrad"
+    },
+    {
+      "id": "MET_LFU3PERS",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment by sex, age and metropolitan region | Ch\u00f4mage par sexe, \u00e2ge et r\u00e9gion m\u00e9tropolitaine | Arbeitslosigkeit nach Geschlecht, Alter und Metropolregionen"
+    },
+    {
+      "id": "MET_LFU3RT",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Geschlecht, Alter und Metropolregionen | Taux de ch\u00f4mage par sexe, \u00e2ge et r\u00e9gion m\u00e9tropolitaine | Unemployment rates by sex, age and metropolitan region"
+    },
+    {
+      "id": "EI_LMHR_M",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage (%) - donn\u00e9es mensuelles | Arbeitslosenquote (%) - monatliche Daten | Unemployment rate (%) - monthly data"
+    },
+    {
+      "id": "EI_LMHU_M",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosigkeit (1 000) - monatliche Daten | Ch\u00f4mage (1 000) - donn\u00e9es mensuelles | Unemployment (1 000) - monthly data"
+    },
+    {
+      "id": "EI_LM_M_VTG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment - monthly data - vintages from 2021 onwards | Arbeitslosigkeit - monatliche Daten - Jahrg\u00e4nge von 2021 an | Ch\u00f4mage - donn\u00e9es mensuelles - mill\u00e9simes \u00e0 partir de 2021"
+    },
+    {
+      "id": "EI_LM_M_VTGFIX",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment - monthly data - vintages from 2001 to 2020 | Arbeitslosigkeit - monatliche Daten - Jahrg\u00e4nge von 2001 bis 2020 | Ch\u00f4mage - donn\u00e9es mensuelles - mill\u00e9simes de 2001 \u00e0 2020"
+    },
+    {
+      "id": "ENPE_LFSA_URGAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par sexe et \u00e2ge - PEV-Pays de l'Est | Unemployment rates by sex and age - ENP-East countries | Erwerbslosenquote nach Geschlecht und Alter - \u00f6stliche ENP-L\u00e4nder"
+    },
+    {
+      "id": "ENPE_LFSA_URGAN2",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage de longue dur\u00e9e par sexe - PEV-Pays de l'Est | Long-term unemployment rates by sex - ENP-East countries | Langzeitarbeitslosenquoten nach Geschlecht - \u00f6stliche ENP-L\u00e4nder"
+    },
+    {
+      "id": "ENPS_LFSA_GAP",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Geschlechterunterschiede bei der Arbeitslosenquote (25- bis -74 J\u00e4hrige) - s\u00fcdliche ENP-L\u00e4nder | \u00c9cart du taux de ch\u00f4mage entre hommes et femmes (25-74 ans) - PEV-Pays du Sud | Gender gap for unemployment rate (aged 25-74) - ENP-South countries"
+    },
+    {
+      "id": "ENPS_LFSA_GAPLG",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Geschlechterunterschiede bei der Langzeitarbeitslosenquote (15- bis -74 J\u00e4hrige) - s\u00fcdliche ENP-L\u00e4nder | Gender gap for long-term unemployment rate (aged 15-74) - ENP-South countries | \u00c9cart du taux de ch\u00f4mage de longue dur\u00e9e entre hommes et femmes (15-74 ans) - PEV-Pays du Sud"
+    },
+    {
+      "id": "ENPS_LFSA_URGAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rates by sex and age - ENP-South countries | Taux de ch\u00f4mage par sexe et par \u00e2ge - PEV-Pays du Sud | Erwerbslosenquote nach Geschlecht und Alter - s\u00fcdliche ENP-L\u00e4nder"
+    },
+    {
+      "id": "ENPS_LFSA_URGAN2",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage de longue dur\u00e9e par sexe - PEV-Pays du Sud | Long-term unemployment rates by sex \u2013 ENP-South countries | Langzeitarbeitslosenquoten nach Geschlecht - s\u00fcdliche ENP-L\u00e4nder"
+    },
+    {
+      "id": "HLTH_DLM030",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par type d'incapacit\u00e9 (2011) | Unemployment rate by type of disability (2011) | Arbeitslosenquote nach Art der Behinderung (2011)"
+    },
+    {
+      "id": "LFSA_UGAD",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslose nach Dauer der Arbeitslosigkeit | Unemployed persons by duration of unemployment | Personnes au ch\u00f4mage par dur\u00e9e de ch\u00f4mage"
+    },
+    {
+      "id": "LFSA_UGADRA",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslose nach Dauer der Arbeitslosigkeit und Registrierung/Leistungsbezug | Unemployed persons by duration of unemployment and distinction registration/benefits | Personnes au ch\u00f4mage par dur\u00e9e de ch\u00f4mage et distinction ch\u00f4mage enregistr\u00e9/b\u00e9n\u00e9ficiaire d'allocations-aides"
+    },
+    {
+      "id": "LFSA_UGMSW",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Personnes au ch\u00f4mage par m\u00e9thodes utilis\u00e9es pour trouver un emploi - % du ch\u00f4mage total | Unemployed persons by methods used for seeking work - % of total unemployment | Arbeitslose nach Methoden der Arbeitssuche - % der gesamten Arbeitslosigkeit"
+    },
+    {
+      "id": "LFSA_UPGACOB",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Geburtsland - % der gesamten Arbeitslosigkeit | Persons in long-term unemployment (12 months or more) by country of birth - % of total unemployment | Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par pays de naissance - % du ch\u00f4mage total"
+    },
+    {
+      "id": "LFSA_UPGACOB$DV_1842",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Persons in long-term unemployment (12 months or more) by country of birth - % of total unemployment | Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Geburtsland - % der gesamten Arbeitslosigkeit | Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par pays de naissance - % du ch\u00f4mage total"
+    },
+    {
+      "id": "LFSA_UPGADL",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Grad der Behinderung (Aktivit\u00e4tseinschr\u00e4nkungen) - % der gesamten Arbeitslosigkeit | Persons in long-term unemployment (12 months or more) by level of disability (activity limitation) - % of total unemployment | Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par niveau de handicap (restriction d'activit\u00e9) - % du ch\u00f4mage total"
+    },
+    {
+      "id": "LFSA_UPGAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Staatsangeh\u00f6rigkeit - % der gesamten Arbeitslosigkeit | Persons in long-term unemployment (12 months or more) by citizenship - % of total unemployment | Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par nationalit\u00e9 - % du ch\u00f4mage total"
+    },
+    {
+      "id": "LFSA_UPGAN$DV_1822",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Persons in long-term unemployment (12 months or more) by citizenship - % of total unemployment | Langzeitarbeitslose (12 Monate oder l\u00e4nger) nach Staatsangeh\u00f6rigkeit - % der gesamten Arbeitslosigkeit | Personnes au ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) par nationalit\u00e9 - % du ch\u00f4mage total"
+    },
+    {
+      "id": "LFSA_URGACOB",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Geburtsland | Unemployment rates by country of birth | Taux de ch\u00f4mage par pays de naissance"
+    },
+    {
+      "id": "LFSA_URGACOB$DV_1762",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Geburtsland | Unemployment rates by country of birth | Taux de ch\u00f4mage par pays de naissance"
+    },
+    {
+      "id": "LFSA_URGAED",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Bildungsabschluss | Unemployment rates by educational attainment level | Taux de ch\u00f4mage par niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "LFSA_URGAED$DV_611",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Bildungsabschluss | Unemployment rates by educational attainment level | Taux de ch\u00f4mage par niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "LFSA_URGAEDDL",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Grad der Behinderung (Aktivit\u00e4tseinschr\u00e4nkungen) und Bildungsabschluss | Taux de ch\u00f4mage par niveau de handicap (restriction d'activit\u00e9) et niveau d'\u00e9ducation atteint | Unemployment rates by level of disability (activity limitation) and educational attainment level"
+    },
+    {
+      "id": "LFSA_URGAN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Staatsangeh\u00f6rigkeit | Unemployment rates by citizenship | Taux de ch\u00f4mage par nationalit\u00e9"
+    },
+    {
+      "id": "LFSA_URGAN$DV_1909",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Staatsangeh\u00f6rigkeit | Unemployment rates by citizenship | Taux de ch\u00f4mage par nationalit\u00e9"
+    },
+    {
+      "id": "LFSA_URGANEDM",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Migrationsstatus, Staatsangeh\u00f6rigkeit und Bildungsabschluss | Unemployment rates by migration status, citizenship and educational attainment level | Taux de ch\u00f4mage par statut migratoire, nationalit\u00e9 et niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "LFSA_URGANEDM$DV_1763",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Migrationsstatus, Staatsangeh\u00f6rigkeit und Bildungsabschluss | Unemployment rates by migration status, citizenship and educational attainment level | Taux de ch\u00f4mage par statut migratoire, nationalit\u00e9 et niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "LFSI_LONG_E01",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Transition du ch\u00f4mage \u00e0 l'emploi par dur\u00e9e de ch\u00f4mage (moyennes annuelles des transitions trimestrielles, probabilit\u00e9s estim\u00e9es) - statistiques exp\u00e9rimentales | \u00dcberg\u00e4nge von Arbeitslosigkeit in Besch\u00e4ftigung nach Dauer der Arbeitslosigkeit (Jahresdurchschnitte der Quartals\u00fcberg\u00e4nge, gesch\u00e4tzte Wahrscheinlichkeiten) - experimentelle Statistiken | Transition from unemployment to employment by duration of unemployment (annual averages of quarterly transitions, estimated probabilities) - experimental statistics"
+    },
+    {
+      "id": "LFSI_LONG_E02",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Transition du ch\u00f4mage \u00e0 l'emploi par exp\u00e9rience professionnelle pr\u00e9c\u00e9dente (moyennes annuelles des transitions trimestrielles, probabilit\u00e9s estim\u00e9es) - statistiques exp\u00e9rimentales | \u00dcberg\u00e4nge von Arbeitslosigkeit in Besch\u00e4ftigung nach Arbeitserfahrung (Jahresdurchschnitte der Quartals\u00fcberg\u00e4nge, gesch\u00e4tzte Wahrscheinlichkeiten) - experimentelle Statistiken | Transition from unemployment to employment by previous work experience (annual averages of quarterly transitions, estimated probabilities) - experimental statistics"
+    },
+    {
+      "id": "LFSI_LONG_E03",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Transition du ch\u00f4mage \u00e0 l'emploi par degr\u00e9 d'urbanisation (moyennes annuelles des transitions trimestrielles, probabilit\u00e9s estim\u00e9es) - statistiques exp\u00e9rimentales | \u00dcberg\u00e4nge von Arbeitslosigkeit in Besch\u00e4ftigung nach Verst\u00e4dterungsgrad (Jahresdurchschnitte der Quartals\u00fcberg\u00e4nge, gesch\u00e4tzte Wahrscheinlichkeiten) - experimentelle Statistiken | Transition from unemployment to employment by degree of urbanisation (annual averages of quarterly transitions, estimated probabilities) - experimental statistics"
+    },
+    {
+      "id": "LFSI_LONG_E04",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Transition de l'emploi au ch\u00f4mage par degr\u00e9 d'urbanisation (moyennes annuelles des transitions trimestrielles, probabilit\u00e9s estim\u00e9es) - statistiques exp\u00e9rimentales | \u00dcberg\u00e4nge von Besch\u00e4ftigung in die Arbeitslosigkeit nach Verst\u00e4dterungsgrad (Jahresdurchschnitte der Quartals\u00fcberg\u00e4nge, gesch\u00e4tzte Wahrscheinlichkeiten) - experimentelle Statistiken | Transition from employment to unemployment by degree of urbanisation (annual averages of quarterly transitions, estimated probabilities) - experimental statistics"
+    },
+    {
+      "id": "LFSI_SUP_A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Supplementary indicators to unemployment - annual data | Erg\u00e4nzende Indikatoren zur Arbeitslosigkeit - Jahresdurchschnitte | Indicateurs compl\u00e9mentaires du ch\u00f4mage - donn\u00e9es annuelles"
+    },
+    {
+      "id": "LFSI_SUP_A_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Erg\u00e4nzende Indikatoren zur Arbeitslosigkeit - j\u00e4hrliche Daten (1992-2020) | Indicateurs compl\u00e9mentaires du ch\u00f4mage - donn\u00e9es annuelles (1992-2020) | Supplementary indicators to unemployment - annual data (1992\u20132020)"
+    },
+    {
+      "id": "LFSI_SUP_Q",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Indicateurs compl\u00e9mentaires du ch\u00f4mage - donn\u00e9es trimestrielles | Supplementary indicators to unemployment - quarterly data | Erg\u00e4nzende Indikatoren zur Arbeitslosigkeit - viertelj\u00e4hrliche Daten"
+    },
+    {
+      "id": "LFSI_SUP_Q_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Supplementary indicators to unemployment - quarterly data (1992\u20132020) | Indicateurs compl\u00e9mentaires du ch\u00f4mage - donn\u00e9es trimestrielles (1992-2020) | Erg\u00e4nzende Indikatoren zur Arbeitslosigkeit - viertelj\u00e4hrliche Daten (1992-2020)"
+    },
+    {
+      "id": "EARN_NT_UNEMTRP",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Steuerquote von Niedriglohnempf\u00e4ngern - Arbeitslosigkeitsfalle | Taux de pr\u00e9l\u00e8vement sur les bas salaires - pi\u00e8ge du ch\u00f4mage | Tax rate on low wage earners - unemployment trap"
+    },
+    {
+      "id": "LFSO_14LUNER",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote nach Migrationsstatus, Staatsangeh\u00f6rigkeit und Bildungsabschluss (2014) | Taux de ch\u00f4mage par statut migratoire, nationalit\u00e9 et niveau d'\u00e9ducation atteint (2014) | Unemployment rate by migration status, citizenship and educational attainment level (2014)"
+    },
+    {
+      "id": "LFSO_16UNERT",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote nach Bildungsabschluss und Berufserfahrung w\u00e4hrend der Ausbildung (2016) | Taux de ch\u00f4mage par niveau d'\u00e9ducation atteint et exp\u00e9rience professionnelle pendant les \u00e9tudes (2016) | Unemployment rate by educational attainment level and work experience while studying (2016)"
+    },
+    {
+      "id": "LFSO_24LMK02",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote nach Berufserfahrung w\u00e4hrend der Ausbildung und Geburtsland (2024) | Unemployment rate by work experience while studying and country of birth (2024) | Taux de ch\u00f4mage par exp\u00e9rience professionnelle pendant les \u00e9tudes et pays de naissance (2024)"
+    },
+    {
+      "id": "LFSO_24TERT03",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rate of persons with tertiary education by medium educational attainment qualifications (2024) | Arbeitslosenquote von Personen mit terti\u00e4rem Bildungsabschluss nach mittlerer Bildungsqualifikation (2024) | Taux de ch\u00f4mage des personnes avec un enseignement sup\u00e9rieur par qualifications correspondant au niveau d'\u00e9ducation moyen (2024)"
+    },
+    {
+      "id": "ILC_ATSB01A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employed people entitled or not to unemployment and/or sickness benefits by status in employment, age and sex | Personnes occupant un emploi ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon le statut dans l\u2019emploi, l\u2019\u00e2ge et le sexe | Erwerbst\u00e4tige mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Stellung im Beruf, Alter und Geschlecht"
+    },
+    {
+      "id": "ILC_ATSB01B",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employed people entitled or not to unemployment and/or sickness benefits by status in employment and disability (activity limitation) | Erwerbst\u00e4tige mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Stellung im Beruf und Behinderung (Aktivit\u00e4tseinschr\u00e4nkung) | Personnes occupant un emploi ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon le statut dans l\u2019emploi et le handicap (limitation d\u2019activit\u00e9)"
+    },
+    {
+      "id": "ILC_ATSB02A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employed people entitled or not to unemployment and/or sickness benefits by status in employment, age, sex and working time arrangements | Personnes occupant un emploi ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon le statut dans l\u2019emploi, l\u2019\u00e2ge, le sexe et l\u2019am\u00e9nagement du temps de travail | Erwerbst\u00e4tige mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Stellung im Beruf, Alter, Geschlecht und Arbeitszeitgestaltung"
+    },
+    {
+      "id": "ILC_ATSB02B",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employed people entitled or not to unemployment and/or sickness benefits by status in employment, disability (activity limitation) and working time arrangements | Erwerbst\u00e4tige mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Stellung im Beruf, Behinderung (Aktivit\u00e4tseinschr\u00e4nkung) und Arbeitszeitgestaltung | Personnes occupant un emploi ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon le statut dans l\u2019emploi, le handicap (limitation d\u2019activit\u00e9) et l\u2019am\u00e9nagement du temps de travail"
+    },
+    {
+      "id": "ILC_ATSB03A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employees entitled or not to unemployment and/or sickness benefits by age, sex and type of contract | Salari\u00e9s ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon l\u2019\u00e2ge, le sexe et le type de contrat | Arbeitnehmer mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Alter, Geschlecht und Vertragsart"
+    },
+    {
+      "id": "ILC_ATSB03B",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Employees entitled or not to unemployment and/or sickness benefits by disability (activity limitation) and type of contract | Arbeitnehmer mit oder ohne Anspruch auf Arbeitslosen- und/oder Krankengeld nach Behinderung (Aktivit\u00e4tseinschr\u00e4nkung) und Vertragsart | Salari\u00e9s ayant droit ou non aux allocations de ch\u00f4mage et/ou de maladie, selon le handicap (limitation d\u2019activit\u00e9) et le type de contrat"
+    },
+    {
+      "id": "TGS00010",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par r\u00e9gion NUTS 2 | Unemployment rate by NUTS 2 region | Arbeitslosenquote nach NUTS-2-Region"
+    },
+    {
+      "id": "SPR_EXP_FUN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "D\u00e9penses dans la fonction ch\u00f4mage par type de prestation et condition de ressources | Expenditure on unemployment function by type of benefit and means-testing | Ausgaben f\u00fcr die Funktion Arbeitslosigkeit nach Leistungsart und Bed\u00fcrftigkeitspr\u00fcfung"
+    },
+    {
+      "id": "SPR_UBR_BEN",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Empf\u00e4nger von Leistungen bei Arbeitslosigkeit nach Geschlecht, Alter und Art der Leistung | Unemployment benefits recipients by sex, age and type of benefit | B\u00e9n\u00e9ficiaires de prestations de ch\u00f4mage par sexe, \u00e2ge et type de prestation"
+    },
+    {
+      "id": "SPR_UBR_BENM",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Empf\u00e4nger von Leistungen bei Arbeitslosigkeit nach Geschlecht, Bed\u00fcrftigkeitspr\u00fcfung und Art der Leistung | Unemployment benefits recipients by sex, means testing and type of benefit | B\u00e9n\u00e9ficiaires de prestations de ch\u00f4mage par sexe, condition de ressources et type de prestation"
+    },
+    {
+      "id": "TIPSLM70",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage de longue dur\u00e9e - % de la population active \u00e2g\u00e9e de 15 \u00e0 74 ans | Long-term unemployment rate, % of active population aged 15-74 | Langzeitarbeitslosenquote - % der Erwerbsbev\u00f6lkerung im Alter von 15 bis 74"
+    },
+    {
+      "id": "TIPSLM80",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugendarbeitslosenquote - % der Erwerbsbev\u00f6lkerung im Alter von 15 bis 24 | Taux de ch\u00f4mage des jeunes - % de la population active \u00e2g\u00e9e de 15 \u00e0 24 ans | Youth unemployment rate - % of active population aged 15-24"
+    },
+    {
+      "id": "TIPSUN10",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage - moyenne sur 3 ans | Unemployment rate - 3 year average | Arbeitslosenquote - Durchschnitt \u00fcber 3 Jahre"
+    },
+    {
+      "id": "TIPSUN20",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rate - annual data | Taux de ch\u00f4mage - donn\u00e9es annuelles | Arbeitslosenquoten - j\u00e4hrliche Daten"
+    },
+    {
+      "id": "TIPSUN30",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote - viertelj\u00e4hrliche Daten, saisonbereinigt | Taux de ch\u00f4mage - donn\u00e9es trimestrielles, corrig\u00e9es des valeurs saisonni\u00e8res | Unemployment rate - quarterly data, seasonally adjusted"
+    },
+    {
+      "id": "TPS00066",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten (Personen im Alter von 25-64) nach Bildungsabschluss | Unemployment rates (persons aged 25-64) by educational attainment level | Taux de ch\u00f4mage (personnes \u00e2g\u00e9es de 25-64 ans) par niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "TEILM010",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosigkeit nach Geschlecht | Ch\u00f4mage par sexe | Unemployment by sex"
+    },
+    {
+      "id": "TEILM011",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par sexe - classe d'\u00e2ge 15-24 | Arbeitslosigkeit nach Geschlecht - Alter 15-24 | Unemployment by sex - age group 15-24"
+    },
+    {
+      "id": "TEILM012",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par sexe - classe d'\u00e2ge 25-74 | Unemployment by sex - age group 25-74 | Arbeitslosigkeit nach Geschlecht - Alter 25-74"
+    },
+    {
+      "id": "TEILM020",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par sexe | Arbeitslosenquote nach Geschlecht | Unemployment rate by sex"
+    },
+    {
+      "id": "TEILM021",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par sexe - classe d'\u00e2ge 15-24 | Arbeitslosenquote nach Geschlecht - Alter 15-24 | Unemployment rate by sex - age group 15-24"
+    },
+    {
+      "id": "TEILM022",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de ch\u00f4mage par sexe - classe d'\u00e2ge 25-74 | Arbeitslosenquote nach Geschlecht - Alter 25-74 | Unemployment rate by sex - age group 25-74"
+    },
+    {
+      "id": "TPS00203",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote | Taux de ch\u00f4mage | Unemployment rate"
+    },
+    {
+      "id": "UNE_EDUC_A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment by educational attainment level - annual data | Arbeitslosigkeit nach Bildungsabschluss - j\u00e4hrliche Daten | Ch\u00f4mage par niveau d'\u00e9ducation atteint - donn\u00e9es annuelles"
+    },
+    {
+      "id": "UNE_EDUC_A_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par niveau d'\u00e9ducation atteint - donn\u00e9es annuelles (1998-2020) | Arbeitslosigkeit nach Bildungsabschluss - j\u00e4hrliche Daten (1998-2020) | Unemployment by educational attainment level - annual data (1998\u20132020)"
+    },
+    {
+      "id": "UNE_EDUC_Q",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par niveau d'\u00e9ducation atteint - donn\u00e9es trimestrielles | Unemployment by educational attainment level - quarterly data | Arbeitslosigkeit nach Bildungsabschluss - Quartalsdaten"
+    },
+    {
+      "id": "UNE_EDUC_Q_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment by educational attainment level - quarterly data (1998\u20132020) | Arbeitslosigkeit nach Geschlecht, Alter und Bildungsabschluss (1998-2020) - viertelj\u00e4hrliche Daten | Ch\u00f4mage par niveau d'\u00e9ducation atteint - donn\u00e9es trimestrielles (1998-2020)"
+    },
+    {
+      "id": "UNE_LTU_A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Long-term unemployment by sex - annual data | Langzeitarbeitslose nach Geschlecht - j\u00e4hrliche Daten | Ch\u00f4mage de longue dur\u00e9e par sexe - donn\u00e9es annuelles"
+    },
+    {
+      "id": "UNE_LTU_A$DV_1821",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Long-term unemployment by sex - annual data | Langzeitarbeitslose nach Geschlecht - j\u00e4hrliche Daten | Ch\u00f4mage de longue dur\u00e9e par sexe - donn\u00e9es annuelles"
+    },
+    {
+      "id": "UNE_LTU_A_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage de longue dur\u00e9e par sexe - donn\u00e9es annuelles (1996-2020) | Langzeitarbeitslose nach Geschlecht - J\u00e4hrliche Daten (1996-2020) | Long-term unemployment by sex - annual data (1996\u20132020)"
+    },
+    {
+      "id": "UNE_LTU_Q",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage de longue dur\u00e9e par sexe - donn\u00e9es trimestrielles | Long-term unemployment by sex - quarterly data | Langzeitarbeitslose nach Geschlecht - viertelj\u00e4hrliche Daten"
+    },
+    {
+      "id": "UNE_LTU_Q_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Long-term unemployment by sex - quarterly data (1992\u20132020) | Langzeitarbeitslose nach Geschlecht - viertelj\u00e4hrliche Daten (1992-2020) | Ch\u00f4mage de longue dur\u00e9e par sexe - donn\u00e9es trimestrielles (1992-2020)"
+    },
+    {
+      "id": "UNE_RT_A",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment by sex and age - annual data | Arbeitslosendaten nach Geschlecht und Alter - j\u00e4hrliche Daten | Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es annuelles"
+    },
+    {
+      "id": "UNE_RT_A$DV_1761",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es annuelles | Arbeitslosendaten nach Geschlecht und Alter - j\u00e4hrliche Daten | Unemployment by sex and age - annual data"
+    },
+    {
+      "id": "UNE_RT_A_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosigkeit nach Geschlecht und Alter - j\u00e4hrliche Daten (1992-2020) | Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es annuelles (1992-2020) | Unemployment by sex and age - annual data (1992\u20132020)"
+    },
+    {
+      "id": "UNE_RT_M",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosendaten nach Geschlecht und Alter - monatliche Daten | Unemployment by sex and age - monthly data | Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es mensuelles"
+    },
+    {
+      "id": "UNE_RT_Q",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es trimestrielles | Unemployment by sex and age - quarterly data | Arbeitslosendaten nach Geschlecht und Alter - viertelj\u00e4hrliche Daten"
+    },
+    {
+      "id": "UNE_RT_Q_H",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment by sex and age - quarterly data (1992\u20132020) | Arbeitslosigkeit nach Geschlecht und Alter - viertelj\u00e4hrliche Daten (1992-2020) | Ch\u00f4mage par sexe et \u00e2ge - donn\u00e9es trimestrielles (1992-2020)"
+    },
+    {
+      "id": "URT_LFU3PERS",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosigkeit nach Geschlecht, Alter und anderen Typologien | Unemployment by sex, age and other typologies | Ch\u00f4mage par sexe, \u00e2ge et autres typologies"
+    },
+    {
+      "id": "URT_LFU3RT",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquoten nach Geschlecht, Alter und anderen Typologien | Unemployment rates by sex, age and other typologies | Taux de ch\u00f4mage par sexe, \u00e2ge et autres typologies"
+    },
+    {
+      "id": "TEPSR_WC170",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Arbeitslosenquote nach Alter | Taux de ch\u00f4mage par \u00e2ge | Unemployment rate by age"
+    },
+    {
+      "id": "TESEM120",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Unemployment rate by sex | Arbeitslosenquote nach Geschlecht | Taux de ch\u00f4mage par sexe"
+    },
+    {
+      "id": "TESEM130",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Long-term unemployment rate by sex | Langzeitarbeitslosenquote nach Geschlecht | Taux de ch\u00f4mage de longue dur\u00e9e par sexe"
+    },
+    {
+      "id": "TESEM140",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugendarbeitslosigkeit nach Geschlecht | Youth unemployment rate by sex | Taux de ch\u00f4mage des jeunes par sexe"
+    },
+    {
+      "id": "TESEM220",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Taux de pr\u00e9l\u00e8vement sur les bas salaires - pi\u00e8ge du ch\u00f4mage | Tax rate on low wage earners - Unemployment trap | Steuerquote von Niedriglohnempf\u00e4ngern - Arbeitslosigkeitsfalle"
+    },
+    {
+      "id": "YTH_EMPL_090",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugend-Arbeitslosigkeit nach Bildungsabschluss | Youth unemployment by educational attainment level | Ch\u00f4mage des jeunes par niveau d'\u00e9ducation atteint"
+    },
+    {
+      "id": "YTH_EMPL_100",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugend-Arbeitslosenquote nach Geburtsland | Youth unemployment rate by country of birth | Taux de ch\u00f4mage des jeunes par pays de naissance"
+    },
+    {
+      "id": "YTH_EMPL_110",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugend-Arbeitslosenquote nach NUTS-2-Region | Taux de ch\u00f4mage des jeunes par r\u00e9gion NUTS 2 | Youth unemployment rate by NUTS 2 region"
+    },
+    {
+      "id": "TESPM080",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Youth unemployment ratio (age group 15-24) | Anteil arbeitsloser Jugendlicher (Altersgruppe 15-24) | Ratio de ch\u00f4mage des jeunes (tranche d'\u00e2ge 15-24)"
+    },
+    {
+      "id": "YTH_EMPL_120",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugend-Langzeitarbeitslosenquote (12 Monate oder l\u00e4nger) | Taux de ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) des jeunes | Youth long-term unemployment rate (12 months or more)"
+    },
+    {
+      "id": "YTH_EMPL_130",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Jugend-Langzeitarbeitslosenquote (12 Monate oder l\u00e4nger) nach NUTS-2-Region | Youth long-term unemployment rate (12 months or more) by NUTS 2 region | Taux de ch\u00f4mage de longue dur\u00e9e (12 mois ou plus) des jeunes par r\u00e9gion NUTS 2"
+    },
+    {
+      "id": "YTH_EMPL_140",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Anteil arbeitsloser Jugendlicher nach NUTS-2-Region | Ratio de ch\u00f4mage des jeunes par r\u00e9gion NUTS 2 | Youth unemployment ratio by NUTS 2 region"
+    },
+    {
+      "id": "SDG_08_40",
+      "agency": "ESTAT",
+      "version": "1.0",
+      "title": "Langzeitarbeitslosenquote nach Geschlecht | Long-term unemployment rate by sex | Taux de ch\u00f4mage de longue dur\u00e9e par sexe"
+    }
+  ],
+  "counts": {
+    "all_matches": 117,
+    "strong": 5,
+    "ip": 4,
+    "unemployment": 112
+  },
+  "next_action": "Probe candidate dataflows for dimensions and select the exact euro-area industrial-production and unemployment vintage datasets."
+}
