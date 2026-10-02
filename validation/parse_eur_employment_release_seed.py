@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import io,json,re,urllib.request
+import io,json,re,time,urllib.request
 from pathlib import Path
 from pypdf import PdfReader
 
@@ -8,9 +8,18 @@ OUT=Path("validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_RELEASE_PARSE_PIL
 seed=json.loads(SEED.read_text(encoding="utf-8"))
 
 def fetch_bytes(url):
-    req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 GMFQ-validation/2.0"})
-    with urllib.request.urlopen(req,timeout=30) as r:
-        return r.read(), (r.headers.get("Content-Type") or "").lower()
+    last=None
+    for attempt in range(5):
+        req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 GMFQ-validation/2.0"})
+        try:
+            with urllib.request.urlopen(req,timeout=30) as r:
+                return r.read(), (r.headers.get("Content-Type") or "").lower()
+        except Exception as e:
+            last=e
+            if "429" not in str(e):
+                raise
+            time.sleep(2*(attempt+1))
+    raise last
 
 def html_to_text(raw):
     s=raw.decode("utf-8","ignore")
