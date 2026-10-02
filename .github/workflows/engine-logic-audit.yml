@@ -185,7 +185,21 @@ jobs:
             console.log(JSON.stringify(out,null,2));
             console.log('===RUNTIME_JSON_END===');
             console.log('===ERRORS===',JSON.stringify(errors));
+            const gates={
+              lazyLoadInvariance:!!out?.lazyLoadInvariance?.ok,
+              refreshStability:!!out?.refreshStability?.ok,
+              currencyRules:(out?.currencyRules?.issues||[]).length===0,
+              pairConsistency:(out?.pairConsistency?.engineCount||0)===0,
+              pairFrames:(out?.allPairFrames?.issues||[]).length===0,
+              runtimeErrors:errors.length===0
+            };
+            console.log('===AUDIT_GATES===',JSON.stringify(gates));
+            const failed=Object.entries(gates).filter(([,v])=>!v).map(([k])=>k);
             await browser.close(); srv.kill();
+            if(failed.length){
+              console.error('AUDIT FAILED:',failed.join(', '));
+              process.exit(2);
+            }
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
