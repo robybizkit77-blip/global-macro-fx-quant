@@ -1,0 +1,336 @@
+{
+  "schema": "GMFQ_MACRO_VINTAGE_AVAILABILITY_MATRIX_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "purpose": "Classify whether first-published / historical-vintage Macro Core values can be reconstructed from official sources before declaring the historical panel FULL_PIT.",
+  "status_classes": {
+    "STRUCTURED_VINTAGE_AVAILABLE": "Official source exposes a real-time/vintage/revision-history dataset suitable for programmatic reconstruction.",
+    "ARCHIVED_RELEASE_RECOVERABLE": "Official dated releases/archive exist and appear capable of recovering first-published values, but extraction must be done release-by-release and value-level matched.",
+    "REVISED_HISTORY_ONLY_UNTIL_PROVEN": "Current historical series is revised and no first-release recovery mechanism has yet been verified.",
+    "SERIES_MATCH_PENDING": "Official vintage/release mechanism exists, but exact runtime-series identity still needs value/key matching."
+  },
+  "findings": [
+    {
+      "jurisdiction": "USD",
+      "family": "BEA Personal Income and Outlays",
+      "ids": [
+        "US_PCEC96_history_value",
+        "US_DSPIC96_history_DSPIC96",
+        "US_PI_history_PI"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "BEA current releases explicitly state that original data are retained in the BEA Data Archive after later releases supersede them; current pages also document revisions.",
+      "official_url": "https://www.bea.gov/data/income-saving/personal-income"
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "Federal Reserve G.17 Industrial Production",
+      "ids": [
+        "US_INDPRO_history_value"
+      ],
+      "status": "STRUCTURED_VINTAGE_AVAILABLE",
+      "evidence": "Federal Reserve publishes revision-history data containing the initially published index and one- through six-month subsequent vintages, plus previous releases/historical release dates.",
+      "official_url": "https://www.federalreserve.gov/releases/g17/revhist.htm"
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "Census Monthly Retail Trade",
+      "ids": [
+        "US_RRSFS_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Census maintains historical Advance Monthly Retail Trade releases by month/year and annual revision reports; historical releases are explicitly not overwritten by current data.",
+      "official_url": "https://www.census.gov/retail/marts/historic_releases.html"
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "Census Manufacturers' Orders / Core Capital Goods",
+      "ids": [
+        "US_NEWORDER_history_NEWORDER"
+      ],
+      "status": "REVISED_HISTORY_ONLY_UNTIL_PROVEN",
+      "evidence": "Release family is known, but a structured first-release vintage dataset for the exact stored core-capital-goods transformation has not yet been verified in this audit."
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "BLS Employment Situation",
+      "ids": [
+        "US_PAYEMS_history_value",
+        "US_AHE_TOTAL_PRIVATE_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated historical Employment Situation releases are the intended reconstruction path; value-level extraction and revision sequencing still need to be materialized."
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "BLS JOLTS",
+      "ids": [
+        "US_JTSHIR_history_JTSHIR",
+        "US_JTSJOL_history_value",
+        "US_JTSQUR_history_JTSQUR"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated JOLTS releases are the intended reconstruction path; exact first-published values have not yet been loaded into the PIT panel."
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "BLS Productivity and Costs",
+      "ids": [
+        "US_OPHNFB_history_OPHNFB"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated Productivity and Costs releases can be used; exact vintage extraction pending."
+    },
+    {
+      "jurisdiction": "USD",
+      "family": "UI Weekly Claims",
+      "ids": [
+        "US_ICSA_history_value",
+        "US_CCSA_history_CCSA"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "U.S. Department of Labor maintains weekly Claims releases/archives. First-published weekly values must be taken from the dated release rather than the latest revised history."
+    },
+    {
+      "jurisdiction": "EUR",
+      "family": "Eurostat Industrial Production",
+      "ids": [
+        "EA_IP_history_value"
+      ],
+      "status": "STRUCTURED_VINTAGE_AVAILABLE",
+      "evidence": "Eurostat publishes vintage datasets for industrial production with historical release vintages.",
+      "official_url": "https://ec.europa.eu/eurostat/web/euro-indicators/information-data"
+    },
+    {
+      "jurisdiction": "EUR",
+      "family": "Eurostat Unemployment",
+      "ids": [
+        "EA_UNEMP_history_value"
+      ],
+      "status": "STRUCTURED_VINTAGE_AVAILABLE",
+      "evidence": "Eurostat publishes vintage datasets for unemployment with historical release vintages.",
+      "official_url": "https://ec.europa.eu/eurostat/web/euro-indicators/information-data"
+    },
+    {
+      "jurisdiction": "EUR",
+      "family": "Eurostat Retail Trade",
+      "ids": [
+        "EA_RETAIL_VOL_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated Euro-indicator releases exist; unlike unemployment/IP, retail trade was not confirmed in this audit as part of Eurostat's structured vintage database."
+    },
+    {
+      "jurisdiction": "EUR",
+      "family": "Eurostat Employment",
+      "ids": [
+        "EA_EMPLOYMENT_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated Eurostat releases exist; structured vintage support for this exact stored series was not confirmed."
+    },
+    {
+      "jurisdiction": "EUR",
+      "family": "ECB Negotiated Wages",
+      "ids": [
+        "EA_NEGOTIATED_WAGES_YOY_history_value"
+      ],
+      "status": "SERIES_MATCH_PENDING",
+      "evidence": "ECB negotiated-wage datasets/release history exist; the exact runtime series key/value match must be certified before vintage reconstruction."
+    },
+    {
+      "jurisdiction": "GBP",
+      "family": "ONS Production / Retail / Labour Market / PAYE",
+      "ids": [
+        "UK_PRODUCTION_history_value",
+        "UK_RETAIL_VOL_history_value",
+        "UK_UNEMP_RATE_history_value",
+        "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value",
+        "UK_EMPLOYMENT_RATE_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "ONS release calendar and archived releases preserve dated publications. ONS also uses real-time databases and revision triangles for some economic statistics, demonstrating an explicit vintage framework, but exact real-time tables for every one of these five runtime series must still be checked."
+    },
+    {
+      "jurisdiction": "JPY",
+      "family": "Statistics Bureau Labour Force Survey",
+      "ids": [
+        "JP_UNEMP_RATE_history_value",
+        "JP_EMPLOYED_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Statistics Bureau warns that current historical data are revised, while annual reports preserve figures as of publication. This gives a source path for historical vintages but requires publication-by-publication extraction.",
+      "official_url": "https://www.stat.go.jp/english/data/roudou/result.html"
+    },
+    {
+      "jurisdiction": "JPY",
+      "family": "METI Industrial Production / Retail",
+      "ids": [
+        "JP_IIP_history_value",
+        "JP_RETAIL_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "METI distinguishes preliminary and revised releases. Historical first-release values should be reconstructed from preliminary releases, with revised releases treated as later information events."
+    },
+    {
+      "jurisdiction": "CHF",
+      "family": "FSO Production",
+      "ids": [
+        "CH_PRODUCTION_history_value"
+      ],
+      "status": "SERIES_MATCH_PENDING",
+      "evidence": "Official provisional/final release mechanism has been identified, but the precise runtime production-series variant still needs value-level matching."
+    },
+    {
+      "jurisdiction": "CHF",
+      "family": "FSO Retail Trade",
+      "ids": [
+        "CH_RETAIL_REAL_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Official releases distinguish provisional and later final results; dated provisional releases are the intended PIT source."
+    },
+    {
+      "jurisdiction": "CHF",
+      "family": "SECO Unemployment",
+      "ids": [
+        "CH_UNEMP_RATE_history_value"
+      ],
+      "status": "SERIES_MATCH_PENDING",
+      "evidence": "Monthly official labour-market releases are dated, but exact seasonally-adjusted/unadjusted runtime variant must be certified."
+    },
+    {
+      "jurisdiction": "CHF",
+      "family": "FSO Employment",
+      "ids": [
+        "CH_EMPLOYMENT_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Official Employment Barometer releases are dated; first-release extraction pending."
+    },
+    {
+      "jurisdiction": "CAD",
+      "family": "Statistics Canada Monthly GDP by Industry",
+      "ids": [
+        "CA_REAL_GDP_M_history_value"
+      ],
+      "status": "STRUCTURED_VINTAGE_AVAILABLE",
+      "evidence": "Statistics Canada table 36-10-0491-01 is explicitly a historical real-time table designed to track estimates since initial release.",
+      "official_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610049101"
+    },
+    {
+      "jurisdiction": "CAD",
+      "family": "Statistics Canada Retail Trade",
+      "ids": [
+        "CA_RETAIL_VOLUME_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated The Daily releases and historical/real-time table opportunities exist; exact table matching for the runtime volume measure still needs to be materialized."
+    },
+    {
+      "jurisdiction": "CAD",
+      "family": "Statistics Canada Labour Force Survey",
+      "ids": [
+        "CA_UNEMP_RATE_history_value",
+        "CA_EMPLOYMENT_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated The Daily releases preserve contemporary estimates; exact revision/vintage extraction still pending."
+    },
+    {
+      "jurisdiction": "AUD",
+      "family": "ABS National Accounts",
+      "ids": [
+        "AU_REAL_GDP_QOQ_ABS_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "ABS documents regular and historical revisions and retains previous releases; first-published quarterly estimates should be reconstructed from the release archive, not current revised history.",
+      "official_url": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/latest-release"
+    },
+    {
+      "jurisdiction": "AUD",
+      "family": "ABS Household Spending",
+      "ids": [
+        "AU_HOUSEHOLD_SPENDING_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated ABS release pages are available; first-release extraction pending."
+    },
+    {
+      "jurisdiction": "AUD",
+      "family": "ABS Labour Force",
+      "ids": [
+        "AU_UNEMP_RATE_history_value",
+        "AU_EMPLOYMENT_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated ABS Labour Force releases are available; current series may embody revisions and seasonal re-estimation, so release-vintage extraction is required."
+    },
+    {
+      "jurisdiction": "AUD",
+      "family": "ABS Wage Price Index",
+      "ids": [
+        "AU_WPI_YOY_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated ABS WPI releases are available; value-level first-release extraction pending."
+    },
+    {
+      "jurisdiction": "NZD",
+      "family": "Stats NZ GDP / Retail / Labour Market",
+      "ids": [
+        "NZ_REAL_GDP_Q_history_value",
+        "NZ_RETAIL_VOLUME_Q_history_value",
+        "NZ_UNEMP_RATE_history_value",
+        "NZ_EMPLOYED_history_value"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Stats NZ maintains dated information releases. First-published values can potentially be reconstructed release-by-release; a structured real-time database was not verified in this audit."
+    },
+    {
+      "jurisdiction": "NZD",
+      "family": "RBNZ Survey of Expectations",
+      "ids": [
+        "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y",
+        "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_2Y",
+        "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y",
+        "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_2Y"
+      ],
+      "status": "ARCHIVED_RELEASE_RECOVERABLE",
+      "evidence": "Dated RBNZ survey releases are the intended source, but these stored series currently have fewer than 8 observations and therefore do not enter normalizedSeriesImpulse yet."
+    }
+  ],
+  "summary": {
+    "total_runtime_series": 49,
+    "structured_vintage_series": [
+      "US_INDPRO_history_value",
+      "EA_IP_history_value",
+      "EA_UNEMP_history_value",
+      "CA_REAL_GDP_M_history_value"
+    ],
+    "structured_vintage_count": 4,
+    "revised_only_or_unverified_series": [
+      "US_NEWORDER_history_NEWORDER"
+    ],
+    "revised_only_or_unverified_count": 1,
+    "series_match_pending": [
+      "EA_NEGOTIATED_WAGES_YOY_history_value",
+      "CH_PRODUCTION_history_value",
+      "CH_UNEMP_RATE_history_value"
+    ],
+    "series_match_pending_count": 3,
+    "remaining_series_class": "ARCHIVED_RELEASE_RECOVERABLE",
+    "conclusion": "A full PIT panel appears feasible for a large majority of the Core Macro set, but most series require archive-level extraction rather than a ready-made real-time database. The panel is not yet FULL_PIT_READY."
+  },
+  "next_action": [
+    "Build actual first-release values for the 4 structured-vintage series first.",
+    "Resolve the 3 exact-series matches and the US core-capital-goods vintage path.",
+    "For archived-release families, extract only the observations needed at monthly model checkpoints from 2020-08 onward rather than reconstructing every calendar day.",
+    "Run a revised-vs-first-release sensitivity comparison before deciding whether any REVISED_ONLY series can remain in the historical test."
+  ]
+}
