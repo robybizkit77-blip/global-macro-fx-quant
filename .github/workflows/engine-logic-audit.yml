@@ -6,6 +6,8 @@ permissions:
 on:
   push:
     branches: [staging-engine-logic-audit-2026-09-30, engine-freeze-v1-2026-10-02]
+    paths-ignore:
+      - validation/ENGINE_LOGIC_AUDIT_LATEST.json
   workflow_dispatch:
 
 jobs:
@@ -197,13 +199,16 @@ jobs:
             console.log(JSON.stringify(out,null,2));
             console.log('===RUNTIME_JSON_END===');
             console.log('===ERRORS===',JSON.stringify(errors));
+            const substantiveErrors=errors.filter(e=>!String(e?.url||'').endsWith('/favicon.ico'));
+            const substantiveHttpFailures=httpFailures.filter(e=>!String(e?.url||'').endsWith('/favicon.ico'));
+            const substantiveRequestFailures=requestFailures.filter(e=>!String(e?.url||'').endsWith('/favicon.ico'));
             const gates={
               lazyLoadInvariance:!!out?.lazyLoadInvariance?.ok,
               refreshStability:!!out?.refreshStability?.ok,
               currencyRules:(out?.currencyRules?.issues||[]).length===0,
               pairConsistency:(out?.pairConsistency?.engineCount||0)===0,
               pairFrames:(out?.allPairFrames?.issues||[]).length===0,
-              runtimeErrors:errors.length===0 && httpFailures.length===0 && requestFailures.length===0
+              runtimeErrors:substantiveErrors.length===0 && substantiveHttpFailures.length===0 && substantiveRequestFailures.length===0
             };
             console.log('===AUDIT_GATES===',JSON.stringify(gates));
             const failed=Object.entries(gates).filter(([,v])=>!v).map(([k])=>k);
@@ -219,7 +224,12 @@ jobs:
               allPairFrames:out?.allPairFrames||null,
               runtimeErrors:errors,
               httpFailures,
-              requestFailures
+              requestFailures,
+              ignoredBrowserNoise:{
+                runtimeErrors:errors.filter(e=>String(e?.url||'').endsWith('/favicon.ico')),
+                httpFailures:httpFailures.filter(e=>String(e?.url||'').endsWith('/favicon.ico')),
+                requestFailures:requestFailures.filter(e=>String(e?.url||'').endsWith('/favicon.ico'))
+              }
             };
             fs.mkdirSync('validation',{recursive:true});
             fs.writeFileSync('validation/ENGINE_LOGIC_AUDIT_LATEST.json',JSON.stringify(auditResult,null,2));
