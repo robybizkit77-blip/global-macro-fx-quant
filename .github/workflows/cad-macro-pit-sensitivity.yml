@@ -1,0 +1,40 @@
+name: CAD Macro PIT Sensitivity
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/build_cad_macro_pit_sensitivity.py'
+      - '.github/workflows/cad-macro-pit-sensitivity.yml'
+      - 'validation/PIT_SIGNAL_SENSITIVITY_CA_GROWTH_FULL_2020_2026_V1_2026-10-02.json'
+      - 'validation/PIT_SIGNAL_SENSITIVITY_CA_LABOUR_FULL_2020_2026_V1_2026-10-02.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build CAD Macro PIT sensitivity
+        run: python validation/build_cad_macro_pit_sensitivity.py
+      - name: Commit sensitivity report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/PIT_SIGNAL_SENSITIVITY_CA_MACRO_FULL_2020_2026_V1_2026-10-02.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build CAD Macro PIT sensitivity report"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
