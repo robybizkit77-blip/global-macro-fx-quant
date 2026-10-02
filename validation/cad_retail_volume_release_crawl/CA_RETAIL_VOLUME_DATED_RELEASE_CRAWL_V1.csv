@@ -1,4 +1,12 @@
 reference_month,release_date,first_release_mom_pct,url
+2024-08,2024-10-25,0.7,https://www150.statcan.gc.ca/daily-quotidien/241025/dq241025a-eng.htm
+2024-09,2024-11-22,0.8,https://www150.statcan.gc.ca/daily-quotidien/241122/dq241122a-eng.htm
+2024-10,2024-12-20,0.0,https://www150.statcan.gc.ca/daily-quotidien/241220/dq241220a-eng.htm
+2024-11,2025-01-23,-0.4,https://www150.statcan.gc.ca/daily-quotidien/250123/dq250123a-eng.htm
+2024-12,2025-02-21,2.5,https://www150.statcan.gc.ca/daily-quotidien/250221/dq250221a-eng.htm
+2025-01,2025-03-21,-1.1,https://www150.statcan.gc.ca/daily-quotidien/250321/dq250321a-eng.htm
+2025-02,2025-04-25,-0.4,https://www150.statcan.gc.ca/daily-quotidien/250425/dq250425a-eng.htm
+2025-03,2025-05-23,0.9,https://www150.statcan.gc.ca/daily-quotidien/250523/dq250523a-eng.htm
 2025-04,2025-06-20,0.5,https://www150.statcan.gc.ca/daily-quotidien/250620/dq250620a-eng.htm
 2025-05,2025-07-24,-1.4,https://www150.statcan.gc.ca/daily-quotidien/250724/dq250724a-eng.htm
 2025-06,2025-08-22,1.5,https://www150.statcan.gc.ca/daily-quotidien/250822/dq250822a-eng.htm
