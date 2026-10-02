@@ -33,7 +33,7 @@ jobs:
             page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
             page.on('pageerror',e=>errors.push(String(e)));
             await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle',timeout:120000});
-            const out=await page.evaluate(()=>{
+            const out=await page.evaluate(async()=>{
               const safe=(fn,fb=null)=>{try{return fn()}catch(e){return {error:String(e?.message||e),fallback:fb}}};
               const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
               const per={};
