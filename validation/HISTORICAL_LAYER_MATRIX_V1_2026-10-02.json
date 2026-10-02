@@ -1,0 +1,259 @@
+{
+  "schema": "GMFQ_HISTORICAL_LAYER_MATRIX_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "principle": "A layer is FULL_BACKTEST_READY only if the historical series, timing of availability, and transformation used by the frozen engine can be reconstructed without look-ahead.",
+  "target_layers": [
+    "Macro",
+    "Rates",
+    "CB/OIS",
+    "COT",
+    "Price",
+    "Liquidity"
+  ],
+  "shared_findings": {
+    "price": {
+      "status": "READY_CORE_PRICE_HISTORY",
+      "coverage": "28/28 canonical FX pairs available in the ECB-based price matrix",
+      "pit_issue": "No structural look-ahead blocker identified for market prices; execution timing/costs are a separate design choice."
+    },
+    "cot": {
+      "status": "PENDING_HISTORICAL_DEPTH_AND_RELEASE_LAG_AUDIT",
+      "current_coverage": "8/8 current weekly canonical coverage",
+      "required_before_use": "Verify full intended historical depth per currency and shift each observation to the actual CFTC publication availability date, not the Tuesday observation date."
+    },
+    "cb_ois": {
+      "status": "NOT_READY_FULL_PIT",
+      "reason": "Homogeneous G8 historical point-in-time CB/OIS expectations have not yet been reconstructed.",
+      "rule": "Do not synthesize missing OIS history from current curves."
+    }
+  },
+  "currencies": {
+    "USD": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 40,
+        "raw_coverage": "2016-01-01 to 2026-09-28",
+        "notes": "Core monthly series commonly begin around 2019-10; revised histories, publication vintages not mapped."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "basis": "validated same-basis historical 2Y",
+        "series_id": "US_DGS2_history_DGS2"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT",
+        "current_note": "Current CME path is only partially validated for matched 1W history."
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "EUR": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 28,
+        "raw_coverage": "2016-Q1 to 2026-W38",
+        "notes": "Monthly core series commonly begin around 2019-10/11; revised histories, publication vintages not mapped."
+      },
+      "rates": {
+        "status": "WITHHELD",
+        "reason": "Legacy EUR historical chain is not certified same-basis with the current validated ECB curve."
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT"
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "GBP": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 27,
+        "raw_coverage": "2016-Q1 to 2026-07",
+        "notes": "Monthly core series generally begin around 2019-10/11; DMP history begins 2020."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "GBP_RATES_2016_2026_2Y"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT"
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "JPY": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 24,
+        "raw_coverage": "2016-Q1 to 2026-08",
+        "notes": "Monthly core series generally begin around 2019-10/11; Tankan quarterly from 2016."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "JPY_RATES_2016_2026_2Y"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT"
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "CHF": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 20,
+        "raw_coverage": "2016Q1 to 2026Q2",
+        "notes": "Core monthly inflation/growth histories mostly begin around 2019-09/11."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "CH_CONFED_SPOT_2Y_history_value_pct"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT",
+        "current_note": "Current SARON OIS remains source-limited/withheld."
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "CAD": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 24,
+        "raw_coverage": "2016-01-01 to 2026Q2",
+        "notes": "Core monthly growth/inflation histories mostly begin around 2019-09/11; BOS/SLOS quarterly extends earlier."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "CAD_RATES_2016_2026_2Y"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT"
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "AUD": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 24,
+        "raw_coverage": "2016-03 to 2026-07",
+        "notes": "Monthly CPI measures are short (from 2025-04); quarterly CPI history extends to 2016. Other monthly core histories mostly begin around 2019-10."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "AU_FCMYGBAG2D_history_FCMYGBAG2D"
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT"
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "HISTORY_AVAILABLE_SUBJECT_TO_PIT_QA"
+      }
+    },
+    "NZD": {
+      "macro": {
+        "status": "HISTORY_PRESENT__PIT_NOT_READY",
+        "series_count": 17,
+        "raw_coverage": "2016-03 to 2026-09-28",
+        "notes": "Growth/inflation/labour are largely quarterly; recent RBNZ expectations have only six observations from 2024-09."
+      },
+      "rates": {
+        "status": "READY_2Y_HISTORY",
+        "series_id": "NZD_RATES_2016_2026_RBNZ_B2_2Y",
+        "note": "Historical validation artifact certifies the 2Y chain for pseudo-OOS even though the runtime-optimized payload only carries a shorter visible slice."
+      },
+      "cb_ois": {
+        "status": "NOT_READY_FULL_PIT",
+        "current_note": "No direct reproducible public 3M/6M/12M OIS history with matched changes."
+      },
+      "cot": {
+        "status": "PENDING_RELEASE_LAG_AUDIT"
+      },
+      "price": {
+        "status": "READY"
+      },
+      "liquidity": {
+        "status": "WITHHELD_HISTORICAL",
+        "reason": "NZD historical liquidity replay remains unavailable."
+      }
+    }
+  },
+  "readiness_summary": {
+    "full_backtest_ready": false,
+    "ready_now": [
+      "Price 28/28",
+      "Rates historical 2Y for 7/8 currencies"
+    ],
+    "blockers": [
+      "Macro release-date/vintage point-in-time reconstruction",
+      "EUR historical Rates same-basis chain",
+      "Historical CB/OIS point-in-time panel",
+      "COT historical depth plus CFTC publication-lag alignment",
+      "NZD historical Liquidity"
+    ],
+    "critical_path": [
+      "1. Macro PIT/release-date mapping",
+      "2. EUR Rates historical chain",
+      "3. CB/OIS historical policy-expectation specification",
+      "4. COT publication-lag historical panel",
+      "5. NZD Liquidity history or formal exclusion",
+      "6. Final missing/stale/outlier/frequency QA",
+      "7. Declare BACKTEST_READY and only then rerun frozen engine"
+    ]
+  }
+}
