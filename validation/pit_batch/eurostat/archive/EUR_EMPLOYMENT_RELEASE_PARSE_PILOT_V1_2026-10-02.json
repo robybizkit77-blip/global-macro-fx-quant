@@ -1,0 +1,119 @@
+{
+  "schema": "GMFQ_EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V1",
+  "created_at": "2026-10-02",
+  "seed_count": 12,
+  "fetch_ok": 12,
+  "parsed_qoq": 0,
+  "rows": [
+    {
+      "reference_quarter": "2022-Q1",
+      "release_date": "2022-05-17",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/14636038/2-17052022-AP-EN.pdf/4b1709eb-3a52-30c3-2e0a-d19b564735fa",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2023-Q1",
+      "release_date": "2023-05-16",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/16668121/2-16052023-AP-EN.pdf/4ac272c6-2af8-4fb2-4c73-8f842a011a57",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2023-Q4",
+      "release_date": "2024-02-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/18507488/2-14022024-AP-EN.pdf/bd0e89a8-b0a6-0cb1-ec74-0992ab92c470",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2023-Q4",
+      "release_date": "2024-03-08",
+      "kind": "regular",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-08032024-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2024-Q2",
+      "release_date": "2024-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14082024-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2024-Q3",
+      "release_date": "2024-11-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14112024-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2024-Q4",
+      "release_date": "2025-02-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14022025-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2025-Q1",
+      "release_date": "2025-05-15",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-15052025-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2025-Q3",
+      "release_date": "2025-11-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14112025-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2025-Q4",
+      "release_date": "2026-02-13",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-13022026-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2026-Q1",
+      "release_date": "2026-05-13",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-13052026-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    },
+    {
+      "reference_quarter": "2026-Q2",
+      "release_date": "2026-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14082026-ap",
+      "fetch_ok": true,
+      "employment_qoq_pct": null,
+      "match_text": null
+    }
+  ],
+  "status": "PARSER_NOT_YET_VALIDATED",
+  "guardrail": "Parsed q/q flash growth rates are release-time observables. Do not equate them mechanically to the runtime level series until the level-path transformation and parity test are completed."
+}
