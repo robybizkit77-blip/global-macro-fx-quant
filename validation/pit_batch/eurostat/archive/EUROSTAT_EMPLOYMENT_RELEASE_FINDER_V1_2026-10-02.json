@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_EUR_EMPLOYMENT_RELEASE_FINDER_V2",
+  "created_at": "2026-10-02",
+  "target": {
+    "runtime_id": "EA_EMPLOYMENT_history_value",
+    "dataset": "NAMQ_10_PE",
+    "unit": "THS_PER",
+    "s_adj": "SCA",
+    "na_item": "EMP_DC",
+    "composition_rule": "EA20 through 2025-Q4; EA21 from 2026-Q1"
+  },
+  "search_window": {
+    "start": "2020-07-01",
+    "end": "2026-09-30"
+  },
+  "search_method": {
+    "quarterly_release_months": [
+      2,
+      3,
+      5,
+      6,
+      8,
+      9,
+      11,
+      12
+    ],
+    "day_window": "04-20 weekdays",
+    "candidate_urls": 3636,
+    "parallel_workers": 18
+  },
+  "qa": {
+    "releases_found": 0
+  },
+  "hits": [],
+  "status": "NO_RELEASES_FOUND",
+  "guardrail": "Finder output is discovery evidence only. Do not mark PIT_READY until first-release values are parsed, mapped to reference quarters, and QA-checked against dated official releases."
+}
