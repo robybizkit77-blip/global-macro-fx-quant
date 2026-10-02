@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_ENGINE_LOGIC_AUDIT_LATEST_V1",
-  "generated_at": "2026-10-02T10:44:40.957Z",
+  "generated_at": "2026-10-02T11:23:47.797Z",
   "gates": {
     "lazyLoadInvariance": true,
     "refreshStability": true,
