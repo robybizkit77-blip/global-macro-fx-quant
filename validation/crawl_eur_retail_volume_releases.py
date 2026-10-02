@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import json,re,time,urllib.request
+import json,re,time,urllib.request,os
 from pathlib import Path
 from datetime import date
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 OUTDIR=Path("validation/pit_batch/eurostat/archive")
 OUTDIR.mkdir(parents=True,exist_ok=True)
-OUT=OUTDIR/"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1_2026-10-02.json"
+YEAR_FILTER=int(os.environ["CRAWL_YEAR"]) if os.environ.get("CRAWL_YEAR") else None
+OUT=OUTDIR/(f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_V1_2026-10-02.json" if YEAR_FILTER else "EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1_2026-10-02.json")
 
 UA={"User-Agent":"Mozilla/5.0 GMFQ-PIT-retail/2.0"}
 
@@ -97,7 +98,8 @@ def crawl_release_month(y,mo):
     return None
 
 targets=[]
-for y in range(2020,2027):
+years=[YEAR_FILTER] if YEAR_FILTER else list(range(2020,2027))
+for y in years:
     m0=8 if y==2020 else 1
     m1=10 if y==2026 else 12
     for mo in range(m0,m1+1):
@@ -129,13 +131,14 @@ report={
  "target":{"runtime_id":"EA_RETAIL_VOL_history_value","source":"Eurostat Volume of retail trade releases"},
  "rows":rows,
  "summary":{
-   "expected_count":len(expected),
+   "crawl_year":YEAR_FILTER,
+   "expected_count":len(expected) if YEAR_FILTER is None else None,
    "parsed":len(rows),
-   "coverage_pct":round(100*len(rows)/len(expected),2),
+   "coverage_pct":round(100*len(rows)/len(expected),2) if YEAR_FILTER is None else None,
    "from":rows[0]["reference_month"] if rows else None,
    "to":rows[-1]["reference_month"] if rows else None,
-   "missing":missing,
-   "complete":len(missing)==0
+   "missing":missing if YEAR_FILTER is None else [],
+   "complete":len(missing)==0 if YEAR_FILTER is None else None
  },
  "guardrail":"Only dated official Eurostat release-time monthly changes are retained. Missing months remain missing; current revised history is never substituted."
 }
