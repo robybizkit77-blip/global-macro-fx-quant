@@ -105,6 +105,13 @@ comparisons=[]
 for checkpoint,_,_ in events:
     fg,mg=available_values(gdp_first,gdp_release,checkpoint)
     fr,mr=available_values(ret_first,ret_release,checkpoint)
+    # Compare only when the current revised runtime contains the exact same
+    # latest observation months available to the first-release reconstruction.
+    # Never silently fall back to an older revised observation.
+    if not mg or not mr:
+        continue
+    if mg[-1] not in rgdp_map or mr[-1] not in rret_map:
+        continue
     rg=[rgdp_map[m] for m in mg if m in rgdp_map]
     rr=[rret_map[m] for m in mr if m in rret_map]
     first=block([fg,fr])
