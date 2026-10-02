@@ -38,5 +38,6 @@ jobs:
             echo "No changes"
           else
             git commit -m "Map Eurostat retail PIT release pages"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
             git push origin HEAD:engine-freeze-v1-2026-10-02
           fi
