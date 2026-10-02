@@ -31,30 +31,28 @@ def get(url):
     raise last
 
 def volume_change(text, month_name):
-    # Canonical Statistics Canada wording in Retail trade releases.
-    pats=[
-        rf"In volume terms,\s*retail sales\s+(increased|decreased|rose|fell|declined|grew|edged up|edged down)\s+(?:by\s*)?([0-9]+(?:\.[0-9]+)?)%\s+in\s+{re.escape(month_name)}",
-        rf"Retail sales in volume terms\s+(increased|decreased|rose|fell|declined|grew|edged up|edged down)\s+(?:by\s*)?([0-9]+(?:\.[0-9]+)?)%\s+in\s+{re.escape(month_name)}",
-        rf"In volume terms,\s*sales\s+(increased|decreased|rose|fell|declined|grew|edged up|edged down)\s+(?:by\s*)?([0-9]+(?:\.[0-9]+)?)%\s+in\s+{re.escape(month_name)}"
+    # The wording changes across vintages. Require the reference month in the
+    # sentence so quarterly/YTD comparisons cannot be mistaken for monthly data.
+    verbs=r"(increased|decreased|rose|fell|declined|grew|edged up|edged down|were up|were down|was up|was down)"
+    stems=[
+        r"In volume terms,\\s*retail sales\\s+",
+        r"In volume terms,\\s*sales\\s+",
+        r"Retail sales in volume terms\\s+"
     ]
-    neg={"decreased","fell","declined","edged down"}
-    for pat in pats:
+    neg={"decreased","fell","declined","edged down","were down","was down"}
+    for stem in stems:
+        pat=rf"{stem}{verbs}\\s+(?:by\\s*)?([0-9]+(?:\\.[0-9]+)?)%\\s+in\\s+{re.escape(month_name)}"
         m=re.search(pat,text,re.I)
         if m:
             val=float(m.group(2))
             if m.group(1).lower() in neg:
                 val=-val
             return val
-    if re.search(rf"In volume terms,\s*retail sales\s+(?:were|was|remained)?\s*(?:essentially )?unchanged\s+in\s+{re.escape(month_name)}",text,re.I):
-        return 0.0
-    # Fallback: accept an explicit volume-terms sentence even if month is omitted.
-    m=re.search(r"In volume terms,\s*retail sales\s+(increased|decreased|rose|fell|declined|grew|edged up|edged down)\s+(?:by\s*)?([0-9]+(?:\.[0-9]+)?)%",text,re.I)
-    if m:
-        val=float(m.group(2))
-        if m.group(1).lower() in neg:
-            val=-val
-        return val
-    if re.search(r"In volume terms,\s*retail sales\s+(?:were|was|remained)?\s*(?:essentially )?unchanged",text,re.I):
+    unchanged=[
+        rf"In volume terms,\\s*retail sales\\s+(?:were|was|remained)?\\s*(?:relatively |essentially )?unchanged\\s+in\\s+{re.escape(month_name)}",
+        rf"In volume terms,\\s*sales\\s+(?:were|was|remained)?\\s*(?:relatively |essentially )?unchanged\\s+in\\s+{re.escape(month_name)}"
+    ]
+    if any(re.search(p,text,re.I) for p in unchanged):
         return 0.0
     return None
 
@@ -104,18 +102,25 @@ if STATE.exists():
     except Exception:
         pass
 
-# Re-read any previously unparsed observations with the latest parser.
+# Re-read all materialized observations with the latest parser. This repairs
+# nulls and also corrects older false-positive parses caused by wording changes.
 repaired=0
+corrected=0
 for i,row in enumerate(rows):
-    if row.get("first_release_mom_pct") is not None or not row.get("url"):
+    if not row.get("url"):
         continue
     try:
         rec=parse_release(row["url"],get(row["url"]))
     except Exception:
         continue
     if rec and rec.get("reference_month")==row.get("reference_month") and rec.get("first_release_mom_pct") is not None:
+        old=row.get("first_release_mom_pct")
+        new=rec.get("first_release_mom_pct")
+        if old is None:
+            repaired+=1
+        elif abs(float(old)-float(new))>1e-12:
+            corrected+=1
         rows[i]=rec
-        repaired+=1
     time.sleep(0.15)
 
 seen={r["url"] for r in rows}
@@ -150,6 +155,7 @@ report={
    "count":len(rows),
    "fetched_this_run":fetched,
    "repaired_nulls_this_run":repaired,
+   "corrected_values_this_run":corrected,
    "from":rows[0]["reference_month"] if rows else None,
    "to":rows[-1]["reference_month"] if rows else None,
    "missing_values":[x["reference_month"] for x in rows if x["first_release_mom_pct"] is None],
