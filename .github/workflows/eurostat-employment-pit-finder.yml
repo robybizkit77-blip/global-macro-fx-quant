@@ -1,0 +1,36 @@
+name: Eurostat Employment PIT Finder
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [engine-freeze-v1-2026-10-02]
+    paths:
+      - validation/find_eurostat_employment_releases.py
+      - .github/workflows/eurostat-employment-pit-finder.yml
+
+permissions:
+  contents: write
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Find official Eurostat employment releases
+        run: python validation/find_eurostat_employment_releases.py
+      - name: Commit finder result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/eurostat/archive/EUROSTAT_EMPLOYMENT_RELEASE_FINDER_V1_2026-10-02.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Record Eurostat employment release finder result"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
