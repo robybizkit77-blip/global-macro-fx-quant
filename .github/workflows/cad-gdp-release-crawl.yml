@@ -1,0 +1,39 @@
+name: CAD GDP Release Crawl
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/crawl_cad_gdp_releases.py'
+      - '.github/workflows/cad-gdp-release-crawl.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4
+      - name: Crawl small official Statistics Canada release pages
+        run: python validation/crawl_cad_gdp_releases.py
+      - name: Commit dated-release panel
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin engine-freeze-v1-2026-10-02
+          git add validation/cad_gdp_release_crawl/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Materialize CAD GDP dated-release PIT crawl"
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
