@@ -1,0 +1,723 @@
+{
+  "schema": "GMFQ_CA_V93_MONTHLY_PIT_COMPATIBILITY_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "methodology": {
+    "cadence": "Monthly; first available reconstructible checkpoint in each month.",
+    "rates": "Same native PIT 2Y seriesDynamics branch in PIT and revised comparisons.",
+    "macro": "Official first-release CAD Growth+Labour vs current-revised historical Macro.",
+    "quality_mapping": "Matches reconstructible v9.3 historical hierarchy semantics at currency-pillar level: aligned Macro+Rates = strong; one neutral = partial; opposing = split; both neutral = no contrast.",
+    "purpose": "Direct compatibility check against the old pseudo-OOS methodology, isolating the effect of replacing revised Macro history with PIT Macro."
+  },
+  "rows": [
+    {
+      "checkpoint": "2021-03-02",
+      "rates_direction": 1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-04-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-05-03",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-06-01",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-07-02",
+      "rates_direction": 1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-08-03",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-09-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-10-01",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-11-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2021-12-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2022-01-04",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-02-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-03-01",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-04-01",
+      "rates_direction": 0,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-05-02",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-06-01",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-07-04",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-08-02",
+      "rates_direction": 0,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "NO_CONTRAST",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2022-09-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-10-03",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-11-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2022-12-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-01-03",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-02-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-03-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-04-03",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-05-01",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-06-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2023-07-04",
+      "rates_direction": 0,
+      "pit_macro": -1,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2023-08-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-09-01",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": 0,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-10-03",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 0,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-11-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2023-12-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-01-02",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-02-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-03-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 0,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2024-04-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-05-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-06-03",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": -1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-07-02",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-08-01",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-09-03",
+      "rates_direction": 0,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "NO_CONTRAST",
+      "revised_quality": "NO_CONTRAST",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-10-01",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-11-01",
+      "rates_direction": 0,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2024-12-02",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 0,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2025-01-02",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-02-03",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-03-03",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-04-01",
+      "rates_direction": -1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PILLARS_SPLIT",
+      "revised_quality": "PILLARS_SPLIT",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-05-01",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-06-02",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-07-02",
+      "rates_direction": 0,
+      "pit_macro": -1,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "NO_CONTRAST",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2025-08-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-09-02",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-10-01",
+      "rates_direction": 0,
+      "pit_macro": -1,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "NO_CONTRAST",
+      "quality_changed": true,
+      "polarity_changed": true
+    },
+    {
+      "checkpoint": "2025-11-03",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2025-12-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 0,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "PARTIAL",
+      "quality_changed": true,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-01-02",
+      "rates_direction": 1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-02-02",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-03-02",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-04-01",
+      "rates_direction": -1,
+      "pit_macro": 0,
+      "revised_macro": 0,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-05-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-06-01",
+      "rates_direction": -1,
+      "pit_macro": -1,
+      "revised_macro": -1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-07-02",
+      "rates_direction": 0,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-08-04",
+      "rates_direction": 0,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "PARTIAL",
+      "revised_quality": "PARTIAL",
+      "quality_changed": false,
+      "polarity_changed": false
+    },
+    {
+      "checkpoint": "2026-09-01",
+      "rates_direction": 1,
+      "pit_macro": 1,
+      "revised_macro": 1,
+      "pit_quality": "ALIGNED_STRONG",
+      "revised_quality": "ALIGNED_STRONG",
+      "quality_changed": false,
+      "polarity_changed": false
+    }
+  ],
+  "summary": {
+    "months_compared": 67,
+    "quality_changes": 14,
+    "quality_change_pct": 20.9,
+    "core_polarity_changes": 8,
+    "core_polarity_change_pct": 11.94,
+    "pit_quality_counts": {
+      "PILLARS_SPLIT": 14,
+      "PARTIAL": 28,
+      "ALIGNED_STRONG": 23,
+      "NO_CONTRAST": 2
+    },
+    "revised_quality_counts": {
+      "PILLARS_SPLIT": 14,
+      "PARTIAL": 26,
+      "ALIGNED_STRONG": 24,
+      "NO_CONTRAST": 3
+    },
+    "changed_months": [
+      "2021-10-01",
+      "2021-12-01",
+      "2022-06-01",
+      "2022-08-02",
+      "2023-06-01",
+      "2023-09-01",
+      "2023-10-03",
+      "2024-03-01",
+      "2024-06-03",
+      "2024-10-01",
+      "2024-12-02",
+      "2025-07-02",
+      "2025-10-01",
+      "2025-12-01"
+    ]
+  },
+  "caveat": "This is a CAD pillar-level compatibility audit, not a 28-pair return backtest. Pair-level performance requires PIT reconstruction for the counterpart currencies too."
+}
