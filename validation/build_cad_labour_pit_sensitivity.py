@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Trigger-ready reproducible builder.
 import json, math, statistics
 from pathlib import Path
 
