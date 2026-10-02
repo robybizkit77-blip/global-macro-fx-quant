@@ -1,0 +1,84 @@
+{
+  "schema": "GMFQ_EUR_REMAINING_CORE_SOURCE_MATCH_V1",
+  "created_at": "2026-10-02",
+  "currency": "EUR",
+  "purpose": "Resolve exact source concepts and PIT reconstruction strategy for the three remaining active EUR Macro Core series.",
+  "matches": [
+    {
+      "runtime_id": "EA_RETAIL_VOL_history_value",
+      "category": "Crescita",
+      "runtime_semantics": {
+        "label": "Vendite al dettaglio reali",
+        "frequency": "M",
+        "unit": "Index 2021=100"
+      },
+      "source_provider": "Eurostat",
+      "source_dataset_candidates": [
+        "STS_TRTU_M",
+        "TEIIS240",
+        "EI_ISRT_M"
+      ],
+      "preferred_current_concept": "Retail trade volume of sales - total, monthly, deflated/volume measure, euro area",
+      "pit_strategy": "DATED_RELEASE_ARCHIVE",
+      "structured_vintage_dataset": null,
+      "status": "CURRENT_CONCEPT_MATCHED__PIT_ARCHIVE_REQUIRED",
+      "note": "Discovery found no dedicated retail vintage dataflow analogous to EI_IS_M_VTG. Do not substitute current revised history."
+    },
+    {
+      "runtime_id": "EA_EMPLOYMENT_history_value",
+      "category": "Lavoro",
+      "runtime_semantics": {
+        "label": "Occupazione",
+        "frequency": "Q",
+        "unit": "Thousands of persons"
+      },
+      "source_provider": "Eurostat",
+      "source_dataset_candidates": [
+        "NAMQ_10_PE"
+      ],
+      "preferred_current_concept": "Quarterly national accounts employment and population, total employment, thousand persons, euro area",
+      "pit_strategy": "DATED_RELEASE_ARCHIVE",
+      "structured_vintage_dataset": null,
+      "status": "CURRENT_CONCEPT_MATCHED__PIT_ARCHIVE_REQUIRED",
+      "note": "Quarterly frequency and thousand-person level match the runtime series. Exact indicator/unit/geo keys must be frozen in extractor QA."
+    },
+    {
+      "runtime_id": "EA_NEGOTIATED_WAGES_YOY_history_value",
+      "category": "Lavoro",
+      "runtime_semantics": {
+        "label": "Salari negoziati",
+        "frequency": "Q",
+        "unit": "Percent YoY"
+      },
+      "source_provider": "ECB",
+      "source_dataset_candidates": [
+        "ECB negotiated wages / indicator of negotiated wage rates"
+      ],
+      "preferred_current_concept": "Euro area negotiated wage growth, quarterly, year-on-year percent",
+      "pit_strategy": "ECB_DATED_RELEASE_ARCHIVE",
+      "structured_vintage_dataset": null,
+      "status": "ECB_EXACT_SERIES_ID_PENDING",
+      "note": "Eurostat wage-search results are not the runtime concept; keep ECB as authoritative source and resolve exact ECB series identifier before extraction."
+    }
+  ],
+  "consequence": {
+    "structured_eurostat_core_ready": [
+      "EA_IP_history_value",
+      "EA_UNEMP_history_value"
+    ],
+    "remaining_archive_reconstruction": [
+      "EA_RETAIL_VOL_history_value",
+      "EA_EMPLOYMENT_history_value"
+    ],
+    "remaining_exact_match": [
+      "EA_NEGOTIATED_WAGES_YOY_history_value"
+    ],
+    "full_eur_block_pit_ready": false
+  },
+  "guardrails": [
+    "No current revised Eurostat values may be backfilled as first release.",
+    "No guessed publication lag.",
+    "Employment extractor must prove the exact national-accounts indicator and unit match.",
+    "Negotiated wages remains WITHHELD_PIT until exact ECB series identity and dated releases are verified."
+  ]
+}
