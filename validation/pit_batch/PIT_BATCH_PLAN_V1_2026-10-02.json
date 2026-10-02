@@ -1,0 +1,238 @@
+{
+  "schema": "GMFQ_PIT_BATCH_PLAN_V1",
+  "created_at": "2026-10-02",
+  "purpose": "Industrialize point-in-time Macro Core reconstruction by provider/currency instead of manual series-by-series pilots.",
+  "totals": {
+    "currencies": 8,
+    "series": 49
+  },
+  "execution_order": [
+    "Structured vintage providers first: Fed G.17, Eurostat, Statistics Canada.",
+    "Then dated-release providers grouped by institution.",
+    "Resolve exact-series-match pending families separately.",
+    "Normalize every recovered observation to market-availability date.",
+    "Build per-currency Crescita/Lavoro PIT blocks.",
+    "Run frozen-engine sensitivity harness before full backtest."
+  ],
+  "jobs": [
+    {
+      "currency": "USD",
+      "series_count": 14,
+      "series": [
+        "US_PCEC96_history_value",
+        "US_NEWORDER_history_NEWORDER",
+        "US_INDPRO_history_value",
+        "US_DSPIC96_history_DSPIC96",
+        "US_PI_history_PI",
+        "US_RRSFS_history_value",
+        "US_JTSHIR_history_JTSHIR",
+        "US_JTSJOL_history_value",
+        "US_JTSQUR_history_JTSQUR",
+        "US_PAYEMS_history_value",
+        "US_OPHNFB_history_OPHNFB",
+        "US_AHE_TOTAL_PRIVATE_history_value",
+        "US_CCSA_history_CCSA",
+        "US_ICSA_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "BEA",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "BLS",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "Federal Reserve G.17",
+          "strategy": "STRUCTURED_VINTAGE"
+        },
+        {
+          "provider": "Census Retail Trade",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "U.S. Department of Labor UI Claims",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "EUR",
+      "series_count": 5,
+      "series": [
+        "EA_IP_history_value",
+        "EA_RETAIL_VOL_history_value",
+        "EA_UNEMP_history_value",
+        "EA_EMPLOYMENT_history_value",
+        "EA_NEGOTIATED_WAGES_YOY_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "Eurostat",
+          "strategy": "STRUCTURED_VINTAGE"
+        },
+        {
+          "provider": "ECB",
+          "strategy": "DATED_RELEASE_OR_SERIES_MATCH_PENDING"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "GBP",
+      "series_count": 5,
+      "series": [
+        "UK_PRODUCTION_history_value",
+        "UK_RETAIL_VOL_history_value",
+        "UK_UNEMP_RATE_history_value",
+        "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value",
+        "UK_EMPLOYMENT_RATE_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "ONS",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "HMRC",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "JPY",
+      "series_count": 4,
+      "series": [
+        "JP_IIP_history_value",
+        "JP_RETAIL_history_value",
+        "JP_UNEMP_RATE_history_value",
+        "JP_EMPLOYED_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "Statistics Bureau of Japan",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "METI",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "CHF",
+      "series_count": 4,
+      "series": [
+        "CH_PRODUCTION_history_value",
+        "CH_RETAIL_REAL_history_value",
+        "CH_UNEMP_RATE_history_value",
+        "CH_EMPLOYMENT_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "Swiss FSO",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "SECO",
+          "strategy": "DATED_RELEASE_OR_SERIES_MATCH_PENDING"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "CAD",
+      "series_count": 4,
+      "series": [
+        "CA_REAL_GDP_M_history_value",
+        "CA_RETAIL_VOLUME_history_value",
+        "CA_UNEMP_RATE_history_value",
+        "CA_EMPLOYMENT_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "Statistics Canada",
+          "strategy": "STRUCTURED_OR_DATED_RELEASE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "AUD",
+      "series_count": 5,
+      "series": [
+        "AU_REAL_GDP_QOQ_ABS_history_value",
+        "AU_HOUSEHOLD_SPENDING_history_value",
+        "AU_UNEMP_RATE_history_value",
+        "AU_EMPLOYMENT_history_value",
+        "AU_WPI_YOY_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "ABS",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    },
+    {
+      "currency": "NZD",
+      "series_count": 8,
+      "series": [
+        "NZ_REAL_GDP_Q_history_value",
+        "NZ_RETAIL_VOLUME_Q_history_value",
+        "NZ_UNEMP_RATE_history_value",
+        "NZ_EMPLOYED_history_value",
+        "NZ_RBNZ_EXP_UNEMP_1Y_history_value",
+        "NZ_RBNZ_EXP_UNEMP_2Y_history_value",
+        "NZ_RBNZ_EXP_WAGE_1Y_history_value",
+        "NZ_RBNZ_EXP_WAGE_2Y_history_value"
+      ],
+      "providers": [
+        {
+          "provider": "Stats NZ",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        },
+        {
+          "provider": "RBNZ",
+          "strategy": "DATED_RELEASE_ARCHIVE"
+        }
+      ],
+      "target_start": "2020-08-31",
+      "target_end": "2026-09-30",
+      "checkpoint_frequency": "month-end",
+      "status": "READY_FOR_BATCH_EXTRACTION_PLAN"
+    }
+  ],
+  "guardrails": [
+    "No revised current-history substitution for missing first release.",
+    "No guessed publication lag.",
+    "No threshold tuning during PIT reconstruction.",
+    "Any unrecoverable series becomes WITHHELD_PIT or is formally excluded from that test."
+  ]
+}
