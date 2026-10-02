@@ -1,0 +1,235 @@
+{
+  "schema": "GMFQ_EUR_NEGOTIATED_WAGES_VARIANT_RECONCILIATION_V1",
+  "created_at": "2026-10-02",
+  "runtime_id": "EA_NEGOTIATED_WAGES_YOY_history_value",
+  "candidates": {
+    "EA20_FIXED": {
+      "series_key": "INW.Q.I9.N.INWR.000000.4F0.GY.IX",
+      "url": "https://data-api.ecb.europa.eu/service/data/INW/Q.I9.N.INWR.000000.4F0.GY.IX?startPeriod=2016-Q1&format=csvdata",
+      "score": {
+        "common": 40,
+        "exact": 3,
+        "within_0_01pp": 10,
+        "max_abs_diff_pp": 0.1,
+        "mean_abs_diff_pp": 0.02925,
+        "tail": [
+          {
+            "period": "2023-Q3",
+            "runtime": 4.71,
+            "candidate": 4.65,
+            "diff": 0.06
+          },
+          {
+            "period": "2023-Q4",
+            "runtime": 4.51,
+            "candidate": 4.49,
+            "diff": 0.02
+          },
+          {
+            "period": "2024-Q1",
+            "runtime": 4.85,
+            "candidate": 4.85,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q2",
+            "runtime": 3.69,
+            "candidate": 3.63,
+            "diff": 0.06
+          },
+          {
+            "period": "2024-Q3",
+            "runtime": 5.51,
+            "candidate": 5.41,
+            "diff": 0.1
+          },
+          {
+            "period": "2024-Q4",
+            "runtime": 4.21,
+            "candidate": 4.16,
+            "diff": 0.05
+          },
+          {
+            "period": "2025-Q1",
+            "runtime": 2.51,
+            "candidate": 2.49,
+            "diff": 0.02
+          },
+          {
+            "period": "2025-Q2",
+            "runtime": 4.04,
+            "candidate": 4.02,
+            "diff": 0.02
+          },
+          {
+            "period": "2025-Q3",
+            "runtime": 1.99,
+            "candidate": 1.89,
+            "diff": 0.1
+          },
+          {
+            "period": "2025-Q4",
+            "runtime": 2.94,
+            "candidate": 2.95,
+            "diff": -0.01
+          }
+        ]
+      },
+      "start": "2016-Q1",
+      "end": "2025-Q4"
+    },
+    "EA_CHANGING": {
+      "series_key": "INW.Q.U2.N.INWR.000000.4F0.GY.IX",
+      "url": "https://data-api.ecb.europa.eu/service/data/INW/Q.U2.N.INWR.000000.4F0.GY.IX?startPeriod=2016-Q1&format=csvdata",
+      "score": {
+        "common": 42,
+        "exact": 42,
+        "within_0_01pp": 42,
+        "max_abs_diff_pp": 0.0,
+        "mean_abs_diff_pp": 0.0,
+        "tail": [
+          {
+            "period": "2024-Q1",
+            "runtime": 4.85,
+            "candidate": 4.85,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q2",
+            "runtime": 3.69,
+            "candidate": 3.69,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q3",
+            "runtime": 5.51,
+            "candidate": 5.51,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q4",
+            "runtime": 4.21,
+            "candidate": 4.21,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q1",
+            "runtime": 2.51,
+            "candidate": 2.51,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q2",
+            "runtime": 4.04,
+            "candidate": 4.04,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q3",
+            "runtime": 1.99,
+            "candidate": 1.99,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q4",
+            "runtime": 2.94,
+            "candidate": 2.94,
+            "diff": 0.0
+          },
+          {
+            "period": "2026-Q1",
+            "runtime": 2.57,
+            "candidate": 2.57,
+            "diff": 0.0
+          },
+          {
+            "period": "2026-Q2",
+            "runtime": 2.45,
+            "candidate": 2.45,
+            "diff": 0.0
+          }
+        ]
+      },
+      "start": "2016-Q1",
+      "end": "2026-Q2"
+    },
+    "EA21_FIXED": {
+      "series_key": "INW.Q.I10.N.INWR.000000.4F0.GY.IX",
+      "url": "https://data-api.ecb.europa.eu/service/data/INW/Q.I10.N.INWR.000000.4F0.GY.IX?startPeriod=2016-Q1&format=csvdata",
+      "score": {
+        "common": 42,
+        "exact": 42,
+        "within_0_01pp": 42,
+        "max_abs_diff_pp": 0.0,
+        "mean_abs_diff_pp": 0.0,
+        "tail": [
+          {
+            "period": "2024-Q1",
+            "runtime": 4.85,
+            "candidate": 4.85,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q2",
+            "runtime": 3.69,
+            "candidate": 3.69,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q3",
+            "runtime": 5.51,
+            "candidate": 5.51,
+            "diff": 0.0
+          },
+          {
+            "period": "2024-Q4",
+            "runtime": 4.21,
+            "candidate": 4.21,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q1",
+            "runtime": 2.51,
+            "candidate": 2.51,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q2",
+            "runtime": 4.04,
+            "candidate": 4.04,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q3",
+            "runtime": 1.99,
+            "candidate": 1.99,
+            "diff": 0.0
+          },
+          {
+            "period": "2025-Q4",
+            "runtime": 2.94,
+            "candidate": 2.94,
+            "diff": 0.0
+          },
+          {
+            "period": "2026-Q1",
+            "runtime": 2.57,
+            "candidate": 2.57,
+            "diff": 0.0
+          },
+          {
+            "period": "2026-Q2",
+            "runtime": 2.45,
+            "candidate": 2.45,
+            "diff": 0.0
+          }
+        ]
+      },
+      "start": "2016-Q1",
+      "end": "2026-Q2"
+    }
+  },
+  "best_current_variant": "EA_CHANGING",
+  "interpretation": "Variant identity test only. Even an exact current-series match does not make revised history point-in-time; release vintages must still be reconstructed or certified.",
+  "guardrail": "Do not promote negotiated wages to PIT_READY from this test alone."
+}
