@@ -1,0 +1,623 @@
+{
+  "schema": "GMFQ_MACRO_CORE_PIT_INVENTORY_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "engine_scope": {
+    "historical_core_macro": "Crescita + Lavoro only",
+    "formula": "blockDynamics(currency, category) = median of normalizedSeriesImpulse across eligible series; Growth and Labour directions are combined for the historical shadow macro.",
+    "exclusions": "Inflazione is descriptive for the historical relative-momentum comparison; Liquidity is an overlay. Growth 'tasso di risparmio' and Labour 'costo unitario' receive zero polarity and are excluded by the engine.",
+    "minimum_series_requirement": "normalizedSeriesImpulse needs at least 8 numeric observations per series."
+  },
+  "pit_policy": {
+    "current_status": "NOT_READY",
+    "reason": "Stored dates are observation-period dates, not a complete record of market-availability dates or first-release vintages.",
+    "required_fields_per_observation": [
+      "observation_period",
+      "release_timestamp_or_release_date",
+      "value_available_at_release",
+      "revision/vintage policy",
+      "source"
+    ],
+    "no_guess_rule": "Do not assign generic monthly/quarterly lags as if they were verified release dates. A series becomes PIT_READY only after an official release-calendar/source mapping is documented."
+  },
+  "currencies": {
+    "USD": {
+      "active_series": [
+        [
+          "US_PCEC96_history_value",
+          "Consumi reali",
+          "Crescita",
+          1,
+          "M",
+          "US_PCEC96_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_NEWORDER_history_NEWORDER",
+          "Ordini beni capitali core",
+          "Crescita",
+          1,
+          null,
+          "US_NEWORDER_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_INDPRO_history_value",
+          "Produzione industriale",
+          "Crescita",
+          1,
+          "M",
+          "US_INDPRO_history.csv",
+          "2019-11-01",
+          "2026-08-01",
+          82
+        ],
+        [
+          "US_DSPIC96_history_DSPIC96",
+          "Reddito disponibile reale",
+          "Crescita",
+          1,
+          null,
+          "US_DSPIC96_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_PI_history_PI",
+          "Reddito personale",
+          "Crescita",
+          1,
+          null,
+          "US_PI_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_RRSFS_history_value",
+          "Retail sales reali",
+          "Crescita",
+          1,
+          "M",
+          "US_RRSFS_history.csv",
+          "2019-10-01",
+          "2026-08-01",
+          82
+        ],
+        [
+          "US_JTSHIR_history_JTSHIR",
+          "JOLTS — hires",
+          "Lavoro",
+          1,
+          null,
+          "US_JTSHIR_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_JTSJOL_history_value",
+          "JOLTS — job openings",
+          "Lavoro",
+          1,
+          "M",
+          "US_JTSJOL_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "US_JTSQUR_history_JTSQUR",
+          "JOLTS — quits",
+          "Lavoro",
+          1,
+          null,
+          "US_JTSQUR_history.csv",
+          "2019-10-01",
+          "2026-07-01",
+          82
+        ],
+        [
+          "US_PAYEMS_history_value",
+          "Payrolls",
+          "Lavoro",
+          1,
+          "M",
+          "US_PAYEMS_history.csv",
+          "2019-11-01",
+          "2026-08-01",
+          82
+        ],
+        [
+          "US_OPHNFB_history_OPHNFB",
+          "Produttività",
+          "Lavoro",
+          1,
+          null,
+          "US_OPHNFB_history.csv",
+          "2016-01-01",
+          "2026-04-01",
+          42
+        ],
+        [
+          "US_AHE_TOTAL_PRIVATE_history_value",
+          "Salari orari medi (AHE)",
+          "Lavoro",
+          1,
+          "M",
+          "US_AHE_TOTAL_PRIVATE_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ],
+        [
+          "US_CCSA_history_CCSA",
+          "Sussidi disoccupazione continuativi",
+          "Lavoro",
+          -1,
+          null,
+          "US_CCSA_history.csv",
+          "2025-02-15",
+          "2026-09-05",
+          82
+        ],
+        [
+          "US_ICSA_history_value",
+          "Sussidi disoccupazione iniziali",
+          "Lavoro",
+          -1,
+          "W",
+          "US_ICSA_history.csv",
+          "2025-02-28",
+          "2026-09-18",
+          82
+        ]
+      ],
+      "excluded_by_engine": [
+        [
+          "US_PSAVERT_history_PSAVERT",
+          "Tasso di risparmio",
+          "Crescita",
+          0
+        ],
+        [
+          "US_ULCNFB_history_ULCNFB",
+          "Costo unitario del lavoro",
+          "Lavoro",
+          0
+        ]
+      ]
+    },
+    "EUR": {
+      "active_series": [
+        [
+          "EA_IP_history_value",
+          "Produzione industriale",
+          "Crescita",
+          1,
+          "M",
+          "EA_IP_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "EA_RETAIL_VOL_history_value",
+          "Vendite al dettaglio reali",
+          "Crescita",
+          1,
+          "M",
+          "EA_RETAIL_VOL_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "EA_UNEMP_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "EA_UNEMP_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "EA_EMPLOYMENT_history_value",
+          "Occupazione",
+          "Lavoro",
+          1,
+          "Q",
+          "EA_EMPLOYMENT_history.csv",
+          "2016-Q1",
+          "2026-Q2",
+          42
+        ],
+        [
+          "EA_NEGOTIATED_WAGES_YOY_history_value",
+          "Salari negoziati",
+          "Lavoro",
+          1,
+          "Q",
+          "EA_NEGOTIATED_WAGES_YOY_history.csv",
+          "2016-Q1",
+          "2026-Q2",
+          42
+        ]
+      ]
+    },
+    "GBP": {
+      "active_series": [
+        [
+          "UK_PRODUCTION_history_value",
+          "Produzione",
+          "Crescita",
+          1,
+          "M",
+          "UK_PRODUCTION_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "UK_RETAIL_VOL_history_value",
+          "Retail volume",
+          "Crescita",
+          1,
+          "M",
+          "UK_RETAIL_VOL_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ],
+        [
+          "UK_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "UK_UNEMP_RATE_history.csv",
+          "2019-09",
+          "2026-06",
+          82
+        ],
+        [
+          "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value",
+          "PAYE payroll employees",
+          "Lavoro",
+          1,
+          "M",
+          "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ],
+        [
+          "UK_EMPLOYMENT_RATE_history_value",
+          "Tasso di occupazione",
+          "Lavoro",
+          1,
+          "M",
+          "UK_EMPLOYMENT_RATE_history.csv",
+          "2019-09",
+          "2026-06",
+          82
+        ]
+      ]
+    },
+    "JPY": {
+      "active_series": [
+        [
+          "JP_IIP_history_value",
+          "Produzione industriale",
+          "Crescita",
+          1,
+          "M",
+          "JP_IIP_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "JP_RETAIL_history_value",
+          "Retail sales",
+          "Crescita",
+          1,
+          "M",
+          "JP_RETAIL_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "JP_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "JP_UNEMP_RATE_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "JP_EMPLOYED_history_value",
+          "Occupati",
+          "Lavoro",
+          1,
+          "M",
+          "JP_EMPLOYED_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ]
+      ]
+    },
+    "CHF": {
+      "active_series": [
+        [
+          "CH_PRODUCTION_history_value",
+          "Produzione industriale",
+          "Crescita",
+          1,
+          "M",
+          "CH_PRODUCTION_history.csv",
+          "2019-09",
+          "2026-06",
+          82
+        ],
+        [
+          "CH_RETAIL_REAL_history_value",
+          "Retail reale",
+          "Crescita",
+          1,
+          "M",
+          "CH_RETAIL_REAL_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "CH_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "CH_UNEMP_RATE_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ],
+        [
+          "CH_EMPLOYMENT_history_value",
+          "Occupazione",
+          "Lavoro",
+          1,
+          "Q",
+          "CH_EMPLOYMENT_history.csv",
+          "2016Q1",
+          "2026Q2",
+          42
+        ]
+      ]
+    },
+    "CAD": {
+      "active_series": [
+        [
+          "CA_REAL_GDP_M_history_value",
+          "PIL reale mensile",
+          "Crescita",
+          1,
+          "M",
+          "CA_REAL_GDP_M_history.csv",
+          "2019-09",
+          "2026-06",
+          82
+        ],
+        [
+          "CA_RETAIL_VOLUME_history_value",
+          "Retail volume",
+          "Crescita",
+          1,
+          "M",
+          "CA_RETAIL_VOLUME_history.csv",
+          "2019-09",
+          "2026-06",
+          82
+        ],
+        [
+          "CA_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "CA_UNEMP_RATE_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ],
+        [
+          "CA_EMPLOYMENT_history_value",
+          "Occupazione",
+          "Lavoro",
+          1,
+          "M",
+          "CA_EMPLOYMENT_history.csv",
+          "2019-11",
+          "2026-08",
+          82
+        ]
+      ]
+    },
+    "AUD": {
+      "active_series": [
+        [
+          "AU_REAL_GDP_QOQ_ABS_history_value",
+          "PIL reale QoQ",
+          "Crescita",
+          1,
+          "Q",
+          "ABS Australian National Accounts · June 2026",
+          "2018-06",
+          "2026-06",
+          33
+        ],
+        [
+          "AU_HOUSEHOLD_SPENDING_history_value",
+          "Spesa famiglie",
+          "Crescita",
+          1,
+          "M",
+          "AU_HOUSEHOLD_SPENDING_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "AU_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "M",
+          "AU_UNEMP_RATE_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "AU_EMPLOYMENT_history_value",
+          "Occupazione",
+          "Lavoro",
+          1,
+          "M",
+          "AU_EMPLOYMENT_history.csv",
+          "2019-10",
+          "2026-07",
+          82
+        ],
+        [
+          "AU_WPI_YOY_history_value",
+          "Wage Price Index YoY",
+          "Lavoro",
+          1,
+          "Q",
+          "AU_WPI_YOY_history.csv",
+          "31/03/2016",
+          "30/06/2026",
+          42
+        ]
+      ]
+    },
+    "NZD": {
+      "active_series": [
+        [
+          "NZ_REAL_GDP_Q_history_value",
+          "PIL reale YoY",
+          "Crescita",
+          1,
+          "Q",
+          "NZ_REAL_GDP_Q_history.csv",
+          "2016-03",
+          "2026-06",
+          42
+        ],
+        [
+          "NZ_RETAIL_VOLUME_Q_history_value",
+          "Retail volume",
+          "Crescita",
+          1,
+          "Q",
+          "NZ_RETAIL_VOLUME_Q_history.csv",
+          "2016-03",
+          "2026-03",
+          41
+        ],
+        [
+          "NZ_UNEMP_RATE_history_value",
+          "Disoccupazione",
+          "Lavoro",
+          -1,
+          "Q",
+          "NZ_UNEMP_RATE_history.csv",
+          "2016-03",
+          "2026-06",
+          42
+        ],
+        [
+          "NZ_EMPLOYED_history_value",
+          "Occupati",
+          "Lavoro",
+          1,
+          "Q",
+          "NZ_EMPLOYED_history.csv",
+          "2016-03",
+          "2026-06",
+          42
+        ],
+        [
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y",
+          "RBNZ survey — disoccupazione 1Y",
+          "Lavoro",
+          -1,
+          null,
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv",
+          "2024-09",
+          "2026-09",
+          6
+        ],
+        [
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_2Y",
+          "RBNZ survey — disoccupazione 2Y",
+          "Lavoro",
+          -1,
+          null,
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv",
+          "2024-09",
+          "2026-09",
+          6
+        ],
+        [
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y",
+          "RBNZ survey — salari 1Y",
+          "Lavoro",
+          1,
+          null,
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv",
+          "2024-09",
+          "2026-09",
+          6
+        ],
+        [
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_2Y",
+          "RBNZ survey — salari 2Y",
+          "Lavoro",
+          1,
+          null,
+          "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv",
+          "2024-09",
+          "2026-09",
+          6
+        ]
+      ],
+      "notes": "The four recent RBNZ expectation series have only 6 observations, so normalizedSeriesImpulse currently excludes them automatically (<8 observations)."
+    }
+  },
+  "summary": {
+    "active_series_count": 55,
+    "excluded_zero_polarity_count": 2,
+    "key_result": "The PIT reconstruction task is narrower than the full 204-series dataset: for the frozen historical macro core we only need the eligible Crescita and Lavoro series listed here.",
+    "cross_currency_clean_start_caution": "Most monthly core histories begin around 2019-09/11. A common full-G8 sample before late 2019 is not supported by the current stored monthly core set without additional history.",
+    "next_gate": "Map official release availability and vintage treatment for these 55 active series; then recompute exact common PIT sample."
+  }
+}
