@@ -24,12 +24,14 @@ def pdf_to_text(raw):
     return re.sub(r"\s+"," "," ".join((p.extract_text() or "") for p in reader.pages)).strip()
 
 def extract_qoq(txt):
-    # Primary official wording seen in Eurostat flash releases:
-    # "The number of employed persons increased by 0.2% in both the euro area and the EU..."
+    # PDF extraction sometimes splits decimals ("0. 6"). Normalize only numeric
+    # decimal spacing, then require quarter-over-quarter context so a later YoY
+    # sentence cannot be mistaken for the q/q release value.
+    txt=re.sub(r'(?<=\\d)[.,]\\s+(?=\\d)', lambda m: m.group(0)[0], txt)
     patterns=[
-      r'(?:number of employed persons|employment)\s+(increased|decreased|remained stable).*?by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area',
-      r'(?:number of employed persons|employment).*?(?:euro area).*?(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%',
-      r'GDP\s+(?:up|down).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+the euro area'
+      r'(?:number of employed persons|employment)\\s+(increased|decreased).*?by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
+      r'(?:number of employed persons|employment).*?(increased|decreased).*?by\\s+([+-]?\\d+(?:[.,]\\d+)?)%.*?in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
+      r'GDP\\s+(?:up|down).*?employment\\s+(up|down)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+the euro area'
     ]
     for p in patterns:
         m=re.search(p,txt,re.I|re.S)
@@ -42,8 +44,6 @@ def extract_qoq(txt):
             continue
         if direction in ("decreased","down"):
             val=-abs(val)
-        elif direction=="remained stable":
-            val=0.0
         else:
             val=abs(val)
         return val,m.group(0)[:700]
