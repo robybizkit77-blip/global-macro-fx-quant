@@ -44,29 +44,27 @@ def employment_contexts(txt, limit=4):
     return out
 
 def extract_qoq(txt):
-    # PDF extraction sometimes splits decimals ("0. 6"). Normalize only numeric
-    # decimal spacing, then require quarter-over-quarter context so a later YoY
-    # sentence cannot be mistaken for the q/q release value.
-    txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)', lambda m: m.group(0)[0], txt)
-    patterns=[
-      r'(?:number of employed persons|employment)\s+(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
-      r'(?:number of employed persons|employment).*?(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%.*?in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
-      r'GDP\s+(?:up|down).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+the euro area'
+    txt=re.sub(r'(?<=\\d)[.,]\\s+(?=\\d)', lambda m: m.group(0)[0], txt)
+    head=txt[:3500]
+    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(up|down)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    if m:
+        d=m.group(1).lower(); v=float(m.group(2).replace(",","."))
+        return (-abs(v) if d=="down" else abs(v)),m.group(0)[:700]
+    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(stable|unchanged)\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    if m:
+        return 0.0,m.group(0)[:700]
+    pats=[
+      r'(?:number of employed persons|employment)\\s+(increased|decreased)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
+      r'(?:number of employed persons|employment)\\s+(remained stable|was stable|remained unchanged)\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter'
     ]
-    for p in patterns:
+    for p in pats:
         m=re.search(p,txt,re.I|re.S)
-        if not m:
-            continue
-        direction=m.group(1).lower()
-        try:
-            val=float(m.group(2).replace(",","."))
-        except Exception:
-            continue
-        if direction in ("decreased","down"):
-            val=-abs(val)
-        else:
-            val=abs(val)
-        return val,m.group(0)[:700]
+        if not m: continue
+        d=m.group(1).lower()
+        if "stable" in d or "unchanged" in d:
+            return 0.0,m.group(0)[:700]
+        v=float(m.group(2).replace(",","."))
+        return (-abs(v) if d=="decreased" else abs(v)),m.group(0)[:700]
     return None,None
 
 rows=[]
@@ -99,7 +97,7 @@ report={
  "parsed_qoq":len(parsed),
  "coverage_pct":round(100*len(parsed)/len(rows),2) if rows else 0,
  "rows":rows,
- "status":"PARSER_VALIDATED_PARTIAL" if len(parsed)>=8 else "PARSER_NOT_YET_VALIDATED",
+ "status":"PARSER_VALIDATED_FULL" if len(parsed)==len(rows) else ("PARSER_VALIDATED_PARTIAL" if len(parsed)>=8 else "PARSER_NOT_YET_VALIDATED"),
  "guardrail":"Parsed q/q flash growth rates are release-time observables. Do not equate them mechanically to the runtime level series until the level-path transformation and parity test are completed."
 }
 OUT.write_text(json.dumps(report,indent=2),encoding="utf-8")
