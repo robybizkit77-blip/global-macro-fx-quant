@@ -12,7 +12,7 @@ OUT=OUTDIR/(f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_{MONTH_FILTER:
 
 UA={"User-Agent":"Mozilla/5.0 GMFQ-PIT-retail/2.0"}
 
-def get(url,timeout=30):
+def get(url,timeout=10):
     last=None
     for attempt in range(4):
         req=urllib.request.Request(url,headers=UA)
@@ -39,6 +39,8 @@ def urls_for(d):
     return [
       f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-{code}-ap",
       f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-{code}-ap",
+      f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/4-{code}-ap",
+      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/-/4-{code}-ap",
     ]
 
 months={m:i+1 for i,m in enumerate(["January","February","March","April","May","June","July","August","September","October","November","December"])}
