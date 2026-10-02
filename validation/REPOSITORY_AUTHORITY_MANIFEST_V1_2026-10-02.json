@@ -1,0 +1,115 @@
+{
+  "schema": "GMFQ_REPOSITORY_AUTHORITY_MANIFEST_V1",
+  "created_at": "2026-10-02",
+  "branch": "engine-freeze-v1-2026-10-02",
+  "purpose": "Single source of truth for what is allowed to affect runtime, what is current validation, and what is historical/superseded material.",
+  "rules": [
+    "Only index.html and payload/part-00.txt..part-15.txt are runtime-authoritative for the browser build.",
+    "Files under validation/ never affect runtime unless explicitly promoted through a reviewed production change.",
+    "Superseded or failed workflows are removed from .github/workflows; Git history preserves them.",
+    "A validation artifact not listed as current_authoritative is informational/archive-only.",
+    "No PIT reconstruction may modify model thresholds or production logic."
+  ],
+  "runtime_authoritative": [
+    "index.html",
+    "payload/part-00.txt",
+    "payload/part-01.txt",
+    "payload/part-02.txt",
+    "payload/part-03.txt",
+    "payload/part-04.txt",
+    "payload/part-05.txt",
+    "payload/part-06.txt",
+    "payload/part-07.txt",
+    "payload/part-08.txt",
+    "payload/part-09.txt",
+    "payload/part-10.txt",
+    "payload/part-11.txt",
+    "payload/part-12.txt",
+    "payload/part-13.txt",
+    "payload/part-14.txt",
+    "payload/part-15.txt"
+  ],
+  "history_non_runtime": [
+    "history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js"
+  ],
+  "active_workflows": [
+    ".github/workflows/engine-logic-audit.yml",
+    ".github/workflows/staging-browser-audit.yml",
+    ".github/workflows/fed-g17-pit-batch.yml",
+    ".github/workflows/eurostat-pit-batch.yml",
+    ".github/workflows/eurostat-retail-pit-finder.yml"
+  ],
+  "removed_workflows": [
+    {
+      "path": ".github/workflows/eurostat-vintage-discovery.yml",
+      "reason": "Superseded by robust V2 discovery and exact dataset IDs already resolved."
+    },
+    {
+      "path": ".github/workflows/eurostat-pit-batch-discovery-v2.yml",
+      "reason": "One-shot discovery complete; exact IDs already materialized."
+    },
+    {
+      "path": ".github/workflows/eurostat-vintage-schema-probe.yml",
+      "reason": "One-shot schema probe complete; dimensions already materialized."
+    },
+    {
+      "path": ".github/workflows/eur-remaining-core-discovery.yml",
+      "reason": "One-shot source discovery complete; source strategy already materialized."
+    },
+    {
+      "path": ".github/workflows/pit-batch-plan.yml",
+      "reason": "One-shot planning workflow complete; batch plan already materialized."
+    },
+    {
+      "path": ".github/workflows/pit-vintage-extract.yml",
+      "reason": "Failed broad extractor superseded by provider-specific pipelines."
+    },
+    {
+      "path": ".github/workflows/statcan-metadata-probe.yml",
+      "reason": "Failed timeout probe; not part of current extraction path."
+    },
+    {
+      "path": ".github/workflows/eurostat-eur-archive-crawl.yml",
+      "reason": "Failed general crawler superseded by deterministic retail finder."
+    }
+  ],
+  "current_authoritative_validation": [
+    "validation/HISTORICAL_DATA_READINESS_AUDIT_V1_2026-10-02.json",
+    "validation/HISTORICAL_LAYER_MATRIX_V1_2026-10-02.json",
+    "validation/MACRO_COMMON_SAMPLE_GATE_V1_2026-10-02.json",
+    "validation/MACRO_CORE_PIT_INVENTORY_V1_2026-10-02.json",
+    "validation/MACRO_CORE_SERIES_RELEASE_MAP_V1_2026-10-02.json",
+    "validation/MACRO_MARKET_AVAILABILITY_GATE_V1_2026-10-02.json",
+    "validation/MACRO_PIT_SOURCE_REGISTRY_V1_2026-10-02.json",
+    "validation/MACRO_VINTAGE_AVAILABILITY_MATRIX_V1_2026-10-02.json",
+    "validation/PIT_PANEL_BUILD_STATUS_V1_2026-10-02.json",
+    "validation/PIT_PANEL_INPUT_SCHEMA_V1_2026-10-02.json",
+    "validation/PIT_SIGNAL_SENSITIVITY_HARNESS_V1.js",
+    "validation/PIT_SIGNAL_SENSITIVITY_CA_GDP_2021_2022_V1_2026-10-02.json",
+    "validation/PIT_SIGNAL_SENSITIVITY_CA_GROWTH_BLOCK_2021_V1_2026-10-02.json",
+    "validation/PIT_SIGNAL_SENSITIVITY_EUR_STRUCTURED_V1_2026-10-02.json",
+    "validation/pit_batch/PIT_BATCH_PLAN_V1_2026-10-02.json",
+    "validation/pit_batch/fed_g17/FED_G17_INDPRO_PIT_BATCH_READY_V1_2026-10-02.json",
+    "validation/pit_batch/eurostat/EUROSTAT_PIT_BATCH_V1_2026-10-02.json",
+    "validation/pit_batch/eurostat/EUROSTAT_PIT_READY_V1_2026-10-02.json",
+    "validation/pit_batch/eurostat/EUR_REMAINING_CORE_SOURCE_MATCH_V1_2026-10-02.json"
+  ],
+  "archive_only_patterns": [
+    "validation/*PILOT*",
+    "validation/*FULL_YEAR*",
+    "validation/eurostat_discovery/*",
+    "validation/*DISCOVERY*",
+    "validation/*TARGETS*",
+    "validation/*MANIFEST* where superseded by this authority manifest",
+    "validation/probe_*",
+    "validation/discover_*",
+    "validation/crawl_eurostat_eur_archive.py",
+    "validation/extract_structured_vintages.py"
+  ],
+  "safety_assertions": {
+    "index_references_validation": false,
+    "index_references_history": false,
+    "runtime_payload_count": 16,
+    "full_pit_ready": false
+  }
+}
