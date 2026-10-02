@@ -37,6 +37,7 @@ geos=[x["code"] for x in dim_meta.get("geo",[])]
 # Keep euro-area aggregates only; test all available employment concepts.
 ea_geos=[g for g in geos if g.startswith("EA")]
 candidates=[]
+series_maps={}
 for geo in ea_geos:
   for item in na_items:
     try:
@@ -58,6 +59,7 @@ for geo in ea_geos:
     if not series:
       continue
     smap=dict(series)
+    series_maps[(geo,item)]=smap
     common=sorted(set(runtime_map)&set(smap))
     diffs=[abs(float(runtime_map[t])-float(smap[t])) for t in common if runtime_map[t] is not None]
     exact=sum(1 for t in common if abs(float(runtime_map[t])-float(smap[t]))<1e-9)
@@ -77,7 +79,43 @@ for geo in ea_geos:
 valid=[x for x in candidates if x.get("common",0)>0]
 valid.sort(key=lambda x:(-(x.get("exact") or 0), x.get("max_abs_diff") if x.get("max_abs_diff") is not None else 1e99, -(x.get("common") or 0)))
 best=valid[0] if valid else None
-status="EXACT_RUNTIME_SOURCE_MATCH_VERIFIED" if best and best.get("exact")==best.get("common") and best.get("common",0)>=20 else "NO_EXACT_MATCH_YET"
+
+# Official euro-area composition changed from EA20 to EA21 in 2026.
+# Test the composition-aware splice explicitly rather than treating the aggregate
+# code change as a source mismatch.
+stitched=None
+ea20=series_maps.get(("EA20","EMP_DC"),{})
+ea21=series_maps.get(("EA21","EMP_DC"),{})
+if ea20 and ea21:
+    smap={}
+    for t in runtime_map:
+        smap[t]=ea20.get(t) if t<"2026-Q1" else ea21.get(t)
+    common=[t for t in runtime_map if smap.get(t) is not None]
+    diffs=[abs(float(runtime_map[t])-float(smap[t])) for t in common]
+    exact=sum(1 for t in common if abs(float(runtime_map[t])-float(smap[t]))<1e-9)
+    stitched={
+      "concept":"Euro area total employment, domestic concept, official composition",
+      "dataset":"NAMQ_10_PE",
+      "unit":"THS_PER",
+      "s_adj":"SCA",
+      "na_item":"EMP_DC",
+      "composition_rule":"EA20 through 2025-Q4; EA21 from 2026-Q1",
+      "common":len(common),
+      "exact":exact,
+      "max_abs_diff":max(diffs) if diffs else None,
+      "mean_abs_diff":sum(diffs)/len(diffs) if diffs else None,
+      "first":next(iter(runtime_map.items())) if runtime_map else None,
+      "last":list(runtime_map.items())[-1] if runtime_map else None
+    }
+
+if stitched and stitched["exact"]==stitched["common"] and stitched["common"]==len(runtime_map):
+    status="EXACT_RUNTIME_SOURCE_MATCH_VERIFIED__COMPOSITION_AWARE"
+    best=stitched
+elif best and best.get("exact")==best.get("common") and best.get("common",0)>=20:
+    status="EXACT_RUNTIME_SOURCE_MATCH_VERIFIED"
+else:
+    status="NO_EXACT_MATCH_YET"
+
 report={
  "schema":"GMFQ_EUR_EMPLOYMENT_SOURCE_RECONCILIATION_V1",
  "created_at":"2026-10-02",
@@ -87,8 +125,9 @@ report={
  "tested_candidates":len(candidates),
  "status":status,
  "best_match":best,
+ "composition_aware_match":stitched,
  "top_matches":valid[:12],
- "guardrail":"Do not reconstruct PIT employment releases until exact current-series identity is proven."
+ "guardrail":"Proceed to PIT release reconstruction only if exact current-series identity is proven; composition changes must be explicit and dated."
 }
 (OUT/"EUR_EMPLOYMENT_SOURCE_RECONCILIATION_V1_2026-10-02.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
 print(json.dumps({"status":status,"best_match":best,"tested":len(candidates)},indent=2))
