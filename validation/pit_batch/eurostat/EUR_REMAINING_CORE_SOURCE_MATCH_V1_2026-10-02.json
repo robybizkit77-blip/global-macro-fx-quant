@@ -52,13 +52,14 @@
       },
       "source_provider": "ECB",
       "source_dataset_candidates": [
-        "ECB negotiated wages / indicator of negotiated wage rates"
+        "INW"
       ],
-      "preferred_current_concept": "Euro area negotiated wage growth, quarterly, year-on-year percent",
-      "pit_strategy": "ECB_DATED_RELEASE_ARCHIVE",
+      "preferred_current_concept": "ECB Indicator of Negotiated Wage Rates, quarterly, euro area 20 fixed composition, YoY growth",
+      "pit_strategy": "ECB_DATED_RELEASE_ARCHIVE_OR_VINTAGE_IF_AVAILABLE",
       "structured_vintage_dataset": null,
-      "status": "ECB_EXACT_SERIES_ID_PENDING",
-      "note": "Eurostat wage-search results are not the runtime concept; keep ECB as authoritative source and resolve exact ECB series identifier before extraction."
+      "status": "EXACT_CURRENT_SERIES_MATCHED__PIT_VINTAGE_EXTRACTION_PENDING",
+      "note": "Exact current ECB Data Portal series matched. PIT reconstruction must still use historical release/vintage availability; current revised INW history alone is not sufficient.",
+      "exact_series_key": "INW.Q.I9.N.INWR.000000.4F0.GY.IX"
     }
   ],
   "consequence": {
@@ -68,11 +69,10 @@
     ],
     "remaining_archive_reconstruction": [
       "EA_RETAIL_VOL_history_value",
-      "EA_EMPLOYMENT_history_value"
-    ],
-    "remaining_exact_match": [
+      "EA_EMPLOYMENT_history_value",
       "EA_NEGOTIATED_WAGES_YOY_history_value"
     ],
+    "remaining_exact_match": [],
     "full_eur_block_pit_ready": false
   },
   "guardrails": [
