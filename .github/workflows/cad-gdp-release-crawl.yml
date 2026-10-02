@@ -29,11 +29,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin engine-freeze-v1-2026-10-02
           git add validation/cad_gdp_release_crawl/
           if git diff --cached --quiet; then
             echo "No changes"
           else
             git commit -m "Materialize CAD GDP dated-release PIT crawl"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
             git push origin HEAD:engine-freeze-v1-2026-10-02
           fi
