@@ -1,0 +1,206 @@
+{
+  "schema": "GMFQ_PIT_SIGNAL_SENSITIVITY_CA_GROWTH_BLOCK_2021_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "scope": {
+    "currency": "CAD",
+    "category": "Crescita",
+    "series": [
+      "CA_REAL_GDP_M_history_value",
+      "CA_RETAIL_VOLUME_history_value"
+    ],
+    "availability": "as-of official release dates"
+  },
+  "methodology": "At each checkpoint, each series contains only observations whose actual publication date was <= checkpoint. blockDynamics-equivalent current/previous medians are computed across the two frozen Growth inputs.",
+  "comparisons": [
+    {
+      "checkpoint": "2021-10-31",
+      "latest_available": {
+        "gdp": "2021-08",
+        "retail": "2021-08"
+      },
+      "first_release": {
+        "current": 0.721,
+        "previous": -0.2966,
+        "direction": 1,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.721,
+        "n": 2
+      },
+      "current_revised": {
+        "current": 0.6451,
+        "previous": 0.4553,
+        "direction": 1,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.6451,
+        "n": 2
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": true
+    },
+    {
+      "checkpoint": "2021-11-30",
+      "latest_available": {
+        "gdp": "2021-09",
+        "retail": "2021-09"
+      },
+      "first_release": {
+        "current": -0.0421,
+        "previous": 0.8106,
+        "direction": 0,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.0421,
+        "n": 2
+      },
+      "current_revised": {
+        "current": 0.2011,
+        "previous": 0.7259,
+        "direction": 1,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.2011,
+        "n": 2
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false
+    },
+    {
+      "checkpoint": "2021-12-31",
+      "latest_available": {
+        "gdp": "2021-10",
+        "retail": "2021-10"
+      },
+      "first_release": {
+        "current": 1.1875,
+        "previous": -0.0795,
+        "direction": 1,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.1875,
+        "n": 2
+      },
+      "current_revised": {
+        "current": 0.597,
+        "previous": 0.1431,
+        "direction": 1,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.597,
+        "n": 2
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": false
+    },
+    {
+      "checkpoint": "2022-01-31",
+      "latest_available": {
+        "gdp": "2021-10",
+        "retail": "2021-11"
+      },
+      "first_release": {
+        "current": 1.0695,
+        "previous": 0.3478,
+        "direction": 1,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.0695,
+        "n": 2
+      },
+      "current_revised": {
+        "current": 0.5562,
+        "previous": 0.4112,
+        "direction": 1,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.5562,
+        "n": 2
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true
+    },
+    {
+      "checkpoint": "2022-02-28",
+      "latest_available": {
+        "gdp": "2021-11",
+        "retail": "2021-12"
+      },
+      "first_release": {
+        "current": 0.2654,
+        "previous": 1.0524,
+        "direction": 1,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.2654,
+        "n": 2
+      },
+      "current_revised": {
+        "current": -0.187,
+        "previous": 0.6073,
+        "direction": 0,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.187,
+        "n": 2
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false
+    },
+    {
+      "checkpoint": "2022-03-31",
+      "latest_available": {
+        "gdp": "2021-12",
+        "retail": "2021-12"
+      },
+      "first_release": {
+        "current": -0.5,
+        "previous": 0.8111,
+        "direction": -1,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.5,
+        "n": 2
+      },
+      "current_revised": {
+        "current": -0.1862,
+        "previous": 0.3936,
+        "direction": 0,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.1862,
+        "n": 2
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": false
+    }
+  ],
+  "summary": {
+    "checkpoints_compared": 6,
+    "direction_changes": 3,
+    "turning_changes": 3,
+    "acceleration_direction_changes": 2,
+    "changed_direction_checkpoints": [
+      "2021-11-30",
+      "2022-02-28",
+      "2022-03-31"
+    ],
+    "changed_turning_checkpoints": [
+      "2021-10-31",
+      "2021-12-31",
+      "2022-03-31"
+    ]
+  },
+  "caveat": "This is the full CAD Growth block for the two active runtime Growth series, but only over checkpoints supported by the reconstructed 2021 first-release retail panel. Extension to 2022+ remains required."
+}
