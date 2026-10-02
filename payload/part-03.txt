@@ -360,6 +360,12 @@ return 1; // quantity direction only; not automatically FX-positive
 }
 return 0;
 }
+// v9.3 runtime-invariance guard:
+// The structural/dynamics engine must not change merely because the user opens
+// a tab that lazy-loads the full macro history into S. Freeze the startup macro
+// input used by blockDynamics; full-history S remains available for charts/UI.
+const ENGINE_MACRO_SERIES = JSON.parse(JSON.stringify(S||{}));
+
 function normalizedSeriesImpulse(x,category){
 const vals=(x?.values||[]).map(Number).filter(Number.isFinite);
 if(vals.length<8) return null;
@@ -375,7 +381,7 @@ function medianNumber(arr){
 return median(arr.filter(Number.isFinite));
 }
 function blockDynamics(c,category){
-const list=(S?.[c]||[]).filter(x=>x.category===category);
+const list=(ENGINE_MACRO_SERIES?.[c]||[]).filter(x=>x.category===category);
 const impulses=list.map(x=>normalizedSeriesImpulse(x,category)).filter(Boolean);
 if(!impulses.length) return null;
 const current=medianNumber(impulses.map(x=>x.current));
