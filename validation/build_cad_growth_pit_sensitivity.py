@@ -153,6 +153,7 @@ report={
  },
  "comparisons":comparisons,
  "summary":{
+   "revised_runtime_support":{"gdp_through":rgdp["dates"][-1],"retail_through":rret["dates"][-1]},
    "event_checkpoints_compared":len(comparisons),
    "both_series_ready_checkpoints":len(usable),
    "direction_changes":len(dirchg),
