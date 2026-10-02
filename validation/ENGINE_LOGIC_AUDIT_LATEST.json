@@ -1,17 +1,15 @@
 {
   "schema": "GMFQ_ENGINE_LOGIC_AUDIT_LATEST_V1",
-  "generated_at": "2026-10-02T10:12:54.082Z",
+  "generated_at": "2026-10-02T10:26:55.938Z",
   "gates": {
     "lazyLoadInvariance": true,
     "refreshStability": true,
     "currencyRules": true,
     "pairConsistency": true,
     "pairFrames": true,
-    "runtimeErrors": false
+    "runtimeErrors": true
   },
-  "failed": [
-    "runtimeErrors"
-  ],
+  "failed": [],
   "lazyLoadInvariance": {
     "ok": true,
     "loadError": null,
@@ -2461,5 +2459,17 @@
     }
   ],
   "httpFailures": [],
-  "requestFailures": []
+  "requestFailures": [],
+  "ignoredBrowserNoise": {
+    "runtimeErrors": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 404 (File not found)",
+        "url": "http://127.0.0.1:8765/favicon.ico",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    ],
+    "httpFailures": [],
+    "requestFailures": []
+  }
 }
