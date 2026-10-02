@@ -39,18 +39,29 @@ def pdf_to_text(raw):
     return re.sub(r"\s+"," "," ".join((p.extract_text() or "") for p in reader.pages)).strip()
 
 def extract_qoq(txt):
-    txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)', lambda m: m.group(0)[0], txt)
-    patterns=[
-      r'(?:number of employed persons|employment)\s+(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
-      r'(?:number of employed persons|employment).*?(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%.*?in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
-      r'GDP\s+(?:up|down|stable).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+the euro area'
+    txt=re.sub(r'(?<=\\d)[.,]\\s+(?=\\d)', lambda m: m.group(0)[0], txt)
+    head=txt[:3500]
+    # Headline is the cleanest flash-release value.
+    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(up|down)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    if m:
+        d=m.group(1).lower(); v=float(m.group(2).replace(",","."))
+        return (-abs(v) if d=="down" else abs(v)),m.group(0)[:700]
+    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(stable|unchanged)\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    if m:
+        return 0.0,m.group(0)[:700]
+    # Narrative fallback requires explicit previous-quarter context and euro-area value.
+    pats=[
+      r'(?:number of employed persons|employment)\\s+(increased|decreased)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
+      r'(?:number of employed persons|employment)\\s+(remained stable|was stable|remained unchanged)\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter'
     ]
-    for p in patterns:
+    for p in pats:
         m=re.search(p,txt,re.I|re.S)
         if not m: continue
         d=m.group(1).lower()
+        if "stable" in d or "unchanged" in d:
+            return 0.0,m.group(0)[:700]
         v=float(m.group(2).replace(",","."))
-        return (-abs(v) if d in ("decreased","down") else abs(v)),m.group(0)[:700]
+        return (-abs(v) if d=="decreased" else abs(v)),m.group(0)[:700]
     return None,None
 
 def quarter_label(y,q):
