@@ -10,7 +10,7 @@ CSV_OUT=OUT/"CA_BOC_BENCHMARK_RATES_DAILY_2020_2026_V1.csv"
 
 START="2020-01-01"
 END="2026-09-30"
-SERIES={"2Y":"V39051","10Y":"V39055"}
+SERIES={"2Y":"BD.CDN.2YR.DQ.YLD","10Y":"BD.CDN.10YR.DQ.YLD"}
 
 session=requests.Session()
 session.headers.update({"User-Agent":"GMFQ-PIT-validation/1.0"})
@@ -42,8 +42,8 @@ report={
  "created_at":"2026-10-02",
  "source":"Bank of Canada Valet API",
  "series":{
-   "2Y":{"code":"V39051","label":"Government of Canada benchmark bond yield - 2 year"},
-   "10Y":{"code":"V39055","label":"Government of Canada benchmark bond yield - 10 year"}
+   "2Y":{"code":"BD.CDN.2YR.DQ.YLD","legacy_lookup_code":"V39051","label":"Government of Canada benchmark bond yield - 2 year"},
+   "10Y":{"code":"BD.CDN.10YR.DQ.YLD","legacy_lookup_code":"V39055","label":"Government of Canada benchmark bond yield - 10 year"}
  },
  "methodology":{
    "pit_status":"PIT_NATIVE_MARKET_DATA",
