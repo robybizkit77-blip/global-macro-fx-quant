@@ -66,7 +66,7 @@
     {
       "reference_month": "2021-01",
       "release_date": "2021-03-19",
-      "first_release_mom_pct": null,
+      "first_release_mom_pct": -1.6,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/210319/dq210319a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/210219/dq210219a-eng.htm"
     },
@@ -164,7 +164,7 @@
     {
       "reference_month": "2022-03",
       "release_date": "2022-05-26",
-      "first_release_mom_pct": -1.0,
+      "first_release_mom_pct": -1,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/220526/dq220526b-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/220422/dq220422a-eng.htm"
     },
@@ -192,7 +192,7 @@
     {
       "reference_month": "2022-07",
       "release_date": "2022-09-23",
-      "first_release_mom_pct": -2.0,
+      "first_release_mom_pct": -2,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/220923/dq220923a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/220819/dq220819a-eng.htm"
     },
@@ -213,7 +213,7 @@
     {
       "reference_month": "2022-10",
       "release_date": "2022-12-20",
-      "first_release_mom_pct": 0.0,
+      "first_release_mom_pct": 0,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/221220/dq221220a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/221122/dq221122a-eng.htm"
     },
@@ -248,7 +248,7 @@
     {
       "reference_month": "2023-03",
       "release_date": "2023-05-19",
-      "first_release_mom_pct": -1.0,
+      "first_release_mom_pct": -1,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/230519/dq230519a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/230421/dq230421a-eng.htm"
     },
@@ -360,7 +360,7 @@
     {
       "reference_month": "2024-07",
       "release_date": "2024-09-20",
-      "first_release_mom_pct": 1.0,
+      "first_release_mom_pct": 1,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/240920/dq240920a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/240823/dq240823a-eng.htm"
     },
@@ -381,7 +381,7 @@
     {
       "reference_month": "2024-10",
       "release_date": "2024-12-20",
-      "first_release_mom_pct": 0.0,
+      "first_release_mom_pct": 0,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/241220/dq241220a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/241122/dq241122a-eng.htm"
     },
@@ -451,7 +451,7 @@
     {
       "reference_month": "2025-08",
       "release_date": "2025-10-23",
-      "first_release_mom_pct": 1.0,
+      "first_release_mom_pct": 1,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/251023/dq251023a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/250919/dq250919a-eng.htm"
     },
@@ -479,14 +479,14 @@
     {
       "reference_month": "2025-12",
       "release_date": "2026-02-20",
-      "first_release_mom_pct": 0.0,
+      "first_release_mom_pct": 0,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/260220/dq260220a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260123/dq260123a-eng.htm"
     },
     {
       "reference_month": "2026-01",
       "release_date": "2026-03-20",
-      "first_release_mom_pct": 1.0,
+      "first_release_mom_pct": 1,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/260320/dq260320a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260220/dq260220a-eng.htm"
     },
@@ -507,7 +507,7 @@
     {
       "reference_month": "2026-04",
       "release_date": "2026-06-19",
-      "first_release_mom_pct": 0.0,
+      "first_release_mom_pct": 0,
       "url": "https://www150.statcan.gc.ca/daily-quotidien/260619/dq260619a-eng.htm",
       "previous_url": "https://www150.statcan.gc.ca/daily-quotidien/260522/dq260522a-eng.htm"
     },
@@ -540,10 +540,12 @@
     "corrected_values_this_run": 2,
     "from": "2020-05",
     "to": "2026-07",
-    "missing_values": [
+    "missing_values": [],
+    "stop_reason": "COMPLETE",
+    "complete": true,
+    "manually_verified_values": [
       "2021-01"
     ],
-    "stop_reason": "COMPLETE",
-    "complete": true
+    "manual_verification_source": "Statistics Canada The Daily headline/narrative volume sentence"
   }
 }
