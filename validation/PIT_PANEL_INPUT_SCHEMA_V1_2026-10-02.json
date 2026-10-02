@@ -1,0 +1,36 @@
+{
+  "schema": "GMFQ_PIT_PANEL_INPUT_SCHEMA_V1",
+  "created_at": "2026-10-02",
+  "purpose": "Canonical input contract for first-release versus current-revised signal sensitivity testing.",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "series_record": {
+    "required": [
+      "ccy",
+      "id",
+      "label",
+      "category",
+      "dates",
+      "values"
+    ],
+    "semantics": {
+      "dates": "Market-availability dates for first-release panel; observation-period dates for current-revised panel are NOT acceptable unless separately converted to market-availability dates.",
+      "values": "Values known as of each corresponding date.",
+      "category": "Frozen engine category, primarily Crescita or Lavoro."
+    }
+  },
+  "checkpoint_rule": "Use month-end/checkpoint dates after 2020-07-31; at each checkpoint include only values whose market-availability date is <= checkpoint.",
+  "outputs_required": [
+    "block direction first-release vs revised",
+    "turning-point change",
+    "acceleration-direction change",
+    "speed difference",
+    "count and percentage of changed checkpoints by currency/block"
+  ],
+  "guardrails": [
+    "No interpolation of unavailable vintage observations.",
+    "No backward application of revisions.",
+    "No threshold changes while evaluating the frozen engine.",
+    "If a source has only revised history, mark the series REVISED_ONLY rather than fabricate first-release values."
+  ]
+}
