@@ -1,0 +1,68 @@
+{
+  "schema": "GMFQ_PIT_VINTAGE_PILOT_EUR_CORE_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "scope": "EUR Growth + Labour pilot around the clean common-sample start",
+  "industrial_production": {
+    "runtime_id": "EA_IP_history_value",
+    "source": "Eurostat dated Euro-indicator releases",
+    "sample": [
+      {
+        "month": "2020-05",
+        "release_date": "2020-07-14",
+        "first_release_mom_pct": 12.4,
+        "current_revised_mom_pct": 14.0449,
+        "delta_pp": 1.6449,
+        "same_direction": true
+      },
+      {
+        "month": "2020-06",
+        "release_date": "2020-08-12",
+        "first_release_mom_pct": 9.1,
+        "current_revised_mom_pct": 9.3596,
+        "delta_pp": 0.2596,
+        "same_direction": true
+      }
+    ],
+    "result": {
+      "observations": 2,
+      "direction_flips": 0,
+      "max_abs_revision_pp": 1.6449,
+      "note": "Direction is unchanged in this two-observation pilot, but the May rebound is materially larger in today's revised runtime history than in the first release."
+    }
+  },
+  "unemployment": {
+    "runtime_id": "EA_UNEMP_history_value",
+    "source": "Eurostat dated Euro-indicator releases",
+    "sample": [
+      {
+        "month": "2020-05",
+        "release_date": "2020-07-02",
+        "first_release_pct": 7.4,
+        "current_revised_pct": 7.7,
+        "delta_pp": 0.3,
+        "same_labour_direction": null
+      },
+      {
+        "month": "2020-06",
+        "release_date": "2020-07-30",
+        "first_release_pct": 7.8,
+        "current_revised_pct": 8.1,
+        "delta_pp": 0.3,
+        "same_labour_direction": true
+      }
+    ],
+    "result": {
+      "level_revision_pp": 0.3,
+      "june_vs_may_labour_direction_same": true,
+      "note": "Both May and June 2020 are 0.3 percentage point higher in the current runtime history than in the contemporary Eurostat releases; the month-to-month deterioration direction remains the same."
+    }
+  },
+  "engine_implication": "This pilot does not show a EUR direction flip at the block-input level, but revised magnitudes and levels differ enough that normalizedSeriesImpulse/blockDynamics must be tested on the full vintage panel before assuming signal equivalence.",
+  "next": "Extend both EUR series across 2020-2026 from Eurostat vintages and compute blockDynamics(first-release) versus blockDynamics(current-revised) at each monthly checkpoint."
+}
