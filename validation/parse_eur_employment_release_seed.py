@@ -23,6 +23,17 @@ def pdf_to_text(raw):
     reader=PdfReader(io.BytesIO(raw))
     return re.sub(r"\s+"," "," ".join((p.extract_text() or "") for p in reader.pages)).strip()
 
+def employment_contexts(txt, limit=4):
+    out=[]
+    for m in re.finditer(r'employ',txt,re.I):
+        a=max(0,m.start()-220); b=min(len(txt),m.start()+520)
+        sn=re.sub(r'\s+',' ',txt[a:b]).strip()
+        if sn not in out:
+            out.append(sn)
+        if len(out)>=limit:
+            break
+    return out
+
 def extract_qoq(txt):
     # PDF extraction sometimes splits decimals ("0. 6"). Normalize only numeric
     # decimal spacing, then require quarter-over-quarter context so a later YoY
@@ -63,7 +74,8 @@ for x in seed["releases"]:
           "parsed_as":"pdf" if is_pdf else "html",
           "text_chars":len(txt),
           "employment_qoq_pct":val,
-          "match_text":matched
+          "match_text":matched,
+          "employment_contexts":[] if val is not None else employment_contexts(txt)
         })
     except Exception as e:
         rows.append({**x,"fetch_ok":False,"error":str(e),"employment_qoq_pct":None,"match_text":None})
