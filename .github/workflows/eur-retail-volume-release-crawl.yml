@@ -5,7 +5,7 @@ on:
   push:
     branches: [engine-freeze-v1-2026-10-02]
     paths:
-      - validation/crawl_eur_retail_volume_releases.py
+      - validation/crawl_eur_retail_from_archive_index.py
       - .github/workflows/eur-retail-volume-release-crawl.yml
 
 permissions:
@@ -16,15 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  crawl-month:
-    strategy:
-      fail-fast: false
-      max-parallel: 12
-      matrix:
-        year: [2020, 2021, 2022, 2023, 2024, 2025, 2026]
-        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+  crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,77 +26,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Crawl one release month
-        env:
-          CRAWL_YEAR: ${{ matrix.year }}
-          CRAWL_MONTH: ${{ matrix.month }}
-        run: python validation/crawl_eur_retail_volume_releases.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: eur-retail-${{ matrix.year }}-${{ matrix.month }}
-          path: validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_${{ matrix.year }}_*.json
-          if-no-files-found: ignore
-
-  aggregate:
-    needs: crawl-month
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: engine-freeze-v1-2026-10-02
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: eur-retail-*
-          path: /tmp/eur-retail
-          merge-multiple: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Aggregate monthly chunks
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          files=sorted(Path("/tmp/eur-retail").glob("*.json"))
-          rows=[]
-          for f in files:
-              j=json.loads(f.read_text())
-              rows.extend(j.get("rows",[]))
-          by={}
-          for x in sorted(rows,key=lambda z:z["release_date"]):
-              by.setdefault(x["reference_month"],x)
-          rows=[by[k] for k in sorted(by)]
-          expected=[]
-          y,m=2020,6
-          while (y,m)<=(2026,7):
-              expected.append(f"{y}-{m:02d}")
-              m+=1
-              if m==13:
-                  y+=1
-                  m=1
-          missing=[x for x in expected if x not in by]
-          report={
-            "schema":"GMFQ_EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1",
-            "created_at":"2026-10-02",
-            "target":{"runtime_id":"EA_RETAIL_VOL_history_value","source":"Eurostat Volume of retail trade releases"},
-            "rows":rows,
-            "summary":{
-              "expected_count":len(expected),
-              "parsed":len(rows),
-              "coverage_pct":round(100*len(rows)/len(expected),2),
-              "from":rows[0]["reference_month"] if rows else None,
-              "to":rows[-1]["reference_month"] if rows else None,
-              "missing":missing,
-              "complete":len(missing)==0
-            },
-            "guardrail":"Only dated official Eurostat release-time monthly changes are retained. Missing months remain missing; current revised history is never substituted."
-          }
-          out=Path("validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1_2026-10-02.json")
-          out.write_text(json.dumps(report,indent=2)+"\n")
-          print(json.dumps(report["summary"],indent=2))
-          PY
-      - name: Commit merged crawl
+      - name: Crawl official Eurostat archive index and retail releases
+        run: python validation/crawl_eur_retail_from_archive_index.py
+      - name: Commit retail PIT crawl
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -110,7 +36,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Build EUR retail volume first-release crawl"
+            git commit -m "Build EUR retail volume first-release crawl from archive index"
             git pull --rebase origin engine-freeze-v1-2026-10-02
             git push origin HEAD:engine-freeze-v1-2026-10-02
           fi
