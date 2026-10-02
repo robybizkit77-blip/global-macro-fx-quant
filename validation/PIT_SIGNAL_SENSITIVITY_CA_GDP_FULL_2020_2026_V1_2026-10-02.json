@@ -1,0 +1,1833 @@
+{
+  "schema": "GMFQ_PIT_SIGNAL_SENSITIVITY_CA_GDP_FULL_2020_2026_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "scope": {
+    "currency": "CAD",
+    "series": "CA_REAL_GDP_M_history_value",
+    "category": "Crescita",
+    "months": "2020-05..2026-06"
+  },
+  "construction": {
+    "first_release": "Synthetic level chain compounded from official contemporaneous Statistics Canada first-release m/m growth rates; starting scale = current runtime 2020-04 level.",
+    "revised": "Current runtime GDP level for each observation month, exposed to the comparison only on the historical release date of the corresponding first-release observation.",
+    "minimum_observations": 8,
+    "direction_threshold": 0.2,
+    "acceleration_threshold": 0.2,
+    "engine_equivalence": "Uses the frozen normalizedSeriesImpulse mechanics: median absolute first differences over the last up to 80 observations."
+  },
+  "comparisons": [
+    {
+      "checkpoint": "2021-03-02",
+      "observation_month": "2020-12",
+      "first_release": {
+        "current": 0.1274,
+        "previous": 0.8855,
+        "direction": 0,
+        "acceleration": -0.7581,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.1274
+      },
+      "current_revised": {
+        "current": 0.2955,
+        "previous": 0.7375,
+        "direction": 1,
+        "acceleration": -0.442,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.2955
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.1682
+    },
+    {
+      "checkpoint": "2021-03-31",
+      "observation_month": "2021-01",
+      "first_release": {
+        "current": 0.9433,
+        "previous": 0.1346,
+        "direction": 1,
+        "acceleration": 0.8086,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.9433
+      },
+      "current_revised": {
+        "current": 0.7199,
+        "previous": 0.3402,
+        "direction": 1,
+        "acceleration": 0.3797,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.7199
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2234
+    },
+    {
+      "checkpoint": "2021-04-30",
+      "observation_month": "2021-02",
+      "first_release": {
+        "current": 0.5754,
+        "previous": 1,
+        "direction": 1,
+        "acceleration": -0.4246,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.5754
+      },
+      "current_revised": {
+        "current": 0.2269,
+        "previous": 0.848,
+        "direction": 1,
+        "acceleration": -0.6211,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.2269
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.3485
+    },
+    {
+      "checkpoint": "2021-06-01",
+      "observation_month": "2021-03",
+      "first_release": {
+        "current": 1.4986,
+        "previous": 0.5428,
+        "direction": 1,
+        "acceleration": 0.9558,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.4986
+      },
+      "current_revised": {
+        "current": 1.3477,
+        "previous": 0.1926,
+        "direction": 1,
+        "acceleration": 1.1551,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.3477
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.1509
+    },
+    {
+      "checkpoint": "2021-06-30",
+      "observation_month": "2021-04",
+      "first_release": {
+        "current": -0.4381,
+        "previous": 1.5888,
+        "direction": -1,
+        "acceleration": -2.0268,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.4381
+      },
+      "current_revised": {
+        "current": -1.1496,
+        "previous": 1.1708,
+        "direction": -1,
+        "acceleration": -2.3203,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.1496
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.7115
+    },
+    {
+      "checkpoint": "2021-07-30",
+      "observation_month": "2021-05",
+      "first_release": {
+        "current": -0.4385,
+        "previous": -0.4398,
+        "direction": -1,
+        "acceleration": 0.0013,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.4385
+      },
+      "current_revised": {
+        "current": -0.2615,
+        "previous": -1.3232,
+        "direction": -1,
+        "acceleration": 1.0618,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.2615
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.177
+    },
+    {
+      "checkpoint": "2021-08-31",
+      "observation_month": "2021-06",
+      "first_release": {
+        "current": 1.016,
+        "previous": -0.4367,
+        "direction": 1,
+        "acceleration": 1.4528,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.016
+      },
+      "current_revised": {
+        "current": 1.0382,
+        "previous": -0.2272,
+        "direction": 1,
+        "acceleration": 1.2654,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.0382
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.0222
+    },
+    {
+      "checkpoint": "2021-10-01",
+      "observation_month": "2021-07",
+      "first_release": {
+        "current": -0.1467,
+        "previous": 1.0201,
+        "direction": 0,
+        "acceleration": -1.1668,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.1467
+      },
+      "current_revised": {
+        "current": 0.861,
+        "previous": 1.1826,
+        "direction": 1,
+        "acceleration": -0.3216,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.861
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.7142
+    },
+    {
+      "checkpoint": "2021-10-29",
+      "observation_month": "2021-08",
+      "first_release": {
+        "current": 0.5887,
+        "previous": -0.1473,
+        "direction": 1,
+        "acceleration": 0.7361,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.5887
+      },
+      "current_revised": {
+        "current": 1,
+        "previous": 0.8055,
+        "direction": 1,
+        "acceleration": 0.1945,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 1
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.4113
+    },
+    {
+      "checkpoint": "2021-11-30",
+      "observation_month": "2021-09",
+      "first_release": {
+        "current": 0.186,
+        "previous": 0.7411,
+        "direction": 0,
+        "acceleration": -0.5551,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.186
+      },
+      "current_revised": {
+        "current": 0.6385,
+        "previous": 1.1077,
+        "direction": 1,
+        "acceleration": -0.4692,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.6385
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4525
+    },
+    {
+      "checkpoint": "2021-12-23",
+      "observation_month": "2021-10",
+      "first_release": {
+        "current": 1.1834,
+        "previous": 0.1478,
+        "direction": 1,
+        "acceleration": 1.0356,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.1834
+      },
+      "current_revised": {
+        "current": 1.0191,
+        "previous": 0.5764,
+        "direction": 1,
+        "acceleration": 0.4426,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.0191
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.1643
+    },
+    {
+      "checkpoint": "2022-02-01",
+      "observation_month": "2021-11",
+      "first_release": {
+        "current": 0.9444,
+        "previous": 1.2492,
+        "direction": 1,
+        "acceleration": -0.3048,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.9444
+      },
+      "current_revised": {
+        "current": 0.626,
+        "previous": 1.1288,
+        "direction": 1,
+        "acceleration": -0.5029,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.626
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.3184
+    },
+    {
+      "checkpoint": "2022-03-01",
+      "observation_month": "2021-12",
+      "first_release": {
+        "current": 0,
+        "previous": 1,
+        "direction": 0,
+        "acceleration": -1,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.6275,
+        "previous": 0.7015,
+        "direction": 1,
+        "acceleration": -0.074,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.6275
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.6275
+    },
+    {
+      "checkpoint": "2022-03-31",
+      "observation_month": "2022-01",
+      "first_release": {
+        "current": 0.4045,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 0.4045,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.4045
+      },
+      "current_revised": {
+        "current": -0.3756,
+        "previous": 0.6352,
+        "direction": -1,
+        "acceleration": -1.0109,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.3756
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.0288
+    },
+    {
+      "checkpoint": "2022-04-29",
+      "observation_month": "2022-02",
+      "first_release": {
+        "current": 1.848,
+        "previous": 0.3353,
+        "direction": 1,
+        "acceleration": 1.5127,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.848
+      },
+      "current_revised": {
+        "current": 1.6216,
+        "previous": -0.3711,
+        "direction": 1,
+        "acceleration": 1.9927,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.6216
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2264
+    },
+    {
+      "checkpoint": "2022-05-31",
+      "observation_month": "2022-03",
+      "first_release": {
+        "current": 1.1228,
+        "previous": 1.7452,
+        "direction": 1,
+        "acceleration": -0.6224,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.1228
+      },
+      "current_revised": {
+        "current": 0.9304,
+        "previous": 1.6415,
+        "direction": 1,
+        "acceleration": -0.7111,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.9304
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.1924
+    },
+    {
+      "checkpoint": "2022-06-30",
+      "observation_month": "2022-04",
+      "first_release": {
+        "current": 0.5131,
+        "previous": 1.189,
+        "direction": 1,
+        "acceleration": -0.6758,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.5131
+      },
+      "current_revised": {
+        "current": 0.0291,
+        "previous": 0.942,
+        "direction": 0,
+        "acceleration": -0.9129,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.0291
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.484
+    },
+    {
+      "checkpoint": "2022-07-29",
+      "observation_month": "2022-05",
+      "first_release": {
+        "current": 0,
+        "previous": 0.6189,
+        "direction": 0,
+        "acceleration": -0.6189,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.3799,
+        "previous": 0.03,
+        "direction": 1,
+        "acceleration": 0.3499,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.3799
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.3799
+    },
+    {
+      "checkpoint": "2022-08-31",
+      "observation_month": "2022-06",
+      "first_release": {
+        "current": 0.2607,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 0.2607,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.2607
+      },
+      "current_revised": {
+        "current": 0.7031,
+        "previous": 0.3916,
+        "direction": 1,
+        "acceleration": 0.3116,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.7031
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4424
+    },
+    {
+      "checkpoint": "2022-09-29",
+      "observation_month": "2022-07",
+      "first_release": {
+        "current": 0.2629,
+        "previous": 0.2626,
+        "direction": 1,
+        "acceleration": 0.0003,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.2629
+      },
+      "current_revised": {
+        "current": 0.2556,
+        "previous": 0.7142,
+        "direction": 1,
+        "acceleration": -0.4586,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.2556
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.0073
+    },
+    {
+      "checkpoint": "2022-10-28",
+      "observation_month": "2022-08",
+      "first_release": {
+        "current": 0.2651,
+        "previous": 0.2649,
+        "direction": 1,
+        "acceleration": 0.0003,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.2651
+      },
+      "current_revised": {
+        "current": 0.5213,
+        "previous": 0.2597,
+        "direction": 1,
+        "acceleration": 0.2616,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.5213
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.2562
+    },
+    {
+      "checkpoint": "2022-11-29",
+      "observation_month": "2022-09",
+      "first_release": {
+        "current": 0.2679,
+        "previous": 0.2676,
+        "direction": 1,
+        "acceleration": 0.0003,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.2679
+      },
+      "current_revised": {
+        "current": 0.398,
+        "previous": 0.5405,
+        "direction": 1,
+        "acceleration": -0.1425,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.398
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.13
+    },
+    {
+      "checkpoint": "2022-12-23",
+      "observation_month": "2022-10",
+      "first_release": {
+        "current": 0.2707,
+        "previous": 0.2705,
+        "direction": 1,
+        "acceleration": 0.0003,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.2707
+      },
+      "current_revised": {
+        "current": -0.2093,
+        "previous": 0.4132,
+        "direction": -1,
+        "acceleration": -0.6224,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.2093
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.0615
+    },
+    {
+      "checkpoint": "2023-01-31",
+      "observation_month": "2022-11",
+      "first_release": {
+        "current": 0.3,
+        "previous": 0.2997,
+        "direction": 1,
+        "acceleration": 0.0003,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.3
+      },
+      "current_revised": {
+        "current": -0.2297,
+        "previous": -0.2244,
+        "direction": -1,
+        "acceleration": -0.0053,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.2297
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.0703
+    },
+    {
+      "checkpoint": "2023-02-28",
+      "observation_month": "2022-12",
+      "first_release": {
+        "current": -0.3363,
+        "previous": 0.336,
+        "direction": -1,
+        "acceleration": -0.6724,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.3363
+      },
+      "current_revised": {
+        "current": -0.6386,
+        "previous": -0.2477,
+        "direction": -1,
+        "acceleration": -0.3909,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.6386
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.3022
+    },
+    {
+      "checkpoint": "2023-03-31",
+      "observation_month": "2023-01",
+      "first_release": {
+        "current": 1.5001,
+        "previous": -0.3003,
+        "direction": 1,
+        "acceleration": 1.8005,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.5001
+      },
+      "current_revised": {
+        "current": 1.9429,
+        "previous": -0.5923,
+        "direction": 1,
+        "acceleration": 2.5352,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.9429
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4427
+    },
+    {
+      "checkpoint": "2023-04-28",
+      "observation_month": "2023-02",
+      "first_release": {
+        "current": 0.3377,
+        "previous": 1.68,
+        "direction": 1,
+        "acceleration": -1.3424,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.3377
+      },
+      "current_revised": {
+        "current": 0.7517,
+        "previous": 2.0947,
+        "direction": 1,
+        "acceleration": -1.3429,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.7517
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4141
+    },
+    {
+      "checkpoint": "2023-05-31",
+      "observation_month": "2023-03",
+      "first_release": {
+        "current": 0,
+        "previous": 0.3442,
+        "direction": 0,
+        "acceleration": -0.3442,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.6694,
+        "previous": 0.7592,
+        "direction": 1,
+        "acceleration": -0.0898,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.6694
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.6694
+    },
+    {
+      "checkpoint": "2023-06-30",
+      "observation_month": "2023-04",
+      "first_release": {
+        "current": 0,
+        "previous": 0,
+        "direction": 0,
+        "acceleration": 0,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.0145,
+        "previous": 0.6761,
+        "direction": 0,
+        "acceleration": -0.6616,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.0145
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.0145
+    },
+    {
+      "checkpoint": "2023-07-28",
+      "observation_month": "2023-05",
+      "first_release": {
+        "current": 1.0338,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 1.0338,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.0338
+      },
+      "current_revised": {
+        "current": 0.0564,
+        "previous": 0.015,
+        "direction": 0,
+        "acceleration": 0.0414,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.0564
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.9773
+    },
+    {
+      "checkpoint": "2023-09-01",
+      "observation_month": "2023-06",
+      "first_release": {
+        "current": -0.7049,
+        "previous": 1.0542,
+        "direction": -1,
+        "acceleration": -1.7591,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.7049
+      },
+      "current_revised": {
+        "current": -0.3129,
+        "previous": 0.0588,
+        "direction": -1,
+        "acceleration": -0.3718,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.3129
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.392
+    },
+    {
+      "checkpoint": "2023-09-29",
+      "observation_month": "2023-07",
+      "first_release": {
+        "current": 0,
+        "previous": -0.706,
+        "direction": 0,
+        "acceleration": 0.706,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.2792,
+        "previous": -0.3175,
+        "direction": 1,
+        "acceleration": 0.5967,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.2792
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.2792
+    },
+    {
+      "checkpoint": "2023-10-31",
+      "observation_month": "2023-08",
+      "first_release": {
+        "current": 0,
+        "previous": 0,
+        "direction": 0,
+        "acceleration": 0,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.1148,
+        "previous": 0.2833,
+        "direction": 0,
+        "acceleration": -0.1685,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.1148
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.1148
+    },
+    {
+      "checkpoint": "2023-11-30",
+      "observation_month": "2023-09",
+      "first_release": {
+        "current": 0.4134,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 0.4134,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.4134
+      },
+      "current_revised": {
+        "current": -0.0934,
+        "previous": 0.1236,
+        "direction": 0,
+        "acceleration": -0.217,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.0934
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.32
+    },
+    {
+      "checkpoint": "2023-12-22",
+      "observation_month": "2023-10",
+      "first_release": {
+        "current": 0,
+        "previous": 0.499,
+        "direction": 0,
+        "acceleration": -0.499,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.3124,
+        "previous": -0.1012,
+        "direction": 1,
+        "acceleration": 0.4136,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.3124
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.3124
+    },
+    {
+      "checkpoint": "2024-01-31",
+      "observation_month": "2023-11",
+      "first_release": {
+        "current": 0.9995,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 0.9995,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.9995
+      },
+      "current_revised": {
+        "current": 0.825,
+        "previous": 0.3321,
+        "direction": 1,
+        "acceleration": 0.4929,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.825
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.1745
+    },
+    {
+      "checkpoint": "2024-02-29",
+      "observation_month": "2023-12",
+      "first_release": {
+        "current": 0,
+        "previous": 1,
+        "direction": 0,
+        "acceleration": -1,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": -0.416,
+        "previous": 0.8803,
+        "direction": -1,
+        "acceleration": -1.2963,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.416
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.416
+    },
+    {
+      "checkpoint": "2024-03-28",
+      "observation_month": "2024-01",
+      "first_release": {
+        "current": 3.0045,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 3.0045,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 3.0045
+      },
+      "current_revised": {
+        "current": 0.9146,
+        "previous": -0.4204,
+        "direction": 1,
+        "acceleration": 1.335,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.9146
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": -2.0899
+    },
+    {
+      "checkpoint": "2024-04-30",
+      "observation_month": "2024-02",
+      "first_release": {
+        "current": 1.007,
+        "previous": 3.003,
+        "direction": 1,
+        "acceleration": -1.996,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.007
+      },
+      "current_revised": {
+        "current": 2.0347,
+        "previous": 0.905,
+        "direction": 1,
+        "acceleration": 1.1298,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 2.0347
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 1.0277
+    },
+    {
+      "checkpoint": "2024-05-31",
+      "observation_month": "2024-03",
+      "first_release": {
+        "current": 0,
+        "previous": 1.0075,
+        "direction": 0,
+        "acceleration": -1.0075,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.1532,
+        "previous": 2.0564,
+        "direction": 0,
+        "acceleration": -1.9032,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.1532
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.1532
+    },
+    {
+      "checkpoint": "2024-06-28",
+      "observation_month": "2024-04",
+      "first_release": {
+        "current": 1.5135,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 1.5135,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.5135
+      },
+      "current_revised": {
+        "current": 1.2102,
+        "previous": 0.1516,
+        "direction": 1,
+        "acceleration": 1.0586,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.2102
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.3033
+    },
+    {
+      "checkpoint": "2024-07-31",
+      "observation_month": "2024-05",
+      "first_release": {
+        "current": 1.0085,
+        "previous": 1.5082,
+        "direction": 1,
+        "acceleration": -0.4997,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.0085
+      },
+      "current_revised": {
+        "current": 0.5094,
+        "previous": 1.2231,
+        "direction": 1,
+        "acceleration": -0.7137,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.5094
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.4991
+    },
+    {
+      "checkpoint": "2024-08-30",
+      "observation_month": "2024-06",
+      "first_release": {
+        "current": 0,
+        "previous": 1.012,
+        "direction": 0,
+        "acceleration": -1.012,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.7602,
+        "previous": 0.5149,
+        "direction": 1,
+        "acceleration": 0.2454,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.7602
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.7602
+    },
+    {
+      "checkpoint": "2024-09-27",
+      "observation_month": "2024-07",
+      "first_release": {
+        "current": 1.0105,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 1.0105,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.0105
+      },
+      "current_revised": {
+        "current": 0.6989,
+        "previous": 0.7663,
+        "direction": 1,
+        "acceleration": -0.0674,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.6989
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.3117
+    },
+    {
+      "checkpoint": "2024-10-31",
+      "observation_month": "2024-08",
+      "first_release": {
+        "current": 0,
+        "previous": 1.0141,
+        "direction": 0,
+        "acceleration": -1.0141,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.4148,
+        "previous": 0.7045,
+        "direction": 1,
+        "acceleration": -0.2897,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.4148
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4148
+    },
+    {
+      "checkpoint": "2024-11-29",
+      "observation_month": "2024-09",
+      "first_release": {
+        "current": 0.5083,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 0.5083,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.5083
+      },
+      "current_revised": {
+        "current": 0.9778,
+        "previous": 0.424,
+        "direction": 1,
+        "acceleration": 0.5538,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.9778
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.4695
+    },
+    {
+      "checkpoint": "2024-12-23",
+      "observation_month": "2024-10",
+      "first_release": {
+        "current": 1.5257,
+        "previous": 0.508,
+        "direction": 1,
+        "acceleration": 1.0176,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.5257
+      },
+      "current_revised": {
+        "current": 1.4715,
+        "previous": 0.9565,
+        "direction": 1,
+        "acceleration": 0.5149,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.4715
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.0542
+    },
+    {
+      "checkpoint": "2025-01-31",
+      "observation_month": "2024-11",
+      "first_release": {
+        "current": -1.0166,
+        "previous": 1.5203,
+        "direction": -1,
+        "acceleration": -2.5369,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.0166
+      },
+      "current_revised": {
+        "current": -0.7459,
+        "previous": 1.5042,
+        "direction": -1,
+        "acceleration": -2.2501,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.7459
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2707
+    },
+    {
+      "checkpoint": "2025-02-28",
+      "observation_month": "2024-12",
+      "first_release": {
+        "current": 1.011,
+        "previous": -1.0131,
+        "direction": 1,
+        "acceleration": 2.0241,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.011
+      },
+      "current_revised": {
+        "current": 0.7511,
+        "previous": -0.7629,
+        "direction": 1,
+        "acceleration": 1.514,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.7511
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2599
+    },
+    {
+      "checkpoint": "2025-03-28",
+      "observation_month": "2025-01",
+      "first_release": {
+        "current": 2.0211,
+        "previous": 1.0085,
+        "direction": 1,
+        "acceleration": 1.0126,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 2.0211
+      },
+      "current_revised": {
+        "current": 2.0024,
+        "previous": 0.7344,
+        "direction": 1,
+        "acceleration": 1.2679,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 2.0024
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.0187
+    },
+    {
+      "checkpoint": "2025-04-30",
+      "observation_month": "2025-02",
+      "first_release": {
+        "current": -1.0121,
+        "previous": 2.016,
+        "direction": -1,
+        "acceleration": -3.0281,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.0121
+      },
+      "current_revised": {
+        "current": -0.5865,
+        "previous": 2.0478,
+        "direction": -1,
+        "acceleration": -2.6343,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.5865
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.4255
+    },
+    {
+      "checkpoint": "2025-05-30",
+      "observation_month": "2025-03",
+      "first_release": {
+        "current": 0.5063,
+        "previous": -1.0146,
+        "direction": 1,
+        "acceleration": 1.5209,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.5063
+      },
+      "current_revised": {
+        "current": 0.6759,
+        "previous": -0.5918,
+        "direction": 1,
+        "acceleration": 1.2677,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.6759
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.1696
+    },
+    {
+      "checkpoint": "2025-06-27",
+      "observation_month": "2025-04",
+      "first_release": {
+        "current": -0.508,
+        "previous": 0.5075,
+        "direction": -1,
+        "acceleration": -1.0156,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.508
+      },
+      "current_revised": {
+        "current": -0.3018,
+        "previous": 0.6821,
+        "direction": -1,
+        "acceleration": -0.9839,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.3018
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2062
+    },
+    {
+      "checkpoint": "2025-07-31",
+      "observation_month": "2025-05",
+      "first_release": {
+        "current": -0.5093,
+        "previous": -0.5098,
+        "direction": -1,
+        "acceleration": 0.0005,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.5093
+      },
+      "current_revised": {
+        "current": -0.5947,
+        "previous": -0.306,
+        "direction": -1,
+        "acceleration": -0.2887,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.5947
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": 0.0854
+    },
+    {
+      "checkpoint": "2025-08-29",
+      "observation_month": "2025-06",
+      "first_release": {
+        "current": -0.5106,
+        "previous": -0.5111,
+        "direction": -1,
+        "acceleration": 0.0005,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.5106
+      },
+      "current_revised": {
+        "current": -0.3519,
+        "previous": -0.603,
+        "direction": -1,
+        "acceleration": 0.2511,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0.3519
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.1586
+    },
+    {
+      "checkpoint": "2025-09-26",
+      "observation_month": "2025-07",
+      "first_release": {
+        "current": 1.0166,
+        "previous": -0.5088,
+        "direction": 1,
+        "acceleration": 1.5254,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.0166
+      },
+      "current_revised": {
+        "current": 2.6992,
+        "previous": -0.3471,
+        "direction": 1,
+        "acceleration": 3.0462,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 2.6992
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 1.6826
+    },
+    {
+      "checkpoint": "2025-10-31",
+      "observation_month": "2025-08",
+      "first_release": {
+        "current": -1.5226,
+        "previous": 1.0131,
+        "direction": -1,
+        "acceleration": -2.5357,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.5226
+      },
+      "current_revised": {
+        "current": -0.214,
+        "previous": 2.7369,
+        "direction": -1,
+        "acceleration": -2.9509,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.214
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -1.3086
+    },
+    {
+      "checkpoint": "2025-11-28",
+      "observation_month": "2025-09",
+      "first_release": {
+        "current": 1.0095,
+        "previous": -1.5188,
+        "direction": 1,
+        "acceleration": 2.5283,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 1.0095
+      },
+      "current_revised": {
+        "current": 0.7791,
+        "previous": -0.221,
+        "direction": 1,
+        "acceleration": 1.0001,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.7791
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2304
+    },
+    {
+      "checkpoint": "2025-12-23",
+      "observation_month": "2025-10",
+      "first_release": {
+        "current": -1.5135,
+        "previous": 1.007,
+        "direction": -1,
+        "acceleration": -2.5205,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.5135
+      },
+      "current_revised": {
+        "current": -1.0101,
+        "previous": 0.7543,
+        "direction": -1,
+        "acceleration": -1.7644,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 1.0101
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.5034
+    },
+    {
+      "checkpoint": "2026-01-30",
+      "observation_month": "2025-11",
+      "first_release": {
+        "current": 0,
+        "previous": -1.5173,
+        "direction": 0,
+        "acceleration": 1.5173,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 0
+      },
+      "current_revised": {
+        "current": 0.3294,
+        "previous": -1.0433,
+        "direction": 1,
+        "acceleration": 1.3726,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.3294
+      },
+      "direction_changed": true,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.3294
+    },
+    {
+      "checkpoint": "2026-02-27",
+      "observation_month": "2025-12",
+      "first_release": {
+        "current": 1.006,
+        "previous": 0,
+        "direction": 1,
+        "acceleration": 1.006,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.006
+      },
+      "current_revised": {
+        "current": 0.4733,
+        "previous": 0.3405,
+        "direction": 1,
+        "acceleration": 0.1327,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 0.4733
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.5327
+    },
+    {
+      "checkpoint": "2026-03-31",
+      "observation_month": "2026-01",
+      "first_release": {
+        "current": 0.5053,
+        "previous": 1.0085,
+        "direction": 1,
+        "acceleration": -0.5032,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.5053
+      },
+      "current_revised": {
+        "current": -0.0732,
+        "previous": 0.4856,
+        "direction": 0,
+        "acceleration": -0.5588,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 0.0732
+      },
+      "direction_changed": true,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.4321
+    },
+    {
+      "checkpoint": "2026-04-30",
+      "observation_month": "2026-02",
+      "first_release": {
+        "current": 1.009,
+        "previous": 0.504,
+        "direction": 1,
+        "acceleration": 0.505,
+        "accelDir": 1,
+        "turning": false,
+        "speed": 1.009
+      },
+      "current_revised": {
+        "current": 0.7184,
+        "previous": -0.0751,
+        "direction": 1,
+        "acceleration": 0.7935,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 0.7184
+      },
+      "direction_changed": false,
+      "turning_changed": true,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.2906
+    },
+    {
+      "checkpoint": "2026-05-29",
+      "observation_month": "2026-03",
+      "first_release": {
+        "current": -0.5068,
+        "previous": 1.0115,
+        "direction": -1,
+        "acceleration": -1.5183,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.5068
+      },
+      "current_revised": {
+        "current": -0.6951,
+        "previous": 0.7294,
+        "direction": -1,
+        "acceleration": -1.4245,
+        "accelDir": -1,
+        "turning": true,
+        "speed": 0.6951
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.1883
+    },
+    {
+      "checkpoint": "2026-06-30",
+      "observation_month": "2026-04",
+      "first_release": {
+        "current": 2.525,
+        "previous": -0.5055,
+        "direction": 1,
+        "acceleration": 3.0305,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 2.525
+      },
+      "current_revised": {
+        "current": 2.8032,
+        "previous": -0.6846,
+        "direction": 1,
+        "acceleration": 3.4879,
+        "accelDir": 1,
+        "turning": true,
+        "speed": 2.8032
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": 0.2782
+    },
+    {
+      "checkpoint": "2026-07-31",
+      "observation_month": "2026-05",
+      "first_release": {
+        "current": 1.5211,
+        "previous": 2.5225,
+        "direction": 1,
+        "acceleration": -1.0014,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.5211
+      },
+      "current_revised": {
+        "current": 1.4434,
+        "previous": 2.7299,
+        "direction": 1,
+        "acceleration": -1.2865,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.4434
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": false,
+      "speed_delta": -0.0777
+    },
+    {
+      "checkpoint": "2026-08-28",
+      "observation_month": "2026-06",
+      "first_release": {
+        "current": 1.5241,
+        "previous": 1.5195,
+        "direction": 1,
+        "acceleration": 0.0046,
+        "accelDir": 0,
+        "turning": false,
+        "speed": 1.5241
+      },
+      "current_revised": {
+        "current": 1.1261,
+        "previous": 1.4066,
+        "direction": 1,
+        "acceleration": -0.2806,
+        "accelDir": -1,
+        "turning": false,
+        "speed": 1.1261
+      },
+      "direction_changed": false,
+      "turning_changed": false,
+      "acceleration_direction_changed": true,
+      "speed_delta": -0.398
+    }
+  ],
+  "summary": {
+    "checkpoints_compared": 67,
+    "from_checkpoint": "2021-03-02",
+    "to_checkpoint": "2026-08-28",
+    "direction_changes": 19,
+    "direction_change_pct": 28.36,
+    "turning_changes": 11,
+    "acceleration_direction_changes": 20,
+    "changed_direction_months": [
+      "2020-12",
+      "2021-07",
+      "2021-09",
+      "2021-12",
+      "2022-01",
+      "2022-04",
+      "2022-05",
+      "2022-10",
+      "2022-11",
+      "2023-03",
+      "2023-05",
+      "2023-07",
+      "2023-09",
+      "2023-10",
+      "2023-12",
+      "2024-06",
+      "2024-08",
+      "2025-11",
+      "2026-01"
+    ],
+    "changed_turning_months": [
+      "2021-08",
+      "2022-01",
+      "2022-02",
+      "2022-10",
+      "2022-12",
+      "2023-07",
+      "2023-10",
+      "2023-12",
+      "2024-01",
+      "2025-11",
+      "2026-02"
+    ],
+    "changed_acceleration_months": [
+      "2021-05",
+      "2021-08",
+      "2021-12",
+      "2022-01",
+      "2022-05",
+      "2022-07",
+      "2022-08",
+      "2022-10",
+      "2023-03",
+      "2023-04",
+      "2023-05",
+      "2023-09",
+      "2023-10",
+      "2024-02",
+      "2024-06",
+      "2024-07",
+      "2025-05",
+      "2025-06",
+      "2025-12",
+      "2026-06"
+    ]
+  },
+  "caveat": "Single-series GDP sensitivity only. It does not yet equal CAD Growth blockDynamics because CA_RETAIL_VOLUME first-release/PIT history has not yet been reconstructed."
+}
