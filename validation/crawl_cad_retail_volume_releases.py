@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Trigger-ready resumable crawler.
 import csv, json, re, time
 from pathlib import Path
 from urllib.parse import urljoin
