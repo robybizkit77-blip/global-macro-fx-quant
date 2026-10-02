@@ -3,8 +3,8 @@
   "created_at": "2026-10-02",
   "seed_count": 20,
   "fetch_ok": 20,
-  "parsed_qoq": 20,
-  "coverage_pct": 100.0,
+  "parsed_qoq": 0,
+  "coverage_pct": 0.0,
   "rows": [
     {
       "reference_quarter": "2020-Q4",
@@ -15,9 +15,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 9567,
-      "employment_qoq_pct": 0.3,
-      "match_text": "number of employed persons increased by 0.3% in both the euro area and in the EU in the fourth quarter of 2020, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "23/2021 - 16 February 2021 GDP and employment flash estimates for the fourth quarter of 2020 GDP down by 0. 6% and employment up by 0.3% in the euro area In the EU, GDP down by 0.4% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2020, seasonally adjusted GDP decreased by 0. 6% in the euro area and by 0. 4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . These declines follow a strong rebound in the third quarter o",
+        "23/2021 - 16 February 2021 GDP and employment flash estimates for the fourth quarter of 2020 GDP down by 0. 6% and employment up by 0.3% in the euro area In the EU, GDP down by 0.4% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2020, seasonally adjusted GDP decreased by 0. 6% in the euro area and by 0. 4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . These declines follow a strong rebound in the third quarter of 2020 (+12 .4% in the euro area and +11.5% in the EU) and the sharpest decrease",
+        "23/2021 - 16 February 2021 GDP and employment flash estimates for the fourth quarter of 2020 GDP down by 0. 6% and employment up by 0.3% in the euro area In the EU, GDP down by 0.4% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2020, seasonally adjusted GDP decreased by 0. 6% in the euro area and by 0. 4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . These declines follow a strong rebound in the third quarter of 2020 (+12 .4% in the euro area and +11.5% in the EU) and the sharpest decreases since the time series started in 1995 observed in the second quarter",
+        "States increased by 1.0% compared wit h the previous quarter (after +7.5% in the third quarter of 20 20). Compared with the same quarter of the previous year, GDP decreased by 2.5% (after -2.8% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0.3% in both the euro area and in the EU in the fourth quarter of 2020, compared with the previous quarter. In the third quarter of 20 20, employment had increased by 1.0% in the euro area and by 0.9% in the EU. Compared with the same quarter of the previous year, employment de creased by 2.0% in the euro area and by 1.7% in the EU in the fourth quarter of 2020, after -2.3% and -2.1% in the third quarter of 2020. According to an e"
+      ]
     },
     {
       "reference_quarter": "2021-Q1",
@@ -28,9 +33,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 10047,
-      "employment_qoq_pct": -0.3,
-      "match_text": "number of employed persons decreased by 0.3% in both the euro area and in the EU in the first quarter of 2021, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "58/2021 - 18 May 2021 GDP and employment flash estimates for the first quarter of 2021 GDP down by 0.6% and employment down by 0.3% in the euro area In the EU, GDP down by 0.4% and employment down by 0.3% GDP growth in the euro area and EU In the first quarter of 2021 , seasonally adjusted GDP decreased by 0.6% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. These declines follow falls in the fourth quarter of 2020 (-0.",
+        "58/2021 - 18 May 2021 GDP and employment flash estimates for the first quarter of 2021 GDP down by 0.6% and employment down by 0.3% in the euro area In the EU, GDP down by 0.4% and employment down by 0.3% GDP growth in the euro area and EU In the first quarter of 2021 , seasonally adjusted GDP decreased by 0.6% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. These declines follow falls in the fourth quarter of 2020 (-0.7% in the euro area and -0.5% in the EU) after a strong rebound in the third q",
+        "58/2021 - 18 May 2021 GDP and employment flash estimates for the first quarter of 2021 GDP down by 0.6% and employment down by 0.3% in the euro area In the EU, GDP down by 0.4% and employment down by 0.3% GDP growth in the euro area and EU In the first quarter of 2021 , seasonally adjusted GDP decreased by 0.6% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. These declines follow falls in the fourth quarter of 2020 (-0.7% in the euro area and -0.5% in the EU) after a strong rebound in the third quarter of 2020 (+ 12.5% in the euro area and +11.7% in the EU) and the sh",
+        "States increased by 1.6% compared with the previous quarter (after +1.1% in the fourth quarter of 2020). Compared with the same quarter of the previous year, GDP increased by 0.4% (after -2.4% in the previous quarter). Employment growth in the euro area and EU The number of employed persons decreased by 0.3% in both the euro area and in the EU in the first quarter of 2021, compared with the previous quarter. In the fourth quarter of 20 20, employment had increased by 0.4% in both the euro area and the EU. Compared with the same quarter of the previous year, employment de creased by 2.1% in the euro area and by 1.8% in the EU in the first quarter of 2021, after -1.9% and -1.6% respectively in the fourth quarter of 2020. These data"
+      ]
     },
     {
       "reference_quarter": "2021-Q2",
@@ -41,9 +51,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 8624,
-      "employment_qoq_pct": 0.5,
-      "match_text": "number of employed persons increased by 0.5% in the euro area and by 0.6% in the EU in the second quarter of 2021, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "94/2021 - 17 August 2021 GDP and employment flash estimates for the second quarter of 2021 GDP up by 2.0% and employment up by 0.5% in the euro area In the EU, GDP up by 1.9% and employment up by 0.6% GDP growth in the euro area and EU In the second quarter of 2021 , seasonally adjusted GDP increased by 2.0% in the euro area and by 1.9% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2021, GDP had declined by 0.3% in the euro",
+        "94/2021 - 17 August 2021 GDP and employment flash estimates for the second quarter of 2021 GDP up by 2.0% and employment up by 0.5% in the euro area In the EU, GDP up by 1.9% and employment up by 0.6% GDP growth in the euro area and EU In the second quarter of 2021 , seasonally adjusted GDP increased by 2.0% in the euro area and by 1.9% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2021, GDP had declined by 0.3% in the euro area and 0.1% in the EU. Compared with the same quarter of the previous year,",
+        "94/2021 - 17 August 2021 GDP and employment flash estimates for the second quarter of 2021 GDP up by 2.0% and employment up by 0.5% in the euro area In the EU, GDP up by 1.9% and employment up by 0.6% GDP growth in the euro area and EU In the second quarter of 2021 , seasonally adjusted GDP increased by 2.0% in the euro area and by 1.9% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2021, GDP had declined by 0.3% in the euro area and 0.1% in the EU. Compared with the same quarter of the previous year, seasonally adjusted GDP in creased by 1 3.6% in the euro area and by",
+        "States increased by 1.6% compared with the previous quarter (after +1. 5% in the first quarter of 2021). Compared with the same quarter of the previous year, GDP increased by 12.2% (after +0.5% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0.5% in the euro area and by 0.6% in the EU in the second quarter of 2021, compared with the previous quarter. In the first quarter of 20 21, employment had decreased by 0.2% in both the euro area and the EU. Compared with the same quarter of the previous year, employment increased by 1.8% in both the euro area and in the EU in the second quarter of 2021, after -1.8% and -1.6% respectively in the first quarter of 2021. These data"
+      ]
     },
     {
       "reference_quarter": "2021-Q3",
@@ -54,9 +69,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 9969,
-      "employment_qoq_pct": 0.9,
-      "match_text": "number of employed persons increased by 0.9% in both the euro area and the EU in the third quarter of 2021, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        ", this Euro Indicator Release has been revised on 17 November 2021. The changes affect the table on page 3 \u2013 growth rates in quarters 1 and 2 for Denmark. We apologise for any inconvenience this may have caused. GDP and employment flash estimates for the third quarter of 2021 GDP up by 2.2% and employment up by 0.9% in the euro area In the EU, GDP up by 2.1% and employment up by 0.9% GDP growth in the euro area and EU In the third quarter of 2021, seasonally adjusted GDP increased by 2.2% in the euro area and by 2.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2021, GDP had grown by 2.1% in the euro area a",
+        "ges affect the table on page 3 \u2013 growth rates in quarters 1 and 2 for Denmark. We apologise for any inconvenience this may have caused. GDP and employment flash estimates for the third quarter of 2021 GDP up by 2.2% and employment up by 0.9% in the euro area In the EU, GDP up by 2.1% and employment up by 0.9% GDP growth in the euro area and EU In the third quarter of 2021, seasonally adjusted GDP increased by 2.2% in the euro area and by 2.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2021, GDP had grown by 2.1% in the euro area and by 2.0% in the EU. Compared with the same quarter of the previous year, s",
+        "Denmark. We apologise for any inconvenience this may have caused. GDP and employment flash estimates for the third quarter of 2021 GDP up by 2.2% and employment up by 0.9% in the euro area In the EU, GDP up by 2.1% and employment up by 0.9% GDP growth in the euro area and EU In the third quarter of 2021, seasonally adjusted GDP increased by 2.2% in the euro area and by 2.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2021, GDP had grown by 2.1% in the euro area and by 2.0% in the EU. Compared with the same quarter of the previous year, seasonally adjusted GDP in creased by 3.7% in the euro area and by 3.9",
+        "States increased by 0.5% compared with the previous quarter (after +1.6% in the second quarter of 2021). Compared with the same quarter of the previous year, GDP increased by 4.9% (after +12.2% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0.9% in both the euro area and the EU in the third quarter of 2021, compared with the previous quarter. In the second quarter of 2021, employment had increased by 0.7% in the euro area and by 0.8% in the EU. Compared with the same quarter of the previous year, employment increased by 2.0% in the euro area and by 2.1% in the EU in the third quarter of 2021, after +1.9% in both areas in the second quarter of 2021. These data provide"
+      ]
     },
     {
       "reference_quarter": "2021-Q4",
@@ -67,9 +87,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 11293,
-      "employment_qoq_pct": 0.5,
-      "match_text": "number of employed persons increased by 0.5% in both the euro area and the EU in the fourth quarter of 2021, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "20/2022 - 15 February 2022 GDP and employment flash estimates for the fourth quarter of 2021 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.5% GDP growth in the euro area and EU In the fourth quarter of 2021, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the third quarter of 2021, GDP had grown by 2 .3% in the euro are",
+        "20/2022 - 15 February 2022 GDP and employment flash estimates for the fourth quarter of 2021 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.5% GDP growth in the euro area and EU In the fourth quarter of 2021, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the third quarter of 2021, GDP had grown by 2 .3% in the euro area and by 2.2% in the EU. Compared with the same quarter of the previous year,",
+        "20/2022 - 15 February 2022 GDP and employment flash estimates for the fourth quarter of 2021 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.5% GDP growth in the euro area and EU In the fourth quarter of 2021, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the third quarter of 2021, GDP had grown by 2 .3% in the euro area and by 2.2% in the EU. Compared with the same quarter of the previous year, seasonally adjusted GDP increased by 4.6% in the euro area and by 4.",
+        "ious quarter (after + 0.6% in the third quarter of 2021). Compared with the same quarter of the previous year, GDP increased by 5.5% (after +4.9% in the previous quarter). For the entire year 2021 GDP increased by 5.7%. Employment growth in the euro area and EU The number of employed persons increased by 0.5% in both the euro area and the EU in the fourth quarter of 2021, compared with the previous quarter. In the third quarter of 2021, employment had increased by 1.0% in the euro area and by 0.9% in the EU. Compared with the same quarter of the previous year, employment increased by 2.1% in both the euro area and the EU in the fourth quarter of 2021, after +2.1% in both areas in the third quarter of 2021. According to a first est"
+      ]
     },
     {
       "reference_quarter": "2022-Q1",
@@ -80,9 +105,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 10687,
-      "employment_qoq_pct": 0.5,
-      "match_text": "number of employed persons increased by 0.5% in the euro area and by 0.4% in the EU in the first quarter of 2022, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "58/2022 - 17 May 2022 GDP and employment flash estimates for the first quarter of 2022 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.4% GDP growth in the euro area and EU In the first quarter of 2022, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2021, GDP had grown by 0.3% in the euro area a",
+        "58/2022 - 17 May 2022 GDP and employment flash estimates for the first quarter of 2022 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.4% GDP growth in the euro area and EU In the first quarter of 2022, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2021, GDP had grown by 0.3% in the euro area and by 0.5% in the EU. Compared with the same quarter of the previous year, s",
+        "58/2022 - 17 May 2022 GDP and employment flash estimates for the first quarter of 2022 GDP up by 0.3% and employment up by 0.5% in the euro area In the EU, GDP up by 0.4% and employment up by 0.4% GDP growth in the euro area and EU In the first quarter of 2022, seasonally adjusted GDP increased by 0.3% in the euro area and by 0.4% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2021, GDP had grown by 0.3% in the euro area and by 0.5% in the EU. Compared with the same quarter of the previous year, season ally adjusted GDP increased by 5. 1% in the euro area and by 5.",
+        "ed States decreased by 0.4% compared to the previous quarter (after +1.7% in the fourth quarter of 2021). Compared with the same quarter of the previous year, GDP increased by 3.6% (after +5.5% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0.5% in the euro area and by 0.4% in the EU in the first quarter of 2022, compared with the previous quarter. In the fourth quarter of 2021, employment had increased by 0 .4% in both the euro area and the EU. Compared with the same quarter of the previous year, employment increased by 2.6% in the euro area and by 2.5% in the EU in the first quarter of 2022, after +2.1% in both areas in the fourth quarter of 2021. These data provid"
+      ]
     },
     {
       "reference_quarter": "2022-Q2",
@@ -93,9 +123,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 10763,
-      "employment_qoq_pct": 0.6,
-      "match_text": "number of employed persons increased by 0.3% both in the euro area and in the EU in the second quarter of 2022, compared with the previous quarter. In the first quarter of 2022 , employment had increased by 0.6% in the euro area and by 0.5% in the EU. Compared with the same quarter of the previous year, employment increased by 2.4% in the euro area and by 2.3% in the EU in the second quarter of 2022, after +2.9% in euro area and +2.8% in the EU in the first quarter of 2022. These data provide a picture of labour input consistent with the output and incom e measures of national accounts. -4 -3 -2 -1 0 1 2 3 2008Q1 2008Q2 2008Q3 2008Q4 2009Q1 2009Q2 2009Q3 2009Q4 2010Q1 2010Q2 2010Q3 2010Q4 20",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "93/2022 - 17 August 2022 GDP and employment flash estimates for the second quarter of 2022 GDP up by 0.6% and employment up by 0.3% in the euro area In the EU, GDP up by 0.6% and employment up by 0.3% GDP growth in the euro area and EU In the second quarter of 2022, seasonally adjusted GDP increased by 0.6% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2022, GDP had grown by 0.5% in the euro area an",
+        "93/2022 - 17 August 2022 GDP and employment flash estimates for the second quarter of 2022 GDP up by 0.6% and employment up by 0.3% in the euro area In the EU, GDP up by 0.6% and employment up by 0.3% GDP growth in the euro area and EU In the second quarter of 2022, seasonally adjusted GDP increased by 0.6% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2022, GDP had grown by 0.5% in the euro area and by 0.6% in the EU. Compared with the same quarter of the previous year, sea",
+        "93/2022 - 17 August 2022 GDP and employment flash estimates for the second quarter of 2022 GDP up by 0.6% and employment up by 0.3% in the euro area In the EU, GDP up by 0.6% and employment up by 0.3% GDP growth in the euro area and EU In the second quarter of 2022, seasonally adjusted GDP increased by 0.6% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2022, GDP had grown by 0.5% in the euro area and by 0.6% in the EU. Compared with the same quarter of the previous year, season ally adjusted GDP increased by 3.9% in the euro area and by 4.0%",
+        "ted States decreased by 0.2% compared to the previous quarter (after -0.4% in the first quarter of 2022). Compared with the same quarter of the previous year, GDP increased by 1.6% (after +3.5% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0. 3% both in the euro area and in the EU in the second quarter of 2022, compared with the previous quarter. In the first quarter of 2022 , employment had increased by 0. 6% in the euro area and by 0.5% in the EU. Compared with the same quarter of the previous year, employment increased by 2. 4% in the euro area and by 2.3% in the EU in the second quarter of 2022, after +2. 9% in euro area and +2.8% in the EU in the first quarter"
+      ]
     },
     {
       "reference_quarter": "2022-Q3",
@@ -106,9 +141,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 8264,
-      "employment_qoq_pct": 1.7,
-      "match_text": "number of employed persons increased by 0.2% both in the euro area and in the EU in the third quarter of 2022, compared with the previous quarter. In the second quarter of 2022, employment had increased by 0.4% both in the euro area and in the EU. Compared with the same quarter of the previous year, employment increased by 1.7% in the euro area and by 1.5% in the EU in the third quarter of 2022, after + 2.7% in the euro area and +2.4% in the EU in the second quarter of 2022. These data provide a picture of labour input consistent with the output and incom e measures of national accounts. Growth rates of employment in persons Percentage change compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "128/2022 - 15 November 2022 GDP and employment flash estimates for the third quarter of 2022 GDP up by 0.2% and employment up by 0.2% in the euro area In the EU, GDP up by 0.2% and employment up by 0.2% GDP growth in the euro area and EU In the third quarter of 202 2, seasonally adjusted GDP increased by 0.2% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2022, GDP had grown by 0.8% in the euro area and",
+        "128/2022 - 15 November 2022 GDP and employment flash estimates for the third quarter of 2022 GDP up by 0.2% and employment up by 0.2% in the euro area In the EU, GDP up by 0.2% and employment up by 0.2% GDP growth in the euro area and EU In the third quarter of 202 2, seasonally adjusted GDP increased by 0.2% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2022, GDP had grown by 0.8% in the euro area and by 0.7% in the EU. Compared with the same quarter of the previous year, sea",
+        "128/2022 - 15 November 2022 GDP and employment flash estimates for the third quarter of 2022 GDP up by 0.2% and employment up by 0.2% in the euro area In the EU, GDP up by 0.2% and employment up by 0.2% GDP growth in the euro area and EU In the third quarter of 202 2, seasonally adjusted GDP increased by 0.2% both in the euro area and in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the second quarter of 2022, GDP had grown by 0.8% in the euro area and by 0.7% in the EU. Compared with the same quarter of the previous year, season ally adjusted GDP increased by 2.1% in the euro area and by 2.4%",
+        "ed States increased by 0.6% compared to the previous quarter (after -0.1% in the second quarter of 2022). Compared with the same quarter of the previous year, GDP increased by 1.8% (after +1.8% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0. 2% both in the euro area and in the EU in the third quarter of 2022, compared with the previous quarter. In the second quarter of 2022, employment had increased by 0. 4% both in the euro area and in the EU. Compared with the same quarter of the previous year, employment increased by 1.7% in the euro area and by 1.5% in the EU in the third quarter of 2022, after + 2.7% in the euro area and +2.4% in the EU in the second quarter o"
+      ]
     },
     {
       "reference_quarter": "2023-Q1",
@@ -119,9 +159,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 8888,
-      "employment_qoq_pct": 0.6,
-      "match_text": "number of employed persons increased by 0.6% in both the euro area and the EU in the first quarter of 2023, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "57/2023 - 16 May 2023 GDP and employment flash estimates for the first quarter of 2023 GDP up by 0.1% and employment up by 0.6% in the euro area In the EU, GDP up by 0.2% and employment up by 0.6% GDP growth in the euro area and EU In the first quarter of 2023 , seasonally adjusted GDP increased by 0.1% in the euro area and by 0.2% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2022, GDP had remained stable in the euro are",
+        "57/2023 - 16 May 2023 GDP and employment flash estimates for the first quarter of 2023 GDP up by 0.1% and employment up by 0.6% in the euro area In the EU, GDP up by 0.2% and employment up by 0.6% GDP growth in the euro area and EU In the first quarter of 2023 , seasonally adjusted GDP increased by 0.1% in the euro area and by 0.2% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2022, GDP had remained stable in the euro area and had decreased by 0.1% in the EU. Compared with the same quarter of the",
+        "57/2023 - 16 May 2023 GDP and employment flash estimates for the first quarter of 2023 GDP up by 0.1% and employment up by 0.6% in the euro area In the EU, GDP up by 0.2% and employment up by 0.6% GDP growth in the euro area and EU In the first quarter of 2023 , seasonally adjusted GDP increased by 0.1% in the euro area and by 0.2% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the fourth quarter of 2022, GDP had remained stable in the euro area and had decreased by 0.1% in the EU. Compared with the same quarter of the previous year, seasonally adjusted GDP increased by 1. 3% in the eur",
+        "ed States increased by 0.3% compared to the previous quarter (after +0.6% in the fourth quarter of 2022). Compared with the same quarter of the previous year, GDP increased by 1.6% (after +0.9% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0. 6% in both the euro area and the EU in the first quarter of 2023, compared with the previous quarter. In the fourth quarter of 2022 , employment had increased by 0. 3% in both the euro area and the EU. Compared with the same quarter of the previous year, employment increased by 1.7% in the euro area and by 1.6% in the EU in the first quarter of 2023 , after +1.5% in the euro area and +1.3% in the EU in the fourth quarter of 202"
+      ]
     },
     {
       "reference_quarter": "2023-Q2",
@@ -132,9 +177,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 10408,
-      "employment_qoq_pct": 0.2,
-      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the second quarter of 2023, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "91/2023 - 16 August 2023 GDP and employment flash estimates for the second quarter of 2023 GDP up by 0.3% and employment up by 0.2% in the euro area In the EU, GDP stable and employment up by 0.2% GDP growth in the euro area and EU In the second quarter of 2023, seasonally adjusted GDP increased by 0.3% in the euro area and was stable in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2023 , GDP had remained stable in the euro ar",
+        "91/2023 - 16 August 2023 GDP and employment flash estimates for the second quarter of 2023 GDP up by 0.3% and employment up by 0.2% in the euro area In the EU, GDP stable and employment up by 0.2% GDP growth in the euro area and EU In the second quarter of 2023, seasonally adjusted GDP increased by 0.3% in the euro area and was stable in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2023 , GDP had remained stable in the euro area and had increased by 0.2% in the EU. Compared with the same quarter of the",
+        "91/2023 - 16 August 2023 GDP and employment flash estimates for the second quarter of 2023 GDP up by 0.3% and employment up by 0.2% in the euro area In the EU, GDP stable and employment up by 0.2% GDP growth in the euro area and EU In the second quarter of 2023, seasonally adjusted GDP increased by 0.3% in the euro area and was stable in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union . In the first quarter of 2023 , GDP had remained stable in the euro area and had increased by 0.2% in the EU. Compared with the same quarter of the previous year, seasonally adjusted GDP increased by 0.6% in the",
+        "ed States increased by 0.6% compared to the previous quarter (after +0.5% in the first quarter of 2023 ). Compared with the same quarter of the previous year, GDP increased by 2.6% (after +1.8% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0. 2% in both the euro area and the EU in the second quarter of 2023, compared with the previous quarter. In the first quarter of 2023 , employment had increased by 0. 5% in both zones. Compared with the same quarter of the previous year, employment increased by 1.5% in the euro area and by 1.3% in the EU in the second quarter of 2023, after +1.6% in both zones in the first quarter of 2023. These data provide a picture of labour i"
+      ]
     },
     {
       "reference_quarter": "2023-Q4",
@@ -145,9 +195,14 @@
       "content_type": "application/pdf",
       "parsed_as": "pdf",
       "text_chars": 8716,
-      "employment_qoq_pct": 0.3,
-      "match_text": "number of employed persons increased by 0.3% in both the euro area and the EU in the fourth quarter of 2023, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "20/2024 - 14 February 2024 GDP and employment flash estimates for the fourth quarter of 2023 GDP stable and employment up by 0.3% in the euro area In the EU, GDP up by 0.1% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2023, seasonally adjusted GDP remained stable in the euro area and increased by 0.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the third quarter of 2023, GDP had declined by 0.1% in both zo",
+        "20/2024 - 14 February 2024 GDP and employment flash estimates for the fourth quarter of 2023 GDP stable and employment up by 0.3% in the euro area In the EU, GDP up by 0.1% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2023, seasonally adjusted GDP remained stable in the euro area and increased by 0.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the third quarter of 2023, GDP had declined by 0.1% in both zones. Compared with the same quarter of t he previous year, seasonally adj",
+        "20/2024 - 14 February 2024 GDP and employment flash estimates for the fourth quarter of 2023 GDP stable and employment up by 0.3% in the euro area In the EU, GDP up by 0.1% and employment up by 0.3% GDP growth in the euro area and EU In the fourth quarter of 2023, seasonally adjusted GDP remained stable in the euro area and increased by 0.1% in the EU, compared with the previous quarter, according to a flash estimate published by Eurostat, the statistical office of the European Union. In the third quarter of 2023, GDP had declined by 0.1% in both zones. Compared with the same quarter of t he previous year, seasonally adjusted GDP increased by 0.1% in the euro area and by 0.3% in the EU in",
+        "ted States increased by 0.8% compared to the previous quarter (after +1.2% in the third quarter of 2023). Compared with the same quarter of the previous year, GDP increased by 3.1% (after +2.9% in the previous quarter). Employment growth in the euro area and EU The number of employed persons increased by 0. 3% in both the euro area and the EU in the fourth quarter of 2023, compared with the previous quarter. In the third quarter of 2023, employment had increased by 0. 2% in both zones. Compared with the same quarter of the previous year, employment increased by 1.3% in the euro area and by 1.2% in the EU in the fourth quarter of 2023, after +1.3% in the euro area and +1.2% in the EU in the third quarter of 2023. According to a fir"
+      ]
     },
     {
       "reference_quarter": "2023-Q4",
@@ -158,9 +213,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 22062,
-      "employment_qoq_pct": 0.3,
-      "match_text": "number of employed persons increased by 0.3% in the euro area and by 0.2% in the EU in the fourth quarter of 2023, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP stable and employment up by 0.3% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 8 March 2024 Next release: 7 June 2024 GDP main aggregates and employment estimates for the fourth quarter of 2023 GDP stable and employment up by 0.3% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers fu",
+        "estions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 8 March 2024 Next release: 7 June 2024 GDP main aggregates and employment estimates for the fourth quarter of 2023 GDP stable and employment up by 0.3% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     },
     {
       "reference_quarter": "2024-Q2",
@@ -171,9 +231,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 13899,
-      "employment_qoq_pct": 0.2,
-      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the second quarter of 2024, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP up by 0.3% and employment up by 0.2% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "er guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 August 2024 Next release: 14 November 2024 GDP and employment flash estimates for the second quarter of 2024 GDP up by 0.3% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF p",
+        "stions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 August 2024 Next release: 14 November 2024 GDP and employment flash estimates for the second quarter of 2024 GDP up by 0.3% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     },
     {
       "reference_quarter": "2024-Q3",
@@ -184,9 +249,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 12981,
-      "employment_qoq_pct": 0.2,
-      "match_text": "number of employed persons increased by 0.2% in the euro area and by 0.1% in the EU in the third quarter of 2024, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP up by 0.4% and employment up by 0.2% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 November 2024 Next release: 14 February 2025 GDP and employment flash estimates for the third quarter of 2024 GDP up by 0.4% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF pr",
+        "tions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 November 2024 Next release: 14 February 2025 GDP and employment flash estimates for the third quarter of 2024 GDP up by 0.4% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     },
     {
       "reference_quarter": "2024-Q4",
@@ -197,9 +267,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 13034,
-      "employment_qoq_pct": 0.1,
-      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the fourth quarter of 2024, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP and employment both up by 0.1% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many yo",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "User guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 February 2025 Next release: 15 May 2025 GDP and employment flash estimates for the fourth quarter of 2024 GDP and employment both up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printer",
+        "ntly asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 February 2025 Next release: 15 May 2025 GDP and employment flash estimates for the fourth quarter of 2024 GDP and employment both up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital cop"
+      ]
     },
     {
       "reference_quarter": "2025-Q1",
@@ -210,9 +285,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 12336,
-      "employment_qoq_pct": 0.3,
-      "match_text": "number of employed persons increased by 0.3% in the euro area and by 0.2% in the EU in the first quarter of 2025, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP and employment both up by 0.3% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many yo",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "es User guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 15 May 2025 Next release: 14 August 2025 GDP and employment flash estimates for the first quarter of 2025 GDP and employment both up by 0.3% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers",
+        "quently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 15 May 2025 Next release: 14 August 2025 GDP and employment flash estimates for the first quarter of 2025 GDP and employment both up by 0.3% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital cop"
+      ]
     },
     {
       "reference_quarter": "2025-Q3",
@@ -223,9 +303,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 11981,
-      "employment_qoq_pct": 0.1,
-      "match_text": "number of employed persons increased by 0.1% in the euro area and by 0.2% in the EU in the third quarter of 2025, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP up by 0.2% and employment up by 0.1% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 November 2025 Next release: 13 February 2026 GDP and employment flash estimates for the third quarter of 2025 GDP up by 0.2% and employment up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF pr",
+        "tions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 November 2025 Next release: 13 February 2026 GDP and employment flash estimates for the third quarter of 2025 GDP up by 0.2% and employment up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     },
     {
       "reference_quarter": "2025-Q4",
@@ -236,9 +321,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 13336,
-      "employment_qoq_pct": 0.2,
-      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the fourth quarter of 2025, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP up by 0.3% and employment up by 0.2% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "User guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 13 February 2026 Next release: 13 May 2026 GDP and employment flash estimates for the fourth quarter of 2025 GDP up by 0.3% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF p",
+        "questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 13 February 2026 Next release: 13 May 2026 GDP and employment flash estimates for the fourth quarter of 2025 GDP up by 0.3% and employment up by 0.2% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     },
     {
       "reference_quarter": "2026-Q1",
@@ -249,9 +339,14 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 12756,
-      "employment_qoq_pct": 0.1,
-      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the first quarter of 2026, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP and employment both up by 0.1% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many yo",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "es User guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 13 May 2026 Next release: 14 August 2026 GDP and employment flash estimates for the first quarter of 2026 GDP and employment both up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers",
+        "quently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 13 May 2026 Next release: 14 August 2026 GDP and employment flash estimates for the first quarter of 2026 GDP and employment both up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital cop"
+      ]
     },
     {
       "reference_quarter": "2026-Q2",
@@ -262,11 +357,16 @@
       "content_type": "text/html;charset=utf-8",
       "parsed_as": "html",
       "text_chars": 12065,
-      "employment_qoq_pct": 0.1,
-      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the second quarter of 2026, compared with the previous quarter",
-      "employment_contexts": []
+      "employment_qoq_pct": null,
+      "match_text": null,
+      "employment_contexts": [
+        "GDP up by 0.4% and employment up by 0.1% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young p",
+        "rlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from home? Where is GDP the highest? Menu Close Menu Back Previous items Next items Home Data Explore data Database Statistical themes Stats finder A-Z Experimental statistics Data visualisations European statistics learning hub Advanced tools and services Web services Bulk download GISCO:Geographical Information and maps Microdata Quality and European sta",
+        "er guides Copyright notice and free re-use of data Alert Frequently asked questions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 August 2026 Next release: 13 November 2026 GDP and employment flash estimates for the second quarter of 2026 GDP up by 0.4% and employment up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF p",
+        "stions Accessibility Maintenance information Home \u2026 News Euro indicators Euro indicators 14 August 2026 Next release: 13 November 2026 GDP and employment flash estimates for the second quarter of 2026 GDP up by 0.4% and employment up by 0.1% in the euro area Skip to the content Contents Loading Toggle page contents Print page Information Before printing Close Printing can have negative environmental impacts due to paper waste. We encourage you to explore eco-friendly alternatives. Bookmarking this page in your browser allows you to access it anytime. This publication can also be converted to PDF, if you have a PDF printer installed on your computer. PDF printers function as virtual printers, enabling you to create digital copies o"
+      ]
     }
   ],
-  "status": "PARSER_VALIDATED_PARTIAL",
+  "status": "PARSER_NOT_YET_VALIDATED",
   "guardrail": "Parsed q/q flash growth rates are release-time observables. Do not equate them mechanically to the runtime level series until the level-path transformation and parity test are completed."
 }
