@@ -38,11 +38,11 @@ def extract_qoq(txt):
     # PDF extraction sometimes splits decimals ("0. 6"). Normalize only numeric
     # decimal spacing, then require quarter-over-quarter context so a later YoY
     # sentence cannot be mistaken for the q/q release value.
-    txt=re.sub(r'(?<=\\d)[.,]\\s+(?=\\d)', lambda m: m.group(0)[0], txt)
+    txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)', lambda m: m.group(0)[0], txt)
     patterns=[
-      r'(?:number of employed persons|employment)\\s+(increased|decreased).*?by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
-      r'(?:number of employed persons|employment).*?(increased|decreased).*?by\\s+([+-]?\\d+(?:[.,]\\d+)?)%.*?in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
-      r'GDP\\s+(?:up|down).*?employment\\s+(up|down)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+the euro area'
+      r'(?:number of employed persons|employment)\s+(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
+      r'(?:number of employed persons|employment).*?(increased|decreased).*?by\s+([+-]?\d+(?:[.,]\d+)?)%.*?in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
+      r'GDP\s+(?:up|down).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+the euro area'
     ]
     for p in patterns:
         m=re.search(p,txt,re.I|re.S)
