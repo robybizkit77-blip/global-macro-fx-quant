@@ -39,20 +39,20 @@ def pdf_to_text(raw):
     return re.sub(r"\s+"," "," ".join((p.extract_text() or "") for p in reader.pages)).strip()
 
 def extract_qoq(txt):
-    txt=re.sub(r'(?<=\\d)[.,]\\s+(?=\\d)', lambda m: m.group(0)[0], txt)
+    txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)', lambda m: m.group(0)[0], txt)
     head=txt[:3500]
     # Headline is the cleanest flash-release value.
-    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(up|down)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    m=re.search(r'GDP\s+(?:up|down|stable).*?employment\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area',head,re.I|re.S)
     if m:
         d=m.group(1).lower(); v=float(m.group(2).replace(",","."))
         return (-abs(v) if d=="down" else abs(v)),m.group(0)[:700]
-    m=re.search(r'GDP\\s+(?:up|down|stable).*?employment\\s+(stable|unchanged)\\s+in\\s+(?:both\\s+)?the euro area',head,re.I|re.S)
+    m=re.search(r'GDP\s+(?:up|down|stable).*?employment\s+(stable|unchanged)\s+in\s+(?:both\s+)?the euro area',head,re.I|re.S)
     if m:
         return 0.0,m.group(0)[:700]
     # Narrative fallback requires explicit previous-quarter context and euro-area value.
     pats=[
-      r'(?:number of employed persons|employment)\\s+(increased|decreased)\\s+by\\s+([+-]?\\d+(?:[.,]\\d+)?)%\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter',
-      r'(?:number of employed persons|employment)\\s+(remained stable|was stable|remained unchanged)\\s+in\\s+(?:both\\s+)?the euro area.*?compared with the previous quarter'
+      r'(?:number of employed persons|employment)\s+(increased|decreased)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?the euro area.*?compared with the previous quarter',
+      r'(?:number of employed persons|employment)\s+(remained stable|was stable|remained unchanged)\s+in\s+(?:both\s+)?the euro area.*?compared with the previous quarter'
     ]
     for p in pats:
         m=re.search(p,txt,re.I|re.S)
