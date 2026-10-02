@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Trigger-ready resumable crawler. Block 3
+# Trigger-ready resumable crawler. Final catch-up
 import csv, json, re, time
 from pathlib import Path
 from urllib.parse import urljoin
@@ -10,7 +10,7 @@ START="https://www150.statcan.gc.ca/n1/daily-quotidien/260924/dq260924a-eng.htm"
 OUT=Path("validation/cad_retail_volume_release_crawl")
 OUT.mkdir(parents=True, exist_ok=True)
 STATE=OUT/"CA_RETAIL_VOLUME_DATED_RELEASE_CRAWL_V1.json"
-MAX_PAGES_PER_RUN=8
+MAX_PAGES_PER_RUN=64
 TARGET="2020-05"
 
 session=requests.Session()
