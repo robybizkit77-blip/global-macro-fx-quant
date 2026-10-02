@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: eur-retail-volume-release-crawl
+  cancel-in-progress: true
+
 jobs:
   crawl-month:
     strategy:
