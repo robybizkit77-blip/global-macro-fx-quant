@@ -1,0 +1,382 @@
+{
+  "schema": "GMFQ_MACRO_CORE_SERIES_RELEASE_MAP_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "policy": {
+    "purpose": "Attach each active Macro Core series to the official release family that must govern historical market-availability dating.",
+    "pit_status_values": [
+      "MAPPED_RELEASE_FAMILY",
+      "EXACT_SERIES_SOURCE_PENDING",
+      "VINTAGE_POLICY_PENDING"
+    ],
+    "release_date_rule": "No observation may be used before the official release date/time of the relevant release family.",
+    "vintage_rule": "Revisions are separate information events. Revised values must never be projected backward into earlier checkpoints."
+  },
+  "series": [
+    {
+      "ccy": "USD",
+      "id": "US_PCEC96_history_value",
+      "release_family": "BEA Personal Income and Outlays",
+      "agency": "U.S. Bureau of Economic Analysis",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_NEWORDER_history_NEWORDER",
+      "release_family": "Manufacturers' Shipments, Inventories, and Orders / Durable Goods",
+      "agency": "U.S. Census Bureau",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_INDPRO_history_value",
+      "release_family": "G.17 Industrial Production and Capacity Utilization",
+      "agency": "Federal Reserve Board",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_DSPIC96_history_DSPIC96",
+      "release_family": "BEA Personal Income and Outlays",
+      "agency": "U.S. Bureau of Economic Analysis",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_PI_history_PI",
+      "release_family": "BEA Personal Income and Outlays",
+      "agency": "U.S. Bureau of Economic Analysis",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_RRSFS_history_value",
+      "release_family": "Retail Sales / Monthly Retail Trade",
+      "agency": "U.S. Census Bureau",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_JTSHIR_history_JTSHIR",
+      "release_family": "Job Openings and Labor Turnover Survey (JOLTS)",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_JTSJOL_history_value",
+      "release_family": "Job Openings and Labor Turnover Survey (JOLTS)",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_JTSQUR_history_JTSQUR",
+      "release_family": "Job Openings and Labor Turnover Survey (JOLTS)",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_PAYEMS_history_value",
+      "release_family": "Employment Situation",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_OPHNFB_history_OPHNFB",
+      "release_family": "Productivity and Costs",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_AHE_TOTAL_PRIVATE_history_value",
+      "release_family": "Employment Situation",
+      "agency": "U.S. Bureau of Labor Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_CCSA_history_CCSA",
+      "release_family": "Unemployment Insurance Weekly Claims",
+      "agency": "U.S. Department of Labor",
+      "pit_status": "EXACT_SERIES_SOURCE_PENDING"
+    },
+    {
+      "ccy": "USD",
+      "id": "US_ICSA_history_value",
+      "release_family": "Unemployment Insurance Weekly Claims",
+      "agency": "U.S. Department of Labor",
+      "pit_status": "EXACT_SERIES_SOURCE_PENDING"
+    },
+    {
+      "ccy": "EUR",
+      "id": "EA_IP_history_value",
+      "release_family": "Eurostat Industrial Production",
+      "agency": "Eurostat",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "EUR",
+      "id": "EA_RETAIL_VOL_history_value",
+      "release_family": "Eurostat Volume of Retail Trade",
+      "agency": "Eurostat",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "EUR",
+      "id": "EA_UNEMP_history_value",
+      "release_family": "Eurostat Euro-area Unemployment",
+      "agency": "Eurostat",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "EUR",
+      "id": "EA_EMPLOYMENT_history_value",
+      "release_family": "Eurostat Employment / National Accounts employment",
+      "agency": "Eurostat",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "EUR",
+      "id": "EA_NEGOTIATED_WAGES_YOY_history_value",
+      "release_family": "ECB Negotiated Wage Tracker / negotiated wages series",
+      "agency": "European Central Bank",
+      "pit_status": "EXACT_SERIES_SOURCE_PENDING"
+    },
+    {
+      "ccy": "GBP",
+      "id": "UK_PRODUCTION_history_value",
+      "release_family": "Index of Production",
+      "agency": "Office for National Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "GBP",
+      "id": "UK_RETAIL_VOL_history_value",
+      "release_family": "Retail Sales",
+      "agency": "Office for National Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "GBP",
+      "id": "UK_UNEMP_RATE_history_value",
+      "release_family": "UK Labour Market",
+      "agency": "Office for National Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "GBP",
+      "id": "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value",
+      "release_family": "Earnings and employment from Pay As You Earn Real Time Information",
+      "agency": "Office for National Statistics / HMRC",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "GBP",
+      "id": "UK_EMPLOYMENT_RATE_history_value",
+      "release_family": "UK Labour Market",
+      "agency": "Office for National Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "JPY",
+      "id": "JP_IIP_history_value",
+      "release_family": "Indices of Industrial Production",
+      "agency": "Ministry of Economy, Trade and Industry",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "JPY",
+      "id": "JP_RETAIL_history_value",
+      "release_family": "Current Survey of Commerce / Retail Sales",
+      "agency": "Ministry of Economy, Trade and Industry",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "JPY",
+      "id": "JP_UNEMP_RATE_history_value",
+      "release_family": "Labour Force Survey",
+      "agency": "Statistics Bureau of Japan",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "JPY",
+      "id": "JP_EMPLOYED_history_value",
+      "release_family": "Labour Force Survey",
+      "agency": "Statistics Bureau of Japan",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CHF",
+      "id": "CH_PRODUCTION_history_value",
+      "release_family": "Production, orders and turnover in the secondary sector",
+      "agency": "Swiss Federal Statistical Office",
+      "pit_status": "EXACT_SERIES_SOURCE_PENDING"
+    },
+    {
+      "ccy": "CHF",
+      "id": "CH_RETAIL_REAL_history_value",
+      "release_family": "Retail Trade Turnover",
+      "agency": "Swiss Federal Statistical Office",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CHF",
+      "id": "CH_UNEMP_RATE_history_value",
+      "release_family": "Registered unemployment / labour market statistics",
+      "agency": "SECO / Swiss official statistics",
+      "pit_status": "EXACT_SERIES_SOURCE_PENDING"
+    },
+    {
+      "ccy": "CHF",
+      "id": "CH_EMPLOYMENT_history_value",
+      "release_family": "Employment Barometer / Employment statistics",
+      "agency": "Swiss Federal Statistical Office",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CAD",
+      "id": "CA_REAL_GDP_M_history_value",
+      "release_family": "GDP by industry",
+      "agency": "Statistics Canada",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CAD",
+      "id": "CA_RETAIL_VOLUME_history_value",
+      "release_family": "Retail trade",
+      "agency": "Statistics Canada",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CAD",
+      "id": "CA_UNEMP_RATE_history_value",
+      "release_family": "Labour Force Survey",
+      "agency": "Statistics Canada",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "CAD",
+      "id": "CA_EMPLOYMENT_history_value",
+      "release_family": "Labour Force Survey",
+      "agency": "Statistics Canada",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "AUD",
+      "id": "AU_REAL_GDP_QOQ_ABS_history_value",
+      "release_family": "Australian National Accounts: National Income, Expenditure and Product",
+      "agency": "Australian Bureau of Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "AUD",
+      "id": "AU_HOUSEHOLD_SPENDING_history_value",
+      "release_family": "Monthly Household Spending Indicator",
+      "agency": "Australian Bureau of Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "AUD",
+      "id": "AU_UNEMP_RATE_history_value",
+      "release_family": "Labour Force, Australia",
+      "agency": "Australian Bureau of Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "AUD",
+      "id": "AU_EMPLOYMENT_history_value",
+      "release_family": "Labour Force, Australia",
+      "agency": "Australian Bureau of Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "AUD",
+      "id": "AU_WPI_YOY_history_value",
+      "release_family": "Wage Price Index, Australia",
+      "agency": "Australian Bureau of Statistics",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_REAL_GDP_Q_history_value",
+      "release_family": "Gross domestic product",
+      "agency": "Stats NZ",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_RETAIL_VOLUME_Q_history_value",
+      "release_family": "Retail trade survey",
+      "agency": "Stats NZ",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_UNEMP_RATE_history_value",
+      "release_family": "Labour market statistics",
+      "agency": "Stats NZ",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_EMPLOYED_history_value",
+      "release_family": "Labour market statistics",
+      "agency": "Stats NZ",
+      "pit_status": "MAPPED_RELEASE_FAMILY"
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y",
+      "release_family": "RBNZ Survey of Expectations",
+      "agency": "Reserve Bank of New Zealand",
+      "pit_status": "MAPPED_RELEASE_FAMILY",
+      "engine_note": "Currently excluded by normalizedSeriesImpulse because stored history has fewer than 8 observations."
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_2Y",
+      "release_family": "RBNZ Survey of Expectations",
+      "agency": "Reserve Bank of New Zealand",
+      "pit_status": "MAPPED_RELEASE_FAMILY",
+      "engine_note": "Currently excluded by normalizedSeriesImpulse because stored history has fewer than 8 observations."
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y",
+      "release_family": "RBNZ Survey of Expectations",
+      "agency": "Reserve Bank of New Zealand",
+      "pit_status": "MAPPED_RELEASE_FAMILY",
+      "engine_note": "Currently excluded by normalizedSeriesImpulse because stored history has fewer than 8 observations."
+    },
+    {
+      "ccy": "NZD",
+      "id": "NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_2Y",
+      "release_family": "RBNZ Survey of Expectations",
+      "agency": "Reserve Bank of New Zealand",
+      "pit_status": "MAPPED_RELEASE_FAMILY",
+      "engine_note": "Currently excluded by normalizedSeriesImpulse because stored history has fewer than 8 observations."
+    }
+  ],
+  "summary": {
+    "mapped_release_family": 44,
+    "exact_series_source_pending": 5,
+    "total": 49,
+    "unresolved_ids": [
+      "US_CCSA_history_CCSA",
+      "US_ICSA_history_value",
+      "EA_NEGOTIATED_WAGES_YOY_history_value",
+      "CH_PRODUCTION_history_value",
+      "CH_UNEMP_RATE_history_value"
+    ],
+    "next_gate": "Extract historical release dates and vintage treatment for mapped families; resolve the few exact-series source ambiguities before PIT_READY."
+  }
+}
