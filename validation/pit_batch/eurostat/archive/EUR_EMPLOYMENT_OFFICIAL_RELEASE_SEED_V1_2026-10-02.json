@@ -11,6 +11,12 @@
   },
   "releases": [
     {
+      "reference_quarter": "2020-Q2",
+      "release_date": "2020-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/10545332/2-14082020-AP-EN.pdf/7f30c3cf-b2c9-98ad-3451-17fed0230b57"
+    },
+    {
       "reference_quarter": "2020-Q4",
       "release_date": "2021-02-16",
       "kind": "flash",
@@ -59,6 +65,12 @@
       "url": "https://ec.europa.eu/eurostat/documents/2995521/15265515/2-15112022-AP-EN.pdf/a86b3e33-506e-12bf-6cbb-6c6280490b6c"
     },
     {
+      "reference_quarter": "2022-Q4",
+      "release_date": "2023-02-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/16056034/2-14022023-AP-EN.pdf/d88030b3-8cb0-770a-0ab4-306f108bce76"
+    },
+    {
       "reference_quarter": "2023-Q1",
       "release_date": "2023-05-16",
       "kind": "flash",
@@ -69,6 +81,12 @@
       "release_date": "2023-08-16",
       "kind": "flash",
       "url": "https://ec.europa.eu/eurostat/documents/2995521/17337861/2-16082023-AP-EN.pdf/927cb6f7-c2fa-0e5e-abcd-ceeb40ebed41"
+    },
+    {
+      "reference_quarter": "2023-Q3",
+      "release_date": "2023-11-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/17869580/2-14112023-AP-EN.pdf/56fb4768-7310-adec-8a6b-ad92ec19a912"
     },
     {
       "reference_quarter": "2023-Q4",
@@ -105,6 +123,12 @@
       "release_date": "2025-05-15",
       "kind": "flash",
       "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-15052025-ap"
+    },
+    {
+      "reference_quarter": "2025-Q2",
+      "release_date": "2025-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14082025-ap"
     },
     {
       "reference_quarter": "2025-Q3",
