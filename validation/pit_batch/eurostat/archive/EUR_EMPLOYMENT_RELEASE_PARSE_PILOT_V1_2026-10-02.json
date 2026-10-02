@@ -1,11 +1,24 @@
 {
   "schema": "GMFQ_EUR_EMPLOYMENT_RELEASE_PARSE_PILOT_V2",
   "created_at": "2026-10-02",
-  "seed_count": 20,
-  "fetch_ok": 20,
-  "parsed_qoq": 20,
+  "seed_count": 24,
+  "fetch_ok": 24,
+  "parsed_qoq": 24,
   "coverage_pct": 100.0,
   "rows": [
+    {
+      "reference_quarter": "2020-Q2",
+      "release_date": "2020-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/10545332/2-14082020-AP-EN.pdf/7f30c3cf-b2c9-98ad-3451-17fed0230b57",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 10628,
+      "employment_qoq_pct": -2.8,
+      "match_text": "GDP down by 12.1% and employment down by 2.8% in the euro area",
+      "employment_contexts": []
+    },
     {
       "reference_quarter": "2020-Q4",
       "release_date": "2021-02-16",
@@ -111,6 +124,19 @@
       "employment_contexts": []
     },
     {
+      "reference_quarter": "2022-Q4",
+      "release_date": "2023-02-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/16056034/2-14022023-AP-EN.pdf/d88030b3-8cb0-770a-0ab4-306f108bce76",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 9102,
+      "employment_qoq_pct": 0.4,
+      "match_text": "GDP up by 0.1% and employment up by 0.4% in the euro area",
+      "employment_contexts": []
+    },
+    {
       "reference_quarter": "2023-Q1",
       "release_date": "2023-05-16",
       "kind": "flash",
@@ -134,6 +160,19 @@
       "text_chars": 10408,
       "employment_qoq_pct": 0.2,
       "match_text": "GDP up by 0.3% and employment up by 0.2% in the euro area",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2023-Q3",
+      "release_date": "2023-11-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/17869580/2-14112023-AP-EN.pdf/56fb4768-7310-adec-8a6b-ad92ec19a912",
+      "fetch_ok": true,
+      "content_type": "application/pdf",
+      "parsed_as": "pdf",
+      "text_chars": 8134,
+      "employment_qoq_pct": 0.3,
+      "match_text": "GDP down by 0.1% and employment up by 0.3% in the euro area",
       "employment_contexts": []
     },
     {
@@ -212,6 +251,19 @@
       "text_chars": 12336,
       "employment_qoq_pct": 0.3,
       "match_text": "number of employed persons increased by 0.3% in the euro area and by 0.2% in the EU in the first quarter of 2025, compared with the previous quarter",
+      "employment_contexts": []
+    },
+    {
+      "reference_quarter": "2025-Q2",
+      "release_date": "2025-08-14",
+      "kind": "flash",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14082025-ap",
+      "fetch_ok": true,
+      "content_type": "text/html;charset=utf-8",
+      "parsed_as": "html",
+      "text_chars": 12075,
+      "employment_qoq_pct": 0.1,
+      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the second quarter of 2025, compared with the previous quarter",
       "employment_contexts": []
     },
     {
