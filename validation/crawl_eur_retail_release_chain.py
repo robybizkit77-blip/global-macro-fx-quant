@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import io,json,re,time,urllib.request
+import io,json,re,time,urllib.request,urllib.parse,html as htmlmod
 from pathlib import Path
 from pypdf import PdfReader
 
@@ -30,6 +30,28 @@ def textify(raw,ctype):
     s=re.sub(r"<style.*?</style>"," ",s,flags=re.S|re.I)
     s=re.sub(r"<[^>]+>"," ",s)
     return re.sub(r"\s+"," ",s).strip()
+
+def download_pdf_text(raw,ctype,final):
+    if raw is None or "html" not in (ctype or ""):
+        return None,None
+    s=raw.decode("utf-8","ignore")
+    for m in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',s,flags=re.S|re.I):
+        href=htmlmod.unescape(m.group(1))
+        label=re.sub(r"<[^>]+>"," ",m.group(2))
+        label=re.sub(r"\s+"," ",htmlmod.unescape(label)).strip().lower()
+        if label!="download" and ".pdf" not in href.lower():
+            continue
+        u=urllib.parse.urljoin(final,href)
+        r2,c2,f2=fetch(u)
+        if r2 is None:
+            continue
+        try:
+            t2=textify(r2,c2)
+        except Exception:
+            continue
+        if "volume of retail trade" in t2.lower() or "retail trade volume" in t2.lower():
+            return t2,f2 or u
+    return None,None
 
 def parse_release_date(txt):
     m=re.search(r'(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',txt,re.I)
@@ -108,11 +130,23 @@ while txt and guard<90:
     ref=parse_reference_month(txt)
     val,matched=parse_mom(txt)
     pd,pm=previous_release_date(txt)
+    pdf_url=None
+    if not ref or not pd:
+        extra,pdf_url=download_pdf_text(raw,ctype,final or url)
+        if extra:
+            combo=txt+" "+extra
+            ref=parse_reference_month(combo) or ref
+            if val is None:
+                val,matched=parse_mom(combo)
+            pd2,pm2=previous_release_date(combo)
+            pd=pd2 or pd
+            pm=pm2 or pm
     rows.append({
       "release_date":rd,
       "reference_month":ref,
       "retail_volume_mom_pct":val,
       "url":final or url,
+      "pdf_url":pdf_url,
       "content_type":ctype,
       "match_text":matched,
       "previous_release_date":pd,
