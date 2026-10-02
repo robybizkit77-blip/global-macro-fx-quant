@@ -1,0 +1,88 @@
+{
+  "schema": "GMFQ_MACRO_MARKET_AVAILABILITY_GATE_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "result": {
+    "preliminary_common_g8_market_availability_gate": "2020-07-31",
+    "status": "RELEASE_DATE_ALIGNED__VINTAGE_AUDIT_PENDING",
+    "meaning": "After replacing observation-period dates with verified official release dates for the first engine-eligible Growth/Labour data around the common gate, the latest currency gate is Japan. The May 2020 Labour Force Survey required to make the JPY Labour block engine-eligible was publicly reported by the Statistics Bureau on 2020-07-31.",
+    "important_warning": "This is still not FULL_PIT_READY. It resolves publication timing around the start gate, but first-release versus revised values across the historical panel remain to be audited."
+  },
+  "currency_gate_evidence": {
+    "USD": {
+      "candidate_release_date": "2020-06-26",
+      "block": "Growth",
+      "series_family": "BEA Personal Income and Outlays, May 2020",
+      "evidence": "BEA release was embargoed until 08:30 EDT on 2020-06-26 and contains May real PCE / income information.",
+      "url": "https://www.bea.gov/news/2020/personal-income-and-outlays-may-2020"
+    },
+    "EUR": {
+      "candidate_release_date": "2020-07-06",
+      "block": "Growth",
+      "series_family": "Eurostat retail trade, May 2020",
+      "evidence": "Eurostat release 108/2020 dated 2020-07-06 published May 2020 retail-trade volume.",
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/11061414/4-06072020-BP-EN.pdf"
+    },
+    "GBP": {
+      "candidate_release_date": "2020-06-19",
+      "block": "Growth",
+      "series_family": "ONS Retail sales, May 2020",
+      "evidence": "ONS released May 2020 retail sales at 07:00 on 2020-06-19.",
+      "url": "https://www.ons.gov.uk/releases/retailsalesgreatbritainmay2020"
+    },
+    "JPY": {
+      "candidate_release_date": "2020-07-31",
+      "block": "Labour",
+      "series_family": "Statistics Bureau Labour Force Survey, May 2020",
+      "evidence": "Statistics Bureau News Bulletin dated 2020-07-31 reports May 2020 employed persons, unemployed persons and unemployment rate.",
+      "url": "https://www.stat.go.jp/english/info/news/20200731.html",
+      "note": "Japan becomes the binding G8 release-date gate in this first clean-start reconstruction."
+    },
+    "CHF": {
+      "candidate_release_date": "2020-06-30",
+      "block": "Growth",
+      "series_family": "FSO Retail trade turnover, May 2020",
+      "evidence": "FSO press release embargoed 2020-06-30 08:30 reports provisional May 2020 real and nominal retail turnover.",
+      "url": "https://www.bfs.admin.ch/bfsstatic/dam/assets/13387172/master"
+    },
+    "CAD": {
+      "candidate_release_date": "2020-07-10",
+      "block": "Labour",
+      "series_family": "Statistics Canada Labour Force Survey, June 2020",
+      "evidence": "Statistics Canada release schedule maps the June 14-20 2020 reference period to 2020-07-10; The Daily release confirms 2020-07-10.",
+      "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/200710/dq200710a-eng.htm"
+    },
+    "AUD": {
+      "candidate_release_date": "2020-06-03",
+      "block": "Growth",
+      "series_family": "ABS Australian National Accounts, March quarter 2020",
+      "evidence": "ABS released March-quarter 2020 National Accounts at 11:30 AEST on 2020-06-03.",
+      "url": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/mar-2020"
+    },
+    "NZD": {
+      "candidate_release_date": "2018-05-02",
+      "block": "Labour",
+      "series_family": "Stats NZ Labour market statistics, March 2018 quarter",
+      "evidence": "The March 2018 quarter labour-market release was published 2020-clean-sample-well-before-gate, on 2018-05-02.",
+      "url": "https://www.stats.govt.nz/publications/?categoryFiltersID=139&filters=Information%20releases%2CIncome&start=300&topicFiltersID=167",
+      "note": "NZD was not the common-sample bottleneck."
+    }
+  },
+  "comparison_with_previous_gate": {
+    "observation_period_gate": "2020-06-01",
+    "release_date_aligned_gate": "2020-07-31",
+    "shift_days_approx": 60,
+    "explanation": "The stored observation date is not the information date. Release timing pushes the clean common G8 start later; Japan's delayed May 2020 Labour Force Survey is the binding case."
+  },
+  "next_gate": [
+    "Audit first-release/revision behavior for each active Macro Core series over 2020-2026.",
+    "Where official vintage data exist, reconstruct the value actually known at each checkpoint.",
+    "Where only revised history is recoverable, label the series REVISED_ONLY and quantify sensitivity with/without it.",
+    "After vintage audit, declare the final Macro PIT start date and build monthly checkpoint panel."
+  ]
+}
