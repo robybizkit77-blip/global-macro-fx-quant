@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
-import json,re,html as htmlmod,urllib.request,urllib.parse,time
+import json,re,html as htmlmod,urllib.request,urllib.parse,time,http.cookiejar
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor,as_completed
 
 OUT=Path("validation/pit_batch/eurostat/archive")
 OUT.mkdir(parents=True,exist_ok=True)
-UA={"User-Agent":"Mozilla/5.0 GMFQ-PIT-retail-index/3.0"}
 BASE="https://ec.europa.eu/eurostat/news/euro-indicators"
-PAGE_SIZE=50
 MAX_PAGES=100
-MAX_WORKERS=10
 
-def fetch(url,timeout=15):
-    req=urllib.request.Request(url,headers=UA)
-    for attempt in range(3):
+jar=http.cookiejar.CookieJar()
+opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+opener.addheaders=[("User-Agent","Mozilla/5.0 GMFQ-PIT-retail-index/4.0")]
+
+def fetch(url,timeout=20):
+    for attempt in range(4):
         try:
-            with urllib.request.urlopen(req,timeout=timeout) as r:
+            with opener.open(url,timeout=timeout) as r:
                 if r.status!=200: return None
                 return r.read().decode("utf-8","ignore")
         except Exception as e:
-            if "429" in str(e) or "timed out" in str(e).lower():
-                time.sleep(1+attempt)
+            if "429" in str(e) or "timed out" in str(e).lower() or "403" in str(e):
+                time.sleep(1.5*(attempt+1))
                 continue
             return None
     return None
@@ -32,36 +31,46 @@ def clean(s):
     s=htmlmod.unescape(s)
     return re.sub(r"\s+"," ",s).strip()
 
-def search_url(page):
-    q={
-      "_estatsearchportlet_WAR_estatsearchportlet_INSTANCE_OaTpFrwlabNK_action":"search",
-      "_estatsearchportlet_WAR_estatsearchportlet_INSTANCE_OaTpFrwlabNK_collection":"CAT_PREREL",
-      "_estatsearchportlet_WAR_estatsearchportlet_INSTANCE_OaTpFrwlabNK_pageNumber":str(page),
-      "_estatsearchportlet_WAR_estatsearchportlet_INSTANCE_OaTpFrwlabNK_pageSize":str(PAGE_SIZE),
-      "_estatsearchportlet_WAR_estatsearchportlet_INSTANCE_OaTpFrwlabNK_sort":"lastUpdateDate"
-    }
-    return BASE+"?"+urllib.parse.urlencode(q)
+def abs_url(href,base=BASE):
+    href=htmlmod.unescape(href)
+    return urllib.parse.urljoin(base,href)
 
-def parse_index(page):
-    raw=fetch(search_url(page))
-    if not raw: return []
+def extract_release_links(raw,page_no):
     out=[]
     for m in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',raw,flags=re.S|re.I):
-        href=htmlmod.unescape(m.group(1))
-        title=clean(m.group(2))
-        if "volume of retail trade" not in title.lower():
-            continue
-        if href.startswith("/"):
-            href="https://ec.europa.eu"+href
-        if href.startswith("http"):
-            out.append({"title":title,"url":href,"search_page":page})
+        href=m.group(1); title=clean(m.group(2))
+        if "volume of retail trade" in title.lower():
+            out.append({"title":title,"url":abs_url(href),"search_page":page_no})
     return out
 
+def next_page_url(raw):
+    # Follow Eurostat's own tokenized/session-bound Next link rather than
+    # synthesizing pagination parameters.
+    for m in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',raw,flags=re.S|re.I):
+        label=clean(m.group(2)).lower()
+        if label=="next":
+            return abs_url(m.group(1))
+    return None
+
+raw=fetch(BASE)
+if not raw:
+    raise SystemExit("Unable to fetch initial Eurostat Euro indicators page")
+
 cands=[]
-with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-    futs=[ex.submit(parse_index,p) for p in range(1,MAX_PAGES+1)]
-    for fut in as_completed(futs):
-        cands.extend(fut.result())
+seen_pages=set()
+url=BASE
+pages_scanned=0
+for page_no in range(1,MAX_PAGES+1):
+    if url in seen_pages: break
+    seen_pages.add(url)
+    if page_no>1:
+        raw=fetch(url)
+        if not raw: break
+    pages_scanned+=1
+    cands.extend(extract_release_links(raw,page_no))
+    nxt=next_page_url(raw)
+    if not nxt: break
+    url=nxt
 
 uniq={}
 for x in cands:
@@ -96,34 +105,29 @@ def parse_release(x):
             val=-abs(v) if d in ("down","decreased") else abs(v)
             matched=m.group(0)[:700]
             break
-    marker=re.search(r"Volume of retail trade,\s*calendar and seasonally adjusted indices",txt,re.I)
-    window=txt[marker.start():marker.start()+3500] if marker else None
     return {
       "release_date":release_date,
       "url":x["url"],
       "title":x["title"],
       "retail_volume_mom_pct":val,
       "match_text":matched,
-      "table_text_window":window,
       "source_dataset_sts_trtu_m":bool(re.search(r"Source dataset:\s*sts_trtu_m",txt,re.I))
     }
 
 hits=[]
-with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-    futs=[ex.submit(parse_release,x) for x in cands]
-    for fut in as_completed(futs):
-        h=fut.result()
-        if h: hits.append(h)
+for x in cands:
+    h=parse_release(x)
+    if h: hits.append(h)
 hits.sort(key=lambda x:x["release_date"])
 
 report={
- "schema":"GMFQ_EUROSTAT_RETAIL_RELEASE_FINDER_V2",
+ "schema":"GMFQ_EUROSTAT_RETAIL_RELEASE_FINDER_V3",
  "created_at":"2026-10-02",
  "runtime_id":"EA_RETAIL_VOL_history_value",
  "window":"2020-08 to 2026-10",
- "method":"Enumerate Eurostat Euro indicators search-index pages, retain only exact 'Volume of retail trade' releases, then fetch and parse those release pages. No date/URL brute force.",
+ "method":"Cookie-preserving crawl of Eurostat Euro indicators pages following the site's own tokenized Next links; retain only 'Volume of retail trade' release links, then parse those exact pages.",
  "qa":{
-   "index_pages_scanned":MAX_PAGES,
+   "index_pages_scanned":pages_scanned,
    "candidate_release_links":len(cands),
    "releases_in_window":len(hits),
    "parsed_mom":sum(x["retail_volume_mom_pct"] is not None for x in hits),
@@ -132,5 +136,5 @@ report={
  "hits":hits,
  "status":"INDEX_DISCOVERY_COMPLETE" if hits else "NO_RELEASES_FOUND"
 }
-(OUT/"EUROSTAT_RETAIL_RELEASE_FINDER_V2_2026-10-02.json").write_text(json.dumps(report,indent=2)+"\n")
+(OUT/"EUROSTAT_RETAIL_RELEASE_FINDER_V3_2026-10-02.json").write_text(json.dumps(report,indent=2)+"\n")
 print(json.dumps(report["qa"],indent=2))
