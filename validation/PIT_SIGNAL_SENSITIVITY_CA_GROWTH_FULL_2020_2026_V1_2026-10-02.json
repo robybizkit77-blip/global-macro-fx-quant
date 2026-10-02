@@ -3906,73 +3906,19 @@
       "turning_changed": false,
       "acceleration_direction_changed": false,
       "both_series_ready": true
-    },
-    {
-      "checkpoint": "2026-09-24",
-      "latest_gdp_month": "2026-06",
-      "latest_retail_month": "2026-07",
-      "first_release": {
-        "current": 0.0489,
-        "previous": 1.7179,
-        "direction": 0,
-        "speed": 0.0489,
-        "acceleration": -1.669,
-        "accelDir": -1,
-        "turning": false,
-        "n": 2
-      },
-      "current_revised": {
-        "current": 1.5885,
-        "previous": 1.0847,
-        "direction": 1,
-        "speed": 1.5885,
-        "acceleration": 0.5038,
-        "accelDir": 1,
-        "turning": false,
-        "n": 2
-      },
-      "direction_changed": true,
-      "turning_changed": false,
-      "acceleration_direction_changed": true,
-      "both_series_ready": true
-    },
-    {
-      "checkpoint": "2026-09-29",
-      "latest_gdp_month": "2026-07",
-      "latest_retail_month": "2026-07",
-      "first_release": {
-        "current": -0.7132,
-        "previous": 1.721,
-        "direction": -1,
-        "speed": 0.7132,
-        "acceleration": -2.4341,
-        "accelDir": -1,
-        "turning": true,
-        "n": 2
-      },
-      "current_revised": {
-        "current": 1.5885,
-        "previous": 1.0847,
-        "direction": 1,
-        "speed": 1.5885,
-        "acceleration": 0.5038,
-        "accelDir": 1,
-        "turning": false,
-        "n": 2
-      },
-      "direction_changed": true,
-      "turning_changed": true,
-      "acceleration_direction_changed": true,
-      "both_series_ready": true
     }
   ],
   "summary": {
-    "event_checkpoints_compared": 136,
-    "both_series_ready_checkpoints": 135,
-    "direction_changes": 44,
-    "direction_change_pct": 32.59,
-    "turning_changes": 32,
-    "acceleration_direction_changes": 52,
+    "revised_runtime_support": {
+      "gdp_through": "2026-06",
+      "retail_through": "2026-06"
+    },
+    "event_checkpoints_compared": 134,
+    "both_series_ready_checkpoints": 133,
+    "direction_changes": 42,
+    "direction_change_pct": 31.58,
+    "turning_changes": 31,
+    "acceleration_direction_changes": 50,
     "changed_direction_checkpoints": [
       "2021-06-23",
       "2021-10-01",
@@ -4015,9 +3961,7 @@
       "2025-09-26",
       "2025-10-31",
       "2025-11-28",
-      "2026-02-27",
-      "2026-09-24",
-      "2026-09-29"
+      "2026-02-27"
     ],
     "changed_turning_checkpoints": [
       "2021-06-23",
@@ -4050,8 +3994,7 @@
       "2025-04-25",
       "2025-11-28",
       "2025-12-23",
-      "2026-03-20",
-      "2026-09-29"
+      "2026-03-20"
     ],
     "changed_acceleration_checkpoints": [
       "2021-06-01",
@@ -4103,9 +4046,7 @@
       "2026-04-30",
       "2026-05-22",
       "2026-07-31",
-      "2026-08-21",
-      "2026-09-24",
-      "2026-09-29"
+      "2026-08-21"
     ]
   },
   "caveat": "This reconstructs the CAD Growth block only. Full CAD macro state also requires PIT Labour series and historical Rates/CB inputs."
