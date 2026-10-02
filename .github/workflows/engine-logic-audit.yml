@@ -1,5 +1,8 @@
 name: Engine Logic Audit
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [staging-engine-logic-audit-2026-09-30, engine-freeze-v1-2026-10-02]
