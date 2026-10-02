@@ -12,7 +12,7 @@ OUT=OUTDIR/(f"EUR_RETAIL_VOLUME_DATED_RELEASE_CRAWL_{YEAR_FILTER}_{MONTH_FILTER:
 
 UA={"User-Agent":"Mozilla/5.0 GMFQ-PIT-retail/2.0"}
 
-def get(url,timeout=10):
+def get(url,timeout=8):
     last=None
     for attempt in range(4):
         req=urllib.request.Request(url,headers=UA)
@@ -36,12 +36,13 @@ def clean(s):
 
 def urls_for(d):
     code=d.strftime("%d%m%Y")
-    return [
-      f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-{code}-ap",
-      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-{code}-ap",
-      f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/4-{code}-ap",
-      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/-/4-{code}-ap",
+    bases=[
+      "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/",
+      "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/",
+      "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/",
+      "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/-/",
     ]
+    return [f"{base}4-{code}-{suffix}" for base in bases for suffix in ("ap","bp")]
 
 months={m:i+1 for i,m in enumerate(["January","February","March","April","May","June","July","August","September","October","November","December"])}
 
@@ -80,7 +81,7 @@ def extract_first_release(txt,release_date):
     return {"reference_month":ref,"mom_pct":val,"match_text":matched}
 
 def crawl_release_month(y,mo):
-    for day in range(4,11):
+    for day in range(3,12):
         try: d=date(y,mo,day)
         except ValueError: continue
         for u in urls_for(d):
