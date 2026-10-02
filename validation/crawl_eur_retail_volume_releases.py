@@ -2,6 +2,7 @@
 import json,re,time,urllib.request
 from pathlib import Path
 from datetime import date
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 OUTDIR=Path("validation/pit_batch/eurostat/archive")
 OUTDIR.mkdir(parents=True,exist_ok=True)
@@ -76,34 +77,41 @@ def extract_first_release(txt,release_date):
             return None
     return {"reference_month":ref,"mom_pct":val,"match_text":matched}
 
-rows=[]
+def crawl_release_month(y,mo):
+    for day in range(1,13):
+        try: d=date(y,mo,day)
+        except ValueError: continue
+        for u in urls_for(d):
+            raw,final=get(u)
+            if not raw: continue
+            txt=clean(raw)
+            if "volume of retail trade" not in txt.lower() or "euro area" not in txt.lower():
+                continue
+            x=extract_first_release(txt,d.isoformat())
+            if not x: continue
+            return {
+              "release_date":d.isoformat(),
+              "reference_month":x["reference_month"],
+              "retail_volume_mom_pct":x["mom_pct"],
+              "url":final or u,
+              "match_text":x["match_text"]
+            }
+    return None
+
+targets=[]
 for y in range(2020,2027):
     m0=8 if y==2020 else 1
     m1=10 if y==2026 else 12
     for mo in range(m0,m1+1):
-        found=None
-        for day in range(1,13):
-            try: d=date(y,mo,day)
-            except ValueError: continue
-            for u in urls_for(d):
-                raw,final=get(u)
-                if not raw: continue
-                txt=clean(raw)
-                if "volume of retail trade" not in txt.lower() or "euro area" not in txt.lower():
-                    continue
-                x=extract_first_release(txt,d.isoformat())
-                if not x: continue
-                found={
-                  "release_date":d.isoformat(),
-                  "reference_month":x["reference_month"],
-                  "retail_volume_mom_pct":x["mom_pct"],
-                  "url":final or u,
-                  "match_text":x["match_text"]
-                }
-                break
-            if found: break
-        if found: rows.append(found)
-        time.sleep(0.1)
+        targets.append((y,mo))
+
+rows=[]
+with ThreadPoolExecutor(max_workers=8) as ex:
+    futs={ex.submit(crawl_release_month,y,mo):(y,mo) for y,mo in targets}
+    for fut in as_completed(futs):
+        x=fut.result()
+        if x: rows.append(x)
+rows.sort(key=lambda x:x["release_date"])
 
 # Deduplicate by reference month, retaining earliest official release found.
 by={}
