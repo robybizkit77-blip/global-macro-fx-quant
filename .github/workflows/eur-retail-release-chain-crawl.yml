@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: eur-retail-release-chain-crawl
+  cancel-in-progress: true
+
 jobs:
   crawl:
     runs-on: ubuntu-latest
@@ -26,6 +30,7 @@ jobs:
       - name: Crawl deterministic Retail release chain
         run: python validation/crawl_eur_retail_release_chain.py
       - name: Commit chain
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
