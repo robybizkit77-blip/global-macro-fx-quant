@@ -1,0 +1,70 @@
+{
+  "schema": "GMFQ_PIT_VINTAGE_PILOT_CA_GDP_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "source_main_sha": "93b7aeb0eda1398a4c689d21d3dac0d2cbe28b79",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "series": {
+    "runtime_id": "CA_REAL_GDP_M_history_value",
+    "label": "PIL reale mensile",
+    "currency": "CAD"
+  },
+  "methodology": {
+    "first_release_growth": "Headline monthly real-GDP growth in dated Statistics Canada The Daily releases.",
+    "revised_growth": "Growth computed from current runtime historical level series.",
+    "scope": "Pilot focused on the first four post-common-gate observations (May-August 2020)."
+  },
+  "source": {
+    "official": "Statistics Canada The Daily + real-time table 36-10-0491-01",
+    "references": [
+      "2020-07-31 May 2020: +4.5%",
+      "2020-08-28 June 2020: +6.5%",
+      "2020-09-30 July 2020: +3.0%",
+      "2020-10-30 August 2020: +1.2%"
+    ]
+  },
+  "sample": [
+    {
+      "month": "2020-05",
+      "release_date": "2020-07-31",
+      "first_release_mom_pct": 4.5,
+      "current_revised_mom_pct": 4.582,
+      "delta_pp": 0.082,
+      "same_direction": true
+    },
+    {
+      "month": "2020-06",
+      "release_date": "2020-08-28",
+      "first_release_mom_pct": 6.5,
+      "current_revised_mom_pct": 5.924,
+      "delta_pp": -0.576,
+      "same_direction": true
+    },
+    {
+      "month": "2020-07",
+      "release_date": "2020-09-30",
+      "first_release_mom_pct": 3,
+      "current_revised_mom_pct": 2.5718,
+      "delta_pp": -0.4282,
+      "same_direction": true
+    },
+    {
+      "month": "2020-08",
+      "release_date": "2020-10-30",
+      "first_release_mom_pct": 1.2,
+      "current_revised_mom_pct": 0.9964,
+      "delta_pp": -0.2036,
+      "same_direction": true
+    }
+  ],
+  "result": {
+    "months_compared": 4,
+    "direction_flips": 0,
+    "max_abs_revision_pp": 0.576,
+    "conclusion": "No sign flip in this four-month CAD GDP pilot, but revisions change the magnitude of the growth impulse. The direction signal appears robust here; normalized impulse strength can still move."
+  },
+  "next": "Extend CAD GDP through the full 2020-2026 monthly sample, then test whether revised-vs-first-release differences alter blockDynamics direction/turning thresholds."
+}
