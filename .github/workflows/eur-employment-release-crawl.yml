@@ -1,0 +1,40 @@
+name: EUR Employment Release Crawl
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [engine-freeze-v1-2026-10-02]
+    paths:
+      - validation/crawl_eur_employment_releases.py
+      - .github/workflows/eur-employment-release-crawl.yml
+      - validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_OFFICIAL_RELEASE_SEED_V1_2026-10-02.json
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdf
+      - name: Crawl EUR employment first releases
+        run: python validation/crawl_eur_employment_releases.py
+      - name: Commit crawl
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_DATED_RELEASE_CRAWL_V1_2026-10-02.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build EUR employment first-release crawl"
+            git pull --rebase origin engine-freeze-v1-2026-10-02
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
