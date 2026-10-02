@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Strict matched-availability comparison.
 import json, math, statistics
 from pathlib import Path
 from datetime import date
