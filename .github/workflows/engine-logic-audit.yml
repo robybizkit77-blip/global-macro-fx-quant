@@ -195,11 +195,45 @@ jobs:
             };
             console.log('===AUDIT_GATES===',JSON.stringify(gates));
             const failed=Object.entries(gates).filter(([,v])=>!v).map(([k])=>k);
+            const auditResult={
+              schema:'GMFQ_ENGINE_LOGIC_AUDIT_LATEST_V1',
+              generated_at:new Date().toISOString(),
+              gates,
+              failed,
+              lazyLoadInvariance:out?.lazyLoadInvariance||null,
+              refreshStability:out?.refreshStability||null,
+              currencyRules:out?.currencyRules||null,
+              pairConsistency:out?.pairConsistency||null,
+              allPairFrames:out?.allPairFrames||null,
+              runtimeErrors:errors
+            };
+            fs.mkdirSync('validation',{recursive:true});
+            fs.writeFileSync('validation/ENGINE_LOGIC_AUDIT_LATEST.json',JSON.stringify(auditResult,null,2));
             await browser.close(); srv.kill();
-            if(failed.length){
-              console.error('AUDIT FAILED:',failed.join(', '));
-              process.exit(2);
-            }
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
+      - name: Commit machine-readable audit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/ENGINE_LOGIC_AUDIT_LATEST.json
+          if git diff --cached --quiet; then
+            echo "No audit result changes"
+          else
+            git commit -m "Record latest engine logic audit result"
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
+      - name: Enforce audit gates
+        run: |
+          python - <<'PY'
+          import json,sys
+          p='validation/ENGINE_LOGIC_AUDIT_LATEST.json'
+          j=json.load(open(p,encoding='utf-8'))
+          print('GATES',json.dumps(j.get('gates',{}),sort_keys=True))
+          failed=j.get('failed') or []
+          if failed:
+              print('FAILED:', ', '.join(failed))
+              sys.exit(2)
+          print('ALL ENGINE AUDIT GATES PASSED')
+          PY
