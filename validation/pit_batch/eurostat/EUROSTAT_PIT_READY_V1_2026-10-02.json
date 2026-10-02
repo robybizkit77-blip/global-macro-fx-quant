@@ -1,7 +1,8 @@
 {
-  "schema": "GMFQ_EUROSTAT_PIT_READY_V1",
+  "schema": "GMFQ_EUROSTAT_PIT_READY_V2",
   "created_at": "2026-10-02",
   "currency": "EUR",
+  "correction_note": "V1 incorrectly compared IP first-release RT1 growth rates directly with current runtime index levels. V2 fixes units by compounding first-release RT1 into a synthetic index path; normalizedSeriesImpulse is invariant to multiplicative scale.",
   "sources": [
     "EI_IS_M_VTG",
     "EI_LM_M_VTG"
@@ -9,605 +10,541 @@
   "series": {
     "EA_IP_history_value": {
       "category": "Crescita",
+      "representation": "first-release RT1 compounded to synthetic level",
       "rows": [
         {
           "observation_month": "2021-01",
           "first_release_date": "2021-03-12",
           "first_release_value": 0.8,
           "vintage_count": 66,
-          "current_revised_value": 100.2,
-          "delta": 99.4,
-          "same_direction": true
+          "first_release_synth_level": 99.48960000000001,
+          "current_revised_level": 100.2
         },
         {
           "observation_month": "2021-02",
           "first_release_date": "2021-04-14",
           "first_release_value": -1,
           "vintage_count": 65,
-          "current_revised_value": 98.9,
-          "delta": 99.9,
-          "same_direction": false
+          "first_release_synth_level": 98.49470400000001,
+          "current_revised_level": 98.9
         },
         {
           "observation_month": "2021-03",
           "first_release_date": "2021-05-12",
           "first_release_value": 0.1,
           "vintage_count": 64,
-          "current_revised_value": 100,
-          "delta": 99.9,
-          "same_direction": true
+          "first_release_synth_level": 98.593198704,
+          "current_revised_level": 100
         },
         {
           "observation_month": "2021-04",
           "first_release_date": "2021-06-14",
           "first_release_value": 0.8,
           "vintage_count": 63,
-          "current_revised_value": 100.8,
-          "delta": 100,
-          "same_direction": true
+          "first_release_synth_level": 99.381944293632,
+          "current_revised_level": 100.8
         },
         {
           "observation_month": "2021-05",
           "first_release_date": "2021-07-14",
           "first_release_value": -1,
           "vintage_count": 62,
-          "current_revised_value": 99.5,
-          "delta": 100.5,
-          "same_direction": false
+          "first_release_synth_level": 98.38812485069568,
+          "current_revised_level": 99.5
         },
         {
           "observation_month": "2021-06",
           "first_release_date": "2021-08-12",
           "first_release_value": -0.3,
           "vintage_count": 61,
-          "current_revised_value": 99.9,
-          "delta": 100.2,
-          "same_direction": false
+          "first_release_synth_level": 98.09296047614359,
+          "current_revised_level": 99.9
         },
         {
           "observation_month": "2021-07",
           "first_release_date": "2021-09-15",
           "first_release_value": 1.5,
           "vintage_count": 60,
-          "current_revised_value": 101.3,
-          "delta": 99.8,
-          "same_direction": true
+          "first_release_synth_level": 99.56435488328573,
+          "current_revised_level": 101.3
         },
         {
           "observation_month": "2021-08",
           "first_release_date": "2021-10-13",
           "first_release_value": -1.6,
           "vintage_count": 59,
-          "current_revised_value": 99,
-          "delta": 100.6,
-          "same_direction": false
+          "first_release_synth_level": 97.97132520515316,
+          "current_revised_level": 99
         },
         {
           "observation_month": "2021-09",
           "first_release_date": "2021-11-12",
           "first_release_value": -0.2,
           "vintage_count": 58,
-          "current_revised_value": 99.1,
-          "delta": 99.3,
-          "same_direction": false
+          "first_release_synth_level": 97.77538255474286,
+          "current_revised_level": 99.1
         },
         {
           "observation_month": "2021-10",
           "first_release_date": "2021-12-14",
           "first_release_value": 1.1,
           "vintage_count": 57,
-          "current_revised_value": 99.3,
-          "delta": 98.2,
-          "same_direction": true
+          "first_release_synth_level": 98.85091176284503,
+          "current_revised_level": 99.3
         },
         {
           "observation_month": "2021-11",
           "first_release_date": "2022-01-12",
           "first_release_value": 2.3,
           "vintage_count": 56,
-          "current_revised_value": 100,
-          "delta": 97.7,
-          "same_direction": true
+          "first_release_synth_level": 101.12448273339045,
+          "current_revised_level": 100
         },
         {
           "observation_month": "2021-12",
           "first_release_date": "2022-02-16",
           "first_release_value": 1.2,
           "vintage_count": 55,
-          "current_revised_value": 102,
-          "delta": 100.8,
-          "same_direction": true
+          "first_release_synth_level": 102.33797652619114,
+          "current_revised_level": 102
         },
         {
           "observation_month": "2022-01",
           "first_release_date": "2022-03-15",
           "first_release_value": 0,
           "vintage_count": 54,
-          "current_revised_value": 101.2,
-          "delta": 101.2,
-          "same_direction": false
+          "first_release_synth_level": 102.33797652619114,
+          "current_revised_level": 101.2
         },
         {
           "observation_month": "2022-02",
           "first_release_date": "2022-04-20",
           "first_release_value": 0.7,
           "vintage_count": 53,
-          "current_revised_value": 101.8,
-          "delta": 101.1,
-          "same_direction": true
+          "first_release_synth_level": 103.05434236187448,
+          "current_revised_level": 101.8
         },
         {
           "observation_month": "2022-03",
           "first_release_date": "2022-05-13",
           "first_release_value": -1.8,
           "vintage_count": 52,
-          "current_revised_value": 100,
-          "delta": 101.8,
-          "same_direction": false
+          "first_release_synth_level": 101.19936419936073,
+          "current_revised_level": 100
         },
         {
           "observation_month": "2022-04",
           "first_release_date": "2022-06-15",
           "first_release_value": 0.4,
           "vintage_count": 51,
-          "current_revised_value": 100.2,
-          "delta": 99.8,
-          "same_direction": true
+          "first_release_synth_level": 101.60416165615817,
+          "current_revised_level": 100.2
         },
         {
           "observation_month": "2022-05",
           "first_release_date": "2022-07-13",
           "first_release_value": 0.8,
           "vintage_count": 50,
-          "current_revised_value": 102.3,
-          "delta": 101.5,
-          "same_direction": true
+          "first_release_synth_level": 102.41699494940744,
+          "current_revised_level": 102.3
         },
         {
           "observation_month": "2022-06",
           "first_release_date": "2022-08-12",
           "first_release_value": 0.7,
           "vintage_count": 49,
-          "current_revised_value": 102.2,
-          "delta": 101.5,
-          "same_direction": true
+          "first_release_synth_level": 103.13391391405328,
+          "current_revised_level": 102.2
         },
         {
           "observation_month": "2022-07",
           "first_release_date": "2022-09-14",
           "first_release_value": -2.3,
           "vintage_count": 48,
-          "current_revised_value": 100.4,
-          "delta": 102.7,
-          "same_direction": false
+          "first_release_synth_level": 100.76183389403005,
+          "current_revised_level": 100.4
         },
         {
           "observation_month": "2022-08",
           "first_release_date": "2022-10-12",
           "first_release_value": 1.5,
           "vintage_count": 47,
-          "current_revised_value": 102.5,
-          "delta": 101,
-          "same_direction": true
+          "first_release_synth_level": 102.27326140244048,
+          "current_revised_level": 102.5
         },
         {
           "observation_month": "2022-09",
           "first_release_date": "2022-11-14",
           "first_release_value": 0.9,
           "vintage_count": 46,
-          "current_revised_value": 103.7,
-          "delta": 102.8,
-          "same_direction": true
+          "first_release_synth_level": 103.19372075506243,
+          "current_revised_level": 103.7
         },
         {
           "observation_month": "2022-10",
           "first_release_date": "2022-12-14",
           "first_release_value": -2,
           "vintage_count": 45,
-          "current_revised_value": 102.6,
-          "delta": 104.6,
-          "same_direction": false
+          "first_release_synth_level": 101.12984633996118,
+          "current_revised_level": 102.6
         },
         {
           "observation_month": "2022-11",
           "first_release_date": "2023-01-13",
           "first_release_value": 1,
           "vintage_count": 44,
-          "current_revised_value": 102.9,
-          "delta": 101.9,
-          "same_direction": true
+          "first_release_synth_level": 102.14114480336079,
+          "current_revised_level": 102.9
         },
         {
           "observation_month": "2022-12",
           "first_release_date": "2023-02-15",
           "first_release_value": -1,
           "vintage_count": 43,
-          "current_revised_value": 100.8,
-          "delta": 101.8,
-          "same_direction": false
+          "first_release_synth_level": 101.11973335532718,
+          "current_revised_level": 100.8
         },
         {
           "observation_month": "2023-01",
           "first_release_date": "2023-03-15",
           "first_release_value": 0.7,
           "vintage_count": 42,
-          "current_revised_value": 102.3,
-          "delta": 101.6,
-          "same_direction": true
+          "first_release_synth_level": 101.82757148881447,
+          "current_revised_level": 102.3
         },
         {
           "observation_month": "2023-02",
           "first_release_date": "2023-04-13",
           "first_release_value": 1.5,
           "vintage_count": 41,
-          "current_revised_value": 103.4,
-          "delta": 101.9,
-          "same_direction": true
+          "first_release_synth_level": 103.35498506114668,
+          "current_revised_level": 103.4
         },
         {
           "observation_month": "2023-03",
           "first_release_date": "2023-05-15",
           "first_release_value": -4.1,
           "vintage_count": 40,
-          "current_revised_value": 100.5,
-          "delta": 104.6,
-          "same_direction": false
+          "first_release_synth_level": 99.11743067363966,
+          "current_revised_level": 100.5
         },
         {
           "observation_month": "2023-04",
           "first_release_date": "2023-06-14",
           "first_release_value": 1,
           "vintage_count": 39,
-          "current_revised_value": 100.6,
-          "delta": 99.6,
-          "same_direction": true
+          "first_release_synth_level": 100.10860498037606,
+          "current_revised_level": 100.6
         },
         {
           "observation_month": "2023-05",
           "first_release_date": "2023-07-13",
           "first_release_value": 0.2,
           "vintage_count": 38,
-          "current_revised_value": 101,
-          "delta": 100.8,
-          "same_direction": true
+          "first_release_synth_level": 100.30882219033681,
+          "current_revised_level": 101
         },
         {
           "observation_month": "2023-06",
           "first_release_date": "2023-08-16",
           "first_release_value": 0.5,
           "vintage_count": 37,
-          "current_revised_value": 101.8,
-          "delta": 101.3,
-          "same_direction": true
+          "first_release_synth_level": 100.81036630128848,
+          "current_revised_level": 101.8
         },
         {
           "observation_month": "2023-07",
           "first_release_date": "2023-09-13",
           "first_release_value": -1.1,
           "vintage_count": 36,
-          "current_revised_value": 99,
-          "delta": 100.1,
-          "same_direction": false
+          "first_release_synth_level": 99.7014522719743,
+          "current_revised_level": 99
         },
         {
           "observation_month": "2023-08",
           "first_release_date": "2023-10-13",
           "first_release_value": 0.6,
           "vintage_count": 35,
-          "current_revised_value": 98.6,
-          "delta": 98,
-          "same_direction": true
+          "first_release_synth_level": 100.29966098560615,
+          "current_revised_level": 98.6
         },
         {
           "observation_month": "2023-09",
           "first_release_date": "2023-11-15",
           "first_release_value": -1.1,
           "vintage_count": 34,
-          "current_revised_value": 98.4,
-          "delta": 99.5,
-          "same_direction": false
+          "first_release_synth_level": 99.19636471476448,
+          "current_revised_level": 98.4
         },
         {
           "observation_month": "2023-10",
           "first_release_date": "2023-12-13",
           "first_release_value": -0.7,
           "vintage_count": 33,
-          "current_revised_value": 97.8,
-          "delta": 98.5,
-          "same_direction": false
+          "first_release_synth_level": 98.50199016176113,
+          "current_revised_level": 97.8
         },
         {
           "observation_month": "2023-11",
           "first_release_date": "2024-01-23",
           "first_release_value": -0.3,
           "vintage_count": 32,
-          "current_revised_value": 98.7,
-          "delta": 99,
-          "same_direction": false
+          "first_release_synth_level": 98.20648419127585,
+          "current_revised_level": 98.7
         },
         {
           "observation_month": "2023-12",
           "first_release_date": "2024-02-14",
           "first_release_value": 2.6,
           "vintage_count": 31,
-          "current_revised_value": 98.6,
-          "delta": 96,
-          "same_direction": true
+          "first_release_synth_level": 100.75985278024902,
+          "current_revised_level": 98.6
         },
         {
           "observation_month": "2024-01",
           "first_release_date": "2024-03-13",
           "first_release_value": -3.2,
           "vintage_count": 30,
-          "current_revised_value": 97.4,
-          "delta": 100.6,
-          "same_direction": false
+          "first_release_synth_level": 97.53553749128105,
+          "current_revised_level": 97.4
         },
         {
           "observation_month": "2024-02",
           "first_release_date": "2024-04-15",
           "first_release_value": 0.8,
           "vintage_count": 29,
-          "current_revised_value": 97.6,
-          "delta": 96.8,
-          "same_direction": true
+          "first_release_synth_level": 98.31582179121129,
+          "current_revised_level": 97.6
         },
         {
           "observation_month": "2024-03",
           "first_release_date": "2024-05-15",
           "first_release_value": 0.6,
           "vintage_count": 28,
-          "current_revised_value": 97.1,
-          "delta": 96.5,
-          "same_direction": true
+          "first_release_synth_level": 98.90571672195856,
+          "current_revised_level": 97.1
         },
         {
           "observation_month": "2024-04",
           "first_release_date": "2024-06-13",
           "first_release_value": -0.1,
           "vintage_count": 27,
-          "current_revised_value": 97.6,
-          "delta": 97.7,
-          "same_direction": false
+          "first_release_synth_level": 98.8068110052366,
+          "current_revised_level": 97.6
         },
         {
           "observation_month": "2024-05",
           "first_release_date": "2024-07-15",
           "first_release_value": -0.6,
           "vintage_count": 26,
-          "current_revised_value": 96,
-          "delta": 96.6,
-          "same_direction": false
+          "first_release_synth_level": 98.21397013920517,
+          "current_revised_level": 96
         },
         {
           "observation_month": "2024-06",
           "first_release_date": "2024-08-14",
           "first_release_value": -0.1,
           "vintage_count": 25,
-          "current_revised_value": 97.7,
-          "delta": 97.8,
-          "same_direction": false
+          "first_release_synth_level": 98.11575616906597,
+          "current_revised_level": 97.7
         },
         {
           "observation_month": "2024-07",
           "first_release_date": "2024-09-13",
           "first_release_value": -0.3,
           "vintage_count": 24,
-          "current_revised_value": 97,
-          "delta": 97.3,
-          "same_direction": false
+          "first_release_synth_level": 97.82140890055878,
+          "current_revised_level": 97
         },
         {
           "observation_month": "2024-08",
           "first_release_date": "2024-10-15",
           "first_release_value": 1.8,
           "vintage_count": 23,
-          "current_revised_value": 97.5,
-          "delta": 95.7,
-          "same_direction": true
+          "first_release_synth_level": 99.58219426076884,
+          "current_revised_level": 97.5
         },
         {
           "observation_month": "2024-09",
           "first_release_date": "2024-11-14",
           "first_release_value": -2,
           "vintage_count": 22,
-          "current_revised_value": 96.6,
-          "delta": 98.6,
-          "same_direction": false
+          "first_release_synth_level": 97.59055037555346,
+          "current_revised_level": 96.6
         },
         {
           "observation_month": "2024-10",
           "first_release_date": "2024-12-13",
           "first_release_value": 0,
           "vintage_count": 21,
-          "current_revised_value": 96.9,
-          "delta": 96.9,
-          "same_direction": false
+          "first_release_synth_level": 97.59055037555346,
+          "current_revised_level": 96.9
         },
         {
           "observation_month": "2024-11",
           "first_release_date": "2025-01-15",
           "first_release_value": 0.2,
           "vintage_count": 20,
-          "current_revised_value": 96.8,
-          "delta": 96.6,
-          "same_direction": true
+          "first_release_synth_level": 97.78573147630458,
+          "current_revised_level": 96.8
         },
         {
           "observation_month": "2024-12",
           "first_release_date": "2025-02-13",
           "first_release_value": -1.1,
           "vintage_count": 19,
-          "current_revised_value": 96.5,
-          "delta": 97.6,
-          "same_direction": false
+          "first_release_synth_level": 96.71008843006523,
+          "current_revised_level": 96.5
         },
         {
           "observation_month": "2025-01",
           "first_release_date": "2025-03-13",
           "first_release_value": 0.8,
           "vintage_count": 18,
-          "current_revised_value": 98.1,
-          "delta": 97.3,
-          "same_direction": true
+          "first_release_synth_level": 97.48376913750575,
+          "current_revised_level": 98.1
         },
         {
           "observation_month": "2025-02",
           "first_release_date": "2025-04-15",
           "first_release_value": 1.1,
           "vintage_count": 17,
-          "current_revised_value": 98.9,
-          "delta": 97.8,
-          "same_direction": true
+          "first_release_synth_level": 98.5560905980183,
+          "current_revised_level": 98.9
         },
         {
           "observation_month": "2025-03",
           "first_release_date": "2025-05-15",
           "first_release_value": 2.6,
           "vintage_count": 16,
-          "current_revised_value": 101.5,
-          "delta": 98.9,
-          "same_direction": true
+          "first_release_synth_level": 101.11854895356677,
+          "current_revised_level": 101.5
         },
         {
           "observation_month": "2025-04",
           "first_release_date": "2025-06-13",
           "first_release_value": -2.4,
           "vintage_count": 15,
-          "current_revised_value": 98,
-          "delta": 100.4,
-          "same_direction": false
+          "first_release_synth_level": 98.69170377868117,
+          "current_revised_level": 98
         },
         {
           "observation_month": "2025-05",
           "first_release_date": "2025-07-15",
           "first_release_value": 1.7,
           "vintage_count": 14,
-          "current_revised_value": 98.9,
-          "delta": 97.2,
-          "same_direction": true
+          "first_release_synth_level": 100.36946274291874,
+          "current_revised_level": 98.9
         },
         {
           "observation_month": "2025-06",
           "first_release_date": "2025-08-14",
           "first_release_value": -1.3,
           "vintage_count": 13,
-          "current_revised_value": 98.7,
-          "delta": 100,
-          "same_direction": false
+          "first_release_synth_level": 99.0646597272608,
+          "current_revised_level": 98.7
         },
         {
           "observation_month": "2025-07",
           "first_release_date": "2025-09-16",
           "first_release_value": 0.3,
           "vintage_count": 12,
-          "current_revised_value": 98.6,
-          "delta": 98.3,
-          "same_direction": true
+          "first_release_synth_level": 99.36185370644257,
+          "current_revised_level": 98.6
         },
         {
           "observation_month": "2025-08",
           "first_release_date": "2025-10-15",
           "first_release_value": -1.2,
           "vintage_count": 11,
-          "current_revised_value": 98.3,
-          "delta": 99.5,
-          "same_direction": false
+          "first_release_synth_level": 98.16951146196526,
+          "current_revised_level": 98.3
         },
         {
           "observation_month": "2025-09",
           "first_release_date": "2025-11-13",
           "first_release_value": 0.2,
           "vintage_count": 10,
-          "current_revised_value": 98.2,
-          "delta": 98,
-          "same_direction": true
+          "first_release_synth_level": 98.3658504848892,
+          "current_revised_level": 98.2
         },
         {
           "observation_month": "2025-10",
           "first_release_date": "2025-12-15",
           "first_release_value": 0.8,
           "vintage_count": 9,
-          "current_revised_value": 98.4,
-          "delta": 97.6,
-          "same_direction": true
+          "first_release_synth_level": 99.1527772887683,
+          "current_revised_level": 98.4
         },
         {
           "observation_month": "2025-11",
           "first_release_date": "2026-01-15",
           "first_release_value": 0.6,
           "vintage_count": 8,
-          "current_revised_value": 98.8,
-          "delta": 98.2,
-          "same_direction": true
+          "first_release_synth_level": 99.74769395250091,
+          "current_revised_level": 98.8
         },
         {
           "observation_month": "2025-12",
           "first_release_date": "2026-02-16",
           "first_release_value": -1.3,
           "vintage_count": 7,
-          "current_revised_value": 98.5,
-          "delta": 99.8,
-          "same_direction": false
+          "first_release_synth_level": 98.4509739311184,
+          "current_revised_level": 98.5
         },
         {
           "observation_month": "2026-01",
           "first_release_date": "2026-03-13",
           "first_release_value": -1.5,
           "vintage_count": 6,
-          "current_revised_value": 97.2,
-          "delta": 98.7,
-          "same_direction": false
+          "first_release_synth_level": 96.97420932215162,
+          "current_revised_level": 97.2
         },
         {
           "observation_month": "2026-02",
           "first_release_date": "2026-04-21",
           "first_release_value": 0.4,
           "vintage_count": 5,
-          "current_revised_value": 97.6,
-          "delta": 97.2,
-          "same_direction": true
+          "first_release_synth_level": 97.36210615944023,
+          "current_revised_level": 97.6
         },
         {
           "observation_month": "2026-03",
           "first_release_date": "2026-05-13",
           "first_release_value": 0.2,
           "vintage_count": 4,
-          "current_revised_value": 98,
-          "delta": 97.8,
-          "same_direction": true
+          "first_release_synth_level": 97.5568303717591,
+          "current_revised_level": 98
         },
         {
           "observation_month": "2026-04",
           "first_release_date": "2026-06-15",
           "first_release_value": 0.1,
           "vintage_count": 3,
-          "current_revised_value": 98.3,
-          "delta": 98.2,
-          "same_direction": true
+          "first_release_synth_level": 97.65438720213085,
+          "current_revised_level": 98.3
         },
         {
           "observation_month": "2026-05",
           "first_release_date": "2026-07-15",
           "first_release_value": -0.2,
           "vintage_count": 2,
-          "current_revised_value": 98.5,
-          "delta": 98.7,
-          "same_direction": false
+          "first_release_synth_level": 97.45907842772658,
+          "current_revised_level": 98.5
         },
         {
           "observation_month": "2026-06",
           "first_release_date": "2026-08-13",
           "first_release_value": 0,
           "vintage_count": 1,
-          "current_revised_value": 98.4,
-          "delta": 98.4,
-          "same_direction": false
+          "first_release_synth_level": 97.45907842772658,
+          "current_revised_level": 98.4
         }
       ]
     },
     "EA_UNEMP_history_value": {
       "category": "Lavoro",
+      "representation": "level-to-level unemployment rate",
       "rows": [
         {
           "observation_month": "2021-01",
@@ -1143,39 +1080,6 @@
   "qa": {
     "ip_rows": 66,
     "unemp_rows": 66,
-    "ip_direction_flips": 30,
-    "ip_flip_months": [
-      "2021-02",
-      "2021-05",
-      "2021-06",
-      "2021-08",
-      "2021-09",
-      "2022-01",
-      "2022-03",
-      "2022-07",
-      "2022-10",
-      "2022-12",
-      "2023-03",
-      "2023-07",
-      "2023-09",
-      "2023-10",
-      "2023-11",
-      "2024-01",
-      "2024-04",
-      "2024-05",
-      "2024-06",
-      "2024-07",
-      "2024-09",
-      "2024-10",
-      "2024-12",
-      "2025-04",
-      "2025-06",
-      "2025-08",
-      "2025-12",
-      "2026-01",
-      "2026-05",
-      "2026-06"
-    ],
-    "status": "PIT_READY_FOR_SIGNAL_HARNESS"
+    "status": "PIT_READY_FOR_SIGNAL_HARNESS_CORRECTED"
   }
 }
