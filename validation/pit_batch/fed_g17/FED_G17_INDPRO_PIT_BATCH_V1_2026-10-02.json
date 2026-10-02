@@ -1,0 +1,588 @@
+{
+  "schema": "GMFQ_FED_G17_INDPRO_PIT_BATCH_V1",
+  "created_at": "2026-10-02",
+  "provider": "Federal Reserve G.17",
+  "runtime_id": "US_INDPRO_history_value",
+  "category": "Crescita",
+  "source": {
+    "revision_history": "https://www.federalreserve.gov/releases/g17/Current/ipdisk/revh_sa.txt",
+    "historical_release_dates": "https://www.federalreserve.gov/releases/G17/release_dates.htm"
+  },
+  "methodology": {
+    "formula": "100 * (init[t] / rev1[t-1] - 1)",
+    "market_availability": "Official G.17 historical monthly release date mapped to the prior observation month.",
+    "no_lookahead": true
+  },
+  "rows": [
+    {
+      "observation_month": "2020-01",
+      "release_date": "2020-02-14",
+      "first_release_mom_pct": -0.308652,
+      "initial_index_level": 109.2026,
+      "prior_month_rev1_index_level": 109.5407
+    },
+    {
+      "observation_month": "2020-02",
+      "release_date": "2020-03-17",
+      "first_release_mom_pct": 0.554315,
+      "initial_index_level": 109.6035,
+      "prior_month_rev1_index_level": 108.9993
+    },
+    {
+      "observation_month": "2020-03",
+      "release_date": "2020-04-15",
+      "first_release_mom_pct": -5.400892,
+      "initial_index_level": 103.6635,
+      "prior_month_rev1_index_level": 109.5819
+    },
+    {
+      "observation_month": "2020-04",
+      "release_date": "2020-05-15",
+      "first_release_mom_pct": -11.247702,
+      "initial_index_level": 92.5919,
+      "prior_month_rev1_index_level": 104.3262
+    },
+    {
+      "observation_month": "2020-05",
+      "release_date": "2020-06-16",
+      "first_release_mom_pct": 1.389097,
+      "initial_index_level": 92.5503,
+      "prior_month_rev1_index_level": 91.2823
+    },
+    {
+      "observation_month": "2020-06",
+      "release_date": "2020-07-15",
+      "first_release_mom_pct": 5.413863,
+      "initial_index_level": 97.4587,
+      "prior_month_rev1_index_level": 92.4534
+    },
+    {
+      "observation_month": "2020-07",
+      "release_date": "2020-08-14",
+      "first_release_mom_pct": 3.028106,
+      "initial_index_level": 100.1665,
+      "prior_month_rev1_index_level": 97.2225
+    },
+    {
+      "observation_month": "2020-08",
+      "release_date": "2020-09-15",
+      "first_release_mom_pct": 0.364781,
+      "initial_index_level": 101.3605,
+      "prior_month_rev1_index_level": 100.9921
+    },
+    {
+      "observation_month": "2020-09",
+      "release_date": "2020-10-16",
+      "first_release_mom_pct": -0.63181,
+      "initial_index_level": 101.5055,
+      "prior_month_rev1_index_level": 102.1509
+    },
+    {
+      "observation_month": "2020-10",
+      "release_date": "2020-11-17",
+      "first_release_mom_pct": 1.079298,
+      "initial_index_level": 103.2054,
+      "prior_month_rev1_index_level": 102.1034
+    },
+    {
+      "observation_month": "2020-11",
+      "release_date": "2020-12-15",
+      "first_release_mom_pct": 0.394601,
+      "initial_index_level": 103.9818,
+      "prior_month_rev1_index_level": 103.5731
+    },
+    {
+      "observation_month": "2020-12",
+      "release_date": "2021-01-15",
+      "first_release_mom_pct": 1.571936,
+      "initial_index_level": 105.7244,
+      "prior_month_rev1_index_level": 104.0882
+    },
+    {
+      "observation_month": "2021-01",
+      "release_date": "2021-02-17",
+      "first_release_mom_pct": 0.928642,
+      "initial_index_level": 107.1843,
+      "prior_month_rev1_index_level": 106.1981
+    },
+    {
+      "observation_month": "2021-02",
+      "release_date": "2021-03-16",
+      "first_release_mom_pct": -2.240519,
+      "initial_index_level": 104.6526,
+      "prior_month_rev1_index_level": 107.0511
+    },
+    {
+      "observation_month": "2021-03",
+      "release_date": "2021-04-15",
+      "first_release_mom_pct": 1.440378,
+      "initial_index_level": 105.583,
+      "prior_month_rev1_index_level": 104.0838
+    },
+    {
+      "observation_month": "2021-04",
+      "release_date": "2021-05-14",
+      "first_release_mom_pct": 0.666802,
+      "initial_index_level": 106.3127,
+      "prior_month_rev1_index_level": 105.6085
+    },
+    {
+      "observation_month": "2021-05",
+      "release_date": "2021-06-15",
+      "first_release_mom_pct": 0.847124,
+      "initial_index_level": 99.8562,
+      "prior_month_rev1_index_level": 99.0174
+    },
+    {
+      "observation_month": "2021-06",
+      "release_date": "2021-07-15",
+      "first_release_mom_pct": 0.443035,
+      "initial_index_level": 100.0951,
+      "prior_month_rev1_index_level": 99.6536
+    },
+    {
+      "observation_month": "2021-07",
+      "release_date": "2021-08-17",
+      "first_release_mom_pct": 0.928184,
+      "initial_index_level": 101.1148,
+      "prior_month_rev1_index_level": 100.1849
+    },
+    {
+      "observation_month": "2021-08",
+      "release_date": "2021-09-15",
+      "first_release_mom_pct": 0.402718,
+      "initial_index_level": 101.5949,
+      "prior_month_rev1_index_level": 101.1874
+    },
+    {
+      "observation_month": "2021-09",
+      "release_date": "2021-10-18",
+      "first_release_mom_pct": -1.287378,
+      "initial_index_level": 100.0178,
+      "prior_month_rev1_index_level": 101.3222
+    },
+    {
+      "observation_month": "2021-10",
+      "release_date": "2021-11-16",
+      "first_release_mom_pct": 1.631936,
+      "initial_index_level": 101.611,
+      "prior_month_rev1_index_level": 99.9794
+    },
+    {
+      "observation_month": "2021-11",
+      "release_date": "2021-12-16",
+      "first_release_mom_pct": 0.515129,
+      "initial_index_level": 102.2852,
+      "prior_month_rev1_index_level": 101.761
+    },
+    {
+      "observation_month": "2021-12",
+      "release_date": "2022-01-14",
+      "first_release_mom_pct": -0.102356,
+      "initial_index_level": 101.8926,
+      "prior_month_rev1_index_level": 101.997
+    },
+    {
+      "observation_month": "2022-01",
+      "release_date": "2022-02-16",
+      "first_release_mom_pct": 1.415656,
+      "initial_index_level": 103.4677,
+      "prior_month_rev1_index_level": 102.0234
+    },
+    {
+      "observation_month": "2022-02",
+      "release_date": "2022-03-17",
+      "first_release_mom_pct": 0.534015,
+      "initial_index_level": 103.5811,
+      "prior_month_rev1_index_level": 103.0309
+    },
+    {
+      "observation_month": "2022-03",
+      "release_date": "2022-04-15",
+      "first_release_mom_pct": 0.917845,
+      "initial_index_level": 104.5853,
+      "prior_month_rev1_index_level": 103.6341
+    },
+    {
+      "observation_month": "2022-04",
+      "release_date": "2022-05-17",
+      "first_release_mom_pct": 1.075099,
+      "initial_index_level": 105.5973,
+      "prior_month_rev1_index_level": 104.4741
+    },
+    {
+      "observation_month": "2022-05",
+      "release_date": "2022-06-17",
+      "first_release_mom_pct": 0.24714,
+      "initial_index_level": 105.7475,
+      "prior_month_rev1_index_level": 105.4868
+    },
+    {
+      "observation_month": "2022-06",
+      "release_date": "2022-07-15",
+      "first_release_mom_pct": -0.199,
+      "initial_index_level": 104.3648,
+      "prior_month_rev1_index_level": 104.5729
+    },
+    {
+      "observation_month": "2022-07",
+      "release_date": "2022-08-16",
+      "first_release_mom_pct": 0.560913,
+      "initial_index_level": 104.8075,
+      "prior_month_rev1_index_level": 104.2229
+    },
+    {
+      "observation_month": "2022-08",
+      "release_date": "2022-09-15",
+      "first_release_mom_pct": -0.164727,
+      "initial_index_level": 104.5464,
+      "prior_month_rev1_index_level": 104.7189
+    },
+    {
+      "observation_month": "2022-09",
+      "release_date": "2022-10-18",
+      "first_release_mom_pct": 0.378413,
+      "initial_index_level": 105.1762,
+      "prior_month_rev1_index_level": 104.7797
+    },
+    {
+      "observation_month": "2022-10",
+      "release_date": "2022-11-16",
+      "first_release_mom_pct": -0.1103,
+      "initial_index_level": 104.6894,
+      "prior_month_rev1_index_level": 104.805
+    },
+    {
+      "observation_month": "2022-11",
+      "release_date": "2022-12-15",
+      "first_release_mom_pct": -0.21948,
+      "initial_index_level": 104.5175,
+      "prior_month_rev1_index_level": 104.7474
+    },
+    {
+      "observation_month": "2022-12",
+      "release_date": "2023-01-18",
+      "first_release_mom_pct": -0.72284,
+      "initial_index_level": 103.4332,
+      "prior_month_rev1_index_level": 104.1863
+    },
+    {
+      "observation_month": "2023-01",
+      "release_date": "2023-02-15",
+      "first_release_mom_pct": 0.026135,
+      "initial_index_level": 102.9525,
+      "prior_month_rev1_index_level": 102.9256
+    },
+    {
+      "observation_month": "2023-02",
+      "release_date": "2023-03-17",
+      "first_release_mom_pct": 0.000292,
+      "initial_index_level": 102.646,
+      "prior_month_rev1_index_level": 102.6457
+    },
+    {
+      "observation_month": "2023-03",
+      "release_date": "2023-04-14",
+      "first_release_mom_pct": 0.376855,
+      "initial_index_level": 103.0258,
+      "prior_month_rev1_index_level": 102.639
+    },
+    {
+      "observation_month": "2023-04",
+      "release_date": "2023-05-16",
+      "first_release_mom_pct": 0.478796,
+      "initial_index_level": 103.0398,
+      "prior_month_rev1_index_level": 102.5488
+    },
+    {
+      "observation_month": "2023-05",
+      "release_date": "2023-06-15",
+      "first_release_mom_pct": -0.15905,
+      "initial_index_level": 103.0107,
+      "prior_month_rev1_index_level": 103.1748
+    },
+    {
+      "observation_month": "2023-06",
+      "release_date": "2023-07-18",
+      "first_release_mom_pct": -0.542002,
+      "initial_index_level": 102.2468,
+      "prior_month_rev1_index_level": 102.804
+    },
+    {
+      "observation_month": "2023-07",
+      "release_date": "2023-08-16",
+      "first_release_mom_pct": 0.994479,
+      "initial_index_level": 102.8957,
+      "prior_month_rev1_index_level": 101.8825
+    },
+    {
+      "observation_month": "2023-08",
+      "release_date": "2023-09-15",
+      "first_release_mom_pct": 0.384705,
+      "initial_index_level": 103.4886,
+      "prior_month_rev1_index_level": 103.092
+    },
+    {
+      "observation_month": "2023-09",
+      "release_date": "2023-10-17",
+      "first_release_mom_pct": 0.285045,
+      "initial_index_level": 103.6115,
+      "prior_month_rev1_index_level": 103.317
+    },
+    {
+      "observation_month": "2023-10",
+      "release_date": "2023-11-16",
+      "first_release_mom_pct": -0.634842,
+      "initial_index_level": 102.7081,
+      "prior_month_rev1_index_level": 103.3643
+    },
+    {
+      "observation_month": "2023-11",
+      "release_date": "2023-12-15",
+      "first_release_mom_pct": 0.240385,
+      "initial_index_level": 102.6651,
+      "prior_month_rev1_index_level": 102.4189
+    },
+    {
+      "observation_month": "2023-12",
+      "release_date": "2024-01-17",
+      "first_release_mom_pct": 0.052621,
+      "initial_index_level": 102.484,
+      "prior_month_rev1_index_level": 102.4301
+    },
+    {
+      "observation_month": "2024-01",
+      "release_date": "2024-02-15",
+      "first_release_mom_pct": -0.09506,
+      "initial_index_level": 102.5739,
+      "prior_month_rev1_index_level": 102.6715
+    },
+    {
+      "observation_month": "2024-02",
+      "release_date": "2024-03-15",
+      "first_release_mom_pct": 0.103888,
+      "initial_index_level": 102.3313,
+      "prior_month_rev1_index_level": 102.2251
+    },
+    {
+      "observation_month": "2024-03",
+      "release_date": "2024-04-16",
+      "first_release_mom_pct": 0.389009,
+      "initial_index_level": 102.6577,
+      "prior_month_rev1_index_level": 102.2599
+    },
+    {
+      "observation_month": "2024-04",
+      "release_date": "2024-05-16",
+      "first_release_mom_pct": 0.005936,
+      "initial_index_level": 102.7623,
+      "prior_month_rev1_index_level": 102.7562
+    },
+    {
+      "observation_month": "2024-05",
+      "release_date": "2024-06-18",
+      "first_release_mom_pct": 0.852767,
+      "initial_index_level": 103.3284,
+      "prior_month_rev1_index_level": 102.4547
+    },
+    {
+      "observation_month": "2024-06",
+      "release_date": "2024-07-17",
+      "first_release_mom_pct": 0.644451,
+      "initial_index_level": 103.9941,
+      "prior_month_rev1_index_level": 103.3282
+    },
+    {
+      "observation_month": "2024-07",
+      "release_date": "2024-08-15",
+      "first_release_mom_pct": -0.638053,
+      "initial_index_level": 102.8887,
+      "prior_month_rev1_index_level": 103.5494
+    },
+    {
+      "observation_month": "2024-08",
+      "release_date": "2024-09-17",
+      "first_release_mom_pct": 0.814323,
+      "initial_index_level": 103.1389,
+      "prior_month_rev1_index_level": 102.3058
+    },
+    {
+      "observation_month": "2024-09",
+      "release_date": "2024-10-17",
+      "first_release_mom_pct": -0.282806,
+      "initial_index_level": 102.6418,
+      "prior_month_rev1_index_level": 102.9329
+    },
+    {
+      "observation_month": "2024-10",
+      "release_date": "2024-11-15",
+      "first_release_mom_pct": -0.262507,
+      "initial_index_level": 102.2805,
+      "prior_month_rev1_index_level": 102.5497
+    },
+    {
+      "observation_month": "2024-11",
+      "release_date": "2024-12-17",
+      "first_release_mom_pct": -0.147093,
+      "initial_index_level": 101.9621,
+      "prior_month_rev1_index_level": 102.1123
+    },
+    {
+      "observation_month": "2024-12",
+      "release_date": "2025-01-17",
+      "first_release_mom_pct": 0.918587,
+      "initial_index_level": 103.1942,
+      "prior_month_rev1_index_level": 102.2549
+    },
+    {
+      "observation_month": "2025-01",
+      "release_date": "2025-02-14",
+      "first_release_mom_pct": 0.512413,
+      "initial_index_level": 103.511,
+      "prior_month_rev1_index_level": 102.9833
+    },
+    {
+      "observation_month": "2025-02",
+      "release_date": "2025-03-18",
+      "first_release_mom_pct": 0.745589,
+      "initial_index_level": 104.2062,
+      "prior_month_rev1_index_level": 103.435
+    },
+    {
+      "observation_month": "2025-03",
+      "release_date": "2025-04-16",
+      "first_release_mom_pct": -0.317597,
+      "initial_index_level": 103.8892,
+      "prior_month_rev1_index_level": 104.2202
+    },
+    {
+      "observation_month": "2025-04",
+      "release_date": "2025-05-15",
+      "first_release_mom_pct": -0.006353,
+      "initial_index_level": 103.8799,
+      "prior_month_rev1_index_level": 103.8865
+    },
+    {
+      "observation_month": "2025-05",
+      "release_date": "2025-06-17",
+      "first_release_mom_pct": -0.218452,
+      "initial_index_level": 103.5948,
+      "prior_month_rev1_index_level": 103.8216
+    },
+    {
+      "observation_month": "2025-06",
+      "release_date": "2025-07-16",
+      "first_release_mom_pct": 0.334651,
+      "initial_index_level": 104.0071,
+      "prior_month_rev1_index_level": 103.6602
+    },
+    {
+      "observation_month": "2025-07",
+      "release_date": "2025-08-15",
+      "first_release_mom_pct": -0.121982,
+      "initial_index_level": 103.9867,
+      "prior_month_rev1_index_level": 104.1137
+    },
+    {
+      "observation_month": "2025-08",
+      "release_date": "2025-09-16",
+      "first_release_mom_pct": 0.097188,
+      "initial_index_level": 103.9203,
+      "prior_month_rev1_index_level": 103.8194
+    },
+    {
+      "observation_month": "2025-09",
+      "release_date": null,
+      "first_release_mom_pct": 0.096615,
+      "initial_index_level": 101.4279,
+      "prior_month_rev1_index_level": 101.33
+    },
+    {
+      "observation_month": "2025-10",
+      "release_date": null,
+      "first_release_mom_pct": -0.055964,
+      "initial_index_level": 101.616,
+      "prior_month_rev1_index_level": 101.6729
+    },
+    {
+      "observation_month": "2025-11",
+      "release_date": "2025-12-03",
+      "first_release_mom_pct": 0.174677,
+      "initial_index_level": 101.7935,
+      "prior_month_rev1_index_level": 101.616
+    },
+    {
+      "observation_month": "2025-12",
+      "release_date": "2026-01-16",
+      "first_release_mom_pct": 0.365071,
+      "initial_index_level": 102.325,
+      "prior_month_rev1_index_level": 101.9528
+    },
+    {
+      "observation_month": "2026-01",
+      "release_date": "2026-02-18",
+      "first_release_mom_pct": 0.70019,
+      "initial_index_level": 102.3412,
+      "prior_month_rev1_index_level": 101.6296
+    },
+    {
+      "observation_month": "2026-02",
+      "release_date": "2026-03-16",
+      "first_release_mom_pct": 0.15108,
+      "initial_index_level": 102.551,
+      "prior_month_rev1_index_level": 102.3963
+    },
+    {
+      "observation_month": "2026-03",
+      "release_date": "2026-04-16",
+      "first_release_mom_pct": -0.541507,
+      "initial_index_level": 101.7898,
+      "prior_month_rev1_index_level": 102.344
+    },
+    {
+      "observation_month": "2026-04",
+      "release_date": "2026-05-15",
+      "first_release_mom_pct": 0.678054,
+      "initial_index_level": 102.4963,
+      "prior_month_rev1_index_level": 101.806
+    },
+    {
+      "observation_month": "2026-05",
+      "release_date": "2026-06-15",
+      "first_release_mom_pct": 0.13511,
+      "initial_index_level": 102.6475,
+      "prior_month_rev1_index_level": 102.509
+    },
+    {
+      "observation_month": "2026-06",
+      "release_date": "2026-07-17",
+      "first_release_mom_pct": 0.07693,
+      "initial_index_level": 102.6395,
+      "prior_month_rev1_index_level": 102.5606
+    },
+    {
+      "observation_month": "2026-07",
+      "release_date": "2026-08-18",
+      "first_release_mom_pct": 0.201485,
+      "initial_index_level": 102.9939,
+      "prior_month_rev1_index_level": 102.7868
+    },
+    {
+      "observation_month": "2026-08",
+      "release_date": "2026-09-18",
+      "first_release_mom_pct": 0.022126,
+      "initial_index_level": 103.0682,
+      "prior_month_rev1_index_level": 103.0454
+    }
+  ],
+  "qa": {
+    "rows_total": 80,
+    "rows_with_release_date": 78,
+    "rows_missing_release_date": [
+      "2025-09",
+      "2025-10"
+    ],
+    "start": "2020-01",
+    "end": "2026-08"
+  }
+}
