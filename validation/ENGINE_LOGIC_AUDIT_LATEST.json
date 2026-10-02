@@ -1,0 +1,2458 @@
+{
+  "schema": "GMFQ_ENGINE_LOGIC_AUDIT_LATEST_V1",
+  "generated_at": "2026-10-02T09:33:41.618Z",
+  "gates": {
+    "lazyLoadInvariance": true,
+    "refreshStability": true,
+    "currencyRules": true,
+    "pairConsistency": true,
+    "pairFrames": true,
+    "runtimeErrors": false
+  },
+  "failed": [
+    "runtimeErrors"
+  ],
+  "lazyLoadInvariance": {
+    "ok": true,
+    "loadError": null,
+    "before": {
+      "currencies": {
+        "USD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "MIGLIORA",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO DIVERGE"
+        },
+        "GBP": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "JPY": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "CHF": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "MIGLIORA",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "CAD": {
+          "base": "COSTRUTTIVA",
+          "macro": 1,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO CONFERMA"
+        },
+        "AUD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "NZD": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        }
+      },
+      "dynamics": {
+        "USD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": -1,
+            "turning": false,
+            "n": 6
+          },
+          "labour": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 8
+          }
+        },
+        "EUR": {
+          "growth": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": 0,
+            "accelDir": 1,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "GBP": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": 0,
+            "accelDir": 0,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "JPY": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          }
+        },
+        "CHF": {
+          "growth": {
+            "direction": 1,
+            "accelDir": -1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": 1,
+            "accelDir": 0,
+            "turning": false,
+            "n": 2
+          }
+        },
+        "CAD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          }
+        },
+        "AUD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": 0,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "NZD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          }
+        }
+      },
+      "pairs": {
+        "EUR/GBP": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "EUR/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "EUR/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/CHF": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "EUR/JPY": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "GBP/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "GBP/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "GBP/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "GBP/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "GBP/CHF": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "GBP/JPY": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "AUD/NZD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "AUD/USD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "AUD/CAD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "AUD/CHF": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "AUD/JPY": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "NZD/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "NZD/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "NZD/CHF": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "NZD/JPY": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "USD/CAD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "USD/CHF": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "USD/JPY": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "CAD/CHF": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "CAD/JPY": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "CHF/JPY": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        }
+      }
+    },
+    "after": {
+      "currencies": {
+        "USD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "MIGLIORA",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO DIVERGE"
+        },
+        "GBP": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "JPY": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "CHF": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "MIGLIORA",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "CAD": {
+          "base": "COSTRUTTIVA",
+          "macro": 1,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO CONFERMA"
+        },
+        "AUD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "TURNING POINT",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        },
+        "NZD": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "EARLY SHIFT POSITIVO",
+          "confirmation": "PREZZO NON RISOLUTIVO"
+        }
+      },
+      "dynamics": {
+        "USD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": -1,
+            "turning": false,
+            "n": 6
+          },
+          "labour": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 8
+          }
+        },
+        "EUR": {
+          "growth": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": 0,
+            "accelDir": 1,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "GBP": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": 0,
+            "accelDir": 0,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "JPY": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          }
+        },
+        "CHF": {
+          "growth": {
+            "direction": 1,
+            "accelDir": -1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": 1,
+            "accelDir": 0,
+            "turning": false,
+            "n": 2
+          }
+        },
+        "CAD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          }
+        },
+        "AUD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": true,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": 0,
+            "turning": false,
+            "n": 3
+          }
+        },
+        "NZD": {
+          "growth": {
+            "direction": 1,
+            "accelDir": 1,
+            "turning": false,
+            "n": 2
+          },
+          "labour": {
+            "direction": -1,
+            "accelDir": -1,
+            "turning": true,
+            "n": 2
+          }
+        }
+      },
+      "pairs": {
+        "EUR/GBP": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "EUR/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "EUR/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "EUR/CHF": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "EUR/JPY": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "GBP/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "GBP/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "GBP/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "GBP/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "GBP/CHF": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "GBP/JPY": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "AUD/NZD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "AUD/USD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "AUD/CAD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "AUD/CHF": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "AUD/JPY": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "NZD/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "NZD/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A",
+          "price": "PREZZO NON RISOLUTIVO"
+        },
+        "NZD/CHF": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "NZD/JPY": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "USD/CAD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "USD/CHF": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "USD/JPY": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "CAD/CHF": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "MERCATO GIÀ ALLINEATO"
+        },
+        "CAD/JPY": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE",
+          "price": "DIVERGENZA DA MONITORARE"
+        },
+        "CHF/JPY": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE",
+          "price": "PREZZO NON RISOLUTIVO"
+        }
+      }
+    }
+  },
+  "refreshStability": {
+    "ok": true,
+    "before": {
+      "currencies": {
+        "USD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "MIGLIORA"
+        },
+        "EUR": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "GBP": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "JPY": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO"
+        },
+        "CHF": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "MIGLIORA"
+        },
+        "CAD": {
+          "base": "COSTRUTTIVA",
+          "macro": 1,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO"
+        },
+        "AUD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "NZD": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "EARLY SHIFT POSITIVO"
+        }
+      },
+      "pairs": {
+        "EUR/GBP": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "EUR/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "EUR/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "EUR/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "EUR/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "EUR/CHF": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "EUR/JPY": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "GBP/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "GBP/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "GBP/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "GBP/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "GBP/CHF": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "GBP/JPY": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "AUD/NZD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "AUD/USD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "AUD/CAD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "AUD/CHF": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "AUD/JPY": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "NZD/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "NZD/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "NZD/CHF": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "NZD/JPY": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "USD/CAD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "USD/CHF": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "USD/JPY": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "CAD/CHF": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "CAD/JPY": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "CHF/JPY": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE"
+        }
+      }
+    },
+    "after": {
+      "currencies": {
+        "USD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "MIGLIORA"
+        },
+        "EUR": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "GBP": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "JPY": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO"
+        },
+        "CHF": {
+          "base": "MISTA",
+          "macro": 0,
+          "policy": 0,
+          "change": "MIGLIORA"
+        },
+        "CAD": {
+          "base": "COSTRUTTIVA",
+          "macro": 1,
+          "policy": 0,
+          "change": "EARLY SHIFT POSITIVO"
+        },
+        "AUD": {
+          "base": "FORTE",
+          "macro": 1,
+          "policy": 1,
+          "change": "TURNING POINT"
+        },
+        "NZD": {
+          "base": "COSTRUTTIVA",
+          "macro": 0,
+          "policy": 1,
+          "change": "EARLY SHIFT POSITIVO"
+        }
+      },
+      "pairs": {
+        "EUR/GBP": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "EUR/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "EUR/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "EUR/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "EUR/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "EUR/CHF": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "EUR/JPY": {
+          "fav": "EUR",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "GBP/AUD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "GBP/NZD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "GBP/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "GBP/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "GBP/CHF": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "GBP/JPY": {
+          "fav": "GBP",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "AUD/NZD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "AUD/USD": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "macro": "TIE",
+          "policy": "TIE"
+        },
+        "AUD/CAD": {
+          "fav": "AUD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "AUD/CHF": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "AUD/JPY": {
+          "fav": "AUD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "NZD/USD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "B",
+          "policy": "TIE"
+        },
+        "NZD/CAD": {
+          "fav": "—",
+          "quality": "PILASTRI DIVISI",
+          "macro": "B",
+          "policy": "A"
+        },
+        "NZD/CHF": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "NZD/JPY": {
+          "fav": "NZD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "USD/CAD": {
+          "fav": "USD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "TIE",
+          "policy": "A"
+        },
+        "USD/CHF": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "USD/JPY": {
+          "fav": "USD",
+          "quality": "CONTRASTO STRUTTURALE FORTE",
+          "macro": "A",
+          "policy": "A"
+        },
+        "CAD/CHF": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "CAD/JPY": {
+          "fav": "CAD",
+          "quality": "VANTAGGIO RELATIVO PARZIALE",
+          "macro": "A",
+          "policy": "TIE"
+        },
+        "CHF/JPY": {
+          "fav": "—",
+          "quality": "SEPARAZIONE RATES MATERIALE",
+          "macro": "TIE",
+          "policy": "TIE"
+        }
+      }
+    }
+  },
+  "currencyRules": {
+    "rows": [
+      {
+        "c": "USD",
+        "macro": 1,
+        "policy": 1,
+        "base": "FORTE",
+        "expected": "FORTE",
+        "improvement": "MIGLIORA",
+        "mismatch": false
+      },
+      {
+        "c": "EUR",
+        "macro": 0,
+        "policy": 1,
+        "base": "COSTRUTTIVA",
+        "expected": "COSTRUTTIVA",
+        "improvement": "TURNING POINT",
+        "mismatch": false
+      },
+      {
+        "c": "GBP",
+        "macro": 0,
+        "policy": 1,
+        "base": "COSTRUTTIVA",
+        "expected": "COSTRUTTIVA",
+        "improvement": "TURNING POINT",
+        "mismatch": false
+      },
+      {
+        "c": "JPY",
+        "macro": 0,
+        "policy": 0,
+        "base": "MISTA",
+        "expected": "MISTA",
+        "improvement": "EARLY SHIFT POSITIVO",
+        "mismatch": false
+      },
+      {
+        "c": "CHF",
+        "macro": 0,
+        "policy": 0,
+        "base": "MISTA",
+        "expected": "MISTA",
+        "improvement": "MIGLIORA",
+        "mismatch": false
+      },
+      {
+        "c": "CAD",
+        "macro": 1,
+        "policy": 0,
+        "base": "COSTRUTTIVA",
+        "expected": "COSTRUTTIVA",
+        "improvement": "EARLY SHIFT POSITIVO",
+        "mismatch": false
+      },
+      {
+        "c": "AUD",
+        "macro": 1,
+        "policy": 1,
+        "base": "FORTE",
+        "expected": "FORTE",
+        "improvement": "TURNING POINT",
+        "mismatch": false
+      },
+      {
+        "c": "NZD",
+        "macro": 0,
+        "policy": 1,
+        "base": "COSTRUTTIVA",
+        "expected": "COSTRUTTIVA",
+        "improvement": "EARLY SHIFT POSITIVO",
+        "mismatch": false
+      }
+    ],
+    "issues": []
+  },
+  "pairConsistency": {
+    "rows": [
+      {
+        "pair": "EUR/GBP",
+        "a": "EUR",
+        "b": "GBP",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "SEPARAZIONE RATES MATERIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/AUD",
+        "a": "EUR",
+        "b": "AUD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "AUD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/NZD",
+        "a": "EUR",
+        "b": "NZD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/USD",
+        "a": "EUR",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/CAD",
+        "a": "EUR",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "CAD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/CHF",
+        "a": "EUR",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/JPY",
+        "a": "EUR",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/AUD",
+        "a": "GBP",
+        "b": "AUD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "AUD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/NZD",
+        "a": "GBP",
+        "b": "NZD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/USD",
+        "a": "GBP",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/CAD",
+        "a": "GBP",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "CAD",
+          "side": "B"
+        },
+        "frameMacroSide": "B",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/CHF",
+        "a": "GBP",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/JPY",
+        "a": "GBP",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/NZD",
+        "a": "AUD",
+        "b": "NZD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "AUD",
+          "side": "A"
+        },
+        "frameMacroSide": "A",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/USD",
+        "a": "AUD",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/CAD",
+        "a": "AUD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "AUD",
+          "side": "A"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/CHF",
+        "a": "AUD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/JPY",
+        "a": "AUD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/USD",
+        "a": "NZD",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "A"
+        },
+        "frameMacroSide": "B",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/CAD",
+        "a": "NZD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "B",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/CHF",
+        "a": "NZD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/JPY",
+        "a": "NZD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "USD/CAD",
+        "a": "USD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "A"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "USD/CHF",
+        "a": "USD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "A"
+        },
+        "frameMacroSide": "A",
+        "fav": "USD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      },
+      {
+        "pair": "USD/JPY",
+        "a": "USD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "USD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "CAD/CHF",
+        "a": "CAD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "A",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "CAD/JPY",
+        "a": "CAD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "A",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "CHF/JPY",
+        "a": "CHF",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "SEPARAZIONE RATES MATERIALE",
+        "legacyMismatch": false,
+        "engineMismatch": false
+      }
+    ],
+    "legacyMismatches": [
+      {
+        "pair": "EUR/NZD",
+        "a": "EUR",
+        "b": "NZD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/CHF",
+        "a": "EUR",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "EUR/JPY",
+        "a": "EUR",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/NZD",
+        "a": "GBP",
+        "b": "NZD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/CHF",
+        "a": "GBP",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "GBP/JPY",
+        "a": "GBP",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/USD",
+        "a": "AUD",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/CAD",
+        "a": "AUD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "AUD",
+          "side": "A"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/CHF",
+        "a": "AUD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "AUD/JPY",
+        "a": "AUD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/USD",
+        "a": "NZD",
+        "b": "USD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "NZD",
+          "side": "A"
+        },
+        "frameMacroSide": "B",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/CAD",
+        "a": "NZD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 0,
+          "b": 1,
+          "side": "B"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "B",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/CHF",
+        "a": "NZD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "NZD/JPY",
+        "a": "NZD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 0,
+          "b": 0,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "USD/CAD",
+        "a": "USD",
+        "b": "CAD",
+        "currencyMacro": {
+          "a": 1,
+          "b": 1,
+          "side": "TIE"
+        },
+        "pairRawMacro": {
+          "raw": "USD",
+          "side": "A"
+        },
+        "frameMacroSide": "TIE",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "USD/JPY",
+        "a": "USD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "MISTO",
+          "side": "TIE"
+        },
+        "frameMacroSide": "A",
+        "fav": "USD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "CAD/CHF",
+        "a": "CAD",
+        "b": "CHF",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "CHF",
+          "side": "B"
+        },
+        "frameMacroSide": "A",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      },
+      {
+        "pair": "CAD/JPY",
+        "a": "CAD",
+        "b": "JPY",
+        "currencyMacro": {
+          "a": 1,
+          "b": 0,
+          "side": "A"
+        },
+        "pairRawMacro": {
+          "raw": "JPY",
+          "side": "B"
+        },
+        "frameMacroSide": "A",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "legacyMismatch": true,
+        "engineMismatch": false
+      }
+    ],
+    "legacyCount": 18,
+    "engineMismatches": [],
+    "engineCount": 0
+  },
+  "allPairFrames": {
+    "rows": [
+      {
+        "pair": "EUR/GBP",
+        "fav": "—",
+        "quality": "SEPARAZIONE RATES MATERIALE",
+        "macroSide": "TIE",
+        "policySide": "TIE",
+        "expectedFav": "—",
+        "expectedQuality": "NESSUN CONTRASTO",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/AUD",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "B",
+        "policySide": "TIE",
+        "expectedFav": "AUD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/NZD",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "macroSide": "TIE",
+        "policySide": "TIE",
+        "expectedFav": "—",
+        "expectedQuality": "NESSUN CONTRASTO",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/USD",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "B",
+        "policySide": "TIE",
+        "expectedFav": "USD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/CAD",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "macroSide": "B",
+        "policySide": "A",
+        "expectedFav": "—",
+        "expectedQuality": "PILASTRI DIVISI",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/CHF",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "EUR",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "EUR/JPY",
+        "fav": "EUR",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "EUR",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/AUD",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "B",
+        "policySide": "TIE",
+        "expectedFav": "AUD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/NZD",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "macroSide": "TIE",
+        "policySide": "TIE",
+        "expectedFav": "—",
+        "expectedQuality": "NESSUN CONTRASTO",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/USD",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "B",
+        "policySide": "TIE",
+        "expectedFav": "USD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/CAD",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "macroSide": "B",
+        "policySide": "A",
+        "expectedFav": "—",
+        "expectedQuality": "PILASTRI DIVISI",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/CHF",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "GBP",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "GBP/JPY",
+        "fav": "GBP",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "GBP",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "AUD/NZD",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "A",
+        "policySide": "TIE",
+        "expectedFav": "AUD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "AUD/USD",
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "macroSide": "TIE",
+        "policySide": "TIE",
+        "expectedFav": "—",
+        "expectedQuality": "NESSUN CONTRASTO",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "AUD/CAD",
+        "fav": "AUD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "AUD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "AUD/CHF",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "macroSide": "A",
+        "policySide": "A",
+        "expectedFav": "AUD",
+        "expectedQuality": "CONTRASTO STRUTTURALE FORTE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "AUD/JPY",
+        "fav": "AUD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "macroSide": "A",
+        "policySide": "A",
+        "expectedFav": "AUD",
+        "expectedQuality": "CONTRASTO STRUTTURALE FORTE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "NZD/USD",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "B",
+        "policySide": "TIE",
+        "expectedFav": "USD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "NZD/CAD",
+        "fav": "—",
+        "quality": "PILASTRI DIVISI",
+        "macroSide": "B",
+        "policySide": "A",
+        "expectedFav": "—",
+        "expectedQuality": "PILASTRI DIVISI",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "NZD/CHF",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "NZD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "NZD/JPY",
+        "fav": "NZD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "NZD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "USD/CAD",
+        "fav": "USD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "TIE",
+        "policySide": "A",
+        "expectedFav": "USD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "USD/CHF",
+        "fav": "USD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "macroSide": "A",
+        "policySide": "A",
+        "expectedFav": "USD",
+        "expectedQuality": "CONTRASTO STRUTTURALE FORTE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "USD/JPY",
+        "fav": "USD",
+        "quality": "CONTRASTO STRUTTURALE FORTE",
+        "macroSide": "A",
+        "policySide": "A",
+        "expectedFav": "USD",
+        "expectedQuality": "CONTRASTO STRUTTURALE FORTE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "CAD/CHF",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "A",
+        "policySide": "TIE",
+        "expectedFav": "CAD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "CAD/JPY",
+        "fav": "CAD",
+        "quality": "VANTAGGIO RELATIVO PARZIALE",
+        "macroSide": "A",
+        "policySide": "TIE",
+        "expectedFav": "CAD",
+        "expectedQuality": "VANTAGGIO RELATIVO PARZIALE",
+        "ruleMismatch": false
+      },
+      {
+        "pair": "CHF/JPY",
+        "fav": "—",
+        "quality": "SEPARAZIONE RATES MATERIALE",
+        "macroSide": "TIE",
+        "policySide": "TIE",
+        "expectedFav": "—",
+        "expectedQuality": "NESSUN CONTRASTO",
+        "ruleMismatch": false
+      }
+    ],
+    "issues": []
+  },
+  "runtimeErrors": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+}
