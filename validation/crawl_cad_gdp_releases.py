@@ -54,7 +54,7 @@ def parse_headline_value(text, month_name, year):
             val=-val
         return val
 
-    segment=text[:6000]
+    segment=text
     nm=re.search(
         r"Real gross domestic product \(GDP\).*?"
         r"(grew|increased|rose|expanded|edged up|decreased|declined|contracted|fell|edged down)\s*"
