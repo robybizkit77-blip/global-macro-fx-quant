@@ -403,25 +403,46 @@
     ]
   },
   "tested_candidates": 20,
-  "status": "NO_EXACT_MATCH_YET",
+  "status": "EXACT_RUNTIME_SOURCE_MATCH_VERIFIED__COMPOSITION_AWARE",
   "best_match": {
-    "geo": "EA20",
+    "concept": "Euro area total employment, domestic concept, official composition",
+    "dataset": "NAMQ_10_PE",
+    "unit": "THS_PER",
+    "s_adj": "SCA",
     "na_item": "EMP_DC",
-    "label": "Total employment domestic concept",
-    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?lang=en&freq=Q&unit=THS_PER&s_adj=SCA&geo=EA20&na_item=EMP_DC&sinceTimePeriod=2016-Q1",
-    "rows": 42,
+    "composition_rule": "EA20 through 2025-Q4; EA21 from 2026-Q1",
+    "common": 42,
+    "exact": 42,
+    "max_abs_diff": 0.0,
+    "mean_abs_diff": 0.0,
     "first": [
       "2016-Q1",
       154635.09
     ],
     "last": [
       "2026-Q2",
-      172849.01
-    ],
+      176448.17
+    ]
+  },
+  "composition_aware_match": {
+    "concept": "Euro area total employment, domestic concept, official composition",
+    "dataset": "NAMQ_10_PE",
+    "unit": "THS_PER",
+    "s_adj": "SCA",
+    "na_item": "EMP_DC",
+    "composition_rule": "EA20 through 2025-Q4; EA21 from 2026-Q1",
     "common": 42,
-    "exact": 40,
-    "max_abs_diff": 3610.529999999999,
-    "mean_abs_diff": 171.65928571428577
+    "exact": 42,
+    "max_abs_diff": 0.0,
+    "mean_abs_diff": 0.0,
+    "first": [
+      "2016-Q1",
+      154635.09
+    ],
+    "last": [
+      "2026-Q2",
+      176448.17
+    ]
   },
   "top_matches": [
     {
@@ -653,5 +674,5 @@
       "mean_abs_diff": 140387.38642857145
     }
   ],
-  "guardrail": "Do not reconstruct PIT employment releases until exact current-series identity is proven."
+  "guardrail": "Proceed to PIT release reconstruction only if exact current-series identity is proven; composition changes must be explicit and dated."
 }
