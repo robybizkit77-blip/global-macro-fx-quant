@@ -35,13 +35,13 @@ def volume_change(text, month_name):
     # sentence so quarterly/YTD comparisons cannot be mistaken for monthly data.
     verbs=r"(increased|decreased|rose|fell|declined|grew|edged up|edged down|were up|were down|was up|was down)"
     stems=[
-        r"In volume terms,\\s*retail sales\\s+",
-        r"In volume terms,\\s*sales\\s+",
-        r"Retail sales in volume terms\\s+"
+        r"In volume terms,\s*retail sales\s+",
+        r"In volume terms,\s*sales\s+",
+        r"Retail sales in volume terms\s+"
     ]
     neg={"decreased","fell","declined","edged down","were down","was down"}
     for stem in stems:
-        pat=rf"{stem}{verbs}\\s+(?:by\\s*)?([0-9]+(?:\\.[0-9]+)?)%\\s+in\\s+{re.escape(month_name)}"
+        pat=rf"{stem}{verbs}\s+(?:by\s*)?([0-9]+(?:\.[0-9]+)?)%\s+in\s+{re.escape(month_name)}"
         m=re.search(pat,text,re.I)
         if m:
             val=float(m.group(2))
@@ -49,8 +49,8 @@ def volume_change(text, month_name):
                 val=-val
             return val
     unchanged=[
-        rf"In volume terms,\\s*retail sales\\s+(?:were|was|remained)?\\s*(?:relatively |essentially )?unchanged\\s+in\\s+{re.escape(month_name)}",
-        rf"In volume terms,\\s*sales\\s+(?:were|was|remained)?\\s*(?:relatively |essentially )?unchanged\\s+in\\s+{re.escape(month_name)}"
+        rf"In volume terms,\s*retail sales\s+(?:were|was|remained)?\s*(?:relatively |essentially )?unchanged\s+in\s+{re.escape(month_name)}",
+        rf"In volume terms,\s*sales\s+(?:were|was|remained)?\s*(?:relatively |essentially )?unchanged\s+in\s+{re.escape(month_name)}"
     ]
     if any(re.search(p,text,re.I) for p in unchanged):
         return 0.0
