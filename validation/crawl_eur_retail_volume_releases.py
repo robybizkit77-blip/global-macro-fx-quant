@@ -35,10 +35,8 @@ def clean(s):
 def urls_for(d):
     code=d.strftime("%d%m%Y")
     return [
-      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/-/4-{code}-ap",
-      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-{code}-ap",
-      f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/4-{code}-ap",
       f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-{code}-ap",
+      f"https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-{code}-ap",
     ]
 
 months={m:i+1 for i,m in enumerate(["January","February","March","April","May","June","July","August","September","October","November","December"])}
@@ -78,7 +76,7 @@ def extract_first_release(txt,release_date):
     return {"reference_month":ref,"mom_pct":val,"match_text":matched}
 
 def crawl_release_month(y,mo):
-    for day in range(1,13):
+    for day in range(4,11):
         try: d=date(y,mo,day)
         except ValueError: continue
         for u in urls_for(d):
@@ -106,7 +104,7 @@ for y in range(2020,2027):
         targets.append((y,mo))
 
 rows=[]
-with ThreadPoolExecutor(max_workers=8) as ex:
+with ThreadPoolExecutor(max_workers=4) as ex:
     futs={ex.submit(crawl_release_month,y,mo):(y,mo) for y,mo in targets}
     for fut in as_completed(futs):
         x=fut.result()
