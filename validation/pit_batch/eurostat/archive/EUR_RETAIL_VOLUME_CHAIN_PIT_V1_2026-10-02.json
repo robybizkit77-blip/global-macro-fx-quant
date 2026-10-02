@@ -106,13 +106,14 @@
     {
       "release_date": "2025-12-04",
       "reference_month": "2025-10",
-      "retail_volume_mom_pct": 1.5,
+      "retail_volume_mom_pct": 0.0,
       "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-04122025-ap",
       "pdf_url": null,
       "content_type": "text/html;charset=utf-8",
       "match_text": "Volume of retail trade stable in both the euro area and the EU - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do youn",
       "previous_release_date": "2025-11-06",
-      "previous_match": "Compared with the data issued in the News Release of 6 November 2025"
+      "previous_match": "Compared with the data issued in the News Release of 6 November 2025",
+      "parser_sanitized_v6": true
     },
     {
       "release_date": "2025-11-06",
@@ -431,18 +432,20 @@
       "content_type": "text/html;charset=utf-8",
       "match_text": "retail trade volume remained stable in the euro area",
       "previous_release_date": "2023-06-06",
-      "previous_match": "News Release 64/2023 of 6 June 2023"
+      "previous_match": "News Release 64/2023 of 6 June 2023",
+      "parser_sanitized_v6": true
     },
     {
       "release_date": "2023-06-06",
       "reference_month": "2023-04",
-      "retail_volume_mom_pct": -0.4,
+      "retail_volume_mom_pct": 0.0,
       "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/4-06062023-ap",
       "pdf_url": "https://ec.europa.eu/eurostat/documents/2995521/16878448/4-06062023-AP-EN.pdf/57edf834-c8f1-e956-72dc-e04777b8c3d6?version=1.0&t=1686006522900&download=true",
       "content_type": "text/html;charset=utf-8",
       "match_text": "Volume of retail trade unchanged in the euro area and up by 0.1% in the EU - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? ",
       "previous_release_date": "2023-05-05",
-      "previous_match": "News Release 55/2023 of 5 May 2023"
+      "previous_match": "News Release 55/2023 of 5 May 2023",
+      "parser_sanitized_v6": true
     },
     {
       "release_date": "2023-05-05",
