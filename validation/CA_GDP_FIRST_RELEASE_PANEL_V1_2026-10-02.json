@@ -1,0 +1,202 @@
+{
+  "schema": "GMFQ_CA_GDP_FIRST_RELEASE_PANEL_V1",
+  "created_at": "2026-10-02",
+  "freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "series": {
+    "runtime_id": "CA_REAL_GDP_M_history_value",
+    "label": "PIL reale mensile",
+    "currency": "CAD"
+  },
+  "scope": {
+    "from": "2020-05",
+    "to": "2021-12",
+    "observations": 20
+  },
+  "methodology": {
+    "first_release": "Headline official monthly change from the dated Statistics Canada The Daily release for each reference month.",
+    "current_revised": "Computed from the current runtime level history as 100*(level_t/level_t-1-1).",
+    "note": "This is a first-release growth panel. It is valid for sensitivity of direction/magnitude, but full normalizedSeriesImpulse replay still requires a level-consistent PIT series or an engine-equivalent transform built from first-release growth."
+  },
+  "rows": [
+    {
+      "month": "2020-05",
+      "release_date": "2020-07-31",
+      "first_release_mom_pct": 4.5,
+      "current_revised_mom_pct": 4.582,
+      "delta_pp": 0.082,
+      "same_direction": true
+    },
+    {
+      "month": "2020-06",
+      "release_date": "2020-08-28",
+      "first_release_mom_pct": 6.5,
+      "current_revised_mom_pct": 5.924,
+      "delta_pp": -0.576,
+      "same_direction": true
+    },
+    {
+      "month": "2020-07",
+      "release_date": "2020-09-30",
+      "first_release_mom_pct": 3,
+      "current_revised_mom_pct": 2.5718,
+      "delta_pp": -0.4282,
+      "same_direction": true
+    },
+    {
+      "month": "2020-08",
+      "release_date": "2020-10-30",
+      "first_release_mom_pct": 1.2,
+      "current_revised_mom_pct": 0.9964,
+      "delta_pp": -0.2036,
+      "same_direction": true
+    },
+    {
+      "month": "2020-09",
+      "release_date": "2020-12-01",
+      "first_release_mom_pct": 0.8,
+      "current_revised_mom_pct": 0.9367,
+      "delta_pp": 0.1367,
+      "same_direction": true
+    },
+    {
+      "month": "2020-10",
+      "release_date": "2020-12-23",
+      "first_release_mom_pct": 0.4,
+      "current_revised_mom_pct": 0.6247,
+      "delta_pp": 0.2247,
+      "same_direction": true
+    },
+    {
+      "month": "2020-11",
+      "release_date": "2021-01-29",
+      "first_release_mom_pct": 0.7,
+      "current_revised_mom_pct": 0.6801,
+      "delta_pp": -0.0199,
+      "same_direction": true
+    },
+    {
+      "month": "2020-12",
+      "release_date": "2021-03-02",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.2707,
+      "delta_pp": 0.1707,
+      "same_direction": true
+    },
+    {
+      "month": "2021-01",
+      "release_date": "2021-03-31",
+      "first_release_mom_pct": 0.7,
+      "current_revised_mom_pct": 0.5713,
+      "delta_pp": -0.1287,
+      "same_direction": true
+    },
+    {
+      "month": "2021-02",
+      "release_date": "2021-04-30",
+      "first_release_mom_pct": 0.4,
+      "current_revised_mom_pct": 0.152,
+      "delta_pp": -0.248,
+      "same_direction": true
+    },
+    {
+      "month": "2021-03",
+      "release_date": "2021-06-01",
+      "first_release_mom_pct": 1.1,
+      "current_revised_mom_pct": 1.0619,
+      "delta_pp": -0.0381,
+      "same_direction": true
+    },
+    {
+      "month": "2021-04",
+      "release_date": "2021-06-30",
+      "first_release_mom_pct": -0.3,
+      "current_revised_mom_pct": -1.0316,
+      "delta_pp": -0.7316,
+      "same_direction": true
+    },
+    {
+      "month": "2021-05",
+      "release_date": "2021-07-30",
+      "first_release_mom_pct": -0.3,
+      "current_revised_mom_pct": -0.206,
+      "delta_pp": 0.094,
+      "same_direction": true
+    },
+    {
+      "month": "2021-06",
+      "release_date": "2021-08-31",
+      "first_release_mom_pct": 0.7,
+      "current_revised_mom_pct": 0.9434,
+      "delta_pp": 0.2434,
+      "same_direction": true
+    },
+    {
+      "month": "2021-07",
+      "release_date": "2021-10-01",
+      "first_release_mom_pct": -0.1,
+      "current_revised_mom_pct": 0.6804,
+      "delta_pp": 0.7804,
+      "same_direction": false
+    },
+    {
+      "month": "2021-08",
+      "release_date": "2021-10-29",
+      "first_release_mom_pct": 0.4,
+      "current_revised_mom_pct": 0.839,
+      "delta_pp": 0.439,
+      "same_direction": true
+    },
+    {
+      "month": "2021-09",
+      "release_date": "2021-11-30",
+      "first_release_mom_pct": 0.1,
+      "current_revised_mom_pct": 0.4796,
+      "delta_pp": 0.3796,
+      "same_direction": true
+    },
+    {
+      "month": "2021-10",
+      "release_date": "2021-12-23",
+      "first_release_mom_pct": 0.8,
+      "current_revised_mom_pct": 0.8438,
+      "delta_pp": 0.0438,
+      "same_direction": true
+    },
+    {
+      "month": "2021-11",
+      "release_date": "2022-02-01",
+      "first_release_mom_pct": 0.6,
+      "current_revised_mom_pct": 0.464,
+      "delta_pp": -0.136,
+      "same_direction": true
+    },
+    {
+      "month": "2021-12",
+      "release_date": "2022-03-01",
+      "first_release_mom_pct": 0,
+      "current_revised_mom_pct": 0.4131,
+      "delta_pp": 0.4131,
+      "same_direction": false
+    }
+  ],
+  "result": {
+    "comparisons": 20,
+    "direction_flips": 2,
+    "flip_months": [
+      "2021-07",
+      "2021-12"
+    ],
+    "max_abs_revision_pp": 0.7804,
+    "mean_abs_revision_pp": 0.2759
+  },
+  "provenance": {
+    "official_source": "Statistics Canada, The Daily, Gross domestic product by industry",
+    "real_time_reference_table": "36-10-0491-01",
+    "release_pages_verified_for_sample": "2020-05 through 2021-12"
+  },
+  "next": "Extend release panel through 2026-09, then construct a level-consistent/as-of PIT representation suitable for normalizedSeriesImpulse."
+}
