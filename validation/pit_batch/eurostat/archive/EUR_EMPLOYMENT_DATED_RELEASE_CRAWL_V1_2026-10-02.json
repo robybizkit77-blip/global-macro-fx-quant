@@ -1,0 +1,221 @@
+{
+  "schema": "GMFQ_EUR_EMPLOYMENT_DATED_RELEASE_CRAWL_V1",
+  "created_at": "2026-10-02",
+  "target": {
+    "runtime_id": "EA_EMPLOYMENT_history_value",
+    "source": "Eurostat GDP and employment flash estimates"
+  },
+  "rows": [
+    {
+      "reference_quarter": "2020-Q2",
+      "release_date": "2020-08-14",
+      "employment_qoq_pct": -2.8,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14082020-ap",
+      "discovery": "scan",
+      "match_text": "GDP down by 12.1% and employment down by 2.8% in the euro area"
+    },
+    {
+      "reference_quarter": "2020-Q3",
+      "release_date": "2020-11-13",
+      "employment_qoq_pct": 0.9,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-13112020-ap",
+      "discovery": "scan",
+      "match_text": "GDP up by 12.6% and employment up by 0.9% in the euro area"
+    },
+    {
+      "reference_quarter": "2020-Q4",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2021-Q1",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2021-Q2",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2021-Q3",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2021-Q4",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2022-Q1",
+      "release_date": "2022-05-17",
+      "employment_qoq_pct": 0.5,
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/14636038/2-17052022-AP-EN.pdf/4b1709eb-3a52-30c3-2e0a-d19b564735fa",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.5% in the euro area and by 0.4% in the EU in the first quarter of 2022, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2022-Q2",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2022-Q3",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2022-Q4",
+      "release_date": "2023-02-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14022023-ap",
+      "discovery": "scan",
+      "match_text": "employment up by 0.4% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from h"
+    },
+    {
+      "reference_quarter": "2023-Q1",
+      "release_date": "2023-05-16",
+      "employment_qoq_pct": 0.6,
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/16668121/2-16052023-AP-EN.pdf/4ac272c6-2af8-4fb2-4c73-8f842a011a57",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.6% in both the euro area and the EU in the first quarter of 2023, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2023-Q2",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2023-Q3",
+      "release_date": "2023-11-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14112023-ap",
+      "discovery": "scan",
+      "match_text": "employment up by 0.3% in the euro area - Euro indicators - Eurostat Skip to Main Content Log in English English Select your language Close bg \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 es espa\u00f1ol cs \u010de\u0161tina da dansk de Deutsch et eesti el \u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac fr fran\u00e7ais ga Gaeilge hr hrvatski it italiano lv latvie\u0161u lt lietuvi\u0173 hu magyar mt Malti nl Nederlands pl polski pt portugu\u00eas ru p\u0443\u0441\u0441\u043a\u0438\u0439 ro rom\u00e2n\u0103 sk sloven\u010dina sl sloven\u0161\u010dina fi suomi sv svenska uk \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 Search Search Search by keyword Search Search How many women work in science? How many young people are unemployed? How many hours do people work in the EU? In which EU countries did poverty decrease? How much have fuel prices increased? When do young people move out from h"
+    },
+    {
+      "reference_quarter": "2023-Q4",
+      "release_date": "2024-02-14",
+      "employment_qoq_pct": 0.3,
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/18507488/2-14022024-AP-EN.pdf/bd0e89a8-b0a6-0cb1-ec74-0992ab92c470",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.3% in both the euro area and the EU in the fourth quarter of 2023, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2024-Q1",
+      "release_date": "2024-05-15",
+      "employment_qoq_pct": 0.3,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-15052024-ap",
+      "discovery": "scan",
+      "match_text": "number of employed persons increased by 0.3% in the euro area and by 0.2% in the EU in the first quarter of 2024, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2024-Q2",
+      "release_date": "2024-08-14",
+      "employment_qoq_pct": 0.2,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14082024-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the second quarter of 2024, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2024-Q3",
+      "release_date": "2024-11-14",
+      "employment_qoq_pct": 0.2,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14112024-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.2% in the euro area and by 0.1% in the EU in the third quarter of 2024, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2024-Q4",
+      "release_date": "2025-02-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-14022025-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the fourth quarter of 2024, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2025-Q1",
+      "release_date": "2025-05-15",
+      "employment_qoq_pct": 0.3,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-15052025-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.3% in the euro area and by 0.2% in the EU in the first quarter of 2025, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2025-Q2",
+      "release_date": "2025-08-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14082025-ap",
+      "discovery": "scan",
+      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the second quarter of 2025, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2025-Q3",
+      "release_date": "2025-11-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14112025-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.1% in the euro area and by 0.2% in the EU in the third quarter of 2025, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2025-Q4",
+      "release_date": "2026-02-13",
+      "employment_qoq_pct": 0.2,
+      "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-13022026-ap",
+      "discovery": "seed",
+      "match_text": "number of employed persons increased by 0.2% in both the euro area and the EU in the fourth quarter of 2025, compared with the previous quarter"
+    },
+    {
+      "reference_quarter": "2026-Q1",
+      "release_date": null,
+      "employment_qoq_pct": null,
+      "url": null,
+      "discovery": "missing"
+    },
+    {
+      "reference_quarter": "2026-Q2",
+      "release_date": "2026-08-14",
+      "employment_qoq_pct": 0.1,
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-14082026-ap",
+      "discovery": "scan",
+      "match_text": "number of employed persons increased by 0.1% in both the euro area and the EU in the second quarter of 2026, compared with the previous quarter"
+    }
+  ],
+  "summary": {
+    "count": 25,
+    "parsed": 16,
+    "coverage_pct": 64.0,
+    "from": "2020-Q2",
+    "to": "2026-Q2",
+    "missing": [
+      "2020-Q4",
+      "2021-Q1",
+      "2021-Q2",
+      "2021-Q3",
+      "2021-Q4",
+      "2022-Q2",
+      "2022-Q3",
+      "2023-Q2",
+      "2026-Q1"
+    ],
+    "complete": false
+  },
+  "guardrail": "Only dated Eurostat first-publication q/q employment growth is stored. Current revised levels are never substituted for missing releases."
+}
