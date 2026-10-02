@@ -1,0 +1,42 @@
+name: Eurostat Retail PIT Finder
+
+on:
+  push:
+    branches:
+      - engine-freeze-v1-2026-10-02
+    paths:
+      - 'validation/find_eurostat_retail_releases.py'
+      - '.github/workflows/eurostat-retail-pit-finder.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: eurostat-retail-pit-finder
+  cancel-in-progress: false
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: engine-freeze-v1-2026-10-02
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Find official Eurostat retail releases
+        run: python validation/find_eurostat_retail_releases.py
+      - name: Commit finder result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/pit_batch/eurostat/archive/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Map Eurostat retail PIT release pages"
+            git push origin HEAD:engine-freeze-v1-2026-10-02
+          fi
