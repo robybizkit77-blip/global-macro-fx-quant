@@ -535,8 +535,9 @@
   ],
   "summary": {
     "count": 75,
-    "fetched_this_run": 51,
+    "fetched_this_run": 0,
     "repaired_nulls_this_run": 0,
+    "corrected_values_this_run": 0,
     "from": "2020-05",
     "to": "2026-07",
     "missing_values": [
@@ -558,7 +559,7 @@
       "2022-08",
       "2026-01"
     ],
-    "stop_reason": "TARGET_REACHED",
+    "stop_reason": "COMPLETE",
     "complete": true
   }
 }
