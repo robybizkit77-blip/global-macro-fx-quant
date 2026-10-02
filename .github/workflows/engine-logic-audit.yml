@@ -2,7 +2,7 @@ name: Engine Logic Audit
 
 on:
   push:
-    branches: [staging-engine-logic-audit-2026-09-30]
+    branches: [staging-engine-logic-audit-2026-09-30, engine-freeze-v1-2026-10-02]
   workflow_dispatch:
 
 jobs:
@@ -60,6 +60,19 @@ jobs:
                   buildCanonicalCurrencyState:safe(()=>buildCanonicalCurrencyState.toString()),
                   rebuildCanonicalState:safe(()=>rebuildCanonicalState.toString())
                 },
+                lazyLoadInvariance:await (async()=>{
+                  const snap=()=>({
+                    currencies:Object.fromEntries(ccys.map(c=>{const x=deriveCurrencyState(c)||{};return [c,{base:x.base,macro:x.macro,policy:x.policy,change:x.improvementState,confirmation:x.confirmation}]})),
+                    dynamics:Object.fromEntries(ccys.map(c=>{const g=blockDynamics(c,'Crescita'),l=blockDynamics(c,'Lavoro');return [c,{growth:g?{direction:g.direction,accelDir:g.accelDir,turning:g.turning,n:g.n}:null,labour:l?{direction:l.direction,accelDir:l.accelDir,turning:l.turning,n:l.n}:null}]})),
+                    pairs:Object.fromEntries([...(D?.pairs||[])].map(x=>{const f=derivePairDecisionFrame(x.pair)||{};return [x.pair,{fav:f.fav,quality:f.quality,macro:f.structural?.macro?.side,policy:f.structural?.policy?.side,price:f.priceReading}]}))
+                  });
+                  const before=snap();
+                  let loadError=null;
+                  try{ if(typeof window.loadFullMacroSeries==='function') await window.loadFullMacroSeries(); }
+                  catch(e){ loadError=String(e?.message||e); }
+                  const after=snap();
+                  return {ok:!loadError && JSON.stringify(before)===JSON.stringify(after),loadError,before,after};
+                })(),
                 refreshStability:safe(()=>{
                   const before={
                     currencies:Object.fromEntries(ccys.map(c=>{const x=deriveCurrencyState(c)||{};return [c,{base:x.base,macro:x.macro,policy:x.policy,change:x.improvementState}]})),
