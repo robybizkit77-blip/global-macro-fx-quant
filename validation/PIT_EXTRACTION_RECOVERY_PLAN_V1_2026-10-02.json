@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_PIT_EXTRACTION_RECOVERY_PLAN_V1",
+  "created_at": "2026-10-02",
+  "purpose": "Recover PIT construction after official bulk/API endpoints proved unreliable in GitHub Actions runners.",
+  "findings": {
+    "statcan_bulk": {
+      "status": "UNRELIABLE_IN_GITHUB_ACTIONS",
+      "evidence": "Two attempts to download/inspect the full real-time tables were terminated while still running.",
+      "interpretation": "This is an extraction-transport problem, not evidence that the official real-time tables are unavailable."
+    },
+    "statcan_metadata_api": {
+      "status": "UNRELIABLE_IN_GITHUB_ACTIONS",
+      "evidence": "getCubeMetadata POST timed out after 60 seconds on the runner.",
+      "interpretation": "Do not block the PIT programme on this endpoint."
+    },
+    "eurostat": {
+      "status": "SOURCE_METHODOLOGY_CONFIRMED",
+      "official_facts": [
+        "PEEI vintage database stores real-time data as published.",
+        "A revision-date dimension records when vintages were published.",
+        "Industrial production and unemployment are split into static older vintages through 2020 and regularly updated vintages from 2021 onward.",
+        "Vintage rows are stored only when the published series changes or a new observation appears."
+      ],
+      "extraction_note": "Generic SDMX dataflow discovery returned no candidate rows; direct source-specific vintage extraction remains required."
+    }
+  },
+  "revised_execution_strategy": [
+    {
+      "priority": 1,
+      "scope": "CAD GDP",
+      "method": "Reconstruct first-release values from dated Statistics Canada The Daily releases at monthly checkpoints, using table 36-10-0491-01 as the real-time validation reference.",
+      "reason": "Dated releases are official, individually small, and directly record the values/growth seen by the market."
+    },
+    {
+      "priority": 2,
+      "scope": "EUR industrial production + unemployment",
+      "method": "Use Eurostat PEEI vintage tables directly; preserve revision-date dimension and changing euro-area composition.",
+      "reason": "Eurostat explicitly designed these vintages for real-time/revision analysis."
+    },
+    {
+      "priority": 3,
+      "scope": "CAD retail volume",
+      "method": "Use dated Statistics Canada monthly retail releases and archived real-time table 20-10-0082-01; exact volume-series continuity must be matched before ingestion.",
+      "reason": "Archived table is confirmed real-time and seasonally adjusted; runtime concept match still requires audit."
+    }
+  ],
+  "rules": [
+    "No synthetic vintage values.",
+    "No use of today's revised value as a substitute for first release.",
+    "At each historical checkpoint include only information publicly released by that date.",
+    "If a release cannot be recovered, mark WITHHELD_PIT.",
+    "Do not change engine thresholds during PIT construction."
+  ],
+  "gate": {
+    "full_backtest_ready": false,
+    "next_deliverable": "Build a dated-release PIT panel for CAD GDP first, then run the frozen sensitivity harness on that complete series."
+  }
+}
