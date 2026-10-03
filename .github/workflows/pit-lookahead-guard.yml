@@ -24,3 +24,4 @@ jobs:
           git add validation/PIT_LOOKAHEAD_GUARD_AUDIT_2026-10-03.json
           git diff --cached --quiet || git commit -m 'Add PIT lookahead guard audit artifact'
           git push
+# retrigger after BEA observation mapping fix
