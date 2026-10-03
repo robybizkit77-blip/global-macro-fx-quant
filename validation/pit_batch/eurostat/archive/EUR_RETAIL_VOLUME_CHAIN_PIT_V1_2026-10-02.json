@@ -534,10 +534,21 @@
       "match_text": "Volume of retail trade down by 0.3 % in the euro area and by 0.2% in the EU Down by 2.0% in the euro area and by 1.3% in the EU compared with August 2021 In August 2022, the seasonally adjusted volume of retail trade decreased by 0.3% in the euro area and by 0.2% in the EU, compared with",
       "previous_release_date": "2022-09-05",
       "previous_match": "News Release 99/2022 of 5 September 2022"
+    },
+    {
+      "release_date": "2022-09-05",
+      "reference_month": "2022-07",
+      "retail_volume_mom_pct": null,
+      "url": "https://ec.europa.eu/eurostat/documents/2995521/14698165/4-05092022-AP-EN.pdf/e19fec60-f51a-dde7-51cb-0b8d0bd7f6fc",
+      "pdf_url": null,
+      "content_type": "application/pdf",
+      "match_text": null,
+      "previous_release_date": "2022-08-03",
+      "previous_match": "News Release 90/2022 of 3 August 2022"
     }
   ],
   "summary": {
-    "chain_rows": 48,
+    "chain_rows": 49,
     "expected_months": 74,
     "parsed_months": 48,
     "coverage_pct": 64.86,
