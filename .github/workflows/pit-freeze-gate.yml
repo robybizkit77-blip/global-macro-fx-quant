@@ -1,0 +1,46 @@
+name: PIT Freeze Gate
+
+on:
+  push:
+    branches:
+      - staging-usd-pit-readiness-2026-10-03
+    paths:
+      - 'validation/PIT_DATASET_FREEZE_V1_2026-10-03.json'
+      - 'validation/run_pit_freeze_gate.py'
+      - 'validation/pit_batch/**/GBP_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/JPY_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/CHF_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/AUD_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/NZD_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/CAD_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/EUR_PIT_READINESS_2026-10-03.json'
+      - 'validation/pit_batch/**/USD_PIT_READINESS_2026-10-03.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-usd-pit-readiness-2026-10-03
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run PIT freeze gate
+        run: python validation/run_pit_freeze_gate.py
+      - name: Commit gate report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/PIT_FREEZE_GATE_V1_2026-10-03.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Record PIT freeze gate"
+            git pull --rebase origin staging-usd-pit-readiness-2026-10-03
+            git push origin HEAD:staging-usd-pit-readiness-2026-10-03
+          fi
