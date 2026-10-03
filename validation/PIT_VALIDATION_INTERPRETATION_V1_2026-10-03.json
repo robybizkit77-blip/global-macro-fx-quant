@@ -1,0 +1,148 @@
+{
+  "schema": "GMFQ_PIT_VALIDATION_INTERPRETATION_V1",
+  "created_at": "2026-10-03",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "status": "PRE_FORWARD_OOS_PIT_VALIDATION_CLOSED",
+  "scope": {
+    "currencies_with_usable_pit_macro_evidence": ["USD", "EUR", "CAD"],
+    "full_growth_and_labour_core": ["CAD"],
+    "partial_growth_and_labour_core": ["EUR"],
+    "growth_only": ["USD"],
+    "withheld_historical_macro": ["GBP", "JPY", "CHF", "AUD", "NZD"]
+  },
+  "methodology_conclusions": [
+    {
+      "id": "revised_history_contaminates_signal_state",
+      "status": "SUPPORTED",
+      "evidence": [
+        "CAD Macro polarity changes PIT vs revised: 53/200 = 26.5%.",
+        "EUR partial Macro polarity changes PIT vs revised: 41/129 = 31.78%."
+      ],
+      "interpretation": "Revised historical data can materially alter the state the model would appear to have seen in real time. Revised history is therefore benchmark-only, not true PIT validation."
+    },
+    {
+      "id": "hard_reversals_are_smaller_subset_than_total_state_changes",
+      "status": "SUPPORTED_CAD",
+      "evidence": [
+        "CAD hard opposite polarity reversals: 9/200 = 4.5% of all checkpoints.",
+        "Most CAD polarity changes occur across the neutral boundary rather than direct +1 to -1 or -1 to +1 reversals."
+      ],
+      "interpretation": "Revision sensitivity is concentrated around regime boundaries and confidence transitions more than wholesale opposite-regime rewrites."
+    },
+    {
+      "id": "growth_is_primary_revision_vulnerability",
+      "status": "SUPPORTED_CAD_AND_EUR",
+      "evidence": [
+        "CAD macro flips attributable to Growth-only: 26/53 = 49.06%; Labour-only: 12/53 = 22.64%; both: 15/53 = 28.30%.",
+        "EUR macro flips attributable to Growth-only: 19/41 = 46.34%; Labour-only: 11/41 = 26.83%; both: 11/41 = 26.83%."
+      ],
+      "interpretation": "Growth is the larger revision-sensitive block in both available two-block PIT samples, but this does not justify reweighting without forward evidence."
+    },
+    {
+      "id": "cad_series_level_sensitivity",
+      "status": "SUPPORTED_CAD",
+      "evidence": [
+        "GDP direction changes: 19/68 = 27.94%.",
+        "Retail direction changes: 18/68 = 26.47%.",
+        "Retail turning changes: 20/68 = 29.41%.",
+        "Unemployment direction changes: 12/69 = 17.39%.",
+        "Employment direction changes: 10/69 = 14.49%."
+      ],
+      "interpretation": "GDP direction and Retail turning behavior are the largest observed CAD series-level revision sensitivities."
+    },
+    {
+      "id": "growth_internal_divergence_marks_low_conviction",
+      "status": "SUPPORTED_CAD",
+      "evidence": [
+        "CAD first-release GDP/Retail divergence: 40/135 = 29.63%.",
+        "Growth block direction changes when divergent: 19/40 = 47.5% versus 23/95 = 24.21% when aligned.",
+        "Near-threshold divergent cases: 24/40 = 60%."
+      ],
+      "interpretation": "Internal Growth disagreement is associated with materially higher revision fragility and lower conviction. It is a future confidence-modifier candidate, not a current engine rule."
+    },
+    {
+      "id": "labour_internal_divergence_is_rarer_and_less_fragility_amplifying",
+      "status": "SUPPORTED_CAD",
+      "evidence": [
+        "Employment/Unemployment divergence: 9/69 = 13.04%.",
+        "Labour block direction changes when divergent: 2/9 = 22.22% versus 12/60 = 20.0% when aligned.",
+        "Near-threshold divergent cases: 8/9 = 88.89%."
+      ],
+      "interpretation": "Labour internal divergence is mainly a low-conviction marker in this sample, not a clear amplifier of direction revision fragility."
+    },
+    {
+      "id": "block_direction_fragility_propagates_to_macro",
+      "status": "SUPPORTED_CAD",
+      "evidence": [
+        "Growth-only fragile checkpoints produce Macro polarity flips in 26/43 = 60.47%.",
+        "Labour-only fragile checkpoints produce Macro polarity flips in 12/20 = 60.0%.",
+        "Both-block fragile checkpoints produce Macro polarity flips in 15/22 = 68.18%.",
+        "Neither block direction fragile: 0/115 Macro polarity flips."
+      ],
+      "interpretation": "When block direction itself changes PIT vs revised, the revision often propagates into overall Macro. When neither block direction changes, Macro polarity is stable in the CAD sample."
+    },
+    {
+      "id": "turning_is_more_sensitive_than_direction",
+      "status": "SUPPORTED_CAD_AND_EUR",
+      "evidence": [
+        "CAD turning changes: 53/200; 17/115 occur with neither block direction changing.",
+        "EUR turning changes: 51/129; 23/51 = 45.10% occur without a Macro polarity flip."
+      ],
+      "interpretation": "Turning point should be treated as an early-warning layer rather than the same confidence class as a confirmed Macro direction change."
+    },
+    {
+      "id": "persistent_turning_has_higher_confirmation_value",
+      "status": "SUPPORTED_CROSS_COUNTRY_RESEARCH_SIGNAL",
+      "evidence": [
+        "CAD persistent turning confirms Macro polarity within two checkpoints in 13/19 = 68.42%.",
+        "EUR persistent turning with second checkpoint available confirms within two checkpoints in 16/21 = 76.19%."
+      ],
+      "interpretation": "The research hierarchy FIRST SIGNAL -> POSSIBLE CHANGE -> CONFIRMED STRUCTURAL CHANGE is supported across CAD and EUR, but remains a descriptive validation hierarchy until forward OOS evidence exists."
+    },
+    {
+      "id": "lookahead_guard",
+      "status": "PASS",
+      "evidence": [
+        "USD eligible PIT series pass release-date chronology checks.",
+        "EUR eligible PIT series pass release-date chronology checks.",
+        "CAD aggregate forward-filled source checkpoints are never later than the aggregate checkpoint.",
+        "Replay availability filter is release_date <= checkpoint and does not use observation date as an as-of gate."
+      ],
+      "interpretation": "No lookahead leakage was detected in the currently eligible PIT replay at daily-date resolution."
+    }
+  ],
+  "decision_rules": {
+    "revised_history": "BENCHMARK_ONLY",
+    "pit_first_release": "REQUIRED_FOR_HISTORICAL_SIGNAL_VALIDATION",
+    "withheld_series": "NO_FALLBACK_NO_VOTE",
+    "turning_single": "EARLY_WARNING_ONLY",
+    "turning_persistent": "HIGHER_ATTENTION_RESEARCH_SIGNAL_NOT_ENGINE_RULE",
+    "macro_direction_change": "STRUCTURAL_CONFIRMATION_LAYER",
+    "threshold_or_weight_changes_before_forward_oos": "PROHIBITED",
+    "runtime_or_model_logic_changes_before_forward_oos_checkpoint": "RESTARTS_OOS"
+  },
+  "evidence_limits": [
+    "CAD is the only G8 currency with a full Growth+Labour PIT core in this validation set.",
+    "EUR has both blocks but partial series coverage because Retail volume and negotiated wages are withheld.",
+    "USD has PIT Growth only and cannot produce a complete historical Macro polarity vote.",
+    "GBP, JPY, CHF, AUD and NZD historical Macro remain WITHHELD under PIT rules.",
+    "Cross-country turning conclusions currently rest on CAD and EUR only and must not be generalized mechanically to the full G8.",
+    "Daily-date lookahead checks do not validate intraday timestamps."
+  ],
+  "forward_oos": {
+    "canonical_file": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+    "t0": "2026-10-01",
+    "checkpoints": {
+      "1W": "2026-10-08",
+      "4W": "2026-10-29",
+      "12W": "2026-12-24"
+    },
+    "role": "DECISIVE_VALIDATION_LAYER",
+    "note": "No parameter tuning or engine-rule promotion should occur from partial PIT evidence before forward OOS checkpoints are evaluated."
+  },
+  "phase_decision": "STOP_PRE_FORWARD_PIT_VALIDATION_AND_PRESERVE_FROZEN_ENGINE",
+  "next_action": "Wait for canonical forward OOS checkpoints while limiting interim work to validation-only, data-integrity, presentation, or non-engine operational tasks that do not contaminate the frozen OOS.",
+  "no_model_change": true
+}
