@@ -1,5 +1,10 @@
 name: Forward OOS Checkpoint Evaluator
 on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/evaluate_forward_oos_checkpoint.py'
+      - '.github/workflows/forward-oos-checkpoint-evaluator.yml'
   workflow_dispatch:
     inputs:
       checkpoint:
@@ -17,9 +22,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Evaluate checkpoint
+      - name: Deterministic pre-checkpoint self-test
+        if: github.event_name == 'push'
+        run: python validation/evaluate_forward_oos_checkpoint.py --checkpoint 1W --today 2026-10-03
+      - name: Evaluate requested checkpoint
+        if: github.event_name == 'workflow_dispatch'
         run: python validation/evaluate_forward_oos_checkpoint.py --checkpoint '${{ inputs.checkpoint }}'
       - name: Commit evaluation artifact if created
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
