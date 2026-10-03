@@ -1,0 +1,27 @@
+name: CAD Macro Internal Divergence Propagation
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/audit_cad_macro_internal_divergence_propagation.py'
+      - '.github/workflows/cad-macro-internal-divergence-propagation.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-usd-pit-readiness-2026-10-03
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python validation/audit_cad_macro_internal_divergence_propagation.py
+      - name: Commit audit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/CAD_MACRO_INTERNAL_DIVERGENCE_PROPAGATION_AUDIT_2026-10-03.json
+          git diff --cached --quiet || git commit -m 'Record CAD macro internal divergence propagation audit'
+          git push
