@@ -58,7 +58,6 @@ for sid in ['EA_IP_history_value','EA_UNEMP_history_value']:
             rr.append({'release_date':d,'obs':o,'first':fv,'revised':rv})
     rows[sid]=sorted(rr,key=lambda x:(x['release_date'],x['obs']))
 
-# Employment: official first-release q/q path compounded. Revised runtime level extracted from payload.
 emp=json.loads(EMP.read_text())['rows']
 first_level=100.0
 first_map=[]
@@ -67,9 +66,10 @@ for r in sorted(emp,key=lambda x:x['reference_quarter']):
     first_map.append({'release_date':r['release_date'],'obs':r['reference_quarter'],'first':first_level})
 
 text=PAYLOAD.read_text()
-m=re.search(r'EA_EMPLOYMENT_history_value\s*:\s*\[(.*?)\]\s*,',text,re.S)
+m=re.search(r'["\']?EA_EMPLOYMENT_history_value["\']?\s*:\s*\[(.*?)\]\s*,',text,re.S)
 if not m: raise SystemExit('EA_EMPLOYMENT_history_value not found in payload')
 rev_pairs=re.findall(r'\[\s*["\'](20\d{2}-Q[1-4])["\']\s*,\s*(-?\d+(?:\.\d+)?)\s*\]',m.group(1))
+if not rev_pairs: raise SystemExit('No revised EUR employment rows parsed from payload')
 rev={q:float(v) for q,v in rev_pairs}
 rows['EA_EMPLOYMENT_history_value']=sorted([{**r,'revised':rev[r['obs']]} for r in first_map if r['obs'] in rev],key=lambda x:(x['release_date'],x['obs']))
 
@@ -86,44 +86,13 @@ for cp in events:
     fm=macro(fg,fl); rm=macro(rg,rl)
     if fm and rm: replay.append({'checkpoint':cp,'first':fm,'revised':rm})
 
-# Focus on first-release turning signals that disagree with revised history at that same checkpoint (fragile turning).
 fragile=[]
 for i,x in enumerate(replay[:-1]):
     if x['first']['turning'] and x['first']['turning']!=x['revised']['turning']:
         nxt=replay[i+1]
-        fragile.append({
-            'checkpoint':x['checkpoint'],
-            'next_checkpoint':nxt['checkpoint'],
-            'first_polarity':x['first']['polarity'],
-            'next_first_turning':nxt['first']['turning'],
-            'next_first_polarity':nxt['first']['polarity'],
-            'turning_persists_next':bool(nxt['first']['turning']),
-            'macro_polarity_changes_next':bool(nxt['first']['polarity']!=x['first']['polarity'])
-        })
+        fragile.append({'checkpoint':x['checkpoint'],'next_checkpoint':nxt['checkpoint'],'first_polarity':x['first']['polarity'],'next_first_turning':nxt['first']['turning'],'next_first_polarity':nxt['first']['polarity'],'turning_persists_next':bool(nxt['first']['turning']),'macro_polarity_changes_next':bool(nxt['first']['polarity']!=x['first']['polarity'])})
 
 n=len(fragile); pers=sum(x['turning_persists_next'] for x in fragile); flips=sum(x['macro_polarity_changes_next'] for x in fragile)
-report={
- 'schema':'GMFQ_EUR_TURNING_PERSISTENCE_AUDIT_V1',
- 'engine_ref':'engine-freeze-v1-2026-10-02','rules_fingerprint':'3356baf0','threshold_direction':TH,
- 'eligible_pit_core':['EA_IP_history_value','EA_UNEMP_history_value','EA_EMPLOYMENT_history_value'],
- 'summary':{
-   'usable_macro_checkpoints':len(replay),
-   'fragile_first_release_turning_cases_with_next_checkpoint':n,
-   'turning_persists_next':pers,
-   'turning_persists_next_pct':round(100*pers/n,2) if n else None,
-   'turning_reverts_next':n-pers,
-   'turning_reverts_next_pct':round(100*(n-pers)/n,2) if n else None,
-   'macro_polarity_changes_next':flips,
-   'macro_polarity_changes_next_pct':round(100*flips/n,2) if n else None
- },
- 'cases':fragile,
- 'limitations':[
-  'EUR PIT coverage remains partial: Retail volume and negotiated wages are withheld and excluded.',
-  'Employment first-release path is compounded from official flash q/q growth; normalized impulse is scale-invariant.',
-  'This is a descriptive persistence audit, not a trading backtest.'
- ],
- 'interpretation_guardrail':'Do not alter model weights, thresholds, or turning rules from this partial EUR PIT sample.',
- 'no_model_change':True
-}
+report={'schema':'GMFQ_EUR_TURNING_PERSISTENCE_AUDIT_V1','engine_ref':'engine-freeze-v1-2026-10-02','rules_fingerprint':'3356baf0','threshold_direction':TH,'eligible_pit_core':['EA_IP_history_value','EA_UNEMP_history_value','EA_EMPLOYMENT_history_value'],'summary':{'usable_macro_checkpoints':len(replay),'fragile_first_release_turning_cases_with_next_checkpoint':n,'turning_persists_next':pers,'turning_persists_next_pct':round(100*pers/n,2) if n else None,'turning_reverts_next':n-pers,'turning_reverts_next_pct':round(100*(n-pers)/n,2) if n else None,'macro_polarity_changes_next':flips,'macro_polarity_changes_next_pct':round(100*flips/n,2) if n else None},'cases':fragile,'limitations':['EUR PIT coverage remains partial: Retail volume and negotiated wages are withheld and excluded.','Employment first-release path is compounded from official flash q/q growth; normalized impulse is scale-invariant.','This is a descriptive persistence audit, not a trading backtest.'],'interpretation_guardrail':'Do not alter model weights, thresholds, or turning rules from this partial EUR PIT sample.','no_model_change':True}
 OUT.write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report['summary'],indent=2))
