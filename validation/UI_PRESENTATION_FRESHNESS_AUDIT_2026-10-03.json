@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_UI_PRESENTATION_FRESHNESS_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "engine_freeze": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "scope": "UI/presentation labels and auxiliary freshness only; no model-rule or runtime-state mutation",
+  "findings": [
+    {
+      "id": "AUX_NEWS_STALE_CURRENT_LABEL",
+      "severity": "MEDIUM",
+      "status": "OPEN_PRESENTATION_DEFECT",
+      "evidence": {
+        "news_as_of": "2026-09-30T10:34+02:00",
+        "news_status": "CURRENT_SOURCED",
+        "calendar_current_date": "2026-09-30",
+        "brent_as_of": "2026-09-28",
+        "wti_as_of": "2026-09-28"
+      },
+      "issue": "The auxiliary feed is correctly date-stamped but the CURRENT_SOURCED/current-style wording becomes misleading after the snapshot date passes.",
+      "model_impact": "NONE",
+      "oos_impact": "NONE if left unchanged; do not alter structural engine state.",
+      "recommended_fix": "Presentation layer should render explicit 'Aggiornato al <date/time>' and derive stale/current badge from age instead of persisting CURRENT_SOURCED indefinitely."
+    },
+    {
+      "id": "AUX_NEWS_EVENT_TEXT_STALE",
+      "severity": "MEDIUM",
+      "status": "OPEN_PRESENTATION_DEFECT",
+      "examples": [
+        "PCE e payrolls USA diventano il prossimo snodo",
+        "Brent resta sopra 100 dollari",
+        "Vendite sui bond globali ancora al centro"
+      ],
+      "issue": "Event/news copy from 28-30 September may still read as forward-looking/current on 3 October if freshness context is not visually prominent.",
+      "model_impact": "NONE",
+      "recommended_fix": "Age-gate or archive auxiliary narrative once the referenced event window has passed; never reuse stale copy as live narrative."
+    }
+  ],
+  "verified_not_a_problem": [
+    "JPY current OIS status is ACTIVE in the frozen baseline; earlier JPY-withheld references were superseded before T0.",
+    "USD, CHF and NZD remain the current OIS limitation set in the canonical T0/current completeness evidence.",
+    "Auxiliary calendar/news/risk payloads are separated from structural model voting and do not independently mutate canonical layers."
+  ],
+  "decision": "PASS_ENGINE__UI_FRESHNESS_DEFECTS_LOGGED",
+  "safe_next_action": "Do not modify frozen engine/runtime before forward OOS checkpoint. Prepare a presentation-only freshness patch for application after checkpoint or in a separately proven non-structural rendering layer."
+}
