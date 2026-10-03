@@ -1,0 +1,100 @@
+{
+  "schema": "GMFQ_G8_PIT_DATASET_FREEZE_V1",
+  "created_at": "2026-10-03",
+  "purpose": "Freeze the minimum robust point-in-time Macro Core dataset that is allowed to feed the new-engine historical replay/backtest. Only verified PIT series vote; withheld series remain excluded and are never replaced with revised current history.",
+  "data_branch": "staging-usd-pit-readiness-2026-10-03",
+  "frozen_engine": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0",
+    "macro_core": "Crescita + Lavoro"
+  },
+  "global_rules": [
+    "Use only observations with verified market-availability/release dates.",
+    "Never backfill a missing PIT observation with current revised history.",
+    "Withheld series contribute no vote at any historical checkpoint.",
+    "A block is computed only from PIT-eligible series actually available at that checkpoint.",
+    "No threshold tuning is allowed during dataset reconstruction or replay.",
+    "Provider families closed under the stopping rule remain closed unless a new authoritative PIT path becomes available."
+  ],
+  "totals": {
+    "currencies": 8,
+    "planned_series": 49,
+    "pit_ready_series": 10,
+    "withheld_series": 39,
+    "pending_series": 0,
+    "currencies_with_any_pit_vote": 3,
+    "currencies_with_full_growth_and_labour_blocks": 1
+  },
+  "currencies": {
+    "USD": {
+      "status": "PARTIAL_CORE_PIT_READY_WITH_WITHHELD_LABOUR_BLOCK",
+      "growth": ["US_INDPRO_history_value", "US_PI_history_PI", "US_NEWORDER_history_NEWORDER"],
+      "labour": [],
+      "withheld_count": 11,
+      "source_manifest": "validation/pit_batch/fed_g17/USD_PIT_READINESS_2026-10-03.json"
+    },
+    "EUR": {
+      "status": "PARTIAL_CORE_PIT_READY_WITH_WITHHELD_INPUTS",
+      "growth": ["EA_IP_history_value"],
+      "labour": ["EA_UNEMP_history_value", "EA_EMPLOYMENT_history_value"],
+      "withheld_count": 2,
+      "source_manifest": "validation/pit_batch/eurostat/EUR_PIT_READINESS_2026-10-03.json"
+    },
+    "GBP": {
+      "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth": [],
+      "labour": [],
+      "withheld_count": 5,
+      "source_manifest": "validation/pit_batch/ons/GBP_PIT_READINESS_2026-10-03.json"
+    },
+    "JPY": {
+      "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth": [],
+      "labour": [],
+      "withheld_count": 4,
+      "source_manifest": "validation/pit_batch/japan/JPY_PIT_READINESS_2026-10-03.json"
+    },
+    "CHF": {
+      "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth": [],
+      "labour": [],
+      "withheld_count": 4,
+      "source_manifest": "validation/pit_batch/swiss/CHF_PIT_READINESS_2026-10-03.json"
+    },
+    "CAD": {
+      "status": "CORE_PIT_READY",
+      "growth": ["CA_REAL_GDP_M_history_value", "CA_RETAIL_VOLUME_history_value"],
+      "labour": ["CA_EMPLOYMENT_history_value", "CA_UNEMP_RATE_history_value"],
+      "withheld_count": 0,
+      "source_manifest": "validation/pit_batch/statcan/CAD_PIT_READINESS_2026-10-03.json"
+    },
+    "AUD": {
+      "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth": [],
+      "labour": [],
+      "withheld_count": 5,
+      "source_manifest": "validation/pit_batch/abs/AUD_PIT_READINESS_2026-10-03.json"
+    },
+    "NZD": {
+      "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth": [],
+      "labour": [],
+      "withheld_count": 8,
+      "source_manifest": "validation/pit_batch/stats_nz/NZD_PIT_READINESS_2026-10-03.json"
+    }
+  },
+  "backtest_eligibility": {
+    "USD": "ELIGIBLE_PARTIAL_GROWTH_ONLY",
+    "EUR": "ELIGIBLE_PARTIAL_CORE",
+    "GBP": "WITHHELD_NO_MACRO_PIT_VOTE",
+    "JPY": "WITHHELD_NO_MACRO_PIT_VOTE",
+    "CHF": "WITHHELD_NO_MACRO_PIT_VOTE",
+    "CAD": "ELIGIBLE_FULL_CORE",
+    "AUD": "WITHHELD_NO_MACRO_PIT_VOTE",
+    "NZD": "WITHHELD_NO_MACRO_PIT_VOTE"
+  },
+  "interpretation_guardrail": "The backtest may evaluate the frozen engine with the information genuinely available under this PIT dataset, but results must distinguish full-core CAD, partial-core EUR, growth-only USD, and currencies with no historical Macro Core vote. Cross-currency performance must not be interpreted as if all currencies had equal historical feature coverage.",
+  "next_action": "Build and run the frozen-engine PIT replay/sensitivity harness against this exact manifest before any threshold tuning or UI work."
+}
