@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json, math, statistics, re
+import json, math, statistics
 from pathlib import Path
 
 TH=0.20
@@ -7,9 +7,27 @@ SRC=Path('validation/pit_batch/eurostat/EUROSTAT_PIT_READY_V1_2026-10-02.json')
 EMP=Path('validation/pit_batch/eurostat/archive/EUR_EMPLOYMENT_DATED_RELEASE_CRAWL_V1_2026-10-02.json')
 PAYLOAD=Path('payload/part-01.txt')
 OUT=Path('validation/EUR_TURNING_PERSISTENCE_AUDIT_2026-10-03.json')
-
 POL={'EA_IP_history_value':1,'EA_UNEMP_history_value':-1,'EA_EMPLOYMENT_history_value':1}
 CAT={'EA_IP_history_value':'Growth','EA_UNEMP_history_value':'Labour','EA_EMPLOYMENT_history_value':'Labour'}
+
+def extract_runtime_series(text, series_id):
+    marker='{"id":"'+series_id+'"'
+    start=text.find(marker)
+    if start<0: raise RuntimeError(f'runtime series not found: {series_id}')
+    depth=0; instr=False; esc=False
+    for i in range(start,len(text)):
+        ch=text[i]
+        if instr:
+            if esc: esc=False
+            elif ch=='\\': esc=True
+            elif ch=='"': instr=False
+        else:
+            if ch=='"': instr=True
+            elif ch=='{': depth+=1
+            elif ch=='}':
+                depth-=1
+                if depth==0:return json.loads(text[start:i+1])
+    raise RuntimeError('unterminated runtime object')
 
 def pick(row,prefix):
     ks=[k for k in row if k.startswith(prefix)]
@@ -45,36 +63,27 @@ def macro(g,l):
     s=g['direction']+l['direction']
     return {'polarity':0 if s==0 else (1 if s>0 else -1),'turning':bool(g['turning'] or l['turning'])}
 
-base=json.loads(SRC.read_text())
-series=base['series']
-rows={}
-for sid in ['EA_IP_history_value','EA_UNEMP_history_value']:
+base=json.loads(SRC.read_text()); series=base['series']; rows={}
+for sid in ('EA_IP_history_value','EA_UNEMP_history_value'):
     rr=[]
     for r in series[sid].get('rows',[]):
         fv=pick(r,'first_release'); rv=pick(r,'current_revised')
         d=r.get('first_release_date') or r.get('release_date')
-        o=r.get('observation_month') or r.get('reference_month') or r.get('period')
-        if fv is not None and rv is not None and d and o:
-            rr.append({'release_date':d,'obs':o,'first':fv,'revised':rv})
+        o=r.get('observation_month') or r.get('observation_quarter') or r.get('reference_month') or r.get('reference_quarter') or r.get('period')
+        if fv is not None and rv is not None and d and o: rr.append({'release_date':d,'obs':o,'first':fv,'revised':rv})
     rows[sid]=sorted(rr,key=lambda x:(x['release_date'],x['obs']))
 
-emp=json.loads(EMP.read_text())['rows']
-first_level=100.0
-first_map=[]
+emp=json.loads(EMP.read_text())['rows']; rt=extract_runtime_series(PAYLOAD.read_text(),'EA_EMPLOYMENT_history_value')
+rtmap=dict(zip(rt['dates'],map(float,rt['values'])))
+prev_level=rtmap.get('2020-Q1')
+if prev_level is None: raise RuntimeError('missing 2020-Q1 employment runtime anchor')
+err=[]
 for r in sorted(emp,key=lambda x:x['reference_quarter']):
-    first_level*=1.0+float(r['employment_qoq_pct'])/100.0
-    first_map.append({'release_date':r['release_date'],'obs':r['reference_quarter'],'first':first_level})
+    q=r['reference_quarter']; prev_level*=1+float(r['employment_qoq_pct'])/100.0
+    if q in rtmap: err.append({'release_date':r['release_date'],'obs':q,'first':prev_level,'revised':rtmap[q]})
+rows['EA_EMPLOYMENT_history_value']=err
 
-text=PAYLOAD.read_text()
-m=re.search(r'["\']?EA_EMPLOYMENT_history_value["\']?\s*:\s*\[(.*?)\]\s*,',text,re.S)
-if not m: raise SystemExit('EA_EMPLOYMENT_history_value not found in payload')
-rev_pairs=re.findall(r'\[\s*["\'](20\d{2}-Q[1-4])["\']\s*,\s*(-?\d+(?:\.\d+)?)\s*\]',m.group(1))
-if not rev_pairs: raise SystemExit('No revised EUR employment rows parsed from payload')
-rev={q:float(v) for q,v in rev_pairs}
-rows['EA_EMPLOYMENT_history_value']=sorted([{**r,'revised':rev[r['obs']]} for r in first_map if r['obs'] in rev],key=lambda x:(x['release_date'],x['obs']))
-
-events=sorted(set(r['release_date'] for rr in rows.values() for r in rr))
-replay=[]
+events=sorted(set(r['release_date'] for rr in rows.values() for r in rr)); replay=[]
 for cp in events:
     fs={}; rs={}
     for sid,rr in rows.items():
@@ -94,5 +103,4 @@ for i,x in enumerate(replay[:-1]):
 
 n=len(fragile); pers=sum(x['turning_persists_next'] for x in fragile); flips=sum(x['macro_polarity_changes_next'] for x in fragile)
 report={'schema':'GMFQ_EUR_TURNING_PERSISTENCE_AUDIT_V1','engine_ref':'engine-freeze-v1-2026-10-02','rules_fingerprint':'3356baf0','threshold_direction':TH,'eligible_pit_core':['EA_IP_history_value','EA_UNEMP_history_value','EA_EMPLOYMENT_history_value'],'summary':{'usable_macro_checkpoints':len(replay),'fragile_first_release_turning_cases_with_next_checkpoint':n,'turning_persists_next':pers,'turning_persists_next_pct':round(100*pers/n,2) if n else None,'turning_reverts_next':n-pers,'turning_reverts_next_pct':round(100*(n-pers)/n,2) if n else None,'macro_polarity_changes_next':flips,'macro_polarity_changes_next_pct':round(100*flips/n,2) if n else None},'cases':fragile,'limitations':['EUR PIT coverage remains partial: Retail volume and negotiated wages are withheld and excluded.','Employment first-release path is compounded from official flash q/q growth; normalized impulse is scale-invariant.','This is a descriptive persistence audit, not a trading backtest.'],'interpretation_guardrail':'Do not alter model weights, thresholds, or turning rules from this partial EUR PIT sample.','no_model_change':True}
-OUT.write_text(json.dumps(report,indent=2)+'\n')
-print(json.dumps(report['summary'],indent=2))
+OUT.write_text(json.dumps(report,indent=2)+'\n'); print(json.dumps(report['summary'],indent=2))
