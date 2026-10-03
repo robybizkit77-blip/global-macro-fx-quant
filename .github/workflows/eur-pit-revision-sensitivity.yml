@@ -1,0 +1,27 @@
+name: EUR PIT Revision Sensitivity
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/audit_eur_pit_revision_sensitivity.py'
+      - 'validation/pit_batch/eurostat/EUROSTAT_PIT_READY_V1_2026-10-02.json'
+      - '.github/workflows/eur-pit-revision-sensitivity.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python validation/audit_eur_pit_revision_sensitivity.py
+      - name: Commit audit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/EUR_PIT_REVISION_SENSITIVITY_AUDIT_2026-10-03.json
+          git diff --cached --quiet || git commit -m "Record EUR PIT revision sensitivity audit"
+          git push
