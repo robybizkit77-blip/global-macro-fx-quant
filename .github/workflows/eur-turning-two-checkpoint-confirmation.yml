@@ -1,0 +1,26 @@
+name: EUR Turning Two Checkpoint Confirmation
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/audit_eur_turning_two_checkpoint_confirmation.py'
+      - '.github/workflows/eur-turning-two-checkpoint-confirmation.yml'
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python validation/audit_eur_turning_two_checkpoint_confirmation.py
+      - name: Commit audit artifact
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/EUR_TURNING_TWO_CHECKPOINT_CONFIRMATION_AUDIT_2026-10-03.json
+          git diff --cached --quiet || git commit -m 'Add EUR turning two-checkpoint confirmation audit artifact'
+          git push
