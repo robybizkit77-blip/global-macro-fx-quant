@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_JPY_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "currency": "JPY",
+  "source_review": {
+    "official_sources_checked": ["METI Indices of Industrial Production historical/results archives", "METI retail/trade statistics", "Statistics Bureau Labour Force Survey"],
+    "finding": "Official historical releases exist, but no verified mapping from all four runtime IDs to exact first-release historical columns is already documented in the repository. Under the one-pass stopping rule, identity is not guessed and revised history is not substituted."
+  },
+  "series": {
+    "JP_IIP_history_value": {"block": "Crescita", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "METI"},
+    "JP_RETAIL_history_value": {"block": "Crescita", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "METI"},
+    "JP_UNEMP_RATE_history_value": {"block": "Lavoro", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "Statistics Bureau of Japan"},
+    "JP_EMPLOYED_history_value": {"block": "Lavoro", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "Statistics Bureau of Japan"}
+  },
+  "eligible_pit_core_now": {"growth": [], "labour": [], "withheld": ["JP_IIP_history_value", "JP_RETAIL_history_value", "JP_UNEMP_RATE_history_value", "JP_EMPLOYED_history_value"], "pending": []},
+  "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+  "engine_rule": "Withheld series contribute no vote in PIT backtests. No revised current-history substitution and no guessed source identity.",
+  "next_action": "Proceed to CHF under the same one-pass stopping rule."
+}
