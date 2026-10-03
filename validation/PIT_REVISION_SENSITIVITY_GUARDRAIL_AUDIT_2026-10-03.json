@@ -1,0 +1,43 @@
+{
+  "schema": "GMFQ_PIT_REVISION_SENSITIVITY_GUARDRAIL_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "engine": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "revision_sensitivity": {
+    "currency": "CAD",
+    "scope": "Full Macro Core PIT Growth + Labour",
+    "checkpoints_compared": 200,
+    "macro_polarity_changes": 53,
+    "macro_polarity_change_pct": 26.5,
+    "macro_turning_changes": 53,
+    "checkpoints_with_growth_revision_effect": 65,
+    "checkpoints_with_labour_revision_effect": 42,
+    "interpretation": "Current-revised histories materially alter the frozen macro signal. On the only G8 currency with complete Macro Core PIT reconstruction, macro polarity differs at 26.5% of matched checkpoints. Revised-history pseudo-OOS must therefore remain analytically separate from true PIT evidence."
+  },
+  "guardrails": {
+    "USD": {
+      "status": "PASS",
+      "replay_status": "PIT_GROWTH_ONLY",
+      "rule": "Overall Macro remains WITHHELD because Labour PIT is unavailable.",
+      "verified_behavior": "macro_polarity and macro_turning remain null even after Growth becomes usable."
+    },
+    "GBP": {"status": "PASS", "replay_status": "WITHHELD_PIT"},
+    "JPY": {"status": "PASS", "replay_status": "WITHHELD_PIT"},
+    "CHF": {"status": "PASS", "replay_status": "WITHHELD_PIT"},
+    "AUD": {"status": "PASS", "replay_status": "WITHHELD_PIT"},
+    "NZD": {"status": "PASS", "replay_status": "WITHHELD_PIT"},
+    "no_revised_fallback": true,
+    "no_phantom_historical_votes": true
+  },
+  "decision": {
+    "result": "PASS_WITH_MATERIAL_REVISION_RISK_CONFIRMED",
+    "model_rules_change": false,
+    "threshold_tuning": false,
+    "oos_restart_required": false,
+    "implication": "Preserve true PIT vs revised-history separation. Use the frozen forward OOS as the decisive validation path; do not infer robustness from revised-history backtests alone."
+  }
+}
