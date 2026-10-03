@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_USD_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "currency": "USD",
+  "frozen_engine": {
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0",
+    "macro_core": "Crescita + Lavoro"
+  },
+  "series": {
+    "US_INDPRO_history_value": {
+      "block": "Crescita",
+      "status": "PIT_READY",
+      "source": "Federal Reserve G.17 revision history",
+      "method": "First-release monthly growth reconstructed from initial current-month index and first revised prior-month index using 100 * (init[t] / rev1[t-1] - 1).",
+      "source_artifact": "validation/pit_batch/fed_g17/FED_G17_INDPRO_PIT_BATCH_READY_V1_2026-10-02.json",
+      "validation_artifact": "validation/PIT_VINTAGE_PILOT_US_INDPRO_V1_2026-10-02.json",
+      "note": "Current revised history can change the sign of a historical monthly move; only first-release values are eligible for PIT backtests."
+    },
+    "US_PCEC96_history_value": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
+    "US_NEWORDER_history_NEWORDER": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census"},
+    "US_DSPIC96_history_DSPIC96": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
+    "US_PI_history_PI": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
+    "US_RRSFS_history_value": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census Retail Trade"},
+    "US_JTSHIR_history_JTSHIR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_JTSJOL_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_JTSQUR_history_JTSQUR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_PAYEMS_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_OPHNFB_history_OPHNFB": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_AHE_TOTAL_PRIVATE_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_CCSA_history_CCSA": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"},
+    "US_ICSA_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"}
+  },
+  "eligible_pit_core_now": {
+    "growth": ["US_INDPRO_history_value"],
+    "labour": [],
+    "pending": [
+      "US_PCEC96_history_value",
+      "US_NEWORDER_history_NEWORDER",
+      "US_DSPIC96_history_DSPIC96",
+      "US_PI_history_PI",
+      "US_RRSFS_history_value",
+      "US_JTSHIR_history_JTSHIR",
+      "US_JTSJOL_history_value",
+      "US_JTSQUR_history_JTSQUR",
+      "US_PAYEMS_history_value",
+      "US_OPHNFB_history_OPHNFB",
+      "US_AHE_TOTAL_PRIVATE_history_value",
+      "US_CCSA_history_CCSA",
+      "US_ICSA_history_value"
+    ]
+  },
+  "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Pending or withheld series contribute no vote and must not be backfilled from revised history.",
+  "status": "PARTIAL_CORE_PIT_READY",
+  "next_action": "Proceed by provider batch: BEA first, then BLS, Census and Department of Labor; promote each series to PIT_READY only after exact source and release-date reconstruction are validated."
+}
