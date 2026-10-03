@@ -1,0 +1,104 @@
+{
+  "schema": "GMFQ_CROSS_COUNTRY_TURNING_HIERARCHY_GATE_V1",
+  "created_at": "2026-10-03",
+  "engine_ref": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "scope": "Cross-country methodological validation of turning-point hierarchy using available PIT Macro Core evidence for CAD and EUR only.",
+  "countries": {
+    "CAD": {
+      "pit_status": "FULL_CORE_PIT_READY",
+      "turning_persistence": {
+        "fragile_turning_cases": 28,
+        "persists_next": 19,
+        "persists_next_pct": 67.86,
+        "macro_polarity_changes_next": 8,
+        "macro_polarity_changes_next_pct": 28.57
+      },
+      "two_checkpoint_confirmation": {
+        "persistent_cases": 19,
+        "confirmed_by_next": 6,
+        "confirmed_by_next_pct": 31.58,
+        "confirmed_within_two": 13,
+        "confirmed_within_two_pct": 68.42,
+        "not_confirmed_within_two": 6,
+        "not_confirmed_within_two_pct": 31.58
+      },
+      "sources": [
+        "validation/CAD_TURNING_PERSISTENCE_AUDIT_2026-10-03.json",
+        "validation/CAD_TURNING_TWO_CHECKPOINT_CONFIRMATION_AUDIT_2026-10-03.json",
+        "validation/CAD_PIT_REVISION_METHOD_GATE_2026-10-03.json"
+      ]
+    },
+    "EUR": {
+      "pit_status": "PARTIAL_CORE_PIT_READY",
+      "limitations": [
+        "Retail volume withheld from PIT core",
+        "Negotiated wages withheld from PIT core"
+      ],
+      "turning_persistence": {
+        "fragile_turning_cases_with_next": 33,
+        "persists_next": 28,
+        "persists_next_pct": 84.85,
+        "macro_polarity_changes_next": 16,
+        "macro_polarity_changes_next_pct": 48.48
+      },
+      "two_checkpoint_confirmation": {
+        "persistent_cases_total": 28,
+        "persistent_cases_with_second_checkpoint": 21,
+        "confirmed_by_next": 12,
+        "confirmed_by_next_pct": 57.14,
+        "confirmed_within_two": 16,
+        "confirmed_within_two_pct": 76.19,
+        "not_confirmed_within_two": 5,
+        "not_confirmed_within_two_pct": 23.81
+      },
+      "sources": [
+        "validation/EUR_TURNING_PERSISTENCE_AUDIT_2026-10-03.json",
+        "validation/EUR_TURNING_TWO_CHECKPOINT_CONFIRMATION_AUDIT_2026-10-03.json",
+        "validation/EUR_PIT_REVISION_BLOCK_ATTRIBUTION_2026-10-03.json"
+      ]
+    }
+  },
+  "cross_country_findings": {
+    "turning_persistence_supported_in_both": true,
+    "persistent_turning_has_higher_confirmation_value_than_single_turning": true,
+    "macro_direction_remains_the_structural_confirmation_layer": true,
+    "cad_confirmation_within_two_pct": 68.42,
+    "eur_confirmation_within_two_pct": 76.19,
+    "interpretation": "Across both available PIT countries, a single turning point behaves as an early warning, while persistence across the next checkpoint materially increases the chance of a subsequent macro-polarity change. Macro direction remains the more robust structural confirmation layer."
+  },
+  "research_hierarchy": [
+    {
+      "level": 1,
+      "label": "PRIMO_SEGNALE",
+      "condition": "single turning point",
+      "status": "descriptive early warning only"
+    },
+    {
+      "level": 2,
+      "label": "POSSIBILE_CAMBIO",
+      "condition": "turning persists at next checkpoint",
+      "status": "elevated attention; not structural confirmation"
+    },
+    {
+      "level": 3,
+      "label": "CAMBIO_STRUTTURALE_CONFERMATO",
+      "condition": "macro polarity changes with underlying block support",
+      "status": "structural confirmation"
+    }
+  ],
+  "guardrails": [
+    "Do not change model weights, thresholds, labels, or runtime logic before forward OOS evidence.",
+    "Do not generalize CAD/EUR percentages to GBP, JPY, CHF, AUD, NZD, or USD overall macro because equivalent PIT evidence is unavailable.",
+    "EUR is partial-core PIT and must not be treated as directly equivalent to CAD full-core PIT.",
+    "This gate supports a research hierarchy only; it does not promote turning persistence into a trading rule or engine rule."
+  ],
+  "decision": "KEEP_ENGINE_UNCHANGED__TURNING_HIERARCHY_SUPPORTED_AS_RESEARCH_INTERPRETATION",
+  "next_valid_step": "Run PIT lookahead/availability guard across all eligible USD, EUR, CAD PIT series, then wait for frozen forward OOS checkpoint on 2026-10-08 for true forward evaluation.",
+  "no_model_change": true,
+  "oos_restart_required": false
+}
