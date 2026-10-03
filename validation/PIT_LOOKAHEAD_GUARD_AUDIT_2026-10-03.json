@@ -1,0 +1,153 @@
+{
+  "schema": "GMFQ_PIT_LOOKAHEAD_GUARD_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "scope": {
+    "eligible_series": {
+      "USD": [
+        "US_INDPRO_history_value",
+        "US_PI_history_PI",
+        "US_NEWORDER_history_NEWORDER"
+      ],
+      "EUR": [
+        "EA_IP_history_value",
+        "EA_UNEMP_history_value",
+        "EA_EMPLOYMENT_history_value"
+      ],
+      "CAD": [
+        "CAD GDP",
+        "CAD Retail",
+        "CAD Employment",
+        "CAD Unemployment"
+      ]
+    }
+  },
+  "series_checks": [
+    {
+      "series": "USD/US_INDPRO_history_value",
+      "rows": 71,
+      "release_dates_parsed": 71,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 0,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": []
+      },
+      "pass": true
+    },
+    {
+      "series": "USD/US_PI_history_PI",
+      "rows": 69,
+      "release_dates_parsed": 69,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 1,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": [
+          {
+            "index": 61,
+            "release_date": "2026-01-22",
+            "previous_release_date": "2026-02-20"
+          }
+        ]
+      },
+      "pass": false
+    },
+    {
+      "series": "USD/US_NEWORDER_history_NEWORDER",
+      "rows": 72,
+      "release_dates_parsed": 72,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 0,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": []
+      },
+      "pass": true
+    },
+    {
+      "series": "EUR/EA_IP_history_value",
+      "rows": 66,
+      "release_dates_parsed": 66,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 0,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": []
+      },
+      "pass": true
+    },
+    {
+      "series": "EUR/EA_UNEMP_history_value",
+      "rows": 66,
+      "release_dates_parsed": 66,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 0,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": []
+      },
+      "pass": true
+    },
+    {
+      "series": "EUR/EA_EMPLOYMENT_history_value",
+      "rows": 25,
+      "release_dates_parsed": 25,
+      "missing_release_date_count": 0,
+      "release_before_observation_period_end_count": 0,
+      "release_date_order_inversions": 0,
+      "examples": {
+        "missing_release_date_indexes": [],
+        "release_before_period_end": [],
+        "date_inversions": []
+      },
+      "pass": true
+    },
+    {
+      "series": "CAD/Macro Core aggregate",
+      "rows": 200,
+      "missing_latest_source_checkpoint_count": 0,
+      "future_source_checkpoint_count": 0,
+      "examples": {
+        "missing": [],
+        "future": []
+      },
+      "pass": true
+    }
+  ],
+  "replay_static_guard": {
+    "vals_asof_release_gate_present": true,
+    "checkpoints_derived_from_release_date": true,
+    "cad_reuses_validated_release_checkpoint_artifact": true,
+    "no_observation_date_as_asof_filter_found": true,
+    "pass": true
+  },
+  "hard_failures": [
+    "USD/US_PI_history_PI"
+  ],
+  "passed": false,
+  "decision": "FAIL_LOOKAHEAD_GUARD",
+  "guardrails": [
+    "Availability is controlled by official release/first-release date, never by observation month/quarter.",
+    "A series cannot vote at checkpoint cp unless its release date is <= cp.",
+    "CAD forward-filled block state may only come from a latest official source checkpoint <= aggregate checkpoint.",
+    "Any missing or unprovable release timing is a hard failure, not an assumed lag."
+  ],
+  "limitations": [
+    "This audit verifies date gating and chronology for the currently eligible PIT series only; withheld series remain excluded.",
+    "It does not validate intraday release timestamps; checkpoints are daily-date resolution.",
+    "CAD underlying first-release source identity/values were already validated in the canonical CAD PIT artifacts; this guard tests their aggregate checkpoint chronology."
+  ],
+  "no_model_change": true
+}
