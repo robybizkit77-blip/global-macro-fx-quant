@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, csv, io, json, os, sys, urllib.parse, urllib.request
+import argparse, csv, io, json, sys, urllib.parse, urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -52,6 +52,22 @@ def cross_price(pair:str,rates:dict[str,float]):
     a,b=pair.split('/')
     # ECB rates are currency units per EUR. Cross A/B = B-per-EUR / A-per-EUR.
     return rates[b]/rates[a]
+
+
+def smoke_test_ecb():
+    target=date(2026,9,30)
+    fixing_date,rates,series=first_common_fixing(target,max_days=3)
+    missing=[c for c in CCYS if not series.get(c)]
+    invalid=[c for c,v in rates.items() if not isinstance(v,(int,float)) or v<=0]
+    if fixing_date is None or missing or invalid or len(rates)!=8:
+        print(json.dumps({'status':'ECB_SMOKE_FAIL','target':target.isoformat(),'fixing_date':fixing_date.isoformat() if fixing_date else None,'missing_series':missing,'invalid_rates':invalid,'currencies':sorted(rates)},indent=2))
+        return 2
+    # Sanity-check the same cross formula used by the evaluator.
+    sample=cross_price('EUR/USD',rates)
+    if sample<=0:
+        print(json.dumps({'status':'ECB_SMOKE_FAIL','reason':'invalid sample cross'},indent=2)); return 2
+    print(json.dumps({'status':'ECB_SMOKE_PASS','target':target.isoformat(),'fixing_date':fixing_date.isoformat(),'currencies':sorted(rates),'sample_EURUSD':sample},indent=2))
+    return 0
 
 
 def evaluate(label:str, today:date):
@@ -108,8 +124,13 @@ def evaluate(label:str, today:date):
 
 if __name__=='__main__':
     ap=argparse.ArgumentParser()
-    ap.add_argument('--checkpoint',choices=['1W','4W','12W'],required=True)
+    ap.add_argument('--checkpoint',choices=['1W','4W','12W'])
     ap.add_argument('--today',help='Override current date YYYY-MM-DD for deterministic dry-runs')
+    ap.add_argument('--smoke-test-ecb',action='store_true',help='Test the real ECB feed on a historical fixing without creating an OOS artifact')
     a=ap.parse_args()
+    if a.smoke_test_ecb:
+        sys.exit(smoke_test_ecb())
+    if not a.checkpoint:
+        ap.error('--checkpoint is required unless --smoke-test-ecb is used')
     today=date.fromisoformat(a.today) if a.today else date.today()
     sys.exit(evaluate(a.checkpoint,today))
