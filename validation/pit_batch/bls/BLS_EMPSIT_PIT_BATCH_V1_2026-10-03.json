@@ -1,0 +1,2255 @@
+{
+  "schema": "GMFQ_BLS_EMPSIT_PIT_BATCH_V1",
+  "created_at": "2026-10-03",
+  "provider": "U.S. Bureau of Labor Statistics",
+  "release_family": "The Employment Situation",
+  "source_strategy": "DIRECT_DATED_ARCHIVE_DISCOVERY",
+  "target_runtime_series": {
+    "US_PAYEMS_history_value": "payems_first_release_level_thousands",
+    "US_AHE_TOTAL_PRIVATE_history_value": "ahe_total_private_first_release_dollars_per_hour"
+  },
+  "guardrail": "Only values printed in the dated BLS archived release are eligible. Current revised BLS history is never used to fill missing observations.",
+  "start_observation_month": "2020-08",
+  "archive_hits": 0,
+  "rows_found": 0,
+  "rows_complete": 0,
+  "rows": [],
+  "errors": [
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09032020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09072020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09102020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10012020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10052020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10082020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10092020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11022020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11032020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11042020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11052020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11062020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11092020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11102020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12012020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12022020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12032020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12042020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12072020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12082020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12092020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12102020.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11042021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11052021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12012021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12022021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12032021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12062021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12072021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12082021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12092021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12102021.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01032022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01042022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01052022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01062022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01072022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01102022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02012022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02032022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02042022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02072022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02082022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02092022.htm",
+      "error": "HTTP 403"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11032022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11032022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11042022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11042022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11102022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11102022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12012022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12012022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12022022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12022022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12052022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12052022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12062022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12062022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12072022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12072022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12082022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12082022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12092022.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12092022.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11022023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11022023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11032023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11032023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11092023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11092023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11102023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11102023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12012023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12012023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12042023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12042023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12052023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12052023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12062023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12062023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12072023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12072023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12082023.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12082023.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11012024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11012024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11072024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11072024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11082024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11082024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12022024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12022024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12032024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12032024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12042024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12042024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12052024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12052024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12062024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12062024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12092024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12092024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12102024.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12102024.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10132025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10132025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10142025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10142025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10152025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10152025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10162025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10162025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10172025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10172025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10202025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10202025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11062025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11062025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11072025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11072025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11112025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11112025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11122025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11122025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11132025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11132025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11142025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11142025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11172025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11172025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11182025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11182025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11192025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11192025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11202025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_11202025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12012025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12012025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12022025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12022025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12032025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12032025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12042025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12042025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12052025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12052025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12082025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12082025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12092025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12092025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12102025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12102025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12112025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12112025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12122025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12122025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12152025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12152025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12162025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12162025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12172025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12172025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12182025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12182025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12192025.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_12192025.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01122026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01122026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01132026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01132026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01142026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01142026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01152026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01152026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01162026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01162026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01192026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01192026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01202026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_01202026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_02102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_03102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_04102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_05082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_06102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_07102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_08102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09032026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09032026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09042026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09092026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09102026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_09102026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10012026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10012026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10022026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10052026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10052026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10062026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10062026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10072026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10072026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10082026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10082026.htm"
+    },
+    {
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10092026.htm",
+      "error": "HTTPError: 429 Client Error: Too Many Requests for url: https://www.bls.gov/news.release/archives/empsit_10092026.htm"
+    }
+  ]
+}
