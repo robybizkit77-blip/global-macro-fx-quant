@@ -52,15 +52,25 @@ def obs_from_title(text: str) -> str | None:
     return f"{int(m.group(2)):04d}-{month:02d}"
 
 
+def obs_from_url(url: str) -> str | None:
+    m = re.search(r"personal-income-and-outlays-([a-z]+)-(\d{4})", url, re.I)
+    if not m:
+        return None
+    month = MONTHS.get(m.group(1).title())
+    if not month:
+        return None
+    return f"{int(m.group(2)):04d}-{month:02d}"
+
+
 def release_date_from_page(soup: BeautifulSoup, text: str) -> str | None:
     for tag in soup.find_all("time"):
         dt = tag.get("datetime")
         if dt and re.match(r"\d{4}-\d{2}-\d{2}", dt):
             return dt[:10]
     m = re.search(
-        r"EMBARGOED UNTIL RELEASE AT[^\n]*?([A-Z][a-z]+\s+\d{1,2},\s+\d{4})",
+        r"EMBARGOED UNTIL RELEASE AT.*?([A-Z][a-z]+\s+\d{1,2},\s+\d{4})",
         text,
-        re.I,
+        re.I | re.S,
     )
     if m:
         from datetime import datetime
@@ -80,11 +90,10 @@ def parse_release(url: str) -> dict:
     r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
-    title = soup.get_text(" ", strip=True)
-    h1 = soup.find("h1")
-    title_text = h1.get_text(" ", strip=True) if h1 else title
-    obs = obs_from_title(title_text)
     text = soup.get_text(" ", strip=True)
+    h1 = soup.find("h1")
+    title_text = h1.get_text(" ", strip=True) if h1 else ""
+    obs = obs_from_title(title_text) or obs_from_title(text) or obs_from_url(url)
     release_date = release_date_from_page(soup, text)
 
     personal_income = first_match(text, [
@@ -97,6 +106,7 @@ def parse_release(url: str) -> dict:
     ])
     real_pce = first_match(text, [
         r"Real\s+(?:personal consumption expenditures\s*\(PCE\)|PCE)\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
+        r"Real consumer spending\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
     ])
 
     return {
@@ -114,7 +124,6 @@ def collect_release_urls() -> list[str]:
     seen: set[str] = set()
     stagnant_pages = 0
     for page in range(MAX_PAGES):
-        # BEA's archive product filter is reliable; the free-text title filter is not.
         params = {
             "created_1": "All",
             "field_related_product_target_id": PIO_PRODUCT_ID,
@@ -181,6 +190,8 @@ def main() -> None:
     print(json.dumps({"release_urls_found": len(urls), "rows_found": len(rows), "rows_complete": complete, "errors": len(errors)}, indent=2))
     if not urls:
         raise SystemExit("No BEA PIO release URLs found; archive discovery failed")
+    if not rows:
+        raise SystemExit("BEA PIO release URLs were found but no observation months parsed")
 
 
 if __name__ == "__main__":
