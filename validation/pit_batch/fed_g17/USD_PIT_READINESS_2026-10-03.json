@@ -18,10 +18,37 @@
       "validation_artifact": "validation/PIT_VINTAGE_PILOT_US_INDPRO_V1_2026-10-02.json",
       "note": "Current revised history can change the sign of a historical monthly move; only first-release values are eligible for PIT backtests."
     },
-    "US_PCEC96_history_value": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
+    "US_PCEC96_history_value": {
+      "block": "Crescita",
+      "status": "WITHHELD_PIT_INCOMPLETE",
+      "provider": "BEA",
+      "source": "BEA Personal Income and Outlays dated-release archive",
+      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
+      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
+      "coverage_pct": 79.17,
+      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains because first-release Real PCE is not consistently exposed in the release HTML; revised-history backfill is forbidden."
+    },
     "US_NEWORDER_history_NEWORDER": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census"},
-    "US_DSPIC96_history_DSPIC96": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
-    "US_PI_history_PI": {"block": "Crescita", "status": "PENDING_PIT", "provider": "BEA"},
+    "US_DSPIC96_history_DSPIC96": {
+      "block": "Crescita",
+      "status": "WITHHELD_PIT_INCOMPLETE",
+      "provider": "BEA",
+      "source": "BEA Personal Income and Outlays dated-release archive",
+      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
+      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
+      "coverage_pct": 79.17,
+      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains because first-release Real DPI is not consistently exposed in the release HTML; revised-history backfill is forbidden."
+    },
+    "US_PI_history_PI": {
+      "block": "Crescita",
+      "status": "PIT_READY",
+      "provider": "BEA",
+      "source": "BEA Personal Income and Outlays dated-release archive",
+      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
+      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
+      "coverage_pct": 95.83,
+      "note": "69/72 monthly first-release values recovered. Missing observations remain explicit gaps and contribute no vote at those checkpoints."
+    },
     "US_RRSFS_history_value": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census Retail Trade"},
     "US_JTSHIR_history_JTSHIR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
     "US_JTSJOL_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
@@ -33,13 +60,17 @@
     "US_ICSA_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"}
   },
   "eligible_pit_core_now": {
-    "growth": ["US_INDPRO_history_value"],
+    "growth": [
+      "US_INDPRO_history_value",
+      "US_PI_history_PI"
+    ],
     "labour": [],
-    "pending": [
+    "withheld": [
       "US_PCEC96_history_value",
+      "US_DSPIC96_history_DSPIC96"
+    ],
+    "pending": [
       "US_NEWORDER_history_NEWORDER",
-      "US_DSPIC96_history_DSPIC96",
-      "US_PI_history_PI",
       "US_RRSFS_history_value",
       "US_JTSHIR_history_JTSHIR",
       "US_JTSJOL_history_value",
@@ -53,5 +84,5 @@
   },
   "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Pending or withheld series contribute no vote and must not be backfilled from revised history.",
   "status": "PARTIAL_CORE_PIT_READY",
-  "next_action": "Proceed by provider batch: BEA first, then BLS, Census and Department of Labor; promote each series to PIT_READY only after exact source and release-date reconstruction are validated."
+  "next_action": "BEA batch closed for now. Proceed to BLS by release family: Employment Situation (PAYEMS + AHE), JOLTS (openings + hires + quits), then Productivity (OPHNFB)."
 }
