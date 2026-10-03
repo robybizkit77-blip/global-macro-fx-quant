@@ -18,7 +18,8 @@ src = src.replace("while txt and guard<90:", "while txt and guard<8:")
 needle = "def load_candidate(ds):\n    for _pass in range(2):"
 replacement = '''def load_candidate(ds):
     direct_releases={
-      "2022-10-06":"https://ec.europa.eu/eurostat/documents/2995521/15131934/4-06102022-AP-EN.pdf/30dbcae1-1162-7035-4b3e-ae69a64df586"
+      "2022-10-06":"https://ec.europa.eu/eurostat/documents/2995521/15131934/4-06102022-AP-EN.pdf/30dbcae1-1162-7035-4b3e-ae69a64df586",
+      "2022-09-05":"https://ec.europa.eu/eurostat/documents/2995521/14698165/4-05092022-AP-EN.pdf/e19fec60-f51a-dde7-51cb-0b8d0bd7f6fc"
     }
     if ds in direct_releases:
         u=direct_releases[ds]
@@ -35,6 +36,6 @@ replacement = '''def load_candidate(ds):
 src = src.replace(needle, replacement)
 if "while txt and guard<8:" not in src:
     raise RuntimeError("Chunk guard patch did not apply; frozen crawler changed unexpectedly")
-if '"2022-10-06":"https://ec.europa.eu/eurostat/documents/' not in src:
+if '"2022-09-05":"https://ec.europa.eu/eurostat/documents/' not in src:
     raise RuntimeError("Historical direct-release fallback patch did not apply")
 exec(compile(src, str(src_path), "exec"), {"__name__": "__main__", "__file__": str(src_path)})
