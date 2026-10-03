@@ -1,0 +1,18 @@
+{
+  "schema": "GMFQ_NZD_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "currency": "NZD",
+  "source_review": {"official_sources_checked": ["Stats NZ GDP, retail trade and labour market releases", "RBNZ expectation-series releases"], "finding": "Official releases and downloadable files exist, but exact first-release mapping for all eight runtime IDs is not already documented. Under the stopping rule no new multi-provider reconstruction pipeline is opened now."},
+  "series": {
+    "NZ_REAL_GDP_Q_history_value": {"block":"Crescita","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"Stats NZ"},
+    "NZ_RETAIL_VOLUME_Q_history_value": {"block":"Crescita","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"Stats NZ"},
+    "NZ_UNEMP_RATE_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"Stats NZ"},
+    "NZ_EMPLOYED_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"Stats NZ"},
+    "NZ_RBNZ_EXP_UNEMP_1Y_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"RBNZ"},
+    "NZ_RBNZ_EXP_UNEMP_2Y_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"RBNZ"},
+    "NZ_RBNZ_EXP_WAGE_1Y_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"RBNZ"},
+    "NZ_RBNZ_EXP_WAGE_2Y_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"RBNZ"}
+  },
+  "eligible_pit_core_now": {"growth":[],"labour":[],"withheld":["NZ_REAL_GDP_Q_history_value","NZ_RETAIL_VOLUME_Q_history_value","NZ_UNEMP_RATE_history_value","NZ_EMPLOYED_history_value","NZ_RBNZ_EXP_UNEMP_1Y_history_value","NZ_RBNZ_EXP_UNEMP_2Y_history_value","NZ_RBNZ_EXP_WAGE_1Y_history_value","NZ_RBNZ_EXP_WAGE_2Y_history_value"],"pending":[]},
+  "status":"CLOSED_WITHHELD_NO_PIT_VOTES"
+}
