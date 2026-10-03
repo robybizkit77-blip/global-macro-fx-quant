@@ -86,6 +86,23 @@ def first_match(text: str, patterns: list[str]) -> float | None:
     return None
 
 
+def table_last_value(text: str, label_patterns: list[str]) -> float | None:
+    """Fallback for newer BEA releases that put first-release rates in the
+    'Personal Income and Related Measures [Percent change from preceding month]'
+    table instead of repeating them in prose. We take the second numeric cell
+    (the current observation month), never a later revised-history table.
+    """
+    for label in label_patterns:
+        m = re.search(
+            rf"{label}\s+([-+]?\d+(?:\.\d+)?)\s+([-+]?\d+(?:\.\d+)?)",
+            text,
+            re.I,
+        )
+        if m:
+            return float(m.group(2))
+    return None
+
+
 def parse_release(url: str) -> dict:
     r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
@@ -108,6 +125,15 @@ def parse_release(url: str) -> dict:
         r"Real\s+(?:personal consumption expenditures\s*\(PCE\)|PCE)\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
         r"Real consumer spending\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
     ])
+
+    # Newer BEA PIO releases increasingly rely on the release table. These are
+    # still dated first-release values and therefore PIT-safe.
+    if personal_income is None:
+        personal_income = table_last_value(text, [r"Current-dollar personal income", r"Personal income"])
+    if real_dpi is None:
+        real_dpi = table_last_value(text, [r"Real DPI", r"Real disposable personal income"])
+    if real_pce is None:
+        real_pce = table_last_value(text, [r"Real PCE", r"Real personal consumption expenditures"])
 
     return {
         "observation_month": obs,
