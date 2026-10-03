@@ -1,0 +1,53 @@
+{
+  "schema": "GMFQ_CAD_MACRO_INTERNAL_DIVERGENCE_PROPAGATION_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "method_note": "Descriptive propagation from block-level PIT-vs-revised direction fragility into overall Macro polarity/turning changes. This does not change model rules and does not infer causality.",
+  "groups": {
+    "growth_fragile_any": {
+      "n": 42,
+      "macro_flips": 0,
+      "macro_flip_pct": 0.0,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": 0.0
+    },
+    "labour_fragile_any": {
+      "n": 14,
+      "macro_flips": 0,
+      "macro_flip_pct": 0.0,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": 0.0
+    },
+    "growth_only_fragile": {
+      "n": 42,
+      "macro_flips": 0,
+      "macro_flip_pct": 0.0,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": 0.0
+    },
+    "labour_only_fragile": {
+      "n": 14,
+      "macro_flips": 0,
+      "macro_flip_pct": 0.0,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": 0.0
+    },
+    "both_fragile": {
+      "n": 0,
+      "macro_flips": 0,
+      "macro_flip_pct": null,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": null
+    },
+    "neither_fragile": {
+      "n": 144,
+      "macro_flips": 0,
+      "macro_flip_pct": 0.0,
+      "macro_turning_changes": 0,
+      "macro_turning_change_pct": 0.0
+    }
+  },
+  "examples_macro_flip_with_growth_fragility": [],
+  "examples_macro_flip_with_labour_fragility": [],
+  "no_model_change": true
+}
