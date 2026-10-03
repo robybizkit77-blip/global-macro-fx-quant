@@ -1,0 +1,14 @@
+{
+  "schema": "GMFQ_CHF_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "currency": "CHF",
+  "source_review": {"official_sources_checked": ["Swiss FSO/PxWeb production, retail and employment series", "SECO unemployment releases"], "finding": "Official series and releases exist, but no repository mapping proves exact first-release identities for all runtime IDs. Current historical tables explicitly contain revisions/re-estimation. Under the stopping rule no new reconstruction pipeline is opened."},
+  "series": {
+    "CH_PRODUCTION_history_value": {"block":"Crescita","status":"WITHHELD_SOURCE_IDENTITY","provider":"Swiss FSO"},
+    "CH_RETAIL_REAL_history_value": {"block":"Crescita","status":"WITHHELD_SOURCE_IDENTITY","provider":"Swiss FSO"},
+    "CH_UNEMP_RATE_history_value": {"block":"Lavoro","status":"WITHHELD_SOURCE_IDENTITY","provider":"SECO"},
+    "CH_EMPLOYMENT_history_value": {"block":"Lavoro","status":"WITHHELD_SOURCE_IDENTITY","provider":"Swiss FSO"}
+  },
+  "eligible_pit_core_now": {"growth":[],"labour":[],"withheld":["CH_PRODUCTION_history_value","CH_RETAIL_REAL_history_value","CH_UNEMP_RATE_history_value","CH_EMPLOYMENT_history_value"],"pending":[]},
+  "status":"CLOSED_WITHHELD_NO_PIT_VOTES"
+}
