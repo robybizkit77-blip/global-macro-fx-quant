@@ -5,6 +5,7 @@ on:
     branches: [engine-freeze-v1-2026-10-02]
     paths:
       - validation/crawl_eur_retail_release_chain.py
+      - validation/run_eur_retail_release_chain_chunk.py
       - .github/workflows/eur-retail-release-chain-crawl.yml
   workflow_dispatch:
 
@@ -18,7 +19,7 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,9 +28,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pypdf
-      - name: Crawl deterministic Retail release chain
-        run: python validation/crawl_eur_retail_release_chain.py
-      - name: Commit chain
+      - name: Crawl bounded Retail release-chain chunk
+        run: python validation/run_eur_retail_release_chain_chunk.py
+      - name: Commit chain checkpoint
         if: always()
         run: |
           git config user.name "github-actions[bot]"
@@ -38,7 +39,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Build EUR retail PIT release chain"
+            git commit -m "Advance EUR retail PIT release chain checkpoint"
             git pull --rebase origin engine-freeze-v1-2026-10-02
             git push origin HEAD:engine-freeze-v1-2026-10-02
           fi
