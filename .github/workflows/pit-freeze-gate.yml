@@ -5,6 +5,7 @@ on:
     branches:
       - staging-usd-pit-readiness-2026-10-03
     paths:
+      - '.github/workflows/pit-freeze-gate.yml'
       - 'validation/PIT_DATASET_FREEZE_V1_2026-10-03.json'
       - 'validation/run_pit_freeze_gate.py'
       - 'validation/pit_batch/**/GBP_PIT_READINESS_2026-10-03.json'
