@@ -1,0 +1,15 @@
+{
+  "schema": "GMFQ_AUD_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "currency": "AUD",
+  "source_review": {"official_sources_checked": ["ABS Labour Force previous releases", "ABS GDP/National Accounts releases", "ABS Household Spending releases", "ABS Wage Price Index releases"], "finding": "ABS exposes strong official previous-release archives, but extracting exact first-release values for all runtime IDs requires a new multi-release parser. Under the stopping rule this pipeline is not opened now; no revised-history substitution is permitted."},
+  "series": {
+    "AU_REAL_GDP_QOQ_ABS_history_value": {"block":"Crescita","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"ABS"},
+    "AU_HOUSEHOLD_SPENDING_history_value": {"block":"Crescita","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"ABS"},
+    "AU_UNEMP_RATE_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"ABS"},
+    "AU_EMPLOYMENT_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"ABS"},
+    "AU_WPI_YOY_history_value": {"block":"Lavoro","status":"WITHHELD_REQUIRES_NEW_PIPELINE","provider":"ABS"}
+  },
+  "eligible_pit_core_now": {"growth":[],"labour":[],"withheld":["AU_REAL_GDP_QOQ_ABS_history_value","AU_HOUSEHOLD_SPENDING_history_value","AU_UNEMP_RATE_history_value","AU_EMPLOYMENT_history_value","AU_WPI_YOY_history_value"],"pending":[]},
+  "status":"CLOSED_WITHHELD_NO_PIT_VOTES"
+}
