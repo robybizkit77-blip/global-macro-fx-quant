@@ -1,0 +1,90 @@
+{
+  "schema": "GMFQ_CAD_PIT_REVISION_BLOCK_ATTRIBUTION_V1",
+  "source": "validation/PIT_SIGNAL_SENSITIVITY_CA_MACRO_FULL_2020_2026_V1_2026-10-02.json",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "totals": {
+    "labour_changed": 42,
+    "labour_only_changed": 20,
+    "macro_flips": 53,
+    "macro_flip_labour_only": 12,
+    "growth_changed": 65,
+    "both_blocks_changed": 22,
+    "macro_flip_both": 15,
+    "turning_change_both": 13,
+    "block_change_no_macro_flip": 32,
+    "growth_only_changed": 43,
+    "macro_flip_growth_only": 26,
+    "turning_change_growth_only": 16,
+    "turning_change_without_block_dir_change": 17,
+    "turning_change_labour_only": 7
+  },
+  "rates": {
+    "growth_revision_effect_pct": 32.5,
+    "labour_revision_effect_pct": 21.0,
+    "macro_flip_from_growth_only_pct_of_flips": 49.06,
+    "macro_flip_from_labour_only_pct_of_flips": 22.64,
+    "macro_flip_from_both_pct_of_flips": 28.3
+  },
+  "examples": {
+    "growth_only_macro_flip": [
+      "2021-10-01",
+      "2021-10-08",
+      "2021-11-30",
+      "2021-12-03",
+      "2022-03-11",
+      "2022-05-31",
+      "2023-01-06",
+      "2023-03-10",
+      "2023-07-07",
+      "2023-07-21",
+      "2023-09-29",
+      "2023-11-24"
+    ],
+    "labour_only_macro_flip": [
+      "2021-06-04",
+      "2022-12-02",
+      "2022-12-20",
+      "2023-08-04",
+      "2023-09-01",
+      "2024-05-31",
+      "2024-09-06",
+      "2024-09-20",
+      "2024-09-27",
+      "2024-11-22",
+      "2024-11-29",
+      "2025-03-21"
+    ],
+    "both_changed_macro_flip": [
+      "2021-06-23",
+      "2022-04-08",
+      "2022-04-22",
+      "2022-07-29",
+      "2022-08-05",
+      "2022-08-19",
+      "2023-05-05",
+      "2023-05-19",
+      "2023-05-31",
+      "2023-06-09",
+      "2023-06-21",
+      "2023-06-30"
+    ],
+    "block_change_no_macro_flip": [
+      "2021-06-30",
+      "2021-11-19",
+      "2022-02-18",
+      "2022-03-01",
+      "2022-03-31",
+      "2022-04-29",
+      "2022-06-10",
+      "2022-06-30",
+      "2022-07-08",
+      "2022-07-22",
+      "2022-08-31",
+      "2022-12-23"
+    ]
+  },
+  "interpretation": {
+    "dominant_block": "growth",
+    "note": "Attribution is descriptive only. No threshold or model-rule changes are permitted from this audit."
+  }
+}
