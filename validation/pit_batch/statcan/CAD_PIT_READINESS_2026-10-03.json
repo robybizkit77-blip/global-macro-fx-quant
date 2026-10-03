@@ -1,0 +1,15 @@
+{
+  "schema": "GMFQ_CAD_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "currency": "CAD",
+  "frozen_engine": {"model_rules_version":"9.3-pair-attention-hierarchy","rules_fingerprint":"3356baf0"},
+  "series": {
+    "CA_REAL_GDP_M_history_value": {"block":"Crescita","status":"PIT_READY","source":"Statistics Canada dated first-release GDP releases","evidence":"validation/PIT_SIGNAL_SENSITIVITY_CA_GROWTH_FULL_2020_2026_V1_2026-10-02.json"},
+    "CA_RETAIL_VOLUME_history_value": {"block":"Crescita","status":"PIT_READY","source":"Statistics Canada dated first-release retail-volume releases","evidence":"validation/PIT_SIGNAL_SENSITIVITY_CA_GROWTH_FULL_2020_2026_V1_2026-10-02.json"},
+    "CA_EMPLOYMENT_history_value": {"block":"Lavoro","status":"PIT_READY","source":"Statistics Canada LFS first-release levels","evidence":"validation/PIT_SIGNAL_SENSITIVITY_CA_LABOUR_FULL_2020_2026_V1_2026-10-02.json"},
+    "CA_UNEMP_RATE_history_value": {"block":"Lavoro","status":"PIT_READY","source":"Statistics Canada LFS first-release levels","evidence":"validation/PIT_SIGNAL_SENSITIVITY_CA_LABOUR_FULL_2020_2026_V1_2026-10-02.json"}
+  },
+  "eligible_pit_core_now": {"growth":["CA_REAL_GDP_M_history_value","CA_RETAIL_VOLUME_history_value"],"labour":["CA_EMPLOYMENT_history_value","CA_UNEMP_RATE_history_value"],"withheld":[],"pending":[]},
+  "macro_evidence":"validation/PIT_SIGNAL_SENSITIVITY_CA_MACRO_FULL_2020_2026_V1_2026-10-02.json",
+  "status":"CORE_PIT_READY"
+}
