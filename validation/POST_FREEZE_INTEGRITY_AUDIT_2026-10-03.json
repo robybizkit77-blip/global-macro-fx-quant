@@ -1,0 +1,31 @@
+{
+  "schema": "GMFQ_POST_FREEZE_INTEGRITY_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "engine_freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "compared_head": "staging-usd-pit-readiness-2026-10-03",
+  "compare_result": {
+    "status": "ahead",
+    "ahead_by": 57,
+    "behind_by": 0,
+    "merge_base": "ff52198a75cc67f7dae96fc2bbf65623f170791c"
+  },
+  "changed_file_classes": [
+    ".github/workflows/*",
+    "validation/*"
+  ],
+  "forbidden_runtime_changes_found": [],
+  "explicitly_not_changed": [
+    "index.html",
+    "payload/part-*",
+    "runtime engine files",
+    "production branch content"
+  ],
+  "decision": "PASS_NO_ENGINE_CONTAMINATION",
+  "implication": "PIT reconstruction, replay, robustness-gate and audit work performed after the engine freeze did not modify the frozen runtime/model logic. The forward OOS baseline remains methodologically intact.",
+  "governance_rule": "Any future modification to runtime/model logic before an OOS checkpoint must invalidate and restart the canonical forward OOS baseline. Validation/data/audit-only changes are permitted if they do not alter runtime behavior."
+}
