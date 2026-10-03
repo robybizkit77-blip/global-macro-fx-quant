@@ -1,0 +1,25 @@
+{
+  "schema": "GMFQ_GBP_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "currency": "GBP",
+  "source_review": {
+    "official_sources_checked": [
+      "ONS Index of Production previous releases and dataset versions",
+      "ONS Retail Sales Index previous versions",
+      "ONS Labour Market / PAYE historical releases"
+    ],
+    "finding": "Official historical release/version archives exist, but the repository does not contain a verified mapping from the five runtime IDs to exact ONS historical series identifiers/columns. Under the current stopping rule, no guessed identity or revised-history substitution is allowed."
+  },
+  "series": {
+    "UK_PRODUCTION_history_value": {"block": "Crescita", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "ONS"},
+    "UK_RETAIL_VOL_history_value": {"block": "Crescita", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "ONS"},
+    "UK_UNEMP_RATE_history_value": {"block": "Lavoro", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "ONS"},
+    "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value": {"block": "Lavoro", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "ONS/HMRC"},
+    "UK_EMPLOYMENT_RATE_history_value": {"block": "Lavoro", "status": "WITHHELD_SOURCE_IDENTITY", "provider": "ONS"}
+  },
+  "eligible_pit_core_now": {"growth": [], "labour": [], "withheld": ["UK_PRODUCTION_history_value", "UK_RETAIL_VOL_history_value", "UK_UNEMP_RATE_history_value", "UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value", "UK_EMPLOYMENT_RATE_history_value"], "pending": []},
+  "status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+  "engine_rule": "Withheld series contribute no vote in PIT backtests. No revised current-history substitution and no guessed source identity.",
+  "next_action": "Proceed to JPY under the same one-pass stopping rule."
+}
