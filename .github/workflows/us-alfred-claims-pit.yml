@@ -9,6 +9,10 @@ on:
       - '.github/workflows/us-alfred-claims-pit.yml'
   workflow_dispatch:
 
+concurrency:
+  group: us-alfred-claims-pit-staging
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
