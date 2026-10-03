@@ -1,0 +1,84 @@
+{
+  "schema": "GMFQ_CAD_PIT_REVISION_METHOD_GATE_V1",
+  "created_at": "2026-10-03",
+  "engine_freeze": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "evidence": {
+    "macro_revision_sensitivity": {
+      "checkpoints": 200,
+      "macro_polarity_changes": 53,
+      "macro_polarity_change_pct": 26.5,
+      "conclusion": "Current revised history is not an acceptable substitute for true PIT evidence."
+    },
+    "series_attribution": {
+      "GDP_direction_change_pct": 27.94,
+      "Retail_direction_change_pct": 26.47,
+      "Unemployment_direction_change_pct": 17.39,
+      "Employment_direction_change_pct": 14.49,
+      "conclusion": "Growth is materially more revision-sensitive than Labour."
+    },
+    "internal_divergence": {
+      "growth_divergence_pct": 29.63,
+      "growth_revision_flip_when_divergent_pct": 47.5,
+      "growth_revision_flip_when_aligned_pct": 24.21,
+      "labour_divergence_pct": 13.04,
+      "labour_revision_flip_when_divergent_pct": 22.22,
+      "labour_revision_flip_when_aligned_pct": 20.0,
+      "conclusion": "Internal Growth divergence is a meaningful fragility marker; Labour divergence is mostly a low-conviction marker rather than an additional revision-risk amplifier."
+    },
+    "macro_propagation": {
+      "macro_flip_pct_growth_fragile": 63.08,
+      "macro_flip_pct_labour_fragile": 64.29,
+      "macro_flip_pct_both_fragile": 68.18,
+      "macro_flip_pct_neither_fragile": 0.0,
+      "conclusion": "Macro polarity remains stable when underlying block directions remain stable; block-direction revision changes frequently propagate into the Macro state."
+    },
+    "turning_point_revision_sensitivity": {
+      "turning_changes": 53,
+      "with_macro_polarity_flip_pct": 52.83,
+      "without_macro_polarity_flip_pct": 47.17,
+      "without_any_block_direction_change_pct": 32.08,
+      "conclusion": "Turning points are materially more timing-sensitive than Macro direction and should be treated as early-warning information rather than structural confirmation."
+    },
+    "turning_persistence": {
+      "fragile_first_release_turning_active": 28,
+      "persists_next_checkpoint_pct": 67.86,
+      "macro_polarity_changes_next_checkpoint_pct": 28.57,
+      "conclusion": "A single turning point often persists, but immediate structural confirmation is much less frequent."
+    },
+    "two_checkpoint_confirmation": {
+      "persistent_turning_cases": 19,
+      "macro_confirmation_by_t1_pct": 31.58,
+      "macro_confirmation_by_t2_pct": 68.42,
+      "not_confirmed_by_t2_pct": 31.58,
+      "conclusion": "Persistent turning carries materially more information: about two thirds of these cases are followed by a Macro polarity change within two union-release checkpoints."
+    }
+  },
+  "methodological_decision": {
+    "historical_revised_data": "BENCHMARK_ONLY_NOT_PIT_VALIDATION",
+    "macro_direction": "MORE_ROBUST_STATE_VARIABLE",
+    "turning_point": "EARLY_WARNING_REQUIRES_CONFIRMATION",
+    "persistent_turning": "HIGHER_ATTENTION_NOT_AUTOMATIC_SIGNAL",
+    "growth_internal_divergence": "POST_OOS_CONFIDENCE_RESEARCH_CANDIDATE",
+    "labour_internal_divergence": "POST_OOS_LOW_CONVICTION_RESEARCH_CANDIDATE",
+    "weights_thresholds": "DO_NOT_CHANGE_BEFORE_FORWARD_OOS_EVIDENCE",
+    "runtime_model_rules": "KEEP_FROZEN"
+  },
+  "research_hierarchy_for_future_evaluation": [
+    "FIRST_SIGNAL: single turning point",
+    "POSSIBLE_CHANGE: turning persists into the next release checkpoint",
+    "CONFIRMED_STRUCTURAL_CHANGE: Macro direction changes with underlying block support"
+  ],
+  "scope_limitations": [
+    "Evidence is strongest for CAD because CAD is the only G8 currency with full Growth+Labour PIT Macro Core reconstruction.",
+    "Do not generalize numeric rates mechanically to other currencies until comparable PIT panels exist.",
+    "This gate does not validate Rates, CB/OIS, COT, Liquidity or full 28-pair historical PIT engine behavior."
+  ],
+  "decision": "CLOSE_CAD_PIT_REVISION_RESEARCH_UNTIL_FORWARD_OOS_CHECKPOINT",
+  "no_model_change": true,
+  "oos_restart_required": false
+}
