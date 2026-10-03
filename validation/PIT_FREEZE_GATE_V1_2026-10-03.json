@@ -1,0 +1,98 @@
+{
+  "schema": "GMFQ_PIT_FREEZE_GATE_V1",
+  "created_at": "2026-10-03",
+  "engine_rules_fingerprint": "3356baf0",
+  "dataset_freeze": "validation/PIT_DATASET_FREEZE_V1_2026-10-03.json",
+  "hard_failures": [],
+  "passed": true,
+  "currencies": [
+    {
+      "currency": "USD",
+      "freeze_status": "PARTIAL_CORE_PIT_READY",
+      "growth_eligible": [
+        "US_INDPRO_history_value",
+        "US_PI_history_PI",
+        "US_NEWORDER_history_NEWORDER"
+      ],
+      "labour_eligible": [],
+      "withheld_count": 11,
+      "pending_count": 0,
+      "macro_replay_mode": "GROWTH_ONLY"
+    },
+    {
+      "currency": "EUR",
+      "freeze_status": "PARTIAL_CORE_PIT_READY_WITH_BOTH_BLOCKS",
+      "growth_eligible": [
+        "EA_IP_history_value"
+      ],
+      "labour_eligible": [
+        "EA_UNEMP_history_value",
+        "EA_EMPLOYMENT_history_value"
+      ],
+      "withheld_count": 2,
+      "pending_count": 0,
+      "macro_replay_mode": "BOTH_BLOCKS"
+    },
+    {
+      "currency": "CAD",
+      "freeze_status": "CORE_PIT_READY",
+      "growth_eligible": [
+        "CA_REAL_GDP_M_history_value",
+        "CA_RETAIL_VOLUME_history_value"
+      ],
+      "labour_eligible": [
+        "CA_EMPLOYMENT_history_value",
+        "CA_UNEMP_RATE_history_value"
+      ],
+      "withheld_count": 0,
+      "pending_count": 0,
+      "macro_replay_mode": "BOTH_BLOCKS"
+    },
+    {
+      "currency": "GBP",
+      "freeze_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth_eligible": [],
+      "labour_eligible": [],
+      "withheld_count": 5,
+      "pending_count": 0,
+      "macro_replay_mode": "WITHHELD_NO_MACRO_VOTE"
+    },
+    {
+      "currency": "JPY",
+      "freeze_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth_eligible": [],
+      "labour_eligible": [],
+      "withheld_count": 4,
+      "pending_count": 0,
+      "macro_replay_mode": "WITHHELD_NO_MACRO_VOTE"
+    },
+    {
+      "currency": "CHF",
+      "freeze_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth_eligible": [],
+      "labour_eligible": [],
+      "withheld_count": 4,
+      "pending_count": 0,
+      "macro_replay_mode": "WITHHELD_NO_MACRO_VOTE"
+    },
+    {
+      "currency": "AUD",
+      "freeze_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth_eligible": [],
+      "labour_eligible": [],
+      "withheld_count": 5,
+      "pending_count": 0,
+      "macro_replay_mode": "WITHHELD_NO_MACRO_VOTE"
+    },
+    {
+      "currency": "NZD",
+      "freeze_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "growth_eligible": [],
+      "labour_eligible": [],
+      "withheld_count": 8,
+      "pending_count": 0,
+      "macro_replay_mode": "WITHHELD_NO_MACRO_VOTE"
+    }
+  ],
+  "replay_policy": "Only PIT_READY series vote. WITHHELD currencies/blocks stay withheld. No revised-history fallback."
+}
