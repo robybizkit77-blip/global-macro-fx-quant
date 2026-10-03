@@ -1,0 +1,43 @@
+{
+  "schema": "GMFQ_CAD_GROWTH_DIVERGENCE_STABILITY_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "threshold_direction": 0.2,
+  "totals": {
+    "checkpoints": 135,
+    "first_release_divergence_checkpoints": 40,
+    "first_release_divergence_pct": 29.63,
+    "aligned_checkpoints": 95
+  },
+  "stability": {
+    "direction_changes_when_divergent": 19,
+    "direction_change_pct_when_divergent": 47.5,
+    "direction_changes_when_aligned": 23,
+    "direction_change_pct_when_aligned": 24.21,
+    "near_threshold_when_divergent": 24,
+    "near_threshold_pct_when_divergent": 60.0
+  },
+  "examples_divergent_changes": [
+    "2021-06-23",
+    "2021-11-19",
+    "2022-02-18",
+    "2022-04-22",
+    "2022-05-31",
+    "2023-02-28",
+    "2023-04-21",
+    "2023-04-28",
+    "2023-05-19",
+    "2024-07-19",
+    "2024-07-31",
+    "2025-01-23",
+    "2025-03-28",
+    "2025-04-25",
+    "2025-05-23",
+    "2025-06-27",
+    "2025-09-26",
+    "2025-10-31",
+    "2025-11-28"
+  ],
+  "interpretation": {
+    "no_model_change": "Descriptive audit only; no threshold/weight changes."
+  }
+}
