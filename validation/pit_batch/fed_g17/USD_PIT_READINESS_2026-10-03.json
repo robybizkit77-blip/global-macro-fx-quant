@@ -9,105 +9,29 @@
     "macro_core": "Crescita + Lavoro"
   },
   "series": {
-    "US_INDPRO_history_value": {
-      "block": "Crescita",
-      "status": "PIT_READY",
-      "source": "Federal Reserve G.17 revision history",
-      "method": "First-release monthly growth reconstructed from initial current-month index and first revised prior-month index using 100 * (init[t] / rev1[t-1] - 1).",
-      "source_artifact": "validation/pit_batch/fed_g17/FED_G17_INDPRO_PIT_BATCH_READY_V1_2026-10-02.json",
-      "validation_artifact": "validation/PIT_VINTAGE_PILOT_US_INDPRO_V1_2026-10-02.json",
-      "note": "Current revised history can change the sign of a historical monthly move; only first-release values are eligible for PIT backtests."
-    },
-    "US_PCEC96_history_value": {
-      "block": "Crescita",
-      "status": "WITHHELD_PIT_INCOMPLETE",
-      "provider": "BEA",
-      "source": "BEA Personal Income and Outlays dated-release archive",
-      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
-      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
-      "coverage_pct": 79.17,
-      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains; revised-history backfill is forbidden."
-    },
-    "US_NEWORDER_history_NEWORDER": {
-      "block": "Crescita",
-      "status": "PIT_READY",
-      "provider": "U.S. Census Bureau M3",
-      "source_identity": "Manufacturers' New Orders: Nondefense Capital Goods Excluding Aircraft, seasonally adjusted, millions of dollars",
-      "source_artifact": "validation/pit_batch/census/CENSUS_M3_NEWORDER_PIT_BATCH_V1_2026-10-03.json",
-      "coverage_pct": 100.0,
-      "note": "72/72 archived M3 first-release observations recovered with 72/72 verified release dates and zero crawl errors."
-    },
-    "US_DSPIC96_history_DSPIC96": {
-      "block": "Crescita",
-      "status": "WITHHELD_PIT_INCOMPLETE",
-      "provider": "BEA",
-      "source": "BEA Personal Income and Outlays dated-release archive",
-      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
-      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
-      "coverage_pct": 79.17,
-      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains; revised-history backfill is forbidden."
-    },
-    "US_PI_history_PI": {
-      "block": "Crescita",
-      "status": "PIT_READY",
-      "provider": "BEA",
-      "source": "BEA Personal Income and Outlays dated-release archive",
-      "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
-      "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
-      "coverage_pct": 95.83,
-      "note": "69/72 monthly first-release values recovered. Missing observations remain explicit gaps and contribute no vote at those checkpoints."
-    },
-    "US_RRSFS_history_value": {
-      "block": "Crescita",
-      "status": "WITHHELD_SOURCE_IDENTITY_PENDING",
-      "provider": "U.S. Census Bureau / FRED",
-      "note": "Runtime series is real retail and food services sales. Census AMRTS press releases are nominal; do not substitute nominal release values until the exact real-series PIT construction is proven."
-    },
-    "US_JTSHIR_history_JTSHIR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_JTSJOL_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_JTSQUR_history_JTSQUR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_PAYEMS_history_value": {
-      "block": "Lavoro",
-      "status": "WITHHELD_SOURCE_ACCESS",
-      "provider": "BLS Employment Situation",
-      "source_artifact": "validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json",
-      "note": "GitHub-hosted runner is blocked by BLS archive access (403); 559 direct dated candidates produced zero archive hits. No revised-history substitution."
-    },
-    "US_OPHNFB_history_OPHNFB": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_AHE_TOTAL_PRIVATE_history_value": {
-      "block": "Lavoro",
-      "status": "WITHHELD_SOURCE_ACCESS",
-      "provider": "BLS Employment Situation",
-      "source_artifact": "validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json",
-      "note": "GitHub-hosted runner is blocked by BLS archive access (403); 559 direct dated candidates produced zero archive hits. No revised-history substitution."
-    },
-    "US_CCSA_history_CCSA": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"},
-    "US_ICSA_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"}
+    "US_INDPRO_history_value": {"block":"Crescita","status":"PIT_READY","source":"Federal Reserve G.17 revision history","source_artifact":"validation/pit_batch/fed_g17/FED_G17_INDPRO_PIT_BATCH_READY_V1_2026-10-02.json"},
+    "US_PCEC96_history_value": {"block":"Crescita","status":"WITHHELD_PIT_INCOMPLETE","provider":"BEA","coverage_pct":79.17,"source_artifact":"validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json"},
+    "US_NEWORDER_history_NEWORDER": {"block":"Crescita","status":"PIT_READY","provider":"U.S. Census Bureau M3","coverage_pct":100.0,"source_artifact":"validation/pit_batch/census/CENSUS_M3_NEWORDER_PIT_BATCH_V1_2026-10-03.json","note":"72/72 first-release observations and release dates recovered; zero crawl errors."},
+    "US_DSPIC96_history_DSPIC96": {"block":"Crescita","status":"WITHHELD_PIT_INCOMPLETE","provider":"BEA","coverage_pct":79.17,"source_artifact":"validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json"},
+    "US_PI_history_PI": {"block":"Crescita","status":"PIT_READY","provider":"BEA","coverage_pct":95.83,"source_artifact":"validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json"},
+    "US_RRSFS_history_value": {"block":"Crescita","status":"WITHHELD_SOURCE_IDENTITY_PENDING","provider":"U.S. Census Bureau / FRED","note":"Runtime series is real retail and food services sales; nominal Census AMRTS releases are not substituted."},
+    "US_JTSHIR_history_JTSHIR": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS","note":"Closed under stopping rule after BLS archive access proved unreliable from GitHub runners. No revised-history substitution."},
+    "US_JTSJOL_history_value": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS","note":"Closed under stopping rule after BLS archive access proved unreliable from GitHub runners. No revised-history substitution."},
+    "US_JTSQUR_history_JTSQUR": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS","note":"Closed under stopping rule after BLS archive access proved unreliable from GitHub runners. No revised-history substitution."},
+    "US_PAYEMS_history_value": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS Employment Situation","source_artifact":"validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json","note":"Direct BLS archive access blocked; no revised-history substitution."},
+    "US_OPHNFB_history_OPHNFB": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS","note":"Closed under stopping rule after BLS archive access proved unreliable from GitHub runners. No revised-history substitution."},
+    "US_AHE_TOTAL_PRIVATE_history_value": {"block":"Lavoro","status":"WITHHELD_SOURCE_ACCESS","provider":"BLS Employment Situation","source_artifact":"validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json","note":"Direct BLS archive access blocked; no revised-history substitution."},
+    "US_CCSA_history_CCSA": {"block":"Lavoro","status":"WITHHELD_PIT_SOURCE_TOO_SLOW","provider":"ALFRED / U.S. DOL","note":"Two PIT extraction attempts were operationally too slow; closed under stopping rule rather than delaying the backtest."},
+    "US_ICSA_history_value": {"block":"Lavoro","status":"WITHHELD_PIT_SOURCE_TOO_SLOW","provider":"ALFRED / U.S. DOL","note":"Two PIT extraction attempts were operationally too slow; closed under stopping rule rather than delaying the backtest."}
   },
   "eligible_pit_core_now": {
-    "growth": [
-      "US_INDPRO_history_value",
-      "US_PI_history_PI",
-      "US_NEWORDER_history_NEWORDER"
-    ],
+    "growth": ["US_INDPRO_history_value","US_PI_history_PI","US_NEWORDER_history_NEWORDER"],
     "labour": [],
-    "withheld": [
-      "US_PCEC96_history_value",
-      "US_DSPIC96_history_DSPIC96",
-      "US_RRSFS_history_value",
-      "US_PAYEMS_history_value",
-      "US_AHE_TOTAL_PRIVATE_history_value"
-    ],
-    "pending": [
-      "US_JTSHIR_history_JTSHIR",
-      "US_JTSJOL_history_value",
-      "US_JTSQUR_history_JTSQUR",
-      "US_OPHNFB_history_OPHNFB",
-      "US_CCSA_history_CCSA",
-      "US_ICSA_history_value"
-    ]
+    "withheld": ["US_PCEC96_history_value","US_DSPIC96_history_DSPIC96","US_RRSFS_history_value","US_JTSHIR_history_JTSHIR","US_JTSJOL_history_value","US_JTSQUR_history_JTSQUR","US_PAYEMS_history_value","US_OPHNFB_history_OPHNFB","US_AHE_TOTAL_PRIVATE_history_value","US_CCSA_history_CCSA","US_ICSA_history_value"],
+    "pending": []
   },
-  "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Pending or withheld series contribute no vote and must not be backfilled from revised history.",
-  "status": "PARTIAL_CORE_PIT_READY",
-  "next_action": "Proceed with Department of Labor UI Claims (ICSA + CCSA) as the next labour batch. Revisit BLS only via a source path that can be independently verified without revised-history substitution."
+  "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Withheld series contribute no vote and must not be backfilled from revised history.",
+  "status": "CLOSED_FOR_PIT_BACKTEST_WITH_WITHHELD_LABOUR_BLOCK",
+  "stopping_rule": "Maximum 1-2 serious extraction attempts per source family; unresolved series are withheld and do not delay the global backtest.",
+  "next_action": "USD PIT reconstruction closed. Proceed to remaining currencies and freeze the minimum robust PIT dataset."
 }
