@@ -24,3 +24,4 @@ jobs:
           git add validation/EUR_TURNING_PERSISTENCE_AUDIT_2026-10-03.json
           git diff --cached --quiet || git commit -m 'Add EUR turning persistence audit artifact'
           git push
+# retrigger after validated employment extractor reuse
