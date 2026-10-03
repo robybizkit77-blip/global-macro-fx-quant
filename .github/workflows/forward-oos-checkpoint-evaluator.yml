@@ -1,0 +1,28 @@
+name: Forward OOS Checkpoint Evaluator
+on:
+  workflow_dispatch:
+    inputs:
+      checkpoint:
+        description: 'Checkpoint to evaluate'
+        required: true
+        type: choice
+        options: [1W, 4W, 12W]
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Evaluate checkpoint
+        run: python validation/evaluate_forward_oos_checkpoint.py --checkpoint '${{ inputs.checkpoint }}'
+      - name: Commit evaluation artifact if created
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/FORWARD_OOS_*_EVALUATION_*.json
+          git diff --cached --quiet || git commit -m "Record forward OOS ${{ inputs.checkpoint }} evaluation"
+          git push
