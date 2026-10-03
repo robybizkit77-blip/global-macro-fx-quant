@@ -1,0 +1,33 @@
+{
+  "schema": "GMFQ_PIT_DATASET_FREEZE_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "engine_freeze": {"branch":"engine-freeze-v1-2026-10-02","model_rules_version":"9.3-pair-attention-hierarchy","rules_fingerprint":"3356baf0"},
+  "policy": {
+    "goal": "Freeze the minimum robust point-in-time dataset for frozen-engine replay without look-ahead bias.",
+    "stopping_rule": "Maximum one or two focused source attempts per unresolved provider/series. If exact first-release identity is not quickly verifiable, mark WITHHELD and proceed.",
+    "no_backfill": "Never substitute current revised history for missing PIT observations.",
+    "no_guess": "Never guess publication lags or source identity."
+  },
+  "currencies": {
+    "USD": {"status":"PARTIAL_CORE_PIT_READY","growth":["US_INDPRO_history_value","US_PI_history_PI","US_NEWORDER_history_NEWORDER"],"labour":[],"manifest":"validation/pit_batch/fed_g17/USD_PIT_READINESS_2026-10-03.json"},
+    "EUR": {"status":"PARTIAL_CORE_PIT_READY_WITH_BOTH_BLOCKS","growth":["EA_IP_history_value"],"labour":["EA_UNEMP_history_value","EA_EMPLOYMENT_history_value"],"manifest":"validation/pit_batch/eurostat/EUR_PIT_READINESS_2026-10-03.json"},
+    "CAD": {"status":"CORE_PIT_READY","growth":["CA_REAL_GDP_M_history_value","CA_RETAIL_VOLUME_history_value"],"labour":["CA_EMPLOYMENT_history_value","CA_UNEMP_RATE_history_value"],"manifest":"validation/pit_batch/statcan/CAD_PIT_READINESS_2026-10-03.json"},
+    "GBP": {"status":"CLOSED_WITHHELD_NO_PIT_VOTES","manifest":"validation/pit_batch/ons/GBP_PIT_READINESS_2026-10-03.json"},
+    "JPY": {"status":"CLOSED_WITHHELD_NO_PIT_VOTES","manifest":"validation/pit_batch/japan/JPY_PIT_READINESS_2026-10-03.json"},
+    "CHF": {"status":"CLOSED_WITHHELD_NO_PIT_VOTES","manifest":"validation/pit_batch/swiss/CHF_PIT_READINESS_2026-10-03.json"},
+    "AUD": {"status":"CLOSED_WITHHELD_NO_PIT_VOTES","manifest":"validation/pit_batch/abs/AUD_PIT_READINESS_2026-10-03.json"},
+    "NZD": {"status":"CLOSED_WITHHELD_NO_PIT_VOTES","manifest":"validation/pit_batch/stats_nz/NZD_PIT_READINESS_2026-10-03.json"}
+  },
+  "usable_macro_blocks": {
+    "USD":{"growth":true,"labour":false},
+    "EUR":{"growth":true,"labour":true},
+    "CAD":{"growth":true,"labour":true},
+    "GBP":{"growth":false,"labour":false},
+    "JPY":{"growth":false,"labour":false},
+    "CHF":{"growth":false,"labour":false},
+    "AUD":{"growth":false,"labour":false},
+    "NZD":{"growth":false,"labour":false}
+  },
+  "next_stage": "Run frozen-engine PIT sensitivity harness on available blocks. Any currency/pair without sufficient PIT macro input must remain WITHHELD in historical scoring rather than using revised data."
+}
