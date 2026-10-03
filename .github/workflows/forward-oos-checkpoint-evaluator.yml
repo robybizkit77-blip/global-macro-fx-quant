@@ -25,6 +25,9 @@ jobs:
       - name: Deterministic pre-checkpoint self-test
         if: github.event_name == 'push'
         run: python validation/evaluate_forward_oos_checkpoint.py --checkpoint 1W --today 2026-10-03
+      - name: Real ECB feed smoke test
+        if: github.event_name == 'push'
+        run: python validation/evaluate_forward_oos_checkpoint.py --smoke-test-ecb
       - name: Evaluate requested checkpoint
         if: github.event_name == 'workflow_dispatch'
         run: python validation/evaluate_forward_oos_checkpoint.py --checkpoint '${{ inputs.checkpoint }}'
