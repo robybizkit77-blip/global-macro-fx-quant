@@ -1,5 +1,5 @@
 {
-  "schema": "GMFQ_UI_STRUCTURE_STATIC_AUDIT_V1",
+  "schema": "GMFQ_UI_STRUCTURE_STATIC_AUDIT_V2",
   "engine_ref": "engine-freeze-v1-2026-10-02",
   "payload_files": 16,
   "payload_bytes": 2764473,
@@ -7,149 +7,2333 @@
   "unique_html_ids": 517,
   "duplicate_html_ids": {},
   "duplicate_section_markers": {
-    "themes": 2,
-    "inflationlabour": 2
+    "themes": [
+      {
+        "file": "payload/part-00.txt",
+        "line": 630
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 634
+      }
+    ],
+    "inflationlabour": [
+      {
+        "file": "payload/part-00.txt",
+        "line": 630
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 159
+      }
+    ]
   },
   "duplicate_named_functions": {
-    "selectNativeRates": 2,
-    "selectNativeCb": 2,
-    "renderSimpleOverview": 2,
-    "renderCurrency": 2,
-    "baseMeta": 2,
-    "changeMeta": 2,
-    "priceMeta": 2,
-    "syncCurrency": 2,
-    "syncMacro": 2,
-    "syncRates": 2,
-    "syncCb": 2,
-    "syncLiquidity": 2,
-    "syncCot": 2,
-    "syncPairs": 2,
-    "syncOverview": 2,
-    "apply": 3,
-    "schedule": 2,
-    "sync": 2,
-    "run": 4,
-    "render": 12,
-    "clone": 3,
-    "labelFromPol": 2,
-    "currentPol": 2,
-    "label": 2,
-    "updateMemory": 2,
-    "same": 2,
-    "hashString": 2,
-    "stats": 2,
-    "direction": 3,
-    "summarize": 2,
-    "visible": 3,
-    "currency": 2,
-    "esc": 3,
-    "stateModel": 2,
-    "ensureUi": 5,
-    "directionFrom": 2,
-    "statusFrom": 2,
-    "model": 5,
-    "install": 4,
-    "safe": 3,
-    "upsertNews": 2,
-    "cls": 2,
-    "ensureStyle": 2,
-    "selected": 2
+    "selectNativeRates": [
+      {
+        "file": "payload/part-01.txt",
+        "line": 129
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 144
+      }
+    ],
+    "selectNativeCb": [
+      {
+        "file": "payload/part-01.txt",
+        "line": 282
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 421
+      }
+    ],
+    "renderSimpleOverview": [
+      {
+        "file": "payload/part-01.txt",
+        "line": 482
+      },
+      {
+        "file": "payload/part-01.txt",
+        "line": 915
+      }
+    ],
+    "renderCurrency": [
+      {
+        "file": "payload/part-04.txt",
+        "line": 30
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 1033
+      }
+    ],
+    "baseMeta": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 679
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 817
+      }
+    ],
+    "changeMeta": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 686
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 984
+      }
+    ],
+    "priceMeta": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 695
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 993
+      }
+    ],
+    "syncCurrency": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 732
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 846
+      }
+    ],
+    "syncMacro": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 751
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 852
+      }
+    ],
+    "syncRates": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 757
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 859
+      }
+    ],
+    "syncCb": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 763
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 866
+      }
+    ],
+    "syncLiquidity": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 768
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 881
+      }
+    ],
+    "syncCot": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 774
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 887
+      }
+    ],
+    "syncPairs": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 779
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 891
+      }
+    ],
+    "syncOverview": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 787
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 845
+      }
+    ],
+    "apply": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 792
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 895
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 860
+      }
+    ],
+    "schedule": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 798
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 901
+      }
+    ],
+    "sync": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 23
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4998
+      }
+    ],
+    "run": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 38
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 205
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 674
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 801
+      }
+    ],
+    "render": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 431
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 688
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 790
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 901
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 13
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 225
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 353
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 522
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 610
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3314
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4863
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4945
+      }
+    ],
+    "clone": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 516
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 355
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 501
+      }
+    ],
+    "labelFromPol": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 684
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 356
+      }
+    ],
+    "currentPol": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 687
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 14
+      }
+    ],
+    "label": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 785
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 1062
+      }
+    ],
+    "updateMemory": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 961
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 86
+      }
+    ],
+    "same": [
+      {
+        "file": "payload/part-11.txt",
+        "line": 422
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 591
+      }
+    ],
+    "hashString": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 7
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 825
+      }
+    ],
+    "stats": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 622
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 962
+      }
+    ],
+    "direction": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 838
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 263
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 576
+      }
+    ],
+    "summarize": [
+      {
+        "file": "payload/part-13.txt",
+        "line": 6
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 70
+      }
+    ],
+    "visible": [
+      {
+        "file": "payload/part-13.txt",
+        "line": 220
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 333
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 384
+      }
+    ],
+    "currency": [
+      {
+        "file": "payload/part-13.txt",
+        "line": 648
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 1087
+      }
+    ],
+    "esc": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 305
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4829
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4910
+      }
+    ],
+    "stateModel": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 734
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 835
+      }
+    ],
+    "ensureUi": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 768
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 879
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 990
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 192
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 332
+      }
+    ],
+    "directionFrom": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 824
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 114
+      }
+    ],
+    "statusFrom": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 933
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 106
+      }
+    ],
+    "model": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 948
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 136
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 281
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 593
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4936
+      }
+    ],
+    "install": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 449
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 543
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 622
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3399
+      }
+    ],
+    "safe": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 655
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 800
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 842
+      }
+    ],
+    "upsertNews": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 843
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3819
+      }
+    ],
+    "cls": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4830
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4911
+      }
+    ],
+    "ensureStyle": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4837
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4918
+      }
+    ],
+    "selected": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4860
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4935
+      }
+    ]
   },
   "duplicate_window_assignments": {
-    "__GMFQ_DATA": 16,
-    "v302ConsolidatedSync": 8,
-    "v272UiSync": 2,
-    "v273CoherenceSync": 2,
-    "stableModelRefresh": 3,
-    "showView": 7,
-    "renderCurrency": 4,
-    "DATA_FRESHNESS_REGISTRY": 3,
-    "CANONICAL_LAYER_STATE": 2,
-    "REFRESH_GENERATION": 3,
-    "LAST_REFRESH_AUDIT": 6,
-    "applyCanonicalRefreshPayload": 3,
-    "SEMANTIC_SHADOW": 2,
-    "CB_LIQ_HYSTERESIS_STATE": 2,
-    "runGuardedDailyRefresh": 2,
-    "PENDING_STRUCTURAL_CHANGES": 2,
-    "finalSourceAuditSummary": 2,
-    "forwardValidationSummary": 2,
-    "AUXILIARY_REFRESH_GENERATION": 3,
-    "LAST_AUXILIARY_REFRESH": 4,
-    "AUXILIARY_FEED_FRESHNESS": 6,
-    "applyAuxiliaryRefreshPayload": 2,
-    "PRODUCTION_REFRESH_GENERATION": 3,
-    "LAST_PRODUCTION_REFRESH": 9,
-    "runProductionDailyRefresh": 8,
-    "productionRefreshStatus": 2,
-    "productionHealthCheck": 19,
-    "sourceResolutionWatchlist": 2,
-    "unresolvedSourceChecks": 5,
-    "LAST_DAILY_CLOSEOUT": 3,
-    "productionDailyCloseoutStatus": 2,
-    "productionRefreshCoverageMatrix": 2,
-    "productionCoverageSummary": 3,
-    "macroBlockCoverage": 2,
-    "rate2YSeries": 2,
-    "__PAIR_SINGLE_SOURCE_AUDIT__": 2,
-    "currencyNarrativeIntegrity": 2,
-    "OOS_BASELINE_T0_STATUS": 5,
-    "renderForwardMonitor": 4,
-    "uiIntegrityAudit": 2,
-    "renderInflationLabourSection": 2,
-    "v461OperationalRead": 2,
-    "GMFQ_USD_PRICE_AUDIT": 2,
-    "GMFQ_GBP_OIS_AUDIT": 2,
-    "GMFQ_CAD_CORRA_AUDIT": 2,
-    "GMFQ_AUD_POST_RBA_PRICING_AUDIT": 4,
-    "GMFQ_EUR_RATES_AUDIT": 2,
-    "GMFQ_GBP_RATES_AUDIT": 2,
-    "GMFQ_CAD_RATES_AUDIT": 2,
-    "GMFQ_SOURCE_AUDIT_CLEANUP": 2,
-    "GMFQ_DEFINITIVE_WITHHELD_AUDIT": 2,
-    "GMFQ_SOURCE_REGISTRY_REALIGNMENT": 2,
-    "GMFQ_FULL_SYSTEM_AUDIT": 4,
-    "GMFQ_AUD_ASX_POST_RBA_AUDIT": 2,
-    "GMFQ_EUR_ESTR_HISTORY_AUDIT": 2,
-    "GMFQ_USD_OIS_AUDIT": 4,
-    "GMFQ_JPY_TONA_AUDIT": 2,
-    "GMFQ_CHF_SARON_AUDIT": 2,
-    "GMFQ_NZD_OIS_AUDIT": 2,
-    "GMFQ_POST_GATE_FINAL_AUDIT": 2,
-    "GMFQ_RUNTIME_AUDIT_REALIGN": 2,
-    "GMFQ_ECB_PRICE_AUDIT": 2,
-    "GMFQ_JPY_RATES_HISTORY_REPAIR": 2,
-    "GMFQ_JPY_RATES_HISTORY_REPAIR2": 2,
-    "GMFQ_DATA_HYGIENE_AUDIT": 2,
-    "GMFQ_USD_BEA_ANNUAL_DATA_ONLY": 2,
-    "GMFQ_USD_SEP30_CLOSEOUT": 2,
-    "GMFQ_RUNTIME_PROVENANCE_MANIFEST": 2,
-    "GMFQ_RUNTIME_SECONDARY_METADATA_COMPLETION": 2,
-    "GMFQ_CURRENT_DATA_GAP_RECONCILIATION": 2,
-    "GMFQ_HEALTH_WARNING_RECONCILIATION": 2,
-    "GMFQ_NZD_DATA_REFRESH_AUDIT": 2,
-    "GMFQ_OIS_GAP_CLOSURE": 2,
-    "GMFQ_USD_RATES_REFRESH_AUDIT": 2,
-    "GMFQ_MACRO_SURPRISE_DIAGNOSTIC": 4
+    "__GMFQ_DATA": [
+      {
+        "file": "payload/part-00.txt",
+        "line": 869
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 924
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 929
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 934
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 939
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 944
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 950
+      },
+      {
+        "file": "payload/part-01.txt",
+        "line": 68
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1099
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1206
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1414
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2377
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2463
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2547
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4196
+      }
+    ],
+    "v302ConsolidatedSync": [
+      {
+        "file": "payload/part-06.txt",
+        "line": 344
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 798
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 925
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 30
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 40
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 448
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 669
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3367
+      }
+    ],
+    "v272UiSync": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 801
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 923
+      }
+    ],
+    "v273CoherenceSync": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 904
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 924
+      }
+    ],
+    "stableModelRefresh": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 935
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 642
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 529
+      }
+    ],
+    "showView": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 966
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 796
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 512
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 627
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 151
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 77
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 5014
+      }
+    ],
+    "renderCurrency": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 1042
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 204
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 356
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 491
+      }
+    ],
+    "DATA_FRESHNESS_REGISTRY": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 481
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 834
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 915
+      }
+    ],
+    "CANONICAL_LAYER_STATE": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 488
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 630
+      }
+    ],
+    "REFRESH_GENERATION": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 514
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 996
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 916
+      }
+    ],
+    "LAST_REFRESH_AUDIT": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 515
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 557
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 617
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 631
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 999
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 919
+      }
+    ],
+    "applyCanonicalRefreshPayload": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 554
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 764
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 151
+      }
+    ],
+    "SEMANTIC_SHADOW": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 761
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 767
+      }
+    ],
+    "CB_LIQ_HYSTERESIS_STATE": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 148
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 154
+      }
+    ],
+    "runGuardedDailyRefresh": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 323
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 447
+      }
+    ],
+    "PENDING_STRUCTURAL_CHANGES": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 354
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 385
+      }
+    ],
+    "finalSourceAuditSummary": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 470
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 399
+      }
+    ],
+    "forwardValidationSummary": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 527
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 213
+      }
+    ],
+    "AUXILIARY_REFRESH_GENERATION": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 661
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 997
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 917
+      }
+    ],
+    "LAST_AUXILIARY_REFRESH": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 662
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 737
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 1000
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 920
+      }
+    ],
+    "AUXILIARY_FEED_FRESHNESS": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 663
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 719
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 753
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 995
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 845
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 914
+      }
+    ],
+    "applyAuxiliaryRefreshPayload": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 699
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 694
+      }
+    ],
+    "PRODUCTION_REFRESH_GENERATION": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 813
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 998
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 918
+      }
+    ],
+    "LAST_PRODUCTION_REFRESH": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 814
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 886
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 974
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 1001
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 921
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 957
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 574
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 935
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 685
+      }
+    ],
+    "runProductionDailyRefresh": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 832
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 532
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 598
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 884
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 559
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 680
+      }
+    ],
+    "productionRefreshStatus": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 897
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 286
+      }
+    ],
+    "productionHealthCheck": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 15
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 194
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 241
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 478
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 543
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 667
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 7
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 131
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 244
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 299
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 374
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 477
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 656
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 764
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 974
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 231
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 306
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2262
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4157
+      }
+    ],
+    "sourceResolutionWatchlist": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 262
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4084
+      }
+    ],
+    "unresolvedSourceChecks": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 280
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4105
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4159
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4179
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4482
+      }
+    ],
+    "LAST_DAILY_CLOSEOUT": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 338
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 471
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 536
+      }
+    ],
+    "productionDailyCloseoutStatus": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 347
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 518
+      }
+    ],
+    "productionRefreshCoverageMatrix": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 715
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 923
+      }
+    ],
+    "productionCoverageSummary": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 774
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 940
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 23
+      }
+    ],
+    "macroBlockCoverage": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 964
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 56
+      }
+    ],
+    "rate2YSeries": [
+      {
+        "file": "payload/part-11.txt",
+        "line": 84
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 154
+      }
+    ],
+    "__PAIR_SINGLE_SOURCE_AUDIT__": [
+      {
+        "file": "payload/part-11.txt",
+        "line": 406
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 415
+      }
+    ],
+    "currencyNarrativeIntegrity": [
+      {
+        "file": "payload/part-11.txt",
+        "line": 423
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 537
+      }
+    ],
+    "OOS_BASELINE_T0_STATUS": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 365
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 369
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 374
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 381
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 386
+      }
+    ],
+    "renderForwardMonitor": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 793
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 1016
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 41
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 166
+      }
+    ],
+    "uiIntegrityAudit": [
+      {
+        "file": "payload/part-13.txt",
+        "line": 231
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 353
+      }
+    ],
+    "renderInflationLabourSection": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 104
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 153
+      }
+    ],
+    "v461OperationalRead": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 340
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 473
+      }
+    ],
+    "GMFQ_USD_PRICE_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1075
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1089
+      }
+    ],
+    "GMFQ_GBP_OIS_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1179
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1195
+      }
+    ],
+    "GMFQ_CAD_CORRA_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1291
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1307
+      }
+    ],
+    "GMFQ_AUD_POST_RBA_PRICING_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1392
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1404
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1553
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1573
+      }
+    ],
+    "GMFQ_EUR_RATES_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1640
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1674
+      }
+    ],
+    "GMFQ_GBP_RATES_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1762
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1788
+      }
+    ],
+    "GMFQ_CAD_RATES_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1899
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1916
+      }
+    ],
+    "GMFQ_SOURCE_AUDIT_CLEANUP": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1970
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1977
+      }
+    ],
+    "GMFQ_DEFINITIVE_WITHHELD_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 1988
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2029
+      }
+    ],
+    "GMFQ_SOURCE_REGISTRY_REALIGNMENT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2081
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2096
+      }
+    ],
+    "GMFQ_FULL_SYSTEM_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2162
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2175
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 5092
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 5106
+      }
+    ],
+    "GMFQ_AUD_ASX_POST_RBA_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2270
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2285
+      }
+    ],
+    "GMFQ_EUR_ESTR_HISTORY_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2426
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2451
+      }
+    ],
+    "GMFQ_USD_OIS_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2519
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2535
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4293
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4307
+      }
+    ],
+    "GMFQ_JPY_TONA_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2707
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2734
+      }
+    ],
+    "GMFQ_CHF_SARON_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2746
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2805
+      }
+    ],
+    "GMFQ_NZD_OIS_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2817
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2875
+      }
+    ],
+    "GMFQ_POST_GATE_FINAL_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 2968
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3024
+      }
+    ],
+    "GMFQ_RUNTIME_AUDIT_REALIGN": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3008
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3017
+      }
+    ],
+    "GMFQ_ECB_PRICE_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3092
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3108
+      }
+    ],
+    "GMFQ_JPY_RATES_HISTORY_REPAIR": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3486
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3496
+      }
+    ],
+    "GMFQ_JPY_RATES_HISTORY_REPAIR2": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3516
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3519
+      }
+    ],
+    "GMFQ_DATA_HYGIENE_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3585
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3587
+      }
+    ],
+    "GMFQ_USD_BEA_ANNUAL_DATA_ONLY": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3781
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3791
+      }
+    ],
+    "GMFQ_USD_SEP30_CLOSEOUT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 3910
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3913
+      }
+    ],
+    "GMFQ_RUNTIME_PROVENANCE_MANIFEST": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4005
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4008
+      }
+    ],
+    "GMFQ_RUNTIME_SECONDARY_METADATA_COMPLETION": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4067
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4073
+      }
+    ],
+    "GMFQ_CURRENT_DATA_GAP_RECONCILIATION": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4135
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4144
+      }
+    ],
+    "GMFQ_HEALTH_WARNING_RECONCILIATION": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4177
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4185
+      }
+    ],
+    "GMFQ_NZD_DATA_REFRESH_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4383
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4409
+      }
+    ],
+    "GMFQ_OIS_GAP_CLOSURE": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4420
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4488
+      }
+    ],
+    "GMFQ_USD_RATES_REFRESH_AUDIT": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4542
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4557
+      }
+    ],
+    "GMFQ_MACRO_SURPRISE_DIAGNOSTIC": [
+      {
+        "file": "payload/part-15.txt",
+        "line": 4644
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4673
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4786
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4819
+      }
+    ]
   },
   "renderer_related_duplicates": {
-    "renderSimpleOverview": 2,
-    "renderCurrency": 4,
-    "apply": 3,
-    "render": 12,
-    "updateMemory": 2,
-    "REFRESH_GENERATION": 3,
-    "applyCanonicalRefreshPayload": 3,
-    "applyAuxiliaryRefreshPayload": 2,
-    "renderForwardMonitor": 4,
-    "renderInflationLabourSection": 2
+    "renderSimpleOverview": [
+      {
+        "file": "payload/part-01.txt",
+        "line": 482
+      },
+      {
+        "file": "payload/part-01.txt",
+        "line": 915
+      }
+    ],
+    "renderCurrency": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 1042
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 204
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 356
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 491
+      }
+    ],
+    "apply": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 792
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 895
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 860
+      }
+    ],
+    "render": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 431
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 688
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 790
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 901
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 13
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 225
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 353
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 522
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 610
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3314
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4863
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4945
+      }
+    ],
+    "updateMemory": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 961
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 86
+      }
+    ],
+    "REFRESH_GENERATION": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 514
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 996
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 916
+      }
+    ],
+    "applyCanonicalRefreshPayload": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 554
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 764
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 151
+      }
+    ],
+    "applyAuxiliaryRefreshPayload": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 699
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 694
+      }
+    ],
+    "renderForwardMonitor": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 793
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 1016
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 41
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 166
+      }
+    ],
+    "renderInflationLabourSection": [
+      {
+        "file": "payload/part-14.txt",
+        "line": 104
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 153
+      }
+    ]
+  },
+  "renderer_cross_file_duplicates": {
+    "renderCurrency": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 1042
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 204
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 356
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 491
+      }
+    ],
+    "apply": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 792
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 895
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 860
+      }
+    ],
+    "render": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 431
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 688
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 790
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 901
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 13
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 225
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 353
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 522
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 610
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3314
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4863
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4945
+      }
+    ],
+    "updateMemory": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 961
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 86
+      }
+    ],
+    "REFRESH_GENERATION": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 514
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 996
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 916
+      }
+    ],
+    "applyCanonicalRefreshPayload": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 554
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 764
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 151
+      }
+    ],
+    "applyAuxiliaryRefreshPayload": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 699
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 694
+      }
+    ],
+    "renderForwardMonitor": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 793
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 1016
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 41
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 166
+      }
+    ]
+  },
+  "window_callable_cross_file_review": {
+    "__GMFQ_DATA": [
+      {
+        "file": "payload/part-00.txt",
+        "line": 869
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 924
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 929
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 934
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 939
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 944
+      },
+      {
+        "file": "payload/part-00.txt",
+        "line": 950
+      },
+      {
+        "file": "payload/part-01.txt",
+        "line": 68
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1099
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1206
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 1414
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2377
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2463
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 2547
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4196
+      }
+    ],
+    "v302ConsolidatedSync": [
+      {
+        "file": "payload/part-06.txt",
+        "line": 344
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 798
+      },
+      {
+        "file": "payload/part-07.txt",
+        "line": 925
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 30
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 40
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 448
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 669
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 3367
+      }
+    ],
+    "stableModelRefresh": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 935
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 642
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 529
+      }
+    ],
+    "showView": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 966
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 796
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 512
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 627
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 151
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 77
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 5014
+      }
+    ],
+    "renderCurrency": [
+      {
+        "file": "payload/part-07.txt",
+        "line": 1042
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 204
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 356
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 491
+      }
+    ],
+    "applyCanonicalRefreshPayload": [
+      {
+        "file": "payload/part-08.txt",
+        "line": 554
+      },
+      {
+        "file": "payload/part-08.txt",
+        "line": 764
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 151
+      }
+    ],
+    "LAST_AUXILIARY_REFRESH": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 662
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 737
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 1000
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 920
+      }
+    ],
+    "applyAuxiliaryRefreshPayload": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 699
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 694
+      }
+    ],
+    "LAST_PRODUCTION_REFRESH": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 814
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 886
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 974
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 1001
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 921
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 957
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 574
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 935
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 685
+      }
+    ],
+    "runProductionDailyRefresh": [
+      {
+        "file": "payload/part-09.txt",
+        "line": 832
+      },
+      {
+        "file": "payload/part-09.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 532
+      },
+      {
+        "file": "payload/part-10.txt",
+        "line": 598
+      },
+      {
+        "file": "payload/part-11.txt",
+        "line": 884
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 559
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 919
+      },
+      {
+        "file": "payload/part-14.txt",
+        "line": 680
+      }
+    ],
+    "unresolvedSourceChecks": [
+      {
+        "file": "payload/part-10.txt",
+        "line": 280
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4105
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4159
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4179
+      },
+      {
+        "file": "payload/part-15.txt",
+        "line": 4482
+      }
+    ],
+    "renderForwardMonitor": [
+      {
+        "file": "payload/part-12.txt",
+        "line": 793
+      },
+      {
+        "file": "payload/part-12.txt",
+        "line": 1016
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 41
+      },
+      {
+        "file": "payload/part-13.txt",
+        "line": 166
+      }
+    ]
   },
   "hard_fail": false,
   "review_required": true,
   "interpretation": {
     "duplicate_html_id": "Potential DOM binding collision; must be fixed before UI redesign.",
-    "duplicate_function_or_window": "May be deliberate override layering; requires manual lineage check before removal.",
-    "renderer_duplicate": "High-priority review for double-render/overwritten renderer risk."
+    "same_file_function_duplicate": "Could be nested/local helpers; lower risk until scope is inspected.",
+    "cross_file_renderer_duplicate": "High-priority override-lineage review; later payload may silently replace earlier renderer.",
+    "duplicate_section_marker": "May be intentional repeated component, but verify only one canonical section is visible per view."
   }
 }
