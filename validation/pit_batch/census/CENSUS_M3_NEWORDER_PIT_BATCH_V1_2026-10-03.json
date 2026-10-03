@@ -1,0 +1,521 @@
+{
+  "schema": "GMFQ_CENSUS_M3_NEWORDER_PIT_BATCH_V1",
+  "created_at": "2026-10-03",
+  "provider": "U.S. Census Bureau",
+  "release_family": "M3 Advance Report on Durable Goods",
+  "target_runtime_series": "US_NEWORDER_history_NEWORDER",
+  "series_identity": "Manufacturers' New Orders: Nondefense Capital Goods Excluding Aircraft (NEWORDER), Millions of Dollars, Seasonally Adjusted, Monthly",
+  "source_strategy": "DATED_HISTORICAL_PRESS_RELEASE_PDF",
+  "guardrail": "Only current-month values printed in the dated M3 advance release are eligible; current revised history is never used to fill missing observations.",
+  "start_observation_month": "2020-08",
+  "release_links_found": 72,
+  "rows_found": 72,
+  "rows_complete": 72,
+  "rows": [
+    {
+      "observation_month": "2020-08",
+      "release_date": "2020-09-25",
+      "neworder_first_release_millions_sa": 67703.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2020/aug20adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-09",
+      "release_date": "2020-10-27",
+      "neworder_first_release_millions_sa": 68715.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2020/sep20adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-10",
+      "release_date": "2020-11-25",
+      "neworder_first_release_millions_sa": 70025.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2020/oct20adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-11",
+      "release_date": "2020-12-23",
+      "neworder_first_release_millions_sa": 70901.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2020/nov20adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-12",
+      "release_date": "2021-01-27",
+      "neworder_first_release_millions_sa": 71772.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2020/dec20adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-01",
+      "release_date": "2021-02-25",
+      "neworder_first_release_millions_sa": 72924.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/jan21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-02",
+      "release_date": "2021-03-24",
+      "neworder_first_release_millions_sa": 72480.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/feb21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-03",
+      "release_date": "2021-04-26",
+      "neworder_first_release_millions_sa": 73211.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/mar21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-04",
+      "release_date": "2021-05-27",
+      "neworder_first_release_millions_sa": 75001.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/apr21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-05",
+      "release_date": "2021-06-24",
+      "neworder_first_release_millions_sa": 75195.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/may21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-06",
+      "release_date": "2021-07-27",
+      "neworder_first_release_millions_sa": 76066.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/jun21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-07",
+      "release_date": "2021-08-25",
+      "neworder_first_release_millions_sa": 76534.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/jul21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-08",
+      "release_date": "2021-09-27",
+      "neworder_first_release_millions_sa": 77082.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/aug21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-09",
+      "release_date": "2021-10-27",
+      "neworder_first_release_millions_sa": 77712.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/sep21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-10",
+      "release_date": "2021-11-24",
+      "neworder_first_release_millions_sa": 78588.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/oct21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-11",
+      "release_date": "2021-12-23",
+      "neworder_first_release_millions_sa": 78801.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/nov21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-12",
+      "release_date": "2022-01-27",
+      "neworder_first_release_millions_sa": 79065.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2021/dec21adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-01",
+      "release_date": "2022-02-25",
+      "neworder_first_release_millions_sa": 79986.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/jan22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-02",
+      "release_date": "2022-03-24",
+      "neworder_first_release_millions_sa": 80093.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/feb22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-03",
+      "release_date": "2022-04-26",
+      "neworder_first_release_millions_sa": 80783.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/mar22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-04",
+      "release_date": "2022-05-25",
+      "neworder_first_release_millions_sa": 73070.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/apr22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-05",
+      "release_date": "2022-06-27",
+      "neworder_first_release_millions_sa": 73458.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/may22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-06",
+      "release_date": "2022-07-27",
+      "neworder_first_release_millions_sa": 73878.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/jun22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-07",
+      "release_date": "2022-08-24",
+      "neworder_first_release_millions_sa": 74464.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/jul22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-08",
+      "release_date": "2022-09-27",
+      "neworder_first_release_millions_sa": 75647.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/aug22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-09",
+      "release_date": "2022-10-27",
+      "neworder_first_release_millions_sa": 74770.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/sep22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-10",
+      "release_date": "2022-11-23",
+      "neworder_first_release_millions_sa": 75323.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/oct22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-11",
+      "release_date": "2022-12-23",
+      "neworder_first_release_millions_sa": 75159.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/nov22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-12",
+      "release_date": "2023-01-26",
+      "neworder_first_release_millions_sa": 74880.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2022/dec22adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-01",
+      "release_date": "2023-02-27",
+      "neworder_first_release_millions_sa": 75296.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/jan23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-02",
+      "release_date": "2023-03-24",
+      "neworder_first_release_millions_sa": 75162.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/feb23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-03",
+      "release_date": "2023-04-26",
+      "neworder_first_release_millions_sa": 74321.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/mar23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-04",
+      "release_date": "2023-05-26",
+      "neworder_first_release_millions_sa": 74038.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/apr23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-05",
+      "release_date": "2023-06-27",
+      "neworder_first_release_millions_sa": 73959.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/may23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-06",
+      "release_date": "2023-07-27",
+      "neworder_first_release_millions_sa": 74079.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/jun23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-07",
+      "release_date": "2023-08-24",
+      "neworder_first_release_millions_sa": 73629.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/jul23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-08",
+      "release_date": "2023-09-27",
+      "neworder_first_release_millions_sa": 73916.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/aug23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-09",
+      "release_date": "2023-10-26",
+      "neworder_first_release_millions_sa": 74462.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/sep23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-10",
+      "release_date": "2023-11-22",
+      "neworder_first_release_millions_sa": 73794.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/oct23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-11",
+      "release_date": "2023-12-22",
+      "neworder_first_release_millions_sa": 73973.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2023/nov23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-12",
+      "release_date": "2024-01-25",
+      "neworder_first_release_millions_sa": 74332.0,
+      "source_url": "https://www.census.gov/manufacturing/m3//historical_data/pressreleases/adv/2023/dec23adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-01",
+      "release_date": "2024-02-27",
+      "neworder_first_release_millions_sa": 73720.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/jan24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-02",
+      "release_date": "2024-03-26",
+      "neworder_first_release_millions_sa": 73872.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/feb24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-03",
+      "release_date": "2024-04-24",
+      "neworder_first_release_millions_sa": 73848.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/mar24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-04",
+      "release_date": "2024-05-24",
+      "neworder_first_release_millions_sa": 74037.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/apr24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-05",
+      "release_date": "2024-06-27",
+      "neworder_first_release_millions_sa": 73553.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/may24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-06",
+      "release_date": "2024-07-25",
+      "neworder_first_release_millions_sa": 73994.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/jun24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-07",
+      "release_date": "2024-08-26",
+      "neworder_first_release_millions_sa": 73615.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/jul24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-08",
+      "release_date": "2024-09-26",
+      "neworder_first_release_millions_sa": 73705.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/aug24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-09",
+      "release_date": "2024-10-25",
+      "neworder_first_release_millions_sa": 74054.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/sep24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-10",
+      "release_date": "2024-11-27",
+      "neworder_first_release_millions_sa": 73657.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/oct24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-11",
+      "release_date": "2024-12-23",
+      "neworder_first_release_millions_sa": 74305.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/nov24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-12",
+      "release_date": "2025-01-28",
+      "neworder_first_release_millions_sa": 74834.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2024/dec24adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-01",
+      "release_date": "2025-02-27",
+      "neworder_first_release_millions_sa": 75139.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/jan25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-02",
+      "release_date": "2025-03-26",
+      "neworder_first_release_millions_sa": 74986.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/feb25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-03",
+      "release_date": "2025-04-24",
+      "neworder_first_release_millions_sa": 75130.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/mar25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-04",
+      "release_date": "2025-05-27",
+      "neworder_first_release_millions_sa": 74781.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/apr25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-05",
+      "release_date": "2025-06-26",
+      "neworder_first_release_millions_sa": 76007.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/may25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-06",
+      "release_date": "2025-07-25",
+      "neworder_first_release_millions_sa": 75590.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/jun25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-07",
+      "release_date": "2025-08-26",
+      "neworder_first_release_millions_sa": 76430.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/jul25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-08",
+      "release_date": "2025-09-25",
+      "neworder_first_release_millions_sa": 76706.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/aug25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-09",
+      "release_date": "2025-11-26",
+      "neworder_first_release_millions_sa": 77485.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/sep25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-10",
+      "release_date": "2025-12-23",
+      "neworder_first_release_millions_sa": 78028.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/oct25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-11",
+      "release_date": "2026-01-26",
+      "neworder_first_release_millions_sa": 78393.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/nov25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2025-12",
+      "release_date": "2026-02-18",
+      "neworder_first_release_millions_sa": 78998.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2025/dec25adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-01",
+      "release_date": "2026-03-13",
+      "neworder_first_release_millions_sa": 79265.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/jan26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-02",
+      "release_date": "2026-04-07",
+      "neworder_first_release_millions_sa": 79427.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/feb26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-03",
+      "release_date": "2026-04-29",
+      "neworder_first_release_millions_sa": 82896.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/mar26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-04",
+      "release_date": "2026-05-28",
+      "neworder_first_release_millions_sa": 82426.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/apr26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-05",
+      "release_date": "2026-06-25",
+      "neworder_first_release_millions_sa": 84027.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/may26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-06",
+      "release_date": "2026-07-27",
+      "neworder_first_release_millions_sa": 85089.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/jun26adv.pdf",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2026-07",
+      "release_date": "2026-08-26",
+      "neworder_first_release_millions_sa": 85946.0,
+      "source_url": "https://www.census.gov/manufacturing/m3/historical_data/pressreleases/adv/2026/jul26adv.pdf",
+      "parse_complete": true
+    }
+  ],
+  "errors": []
+}
