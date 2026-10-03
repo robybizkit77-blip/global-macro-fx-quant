@@ -14,27 +14,36 @@ def load_json(path):
     return json.loads(Path(path).read_text())
 
 
-def fetch_ecb(currency:str,start:date,end:date):
-    # ECB Data Portal: foreign-exchange reference rate, currency units per EUR.
-    key=f'D.{currency}.EUR.SP00.A'
+def fetch_ecb_all(start:date,end:date):
+    # One SDMX request for all required daily ECB reference rates.
+    # ECB rates are currency units per EUR.
+    currency_key='+'.join(CCYS)
+    key=f'D.{currency_key}.EUR.SP00.A'
     qs=urllib.parse.urlencode({'startPeriod':start.isoformat(),'endPeriod':end.isoformat(),'format':'csvdata'})
     url=f'https://data-api.ecb.europa.eu/service/data/EXR/{key}?{qs}'
-    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-OOS-Evaluator/1.0'})
-    with urllib.request.urlopen(req,timeout=30) as r:
+    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-OOS-Evaluator/1.0','Accept':'text/csv'})
+    with urllib.request.urlopen(req,timeout=60) as r:
         text=r.read().decode('utf-8-sig')
-    rows=[]
-    for row in csv.DictReader(io.StringIO(text)):
+    series={c:[] for c in CCYS}
+    reader=csv.DictReader(io.StringIO(text))
+    for row in reader:
         t=row.get('TIME_PERIOD') or row.get('TIME PERIOD')
         v=row.get('OBS_VALUE') or row.get('OBS VALUE')
-        if not t or v in (None,''): continue
-        try: rows.append((date.fromisoformat(t),float(v)))
+        c=row.get('CURRENCY') or row.get('CURRENCY_DENOM')
+        if not c:
+            keyval=row.get('KEY') or row.get('SERIES_KEY') or ''
+            parts=keyval.split('.')
+            if len(parts)>=2: c=parts[1]
+        if c not in series or not t or v in (None,''): continue
+        try: series[c].append((date.fromisoformat(t),float(v)))
         except Exception: continue
-    return sorted(rows)
+    for c in series: series[c].sort()
+    return series
 
 
 def first_common_fixing(target:date, max_days:int=10):
     end=target+timedelta(days=max_days)
-    series={c:fetch_ecb(c,target,end) for c in CCYS}
+    series=fetch_ecb_all(target,end)
     maps={c:dict(v) for c,v in series.items()}
     common=None
     for i in range(max_days+1):
@@ -50,19 +59,21 @@ def first_common_fixing(target:date, max_days:int=10):
 
 def cross_price(pair:str,rates:dict[str,float]):
     a,b=pair.split('/')
-    # ECB rates are currency units per EUR. Cross A/B = B-per-EUR / A-per-EUR.
     return rates[b]/rates[a]
 
 
 def smoke_test_ecb():
     target=date(2026,9,30)
-    fixing_date,rates,series=first_common_fixing(target,max_days=3)
+    try:
+        fixing_date,rates,series=first_common_fixing(target,max_days=3)
+    except Exception as e:
+        print(json.dumps({'status':'ECB_SMOKE_FAIL','target':target.isoformat(),'error':type(e).__name__,'message':str(e)},indent=2))
+        return 2
     missing=[c for c in CCYS if not series.get(c)]
     invalid=[c for c,v in rates.items() if not isinstance(v,(int,float)) or v<=0]
     if fixing_date is None or missing or invalid or len(rates)!=8:
         print(json.dumps({'status':'ECB_SMOKE_FAIL','target':target.isoformat(),'fixing_date':fixing_date.isoformat() if fixing_date else None,'missing_series':missing,'invalid_rates':invalid,'currencies':sorted(rates)},indent=2))
         return 2
-    # Sanity-check the same cross formula used by the evaluator.
     sample=cross_price('EUR/USD',rates)
     if sample<=0:
         print(json.dumps({'status':'ECB_SMOKE_FAIL','reason':'invalid sample cross'},indent=2)); return 2
@@ -83,7 +94,11 @@ def evaluate(label:str, today:date):
             print(json.dumps({'status':'ALREADY_EVALUATED','path':str(out)},indent=2)); return 0
     if today<target:
         print(json.dumps({'status':'WAITING','checkpoint':label,'evaluation_date':target.isoformat(),'today':today.isoformat()},indent=2)); return 0
-    fixing_date,rates,_=first_common_fixing(target)
+    try:
+        fixing_date,rates,_=first_common_fixing(target)
+    except Exception as e:
+        print(json.dumps({'status':'ECB_FETCH_ERROR','checkpoint':label,'evaluation_date':target.isoformat(),'error':type(e).__name__,'message':str(e)},indent=2))
+        return 2
     if fixing_date is None:
         print(json.dumps({'status':'WAITING_FOR_ECB_FIXING','checkpoint':label,'evaluation_date':target.isoformat()},indent=2)); return 0
     results=[]
