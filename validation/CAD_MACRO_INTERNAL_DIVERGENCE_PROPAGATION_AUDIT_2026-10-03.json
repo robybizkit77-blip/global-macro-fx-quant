@@ -1,53 +1,100 @@
 {
-  "schema": "GMFQ_CAD_MACRO_INTERNAL_DIVERGENCE_PROPAGATION_AUDIT_V1",
+  "schema": "GMFQ_CAD_MACRO_INTERNAL_DIVERGENCE_PROPAGATION_AUDIT_V2",
   "engine_ref": "engine-freeze-v1-2026-10-02",
   "rules_fingerprint": "3356baf0",
-  "method_note": "Descriptive propagation from block-level PIT-vs-revised direction fragility into overall Macro polarity/turning changes. This does not change model rules and does not infer causality.",
+  "method_note": "Uses the canonical CAD Macro replay flags growth_direction_changed, labour_direction_changed, macro_polarity_changed and macro_turning_changed at each union-release checkpoint. Descriptive only; no causal inference and no model change.",
+  "totals": {
+    "checkpoints": 200,
+    "macro_flips": 53,
+    "macro_turning_changes": 53
+  },
   "groups": {
     "growth_fragile_any": {
-      "n": 42,
-      "macro_flips": 0,
-      "macro_flip_pct": 0.0,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": 0.0
+      "n": 65,
+      "macro_flips": 41,
+      "macro_flip_pct": 63.08,
+      "macro_turning_changes": 29,
+      "macro_turning_change_pct": 44.62
     },
     "labour_fragile_any": {
-      "n": 14,
-      "macro_flips": 0,
-      "macro_flip_pct": 0.0,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": 0.0
+      "n": 42,
+      "macro_flips": 27,
+      "macro_flip_pct": 64.29,
+      "macro_turning_changes": 20,
+      "macro_turning_change_pct": 47.62
     },
     "growth_only_fragile": {
-      "n": 42,
-      "macro_flips": 0,
-      "macro_flip_pct": 0.0,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": 0.0
+      "n": 43,
+      "macro_flips": 26,
+      "macro_flip_pct": 60.47,
+      "macro_turning_changes": 16,
+      "macro_turning_change_pct": 37.21
     },
     "labour_only_fragile": {
-      "n": 14,
-      "macro_flips": 0,
-      "macro_flip_pct": 0.0,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": 0.0
+      "n": 20,
+      "macro_flips": 12,
+      "macro_flip_pct": 60.0,
+      "macro_turning_changes": 7,
+      "macro_turning_change_pct": 35.0
     },
     "both_fragile": {
-      "n": 0,
-      "macro_flips": 0,
-      "macro_flip_pct": null,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": null
+      "n": 22,
+      "macro_flips": 15,
+      "macro_flip_pct": 68.18,
+      "macro_turning_changes": 13,
+      "macro_turning_change_pct": 59.09
     },
     "neither_fragile": {
-      "n": 144,
+      "n": 115,
       "macro_flips": 0,
       "macro_flip_pct": 0.0,
-      "macro_turning_changes": 0,
-      "macro_turning_change_pct": 0.0
+      "macro_turning_changes": 17,
+      "macro_turning_change_pct": 14.78
     }
   },
-  "examples_macro_flip_with_growth_fragility": [],
-  "examples_macro_flip_with_labour_fragility": [],
+  "examples_macro_flip_with_growth_fragility": [
+    "2021-06-23",
+    "2021-10-01",
+    "2021-10-08",
+    "2021-11-30",
+    "2021-12-03",
+    "2022-03-11",
+    "2022-04-08",
+    "2022-04-22",
+    "2022-05-31",
+    "2022-07-29",
+    "2022-08-05",
+    "2022-08-19",
+    "2023-01-06",
+    "2023-03-10",
+    "2023-05-05",
+    "2023-05-19",
+    "2023-05-31",
+    "2023-06-09",
+    "2023-06-21",
+    "2023-06-30"
+  ],
+  "examples_macro_flip_with_labour_fragility": [
+    "2021-06-04",
+    "2021-06-23",
+    "2022-04-08",
+    "2022-04-22",
+    "2022-07-29",
+    "2022-08-05",
+    "2022-08-19",
+    "2022-12-02",
+    "2022-12-20",
+    "2023-05-05",
+    "2023-05-19",
+    "2023-05-31",
+    "2023-06-09",
+    "2023-06-21",
+    "2023-06-30",
+    "2023-08-04",
+    "2023-08-23",
+    "2023-09-01",
+    "2023-10-06",
+    "2024-05-31"
+  ],
   "no_model_change": true
 }
