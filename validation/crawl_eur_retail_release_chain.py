@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Resume trigger 2026-10-03: continue only from the oldest saved Retail checkpoint.
 import io,json,re,time,urllib.request,urllib.parse,html as htmlmod
 from pathlib import Path
 from pypdf import PdfReader
@@ -70,7 +71,6 @@ def parse_reference_month(txt):
 
 def parse_mom(txt):
     txt=re.sub(r'(?<=\d)[.,]\s+(?=\d)',lambda m:m.group(0)[0],txt)
-    # Headline stable/unchanged must win before any broad narrative fallback.
     for p in [
       r'Volume of retail trade\s+(?:remained\s+)?stable\s+in\s+(?:both\s+)?(?:the\s+)?euro area',
       r'retail trade volume\s+(?:remained\s+)?stable\s+in\s+(?:both\s+)?(?:the\s+)?euro area',
@@ -78,13 +78,10 @@ def parse_mom(txt):
     ]:
         m=re.search(p,txt,re.I)
         if m: return 0.0,m.group(0)
-    # Exact headline directional wording.
     m=re.search(r'Volume of retail trade\s+(up|down)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:both\s+)?(?:the\s+)?euro area',txt,re.I)
     if m:
         d=m.group(1).lower(); v=float(m.group(2).replace(",","."))
         return (-abs(v) if d=="down" else abs(v)),m.group(0)[:700]
-    # Narrative fallbacks are deliberately bounded so they cannot jump from the
-    # release title to a later country/EU sentence and capture the wrong number.
     pats=[
       r'volume of retail trade.{0,500}?(increased|decreased|rose|fell)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:the\s+)?euro area.{0,250}?compared with',
       r'seasonally adjusted (?:volume of )?retail trade(?: volume)?\s+(increased|decreased|rose|fell)\s+by\s+([+-]?\d+(?:[.,]\d+)?)%\s+in\s+(?:the\s+)?euro area'
@@ -122,7 +119,6 @@ def candidates(ds):
     return [f"{b}4-{code}-{s}" for b in bases for s in ("ap","bp")]
 
 def load_candidate(ds):
-    # Two complete passes protect the deterministic chain from transient Eurostat timeouts.
     for _pass in range(2):
         for u in candidates(ds):
             raw,ctype,final=fetch(u,tries=4,timeout=15)
@@ -173,7 +169,6 @@ def save_progress(rows):
     OUT.write_text(json.dumps(report,indent=2)+"\n")
     return report
 
-# Resume from the oldest successfully parsed checkpoint if a partial chain exists.
 rows=[]
 resume_date=None
 if OUT.exists():
@@ -183,9 +178,6 @@ if OUT.exists():
         for x in old.get("rows",[]):
             if not (x.get("reference_month") and x.get("retail_volume_mom_pct") is not None):
                 continue
-            # Sanitize rows produced by the older permissive parser: if the
-            # captured text itself says the headline was stable, the correct
-            # release-time monthly change is mechanically 0.0.
             mt=(x.get("match_text") or "").lower()
             if "stable" in mt or "unchanged" in mt:
                 x["retail_volume_mom_pct"]=0.0
@@ -223,7 +215,6 @@ while txt and guard<90:
             pd2,pm2=previous_release_date(combo)
             pd=pd2 or pd
             pm=pm2 or pm
-    # Avoid duplicating a checkpoint already present after a retry/resume.
     if not any(x.get("release_date")==rd for x in rows):
         rows.append({
           "release_date":rd,
