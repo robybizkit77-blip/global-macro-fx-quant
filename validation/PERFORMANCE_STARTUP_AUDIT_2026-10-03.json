@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_PERFORMANCE_STARTUP_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "scope": "STATIC_STARTUP_ARCHITECTURE_ONLY_NO_RUNTIME_CHANGE",
+  "measured_browser_timings": false,
+  "reason_no_browser_timing": "Exact browser timing was not available through the connected GitHub toolchain, so no synthetic millisecond claims are made.",
+  "loader": {
+    "payload_parts": 16,
+    "fetch_strategy": "Promise.all parallel fetch with cache:no-store",
+    "assembly": "responses joined into one HTML string",
+    "bootstrap": "document.open + document.write + document.close",
+    "implication": "Network fetches are parallel, but parsing/execution/rendering begins only after all payload parts complete and the monolithic document is written."
+  },
+  "payload": {
+    "total_bytes": 2764473,
+    "part_00_bytes": 1435445,
+    "part_00_share_pct": 51.9,
+    "part_01_bytes": 415109,
+    "part_01_share_pct": 15.0,
+    "part_00_plus_part_01_share_pct": 66.9
+  },
+  "structural_findings": [
+    "Startup is all-or-nothing: no meaningful first UI can render before all 16 payload files finish downloading.",
+    "The largest two payloads account for roughly two thirds of the transferred source, so splitting into 16 files does not by itself produce progressive rendering.",
+    "document.write of the concatenated payload forces a second full document parse after the loader page has already loaded.",
+    "The frozen payload contains extensive layered bootstrap/health/audit code and historical compatibility overrides; even when functionally safe, they increase parse and execution work at startup.",
+    "cache:no-store prevents normal browser reuse of payload responses between visits, increasing repeated-load cost."
+  ],
+  "likely_bottleneck_order": [
+    "Monolithic parse/execution/render after Promise.all completion",
+    "Large part-00/part-01 payload concentration",
+    "Repeated startup bootstrap/compatibility layers",
+    "Network transfer, especially on cold/mobile connections"
+  ],
+  "not_proven": [
+    "Exact contribution in milliseconds of network versus JavaScript versus rendering",
+    "Device-specific mobile CPU cost",
+    "Whether cache:no-store alone explains any specific observed 15-second load"
+  ],
+  "recommended_post_oos_sequence": [
+    "Instrument real browser milestones: loader start, all payload fetched, document.write start/end, DOMContentLoaded, first useful dashboard paint, stableModelRefresh completion.",
+    "Remove cache:no-store or replace it with versioned immutable payload URLs so unchanged payload can be cached safely.",
+    "Make the initial shell and first selected view render before non-visible modules/audits are loaded.",
+    "Consolidate legacy override layers and duplicate bootstrap wrappers identified by the UI structure audit.",
+    "Reduce or lazy-load historical/diagnostic material not needed for first paint.",
+    "Re-measure on desktop and mobile before further optimization."
+  ],
+  "oos_safety": {
+    "runtime_changed": false,
+    "engine_changed": false,
+    "oos_restart_required": false,
+    "rule": "Do not implement startup architecture changes before the active 1W OOS checkpoint unless a new OOS baseline is deliberately accepted."
+  },
+  "decision": "STARTUP_ARCHITECTURE_IS_A_VALID_OPTIMIZATION_TARGET_AFTER_OOS_CHECKPOINT"
+}
