@@ -1,0 +1,327 @@
+{
+  "schema": "GMFQ_EUR_TURNING_PERSISTENCE_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "threshold_direction": 0.2,
+  "eligible_pit_core": [
+    "EA_IP_history_value",
+    "EA_UNEMP_history_value",
+    "EA_EMPLOYMENT_history_value"
+  ],
+  "summary": {
+    "usable_macro_checkpoints": 129,
+    "fragile_first_release_turning_cases_with_next_checkpoint": 33,
+    "turning_persists_next": 28,
+    "turning_persists_next_pct": 84.85,
+    "turning_reverts_next": 5,
+    "turning_reverts_next_pct": 15.15,
+    "macro_polarity_changes_next": 16,
+    "macro_polarity_changes_next_pct": 48.48
+  },
+  "cases": [
+    {
+      "checkpoint": "2021-11-12",
+      "next_checkpoint": "2021-11-16",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2021-11-16",
+      "next_checkpoint": "2021-12-02",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2021-12-02",
+      "next_checkpoint": "2021-12-14",
+      "first_polarity": 1,
+      "next_first_turning": false,
+      "next_first_polarity": 1,
+      "turning_persists_next": false,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2022-02-16",
+      "next_checkpoint": "2022-03-03",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2022-03-03",
+      "next_checkpoint": "2022-03-15",
+      "first_polarity": 0,
+      "next_first_turning": false,
+      "next_first_polarity": 0,
+      "turning_persists_next": false,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2022-12-01",
+      "next_checkpoint": "2022-12-14",
+      "first_polarity": 0,
+      "next_first_turning": false,
+      "next_first_polarity": 0,
+      "turning_persists_next": false,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2023-06-14",
+      "next_checkpoint": "2023-06-30",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2023-06-30",
+      "next_checkpoint": "2023-07-13",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-07-13",
+      "next_checkpoint": "2023-08-01",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2023-08-01",
+      "next_checkpoint": "2023-08-16",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-08-16",
+      "next_checkpoint": "2023-08-31",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2023-08-31",
+      "next_checkpoint": "2023-09-13",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-11-03",
+      "next_checkpoint": "2023-11-14",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-11-14",
+      "next_checkpoint": "2023-11-15",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-11-15",
+      "next_checkpoint": "2023-11-30",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-11-30",
+      "next_checkpoint": "2023-12-13",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2023-12-13",
+      "next_checkpoint": "2024-01-18",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2024-01-18",
+      "next_checkpoint": "2024-01-23",
+      "first_polarity": 1,
+      "next_first_turning": false,
+      "next_first_polarity": 1,
+      "turning_persists_next": false,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2024-03-13",
+      "next_checkpoint": "2024-04-03",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-02-13",
+      "next_checkpoint": "2025-02-14",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-02-14",
+      "next_checkpoint": "2025-03-04",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-03-04",
+      "next_checkpoint": "2025-03-13",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-09-16",
+      "next_checkpoint": "2025-10-02",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-10-30",
+      "next_checkpoint": "2025-11-13",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2025-11-13",
+      "next_checkpoint": "2025-11-14",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2025-12-02",
+      "next_checkpoint": "2025-12-15",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2026-01-15",
+      "next_checkpoint": "2026-01-30",
+      "first_polarity": 1,
+      "next_first_turning": false,
+      "next_first_polarity": 1,
+      "turning_persists_next": false,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2026-06-01",
+      "next_checkpoint": "2026-06-15",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2026-06-15",
+      "next_checkpoint": "2026-07-02",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": 1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2026-07-02",
+      "next_checkpoint": "2026-07-15",
+      "first_polarity": 1,
+      "next_first_turning": true,
+      "next_first_polarity": 0,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2026-07-15",
+      "next_checkpoint": "2026-07-30",
+      "first_polarity": 0,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": true
+    },
+    {
+      "checkpoint": "2026-07-30",
+      "next_checkpoint": "2026-08-13",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    },
+    {
+      "checkpoint": "2026-08-13",
+      "next_checkpoint": "2026-08-14",
+      "first_polarity": -1,
+      "next_first_turning": true,
+      "next_first_polarity": -1,
+      "turning_persists_next": true,
+      "macro_polarity_changes_next": false
+    }
+  ],
+  "limitations": [
+    "EUR PIT coverage remains partial: Retail volume and negotiated wages are withheld and excluded.",
+    "Employment first-release path is compounded from official flash q/q growth; normalized impulse is scale-invariant.",
+    "This is a descriptive persistence audit, not a trading backtest."
+  ],
+  "interpretation_guardrail": "Do not alter model weights, thresholds, or turning rules from this partial EUR PIT sample.",
+  "no_model_change": true
+}
