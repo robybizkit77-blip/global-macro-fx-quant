@@ -1,0 +1,277 @@
+{
+  "schema": "GMFQ_EUR_TURNING_TWO_CHECKPOINT_CONFIRMATION_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "source": "validation/EUR_TURNING_PERSISTENCE_AUDIT_2026-10-03.json",
+  "summary": {
+    "persistent_turning_cases_total": 28,
+    "persistent_turning_cases_with_second_checkpoint": 21,
+    "confirmed_by_next_checkpoint": 12,
+    "confirmed_by_next_checkpoint_pct": 57.14,
+    "confirmed_within_two_checkpoints": 16,
+    "confirmed_within_two_checkpoints_pct": 76.19,
+    "not_confirmed_within_two_checkpoints": 5,
+    "not_confirmed_within_two_checkpoints_pct": 23.81
+  },
+  "cases": [
+    {
+      "checkpoint": "2021-11-12",
+      "next_checkpoint": "2021-11-16",
+      "second_checkpoint": "2021-12-02",
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2021-11-16",
+      "next_checkpoint": "2021-12-02",
+      "second_checkpoint": "2021-12-14",
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2022-02-16",
+      "next_checkpoint": "2022-03-03",
+      "second_checkpoint": "2022-03-15",
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-06-14",
+      "next_checkpoint": "2023-06-30",
+      "second_checkpoint": "2023-07-13",
+      "confirmed_by_next": false,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-06-30",
+      "next_checkpoint": "2023-07-13",
+      "second_checkpoint": "2023-08-01",
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-07-13",
+      "next_checkpoint": "2023-08-01",
+      "second_checkpoint": "2023-08-16",
+      "confirmed_by_next": false,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-08-01",
+      "next_checkpoint": "2023-08-16",
+      "second_checkpoint": "2023-08-31",
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-08-16",
+      "next_checkpoint": "2023-08-31",
+      "second_checkpoint": "2023-09-13",
+      "confirmed_by_next": false,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-08-31",
+      "next_checkpoint": "2023-09-13",
+      "second_checkpoint": null,
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2023-11-03",
+      "next_checkpoint": "2023-11-14",
+      "second_checkpoint": "2023-11-15",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-11-14",
+      "next_checkpoint": "2023-11-15",
+      "second_checkpoint": "2023-11-30",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-11-15",
+      "next_checkpoint": "2023-11-30",
+      "second_checkpoint": "2023-12-13",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-11-30",
+      "next_checkpoint": "2023-12-13",
+      "second_checkpoint": "2024-01-18",
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2023-12-13",
+      "next_checkpoint": "2024-01-18",
+      "second_checkpoint": "2024-01-23",
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2024-03-13",
+      "next_checkpoint": "2024-04-03",
+      "second_checkpoint": null,
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2025-02-13",
+      "next_checkpoint": "2025-02-14",
+      "second_checkpoint": "2025-03-04",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2025-02-14",
+      "next_checkpoint": "2025-03-04",
+      "second_checkpoint": "2025-03-13",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2025-03-04",
+      "next_checkpoint": "2025-03-13",
+      "second_checkpoint": null,
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2025-09-16",
+      "next_checkpoint": "2025-10-02",
+      "second_checkpoint": null,
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2025-10-30",
+      "next_checkpoint": "2025-11-13",
+      "second_checkpoint": "2025-11-14",
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2025-11-13",
+      "next_checkpoint": "2025-11-14",
+      "second_checkpoint": null,
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2025-12-02",
+      "next_checkpoint": "2025-12-15",
+      "second_checkpoint": null,
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": false
+    },
+    {
+      "checkpoint": "2026-06-01",
+      "next_checkpoint": "2026-06-15",
+      "second_checkpoint": "2026-07-02",
+      "confirmed_by_next": false,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2026-06-15",
+      "next_checkpoint": "2026-07-02",
+      "second_checkpoint": "2026-07-15",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2026-07-02",
+      "next_checkpoint": "2026-07-15",
+      "second_checkpoint": "2026-07-30",
+      "confirmed_by_next": true,
+      "confirmed_by_second": true,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2026-07-15",
+      "next_checkpoint": "2026-07-30",
+      "second_checkpoint": "2026-08-13",
+      "confirmed_by_next": true,
+      "confirmed_by_second": false,
+      "confirmed_within_two": true,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2026-07-30",
+      "next_checkpoint": "2026-08-13",
+      "second_checkpoint": "2026-08-14",
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": true
+    },
+    {
+      "checkpoint": "2026-08-13",
+      "next_checkpoint": "2026-08-14",
+      "second_checkpoint": null,
+      "confirmed_by_next": false,
+      "confirmed_by_second": false,
+      "confirmed_within_two": false,
+      "second_available": false
+    }
+  ],
+  "limitations": [
+    "EUR PIT coverage remains partial: Retail volume and negotiated wages are withheld and excluded.",
+    "This reuses the canonical EUR turning persistence audit and measures confirmation timing only.",
+    "Descriptive validation only; not a trading backtest."
+  ],
+  "interpretation_guardrail": "Do not alter weights, thresholds, or turning rules from this partial EUR PIT sample.",
+  "no_model_change": true
+}
