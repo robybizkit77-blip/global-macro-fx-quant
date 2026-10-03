@@ -1,0 +1,23 @@
+name: Inspect PIT Shapes
+
+on:
+  push:
+    branches:
+      - staging-usd-pit-readiness-2026-10-03
+    paths:
+      - 'validation/inspect_pit_shapes.py'
+      - '.github/workflows/inspect-pit-shapes.yml'
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-usd-pit-readiness-2026-10-03
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect PIT files
+        run: python validation/inspect_pit_shapes.py
