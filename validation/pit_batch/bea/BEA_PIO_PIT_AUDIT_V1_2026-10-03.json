@@ -1,31 +1,29 @@
 {
   "schema": "GMFQ_BEA_PIO_PIT_AUDIT_V1",
-  "rows_found": 72,
+  "rows_found": 71,
   "rows_complete_all_fields": 51,
   "per_field": {
     "release_date": {
       "available": 70,
-      "total": 72,
-      "coverage_pct": 97.22,
+      "total": 71,
+      "coverage_pct": 98.59,
       "missing_months": [
-        "2021-02",
-        "2025-09"
+        "2021-02"
       ]
     },
     "personal_income_first_release_mom_pct": {
       "available": 69,
-      "total": 72,
-      "coverage_pct": 95.83,
+      "total": 71,
+      "coverage_pct": 97.18,
       "missing_months": [
         "2021-02",
-        "2024-05",
-        "2025-09"
+        "2024-05"
       ]
     },
     "real_dpi_first_release_mom_pct": {
       "available": 57,
-      "total": 72,
-      "coverage_pct": 79.17,
+      "total": 71,
+      "coverage_pct": 80.28,
       "missing_months": [
         "2022-04",
         "2022-09",
@@ -40,14 +38,13 @@
         "2025-06",
         "2025-07",
         "2025-08",
-        "2025-09",
         "2025-09"
       ]
     },
     "real_pce_first_release_mom_pct": {
       "available": 57,
-      "total": 72,
-      "coverage_pct": 79.17,
+      "total": 71,
+      "coverage_pct": 80.28,
       "missing_months": [
         "2021-11",
         "2022-11",
@@ -62,7 +59,6 @@
         "2025-06",
         "2025-07",
         "2025-08",
-        "2025-09",
         "2025-09"
       ]
     }
