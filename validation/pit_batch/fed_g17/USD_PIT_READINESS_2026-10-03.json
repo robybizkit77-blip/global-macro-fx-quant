@@ -26,9 +26,15 @@
       "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
       "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
       "coverage_pct": 79.17,
-      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains because first-release Real PCE is not consistently exposed in the release HTML; revised-history backfill is forbidden."
+      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains; revised-history backfill is forbidden."
     },
-    "US_NEWORDER_history_NEWORDER": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census"},
+    "US_NEWORDER_history_NEWORDER": {
+      "block": "Crescita",
+      "status": "PENDING_PIT",
+      "provider": "U.S. Census Bureau M3",
+      "source_identity": "Manufacturers' New Orders: Nondefense Capital Goods Excluding Aircraft, seasonally adjusted, millions of dollars",
+      "note": "Exact runtime identity verified against Census/FRED series NEWORDER; reconstruct from archived M3 advance durable-goods releases."
+    },
     "US_DSPIC96_history_DSPIC96": {
       "block": "Crescita",
       "status": "WITHHELD_PIT_INCOMPLETE",
@@ -37,7 +43,7 @@
       "source_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json",
       "audit_artifact": "validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json",
       "coverage_pct": 79.17,
-      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains because first-release Real DPI is not consistently exposed in the release HTML; revised-history backfill is forbidden."
+      "note": "57/72 observation rows recovered. A contiguous 2025 gap remains; revised-history backfill is forbidden."
     },
     "US_PI_history_PI": {
       "block": "Crescita",
@@ -49,40 +55,54 @@
       "coverage_pct": 95.83,
       "note": "69/72 monthly first-release values recovered. Missing observations remain explicit gaps and contribute no vote at those checkpoints."
     },
-    "US_RRSFS_history_value": {"block": "Crescita", "status": "PENDING_PIT", "provider": "Census Retail Trade"},
+    "US_RRSFS_history_value": {
+      "block": "Crescita",
+      "status": "WITHHELD_SOURCE_IDENTITY_PENDING",
+      "provider": "U.S. Census Bureau / FRED",
+      "note": "Runtime series is real retail and food services sales. Census AMRTS press releases are nominal; do not substitute nominal release values until the exact real-series PIT construction is proven."
+    },
     "US_JTSHIR_history_JTSHIR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
     "US_JTSJOL_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
     "US_JTSQUR_history_JTSQUR": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_PAYEMS_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_PAYEMS_history_value": {
+      "block": "Lavoro",
+      "status": "WITHHELD_SOURCE_ACCESS",
+      "provider": "BLS Employment Situation",
+      "source_artifact": "validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json",
+      "note": "GitHub-hosted runner is blocked by BLS archive access (403); 559 direct dated candidates produced zero archive hits. No revised-history substitution."
+    },
     "US_OPHNFB_history_OPHNFB": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
-    "US_AHE_TOTAL_PRIVATE_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "BLS"},
+    "US_AHE_TOTAL_PRIVATE_history_value": {
+      "block": "Lavoro",
+      "status": "WITHHELD_SOURCE_ACCESS",
+      "provider": "BLS Employment Situation",
+      "source_artifact": "validation/pit_batch/bls/BLS_EMPSIT_PIT_BATCH_V1_2026-10-03.json",
+      "note": "GitHub-hosted runner is blocked by BLS archive access (403); 559 direct dated candidates produced zero archive hits. No revised-history substitution."
+    },
     "US_CCSA_history_CCSA": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"},
     "US_ICSA_history_value": {"block": "Lavoro", "status": "PENDING_PIT", "provider": "U.S. Department of Labor UI Claims"}
   },
   "eligible_pit_core_now": {
-    "growth": [
-      "US_INDPRO_history_value",
-      "US_PI_history_PI"
-    ],
+    "growth": ["US_INDPRO_history_value", "US_PI_history_PI"],
     "labour": [],
     "withheld": [
       "US_PCEC96_history_value",
-      "US_DSPIC96_history_DSPIC96"
+      "US_DSPIC96_history_DSPIC96",
+      "US_RRSFS_history_value",
+      "US_PAYEMS_history_value",
+      "US_AHE_TOTAL_PRIVATE_history_value"
     ],
     "pending": [
       "US_NEWORDER_history_NEWORDER",
-      "US_RRSFS_history_value",
       "US_JTSHIR_history_JTSHIR",
       "US_JTSJOL_history_value",
       "US_JTSQUR_history_JTSQUR",
-      "US_PAYEMS_history_value",
       "US_OPHNFB_history_OPHNFB",
-      "US_AHE_TOTAL_PRIVATE_history_value",
       "US_CCSA_history_CCSA",
       "US_ICSA_history_value"
     ]
   },
   "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Pending or withheld series contribute no vote and must not be backfilled from revised history.",
   "status": "PARTIAL_CORE_PIT_READY",
-  "next_action": "BEA batch closed for now. Proceed to BLS by release family: Employment Situation (PAYEMS + AHE), JOLTS (openings + hires + quits), then Productivity (OPHNFB)."
+  "next_action": "Proceed with Census M3 NEWORDER first-release reconstruction; then Department of Labor claims. Revisit BLS only via a source path that can be independently verified without revised-history substitution."
 }
