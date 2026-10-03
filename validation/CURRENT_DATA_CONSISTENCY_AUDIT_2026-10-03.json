@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_CURRENT_DATA_CONSISTENCY_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "scope": "Current operational data-status consistency only; no runtime or model-rule changes.",
+  "references": {
+    "current_completeness": "validation/CURRENT_DATA_COMPLETENESS_2026-10-01.json",
+    "canonical_oos_t0": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+    "engine_logic_audit": "validation/ENGINE_LOGIC_AUDIT_LATEST.json",
+    "repository_authority": "validation/REPOSITORY_AUTHORITY_MANIFEST_V1_2026-10-02.json",
+    "post_freeze_integrity": "validation/POST_FREEZE_INTEGRITY_AUDIT_2026-10-03.json"
+  },
+  "checks": {
+    "runtime_authority_boundary": "PASS",
+    "runtime_metadata_204_of_204": "PASS",
+    "cot_current_8_of_8": "PASS",
+    "pair_price_matrix_28_of_28": "PASS",
+    "engine_logic_gates": "PASS",
+    "post_freeze_runtime_contamination": "PASS_NONE_FOUND",
+    "current_vs_oos_ois_withheld_set": "PASS"
+  },
+  "ois_current_status": {
+    "USD": "WITHHELD_PARTIAL_DIRECT_VALIDATED",
+    "EUR": "ACTIVE",
+    "GBP": "ACTIVE",
+    "JPY": "ACTIVE_WITH_LONG_BUCKET_LIQUIDITY_CAUTION",
+    "CHF": "WITHHELD_VALIDATED_SOURCE_LIMIT",
+    "CAD": "ACTIVE",
+    "AUD": "ACTIVE_WITH_LONG_BUCKET_ACTIVITY_CAUTION",
+    "NZD": "WITHHELD_VALIDATED_SOURCE_LIMIT"
+  },
+  "jpy_resolution": {
+    "issue_checked": "Older project notes listed JPY among OIS gaps, while CURRENT_DATA_COMPLETENESS_2026-10-01 marks JPY active.",
+    "canonical_evidence": "CANONICAL_ENGINE_OOS_T0_V3_2026-10-01 data_governance.ois_withheld contains USD, CHF and NZD only; JPY is not withheld.",
+    "decision": "NO_INCONSISTENCY_CURRENT_JPY_OIS_ACTIVE",
+    "note": "Long-dated JPY OIS liquidity remains a quality caution, not a WITHHELD condition."
+  },
+  "known_current_nonblocking_gaps": {
+    "USD": [
+      "Matched same-contract 1W CME Fed Funds futures history missing for canonical OIS-history comparison.",
+      "Fed H.10 broad USD benchmark remains diagnostic and is not promoted during the frozen OOS regime."
+    ],
+    "CHF": [
+      "Direct SARON futures identified, but useful maturities lack reliable current price discovery."
+    ],
+    "NZD": [
+      "No direct public reproducible 3M/6M/12M OIS curve with matched 1D/1W history."
+    ]
+  },
+  "quarantined_secondary_series": [
+    "USD SLOOS C&I large/middle pending exact source-column mapping",
+    "CHF SECO consumer sentiment pending unambiguous source reconstruction"
+  ],
+  "decision": "PASS_CURRENT_DATA_STATUS_COHERENT",
+  "model_safety": {
+    "changes_model_rules": false,
+    "changes_runtime": false,
+    "changes_currency_state": false,
+    "changes_pair_direction": false,
+    "oos_restart_required": false
+  },
+  "next_safe_work": "Audit UI/data presentation and stale-label handling without changing frozen engine logic."
+}
