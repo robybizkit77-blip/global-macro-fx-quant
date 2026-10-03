@@ -1,0 +1,31 @@
+name: Find FX Price Cross
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/find_fx_price_cross.py'
+      - '.github/workflows/find-fx-price-cross.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-usd-pit-readiness-2026-10-03
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Locate FX price cross inputs
+        run: python validation/find_fx_price_cross.py
+      - name: Commit locator report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/FX_PRICE_CROSS_LOCATOR_2026-10-03.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record FX price cross locator"
+          git pull --rebase origin staging-usd-pit-readiness-2026-10-03
+          git push origin HEAD:staging-usd-pit-readiness-2026-10-03
