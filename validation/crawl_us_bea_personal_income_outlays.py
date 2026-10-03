@@ -43,6 +43,14 @@ def signed(word: str, value: str) -> float:
 
 
 def obs_from_title(text: str) -> str | None:
+    # Special combined releases (e.g. "October and November 2025") publish two
+    # months at once. The current/last month is the second month and is the
+    # observation corresponding to the table's current value.
+    m = re.search(r"Personal Income and Outlays,\s+([A-Za-z]+)\s+and\s+([A-Za-z]+)\s+(\d{4})", text, re.I)
+    if m:
+        month = MONTHS.get(m.group(2).title())
+        if month:
+            return f"{int(m.group(3)):04d}-{month:02d}"
     m = re.search(r"Personal Income and Outlays,\s+([A-Za-z]+)\s+(\d{4})", text, re.I)
     if not m:
         return None
@@ -53,6 +61,11 @@ def obs_from_title(text: str) -> str | None:
 
 
 def obs_from_url(url: str) -> str | None:
+    m = re.search(r"personal-income-and-outlays-([a-z]+)-and-([a-z]+)-(\d{4})", url, re.I)
+    if m:
+        month = MONTHS.get(m.group(2).title())
+        if month:
+            return f"{int(m.group(3)):04d}-{month:02d}"
     m = re.search(r"personal-income-and-outlays-([a-z]+)-(\d{4})", url, re.I)
     if not m:
         return None
@@ -110,7 +123,9 @@ def parse_release(url: str) -> dict:
     text = soup.get_text(" ", strip=True)
     h1 = soup.find("h1")
     title_text = h1.get_text(" ", strip=True) if h1 else ""
-    obs = obs_from_title(title_text) or obs_from_title(text) or obs_from_url(url)
+    # Only trust the release title or URL for the observation identity. Using
+    # the full page text can accidentally match unrelated archive/navigation text.
+    obs = obs_from_title(title_text) or obs_from_url(url)
     release_date = release_date_from_page(soup, text)
 
     personal_income = first_match(text, [
@@ -126,8 +141,6 @@ def parse_release(url: str) -> dict:
         r"Real consumer spending\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
     ])
 
-    # Newer BEA PIO releases increasingly rely on the release table. These are
-    # still dated first-release values and therefore PIT-safe.
     if personal_income is None:
         personal_income = table_last_value(text, [r"Current-dollar personal income", r"Personal income"])
     if real_dpi is None:
@@ -188,7 +201,7 @@ def main() -> None:
             errors.append({"source_url": url, "error": f"{type(exc).__name__}: {exc}"})
         time.sleep(0.15)
 
-    rows.sort(key=lambda x: x["observation_month"] or "")
+    rows.sort(key=lambda x: (x["observation_month"] or "", x.get("release_date") or ""))
     complete = sum(1 for r in rows if r["parse_complete"])
     payload = {
         "schema": "GMFQ_BEA_PIO_PIT_BATCH_V1",
@@ -202,7 +215,7 @@ def main() -> None:
             "US_DSPIC96_history_DSPIC96": "real_dpi_first_release_mom_pct",
             "US_PCEC96_history_value": "real_pce_first_release_mom_pct",
         },
-        "guardrail": "Only values printed in the dated BEA release are eligible. Current revised NIPA history is never used to fill missing observations.",
+        "guardrail": "Only values printed in the dated BEA release are eligible. Current revised NIPA history is never used to fill missing observations. Observation identity is taken only from the release title/URL; combined-month releases map to the last/current month.",
         "start_observation_month": START_OBS,
         "release_urls_found": len(urls),
         "rows_found": len(rows),
