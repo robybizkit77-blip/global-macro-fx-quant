@@ -1,0 +1,22 @@
+{
+  "schema": "GMFQ_EUR_RETAIL_PIT_GAP_DECISION_V1",
+  "created_at": "2026-10-03",
+  "branch": "engine-freeze-v1-2026-10-02",
+  "runtime_id": "EA_RETAIL_VOL_history_value",
+  "status": "WITHHELD_PIT_INCOMPLETE",
+  "decision": "Do not spend additional validation cycles crawling individual historical Eurostat retail releases. Preserve the verified partial PIT chain, exclude Retail Volume from PIT-dependent EUR backtests where full historical coverage is required, and proceed with the remaining G8 reconstruction.",
+  "verified_partial_chain": {
+    "file": "validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_CHAIN_PIT_V1_2026-10-02.json",
+    "expected_months": 74,
+    "parsed_months": 48,
+    "coverage_pct": 64.86,
+    "verified_range_from": "2022-08",
+    "verified_range_to": "2026-07",
+    "missing_range": "2020-06 through 2022-07",
+    "missing_months": 26
+  },
+  "backtest_rule": "Never substitute current revised retail history for missing PIT observations. Retail may be used only on checkpoints where an official dated first-release observation is verified; otherwise the Retail input is WITHHELD and the macro block must be computed from eligible PIT inputs according to the frozen missing-input rules.",
+  "preservation_rule": "Keep all verified Eurostat release-chain rows and source URLs for future completion; do not delete the partial reconstruction.",
+  "reason": "Repeated brute-force, yearly, monthly, and deterministic release-chain crawls encountered unstable historical Eurostat URL/PDF availability and rate/runner limits. Additional crawling has diminishing validation value relative to continuing the G8 PIT program.",
+  "next_step": "Proceed with EUR PIT construction using the already verified Industrial Production, Unemployment and Employment series, then continue the G8 common-sample reconstruction. Negotiated Wages remains a separate source-identity gap and must not be conflated with Retail Volume."
+}
