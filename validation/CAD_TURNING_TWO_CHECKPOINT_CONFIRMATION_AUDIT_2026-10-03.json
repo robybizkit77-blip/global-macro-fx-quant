@@ -1,0 +1,189 @@
+{
+  "schema": "GMFQ_CAD_TURNING_TWO_CHECKPOINT_CONFIRMATION_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "method_note": "Among PIT-vs-revised turning disagreements where first-release turning remains active at the next union-release checkpoint, test whether first-release Macro polarity changes from the original checkpoint by t+1 or t+2. Descriptive only; no model change.",
+  "totals": {
+    "persistent_turning_cases": 19,
+    "macro_confirmation_by_t1": 6,
+    "macro_confirmation_by_t1_pct": 31.58,
+    "macro_confirmation_by_t2": 13,
+    "macro_confirmation_by_t2_pct": 68.42,
+    "not_confirmed_by_t2": 6,
+    "not_confirmed_by_t2_pct": 31.58
+  },
+  "cases": [
+    {
+      "checkpoint": "2021-06-23",
+      "next_checkpoint": "2021-06-30",
+      "second_checkpoint": "2021-07-09",
+      "t0_macro_polarity": -1,
+      "t1_macro_polarity": -1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2021-10-01",
+      "next_checkpoint": "2021-10-08",
+      "second_checkpoint": "2021-10-22",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2021-10-29",
+      "next_checkpoint": "2021-11-05",
+      "second_checkpoint": "2021-11-19",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2021-11-30",
+      "next_checkpoint": "2021-12-03",
+      "second_checkpoint": "2021-12-21",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2021-12-03",
+      "next_checkpoint": "2021-12-21",
+      "second_checkpoint": "2021-12-23",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2021-12-21",
+      "next_checkpoint": "2021-12-23",
+      "second_checkpoint": "2022-01-07",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2021-12-23",
+      "next_checkpoint": "2022-01-07",
+      "second_checkpoint": "2022-01-21",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2023-02-21",
+      "next_checkpoint": "2023-02-28",
+      "second_checkpoint": "2023-03-10",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2023-02-28",
+      "next_checkpoint": "2023-03-10",
+      "second_checkpoint": "2023-03-24",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2023-06-21",
+      "next_checkpoint": "2023-06-30",
+      "second_checkpoint": "2023-07-07",
+      "t0_macro_polarity": -1,
+      "t1_macro_polarity": -1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2023-09-22",
+      "next_checkpoint": "2023-09-29",
+      "second_checkpoint": "2023-10-06",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-04-24",
+      "next_checkpoint": "2024-04-30",
+      "second_checkpoint": "2024-05-10",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-04-30",
+      "next_checkpoint": "2024-05-10",
+      "second_checkpoint": "2024-05-24",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-05-10",
+      "next_checkpoint": "2024-05-24",
+      "second_checkpoint": "2024-05-31",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-05-24",
+      "next_checkpoint": "2024-05-31",
+      "second_checkpoint": "2024-06-07",
+      "t0_macro_polarity": 1,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-12-06",
+      "next_checkpoint": "2024-12-20",
+      "second_checkpoint": "2024-12-23",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": false
+    },
+    {
+      "checkpoint": "2024-12-20",
+      "next_checkpoint": "2024-12-23",
+      "second_checkpoint": "2025-01-10",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 0,
+      "confirmed_by_t1": false,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2024-12-23",
+      "next_checkpoint": "2025-01-10",
+      "second_checkpoint": "2025-01-23",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": 1,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    },
+    {
+      "checkpoint": "2025-12-23",
+      "next_checkpoint": "2026-01-09",
+      "second_checkpoint": "2026-01-23",
+      "t0_macro_polarity": 0,
+      "t1_macro_polarity": -1,
+      "confirmed_by_t1": true,
+      "confirmed_by_t2": true
+    }
+  ],
+  "no_model_change": true
+}
