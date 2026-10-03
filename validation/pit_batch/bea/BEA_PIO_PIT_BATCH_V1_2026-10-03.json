@@ -4,6 +4,7 @@
   "provider": "U.S. Bureau of Economic Analysis",
   "release_family": "Personal Income and Outlays",
   "source_strategy": "DATED_RELEASE_ARCHIVE",
+  "archive_product_id": "476",
   "target_runtime_series": {
     "US_PI_history_PI": "personal_income_first_release_mom_pct",
     "US_DSPIC96_history_DSPIC96": "real_dpi_first_release_mom_pct",
@@ -11,6 +12,7 @@
   },
   "guardrail": "Only values printed in the dated BEA release are eligible. Current revised NIPA history is never used to fill missing observations.",
   "start_observation_month": "2020-08",
+  "release_urls_found": 304,
   "rows_found": 0,
   "rows_complete": 0,
   "rows_incomplete": 0,
