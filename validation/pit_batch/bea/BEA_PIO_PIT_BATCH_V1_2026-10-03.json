@@ -13,9 +13,658 @@
   "guardrail": "Only values printed in the dated BEA release are eligible. Current revised NIPA history is never used to fill missing observations.",
   "start_observation_month": "2020-08",
   "release_urls_found": 304,
-  "rows_found": 0,
-  "rows_complete": 0,
-  "rows_incomplete": 0,
-  "rows": [],
+  "rows_found": 72,
+  "rows_complete": 42,
+  "rows_incomplete": 30,
+  "rows": [
+    {
+      "observation_month": "2020-08",
+      "release_date": "2020-10-01",
+      "personal_income_first_release_mom_pct": -2.7,
+      "real_dpi_first_release_mom_pct": -3.5,
+      "real_pce_first_release_mom_pct": 0.7,
+      "source_url": "https://www.bea.gov/news/2020/personal-income-and-outlays-august-2020",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-09",
+      "release_date": "2020-10-30",
+      "personal_income_first_release_mom_pct": 0.9,
+      "real_dpi_first_release_mom_pct": 0.7,
+      "real_pce_first_release_mom_pct": 1.2,
+      "source_url": "https://www.bea.gov/news/2020/personal-income-and-outlays-september-2020",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-10",
+      "release_date": "2020-11-25",
+      "personal_income_first_release_mom_pct": -0.7,
+      "real_dpi_first_release_mom_pct": -0.8,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2020/personal-income-and-outlays-october-2020",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-11",
+      "release_date": "2020-12-23",
+      "personal_income_first_release_mom_pct": -1.1,
+      "real_dpi_first_release_mom_pct": -1.3,
+      "real_pce_first_release_mom_pct": -0.4,
+      "source_url": "https://www.bea.gov/news/2020/personal-income-and-outlays-november-2020",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2020-12",
+      "release_date": "2021-01-29",
+      "personal_income_first_release_mom_pct": 0.6,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": -0.6,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-december-2020",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-01",
+      "release_date": "2021-02-26",
+      "personal_income_first_release_mom_pct": 10.0,
+      "real_dpi_first_release_mom_pct": 11.0,
+      "real_pce_first_release_mom_pct": 2.0,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-january-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-02",
+      "release_date": null,
+      "personal_income_first_release_mom_pct": null,
+      "real_dpi_first_release_mom_pct": -8.2,
+      "real_pce_first_release_mom_pct": -1.2,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-february-2021",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2021-03",
+      "release_date": "2021-04-30",
+      "personal_income_first_release_mom_pct": 21.1,
+      "real_dpi_first_release_mom_pct": 23.0,
+      "real_pce_first_release_mom_pct": 3.6,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-march-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-04",
+      "release_date": "2021-05-28",
+      "personal_income_first_release_mom_pct": -13.1,
+      "real_dpi_first_release_mom_pct": -15.1,
+      "real_pce_first_release_mom_pct": -0.1,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-april-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-05",
+      "release_date": "2021-06-25",
+      "personal_income_first_release_mom_pct": -2.0,
+      "real_dpi_first_release_mom_pct": -2.8,
+      "real_pce_first_release_mom_pct": -0.4,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-may-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-06",
+      "release_date": "2021-07-30",
+      "personal_income_first_release_mom_pct": 0.1,
+      "real_dpi_first_release_mom_pct": -0.5,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-june-2021-and-annual-update",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-07",
+      "release_date": "2021-08-27",
+      "personal_income_first_release_mom_pct": 1.1,
+      "real_dpi_first_release_mom_pct": 0.7,
+      "real_pce_first_release_mom_pct": -0.1,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-july-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-08",
+      "release_date": "2021-10-01",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": -0.3,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-august-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-09",
+      "release_date": "2021-10-29",
+      "personal_income_first_release_mom_pct": -1.0,
+      "real_dpi_first_release_mom_pct": -1.6,
+      "real_pce_first_release_mom_pct": 0.3,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-september-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-10",
+      "release_date": "2021-11-24",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": -0.3,
+      "real_pce_first_release_mom_pct": 0.7,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-october-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2021-11",
+      "release_date": "2021-12-23",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": -0.2,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2021/personal-income-and-outlays-november-2021",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2021-12",
+      "release_date": "2022-01-28",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": -0.2,
+      "real_pce_first_release_mom_pct": -1.0,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-december-2021",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-01",
+      "release_date": "2022-02-25",
+      "personal_income_first_release_mom_pct": 0.1,
+      "real_dpi_first_release_mom_pct": -0.5,
+      "real_pce_first_release_mom_pct": 1.5,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-january-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-02",
+      "release_date": "2022-03-31",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": -0.2,
+      "real_pce_first_release_mom_pct": -0.4,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-february-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-03",
+      "release_date": "2022-04-29",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": -0.4,
+      "real_pce_first_release_mom_pct": 0.2,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-march-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-04",
+      "release_date": "2022-05-27",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": 0.7,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-april-2022",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2022-05",
+      "release_date": "2022-06-30",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": -0.1,
+      "real_pce_first_release_mom_pct": -0.4,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-may-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-06",
+      "release_date": "2022-07-29",
+      "personal_income_first_release_mom_pct": 0.6,
+      "real_dpi_first_release_mom_pct": -0.3,
+      "real_pce_first_release_mom_pct": 0.1,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-june-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-07",
+      "release_date": "2022-08-26",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": 0.3,
+      "real_pce_first_release_mom_pct": 0.2,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-july-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-08",
+      "release_date": "2022-09-30",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.1,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-august-2022-and-annual-update",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-09",
+      "release_date": "2022-10-28",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": 0.3,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-september-2022",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2022-10",
+      "release_date": "2022-12-01",
+      "personal_income_first_release_mom_pct": 0.7,
+      "real_dpi_first_release_mom_pct": 0.4,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-october-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2022-11",
+      "release_date": "2022-12-23",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": 0.3,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2022/personal-income-and-outlays-november-2022",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2022-12",
+      "release_date": "2023-01-27",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": -0.3,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-december-2022",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-01",
+      "release_date": "2023-02-24",
+      "personal_income_first_release_mom_pct": 0.6,
+      "real_dpi_first_release_mom_pct": 1.4,
+      "real_pce_first_release_mom_pct": 1.1,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-january-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-02",
+      "release_date": "2023-03-31",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": -0.1,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-february-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-03",
+      "release_date": "2023-04-28",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.3,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-march-2023",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2023-04",
+      "release_date": "2023-05-26",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-april-2023",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2023-05",
+      "release_date": "2023-06-30",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": 0.3,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-may-2023",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2023-06",
+      "release_date": "2023-07-28",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-june-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-07",
+      "release_date": "2023-08-31",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": -0.2,
+      "real_pce_first_release_mom_pct": 0.6,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-july-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-08",
+      "release_date": "2023-09-29",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": -0.2,
+      "real_pce_first_release_mom_pct": 0.1,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-august-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-09",
+      "release_date": "2023-10-27",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": -0.1,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-september-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-10",
+      "release_date": "2023-11-30",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": 0.3,
+      "real_pce_first_release_mom_pct": 0.2,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-october-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-11",
+      "release_date": "2023-12-22",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": 0.4,
+      "real_pce_first_release_mom_pct": 0.3,
+      "source_url": "https://www.bea.gov/news/2023/personal-income-and-outlays-november-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2023-12",
+      "release_date": "2024-01-26",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-december-2023",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-01",
+      "release_date": "2024-02-29",
+      "personal_income_first_release_mom_pct": 1.0,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": -0.1,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-january-2024",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2024-02",
+      "release_date": "2024-03-29",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": -0.1,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-february-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-03",
+      "release_date": "2024-04-26",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": 0.5,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-march-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-04",
+      "release_date": "2024-05-31",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": -0.1,
+      "real_pce_first_release_mom_pct": -0.1,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-april-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-05",
+      "release_date": "2024-06-28",
+      "personal_income_first_release_mom_pct": null,
+      "real_dpi_first_release_mom_pct": 0.5,
+      "real_pce_first_release_mom_pct": 0.3,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-may-2024",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2024-06",
+      "release_date": "2024-07-26",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.2,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-june-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-07",
+      "release_date": "2024-08-30",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-july-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-08",
+      "release_date": "2024-09-27",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.1,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-august-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-09",
+      "release_date": "2024-10-31",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.1,
+      "real_pce_first_release_mom_pct": 0.4,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-september-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-10",
+      "release_date": "2024-11-27",
+      "personal_income_first_release_mom_pct": 0.6,
+      "real_dpi_first_release_mom_pct": 0.4,
+      "real_pce_first_release_mom_pct": 0.1,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-october-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-11",
+      "release_date": "2024-12-20",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": 0.2,
+      "real_pce_first_release_mom_pct": 0.3,
+      "source_url": "https://www.bea.gov/news/2024/personal-income-and-outlays-november-2024",
+      "parse_complete": true
+    },
+    {
+      "observation_month": "2024-12",
+      "release_date": "2025-01-31",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-december-2024",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-01",
+      "release_date": "2025-02-28",
+      "personal_income_first_release_mom_pct": 0.9,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-january-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-02",
+      "release_date": "2025-03-28",
+      "personal_income_first_release_mom_pct": 0.8,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-february-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-03",
+      "release_date": "2025-04-30",
+      "personal_income_first_release_mom_pct": 0.5,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-march-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-04",
+      "release_date": "2025-05-30",
+      "personal_income_first_release_mom_pct": 0.8,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-april-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-05",
+      "release_date": "2025-06-27",
+      "personal_income_first_release_mom_pct": -0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-may-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-06",
+      "release_date": "2025-07-31",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-june-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-07",
+      "release_date": "2025-08-29",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-july-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-08",
+      "release_date": "2025-09-26",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-august-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-09",
+      "release_date": null,
+      "personal_income_first_release_mom_pct": null,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-data-update-september-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-09",
+      "release_date": "2025-12-05",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2025/personal-income-and-outlays-september-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-12",
+      "release_date": "2026-02-20",
+      "personal_income_first_release_mom_pct": 0.3,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-december-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2025-12",
+      "release_date": "2026-01-22",
+      "personal_income_first_release_mom_pct": 0.1,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-october-and-november-2025",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-01",
+      "release_date": "2026-03-13",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-january-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-02",
+      "release_date": "2026-04-09",
+      "personal_income_first_release_mom_pct": -0.1,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-february-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-03",
+      "release_date": "2026-04-30",
+      "personal_income_first_release_mom_pct": 0.6,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-march-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-04",
+      "release_date": "2026-05-28",
+      "personal_income_first_release_mom_pct": -0.1,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-april-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-05",
+      "release_date": "2026-06-25",
+      "personal_income_first_release_mom_pct": 0.7,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-may-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-06",
+      "release_date": "2026-07-30",
+      "personal_income_first_release_mom_pct": 0.2,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026",
+      "parse_complete": false
+    },
+    {
+      "observation_month": "2026-07",
+      "release_date": "2026-08-26",
+      "personal_income_first_release_mom_pct": 0.4,
+      "real_dpi_first_release_mom_pct": null,
+      "real_pce_first_release_mom_pct": null,
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-july-2026",
+      "parse_complete": false
+    }
+  ],
   "errors": []
 }
