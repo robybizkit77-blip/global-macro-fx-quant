@@ -1,0 +1,120 @@
+{
+  "schema": "GMFQ_CAD_PIT_REVISION_SERIES_ATTRIBUTION_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "series": {
+    "GDP": {
+      "checkpoints": 68,
+      "direction_changes": 19,
+      "direction_change_pct": 27.94,
+      "turning_changes": 11,
+      "turning_change_pct": 16.18,
+      "acceleration_direction_changes": 21,
+      "acceleration_direction_change_pct": 30.88,
+      "direction_change_checkpoints": [
+        "2021-03-02",
+        "2021-10-01",
+        "2021-11-30",
+        "2022-03-01",
+        "2022-03-31",
+        "2022-06-30",
+        "2022-07-29",
+        "2022-12-23",
+        "2023-01-31",
+        "2023-05-31",
+        "2023-07-28",
+        "2023-09-29",
+        "2023-11-30",
+        "2023-12-22",
+        "2024-02-29",
+        "2024-08-30",
+        "2024-10-31",
+        "2026-01-30",
+        "2026-03-31"
+      ]
+    },
+    "Retail": {
+      "checkpoints": 68,
+      "direction_changes": 18,
+      "direction_change_pct": 26.47,
+      "turning_changes": 20,
+      "turning_change_pct": 29.41,
+      "acceleration_direction_changes": 20,
+      "acceleration_direction_change_pct": 29.41,
+      "direction_change_checkpoints": [
+        "2021-09-23",
+        "2022-04-22",
+        "2022-06-21",
+        "2022-08-19",
+        "2022-12-20",
+        "2023-01-20",
+        "2023-05-19",
+        "2023-07-21",
+        "2023-08-23",
+        "2023-09-22",
+        "2024-01-19",
+        "2024-02-22",
+        "2024-04-24",
+        "2024-08-23",
+        "2024-10-25",
+        "2024-12-20",
+        "2026-02-20",
+        "2026-06-19"
+      ]
+    },
+    "Employment": {
+      "checkpoints": 69,
+      "direction_changes": 10,
+      "direction_change_pct": 14.49,
+      "turning_changes": 7,
+      "turning_change_pct": 10.14,
+      "acceleration_direction_changes": 13,
+      "acceleration_direction_change_pct": 18.84,
+      "direction_change_checkpoints": [
+        "2022-04-08",
+        "2022-05-06",
+        "2022-07-08",
+        "2022-08-05",
+        "2022-09-09",
+        "2022-12-02",
+        "2023-08-04",
+        "2024-04-05",
+        "2024-08-09",
+        "2024-11-08"
+      ]
+    },
+    "Unemployment": {
+      "checkpoints": 69,
+      "direction_changes": 12,
+      "direction_change_pct": 17.39,
+      "turning_changes": 4,
+      "turning_change_pct": 5.8,
+      "acceleration_direction_changes": 19,
+      "acceleration_direction_change_pct": 27.54,
+      "direction_change_checkpoints": [
+        "2022-05-06",
+        "2022-08-05",
+        "2023-01-06",
+        "2023-02-10",
+        "2023-03-10",
+        "2023-04-06",
+        "2023-08-04",
+        "2023-10-06",
+        "2024-05-10",
+        "2024-11-08",
+        "2025-02-07",
+        "2025-03-07"
+      ]
+    }
+  },
+  "direction_revision_sensitivity_rank": [
+    "GDP",
+    "Retail",
+    "Unemployment",
+    "Employment"
+  ],
+  "interpretation": {
+    "scope": "Descriptive series-level PIT vs revised sensitivity using frozen v9.3 normalizedSeriesImpulse thresholds.",
+    "no_model_change": "Do not change weights or thresholds from this audit."
+  }
+}
