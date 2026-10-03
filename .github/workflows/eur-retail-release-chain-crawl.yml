@@ -19,7 +19,7 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,8 +28,24 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pypdf
-      - name: Crawl bounded Retail release-chain chunk
-        run: python validation/run_eur_retail_release_chain_chunk.py
+      - name: Crawl Retail release-chain to completion in bounded chunks
+        run: |
+          for i in 1 2 3 4; do
+            echo "=== Retail PIT chunk $i/4 ==="
+            python validation/run_eur_retail_release_chain_chunk.py
+            if python - <<'PY'
+          import json,sys
+          p='validation/pit_batch/eurostat/archive/EUR_RETAIL_VOLUME_CHAIN_PIT_V1_2026-10-02.json'
+          j=json.load(open(p))
+          s=j.get('summary',{})
+          print('coverage',s.get('parsed_months'),'/',s.get('expected_months'),'complete=',s.get('complete'),'terminal_error=',s.get('terminal_error'))
+          sys.exit(0 if s.get('complete') else 1)
+          PY
+            then
+              echo "Retail PIT chain complete."
+              break
+            fi
+          done
       - name: Commit chain checkpoint
         if: always()
         run: |
