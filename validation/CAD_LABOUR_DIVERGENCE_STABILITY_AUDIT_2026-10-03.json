@@ -1,0 +1,26 @@
+{
+  "schema": "GMFQ_CAD_LABOUR_DIVERGENCE_STABILITY_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "threshold_direction": 0.2,
+  "totals": {
+    "checkpoints": 69,
+    "first_release_divergence_checkpoints": 9,
+    "first_release_divergence_pct": 13.04,
+    "aligned_checkpoints": 60
+  },
+  "stability": {
+    "direction_changes_when_divergent": 2,
+    "direction_change_pct_when_divergent": 22.22,
+    "direction_changes_when_aligned": 12,
+    "direction_change_pct_when_aligned": 20.0,
+    "near_threshold_when_divergent": 8,
+    "near_threshold_pct_when_divergent": 88.89
+  },
+  "examples_divergent_changes": [
+    "2022-07-08",
+    "2024-09-06"
+  ],
+  "interpretation": {
+    "no_model_change": "Descriptive audit only; no threshold/weight changes."
+  }
+}
