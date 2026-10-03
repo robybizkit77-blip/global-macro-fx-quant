@@ -1,0 +1,50 @@
+{
+  "schema": "GMFQ_FORWARD_OOS_READINESS_GATE_V1",
+  "created_at": "2026-10-03",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "branch_head_at_gate": "f2cb52e96e600b14c2d9da9f02aaa79e85061479",
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "canonical_oos_baseline": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+  "t0_effective_date": "2026-10-01",
+  "oos_rule": "ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE",
+  "checkpoints": {
+    "1W": "2026-10-08",
+    "4W": "2026-10-29",
+    "12W": "2026-12-24"
+  },
+  "evaluation_rule": "Use the first available ECB reference-rate observation on or after each evaluation date; no threshold tuning and no rule changes within the OOS regime.",
+  "pre_forward_validation": {
+    "pit_dataset_freeze": "PASS",
+    "pit_freeze_gate": "PASS",
+    "pit_macro_replay": "BUILT",
+    "pit_backtest_final_audit": "PASS_FOR_VALIDATION_BOUNDARY",
+    "pit_lookahead_guard": "PASS_NO_LOOKAHEAD_DETECTED",
+    "pit_validation_interpretation": "STOP_PRE_FORWARD_PIT_VALIDATION_AND_PRESERVE_FROZEN_ENGINE",
+    "post_freeze_engine_integrity": "PASS_NO_ENGINE_CONTAMINATION"
+  },
+  "freeze_to_current_diff": {
+    "base": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "head": "f2cb52e96e600b14c2d9da9f02aaa79e85061479",
+    "commits_ahead": 124,
+    "runtime_files_changed": [],
+    "index_html_changed": false,
+    "payload_files_changed": false,
+    "allowed_change_families": [
+      ".github/workflows/",
+      "validation/"
+    ],
+    "integrity_result": "PASS_VALIDATION_ONLY_CHANGES"
+  },
+  "hard_failures": [],
+  "passed": true,
+  "decision": "READY_FOR_FORWARD_OOS_CHECKPOINTS",
+  "next_required_action": "Do not tune or change model logic before the 1W checkpoint on 2026-10-08. At the checkpoint, evaluate the frozen T0 snapshot only under the canonical evaluation rule.",
+  "guardrails": [
+    "No model weights, thresholds, hierarchy, pair logic, or runtime engine changes before checkpoint evaluation unless the OOS is explicitly restarted.",
+    "Validation scripts, audits, and documentation may continue only if they do not alter runtime behavior or retrospectively tune the frozen rule set.",
+    "Current live dashboard updates do not replace or rewrite the frozen T0 snapshot.",
+    "The first forward checkpoint is an evaluation event, not a tuning event."
+  ]
+}
