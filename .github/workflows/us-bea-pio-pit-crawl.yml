@@ -5,6 +5,7 @@ on:
     branches: [staging-usd-pit-readiness-2026-10-03]
     paths:
       - validation/crawl_us_bea_personal_income_outlays.py
+      - validation/audit_bea_pio_pit.py
       - .github/workflows/us-bea-pio-pit-crawl.yml
   workflow_dispatch:
 
@@ -29,16 +30,18 @@ jobs:
       - run: pip install requests beautifulsoup4
       - name: Crawl BEA Personal Income and Outlays dated releases
         run: python validation/crawl_us_bea_personal_income_outlays.py
-      - name: Commit PIT batch artifact
+      - name: Audit BEA PIO PIT completeness
+        run: python validation/audit_bea_pio_pit.py
+      - name: Commit PIT batch and audit artifacts
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json
+          git add validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json validation/pit_batch/bea/BEA_PIO_PIT_AUDIT_V1_2026-10-03.json
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Build BEA PIO PIT batch"
+            git commit -m "Build and audit BEA PIO PIT batch"
             git pull --rebase origin staging-usd-pit-readiness-2026-10-03
             git push origin HEAD:staging-usd-pit-readiness-2026-10-03
           fi
