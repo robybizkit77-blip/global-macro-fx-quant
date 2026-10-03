@@ -1,0 +1,28 @@
+name: CAD Turning Persistence
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+    paths:
+      - 'validation/audit_cad_turning_persistence.py'
+      - '.github/workflows/cad-turning-persistence.yml'
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-usd-pit-readiness-2026-10-03
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python validation/audit_cad_turning_persistence.py
+      - name: Commit audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/CAD_TURNING_PERSISTENCE_AUDIT_2026-10-03.json
+          git diff --cached --quiet || git commit -m "Add CAD turning persistence audit result"
+          git push
