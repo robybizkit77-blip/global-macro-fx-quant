@@ -44,19 +44,13 @@
       "release_dates_parsed": 69,
       "missing_release_date_count": 0,
       "release_before_observation_period_end_count": 0,
-      "release_date_order_inversions": 1,
+      "release_date_order_inversions": 0,
       "examples": {
         "missing_release_date_indexes": [],
         "release_before_period_end": [],
-        "date_inversions": [
-          {
-            "index": 61,
-            "release_date": "2026-01-22",
-            "previous_release_date": "2026-02-20"
-          }
-        ]
+        "date_inversions": []
       },
-      "pass": false
+      "pass": true
     },
     {
       "series": "USD/US_NEWORDER_history_NEWORDER",
@@ -133,11 +127,9 @@
     "no_observation_date_as_asof_filter_found": true,
     "pass": true
   },
-  "hard_failures": [
-    "USD/US_PI_history_PI"
-  ],
-  "passed": false,
-  "decision": "FAIL_LOOKAHEAD_GUARD",
+  "hard_failures": [],
+  "passed": true,
+  "decision": "PASS_NO_LOOKAHEAD_DETECTED",
   "guardrails": [
     "Availability is controlled by official release/first-release date, never by observation month/quarter.",
     "A series cannot vote at checkpoint cp unless its release date is <= cp.",
