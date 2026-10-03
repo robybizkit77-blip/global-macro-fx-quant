@@ -1,0 +1,53 @@
+{
+  "schema": "GMFQ_EUR_PIT_READINESS_V1",
+  "created_at": "2026-10-03",
+  "branch": "engine-freeze-v1-2026-10-02",
+  "currency": "EUR",
+  "frozen_engine": {
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0",
+    "macro_core": "Crescita + Lavoro"
+  },
+  "series": {
+    "EA_IP_history_value": {
+      "block": "Crescita",
+      "status": "PIT_READY",
+      "source": "Eurostat structured vintage",
+      "note": "First-release RT1 compounded to synthetic level; validated against comparable revised level path."
+    },
+    "EA_RETAIL_VOL_history_value": {
+      "block": "Crescita",
+      "status": "WITHHELD_PIT_INCOMPLETE",
+      "source": "Eurostat dated release chain",
+      "coverage_pct": 64.86,
+      "verified_range": "2022-08 through 2026-07",
+      "missing_range": "2020-06 through 2022-07",
+      "rule": "Never substitute revised history for missing PIT observations."
+    },
+    "EA_UNEMP_history_value": {
+      "block": "Lavoro",
+      "status": "PIT_READY",
+      "source": "Eurostat structured vintage"
+    },
+    "EA_EMPLOYMENT_history_value": {
+      "block": "Lavoro",
+      "status": "PIT_READY",
+      "source": "Eurostat GDP and employment flash releases",
+      "coverage": "25/25 quarters from 2020-Q2 through 2026-Q2"
+    },
+    "EA_NEGOTIATED_WAGES_YOY_history_value": {
+      "block": "Lavoro",
+      "status": "WITHHELD_SOURCE_IDENTITY_PENDING",
+      "source_candidate": "ECB INW",
+      "rule": "Do not use the current ECB INW history as PIT until exact runtime-series identity and vintage policy are proven."
+    }
+  },
+  "eligible_pit_core_now": {
+    "growth": ["EA_IP_history_value"],
+    "labour": ["EA_UNEMP_history_value", "EA_EMPLOYMENT_history_value"],
+    "withheld": ["EA_RETAIL_VOL_history_value", "EA_NEGOTIATED_WAGES_YOY_history_value"]
+  },
+  "engine_rule": "Compute a block only from PIT-eligible observations available at each checkpoint. Missing or withheld series contribute no vote and must not be backfilled from revised history.",
+  "status": "PARTIAL_CORE_PIT_READY_WITH_WITHHELD_INPUTS",
+  "next_action": "Proceed to the next G8 currency reconstruction. Return to withheld EUR inputs only if a complete authoritative PIT source becomes available."
+}
