@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_CAD_TURNING_PERSISTENCE_AUDIT_V1",
+  "engine_ref": "engine-freeze-v1-2026-10-02",
+  "rules_fingerprint": "3356baf0",
+  "method_note": "For PIT-vs-revised turning disagreements, evaluate the next union-release checkpoint using the first-release path only. Descriptive persistence test; no model changes.",
+  "totals": {
+    "fragile_turning_disagreements": 53,
+    "fragile_first_release_turning_active": 28,
+    "persists_next_checkpoint": 19,
+    "persists_next_pct": 67.86,
+    "reverts_next_checkpoint": 9,
+    "reverts_next_pct": 32.14,
+    "macro_polarity_changes_next_checkpoint": 8,
+    "macro_polarity_changes_next_pct": 28.57
+  },
+  "examples_persist": [
+    "2021-06-23",
+    "2021-10-01",
+    "2021-10-29",
+    "2021-11-30",
+    "2021-12-03",
+    "2021-12-21",
+    "2021-12-23",
+    "2023-02-21",
+    "2023-02-28",
+    "2023-06-21",
+    "2023-09-22",
+    "2024-04-24",
+    "2024-04-30",
+    "2024-05-10",
+    "2024-05-24",
+    "2024-12-06",
+    "2024-12-20",
+    "2024-12-23",
+    "2025-12-23"
+  ],
+  "examples_revert": [
+    "2021-10-08",
+    "2021-11-05",
+    "2022-01-07",
+    "2022-04-08",
+    "2023-03-10",
+    "2023-05-19",
+    "2023-06-30",
+    "2023-09-29",
+    "2024-02-22"
+  ],
+  "no_model_change": true
+}
