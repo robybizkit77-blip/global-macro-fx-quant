@@ -29,6 +29,7 @@ OUT = Path("validation/pit_batch/bea/BEA_PIO_PIT_BATCH_V1_2026-10-03.json")
 START_OBS = "2020-08"
 MAX_PAGES = 80
 HEADERS = {"User-Agent": "GMFQ-PIT-research/1.0"}
+PIO_PRODUCT_ID = "476"
 
 MONTHS = {m: i for i, m in enumerate([
     "January", "February", "March", "April", "May", "June",
@@ -87,7 +88,8 @@ def parse_release(url: str) -> dict:
     release_date = release_date_from_page(soup, text)
 
     personal_income = first_match(text, [
-        r"Personal income\s+(increased|decreased|rose|fell)\b.*?\(([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent\)",
+        r"Personal income\s+(increased|decreased|rose|fell)\b.*?\(([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent(?:\s+at a monthly rate)?\)",
+        r"Personal income\s+(increased|decreased|rose|fell)\s+[-$0-9., billionmillion]+\s*\(([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
         r"Personal income\s+(increased|decreased|rose|fell)\s+([-+]?[0-9]+(?:\.[0-9]+)?)\s*percent",
     ])
     real_dpi = first_match(text, [
@@ -110,11 +112,13 @@ def parse_release(url: str) -> dict:
 
 def collect_release_urls() -> list[str]:
     seen: set[str] = set()
+    stagnant_pages = 0
     for page in range(MAX_PAGES):
+        # BEA's archive product filter is reliable; the free-text title filter is not.
         params = {
             "created_1": "All",
-            "field_related_product_target_id": "All",
-            "title": "Personal Income and Outlays",
+            "field_related_product_target_id": PIO_PRODUCT_ID,
+            "title": "",
             "page": page,
         }
         r = requests.get(ARCHIVE, params=params, headers=HEADERS, timeout=30)
@@ -124,9 +128,13 @@ def collect_release_urls() -> list[str]:
         for a in soup.find_all("a", href=True):
             label = a.get_text(" ", strip=True)
             href = a["href"]
-            if "Personal Income and Outlays" in label and "/news/" in href:
+            if label.lower().startswith("personal income and outlays") and "/news/" in href:
                 seen.add(urljoin(BASE, href))
-        if len(seen) == before and page > 2:
+        if len(seen) == before:
+            stagnant_pages += 1
+        else:
+            stagnant_pages = 0
+        if stagnant_pages >= 3:
             break
         time.sleep(0.15)
     return sorted(seen)
@@ -153,6 +161,7 @@ def main() -> None:
         "provider": "U.S. Bureau of Economic Analysis",
         "release_family": "Personal Income and Outlays",
         "source_strategy": "DATED_RELEASE_ARCHIVE",
+        "archive_product_id": PIO_PRODUCT_ID,
         "target_runtime_series": {
             "US_PI_history_PI": "personal_income_first_release_mom_pct",
             "US_DSPIC96_history_DSPIC96": "real_dpi_first_release_mom_pct",
@@ -160,6 +169,7 @@ def main() -> None:
         },
         "guardrail": "Only values printed in the dated BEA release are eligible. Current revised NIPA history is never used to fill missing observations.",
         "start_observation_month": START_OBS,
+        "release_urls_found": len(urls),
         "rows_found": len(rows),
         "rows_complete": complete,
         "rows_incomplete": len(rows) - complete,
@@ -168,7 +178,9 @@ def main() -> None:
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"rows_found": len(rows), "rows_complete": complete, "errors": len(errors)}, indent=2))
+    print(json.dumps({"release_urls_found": len(urls), "rows_found": len(rows), "rows_complete": complete, "errors": len(errors)}, indent=2))
+    if not urls:
+        raise SystemExit("No BEA PIO release URLs found; archive discovery failed")
 
 
 if __name__ == "__main__":
