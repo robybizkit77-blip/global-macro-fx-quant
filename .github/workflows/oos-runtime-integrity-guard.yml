@@ -1,0 +1,33 @@
+name: OOS Runtime Integrity Guard
+on:
+  push:
+    branches: [staging-usd-pit-readiness-2026-10-03]
+  workflow_dispatch:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen runtime remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          FREEZE_SHA="ff52198a75cc67f7dae96fc2bbf65623f170791c"
+          echo "Freeze SHA: $FREEZE_SHA"
+          echo "Current SHA: $GITHUB_SHA"
+
+          CHANGED=$(git diff --name-only "$FREEZE_SHA" "$GITHUB_SHA")
+          echo "$CHANGED"
+
+          FORBIDDEN=$(printf '%s\n' "$CHANGED" | grep -E '^(index\.html|payload/part-[0-9][0-9]\.txt|payload/part-[0-9]+\.txt)$' || true)
+
+          if [ -n "$FORBIDDEN" ]; then
+            echo "OOS INVALIDATION RISK: frozen runtime files changed after engine freeze:"
+            echo "$FORBIDDEN"
+            exit 1
+          fi
+
+          echo "PASS: no frozen runtime/index/payload files changed since engine freeze."
