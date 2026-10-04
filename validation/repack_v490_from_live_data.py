@@ -1,12 +1,23 @@
 from pathlib import Path
-import json,re,hashlib,sys
+import json,re,hashlib,sys,urllib.request
 ROOT=Path('.')
 PAY=ROOT/'payload'; SEC=ROOT/'live_data'/'sections'
-parts=[PAY/f'part-{i:02d}.txt' for i in range(16)]
-orig_parts=[p.read_text(encoding='utf-8') for p in parts]
-joined='\n'.join(orig_parts)
 manifest=json.loads((ROOT/'live_data'/'manifest.json').read_text(encoding='utf-8'))
 keys=[s['key'] for s in manifest['sections']]
+
+# Always rebuild from the frozen production-layout baseline, not from a previously
+# repacked staging payload. This preserves all unaffected chunks byte-for-byte.
+BASE='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/payload/part-{i:02d}.txt'
+base_parts=[]
+for i,meta in enumerate(manifest['parts']):
+    req=urllib.request.Request(BASE.format(i=i),headers={'User-Agent':'Mozilla/5.0 GMFQ/1.0'})
+    raw=urllib.request.urlopen(req,timeout=30).read()
+    txt=raw.decode('utf-8')
+    sha=hashlib.sha256(raw).hexdigest()
+    if sha!=meta['sha256']:
+        raise RuntimeError(f'PRODUCTION_BASELINE_CHANGED part-{i:02d}: {sha} != {meta["sha256"]}')
+    base_parts.append(txt)
+base='\n'.join(base_parts)
 
 def scan(src,start,op,cl):
     depth=0; quote=None; esc=False
@@ -38,50 +49,60 @@ def locate(src,name):
         return pos,end
     raise RuntimeError(f'parseable assignment not found: {name}')
 
-rebuilt=joined
+# Locate every section against the untouched baseline first.
+repls=[]
 for name in keys:
-    a,b=locate(rebuilt,name)
-    raw=(SEC/f'{name}.json').read_text(encoding='utf-8')
-    json.loads(raw)
-    rebuilt=rebuilt[:a]+raw+rebuilt[b:]
+    a,b=locate(base,name)
+    newraw=(SEC/f'{name}.json').read_text(encoding='utf-8')
+    json.loads(newraw)
+    repls.append((a,b,name,newraw))
+repls.sort()
+for x,y in zip(repls,repls[1:]):
+    if x[1]>y[0]: raise RuntimeError(f'overlapping data sections {x[2]} / {y[2]}')
 
-if 'GMFQ_RUNTIME_VALIDATION_MANIFEST' not in rebuilt:
-    raise RuntimeError('runtime validation manifest missing after repack')
-
-# Split on real newline positions close to original cumulative ratios. Joining the parts
-# with the loader's single newline restores rebuilt byte-for-byte.
-orig_join_len=len(joined)
+# Original boundaries are exact loader join boundaries. A boundary must never fall
+# inside a replaceable data literal; otherwise we stop rather than silently reflow.
 orig_bounds=[]; cur=0
-for t in orig_parts[:-1]:
-    cur+=len(t)
-    orig_bounds.append(cur)
-    cur+=1
+for t in base_parts[:-1]:
+    cur+=len(t); orig_bounds.append(cur); cur+=1
+for B in orig_bounds:
+    for a,b,name,_ in repls:
+        if a < B < b:
+            raise RuntimeError(f'chunk boundary crosses data section {name}')
+
+# Replace from right to left to retain original coordinates.
+rebuilt=base
+for a,b,name,newraw in reversed(repls): rebuilt=rebuilt[:a]+newraw+rebuilt[b:]
+if 'GMFQ_RUNTIME_VALIDATION_MANIFEST' not in rebuilt: raise RuntimeError('runtime validation manifest missing')
+
+# Shift each original boundary only by length deltas entirely before it.
+def shifted_boundary(B):
+    delta=0
+    for a,b,name,newraw in repls:
+        if b<=B: delta+=len(newraw)-(b-a)
+    return B+delta
+new_bounds=[shifted_boundary(B) for B in orig_bounds]
 new_parts=[]; last=0
-for bound in orig_bounds:
-    target=round(bound/orig_join_len*len(rebuilt))
-    lo=max(last+1,target-5000); hi=min(len(rebuilt)-1,target+5000)
-    candidates=[i for i in range(lo,hi+1) if rebuilt[i]=='\n']
-    if not candidates:
-        # widen search safely to nearest actual newline
-        left=rebuilt.rfind('\n',last+1,target)
-        right=rebuilt.find('\n',target)
-        candidates=[x for x in (left,right) if x>=last+1]
-    if not candidates: raise RuntimeError('cannot find safe newline split')
-    cut=min(candidates,key=lambda x:abs(x-target))
+for cut in new_bounds:
+    # Loader inserts one newline between chunks; cut points reference the character
+    # immediately before that synthetic separator in the joined runtime.
     new_parts.append(rebuilt[last:cut]); last=cut+1
 new_parts.append(rebuilt[last:])
-if len(new_parts)!=16: raise RuntimeError('part count mismatch')
-if '\n'.join(new_parts)!=rebuilt: raise RuntimeError('split/join roundtrip failed')
+if len(new_parts)!=16 or '\n'.join(new_parts)!=rebuilt: raise RuntimeError('split/join roundtrip failed')
 
-changed=[i for i,(a,b) in enumerate(zip(orig_parts,new_parts)) if a!=b]
+changed=[i for i,(a,b) in enumerate(zip(base_parts,new_parts)) if a!=b]
+changed_sections=[]
+for a,b,name,newraw in repls:
+    oldraw=base[a:b]
+    if oldraw!=newraw: changed_sections.append(name)
 report={
- 'schema':'GMFQ_V490_REPACK_AUDIT_V1','created_at':'2026-10-04',
- 'runtime_sha256_before':hashlib.sha256(joined.encode()).hexdigest(),
+ 'schema':'GMFQ_V490_REPACK_AUDIT_V2','created_at':'2026-10-04',
+ 'baseline_ref':'main','runtime_sha256_before':hashlib.sha256(base.encode()).hexdigest(),
  'runtime_sha256_after':hashlib.sha256(rebuilt.encode()).hexdigest(),
- 'runtime_changed':rebuilt!=joined,'changed_parts':changed,
- 'section_count':len(keys),'split_join_exact':True
+ 'runtime_changed':rebuilt!=base,'changed_sections':changed_sections,'changed_parts':changed,
+ 'section_count':len(keys),'split_join_exact':True,'unaffected_parts_byte_identical':all(base_parts[i]==new_parts[i] for i in range(16) if i not in changed)
 }
 (ROOT/'validation'/'V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 if '--write' in sys.argv:
-    for p,t in zip(parts,new_parts): p.write_text(t,encoding='utf-8')
+    for i,t in enumerate(new_parts): (PAY/f'part-{i:02d}.txt').write_text(t,encoding='utf-8')
 print(json.dumps(report))
