@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_MACRO_CORE_REGISTRY_V1",
+  "created_at": "2026-10-04",
+  "series": {},
+  "currency_macro": {
+    "USD": {
+      "growth": 0.13,
+      "labour": 0.68,
+      "inflation": 1.68,
+      "rate2y": 4.83
+    },
+    "EUR": {
+      "growth": -0.45,
+      "labour": 1.19,
+      "inflation": 0.84,
+      "rate2y": 3.1064811134
+    },
+    "GBP": {
+      "growth": 0.47,
+      "labour": -0.63,
+      "inflation": 0.14,
+      "rate2y": 4.600778759919967
+    },
+    "JPY": {
+      "growth": 1.37,
+      "labour": 1.45,
+      "inflation": 0.55,
+      "rate2y": 1.939
+    },
+    "CHF": {
+      "growth": 0.96,
+      "labour": 0.42,
+      "inflation": 0.09,
+      "rate2y": 0.287
+    },
+    "CAD": {
+      "growth": 0.08,
+      "labour": 0.16,
+      "inflation": -0.36,
+      "rate2y": 3.27
+    },
+    "AUD": {
+      "growth": 0.47,
+      "labour": -0.02,
+      "inflation": -0.03,
+      "rate2y": 4.942
+    },
+    "NZD": {
+      "growth": 0.24,
+      "labour": -0.37,
+      "inflation": 0.69,
+      "rate2y": 3.89
+    }
+  }
+}
