@@ -1,0 +1,52 @@
+name: ECB AAA Rates Probe
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - ".github/workflows/ecb-aaa-rates-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe ECB AAA Svensson spot curve
+        run: |
+          python - <<'PY'
+          import csv, io, json, pathlib, urllib.request
+          base='https://data-api.ecb.europa.eu/service/data/YC/'
+          keys={
+            '2Y':'B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y',
+            '10Y':'B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'
+          }
+          out={'schema':'GMFQ_ECB_AAA_RATES_PROBE_V1','series':{}}
+          for tenor,key in keys.items():
+            url=f'{base}{key}?startPeriod=2026-09-20&endPeriod=2026-10-04&format=csvdata'
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 GMFQ/1.0','Accept':'text/csv'})
+            raw=urllib.request.urlopen(req,timeout=45).read().decode('utf-8-sig')
+            rows=list(csv.DictReader(io.StringIO(raw)))
+            vals=[]
+            for r in rows:
+              d=r.get('TIME_PERIOD') or r.get('TIME PERIOD') or r.get('TIME_PERIOD_START')
+              v=r.get('OBS_VALUE') or r.get('OBS VALUE')
+              if d and v not in (None,''):
+                vals.append({'date':d,'value':float(v)})
+            out['series'][tenor]={'url':url,'tail':vals[-10:]}
+          pathlib.Path('validation/ECB_AAA_RATES_PROBE_2026-10-04.json').write_text(json.dumps(out,indent=2)+'\n')
+          print(json.dumps(out,indent=2))
+          PY
+      - name: Commit probe
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/ECB_AAA_RATES_PROBE_2026-10-04.json
+          git commit -m "Probe ECB AAA Svensson rates" || exit 0
+          git push
