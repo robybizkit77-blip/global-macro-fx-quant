@@ -64,10 +64,10 @@
     },
     {
       "file": "payload/part-15.txt",
-      "bytes": 196636
+      "bytes": 196325
     }
   ],
-  "runtime_bytes": 2713266,
+  "runtime_bytes": 2712955,
   "runtime_date_range": {
     "count": 2947,
     "min": "2016-01-01",
