@@ -1,0 +1,81 @@
+name: Live Refresh Browser Gate
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "payload/**"
+      - "live_data/**"
+      - ".github/workflows/live-refresh-browser-gate.yml"
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-live-gate.log 2>&1 &
+          sleep 2
+      - name: Run live refresh browser gate
+        run: |
+          cat > live-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const consoleErrors=[]; const pageErrors=[];
+            page.on('console',m=>{ if(m.type()==='error') consoleErrors.push(m.text()); });
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            const r=await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
+            if(!r?.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccy=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const cot=window.__GMFQ_DATA?.V250_COT_CHART_DATA||{};
+              const d=window.__GMFQ_DATA?.D||{};
+              const latest={}; const cotSync={};
+              for(const c of ccy){
+                const x=cot[c]||{}; const dates=x.dates||[]; const pct=x.percentile||[];
+                latest[c]=dates.at(-1)||null;
+                const a=Number(d?.macro?.[c]?.cot_pct), b=Number(pct.at(-1));
+                cotSync[c]=Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<1e-9;
+              }
+              const states={}; for(const c of ccy) states[c]=window.deriveCurrencyState?.(c)||null;
+              const pair=window.derivePairDecisionFrame?.('USD/JPY')||null;
+              return {
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                latest,cotSync,states,pair,
+                ois:Object.fromEntries(ccy.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null])),
+                bodyLength:document.body?.innerText?.length||0
+              };
+            });
+            console.log(JSON.stringify({out,consoleErrors,pageErrors},null,2));
+            if(!out.finalAudit || out.finalAudit.status!=='PASS') throw new Error('final audit not PASS');
+            if(out.finalAudit?.counts?.currencies!==8 || out.finalAudit?.counts?.pairs!==28) throw new Error('universe count fail');
+            if(consoleErrors.length || pageErrors.length) throw new Error('browser errors');
+            if(out.bodyLength<1000) throw new Error('render too small');
+            for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+              if(out.latest[c]!=='2026-09-29') throw new Error(`COT date ${c}: ${out.latest[c]}`);
+              if(!out.cotSync[c]) throw new Error(`COT sync ${c} fail`);
+            }
+            const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
+            for(const [c,v] of Object.entries(expected)) if(out.ois[c]!==v) throw new Error(`OIS ${c}: ${out.ois[c]} != ${v}`);
+            const j=out.states.JPY||{};
+            if(j.base!=='MISTA'||j.macro!==0||j.policy!==0) throw new Error('JPY state changed');
+            const p=out.pair||{};
+            if(p.quality!=='CONTRASTO STRUTTURALE FORTE'||p.fav!=='USD'||p.macroSide!=='USD'||p.policySide!=='USD'||!p.structural?.ratesGap?.material||p.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY structure changed');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node live-gate.js
