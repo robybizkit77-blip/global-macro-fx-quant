@@ -1,0 +1,96 @@
+{
+  "schema": "GMFQ_COT_LIVE_REFRESH_V1",
+  "source": "https://www.cftc.gov/files/dea/history/deacot2026.zip",
+  "updated": {
+    "EUR": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -52334,
+      "net": -63256,
+      "long": 238183,
+      "short": 301439,
+      "open_interest": 853959,
+      "netoi_pct": -7.407,
+      "percentile_104w": 8.653846
+    },
+    "GBP": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -82568,
+      "net": -91075,
+      "long": 41396,
+      "short": 132471,
+      "open_interest": 251740,
+      "netoi_pct": -36.178,
+      "percentile_104w": 3.846154
+    },
+    "JPY": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": 71982,
+      "net": 55440,
+      "long": 176266,
+      "short": 120826,
+      "open_interest": 360720,
+      "netoi_pct": 15.369,
+      "percentile_104w": 64.423077
+    },
+    "CHF": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -26752,
+      "net": -24617,
+      "long": 24828,
+      "short": 49445,
+      "open_interest": 133872,
+      "netoi_pct": -18.388,
+      "percentile_104w": 84.615385
+    },
+    "AUD": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -46814,
+      "net": -63239,
+      "long": 109690,
+      "short": 172929,
+      "open_interest": 309800,
+      "netoi_pct": -20.413,
+      "percentile_104w": 33.653846
+    },
+    "NZD": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -11380,
+      "net": -17315,
+      "long": 23338,
+      "short": 40653,
+      "open_interest": 114777,
+      "netoi_pct": -15.086,
+      "percentile_104w": 76.923077
+    },
+    "CAD": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": -53210,
+      "net": -78671,
+      "long": 85047,
+      "short": 163718,
+      "open_interest": 347274,
+      "netoi_pct": -22.654,
+      "percentile_104w": 65.384615
+    },
+    "USD": {
+      "from_date": "2026-09-22",
+      "to_date": "2026-09-29",
+      "old_net": 10330,
+      "net": 11881,
+      "long": 29742,
+      "short": 17861,
+      "open_interest": 48342,
+      "netoi_pct": 24.577,
+      "percentile_104w": 78.846154
+    }
+  },
+  "warnings": [],
+  "as_of": "2026-09-29"
+}

@@ -999,5 +999,3 @@ setTimeout(()=>window.gmfqFullPropagationSync('INITIAL_30SEP_SYNC',{}),700);
       ticks.className='gmfqCotTicks';
       ticks.innerHTML='<div id="gmfqCotStatus" class="gmfqCotTick neu"><span class="k">POSIZIONAMENTO OGGI</span><span class="v">—</span></div><div id="gmfqCotFlow" class="gmfqCotTick neu"><span class="k">FLUSSO RECENTE</span><span class="v">—</span></div>';
       top.appendChild(ticks);
-    }
-

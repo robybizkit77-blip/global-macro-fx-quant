@@ -1,3 +1,4 @@
+
 renderCurrency();
 });
 const st=safe(()=>deriveCurrencyState(c),{})||{},a=stateMeta(st),ch=changeMeta(st.improvementState),p=priceMeta(st.confirmation),r=riskMeta(c);

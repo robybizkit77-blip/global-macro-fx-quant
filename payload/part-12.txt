@@ -1,3 +1,4 @@
+const o={};
 Object.keys(x).sort().forEach(k=>{o[k]=stableObject(x[k]);});
 return o;
 }

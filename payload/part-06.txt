@@ -1,3 +1,5 @@
+set('ovQuickImprove','PARITÀ');
+
 set('ovQuickImproveDriver',improvingTie.join(' / '));
 }else{
 set('ovQuickImprove','—');

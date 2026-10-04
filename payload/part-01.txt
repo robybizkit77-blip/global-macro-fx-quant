@@ -999,4 +999,3 @@ if(v==='cot') safeRender('cot',()=>{ renderCot(); });
 if(v==='risk') safeRender('risk',()=>{ renderRischio(); });
 if(v==='calendar') safeRender('calendar',()=>{ renderRealCalendar(); });
 if(v==='wow') safeRender('wow',()=>{ renderWhatChanged(); });
-if(v==='themes') safeRender('themes',()=>{ renderTopThemes(); });
