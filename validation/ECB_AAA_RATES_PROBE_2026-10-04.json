@@ -1,0 +1,15 @@
+{
+  "schema": "GMFQ_ECB_AAA_RATES_PROBE_V2",
+  "series": {
+    "2Y": {
+      "url": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2026-10-02&endPeriod=2026-10-02&format=csvdata&detail=dataonly",
+      "values": [],
+      "attempt": 1
+    },
+    "10Y": {
+      "url": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2026-10-02&endPeriod=2026-10-02&format=csvdata&detail=dataonly",
+      "values": [],
+      "attempt": 1
+    }
+  }
+}
