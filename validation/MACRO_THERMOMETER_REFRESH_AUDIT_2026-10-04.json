@@ -1,0 +1,65 @@
+{
+  "schema": "GMFQ_MACRO_THERMOMETER_REFRESH_V1",
+  "updates": [
+    {
+      "currency": "USD",
+      "key": "labour",
+      "old": {
+        "as_of": "2026-08-01",
+        "value": 4.1
+      },
+      "new_as_of": "2026-09-01",
+      "new_value": 4.2,
+      "percentile": 60.4,
+      "temperature_label": "CALDO",
+      "direction": "SALE",
+      "acceleration": "ACCELERA",
+      "source_note": "BLS Employment Situation September 2026 · released 2026-10-02"
+    },
+    {
+      "currency": "EUR",
+      "key": "inflation",
+      "old": {
+        "as_of": "2026-08",
+        "value": 3.2
+      },
+      "new_as_of": "2026-09",
+      "new_value": 3.8,
+      "percentile": 79.6,
+      "temperature_label": "CALDO",
+      "direction": "SALE",
+      "acceleration": "ACCELERA",
+      "source_note": "Eurostat flash HICP September 2026 · released 2026-10-02"
+    },
+    {
+      "currency": "EUR",
+      "key": "labour",
+      "old": {
+        "as_of": "2026-07",
+        "value": 6.4
+      },
+      "new_as_of": "2026-08",
+      "new_value": 6.4,
+      "percentile": 16.7,
+      "temperature_label": "MOLTO_FREDDO",
+      "direction": "STABILE",
+      "acceleration": "STABILE",
+      "source_note": "Eurostat unemployment August 2026 · released 2026-10-01"
+    },
+    {
+      "currency": "AUD",
+      "key": "labour",
+      "old": {
+        "as_of": "2026-07",
+        "value": 4.4618247
+      },
+      "new_as_of": "2026-08",
+      "new_value": 4.6,
+      "percentile": 47.9,
+      "temperature_label": "NORMALE",
+      "direction": "SALE",
+      "acceleration": "ACCELERA",
+      "source_note": "ABS Labour Force August 2026 · released 2026-09-24"
+    }
+  ]
+}
