@@ -1,0 +1,16 @@
+{
+  "schema": "GMFQ_GBP_BOE_RATES_REFRESH_V1",
+  "as_of": "2026-10-01",
+  "source": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip",
+  "workbook": "GLC Nominal daily data current month.xlsx",
+  "sheet": "4. spot curve",
+  "y2": 4.600778759919967,
+  "y10": 5.424033836234473,
+  "curve_bp": 82.3,
+  "weekly_reference_2y": "2026-09-22",
+  "weekly_reference_10y": "2026-09-22",
+  "chg2_bp": 2.7,
+  "chg10_bp": 21.3,
+  "curve_state": "Bear steepening",
+  "same_basis": true
+}
