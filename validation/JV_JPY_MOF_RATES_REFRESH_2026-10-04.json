@@ -1,0 +1,13 @@
+{
+  "schema": "GMFQ_JPY_MOF_RATES_REFRESH_V1",
+  "as_of": "2026-10-01",
+  "source": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv",
+  "y2": 1.939,
+  "y10": 3.092,
+  "curve_bp": 115.3,
+  "weekly_reference_2y": "2026-09-18",
+  "weekly_reference_10y": "2026-09-18",
+  "chg2_bp": 9.0,
+  "chg10_bp": 11.1,
+  "curve_state": "Bear steepening"
+}
