@@ -1,4 +1,4 @@
-# gate-trigger: rates-basis-diagnostic-2026-10-04
+# gate-trigger: settled-live-state-2026-10-04
 name: Live Refresh Browser Gate
 
 on:
@@ -41,6 +41,7 @@ jobs:
             const r=await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
             if(!r?.ok()) throw new Error('HTTP load failed');
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
+            await page.waitForTimeout(1200);
             const out=await page.evaluate(()=>{
               const ccy=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
               const cot=window.__GMFQ_DATA?.V250_COT_CHART_DATA||{};
@@ -54,8 +55,11 @@ jobs:
               }
               const states={}; for(const c of ccy) states[c]=window.deriveCurrencyState?.(c)||null;
               const pair=window.derivePairDecisionFrame?.('USD/JPY')||null;
+              const canonicalConsistency=(typeof window.canonicalConsistencyQa==='function'?window.canonicalConsistencyQa():null);
+              const canonicalView=(typeof window.canonicalViewQa==='function'?window.canonicalViewQa():null);
               return {
-                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                initialFinalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                canonicalConsistency,canonicalView,
                 ratesBasis:(typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null),
                 ratesVisible:(typeof window.visibleRatesSnapshotIntegrity==='function'?window.visibleRatesSnapshotIntegrity():null),
                 latest,cotSync,states,pair,
@@ -64,8 +68,11 @@ jobs:
               };
             });
             console.log(JSON.stringify({out,consoleErrors,pageErrors},null,2));
-            if(!out.finalAudit || out.finalAudit.status!=='PASS') throw new Error('final audit not PASS');
-            if(out.finalAudit?.counts?.currencies!==8 || out.finalAudit?.counts?.pairs!==28) throw new Error('universe count fail');
+            if(out.initialFinalAudit?.counts?.currencies!==8 || out.initialFinalAudit?.counts?.pairs!==28) throw new Error('universe count fail');
+            if(out.canonicalConsistency?.ok!==true) throw new Error('canonical consistency fail');
+            if(out.canonicalView?.ok!==true) throw new Error('canonical view fail');
+            if(out.ratesBasis?.ok!==true) throw new Error('settled rates basis fail');
+            if(out.ratesVisible?.ok!==true) throw new Error('settled rates visible fail');
             if(consoleErrors.length || pageErrors.length) throw new Error('browser errors');
             if(out.bodyLength<1000) throw new Error('render too small');
             for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
