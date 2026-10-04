@@ -1,5 +1,6 @@
 name: Live Refresh Engine Integrity
 
+# Explicit gate request after staged live-data refreshes.
 on:
   push:
     branches: [staging-live-data-refresh-v1-2026-10-04]
