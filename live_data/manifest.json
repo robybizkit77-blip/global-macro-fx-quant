@@ -1,0 +1,224 @@
+{
+  "schema": "GMFQ_V490_LIVE_DATA_LAYER_V1",
+  "created_at": "2026-10-04",
+  "runtime_sha256_before": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
+  "sections": [
+    {
+      "key": "D",
+      "file": "D.json",
+      "assignment_start": 291589,
+      "literal_start": 291610,
+      "literal_end": 1002124,
+      "bytes": 710606,
+      "sha256": "eb5c948b3abafa0ec107a736deba5406693ab9b855b3ec8ad6fc9121cbcd34f5"
+    },
+    {
+      "key": "CERT53",
+      "file": "CERT53.json",
+      "assignment_start": 1002126,
+      "literal_start": 1002152,
+      "literal_end": 1130351,
+      "bytes": 128669,
+      "sha256": "b12fc3a3d13d0eef7efdd04a6cc5efe5b0d7796958cf407704186bb96f7b8b56"
+    },
+    {
+      "key": "COUNTRY_CTX",
+      "file": "COUNTRY_CTX.json",
+      "assignment_start": 1130353,
+      "literal_start": 1130384,
+      "literal_end": 1137471,
+      "bytes": 7136,
+      "sha256": "3ee2fb0b9cfd8ab2c94e20f65ed32d675b7dcaa659fae1a778be9632fc7c8f28"
+    },
+    {
+      "key": "WHAT_CHANGED",
+      "file": "WHAT_CHANGED.json",
+      "assignment_start": 1137473,
+      "literal_start": 1137505,
+      "literal_end": 1140278,
+      "bytes": 2784,
+      "sha256": "6043497ce073bf10c02841dd860f80ed2f336ee81b0a2b44792d6e428afdca3a"
+    },
+    {
+      "key": "NATIVE_RATES_DATA",
+      "file": "NATIVE_RATES_DATA.json",
+      "assignment_start": 1141961,
+      "literal_start": 1141998,
+      "literal_end": 1266481,
+      "bytes": 124502,
+      "sha256": "5f1374c092f59581dd3c61e1887d0b9e79f1e71ab8f79135abc58e02e4e25a25"
+    },
+    {
+      "key": "OIS_DATA",
+      "file": "OIS_DATA.json",
+      "assignment_start": 1266529,
+      "literal_start": 1266557,
+      "literal_end": 1272295,
+      "bytes": 5743,
+      "sha256": "b6741ec9d3ef2c3251171cbc21aa55ac7112c60b51ca3b3870073e36f864b75c"
+    },
+    {
+      "key": "MACRO_THERMOMETER_DATA",
+      "file": "MACRO_THERMOMETER_DATA.json",
+      "assignment_start": 1272343,
+      "literal_start": 1272385,
+      "literal_end": 1289928,
+      "bytes": 17543,
+      "sha256": "06048c012a592f9eb3fd1d4c05baf20d2da8716ece94645b8e7586131404d19d"
+    },
+    {
+      "key": "NATIVE_LIQ_DATA",
+      "file": "NATIVE_LIQ_DATA.json",
+      "assignment_start": 1289976,
+      "literal_start": 1290011,
+      "literal_end": 1367778,
+      "bytes": 77788,
+      "sha256": "2f656995ea4592c04d6ddae87095e879eac5cfc9e4b805e7b9bc5c6691761e6b"
+    },
+    {
+      "key": "NATIVE_CB_DATA",
+      "file": "NATIVE_CB_DATA.json",
+      "assignment_start": 1367826,
+      "literal_start": 1367860,
+      "literal_end": 1377868,
+      "bytes": 10049,
+      "sha256": "0c020af64548985dccc4c689cc021ae1d7ccea77a4289147a23ae9d512217879"
+    },
+    {
+      "key": "V250_COT_CHART_DATA",
+      "file": "V250_COT_CHART_DATA.json",
+      "assignment_start": 1377916,
+      "literal_start": 1377955,
+      "literal_end": 1418944,
+      "bytes": 40989,
+      "sha256": "c793541b42de27233029380d72ec439b16c93ab26ffddcf107da29e815c451d3"
+    },
+    {
+      "key": "V247_COT_STORIES",
+      "file": "V247_COT_STORIES.json",
+      "assignment_start": 1418946,
+      "literal_start": 1418982,
+      "literal_end": 1424152,
+      "bytes": 5300,
+      "sha256": "a441c6c32d2598e386bc1d573857ac5987514fe5377e9fc7390f3cdd62d81272"
+    },
+    {
+      "key": "TOP_THEMES",
+      "file": "TOP_THEMES.json",
+      "assignment_start": 1433976,
+      "literal_start": 1434006,
+      "literal_end": 1437054,
+      "bytes": 3056,
+      "sha256": "ecfbddcfd7e678d96f96a949d5ec8a1d7ec6e9b2eac4413352c2f579014e9c0c"
+    },
+    {
+      "key": "MACRO_SERIES",
+      "file": "MACRO_SERIES.json",
+      "assignment_start": 1446660,
+      "literal_start": 1446692,
+      "literal_end": 1785664,
+      "bytes": 339108,
+      "sha256": "2d1ed1d498500b2500b97d0fc66efb25a8cf3020fc56d12bad9df8a87435e257"
+    }
+  ],
+  "runtime_sha256_after_roundtrip": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
+  "byte_identical_roundtrip": true,
+  "parts": [
+    {
+      "file": "payload/part-00.txt",
+      "chars": 1433703,
+      "bytes": 1435445,
+      "sha256": "c5b730da84076f21ace4dc80a7b3e97c0278eec6c9f7a9e0b32acc501e27d331"
+    },
+    {
+      "file": "payload/part-01.txt",
+      "chars": 414547,
+      "bytes": 415109,
+      "sha256": "6ae852d032ac6fe6e402e0e5006e7fdefa624a92ad0bba398d4ba171f72ca678"
+    },
+    {
+      "file": "payload/part-02.txt",
+      "chars": 53134,
+      "bytes": 53383,
+      "sha256": "7c144b95d850cd1f68f0b54a79f1ce6fa7257304127c86806e037a45fdf21e30"
+    },
+    {
+      "file": "payload/part-03.txt",
+      "chars": 48714,
+      "bytes": 48923,
+      "sha256": "c27b8fa526838ea188eefdeb44ed7fc05a2250989945422837fd30e8bcd0c3bb"
+    },
+    {
+      "file": "payload/part-04.txt",
+      "chars": 60183,
+      "bytes": 60393,
+      "sha256": "ee6fb960eb84583f5c99ae3764d42186098230f58de2fb384d1bd2614287e101"
+    },
+    {
+      "file": "payload/part-05.txt",
+      "chars": 46055,
+      "bytes": 46336,
+      "sha256": "50a2e64d72225745b158a88d4de374bc9f73ff42daa7a454c124f730b4ac9dc5"
+    },
+    {
+      "file": "payload/part-06.txt",
+      "chars": 63729,
+      "bytes": 63997,
+      "sha256": "78f653d6556419a0ca3aa036dc538269ae72eff5822c2e0107a3c609a4537555"
+    },
+    {
+      "file": "payload/part-07.txt",
+      "chars": 71791,
+      "bytes": 72047,
+      "sha256": "e2f34387dd2706b9be2a0c210cadc19789d489521aef10fbe9841ce93da27b12"
+    },
+    {
+      "file": "payload/part-08.txt",
+      "chars": 39733,
+      "bytes": 39807,
+      "sha256": "94e3317c909f9febb139b4235699af8938de11cd39f6c659fcad6f1d0d2d3fbb"
+    },
+    {
+      "file": "payload/part-09.txt",
+      "chars": 83608,
+      "bytes": 84211,
+      "sha256": "185ae2a8b28dcaca0379ebcc7975f3e89b63928e6e4f966f3dc8449436f7d2cc"
+    },
+    {
+      "file": "payload/part-10.txt",
+      "chars": 35156,
+      "bytes": 35178,
+      "sha256": "110858bcc480f08903c3b33f0f93dff5defba40d49eb2f2919adc68b1922d408"
+    },
+    {
+      "file": "payload/part-11.txt",
+      "chars": 32773,
+      "bytes": 32780,
+      "sha256": "57af2914816113c56a4d3393f63d7d81f064e04c9b95e2d882f0aa341e1848fb"
+    },
+    {
+      "file": "payload/part-12.txt",
+      "chars": 39907,
+      "bytes": 39962,
+      "sha256": "fd5ced003e6ac7218c61025c6626fbbbfbd7242028c069fbbdf24de5f26a3897"
+    },
+    {
+      "file": "payload/part-13.txt",
+      "chars": 49147,
+      "bytes": 49278,
+      "sha256": "11bb0aac427d1481deb304c8a9f522f2b6bd740af089d5c25d90e8109bc16a8e"
+    },
+    {
+      "file": "payload/part-14.txt",
+      "chars": 52741,
+      "bytes": 52981,
+      "sha256": "4b5cd7e494ad427446ec651e752b92f7cd8f6d895f853b4e855d2560a930a388"
+    },
+    {
+      "file": "payload/part-15.txt",
+      "chars": 233902,
+      "bytes": 234286,
+      "sha256": "de1c8983767f4f33bc80c69eedc8c1e32833e6347c674177369d68d1263cd55b"
+    }
+  ]
+}
