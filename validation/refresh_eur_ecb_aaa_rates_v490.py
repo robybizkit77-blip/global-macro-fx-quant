@@ -60,9 +60,12 @@ def ref_point(series,target_date):
 ref2=ref_point(r['history2'],iso); ref10=ref_point(r['history10'],iso)
 chg2=(y2-ref2[1])*100; chg10=(y10-ref10[1])*100
 curve=(y10-y2)*100
-if chg2>0 and chg10>0: state='Bear steepening' if chg10>chg2 else 'Bear flattening'
-elif chg2<0 and chg10<0: state='Bull steepening' if chg10<chg2 else 'Bull flattening'
-else: state='Movimento misto'
+if chg2>0 and chg10>0:
+    state='Bear steepening' if chg10>chg2 else 'Bear flattening'
+elif chg2<0 and chg10<0:
+    state='Bull flattening' if chg10<chg2 else 'Bull steepening'
+else:
+    state='Movimento misto'
 
 r.update({
     'date':iso,
