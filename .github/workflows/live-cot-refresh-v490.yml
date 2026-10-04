@@ -1,0 +1,39 @@
+name: Live COT Refresh v490
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/refresh_cot_live_data.py"
+      - ".github/workflows/live-cot-refresh-v490.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refresh COT from official CFTC Legacy Futures Only
+        run: python validation/refresh_cot_live_data.py
+      - name: Repack live data into v490 payload
+        run: python validation/repack_v490_from_live_data.py --write
+      - name: Re-inventory repacked runtime
+        run: python validation/inventory_v490_runtime_data.py
+      - name: Commit staged COT refresh
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/V250_COT_CHART_DATA.json live_data/sections/D.json payload validation/COT_LIVE_REFRESH_AUDIT_2026-10-04.json validation/V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json validation/LIVE_RUNTIME_DATA_INVENTORY_2026-10-04.json
+          if git diff --cached --quiet; then
+            echo "No COT refresh changes"
+            exit 0
+          fi
+          git commit -m "Stage official CFTC COT refresh to Sep 29"
+          git push
