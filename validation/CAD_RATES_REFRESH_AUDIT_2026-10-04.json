@@ -1,0 +1,12 @@
+{
+  "schema": "GMFQ_CAD_RATES_REFRESH_V1",
+  "as_of": "2026-10-01",
+  "source": "Bank of Canada selected benchmark Government of Canada bond yields",
+  "y2": 3.27,
+  "y10": 3.94,
+  "curve_bp": 67.0,
+  "chg2_bp": -2.0000000000000018,
+  "chg10_bp": 10.000000000000009,
+  "week_ref_2y": "2026-09-21",
+  "week_ref_10y": "2026-09-21"
+}
