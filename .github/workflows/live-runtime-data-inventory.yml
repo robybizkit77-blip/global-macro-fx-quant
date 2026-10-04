@@ -1,0 +1,35 @@
+name: Live Runtime Data Inventory
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/inventory_v490_runtime_data.py"
+      - ".github/workflows/live-runtime-data-inventory.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inventory v490 runtime data
+        run: python validation/inventory_v490_runtime_data.py
+      - name: Commit inventory
+        shell: bash
+        run: |
+          if git diff --quiet -- validation/LIVE_RUNTIME_DATA_INVENTORY_2026-10-04.json; then
+            echo "No inventory change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/LIVE_RUNTIME_DATA_INVENTORY_2026-10-04.json
+          git commit -m "Inventory v490 live runtime data"
+          git push
