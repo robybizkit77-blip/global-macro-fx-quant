@@ -1,0 +1,32 @@
+name: BoE GBP Rates Extract v2
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/extract_gbp_boe_rates_v490.py"
+      - ".github/workflows/boe-gbp-rates-extract-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install openpyxl
+        run: pip install openpyxl
+      - name: Extract official BoE GBP 2Y and 10Y
+        run: python validation/extract_gbp_boe_rates_v490.py
+      - name: Commit extract
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/BOE_GBP_RATES_EXTRACT_2026-10-04.json
+          git commit -m "Extract official BoE GBP 2Y 10Y" || exit 0
+          git push
