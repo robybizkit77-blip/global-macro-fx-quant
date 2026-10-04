@@ -1,0 +1,34 @@
+name: Live GBP BoE Rates Refresh v490
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/refresh_gbp_boe_rates_v490.py"
+      - ".github/workflows/live-gbp-boe-rates-refresh-v490.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook dependency
+        run: pip install openpyxl
+      - name: Refresh GBP from official BoE nominal spot curve
+        run: python validation/refresh_gbp_boe_rates_v490.py
+      - name: Repack v490 payload
+        run: python validation/repack_v490_from_live_data.py --write
+      - name: Commit staged GBP rates refresh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/D.json payload validation/JV_GBP_BOE_RATES_REFRESH_2026-10-04.json validation/V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json
+          git commit -m "Refresh staged GBP BoE rates" || exit 0
+          git push
