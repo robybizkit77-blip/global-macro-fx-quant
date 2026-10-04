@@ -1,4 +1,4 @@
-# gate-trigger: rates-all-g8-2026-10-04
+# gate-trigger: rates-basis-diagnostic-2026-10-04
 name: Live Refresh Browser Gate
 
 on:
@@ -56,6 +56,8 @@ jobs:
               const pair=window.derivePairDecisionFrame?.('USD/JPY')||null;
               return {
                 finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                ratesBasis:(typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null),
+                ratesVisible:(typeof window.visibleRatesSnapshotIntegrity==='function'?window.visibleRatesSnapshotIntegrity():null),
                 latest,cotSync,states,pair,
                 ois:Object.fromEntries(ccy.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null])),
                 bodyLength:document.body?.innerText?.length||0
