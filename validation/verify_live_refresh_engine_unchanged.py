@@ -69,6 +69,11 @@ def strip_data(src):
     src,n= re.subn(r'<script id="gmfq-live-rates-audit-metadata-hydration">.*?</script>\s*',
                     '',src,flags=re.S)
     if n not in (0,1): raise RuntimeError('duplicate RATES_AUDIT_METADATA hydration adapter')
+    # Staging-only CAD restoration verification is a live-data adapter. It is
+    # excluded with metadata hydration, not treated as frozen model logic.
+    for script_id in ('gmfq-cad-live-hydration-integrity', 'gmfq-post-gate-final-audit-settlement'):
+        src,n=re.subn(r'<script id="'+script_id+r'">.*?</script>\s*','',src,flags=re.S)
+        if n not in (0,1): raise RuntimeError('duplicate '+script_id)
     # Metadata consumers are assertions/context only.  Normalize the expected
     # date literal (legacy) and its live-data source without masking script code.
     src=re.sub(r'const expectedRates=(?:window\.__GMFQ_DATA\?\.RATES_AUDIT_METADATA\?\.expected_rates\|\|)?\{.*?\};',

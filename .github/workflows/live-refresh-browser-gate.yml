@@ -69,8 +69,10 @@ jobs:
                   native2Y:Number(cad?.['2Y']), native10Y:Number(cad?.['10Y']), nativeCurveBp:Number(cad?.curve_bp),
                   macro2Y:Number(d?.macro?.CAD?.rate2y),
                   metadataAsOf:window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of||null,
+                  auditStatus:window.GMFQ_CAD_RATES_AUDIT?.status||null,
+                  settledAfterStableRefresh:window.GMFQ_CAD_RATES_AUDIT?.settled_after_stable_refresh===true,
                   integrity:{basisOk:(typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null)?.ok??null,visibleOk:(typeof window.visibleRatesSnapshotIntegrity==='function'?window.visibleRatesSnapshotIntegrity():null)?.ok??null},
-                  order:{hydration:scriptOrder.indexOf('gmfq-live-rates-audit-metadata-hydration'),finalAudit:scriptOrder.indexOf('gmfq-post-gate-final-audit-20260930')}
+                  order:{hydration:scriptOrder.indexOf('gmfq-live-rates-audit-metadata-hydration'),integrity:scriptOrder.indexOf('gmfq-cad-live-hydration-integrity'),finalAudit:scriptOrder.indexOf('gmfq-post-gate-final-audit-20260930')}
                 },
                 canonicalConsistency,canonicalView,
                 ratesBasis:(typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null),
@@ -81,11 +83,13 @@ jobs:
               };
             });
             console.log(JSON.stringify({out,consoleErrors,pageErrors},null,2));
+            if(out.initialFinalAudit?.status!=='PASS' || out.initialFinalAudit?.settled_after_cad_chain!==true) throw new Error('settled final audit fail: '+JSON.stringify(out.initialFinalAudit));
             if(out.initialFinalAudit?.counts?.currencies!==8 || out.initialFinalAudit?.counts?.pairs!==28) throw new Error('universe count fail');
             const cad=out.cadHydration||{};
             if(cad.native2Y!==3.27 || cad.macro2Y!==3.27 || cad.native10Y!==3.94 || cad.nativeCurveBp!==67) throw new Error('CAD live hydration values fail: '+JSON.stringify(cad));
             if(cad.metadataAsOf!=='2026-10-01' || cad.integrity?.basisOk!==true || cad.integrity?.visibleOk!==true) throw new Error('CAD metadata/integrity chain fail: '+JSON.stringify(cad));
-            if(cad.order?.hydration<0 || cad.order?.finalAudit<0 || cad.order.hydration>=cad.order.finalAudit) throw new Error('Final audit precedes CAD hydration chain: '+JSON.stringify(cad.order));
+            if(cad.auditStatus!=='PASS' || cad.settledAfterStableRefresh!==true) throw new Error('CAD settled audit fail: '+JSON.stringify(cad));
+            if(cad.order?.hydration<0 || cad.order?.integrity<0 || cad.order?.finalAudit<0 || cad.order.hydration>=cad.order.integrity || cad.order.integrity>=cad.order.finalAudit) throw new Error('CAD hydration/integrity/final-audit order fail: '+JSON.stringify(cad.order));
             if(out.canonicalConsistency?.ok!==true) throw new Error('canonical consistency fail');
             if(out.canonicalView?.ok!==true) throw new Error('canonical view fail');
             if(out.ratesBasis?.ok!==true) throw new Error('settled rates basis fail');
