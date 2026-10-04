@@ -1,0 +1,108 @@
+{
+  "schema": "GMFQ_RBA_F2_PROBE_V1",
+  "url": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
+  "head": [
+    [
+      "F2 CAPITAL MARKET YIELDS – GOVERNMENT BONDS"
+    ],
+    [
+      "Title",
+      "Australian Government 2 year bond",
+      "Australian Government 3 year bond",
+      "Australian Government 5 year bond",
+      "Australian Government 10 year bond",
+      "Australian Government Indexed Bond"
+    ],
+    [
+      "Description",
+      "Yields on Australian government bonds, interpolated, 2 years maturity",
+      "Yields on Australian government bonds, interpolated, 3 years maturity",
+      "Yields on Australian government bonds, interpolated, 5 years maturity",
+      "Yields on Australian government bonds, interpolated, 10 years maturity",
+      "Yields on Australian government indexed bonds, interpolated, 10 years maturity"
+    ],
+    [
+      "Frequency",
+      "Daily",
+      "Daily",
+      "Daily",
+      "Daily",
+      "Daily"
+    ],
+    [
+      "Type",
+      "Original",
+      "Original",
+      "Original",
+      "Original",
+      "Original"
+    ],
+    [
+      "Units",
+      "Per cent per annum",
+      "Per cent per annum",
+      "Per cent per annum",
+      "Per cent per annum",
+      "Per cent per annum"
+    ],
+    [],
+    [],
+    [
+      "Source",
+      "RBA",
+      "RBA",
+      "RBA",
+      "RBA",
+      "RBA"
+    ],
+    [
+      "Publication date",
+      "02-Oct-2026",
+      "02-Oct-2026",
+      "02-Oct-2026",
+      "02-Oct-2026",
+      "02-Oct-2026"
+    ],
+    [
+      "Series ID",
+      "FCMYGBAG2D",
+      "FCMYGBAG3D",
+      "FCMYGBAG5D",
+      "FCMYGBAG10D",
+      "FCMYGBAGID"
+    ],
+    [
+      "20-May-2013",
+      "",
+      "",
+      "",
+      "3.229"
+    ],
+    [
+      "21-May-2013",
+      "",
+      "",
+      "",
+      "3.263"
+    ],
+    [
+      "22-May-2013",
+      "",
+      "",
+      "",
+      "3.272"
+    ]
+  ],
+  "tail": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ]
+}
