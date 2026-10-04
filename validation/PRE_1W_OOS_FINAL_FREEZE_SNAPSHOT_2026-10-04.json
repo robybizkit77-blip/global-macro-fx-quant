@@ -1,0 +1,51 @@
+{
+  "schema": "GMFQ_PRE_1W_OOS_FINAL_FREEZE_SNAPSHOT_V1",
+  "created_date": "2026-10-04",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "engine_freeze_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "canonical_oos_baseline": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+  "t0_effective_date": "2026-10-01",
+  "checkpoints": {
+    "1W": "2026-10-08",
+    "4W": "2026-10-29",
+    "12W": "2026-12-24"
+  },
+  "integrity_check": {
+    "compare_base": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "compare_head": "staging-usd-pit-readiness-2026-10-03",
+    "ahead_by_commits": 134,
+    "runtime_files_changed": [],
+    "index_html_changed": false,
+    "payload_runtime_changed": false,
+    "authoritative_runtime_contaminated": false,
+    "allowed_change_scopes_observed": [
+      ".github/workflows/",
+      "validation/"
+    ]
+  },
+  "validated_pre_checkpoint_assets": {
+    "pit_validation_interpretation": "validation/PIT_VALIDATION_INTERPRETATION_V1_2026-10-03.json",
+    "lookahead_guard": "validation/PIT_LOOKAHEAD_GUARD_AUDIT_2026-10-03.json",
+    "forward_readiness_gate": "validation/FORWARD_OOS_READINESS_GATE_2026-10-03.json",
+    "checkpoint_evaluator": "validation/evaluate_forward_oos_checkpoint.py",
+    "checkpoint_report_template": "validation/FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1_2026-10-04.json",
+    "checkpoint_runbook": "validation/FORWARD_OOS_CHECKPOINT_RUNBOOK_V1_2026-10-04.json",
+    "runtime_guard_workflow": ".github/workflows/oos-runtime-integrity-guard.yml",
+    "checkpoint_evaluator_workflow": ".github/workflows/forward-oos-checkpoint-evaluator.yml"
+  },
+  "methodological_guardrails": [
+    "ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE",
+    "NO_THRESHOLD_OR_WEIGHT_TUNING_BEFORE_FORWARD_OOS_EVIDENCE",
+    "NO_REVISED_DATA_FALLBACK_FOR_PIT_VALIDATION",
+    "WITHHELD_SERIES_DO_NOT_VOTE",
+    "1W_IS_EARLY_READING_NOT_TUNING_TRIGGER",
+    "4W_IS_INTERMEDIATE_VALIDATION",
+    "12W_IS_FIRST_COMPLETE_FORWARD_CYCLE"
+  ],
+  "decision": "FREEZE_CONFIRMED__WAIT_FOR_1W_FORWARD_CHECKPOINT",
+  "next_information_event": "2026-10-08",
+  "no_model_change": true,
+  "oos_restart_required": false
+}
