@@ -1,0 +1,50 @@
+name: Macro Thermometer Logic Probe
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - ".github/workflows/macro-thermometer-logic-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract thermometer helper source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,re
+          text=''.join((Path('payload')/f'part-{i:02d}.txt').read_text(encoding='utf-8') for i in range(16))
+          names=['pctRank','label','series','currency']
+          out={}
+          for name in names:
+              patterns=[rf'function\s+{name}\s*\([^)]*\)\s*\{{',rf'(?:const|let|var)\s+{name}\s*=\s*\([^)]*\)\s*=>\s*\{{']
+              m=None
+              for p in patterns:
+                  m=re.search(p,text)
+                  if m: break
+              if not m: continue
+              start=m.start(); brace=text.find('{',m.start()); depth=0; end=None
+              for j in range(brace,len(text)):
+                  if text[j]=='{': depth+=1
+                  elif text[j]=='}':
+                      depth-=1
+                      if depth==0:
+                          end=j+1; break
+              out[name]=text[start:end] if end else text[start:start+4000]
+          Path('validation/MACRO_THERMOMETER_LOGIC_PROBE_2026-10-04.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - name: Commit probe
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/MACRO_THERMOMETER_LOGIC_PROBE_2026-10-04.json
+          git commit -m "Extract macro thermometer logic" || exit 0
+          git push
