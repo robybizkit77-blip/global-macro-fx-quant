@@ -1,5 +1,5 @@
 from pathlib import Path
-import urllib.request,zipfile,io,csv,json,re,math
+import urllib.request,zipfile,io,csv,json,re,math,sys
 ROOT=Path('.')
 SEC=ROOT/'live_data'/'sections'
 URL='https://www.cftc.gov/files/dea/history/deacot2026.zip'
@@ -18,6 +18,36 @@ def percentile_104(vals):
 
 chart=load('V250_COT_CHART_DATA.json')
 d=load('D.json')
+stories=load('V247_COT_STORIES.json')
+
+# A narrative-only reconciliation is intentionally offline: it can only use
+# the last already-validated official CFTC chart observation and cannot change
+# V250, D, or any model state.
+if '--sync-narrative-only' in sys.argv:
+    audit={'schema':'GMFQ_COT_NARRATIVE_SYNC_V1','source':'V250_COT_CHART_DATA validated against official CFTC audit','updated':{}}
+    for ccy,s in chart.items():
+        dt=s['dates'][-1]; net=int(s['net'][-1]); lo=int(s['long'][-1]); sh=int(s['short'][-1]); pct=float(s['percentile'][-1]); netoi=float(s['netoi'][-1])
+        week_net=net-int(s['net'][-2]); month_net=net-int(s['net'][-5])
+        sign='long' if net > 0 else 'short' if net < 0 else 'neutrale'
+        level='positivo' if net > 0 else 'negativo' if net < 0 else 'neutrale'
+        flow='migliora' if week_net > 0 else 'peggiora' if week_net < 0 else 'resta invariato'
+        story=stories.setdefault(ccy,{})
+        story.update({
+            'today':f'CFTC al {dt}: fondi net {sign} {net:+,} contratti; Net/OI {netoi:+.1f}% e percentile 104 settimane {pct:.1f}.',
+            'w4':f'Variazione su 4 settimane: {month_net:+,} contratti netti; il livello resta {level}.',
+            'w1':f'Variazione settimanale: {week_net:+,} contratti netti ({flow}).',
+            'why':'Stock, flusso e percentile sono aggiornati dal medesimo record CFTC; il rapporto con il prezzo richiede un refresh prezzo validato separato.',
+            'funds':'Flusso CFTC aggiornato',
+            'funds_detail':f'Long {lo:,}; short {sh:,}.',
+            'price':'WITHHELD',
+            'price_detail':'Conferma prezzo non ricalcolata: nessun input prezzo validato in questo refresh CFTC.'
+        })
+        audit['updated'][ccy]={'as_of':dt,'net':net,'netoi_pct':netoi,'percentile_104w':pct,'week_net':week_net,'four_week_net':month_net}
+    dump('V247_COT_STORIES.json',stories)
+    (ROOT/'validation'/'COT_NARRATIVE_SYNC_AUDIT_2026-10-04.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps(audit,ensure_ascii=False))
+    raise SystemExit()
+
 req=urllib.request.Request(URL,headers={'User-Agent':'Mozilla/5.0 GMFQ/1.0'})
 raw=urllib.request.urlopen(req,timeout=45).read()
 z=zipfile.ZipFile(io.BytesIO(raw)); member=next((n for n in z.namelist() if n.lower().endswith(('.txt','.csv'))),z.namelist()[0])
@@ -69,8 +99,29 @@ for ccy,code in CODES.items():
         for k,v in [('date',dt),('as_of',dt),('net',net),('long',lo),('short',sh),('netoi',round(net/oi*100,3)),('percentile',pct),('pct',pct)]:
             if k in entry: entry[k]=v
     audit['updated'][ccy]={'from_date':old_date,'to_date':dt,'old_net':old_net,'net':net,'long':lo,'short':sh,'open_interest':oi,'netoi_pct':round(net/oi*100,3),'percentile_104w':pct}
+    # The narrative is a presentation layer, but its numerical claims must
+    # always be traceable to the same official CFTC observation as V250.
+    # Price confirmation is deliberately withheld here: this job has no
+    # validated same-run price input.
+    week_net=net-int(s['net'][-2])
+    month_net=net-int(s['net'][-5])
+    sign='long' if net > 0 else 'short' if net < 0 else 'neutrale'
+    level='positivo' if net > 0 else 'negativo' if net < 0 else 'neutrale'
+    flow='migliora' if week_net > 0 else 'peggiora' if week_net < 0 else 'resta invariato'
+    story=stories.setdefault(ccy,{})
+    story.update({
+        'today': f'CFTC al {dt}: fondi net {sign} {net:+,} contratti; Net/OI {net/oi*100:+.1f}% e percentile 104 settimane {pct:.1f}.',
+        'w4': f'Variazione su 4 settimane: {month_net:+,} contratti netti; il livello resta {level}.',
+        'w1': f'Variazione settimanale: {week_net:+,} contratti netti ({flow}).',
+        'why': 'Stock, flusso e percentile sono aggiornati dal medesimo record CFTC; il rapporto con il prezzo richiede un refresh prezzo validato separato.',
+        'funds': 'Flusso CFTC aggiornato',
+        'funds_detail': f'Long {lo:,}; short {sh:,}; open interest {oi:,}.',
+        'price': 'WITHHELD',
+        'price_detail': 'Conferma prezzo non ricalcolata: nessun input prezzo validato in questo refresh CFTC.'
+    })
 if len(latest_dates)!=1: raise RuntimeError('CFTC latest dates differ '+repr(latest_dates))
 audit['as_of']=next(iter(latest_dates))
 dump('V250_COT_CHART_DATA.json',chart); dump('D.json',d)
+dump('V247_COT_STORIES.json',stories)
 (ROOT/'validation'/'COT_LIVE_REFRESH_AUDIT_2026-10-04.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(json.dumps({'as_of':audit['as_of'],'updated':audit['updated']},ensure_ascii=False))

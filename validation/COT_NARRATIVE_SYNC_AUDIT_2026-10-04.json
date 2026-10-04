@@ -1,0 +1,70 @@
+{
+  "schema": "GMFQ_COT_NARRATIVE_SYNC_V1",
+  "source": "V250_COT_CHART_DATA validated against official CFTC audit",
+  "updated": {
+    "USD": {
+      "as_of": "2026-09-29",
+      "net": 11881,
+      "netoi_pct": 24.577,
+      "percentile_104w": 78.846154,
+      "week_net": 1551,
+      "four_week_net": -5144
+    },
+    "EUR": {
+      "as_of": "2026-09-29",
+      "net": -63256,
+      "netoi_pct": -7.407,
+      "percentile_104w": 8.653846,
+      "week_net": -10922,
+      "four_week_net": -38331
+    },
+    "GBP": {
+      "as_of": "2026-09-29",
+      "net": -91075,
+      "netoi_pct": -36.178,
+      "percentile_104w": 3.846154,
+      "week_net": -8507,
+      "four_week_net": -41500
+    },
+    "JPY": {
+      "as_of": "2026-09-29",
+      "net": 55440,
+      "netoi_pct": 15.369,
+      "percentile_104w": 64.423077,
+      "week_net": -16542,
+      "four_week_net": 147667
+    },
+    "CHF": {
+      "as_of": "2026-09-29",
+      "net": -24617,
+      "netoi_pct": -18.388,
+      "percentile_104w": 84.615385,
+      "week_net": 2135,
+      "four_week_net": -1741
+    },
+    "CAD": {
+      "as_of": "2026-09-29",
+      "net": -78671,
+      "netoi_pct": -22.654,
+      "percentile_104w": 65.384615,
+      "week_net": -25461,
+      "four_week_net": 29472
+    },
+    "AUD": {
+      "as_of": "2026-09-29",
+      "net": -63239,
+      "netoi_pct": -20.413,
+      "percentile_104w": 33.653846,
+      "week_net": -16425,
+      "four_week_net": -23833
+    },
+    "NZD": {
+      "as_of": "2026-09-29",
+      "net": -17315,
+      "netoi_pct": -15.086,
+      "percentile_104w": 76.923077,
+      "week_net": -5935,
+      "four_week_net": -9294
+    }
+  }
+}

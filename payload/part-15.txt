@@ -3816,7 +3816,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     "EUR": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated ECB AAA same-basis snapshot retained."},
     "GBP": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of England same-basis snapshot retained."},
     "JPY": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated MOF same-basis 2Y/10Y snapshot retained."},
-    "CHF": {"current_as_of":"2026-09-30","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated SNB same-basis 2Y/10Y snapshot retained."},
+    "CHF": {"current_as_of":"2026-09-30","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated SNB same-basis snapshot retained."},
     "CAD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of Canada same-basis 2Y/10Y snapshot retained."},
     "AUD": {"current_as_of":"2026-09-30","status":"CURRENT_BY_SOURCE_CADENCE","action":"CURRENT_BY_SOURCE_CADENCE","reason":"Validated RBA F2 observation retained at source-native cadence."},
     "NZD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated RBNZ B2 same-basis snapshot retained."}

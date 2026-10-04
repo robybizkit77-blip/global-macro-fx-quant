@@ -1,122 +1,122 @@
 {
   "schema": "GMFQ_V490_LIVE_DATA_LAYER_V1",
   "created_at": "2026-10-04",
-  "runtime_sha256_before": "c84ffa8e642569eb33a73fbb688f3f6d87bb6bd5ae32c944eef4ee0dad6c8c23",
+  "runtime_sha256_before": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
   "sections": [
     {
       "key": "D",
       "file": "D.json",
       "assignment_start": 291589,
       "literal_start": 291610,
-      "literal_end": 1002732,
+      "literal_end": 1002124,
       "bytes": 711214,
       "sha256": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176"
     },
     {
       "key": "CERT53",
       "file": "CERT53.json",
-      "assignment_start": 1002734,
-      "literal_start": 1002760,
-      "literal_end": 1130959,
+      "assignment_start": 1002126,
+      "literal_start": 1002152,
+      "literal_end": 1130351,
       "bytes": 128669,
       "sha256": "b12fc3a3d13d0eef7efdd04a6cc5efe5b0d7796958cf407704186bb96f7b8b56"
     },
     {
       "key": "COUNTRY_CTX",
       "file": "COUNTRY_CTX.json",
-      "assignment_start": 1130961,
-      "literal_start": 1130992,
-      "literal_end": 1138079,
+      "assignment_start": 1130353,
+      "literal_start": 1130384,
+      "literal_end": 1137471,
       "bytes": 7136,
       "sha256": "3ee2fb0b9cfd8ab2c94e20f65ed32d675b7dcaa659fae1a778be9632fc7c8f28"
     },
     {
       "key": "WHAT_CHANGED",
       "file": "WHAT_CHANGED.json",
-      "assignment_start": 1138081,
-      "literal_start": 1138113,
-      "literal_end": 1140886,
+      "assignment_start": 1137473,
+      "literal_start": 1137505,
+      "literal_end": 1140278,
       "bytes": 2784,
       "sha256": "6043497ce073bf10c02841dd860f80ed2f336ee81b0a2b44792d6e428afdca3a"
     },
     {
       "key": "NATIVE_RATES_DATA",
       "file": "NATIVE_RATES_DATA.json",
-      "assignment_start": 1142569,
-      "literal_start": 1142606,
-      "literal_end": 1268805,
+      "assignment_start": 1141961,
+      "literal_start": 1141998,
+      "literal_end": 1266481,
       "bytes": 126228,
       "sha256": "1dae43b609aaa998106280d6da25d63ff20a249aa9dabcd11a5f401a96cec401"
     },
     {
       "key": "OIS_DATA",
       "file": "OIS_DATA.json",
-      "assignment_start": 1268853,
-      "literal_start": 1268881,
-      "literal_end": 1274619,
+      "assignment_start": 1266529,
+      "literal_start": 1266557,
+      "literal_end": 1272295,
       "bytes": 5743,
       "sha256": "b6741ec9d3ef2c3251171cbc21aa55ac7112c60b51ca3b3870073e36f864b75c"
     },
     {
       "key": "MACRO_THERMOMETER_DATA",
       "file": "MACRO_THERMOMETER_DATA.json",
-      "assignment_start": 1274667,
-      "literal_start": 1274709,
-      "literal_end": 1292236,
+      "assignment_start": 1272343,
+      "literal_start": 1272385,
+      "literal_end": 1289928,
       "bytes": 17527,
       "sha256": "226efbdc47cf2a975e1e3c696ac3f237fbb80c5d05f67779948130f4e78fda53"
     },
     {
       "key": "NATIVE_LIQ_DATA",
       "file": "NATIVE_LIQ_DATA.json",
-      "assignment_start": 1292284,
-      "literal_start": 1292319,
-      "literal_end": 1370086,
+      "assignment_start": 1289976,
+      "literal_start": 1290011,
+      "literal_end": 1367778,
       "bytes": 77788,
       "sha256": "2f656995ea4592c04d6ddae87095e879eac5cfc9e4b805e7b9bc5c6691761e6b"
     },
     {
       "key": "NATIVE_CB_DATA",
       "file": "NATIVE_CB_DATA.json",
-      "assignment_start": 1370134,
-      "literal_start": 1370168,
-      "literal_end": 1380176,
+      "assignment_start": 1367826,
+      "literal_start": 1367860,
+      "literal_end": 1377868,
       "bytes": 10049,
       "sha256": "0c020af64548985dccc4c689cc021ae1d7ccea77a4289147a23ae9d512217879"
     },
     {
       "key": "V250_COT_CHART_DATA",
       "file": "V250_COT_CHART_DATA.json",
-      "assignment_start": 1380224,
-      "literal_start": 1380263,
-      "literal_end": 1421277,
+      "assignment_start": 1377916,
+      "literal_start": 1377955,
+      "literal_end": 1418944,
       "bytes": 41014,
       "sha256": "7edde3ae6737a4743ad56643c64dc88095a73fb2e46cf7f72fc3ac748842b0dd"
     },
     {
       "key": "V247_COT_STORIES",
       "file": "V247_COT_STORIES.json",
-      "assignment_start": 1421279,
-      "literal_start": 1421315,
-      "literal_end": 1426485,
-      "bytes": 5300,
-      "sha256": "a441c6c32d2598e386bc1d573857ac5987514fe5377e9fc7390f3cdd62d81272"
+      "assignment_start": 1418946,
+      "literal_start": 1418982,
+      "literal_end": 1424152,
+      "bytes": 5140,
+      "sha256": "b217a6af7060c465503b913f15c022c937906f6e33793c6536eecfd7ab33a18c"
     },
     {
       "key": "TOP_THEMES",
       "file": "TOP_THEMES.json",
-      "assignment_start": 1436309,
-      "literal_start": 1436339,
-      "literal_end": 1439387,
+      "assignment_start": 1433976,
+      "literal_start": 1434006,
+      "literal_end": 1437054,
       "bytes": 3056,
       "sha256": "ecfbddcfd7e678d96f96a949d5ec8a1d7ec6e9b2eac4413352c2f579014e9c0c"
     },
     {
       "key": "MACRO_SERIES",
       "file": "MACRO_SERIES.json",
-      "assignment_start": 1448925,
-      "literal_start": 1448957,
-      "literal_end": 1788027,
+      "assignment_start": 1446592,
+      "literal_start": 1446624,
+      "literal_end": 4309144,
       "bytes": 339206,
       "sha256": "f588c3bd1970bd9a1460ab8e96422d26342a692527ee857e8e3732fca20e7ff8"
     },
@@ -124,24 +124,24 @@
       "key": "RATES_AUDIT_METADATA",
       "file": "RATES_AUDIT_METADATA.json",
       "insertion_anchor": "<script id=\"gmfq-runtime-secondary-metadata-completion-20261001\">",
-      "bytes": 87,
-      "sha256": "cfc8b72f038105c76d360067571dbd13a003a90b5558872926edc53db7119e2b"
+      "bytes": 1823,
+      "sha256": "3eb04b2b3cfb8f64e41ef270b5984d2365f44f24c425b6bf31f3aea7c6fd0d25"
     }
   ],
-  "runtime_sha256_after_roundtrip": "c84ffa8e642569eb33a73fbb688f3f6d87bb6bd5ae32c944eef4ee0dad6c8c23",
+  "runtime_sha256_after_roundtrip": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
   "byte_identical_roundtrip": true,
   "parts": [
     {
       "file": "payload/part-00.txt",
-      "chars": 1436036,
-      "bytes": 1437788,
-      "sha256": "34a7f07fc86ecad34b6ce2e6623061a9c6b821d483069d11ffd6166890924659"
+      "chars": 1433703,
+      "bytes": 1435445,
+      "sha256": "c5b730da84076f21ace4dc80a7b3e97c0278eec6c9f7a9e0b32acc501e27d331"
     },
     {
       "file": "payload/part-01.txt",
-      "chars": 414600,
-      "bytes": 415162,
-      "sha256": "d4926eb636c51fa692db8d3a1dcce503ca7d0115465c371351aa5f19f45087bf"
+      "chars": 2938050,
+      "bytes": 2938612,
+      "sha256": "137cf71e340b6dd4935d561fd44224a79ae6604f3f6bb4c5a6daae4767b96d4c"
     },
     {
       "file": "payload/part-02.txt",
@@ -223,9 +223,9 @@
     },
     {
       "file": "payload/part-15.txt",
-      "chars": 176960,
-      "bytes": 177259,
-      "sha256": "d3630110b90aa5d4de3bc6a570c82de9ac840d370dcb91312efd3324136a08bc"
+      "chars": 174009,
+      "bytes": 174308,
+      "sha256": "aba92c1ce90d85cdfc5e7b15afe023cf316985b2eb62f6c805d11d4dedbec10d"
     }
   ]
 }

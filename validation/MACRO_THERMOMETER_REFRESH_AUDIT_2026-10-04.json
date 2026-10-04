@@ -5,8 +5,8 @@
       "currency": "USD",
       "key": "labour",
       "old": {
-        "as_of": "2026-08-01",
-        "value": 4.1
+        "as_of": "2026-09-01",
+        "value": 4.2
       },
       "new_as_of": "2026-09-01",
       "new_value": 4.2,
@@ -20,8 +20,8 @@
       "currency": "EUR",
       "key": "inflation",
       "old": {
-        "as_of": "2026-08",
-        "value": 3.2
+        "as_of": "2026-09",
+        "value": 3.8
       },
       "new_as_of": "2026-09",
       "new_value": 3.8,
@@ -35,7 +35,7 @@
       "currency": "EUR",
       "key": "labour",
       "old": {
-        "as_of": "2026-07",
+        "as_of": "2026-08",
         "value": 6.4
       },
       "new_as_of": "2026-08",
@@ -50,8 +50,8 @@
       "currency": "AUD",
       "key": "labour",
       "old": {
-        "as_of": "2026-07",
-        "value": 4.4618247
+        "as_of": "2026-08",
+        "value": 4.6
       },
       "new_as_of": "2026-08",
       "new_value": 4.6,

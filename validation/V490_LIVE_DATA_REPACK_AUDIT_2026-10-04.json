@@ -3,13 +3,14 @@
   "created_at": "2026-10-04",
   "baseline_ref": "497ceb7bd3f01e69965c05a54416dc07406ae28d",
   "runtime_sha256_before": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
-  "runtime_sha256_after": "c84ffa8e642569eb33a73fbb688f3f6d87bb6bd5ae32c944eef4ee0dad6c8c23",
+  "runtime_sha256_after": "d95c21b35be522ccbb5dad0a046b3095823132697dbdc76a9c7e53635ae0c598",
   "runtime_changed": true,
   "changed_sections": [
     "D",
     "NATIVE_RATES_DATA",
     "MACRO_THERMOMETER_DATA",
     "V250_COT_CHART_DATA",
+    "V247_COT_STORIES",
     "MACRO_SERIES",
     "RATES_AUDIT_METADATA"
   ],
