@@ -1,0 +1,302 @@
+{
+  "schema": "GMFQ_LIVE_MACRO_REGISTRY_V1",
+  "created_at": "2026-10-04",
+  "currencies": {
+    "USD": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "CPIAUCSL",
+        "source": "FRED/BLS",
+        "frequency": "M",
+        "transformation": "yoy_pct_from_index",
+        "as_of": "2026-08-01",
+        "latest_value": 3.7129581058388483,
+        "direction": "SALE",
+        "acceleration": "ACCELERA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "UNRATE",
+        "source": "FRED/BLS",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-08-01",
+        "latest_value": 4.1,
+        "direction": "STABILE",
+        "acceleration": "STABILE",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "EUR": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "EA_HICP_HEADLINE_YOY",
+        "source": "Eurostat prc_hicp_minr via Wolfram HTTP transport",
+        "frequency": "M",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-08",
+        "latest_value": 3.2,
+        "direction": "SALE",
+        "acceleration": "STABILE",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "EA_UNEMP",
+        "source": "ECB LFSI transport; underlying source EUROSTAT",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-07",
+        "latest_value": 6.4,
+        "direction": "STABILE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "GBP": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "D7G7",
+        "source": "ONS",
+        "frequency": "M",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-08",
+        "latest_value": 3.1,
+        "direction": "SALE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "MGSX",
+        "source": "ONS",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-06",
+        "latest_value": 4.9,
+        "direction": "STABILE",
+        "acceleration": "STABILE",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "JPY": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "JP_CPI_HEADLINE_YOY",
+        "source": "Statistics Bureau of Japan / e-Stat",
+        "frequency": "M",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-08",
+        "latest_value": 1.9,
+        "direction": "STABILE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "JP_UNEMP_RATE",
+        "source": "Statistics Bureau of Japan / e-Stat",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-07",
+        "latest_value": 2.4,
+        "direction": "SCENDE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "CHF": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "CH_CPI_HEADLINE_YOY",
+        "source": "Swiss National Bank data portal / SFSO",
+        "frequency": "M",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-08",
+        "latest_value": 0.8,
+        "direction": "SALE",
+        "acceleration": "ACCELERA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "CH_UNEMP_RATE",
+        "source": "Swiss National Bank data portal / SECO",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-08",
+        "latest_value": 3.13682671641221,
+        "direction": "SALE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "CAD": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "CA_CPI_HEADLINE_YOY",
+        "source": "Statistics Canada",
+        "frequency": "M",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-08",
+        "latest_value": 3.033980582524287,
+        "direction": "SALE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      },
+      "labour": {
+        "series_id": "CA_UNEMP_RATE",
+        "source": "Statistics Canada",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-08",
+        "latest_value": 6.4,
+        "direction": "STABILE",
+        "acceleration": "ACCELERA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "AUD": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "AU_CPI_HEADLINE_Q_YOY",
+        "source": "Australian Bureau of Statistics",
+        "frequency": "Q",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-06",
+        "latest_value": 3.9,
+        "direction": "SCENDE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 40
+      },
+      "labour": {
+        "series_id": "AU_UNEMP_RATE",
+        "source": "Australian Bureau of Statistics",
+        "frequency": "M",
+        "transformation": "level",
+        "as_of": "2026-07",
+        "latest_value": 4.4618247,
+        "direction": "SALE",
+        "acceleration": "RALLENTA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 120
+      }
+    },
+    "NZD": {
+      "status": "ACTIVE",
+      "inflation": {
+        "series_id": "NZ_CPI_HEADLINE_YOY",
+        "source": "Stats NZ via Figure.NZ mirror",
+        "frequency": "Q",
+        "transformation": "reported_yoy_rate",
+        "as_of": "2026-06",
+        "latest_value": 4.1,
+        "direction": "SALE",
+        "acceleration": "ACCELERA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 40
+      },
+      "labour": {
+        "series_id": "NZ_UNEMP_RATE",
+        "source": "Stats NZ via Figure.NZ mirror",
+        "frequency": "Q",
+        "transformation": "level",
+        "as_of": "2026-06",
+        "latest_value": 5.6,
+        "direction": "SALE",
+        "acceleration": "ACCELERA",
+        "validation": {
+          "source": true,
+          "history": true,
+          "latest": true,
+          "transformation": true
+        },
+        "history_len": 40
+      }
+    }
+  }
+}
