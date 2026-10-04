@@ -4,39 +4,39 @@
   "parts": [
     {
       "file": "payload/part-00.txt",
-      "bytes": 1436058
+      "bytes": 1437811
     },
     {
       "file": "payload/part-01.txt",
-      "bytes": 415109
+      "bytes": 415162
     },
     {
       "file": "payload/part-02.txt",
-      "bytes": 53383
+      "bytes": 52271
     },
     {
       "file": "payload/part-03.txt",
-      "bytes": 48923
+      "bytes": 48902
     },
     {
       "file": "payload/part-04.txt",
-      "bytes": 60393
+      "bytes": 59439
     },
     {
       "file": "payload/part-05.txt",
-      "bytes": 46336
+      "bytes": 45990
     },
     {
       "file": "payload/part-06.txt",
-      "bytes": 63997
+      "bytes": 62620
     },
     {
       "file": "payload/part-07.txt",
-      "bytes": 72047
+      "bytes": 66205
     },
     {
       "file": "payload/part-08.txt",
-      "bytes": 39807
+      "bytes": 39815
     },
     {
       "file": "payload/part-09.txt",
@@ -52,29 +52,29 @@
     },
     {
       "file": "payload/part-12.txt",
-      "bytes": 39962
+      "bytes": 36293
     },
     {
       "file": "payload/part-13.txt",
-      "bytes": 49278
+      "bytes": 47376
     },
     {
       "file": "payload/part-14.txt",
-      "bytes": 52981
+      "bytes": 52562
     },
     {
       "file": "payload/part-15.txt",
-      "bytes": 234286
+      "bytes": 177252
     }
   ],
-  "runtime_bytes": 2764744,
+  "runtime_bytes": 2693882,
   "runtime_date_range": {
-    "count": 2948,
+    "count": 2947,
     "min": "2016-01-01",
     "max": "2099-01-02"
   },
   "runtime_validation_manifest_positions": [
-    2570486
+    2553697
   ],
   "data_assignment_keys": [
     "CERT53",
@@ -89,6 +89,7 @@
     "NATIVE_RATES_DATA",
     "NEWS_PULSE_STRUCT",
     "OIS_DATA",
+    "RATES_AUDIT_METADATA",
     "REAL_CALENDAR",
     "TOP_THEMES",
     "V247_COT_STORIES",
@@ -101,7 +102,7 @@
         "assignment_pos": 291589,
         "rhs_span": [
           291610,
-          1002712
+          1002732
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -129,10 +130,10 @@
     ],
     "CERT53": [
       {
-        "assignment_pos": 1002714,
+        "assignment_pos": 1002734,
         "rhs_span": [
-          1002740,
-          1130939
+          1002760,
+          1130959
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -151,10 +152,10 @@
     ],
     "COUNTRY_CTX": [
       {
-        "assignment_pos": 1130941,
+        "assignment_pos": 1130961,
         "rhs_span": [
-          1130972,
-          1138059
+          1130992,
+          1138079
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -179,10 +180,10 @@
     ],
     "WHAT_CHANGED": [
       {
-        "assignment_pos": 1138061,
+        "assignment_pos": 1138081,
         "rhs_span": [
-          1138093,
-          1140866
+          1138113,
+          1140886
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -198,10 +199,10 @@
     ],
     "CURRENCY_DNA": [
       {
-        "assignment_pos": 1140868,
+        "assignment_pos": 1140888,
         "rhs_span": [
-          1140900,
-          1142501
+          1140920,
+          1142521
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 1 (char 2)"
@@ -209,18 +210,18 @@
     ],
     "NATIVE_RATES_DATA": [
       {
-        "assignment_pos": 1142549,
+        "assignment_pos": 1142569,
         "rhs_span": [
-          1142586,
-          1267069
+          1142606,
+          1268805
         ],
         "json_parsed": true,
         "parse_error": null,
         "summary": {
           "type": "dict",
-          "date_count": 433,
+          "date_count": 439,
           "min_date": "2025-01-16",
-          "max_date": "2026-09-28",
+          "max_date": "2026-10-02",
           "keys": [
             "AUD",
             "CAD",
@@ -237,10 +238,10 @@
     ],
     "OIS_DATA": [
       {
-        "assignment_pos": 1267117,
+        "assignment_pos": 1268853,
         "rhs_span": [
-          1267145,
-          1272883
+          1268881,
+          1274619
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -260,64 +261,55 @@
         }
       },
       {
-        "assignment_pos": 2577502,
+        "assignment_pos": 2560713,
         "rhs_span": [
-          2577530,
-          2577574
+          2560741,
+          2560785
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2581177,
+        "assignment_pos": 2564388,
         "rhs_span": [
-          2581205,
-          2581249
+          2564416,
+          2564460
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2588755,
+        "assignment_pos": 2571966,
         "rhs_span": [
-          2588783,
-          2588827
+          2571994,
+          2572038
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2628596,
+        "assignment_pos": 2611807,
         "rhs_span": [
-          2628624,
-          2628668
+          2611835,
+          2611879
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2632363,
+        "assignment_pos": 2615574,
         "rhs_span": [
-          2632391,
-          2632435
+          2615602,
+          2615646
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2636441,
+        "assignment_pos": 2619652,
         "rhs_span": [
-          2636469,
-          2636513
-        ],
-        "json_parsed": false,
-        "parse_error": "non-json expression"
-      },
-      {
-        "assignment_pos": 2716831,
-        "rhs_span": [
-          2716859,
-          2716903
+          2619680,
+          2619724
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
@@ -325,18 +317,18 @@
     ],
     "MACRO_THERMOMETER_DATA": [
       {
-        "assignment_pos": 1272931,
+        "assignment_pos": 1274667,
         "rhs_span": [
-          1272973,
-          1290516
+          1274709,
+          1292236
         ],
         "json_parsed": true,
         "parse_error": null,
         "summary": {
           "type": "dict",
-          "date_count": 1,
+          "date_count": 2,
           "min_date": "2026-08-01",
-          "max_date": "2026-08-01",
+          "max_date": "2026-09-01",
           "keys": [
             "currencies",
             "dimensions",
@@ -353,10 +345,10 @@
     ],
     "NATIVE_LIQ_DATA": [
       {
-        "assignment_pos": 1290564,
+        "assignment_pos": 1292284,
         "rhs_span": [
-          1290599,
-          1368366
+          1292319,
+          1370086
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -381,10 +373,10 @@
     ],
     "NATIVE_CB_DATA": [
       {
-        "assignment_pos": 1368414,
+        "assignment_pos": 1370134,
         "rhs_span": [
-          1368448,
-          1378456
+          1370168,
+          1380176
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -409,10 +401,10 @@
     ],
     "V250_COT_CHART_DATA": [
       {
-        "assignment_pos": 1378504,
+        "assignment_pos": 1380224,
         "rhs_span": [
-          1378543,
-          1419557
+          1380263,
+          1421277
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -437,18 +429,18 @@
     ],
     "V247_COT_STORIES": [
       {
-        "assignment_pos": 1419559,
+        "assignment_pos": 1421279,
         "rhs_span": [
-          1419595,
-          1424765
+          1421315,
+          1426638
         ],
         "json_parsed": true,
         "parse_error": null,
         "summary": {
           "type": "dict",
-          "date_count": 0,
-          "min_date": null,
-          "max_date": null,
+          "date_count": 1,
+          "min_date": "2026-09-29",
+          "max_date": "2026-09-29",
           "keys": [
             "AUD",
             "CAD",
@@ -465,10 +457,10 @@
     ],
     "REAL_CALENDAR": [
       {
-        "assignment_pos": 1424813,
+        "assignment_pos": 1426686,
         "rhs_span": [
-          1424846,
-          1434587
+          1426719,
+          1436460
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 3 column 1 (char 4)"
@@ -476,10 +468,10 @@
     ],
     "TOP_THEMES": [
       {
-        "assignment_pos": 1434589,
+        "assignment_pos": 1436462,
         "rhs_span": [
-          1434619,
-          1437667
+          1436492,
+          1439540
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -495,10 +487,10 @@
     ],
     "NEWS_PULSE_STRUCT": [
       {
-        "assignment_pos": 1437669,
+        "assignment_pos": 1439542,
         "rhs_span": [
-          1437706,
-          1444749
+          1439579,
+          1446622
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
@@ -506,10 +498,10 @@
     ],
     "EVENT_TEMPLATES": [
       {
-        "assignment_pos": 1444751,
+        "assignment_pos": 1446624,
         "rhs_span": [
-          1444786,
-          1447201
+          1446659,
+          1449074
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
@@ -517,10 +509,10 @@
     ],
     "MACRO_SERIES": [
       {
-        "assignment_pos": 1447273,
+        "assignment_pos": 1449078,
         "rhs_span": [
-          1447305,
-          1786277
+          1449110,
+          1788180
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -540,6 +532,32 @@
             "USD"
           ],
           "length": 8
+        }
+      }
+    ],
+    "RATES_AUDIT_METADATA": [
+      {
+        "assignment_pos": 2682964,
+        "rhs_span": [
+          2683004,
+          2684826
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 4,
+          "min_date": "2026-09-30",
+          "max_date": "2026-10-04",
+          "keys": [
+            "audit_date",
+            "expected_rates",
+            "rates",
+            "resolved_audits",
+            "schema",
+            "source_context"
+          ],
+          "length": 6
         }
       }
     ]
@@ -603,9 +621,9 @@
     },
     "NATIVE_RATES_DATA": {
       "type": "dict",
-      "date_count": 433,
+      "date_count": 439,
       "min_date": "2025-01-16",
-      "max_date": "2026-09-28",
+      "max_date": "2026-10-02",
       "keys": [
         "AUD",
         "CAD",
@@ -634,9 +652,9 @@
     },
     "MACRO_THERMOMETER_DATA": {
       "type": "dict",
-      "date_count": 1,
+      "date_count": 2,
       "min_date": "2026-08-01",
-      "max_date": "2026-08-01",
+      "max_date": "2026-09-01",
       "keys": [
         "currencies",
         "dimensions",
@@ -702,9 +720,9 @@
     },
     "V247_COT_STORIES": {
       "type": "dict",
-      "date_count": 0,
-      "min_date": null,
-      "max_date": null,
+      "date_count": 1,
+      "min_date": "2026-09-29",
+      "max_date": "2026-09-29",
       "keys": [
         "AUD",
         "CAD",
@@ -741,6 +759,21 @@
         "USD"
       ],
       "length": 8
+    },
+    "RATES_AUDIT_METADATA": {
+      "type": "dict",
+      "date_count": 4,
+      "min_date": "2026-09-30",
+      "max_date": "2026-10-04",
+      "keys": [
+        "audit_date",
+        "expected_rates",
+        "rates",
+        "resolved_audits",
+        "schema",
+        "source_context"
+      ],
+      "length": 6
     }
   },
   "reference_keys": [
@@ -756,6 +789,7 @@
     "NATIVE_RATES_DATA",
     "NEWS_PULSE_STRUCT",
     "OIS_DATA",
+    "RATES_AUDIT_METADATA",
     "REAL_CALENDAR",
     "TOP_THEMES",
     "V247_COT_STORIES",
