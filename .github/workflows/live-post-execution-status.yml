@@ -61,6 +61,7 @@ jobs:
                 states[c]=typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState(c):null;
               }
               const cot={};
+              const last=a=>Array.isArray(a)&&a.length?a[a.length-1]:null;
               for(const c of ccys){
                 const x=cotData[c]||{};
                 const dates=Array.isArray(x.dates)?x.dates:[];
