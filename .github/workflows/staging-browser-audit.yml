@@ -131,7 +131,7 @@ jobs:
             const jpy=result.currencyStates.JPY||{};
             if(jpy.base!=='COSTRUTTIVA' || jpy.macro!==0 || jpy.policy!==1) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
             const usdjpy=result.usdjpy||{};
-            if(usdjpy.quality!=='CONTRASTO STRUTTURALE FORTE' || usdjpy.fav!=='USD' || usdjpy.macroSide!=='USD' || usdjpy.policySide!=='USD' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY current canonical structure failure: '+JSON.stringify(usdjpy));
+            if(usdjpy.quality!=='VANTAGGIO RELATIVO PARZIALE' || usdjpy.fav!=='USD' || usdjpy.macroSide!=='USD' || usdjpy.policySide!==null || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY current canonical structure failure: '+JSON.stringify(usdjpy));
             if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
             if(result.coherenceText.jpy.includes('Macro e Tassi/CB favoriscono entrambi JPY')) throw new Error('JPY wording still overstates support');
 

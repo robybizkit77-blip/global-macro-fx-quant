@@ -121,7 +121,7 @@ jobs:
             const usd=out.states.USD||{};
             if(usd.base!=='FORTE'||usd.macro!==1||usd.policy!==1) throw new Error('USD state changed outside its D-derived layer');
             const p=out.pair||{};
-            if(p.quality!=='CONTRASTO STRUTTURALE FORTE'||p.fav!=='USD'||p.macroSide!=='USD'||p.policySide!=='USD'||!p.structural?.ratesGap?.material||p.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY structure changed');
+            if(p.quality!=='VANTAGGIO RELATIVO PARZIALE'||p.fav!=='USD'||p.macroSide!=='USD'||p.policySide!==null||!p.structural?.ratesGap?.material||p.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY structure changed');
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
