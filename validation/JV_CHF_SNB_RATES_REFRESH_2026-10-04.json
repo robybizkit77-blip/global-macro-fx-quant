@@ -1,0 +1,19 @@
+{
+  "schema": "GMFQ_CHF_SNB_RATES_REFRESH_V1",
+  "as_of": "2026-09-30",
+  "source": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en?dimSel=D0(CHF),D1(2J,10J)&fromDate=2026-09-01&toDate=2026-10-04",
+  "series_2y": "EPB@SNB.rendeiduebd{CHF,2J}",
+  "series_10y": "EPB@SNB.rendeiduebd{CHF,10J}",
+  "y2": 0.287,
+  "y10": 0.586,
+  "curve_bp": 29.9,
+  "weekly_reference_2y": "2026-09-23",
+  "weekly_reference_10y": "2026-09-23",
+  "weekly_reference_y2": 0.324,
+  "weekly_reference_y10": 0.575,
+  "chg2_bp": -3.7,
+  "chg10_bp": 1.1,
+  "curve_state": "Movimento misto",
+  "same_basis": true,
+  "recent_tail_rows_synced": 22
+}
