@@ -1792,85 +1792,22 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 </script>
 
 
-<script id="gmfq-cad-rates-boc-20260930">
+<script id="gmfq-cad-rates-audit-reconcile-20261004">
 (function(){
   'use strict';
   try{
     const d=NATIVE_RATES_DATA?.CAD;
     if(!d) throw new Error('CAD_NATIVE_RATES_MISSING');
-
     const snap={
-      date:'2026-09-28',
-      source:'Bank of Canada · selected benchmark Government of Canada bond yields',
-      y2:3.37,
-      y5:3.68,
-      y10:3.96,
-      ylong:4.25,
-      realLong:1.93,
-      prevWeekDate:'2026-09-22',
-      prevWeekY2:3.25,
-      prevWeekY10:3.83
+      date:d.date,
+      source:d.source,
+      y2:Number(d['2Y']),
+      y10:Number(d['10Y']),
+      curve_bp:Number(d.curve_bp),
+      chg2_bp:Number(d.chg2_bp),
+      chg10_bp:Number(d.chg10_bp)
     };
-    const chg2=(snap.y2-snap.prevWeekY2)*100;
-    const chg10=(snap.y10-snap.prevWeekY10)*100;
-    const curve=(snap.y10-snap.y2)*100;
-
-    d.date=snap.date;
-    d.source=snap.source;
-    d.quality='FULL_CURRENT_OFFICIAL';
-    d['2Y']=snap.y2;
-    d['10Y']=snap.y10;
-    d.curve_bp=curve;
-    d.chg2_bp=chg2;
-    d.chg10_bp=chg10;
-    d.curve_state='Bear steepening';
-    d.tenors=[
-      {tenor:'2Y',value:snap.y2,date:snap.date},
-      {tenor:'5Y',value:snap.y5,date:snap.date},
-      {tenor:'10Y',value:snap.y10,date:snap.date},
-      {tenor:'Long',value:snap.ylong,date:snap.date}
-    ];
-
-    function appendPoint(obj,date,value){
-      if(!obj||!Array.isArray(obj.dates)||!Array.isArray(obj.values)) return;
-      const i=obj.dates.indexOf(date);
-      if(i>=0) obj.values[i]=value;
-      else {
-        obj.dates.push(date);
-        obj.values.push(value);
-      }
-      obj.last_date=date;
-      obj.last_value=value;
-    }
-    appendPoint(d.history2,snap.date,snap.y2);
-    appendPoint(d.history10,snap.date,snap.y10);
-
-    if(d.real_long){
-      d.real_long.last_date=snap.date;
-      d.real_long.last_value=snap.realLong;
-      appendPoint(d.real_long,snap.date,snap.realLong);
-    }
-    if(d.real && /long/i.test(String(d.real.label||''))){
-      d.real.last_date=snap.date;
-      d.real.last_value=snap.realLong;
-      appendPoint(d.real,snap.date,snap.realLong);
-    }
-
-    d.weekly2_validation={
-      end_date:snap.date,
-      end_value:snap.y2,
-      change_bp:chg2,
-      source:'Bank of Canada selected benchmark bond yields',
-      note:'Same official benchmark basis, 22 Sep to 28 Sep 2026.'
-    };
-    d.freshness_status='CURRENT_OFFICIAL';
-    d.freshness_note='Official Bank of Canada selected benchmark yields updated through 28 Sep 2026.';
-    d.history_status='CURRENT_SAME_BASIS';
-
-    if(D?.macro?.CAD){
-      D.macro.CAD.rate2y=snap.y2;
-      D.macro.CAD.rate_status='CURRENT';
-    }
+    if(!snap.date || !Number.isFinite(snap.y2) || !Number.isFinite(snap.y10)) throw new Error('CAD_LIVE_RATES_INVALID');
     try{
       if(window.FINAL_SOURCE_POLICY_AUDIT?.RATES?.CAD){
         Object.assign(window.FINAL_SOURCE_POLICY_AUDIT.RATES.CAD,{
@@ -1884,7 +1821,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
         Object.assign(window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh.CAD,{
           action:'UPDATED',
           current_as_of:snap.date,
-          reason:'Official Bank of Canada same-basis benchmark 2Y/5Y/10Y/Long and real-long snapshot validated.'
+          reason:'Official Bank of Canada validated live 2Y/10Y same-basis snapshot retained.'
         });
       }
     }catch(e){}
@@ -1902,10 +1839,10 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       as_of:snap.date,
       same_basis:true,
       values:{
-        '2Y':snap.y2,'5Y':snap.y5,'10Y':snap.y10,'Long':snap.ylong,'RealLong':snap.realLong,
-        chg2_bp:Number(chg2.toFixed(2)),
-        chg10_bp:Number(chg10.toFixed(2)),
-        curve_bp:Number(curve.toFixed(2))
+        '2Y':snap.y2,'10Y':snap.y10,
+        chg2_bp:snap.chg2_bp,
+        chg10_bp:snap.chg10_bp,
+        curve_bp:snap.curve_bp
       },
       basis_ok:basis?.ok??null,
       visible_ok:visible?.ok??null
@@ -2033,23 +1970,23 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 </script>
 
 
-<script id="gmfq-source-registry-realignment-20260930">
+<script id="gmfq-source-registry-realignment-20261004">
 (function(){
   'use strict';
   try{
     const A=window.FINAL_SOURCE_POLICY_AUDIT;
     if(!A) throw new Error('FINAL_SOURCE_POLICY_AUDIT_MISSING');
-    A.audit_date='2026-09-30';
+    A.audit_date='2026-10-04';
 
     const R=A.RATES||A.rates;
     if(R){
       if(R.USD) Object.assign(R.USD,{current_as_of:'2026-09-28',status:'CURRENT_OFFICIAL'});
       if(R.EUR) Object.assign(R.EUR,{current_as_of:'2026-09-29',status:'CURRENT_OFFICIAL_SAME_BASIS'});
       if(R.GBP) Object.assign(R.GBP,{current_as_of:'2026-09-29',status:'CURRENT_OFFICIAL_SAME_BASIS'});
-      if(R.JPY) Object.assign(R.JPY,{current_as_of:'2026-09-28',status:'CURRENT_OFFICIAL_SAME_BASIS'});
-      if(R.CHF) Object.assign(R.CHF,{current_as_of:'2026-09-25',status:'LAST_VALID_WITHHELD_NEW_PAIR'});
-      if(R.CAD) Object.assign(R.CAD,{current_as_of:'2026-09-28',status:'CURRENT_OFFICIAL_SAME_BASIS'});
-      if(R.AUD) Object.assign(R.AUD,{current_as_of:'2026-09-25',status:'CURRENT_BY_SOURCE_CADENCE'});
+      if(R.JPY) Object.assign(R.JPY,{current_as_of:'2026-10-01',status:'CURRENT_OFFICIAL_SAME_BASIS'});
+      if(R.CHF) Object.assign(R.CHF,{current_as_of:'2026-09-30',status:'CURRENT_OFFICIAL_SAME_BASIS'});
+      if(R.CAD) Object.assign(R.CAD,{current_as_of:'2026-10-01',status:'CURRENT_OFFICIAL_SAME_BASIS'});
+      if(R.AUD) Object.assign(R.AUD,{current_as_of:'2026-09-30',status:'CURRENT_BY_SOURCE_CADENCE'});
       if(R.NZD) Object.assign(R.NZD,{current_as_of:'2026-09-28',status:'CURRENT_OFFICIAL'});
     }
 
@@ -2069,10 +2006,10 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       const P=window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh;
       if(P.EUR) Object.assign(P.EUR,{action:'UPDATED',current_as_of:'2026-09-29',reason:'Official ECB AAA same-basis curve validated.'});
       if(P.GBP) Object.assign(P.GBP,{action:'UPDATED',current_as_of:'2026-09-29',reason:'Official Bank of England nominal curve validated.'});
-      if(P.JPY) Object.assign(P.JPY,{action:'UPDATED',current_as_of:'2026-09-28',reason:'Official MOF same-basis 2Y/10Y snapshot validated.'});
-      if(P.CHF) Object.assign(P.CHF,{action:'HOLD_LAST_VALID',current_as_of:'2026-09-25',reason:'No full validated same-basis 2Y/10Y pair newer than 25 Sep.'});
-      if(P.CAD) Object.assign(P.CAD,{action:'UPDATED',current_as_of:'2026-09-28',reason:'Official Bank of Canada benchmark curve validated.'});
-      if(P.AUD) Object.assign(P.AUD,{action:'CURRENT_BY_SOURCE_CADENCE',current_as_of:'2026-09-25',reason:'RBA F2 weekly cadence; last validated observation retained.'});
+      if(P.JPY) Object.assign(P.JPY,{action:'UPDATED',current_as_of:'2026-10-01',reason:'Official MOF same-basis 2Y/10Y snapshot validated.'});
+      if(P.CHF) Object.assign(P.CHF,{action:'UPDATED',current_as_of:'2026-09-30',reason:'Official SNB same-basis 2Y/10Y snapshot validated.'});
+      if(P.CAD) Object.assign(P.CAD,{action:'UPDATED',current_as_of:'2026-10-01',reason:'Official Bank of Canada benchmark curve validated.'});
+      if(P.AUD) Object.assign(P.AUD,{action:'CURRENT_BY_SOURCE_CADENCE',current_as_of:'2026-09-30',reason:'RBA F2 validated observation retained.'});
       if(P.NZD) Object.assign(P.NZD,{action:'CURRENT',current_as_of:'2026-09-28',reason:'Official RBNZ B2 snapshot current.'});
     }
 
@@ -2080,10 +2017,10 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
     window.GMFQ_SOURCE_REGISTRY_REALIGNMENT={
       status:'PASS',
-      audit_date:'2026-09-30',
+      audit_date:'2026-10-04',
       rates:{
-        USD:'2026-09-28',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-09-28',
-        CHF:'2026-09-25',CAD:'2026-09-28',AUD:'2026-09-25',NZD:'2026-09-28'
+        USD:'2026-09-28',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-10-01',
+        CHF:'2026-09-30',CAD:'2026-10-01',AUD:'2026-09-30',NZD:'2026-09-28'
       },
       cb_pricing:{
         GBP:'RESOLVED',CAD:'RESOLVED',AUD:'RESOLVED',
@@ -5032,8 +4969,8 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
     const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
     const expectedRates={
-      USD:'2026-09-30',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-09-28',
-      CHF:'2026-09-25',CAD:'2026-09-28',AUD:'2026-09-25',NZD:'2026-09-29'
+      USD:'2026-09-30',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-10-01',
+      CHF:'2026-09-30',CAD:'2026-10-01',AUD:'2026-09-30',NZD:'2026-09-29'
     };
     const issues=[];
     let cq=null,vq=null,rb=null,rv=null;
