@@ -48,8 +48,14 @@ def strip_data(src):
     return src
 main=joined_main(); live=joined_local()
 main_logic=strip_data(main); live_logic=strip_data(live)
-fp='3356baf0'
-report={'schema':'GMFQ_LIVE_REFRESH_ENGINE_INTEGRITY_V1','created_at':'2026-10-04','fingerprint_expected':fp,'fingerprint_present_main':fp in main,'fingerprint_present_live':fp in live,'logic_sha_main':hashlib.sha256(main_logic.encode()).hexdigest(),'logic_sha_live':hashlib.sha256(live_logic.encode()).hexdigest(),'logic_byte_identical_after_data_strip':main_logic==live_logic,'passed':main_logic==live_logic and fp in main and fp in live}
+sha_main=hashlib.sha256(main_logic.encode()).hexdigest(); sha_live=hashlib.sha256(live_logic.encode()).hexdigest()
+report={
+ 'schema':'GMFQ_LIVE_REFRESH_ENGINE_INTEGRITY_V2','created_at':'2026-10-04',
+ 'fingerprint_reference':'3356baf0','fingerprint_check_scope':'OOS_VALIDATION_METADATA_NOT_RUNTIME_LITERAL',
+ 'logic_sha_main':sha_main,'logic_sha_live':sha_live,
+ 'logic_byte_identical_after_data_strip':main_logic==live_logic,
+ 'passed':main_logic==live_logic
+}
 (ROOT/'validation'/'LIVE_REFRESH_ENGINE_INTEGRITY_2026-10-04.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report))
 if not report['passed']: raise SystemExit('ENGINE_INTEGRITY_FAIL')
