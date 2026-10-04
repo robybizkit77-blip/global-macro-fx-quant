@@ -48,6 +48,8 @@ jobs:
 
             const result = await page.evaluate(() => {
               const audit = window.GMFQ_POST_GATE_FINAL_AUDIT || null;
+              const scriptOrder=[...document.scripts].map(s=>s.id);
+              const cad=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD||null;
               const sections = {};
               for (const v of ['currencies','ratesdesk','pairs','cot','risk','macro','inflationlabour','themes']) {
                 try {
@@ -76,6 +78,13 @@ jobs:
               return {
                 title: document.title,
                 finalAudit: audit,
+                cadHydration:{
+                  native2Y:Number(cad?.['2Y']), native10Y:Number(cad?.['10Y']), nativeCurveBp:Number(cad?.curve_bp),
+                  macro2Y:Number(window.__GMFQ_DATA?.D?.macro?.CAD?.rate2y),
+                  metadataAsOf:window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of||null,
+                  integrity:{basisOk:(typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null)?.ok??null,visibleOk:(typeof window.visibleRatesSnapshotIntegrity==='function'?window.visibleRatesSnapshotIntegrity():null)?.ok??null},
+                  order:{hydration:scriptOrder.indexOf('gmfq-live-rates-audit-metadata-hydration'),finalAudit:scriptOrder.indexOf('gmfq-post-gate-final-audit-20260930')}
+                },
                 fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
                 ratesMetadata: window.__GMFQ_DATA?.RATES_AUDIT_METADATA || null,
                 ois: {
@@ -100,6 +109,10 @@ jobs:
 
             if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
+            const cad=result.cadHydration||{};
+            if(cad.native2Y!==3.27 || cad.macro2Y!==3.27 || cad.native10Y!==3.94 || cad.nativeCurveBp!==67) throw new Error('CAD live hydration values fail: '+JSON.stringify(cad));
+            if(cad.metadataAsOf!=='2026-10-01' || cad.integrity?.basisOk!==true || cad.integrity?.visibleOk!==true) throw new Error('CAD metadata/integrity chain fail: '+JSON.stringify(cad));
+            if(cad.order?.hydration<0 || cad.order?.finalAudit<0 || cad.order.hydration>=cad.order.finalAudit) throw new Error('Final audit precedes CAD hydration chain: '+JSON.stringify(cad.order));
             if(!result.ratesMetadata || result.ratesMetadata.schema!=='GMFQ_RATES_AUDIT_METADATA_V1') throw new Error('Rates live audit metadata missing');
             for(const [ccy,date] of Object.entries(result.ratesMetadata.expected_rates||{})){
               const row=(window=>window)(result).ratesMetadata.rates?.[ccy];
