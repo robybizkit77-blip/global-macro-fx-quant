@@ -1,4 +1,3 @@
-
 ${x.cot?`<div class="wc388Cot"><strong>Attenzione COT:</strong> ${x.cot}</div>`:''}
 </div>`).join('')
 : '<div class="wc388Empty">Nessuna valuta mostra un cambiamento abbastanza importante da mettere in evidenza.</div>';
@@ -1001,3 +1000,4 @@ if(improving){
 set('ovQuickImprove',improving.c);
 set('ovQuickImproveDriver',improving.driver);
 }else if(improvingTie?.length){
+set('ovQuickImprove','PARITÀ');

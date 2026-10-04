@@ -1,6 +1,3 @@
-    }
-
-
 
     if(!document.getElementById('gmfqCotTutor')){
       const box=document.createElement('div');

@@ -1,4 +1,3 @@
-
 return {
 level:'NON PRIORITARIO',
 cls:'pairAttentionLow',
@@ -1009,3 +1008,4 @@ function v461OperationalRead(c){
 }
 function v461RatesSpreadSeries(c){
   if(c==='USD') return {labels:[],values:[],note:'USD è la base: il differenziale 2Y vs USD è zero per definizione.'};
+  const a=NATIVE_RATES_DATA?.[c]?.history2;

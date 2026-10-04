@@ -1,4 +1,3 @@
-
 return Object.fromEntries(CCYS.map(c=>[c,evaluateStructuralHysteresis(c)]));
 };
 window.STRUCTURAL_HYSTERESIS_STATE=window.STRUCTURAL_HYSTERESIS_AUDIT();
@@ -1007,3 +1006,5 @@ renderNewsPulse();
 refreshGlobalRiskOverview();
 renderOperationalOverview();
 }catch(e){}
+return {
+ok:false,

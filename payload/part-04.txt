@@ -1,5 +1,3 @@
-  const a=NATIVE_RATES_DATA?.[c]?.history2;
-
   const u=NATIVE_RATES_DATA?.USD?.history2;
   if(!a?.dates?.length||!u?.dates?.length) return {labels:[],values:[],note:'WITHHELD: storico 2Y non disponibile per una delle due gambe.'};
   const um=new Map((u.dates||[]).map((d,i)=>[d,Number(u.values?.[i])]));
