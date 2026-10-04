@@ -1,0 +1,122 @@
+{
+  "schema": "GMFQ_FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1",
+  "created_at": "2026-10-04",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "purpose": "Standard interpretation/reporting layer for 1W/4W/12W forward OOS checkpoints. Validation-only; never changes model logic.",
+  "canonical_baseline": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+  "rules_fingerprint": "3356baf0",
+  "engine_freeze_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "checkpoints": {
+    "1W": "2026-10-08",
+    "4W": "2026-10-29",
+    "12W": "2026-12-24"
+  },
+  "report_sections": [
+    {
+      "id": "headline",
+      "title": "Esito sintetico",
+      "required_fields": [
+        "checkpoint",
+        "evaluation_target",
+        "fixing_date_used",
+        "eligible_pairs",
+        "hits",
+        "hit_rate_pct",
+        "decision"
+      ]
+    },
+    {
+      "id": "quality_breakdown",
+      "title": "Dove ha funzionato il modello",
+      "required_fields": [
+        "by_quality",
+        "best_quality_bucket",
+        "weakest_quality_bucket"
+      ],
+      "interpretation_rule": "Do not generalize from tiny buckets; always report n alongside hit rate."
+    },
+    {
+      "id": "pair_detail",
+      "title": "Pair principali",
+      "required_fields": [
+        "top_positive_contributors",
+        "top_negative_contributors",
+        "strong_contrast_pairs",
+        "partial_advantage_pairs"
+      ],
+      "interpretation_rule": "Pairs without a canonical favored side remain excluded from hit-rate scoring."
+    },
+    {
+      "id": "signal_diagnostics",
+      "title": "Diagnostica del segnale",
+      "required_fields": [
+        "macro_supported_hits",
+        "policy_supported_hits",
+        "price_confirmation_behavior",
+        "price_divergence_behavior"
+      ],
+      "interpretation_rule": "Descriptive only. No threshold or hierarchy change inside the active OOS window."
+    },
+    {
+      "id": "regime_read",
+      "title": "Cosa ci sta dicendo il checkpoint",
+      "required_fields": [
+        "what_worked",
+        "what_failed",
+        "what_is_inconclusive",
+        "next_checkpoint_question"
+      ]
+    },
+    {
+      "id": "governance",
+      "title": "Decisione metodologica",
+      "required_fields": [
+        "tuning_allowed",
+        "engine_change_allowed",
+        "oos_restart_required",
+        "next_action"
+      ]
+    }
+  ],
+  "decision_framework": {
+    "1W": {
+      "role": "EARLY_READ_ONLY",
+      "allowed_conclusion": "Check execution, directionality and obvious failures; never tune from 1W alone.",
+      "default_next_action": "KEEP_FROZEN_AND_WAIT_FOR_4W"
+    },
+    "4W": {
+      "role": "INTERMEDIATE_VALIDATION",
+      "allowed_conclusion": "Assess persistence by quality bucket and whether structural contrasts outperform partial advantages; still no tuning unless a hard implementation defect is proven.",
+      "default_next_action": "KEEP_FROZEN_AND_WAIT_FOR_12W"
+    },
+    "12W": {
+      "role": "FIRST_COMPLETE_FORWARD_CYCLE",
+      "allowed_conclusion": "Combine 1W/4W/12W and decide whether evidence justifies post-OOS research on thresholds, turning persistence, confidence modifiers or pair hierarchy.",
+      "default_next_action": "OPEN_POST_OOS_REVIEW"
+    }
+  },
+  "hard_guardrails": [
+    "No use of post-checkpoint data beyond the first common ECB fixing on/after the evaluation date.",
+    "No rewriting T0 states or anchors after observing outcomes.",
+    "No model weights, thresholds, hierarchy, pair logic, or runtime changes during the active OOS regime.",
+    "Any genuine model-rule change restarts out-of-sample from a new T0.",
+    "1W is not a tuning event.",
+    "Always report sample size together with hit rate.",
+    "Separate implementation/data defects from model-performance misses."
+  ],
+  "status_labels": {
+    "positive": "SUPPORTIVE",
+    "mixed": "INCONCLUSIVE",
+    "negative": "CHALLENGED",
+    "hard_failure": "INVALID_EVALUATION_OR_IMPLEMENTATION_DEFECT"
+  },
+  "final_cycle_questions": [
+    "Do CONTRASTO STRUTTURALE FORTE pairs outperform VANTAGGIO RELATIVO PARZIALE?",
+    "Does performance improve from 1W to 4W/12W as historical pseudo-OOS suggested?",
+    "Are misses concentrated in price-divergent signals or in one macro/policy configuration?",
+    "Does the model add useful discrimination versus no-favored-side pairs without forcing a winner?",
+    "Is there enough independent evidence to justify a new rule research cycle?"
+  ],
+  "no_model_change": true,
+  "oos_restart_required": false
+}
