@@ -1,0 +1,15 @@
+{
+  "schema": "GMFQ_EUR_ECB_AAA_RATES_REFRESH_V1",
+  "as_of": "2026-10-01",
+  "source_2y": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2026-09-22&endPeriod=2026-10-04&format=csvdata",
+  "source_10y": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2026-09-22&endPeriod=2026-10-04&format=csvdata",
+  "y2": 3.1064811134,
+  "y10": 3.5921733451,
+  "curve_bp": 48.6,
+  "weekly_reference_2y": "2026-09-22",
+  "weekly_reference_10y": "2026-09-22",
+  "chg2_bp": -14.2,
+  "chg10_bp": -32.5,
+  "curve_state": "Bull steepening",
+  "same_basis": true
+}
