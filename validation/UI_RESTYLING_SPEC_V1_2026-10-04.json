@@ -1,0 +1,104 @@
+{
+  "schema": "GMFQ_UI_RESTYLING_SPEC_V1",
+  "date": "2026-10-04",
+  "status": "PLANNING_ONLY__NO_RUNTIME_CHANGE",
+  "purpose": "Freeze the post-OOS UI redesign requirements without touching index.html, payload runtime, engine logic, thresholds, pair logic or data bindings before the forward checkpoints.",
+  "oos_guardrail": {
+    "engine_fingerprint": "3356baf0",
+    "runtime_changes_allowed_before_checkpoint": false,
+    "files_explicitly_not_touched": ["index.html", "payload/part-00.txt", "payload/part-01.txt", "payload/part-02.txt", "payload/part-03.txt", "payload/part-04.txt", "payload/part-05.txt", "payload/part-06.txt", "payload/part-07.txt", "payload/part-08.txt", "payload/part-09.txt", "payload/part-10.txt", "payload/part-11.txt", "payload/part-12.txt", "payload/part-13.txt", "payload/part-14.txt", "payload/part-15.txt"]
+  },
+  "design_principles": [
+    "Italiano semplice: ogni sezione deve spiegare da cosa deriva il segnale e cosa significa.",
+    "Separare sempre quadro di fondo, cambiamento recente e conferma/divergenza del prezzo.",
+    "Ridurre numeri ridondanti e aumentare gerarchia narrativa.",
+    "Nessuna etichetta tecnica del motore esposta se non utile all'utente.",
+    "Mobile-first reale: 360-430px senza zoom-out e senza overflow pagina.",
+    "Colori usati per significato, non decorazione.",
+    "WITHHELD resta visibile solo dove serve alla trasparenza dati, senza trasformarlo in rumore grafico.",
+    "Nessun vincitore forzato nelle pair quando le componenti sono opposte o non conclusive."
+  ],
+  "frozen_reference_sections": {
+    "what_changed": "v390_WHAT_CHANGED_FIRST_SIGNAL_EXPLICIT",
+    "top_themes": "v393_TOP_THEMES_RENDER_FIXED",
+    "calendar": "v395_CALENDAR_EVENT_TYPES_FIXED",
+    "news_pulse": "v396_NEWS_PULSE_REFINED_RENDER_SAFE_FINAL",
+    "currencies": "v464_VALUTE_UI_MATCH_MACRO"
+  },
+  "target_information_architecture": [
+    "Panoramica per-valuta, non G8 generica.",
+    "Valute: bandiera+codice, QUADRO DI FONDO, cambiamento recente, driver, conferma/divergenza prezzo.",
+    "Macro: Growth e Labour decisionali; inflazione descrittiva; rischi separati ma decisionali quando rilevanti.",
+    "Rates: 2Y/front-end separato da 10Y/long-end; curva esplicita; OIS/pricing se validato; fallback 'front-end osservato (2Y)' quando OIS non disponibile.",
+    "Banche centrali: tasso, tono, ultima decisione, prossimo meeting, pricing di mercato separato dai rendimenti osservati.",
+    "Liquidità: overlay, non voto macro primario.",
+    "COT: contesto istituzionale, affollamento, conferma/divergenza, mai segnale standalone.",
+    "Pair: bias relativo solo quando c'è sufficiente contrasto; altrimenti MISTA/NEUTRALE.",
+    "Event Risk: solo eventi che possono cambiare pricing o struttura.",
+    "Rischi: fiscali/politici/macro con impatto esplicito sulla valuta.",
+    "Cosa è cambiato: confermati -> possibili -> primi segnali; perché conta e cosa invaliderebbe.",
+    "Top Themes: massimo 4 principali; secondari richiudibili.",
+    "News Pulse: narrativa dominante + cosa controllare + 24h in basso."
+  ],
+  "rates_ui_requirements": {
+    "front_end": "2Y = primo filtro per repricing banca centrale",
+    "long_end": "10Y = crescita + real yield + breakeven + term premium + deficit/supply",
+    "curve_states": ["bear steepening", "bear flattening", "bull steepening", "bull flattening"],
+    "language": [
+      "impulso rates",
+      "direzione",
+      "da cosa deriva",
+      "cosa significa",
+      "cosa guardare",
+      "impatto sulla valuta"
+    ],
+    "ois_rule": "OIS/pricing resta una componente distinta; se non validabile non viene sostituito semanticamente dal 2Y."
+  },
+  "macro_ui_requirements": {
+    "heatmap": "solo inflazione e disoccupazione",
+    "macro_only_vs_fx": "distinzione visibile e non ambigua",
+    "background_vs_recent": "distinzione visibile e non ambigua",
+    "turning_point_hierarchy": [
+      "PRIMO SEGNALE",
+      "POSSIBILE CAMBIO se persiste",
+      "CAMBIO STRUTTURALE CONFERMATO solo con Macro direction + supporto blocchi"
+    ],
+    "warning": "La gerarchia turning resta interpretazione di ricerca finché il forward OOS non giustifica una regola operativa."
+  },
+  "pair_ui_requirements": {
+    "no_forced_winner": true,
+    "show_relative_driver": true,
+    "show_confirming_components": ["Macro", "Rates", "CB", "COT", "Liquidity", "Risk", "Price"],
+    "show_conflicts": true,
+    "preferred_states": ["SOLIDA", "COSTRUTTIVA", "MISTA", "IN CAMBIAMENTO", "WITHHELD"]
+  },
+  "performance_post_oos_backlog": [
+    "Ridurre parsing monolitico iniziale.",
+    "Eliminare document.write/concatenazione globale se possibile.",
+    "Caricare sezioni in modo progressivo senza cambiare output logico.",
+    "Separare asset critici da contenuti secondari.",
+    "Mantenere loader dinamico e 28 pair senza duplicazioni.",
+    "Verificare startup su mobile con cold load e console pulita."
+  ],
+  "acceptance_gate_for_future_implementation": [
+    "OOS checkpoint policy respected; if implementation changes runtime before the agreed checkpoint, OOS restart is explicitly accepted first.",
+    "8 currencies render correctly.",
+    "28 pairs render correctly.",
+    "No duplicate IDs.",
+    "No hidden runtime exceptions.",
+    "No semantic substitution of OIS with 2Y.",
+    "Macro-only and overall FX remain separated.",
+    "Price confirmation/divergence remains visible.",
+    "Risk layer remains decision-relevant.",
+    "Mobile 360/390/430px passes without page-level horizontal scroll.",
+    "Startup performance is measured before and after implementation.",
+    "Browser fingerprint/functional gate passes before any promotion to main/gh-pages."
+  ],
+  "implementation_timing": {
+    "before_1w_checkpoint": "planning only",
+    "after_1w_before_4w": "prefer planning/audit only unless user explicitly accepts OOS restart",
+    "after_4w_before_12w": "same rule",
+    "after_12w": "full UI implementation can proceed together with any evidence-based engine changes, using a new explicit validation cycle if engine logic changes"
+  },
+  "decision": "SPEC_FROZEN__DO_NOT_IMPLEMENT_RUNTIME_CHANGES_DURING_CURRENT_OOS"
+}
