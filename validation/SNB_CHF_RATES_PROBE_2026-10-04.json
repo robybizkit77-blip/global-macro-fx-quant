@@ -1,0 +1,131 @@
+{
+  "schema": "GMFQ_SNB_CHF_RATES_PROBE_V1",
+  "base": "https://data.snb.ch/api/cube/rendopar",
+  "dimensions": {
+    "cubeId": "rendopar",
+    "dimensions": [
+      {
+        "id": "d0",
+        "name": "Overview",
+        "dimensionItems": [
+          {
+            "id": "b0",
+            "name": "B0"
+          },
+          {
+            "id": "b1",
+            "name": "B1"
+          },
+          {
+            "id": "b2",
+            "name": "B2"
+          },
+          {
+            "id": "b3",
+            "name": "B3"
+          },
+          {
+            "id": "t1",
+            "name": "T1"
+          },
+          {
+            "id": "t2",
+            "name": "T2"
+          }
+        ]
+      }
+    ]
+  },
+  "last_update": {
+    "editionDate": "20250804_1430",
+    "publicSinceDate": "20250901_1430"
+  },
+  "data": {
+    "timeseries": [
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "B0"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{b0}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      },
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "B1"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{b1}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      },
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "B2"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{b2}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      },
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "B3"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{b3}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      },
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "T1"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{t1}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      },
+      {
+        "header": [
+          {
+            "dim": "Overview",
+            "dimItem": "T2"
+          }
+        ],
+        "metadata": {
+          "key": "EPB@SNB.rendopar{t2}",
+          "frequency": "P1D_L",
+          "scale": ""
+        },
+        "values": []
+      }
+    ]
+  }
+}
