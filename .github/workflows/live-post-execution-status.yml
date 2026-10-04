@@ -1,0 +1,69 @@
+name: Live Post Execution Status
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - ".github/workflows/live-post-execution-status.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-postexec-server.log 2>&1 &
+          sleep 2
+      - name: Capture effective browser state
+        run: |
+          cat > /tmp/postexec.js <<'EOF'
+          const fs=require('fs'); const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rates={}; const cb={}; const liq={}; const ois={}; const states={};
+              for(const c of ccys){
+                const r=(typeof NATIVE_RATES_DATA!=='undefined'&&NATIVE_RATES_DATA[c])?NATIVE_RATES_DATA[c]:null;
+                rates[c]=r?{date:r.date,source:r.source,quality:r.quality,y2:r['2Y'],y10:r['10Y'],chg2_bp:r.chg2_bp,chg10_bp:r.chg10_bp,curve_bp:r.curve_bp,history2_last:r.history2?.last_date,history10_last:r.history10?.last_date}:null;
+                const b=(typeof NATIVE_CB_DATA!=='undefined'&&NATIVE_CB_DATA[c])?NATIVE_CB_DATA[c]:null;
+                cb[c]=b?{date:b.date||b.as_of||b.asOf,rate:b.rate,source:b.source,quality:b.quality}:null;
+                const l=(typeof NATIVE_LIQ_DATA!=='undefined'&&NATIVE_LIQ_DATA[c])?NATIVE_LIQ_DATA[c]:null;
+                liq[c]=l?{date:l.date||l.as_of||l.asOf,source:l.source,quality:l.quality}:null;
+                const o=window.GMFQ_OIS?.currency?.(c); ois[c]=o?{status:o.status,as_of:o.as_of||o.asOf,source:o.source}:null;
+                states[c]=typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState(c):null;
+              }
+              const cot={};
+              if(typeof V250_COT_CHART_DATA!=='undefined') for(const c of ccys){const x=V250_COT_CHART_DATA[c];cot[c]=x?{date:x.dates?.at(-1),net:x.net?.at(-1),percentile:x.percentile?.at(-1),netoi:x.netoi?.at(-1)}:null;}
+              return {schema:'GMFQ_LIVE_POST_EXECUTION_STATUS_V1',created_at:'2026-10-04',dashboard:{asOf:typeof D!=='undefined'?D.asOf:null,priceAsOf:typeof D!=='undefined'?D.priceAsOf:null,priceLast:typeof D!=='undefined'?D.prices?.at(-1):null},rates,central_bank:cb,liquidity:liq,ois,cot,currency_states:states,final_audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null};
+            });
+            fs.mkdirSync('validation',{recursive:true}); fs.writeFileSync('validation/LIVE_POST_EXECUTION_STATUS_2026-10-04.json',JSON.stringify(out,null,2)+'\n');
+            console.log(JSON.stringify(out)); await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node /tmp/postexec.js
+      - name: Commit effective-state snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/LIVE_POST_EXECUTION_STATUS_2026-10-04.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Snapshot effective live runtime state"
+          git push
