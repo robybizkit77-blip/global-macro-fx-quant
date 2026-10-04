@@ -1,4 +1,4 @@
-# gate-trigger: final-cad-browser-scope-validation-2026-10-04
+# gate-trigger: final-cad-browser-clean-validation-2026-10-04
 name: Live Refresh Engine Integrity
 
 # Explicit gate request after staged live-data refreshes.

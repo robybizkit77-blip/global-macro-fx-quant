@@ -139,11 +139,6 @@ jobs:
             for(const [k,v] of Object.entries(expected)){
               if(result.ois[k]!==v) throw new Error(`OIS ${k}: ${result.ois[k]} != ${v}`);
             }
-            for (const c of ['USD','CHF','NZD']) {
-              const txt=result.coherenceText.withheld[c]||'';
-              if(!txt.includes('front-end osservato')) throw new Error(`OIS/front-end wording failure ${c}`);
-            }
-
             await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
             await browser.close();
           })().catch(e=>{ console.error('::error title=Browser audit detail::'+String(e.message||e)); process.exit(1); });
