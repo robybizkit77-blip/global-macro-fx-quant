@@ -1,0 +1,10 @@
+{
+  "schema": "GMFQ_BOE_GBP_RATES_PROBE_V1",
+  "zip_url": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip",
+  "files": [
+    "GLC Inflation daily data current month.xlsx",
+    "GLC Nominal daily data current month.xlsx",
+    "GLC Real daily data current month.xlsx",
+    "OIS daily data current month.xlsx"
+  ]
+}
