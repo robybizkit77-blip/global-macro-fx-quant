@@ -1,130 +1,232 @@
 {
-  "schema": "GMFQ_SNB_CHF_RATES_PROBE_V1",
-  "base": "https://data.snb.ch/api/cube/rendopar",
+  "schema": "GMFQ_SNB_CHF_RATES_PROBE_V2",
+  "base": "https://data.snb.ch/api/cube/rendeiduebd",
   "dimensions": {
-    "cubeId": "rendopar",
+    "cubeId": "rendeiduebd",
     "dimensions": [
       {
-        "id": "d0",
-        "name": "Overview",
+        "id": "D0",
+        "name": "Bond categories",
         "dimensionItems": [
           {
-            "id": "b0",
-            "name": "B0"
+            "id": "D0_0",
+            "name": "Spot interest rates on Swiss Confederation bonds and euro area government bonds",
+            "dimensionItems": [
+              {
+                "id": "CHF",
+                "name": "CHF Swiss Confederation bond issues"
+              },
+              {
+                "id": "EUR",
+                "name": "Euro area government bonds"
+              }
+            ]
           },
           {
-            "id": "b1",
-            "name": "B1"
+            "id": "D1_1",
+            "name": "Spot interest rates on CHF bond issues for various borrower categories",
+            "dimensionItems": [
+              {
+                "id": "KTA",
+                "name": "Cantons AAA, AA+"
+              },
+              {
+                "id": "KTB",
+                "name": "Cantons AA, AA-"
+              },
+              {
+                "id": "PFI",
+                "name": "Mortgage bond institutions"
+              },
+              {
+                "id": "GBA",
+                "name": "Commercial banks (incl. cantonal banks) AAA, AA+"
+              },
+              {
+                "id": "GBB",
+                "name": "Commercial banks (incl. cantonal banks) AA, AA-"
+              },
+              {
+                "id": "GBC",
+                "name": "Commercial banks (incl. cantonal banks) A+, A, A-"
+              },
+              {
+                "id": "IHA",
+                "name": "Manufacturing (incl. power plants) and trade A+, A, A-"
+              },
+              {
+                "id": "IHB",
+                "name": "Manufacturing (incl. power plants) and trade BBB+, BBB, BBB-"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "D1",
+        "name": "Maturity",
+        "dimensionItems": [
+          {
+            "id": "1J",
+            "name": "1 year"
           },
           {
-            "id": "b2",
-            "name": "B2"
+            "id": "2J",
+            "name": "2 years"
           },
           {
-            "id": "b3",
-            "name": "B3"
+            "id": "3J",
+            "name": "3 years"
           },
           {
-            "id": "t1",
-            "name": "T1"
+            "id": "4J",
+            "name": "4 years"
           },
           {
-            "id": "t2",
-            "name": "T2"
+            "id": "5J",
+            "name": "5 years"
+          },
+          {
+            "id": "6J",
+            "name": "6 years"
+          },
+          {
+            "id": "7J",
+            "name": "7 years"
+          },
+          {
+            "id": "8J",
+            "name": "8 years"
+          },
+          {
+            "id": "9J",
+            "name": "9 years"
+          },
+          {
+            "id": "10J",
+            "name": "10 years"
+          },
+          {
+            "id": "20J",
+            "name": "20 years"
+          },
+          {
+            "id": "30J",
+            "name": "30 years"
           }
         ]
       }
     ]
   },
   "last_update": {
-    "editionDate": "20250804_1430",
-    "publicSinceDate": "20250901_1430"
+    "editionDate": "20261001_1430",
+    "publicSinceDate": "20261001_1430"
   },
   "data": {
     "timeseries": [
       {
         "header": [
           {
-            "dim": "Overview",
-            "dimItem": "B0"
+            "dim": "Bond categories",
+            "dimItem": "Spot interest rates on Swiss Confederation bonds and euro area government bonds - CHF Swiss Confederation bond issues"
+          },
+          {
+            "dim": "Maturity",
+            "dimItem": "2 years"
           }
         ],
         "metadata": {
-          "key": "EPB@SNB.rendopar{b0}",
+          "key": "EPB@SNB.rendeiduebd{CHF,2J}",
           "frequency": "P1D_L",
-          "scale": ""
+          "scale": "",
+          "unit": "In percent"
         },
-        "values": []
+        "values": [
+          {
+            "date": "2026-09-21",
+            "value": 0.278
+          },
+          {
+            "date": "2026-09-22",
+            "value": 0.306
+          },
+          {
+            "date": "2026-09-23",
+            "value": 0.324
+          },
+          {
+            "date": "2026-09-24",
+            "value": 0.385
+          },
+          {
+            "date": "2026-09-25",
+            "value": 0.385
+          },
+          {
+            "date": "2026-09-28",
+            "value": 0.405
+          },
+          {
+            "date": "2026-09-29",
+            "value": 0.345
+          },
+          {
+            "date": "2026-09-30",
+            "value": 0.287
+          }
+        ]
       },
       {
         "header": [
           {
-            "dim": "Overview",
-            "dimItem": "B1"
-          }
-        ],
-        "metadata": {
-          "key": "EPB@SNB.rendopar{b1}",
-          "frequency": "P1D_L",
-          "scale": ""
-        },
-        "values": []
-      },
-      {
-        "header": [
+            "dim": "Bond categories",
+            "dimItem": "Spot interest rates on Swiss Confederation bonds and euro area government bonds - CHF Swiss Confederation bond issues"
+          },
           {
-            "dim": "Overview",
-            "dimItem": "B2"
+            "dim": "Maturity",
+            "dimItem": "10 years"
           }
         ],
         "metadata": {
-          "key": "EPB@SNB.rendopar{b2}",
+          "key": "EPB@SNB.rendeiduebd{CHF,10J}",
           "frequency": "P1D_L",
-          "scale": ""
+          "scale": "",
+          "unit": "In percent"
         },
-        "values": []
-      },
-      {
-        "header": [
+        "values": [
           {
-            "dim": "Overview",
-            "dimItem": "B3"
-          }
-        ],
-        "metadata": {
-          "key": "EPB@SNB.rendopar{b3}",
-          "frequency": "P1D_L",
-          "scale": ""
-        },
-        "values": []
-      },
-      {
-        "header": [
+            "date": "2026-09-21",
+            "value": 0.55
+          },
           {
-            "dim": "Overview",
-            "dimItem": "T1"
-          }
-        ],
-        "metadata": {
-          "key": "EPB@SNB.rendopar{t1}",
-          "frequency": "P1D_L",
-          "scale": ""
-        },
-        "values": []
-      },
-      {
-        "header": [
+            "date": "2026-09-22",
+            "value": 0.564
+          },
           {
-            "dim": "Overview",
-            "dimItem": "T2"
+            "date": "2026-09-23",
+            "value": 0.575
+          },
+          {
+            "date": "2026-09-24",
+            "value": 0.615
+          },
+          {
+            "date": "2026-09-25",
+            "value": 0.649
+          },
+          {
+            "date": "2026-09-28",
+            "value": 0.701
+          },
+          {
+            "date": "2026-09-29",
+            "value": 0.655
+          },
+          {
+            "date": "2026-09-30",
+            "value": 0.586
           }
-        ],
-        "metadata": {
-          "key": "EPB@SNB.rendopar{t2}",
-          "frequency": "P1D_L",
-          "scale": ""
-        },
-        "values": []
+        ]
       }
     ]
   }
