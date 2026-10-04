@@ -1,0 +1,10 @@
+{
+  "schema": "GMFQ_LIVE_REFRESH_ENGINE_INTEGRITY_V2",
+  "created_at": "2026-10-04",
+  "fingerprint_reference": "3356baf0",
+  "fingerprint_check_scope": "OOS_VALIDATION_METADATA_NOT_RUNTIME_LITERAL",
+  "logic_sha_main": "089e34be57960c5cdf1b6a42281695b8c1fc4c8585ed2f405d2e383de06db641",
+  "logic_sha_live": "089e34be57960c5cdf1b6a42281695b8c1fc4c8585ed2f405d2e383de06db641",
+  "logic_byte_identical_after_data_strip": true,
+  "passed": true
+}
