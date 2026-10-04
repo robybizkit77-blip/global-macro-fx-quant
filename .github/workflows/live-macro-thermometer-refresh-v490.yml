@@ -1,0 +1,32 @@
+name: Live Macro Thermometer Refresh v490
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/refresh_macro_thermometer_v490.py"
+      - ".github/workflows/live-macro-thermometer-refresh-v490.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refresh validated macro thermometer releases
+        run: python validation/refresh_macro_thermometer_v490.py
+      - name: Repack v490 payload
+        run: python validation/repack_v490_from_live_data.py --write
+      - name: Commit staged macro thermometer refresh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/MACRO_THERMOMETER_DATA.json payload validation/MACRO_THERMOMETER_REFRESH_AUDIT_2026-10-04.json validation/V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json
+          git commit -m "Refresh staged macro thermometer releases" || exit 0
+          git push
