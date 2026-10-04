@@ -1,0 +1,37 @@
+name: Live Rates USD NZD Refresh v490
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/apply_live_rates_usd_nzd_2026_10_04.py"
+      - ".github/workflows/live-rates-usd-nzd-refresh-v490.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply validated USD and NZD rates snapshots
+        run: python validation/apply_live_rates_usd_nzd_2026_10_04.py
+      - name: Repack v490 payload from live data sections
+        run: python validation/repack_v490_from_live_data.py --write
+      - name: Commit staged rates refresh
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/D.json payload validation/LIVE_RATES_USD_NZD_REFRESH_AUDIT_2026-10-04.json validation/V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json)" ]; then
+            echo "No refresh change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/D.json payload validation/LIVE_RATES_USD_NZD_REFRESH_AUDIT_2026-10-04.json validation/V490_LIVE_DATA_REPACK_AUDIT_2026-10-04.json
+          git commit -m "Refresh staged USD NZD rates through latest official close"
+          git push
