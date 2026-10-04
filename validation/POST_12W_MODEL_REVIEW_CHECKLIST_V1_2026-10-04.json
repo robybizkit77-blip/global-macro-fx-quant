@@ -1,0 +1,154 @@
+{
+  "schema": "GMFQ_POST_12W_MODEL_REVIEW_CHECKLIST_V1",
+  "created_date": "2026-10-04",
+  "purpose": "Decision checklist to be used only after the complete 1W/4W/12W forward OOS cycle is available. This file does not change the model, thresholds, weights, runtime, pair logic, or OOS baseline.",
+  "frozen_engine": {
+    "fingerprint": "3356baf0",
+    "baseline_t0_date": "2026-10-01",
+    "checkpoints": {
+      "1W": "2026-10-08",
+      "4W": "2026-10-29",
+      "12W": "2026-12-24"
+    }
+  },
+  "review_order": [
+    {
+      "step": 1,
+      "name": "Integrity first",
+      "questions": [
+        "Was the frozen runtime untouched throughout the OOS window?",
+        "Did fingerprint 3356baf0 remain unchanged?",
+        "Were all checkpoint prices evaluated with the canonical ECB fixing rule?",
+        "Were any pair labels, thresholds, weights, or anchors changed after T0?"
+      ],
+      "stop_rule": "If any integrity condition fails, do not interpret performance. Mark the affected OOS segment invalid and identify the contamination point."
+    },
+    {
+      "step": 2,
+      "name": "Horizon decomposition",
+      "questions": [
+        "How did directional pair performance differ at 1W, 4W, and 12W?",
+        "Was any apparent edge concentrated only at one horizon?",
+        "Did medium-horizon behaviour confirm or reject the prior pseudo-OOS suggestion that signal quality may be better beyond 1W?"
+      ],
+      "rule": "Do not promote a rule change from a single horizon alone."
+    },
+    {
+      "step": 3,
+      "name": "Signal quality decomposition",
+      "questions": [
+        "Did strong structural contrasts outperform partial/relative advantages?",
+        "Did price confirmation improve outcomes relative to price divergence?",
+        "Did Macro + Rates/CB convergence outperform mixed states?",
+        "Were losses concentrated in specific currencies, pair families, or regime types?"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Turning hierarchy review",
+      "questions": [
+        "Did single turning-point states behave as early warnings rather than immediate directional signals?",
+        "Did persistent turning states show higher confirmation value than single turning states?",
+        "Did actual Macro direction changes remain more reliable than turning states?"
+      ],
+      "candidate_changes_only_if_supported": [
+        "confidence modifier for persistent turning",
+        "display hierarchy for first signal / possible change / confirmed structural change"
+      ],
+      "prohibited_without_forward_support": [
+        "changing turning thresholds because CAD/EUR historical revision studies looked attractive",
+        "turning-to-trading conversion based only on PIT retrospective research"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Macro block robustness",
+      "questions": [
+        "Did Growth and Labour agreement matter for forward outcomes?",
+        "Were mixed Growth/Labour states lower-conviction in live forward behaviour?",
+        "Did Growth-dominant vulnerability observed in CAD/EUR revision studies translate into worse forward outcomes?"
+      ],
+      "candidate_research": [
+        "confidence modifier for internal Growth divergence",
+        "confidence modifier for Labour divergence only if forward evidence supports it"
+      ],
+      "note": "Historical revision sensitivity is diagnostic context, not sufficient evidence for a runtime change."
+    },
+    {
+      "step": 6,
+      "name": "Rates and policy hierarchy",
+      "questions": [
+        "Did front-end / 2Y repricing add directional information when consistent with Macro?",
+        "Did long-end-led moves behave differently from front-end-led moves?",
+        "Were any poor outcomes caused by treating 10Y strength as currency support when the move was term-premium/fiscal/supply-driven?",
+        "Did explicit OIS availability improve interpretation where active?"
+      ],
+      "candidate_changes_only_if_supported": [
+        "confidence treatment for front-end vs long-end disagreement",
+        "clearer policy-family confidence rules when OIS is WITHHELD"
+      ]
+    },
+    {
+      "step": 7,
+      "name": "Positioning, liquidity, and price overlays",
+      "questions": [
+        "Did COT confirmation improve outcomes or mainly provide context?",
+        "Did crowded positioning reduce continuation quality?",
+        "Did liquidity overlays improve discrimination?",
+        "Did price divergence consistently identify fragile signals or simply create false negatives?"
+      ],
+      "rule": "Do not increase overlay weights unless forward evidence shows stable incremental value."
+    },
+    {
+      "step": 8,
+      "name": "Pair construction review",
+      "questions": [
+        "Did forced relative ranking create errors where both currencies were mixed?",
+        "Did the no-forced-winner rule protect against bad pair calls?",
+        "Which pair archetypes produced the cleanest forward outcomes?",
+        "Were outcomes dominated by USD legs, commodity FX, funding currencies, or a small subset of crosses?"
+      ]
+    },
+    {
+      "step": 9,
+      "name": "Decision gate",
+      "allowed_outcomes": [
+        "KEEP_ENGINE_UNCHANGED",
+        "OPEN_TARGETED_RESEARCH_ONLY",
+        "PROPOSE_RULE_CHANGE_AND_RESTART_OOS",
+        "INSUFFICIENT_FORWARD_EVIDENCE__EXTEND_OBSERVATION_WINDOW"
+      ],
+      "rule_change_requirement": "Any change to thresholds, weights, turning logic, pair hierarchy, runtime classification, or decision semantics requires a new frozen baseline and a fresh OOS cycle."
+    }
+  ],
+  "minimum_evidence_standard": {
+    "do_not_tune_from": [
+      "1W checkpoint alone",
+      "one currency alone",
+      "one pair family alone",
+      "retrospective PIT revision percentages",
+      "pseudo-OOS historical benchmark alone"
+    ],
+    "prefer": [
+      "consistent direction across multiple horizons",
+      "cross-sectional support across multiple currencies/pairs",
+      "agreement between forward outcomes and PIT diagnostics",
+      "clear falsifiable mechanism rather than post-hoc story"
+    ]
+  },
+  "post_review_outputs": [
+    "OOS performance summary by horizon",
+    "signal-quality attribution",
+    "failure-mode map",
+    "decision on whether to change model",
+    "if changed: exact specification, rationale, new fingerprint, new T0, and OOS restart date"
+  ],
+  "guardrails": {
+    "no_model_change_now": true,
+    "no_runtime_change_now": true,
+    "no_threshold_change_now": true,
+    "no_weight_change_now": true,
+    "no_pair_logic_change_now": true,
+    "no_oos_restart_required": true
+  }
+}
