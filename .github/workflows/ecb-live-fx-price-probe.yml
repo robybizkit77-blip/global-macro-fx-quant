@@ -1,0 +1,32 @@
+name: ECB Live FX Price Probe
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/probe_ecb_live_fx_prices.py"
+      - ".github/workflows/ecb-live-fx-price-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare runtime FX prices with latest ECB common fixing
+        run: python validation/probe_ecb_live_fx_prices.py
+      - name: Commit probe
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- validation/ECB_LIVE_FX_PRICE_PROBE_2026-10-04.json)" ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/ECB_LIVE_FX_PRICE_PROBE_2026-10-04.json
+          git commit -m "Probe latest ECB live FX prices"
+          git push
