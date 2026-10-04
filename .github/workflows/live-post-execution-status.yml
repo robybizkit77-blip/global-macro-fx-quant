@@ -61,7 +61,8 @@ jobs:
                 states[c]=typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState(c):null;
               }
               const cot={};
-              for(const c of ccys){const x=cotData[c];cot[c]=x?{date:x.dates?.at(-1),net:x.net?.at(-1),percentile:x.percentile?.at(-1),netoi:x.netoi?.at(-1)}:null;}
+              const last=a=>Array.isArray(a)?a.at(-1):null;
+              for(const c of ccys){const x=cotData[c];cot[c]=x?{date:last(x.dates),net:last(x.net),percentile:last(x.percentile),netoi:last(x.netoi)}:null;}
               return {schema:'GMFQ_LIVE_POST_EXECUTION_STATUS_V1',created_at:'2026-10-04',dashboard:{asOf:dashboard.asOf||null,priceAsOf:dashboard.priceAsOf||null,priceLast:dashboard.prices?.at(-1)||null},rates,central_bank:cb,liquidity:liq,ois,cot,currency_states:states,final_audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null};
             });
             fs.mkdirSync('validation',{recursive:true}); fs.writeFileSync('validation/LIVE_POST_EXECUTION_STATUS_2026-10-04.json',JSON.stringify(out,null,2)+'\n');
