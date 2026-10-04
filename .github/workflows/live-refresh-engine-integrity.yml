@@ -1,0 +1,33 @@
+name: Live Refresh Engine Integrity
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/verify_live_refresh_engine_unchanged.py"
+      - "payload/**"
+      - ".github/workflows/live-refresh-engine-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify engine unchanged after stripping live data sections
+        run: python validation/verify_live_refresh_engine_unchanged.py
+      - name: Commit integrity audit
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- validation/LIVE_REFRESH_ENGINE_INTEGRITY_2026-10-04.json)" ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/LIVE_REFRESH_ENGINE_INTEGRITY_2026-10-04.json
+          git commit -m "Verify live refresh leaves engine unchanged"
+          git push
