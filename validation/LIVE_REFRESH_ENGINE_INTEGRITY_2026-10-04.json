@@ -1,7 +1,11 @@
 {
   "schema": "GMFQ_LIVE_REFRESH_ENGINE_INTEGRITY_V3",
   "created_at": "2026-10-04",
+  "baseline_ref": "497ceb7bd3f01e69965c05a54416dc07406ae28d",
+  "baseline_lock_file": "validation/LIVE_REFRESH_BASELINE_LOCK_2026-10-04.json",
+  "baseline_lock_ok": true,
   "canonical_fingerprint_source": "staging-usd-pit-readiness-2026-10-03/validation/FORWARD_OOS_READINESS_GATE_2026-10-03.json",
+  "canonical_oos_gate_commit": "9c3a0393bc71a6dab53f845aca927cd86cdabfbd",
   "fingerprint_expected": "3356baf0",
   "fingerprint_canonical": "3356baf0",
   "fingerprint_ok": true,
@@ -9,8 +13,8 @@
   "frozen_engine_canonical": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
   "frozen_engine_ok": true,
   "oos_gate_passed": true,
-  "logic_sha_main": "089e34be57960c5cdf1b6a42281695b8c1fc4c8585ed2f405d2e383de06db641",
-  "logic_sha_live": "089e34be57960c5cdf1b6a42281695b8c1fc4c8585ed2f405d2e383de06db641",
+  "logic_sha_baseline": "4063da375a0b76410785e78a92c42890792f2fa0d78998de640a46785ded505f",
+  "logic_sha_live": "4063da375a0b76410785e78a92c42890792f2fa0d78998de640a46785ded505f",
   "logic_byte_identical_after_data_strip": true,
   "passed": true
 }

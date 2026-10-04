@@ -896,7 +896,7 @@ return `<div class="v219DetailGrid"><div class="${g.cls}"><span>CRESCITA</span><
 function v219RatesDetail(c){
 const d=currencyIntelData[c], r=NATIVE_RATES_DATA?.[c]||{}, dyn=currencyDynamics(c)?.rates;
 const cls2=(Number(r.chg2_bp)>0?'pos':Number(r.chg2_bp)<0?'neg':'neu');
-const cls10=(Math.abs(Number(r.chg10_bp||0))>=3?'warn':'neu');
+const cls10=(Number(r.chg10_bp)>0?'pos':Number(r.chg10_bp)<0?'neg':'neu');
 return `<div class="v219DetailGrid"><div class="${cls2}"><span>TASSO 2 ANNI</span><b>${r['2Y']==null?'—':fmt(r['2Y'],2)+'%'}</b><small>${r.chg2_bp==null?'—':(r.chg2_bp>=0?'+':'')+fmt(r.chg2_bp,1)+' bp ultimo movimento'}</small></div><div class="${cls10}"><span>TASSO 10 ANNI</span><b>${r['10Y']==null?'—':fmt(r['10Y'],2)+'%'}</b><small>${r.chg10_bp==null?'—':(r.chg10_bp>=0?'+':'')+fmt(r.chg10_bp,1)+' bp ultimo movimento'}</small></div><div class="neu"><span>CURVA 2Y-10Y</span><b>${r.curve_bp==null?'—':fmt(r.curve_bp,0)+' bp'}</b><small>${r.curve_state||'—'}</small></div></div><p class="v219DetailText"><b>Tassi:</b> ${d?.rates?.[2]||'—'}<br><b>Banca centrale:</b> ${d?.cb?.[2]||'—'}${dyn?.turn?'<br><b>Attenzione:</b> possibile svolta recente nei tassi a breve.':''}</p><button class="v220InlineLink" type="button" onclick="showView('ratesdesk')">Apri i grafici Rates</button>`;
 }
 function v219CotDetail(c){
@@ -985,7 +985,7 @@ function v461OperationalRead(c){
   let priced='Il prezzo non sta ancora incorporando in modo pulito la storia strutturale.';
   if(st.confirmation==='PREZZO CONFERMA') priced='Il prezzo è già allineato a Macro + Tassi/CB: una parte della storia è già riflessa.';
   else if(st.confirmation==='PREZZO DIVERGE') priced='La struttura e il prezzo sono ancora separati: la storia non è pienamente prezzata.';
-  let surprise='Una sorpresa sarebbe un movimento netto di Macro o Tassi/CB contro il pilastro strutturale che oggi sostiene la lettura.';
+  let surprise='Una sorpresa sarebbe un movimento netto di Macro o Tassi/CB contro il driver dominante.';
   if(st.base==='MISTA') surprise='La vera sorpresa sarebbe vedere Macro e Tassi/CB finalmente convergere nella stessa direzione.';
   const profit=ext.state==='EXTENDED'||ext.state==='ADVANCED'
     ? ext.text+' Il rischio di presa di profitto è quindi più alto.'

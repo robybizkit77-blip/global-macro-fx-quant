@@ -1,0 +1,8 @@
+{
+  "schema": "GMFQ_LIVE_REFRESH_BASELINE_LOCK_V1",
+  "baseline_ref": "497ceb7bd3f01e69965c05a54416dc07406ae28d",
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "change_control": "This lock is intentionally exact. A baseline change requires an explicit, reviewed edit to this file and to the verifier's immutable constants; a moving branch name is prohibited.",
+  "purpose": "Immutable OOS engine reference for staging live-data refresh gates."
+}

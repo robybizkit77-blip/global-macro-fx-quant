@@ -77,6 +77,7 @@ jobs:
                 title: document.title,
                 finalAudit: audit,
                 fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
+                ratesMetadata: window.__GMFQ_DATA?.RATES_AUDIT_METADATA || null,
                 ois: {
                   USD: window.GMFQ_OIS?.currency?.('USD')?.status || null,
                   EUR: window.GMFQ_OIS?.currency?.('EUR')?.status || null,
@@ -99,6 +100,11 @@ jobs:
 
             if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
+            if(!result.ratesMetadata || result.ratesMetadata.schema!=='GMFQ_RATES_AUDIT_METADATA_V1') throw new Error('Rates live audit metadata missing');
+            for(const [ccy,date] of Object.entries(result.ratesMetadata.expected_rates||{})){
+              const row=(window=>window)(result).ratesMetadata.rates?.[ccy];
+              if(!row || row.current_as_of!==date) throw new Error('Rates metadata/context mismatch '+ccy);
+            }
             if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
             if(result.finalAudit?.counts?.currencies!==8 || result.finalAudit?.counts?.pairs!==28) throw new Error('Universe count failure: '+JSON.stringify(result.finalAudit?.counts));
             if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');

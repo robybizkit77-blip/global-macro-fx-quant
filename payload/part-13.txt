@@ -114,9 +114,9 @@ return 'OTHER';
 }
 function improvementBucket(s){
 const x=String(s||'').toUpperCase();
-if(x==='MIGLIORA') return 'IMPROVING';
-if(x==='PEGGIORA') return 'WORSENING';
-if(x.includes('EARLY SHIFT') || x.includes('TURNING')) return 'TURNING';
+if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')) return 'IMPROVING';
+if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')) return 'WORSENING';
+if(x.includes('TURNING')) return 'TURNING';
 return 'NEUTRAL_OTHER';
 }
 function reading(st){
@@ -481,10 +481,10 @@ const ch=document.getElementById('ov387Changes');
 if(ch) ch.innerHTML=changeItems.length
 ? changeItems.map(x=>{
 const s=x.d.state;
-const cls=s==='MIGLIORA'?'up':s==='PEGGIORA'?'down':'turn';
+const cls=(s==='MIGLIORA'||s==='EARLY SHIFT POSITIVO')?'up':(s==='PEGGIORA'||s==='EARLY SHIFT NEGATIVO')?'down':'turn';
 const arrow=cls==='up'?'↑':cls==='down'?'↓':'↕';
-const word=s==='MIGLIORA'?'miglioramento recente':s==='PEGGIORA'?'peggioramento recente':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva da confermare':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa da confermare':'possibile svolta da confermare';
-return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Cambiamento recente: apri la valuta per distinguere cosa sta cambiando dallo stato strutturale.</span></div>`;
+const word=s==='MIGLIORA'?'sta migliorando':s==='PEGGIORA'?'sta peggiorando':s==='EARLY SHIFT POSITIVO'?'possibile svolta positiva':s==='EARLY SHIFT NEGATIVO'?'possibile svolta negativa':'possibile svolta';
+return `<div class="ov387Card" onclick="selectCurrency('${x.c}',true)"><div class="ov387ChangeTitle"><span class="ov387Arrow ${cls}">${arrow}</span><b>${x.c} · ${word}</b></div><span>Apri la valuta per vedere quali dati stanno cambiando.</span></div>`;
 }).join('')
 : '<div class="ov387Empty">Nessun cambiamento recente abbastanza importante da evidenziare.</div>';
 // Risk, only if active, translated to plain language.
@@ -524,60 +524,56 @@ function e393(s){
 return String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function plain393(t){
-  const ccy=String(t?.ccy||'');
-  const ccy2=String(t?.ccy2||'');
-  try{
-    if(ccy && ccy2){
-      const pair=ccy+'/'+ccy2;
-      const frame=derivePairDecisionFrame(pair)||{};
-      const drv=derivePairDriverStructure(pair)||{};
-      const fav=frame.fav && frame.fav!=='—' ? frame.fav : null;
-      return {
-        title:fav ? `${pair} · vantaggio strutturale ${fav}` : `${pair} · quadro non risolutivo`,
-        story:fav
-          ? `La struttura corrente favorisce ${fav}. Il prezzo resta una conferma separata: ${String(frame.priceReading||'PREZZO NON RISOLUTIVO').toLowerCase()}.`
-          : `Macro e Tassi/CB non separano ancora abbastanza ${ccy} e ${ccy2}. Il tema resta da osservare, non da forzare.`,
-        why:drv.reason||'Il confronto va letto attraverso Macro e Tassi/CB strutturali.',
-        confirm:fav
-          ? `Macro e Tassi/CB devono restare allineati su ${fav}; il prezzo può confermare ma non decide la struttura.`
-          : 'Serve una differenza più chiara tra i pilastri strutturali delle due valute.',
-        stop:fav
-          ? `Il tema perde forza se il vantaggio strutturale di ${fav} si riduce o i pilastri iniziano a divergere.`
-          : 'Il tema resta non risolutivo finché i pilastri restano divisi.'
-      };
-    }
-    const st=deriveCurrencyState(ccy)||{};
-    const drv=deriveCurrencyDriver(ccy)||'Non determinato';
-    const plan=deriveCurrencyActionPlan(ccy)||{};
-    const baseMap={
-      FORTE:'struttura ben sostenuta',
-      COSTRUTTIVA:'supporto strutturale parziale',
-      MISTA:'struttura mista',
-      DEBOLE:'struttura debole',
-      FRAGILE:'struttura fragile'
-    };
-    const base=baseMap[st.base]||'struttura non determinata';
-    const price=st.confirmation==='PREZZO CONFERMA'
-      ? 'Il prezzo conferma, ma non aggiunge da solo nuovo vantaggio.'
-      : st.confirmation==='PREZZO DIVERGE'
-        ? 'Il prezzo diverge: serve conferma prima di inseguire il movimento.'
-        : st.confirmation==='PREZZO SENZA STRUTTURA'
-          ? 'Il prezzo si muove senza una struttura pulita.'
-          : 'Il prezzo non è ancora risolutivo.';
-    return {
-      title:`${ccy} · ${base}`,
-      story:typeof deriveCurrencyStory==='function'
-        ? deriveCurrencyStory(ccy)
-        : `${ccy}: quadro corrente derivato da Macro + Tassi/CB.`,
-      why:drv==='Non determinato'
-        ? 'Nessun pilastro strutturale unico sostiene oggi la lettura.'
-        : `${drv} sostiene la struttura corrente. ${price}`,
-      confirm:plan.strengthen||'Serve maggiore allineamento tra Macro e Tassi/CB.',
-      stop:plan.weaken||'Il tema perde forza se il core strutturale si deteriora.'
-    };
-  }catch(e){
-    return {title:t.title,story:t.body,why:t.lead,confirm:t.confirm,stop:t.invalidate};
-  }
+if(t.ccy==='USD') return {
+title:'USD · I tassi USA stanno ancora sostenendo il dollaro?',
+story:'I dati USA restano solidi. Per il dollaro conta soprattutto se i rendimenti a breve restano alti e il mercato mantiene aspettative Fed restrittive.',
+why:'Se il 2Y USA resta alto, il dollaro mantiene un vantaggio relativo contro valute con tassi in calo.',
+confirm:'2Y USA stabile o in rialzo + dollaro che continua a tenere sui cross.',
+stop:'2Y USA in calo e inflazione attesa in rientro.'
+};
+if(t.ccy==='EUR') return {
+title:'EUR · Liquidità migliore, ma servono conferme da tassi e domanda',
+story:'La moneta in circolazione migliora, ma credito e domanda restano misti. Per l’euro serve una conferma dai tassi europei e dai cross.',
+why:'Dati monetari migliori aiutano solo se cambiano davvero le aspettative sui tassi o la crescita.',
+confirm:'Bund 2Y in rialzo o stabile + domanda/credito migliori + EUR che reagisce.',
+stop:'Domanda e credito peggiorano e il Bund 2Y continua a scendere.'
+};
+if(t.ccy==='GBP') return {
+title:'GBP · Salari e inflazione possono tenere la BoE più restrittiva?',
+story:'La sterlina dipende dalla persistenza di salari e inflazione. Se restano alti, la BoE può mantenere i tassi più restrittivi più a lungo.',
+why:'La GBP ha più supporto quando il mercato rinvia i tagli BoE e il 2Y britannico tiene.',
+confirm:'Salari/inflazione persistenti + Gilt 2Y che smette di scendere o torna a salire.',
+stop:'Salari e inflazione rallentano insieme e il Gilt 2Y continua a scendere.'
+};
+if(t.ccy==='JPY') return {
+title:'JPY · Lo yen ha bisogno di conferme da salari, inflazione e tassi',
+story:'Un singolo dato non basta. Per uno yen più forte servono salari, inflazione e rendimenti giapponesi che inizino a muoversi insieme.',
+why:'Lo yen diventa più interessante solo se il mercato prezza una BoJ più restrittiva e il JGB 2Y reagisce.',
+confirm:'Salari e inflazione servizi solidi + JGB 2Y in rialzo + JPY che inizia a rafforzarsi.',
+stop:'Inflazione servizi rallenta e il JGB 2Y non reagisce.'
+};
+if(t.ccy==='AUD' && t.ccy2==='NZD') return {
+title:'AUD / NZD · Cina e propensione al rischio aiutano o frenano?',
+story:'Cina, commodity e propensione al rischio possono aiutare AUD e NZD, ma non devono sostituire i segnali domestici.',
+why:'Il vento globale conta, ma il movimento è più credibile se anche i tassi domestici confermano.',
+confirm:'Cina/risk favorevoli + AU/NZ 2Y nella stessa direzione + cross che confermano.',
+stop:'Il sostegno esterno si gira e i tassi domestici non compensano.'
+};
+if(t.ccy==='CAD') return {
+title:'CAD · Petrolio forte: basta davvero per aiutare il dollaro canadese?',
+story:'Il petrolio aiuta il CAD, ma da solo non basta. Serve che anche i tassi canadesi o i dati interni vadano nella stessa direzione.',
+why:'Un petrolio forte è più utile al CAD quando il Canada 2Y non sta scendendo contro gli altri paesi.',
+confirm:'Petrolio forte + Canada 2Y stabile/in rialzo + CAD che reagisce.',
+stop:'Petrolio perde forza oppure Canada 2Y scende.'
+};
+if(t.ccy==='CHF') return {
+title:'CHF · SNB accomodante contro domanda di rifugio',
+story:'Lo CHF riceve due spinte opposte: una SNB accomodante lo frena, mentre il risk-off può rafforzarlo come valuta rifugio.',
+why:'Il CHF può salire anche con tassi poco favorevoli se il mercato entra in modalità difensiva.',
+confirm:'Risk-off in aumento + CHF forte su EURCHF/USDCHF.',
+stop:'Il risk-off rientra e torna a dominare la politica accomodante della SNB.'
+};
+return {title:t.title,story:t.body,why:t.lead,confirm:t.confirm,stop:t.invalidate};
 }
 function rate393(t){
 const cs=[t.ccy,t.ccy2].filter(Boolean);
@@ -842,7 +838,7 @@ window.v401NominalCards=function(c,d){
   return [
     v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
     v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
-    v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',Math.abs(d.chg10_bp||0)>=3?'warn':'neu'),
+    v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
     v233RateCard('Pendenza · 10Y−2Y',d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb',curve.name,curve.why,curve.cls)
   ].join('');
 };
@@ -950,96 +946,11 @@ window.v413DrawOisCurve=function(c){
   series.forEach((s,si)=>{ctx.strokeStyle=`rgba(96,165,250,${styles[si].a})`;ctx.lineWidth=styles[si].w;ctx.beginPath();s.forEach((v,i)=>{if(i===0)ctx.moveTo(X(i),Y(v));else ctx.lineTo(X(i),Y(v));});ctx.stroke();});
 };
 
-window.v401RatesOriginDiagnostic=function(c,d){
-  const n=x=>(x===null||x===undefined||x==='')?null:(Number.isFinite(Number(x))?Number(x):null);
-  const ch2=n(d?.chg2_bp), ch10=n(d?.chg10_bp);
-  const minMove=3;
-  const gap=3;
-  const fmtBp=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
-
-  if(ch2==null || ch10==null){
-    return {
-      title:'Misto / non determinato',
-      cls:'neu',
-      why:'Mancano variazioni comparabili di 2Y e 10Y. Il modello non forza una causa.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-    };
-  }
-
-  const a2=Math.abs(ch2), a10=Math.abs(ch10);
-
-  if(a2<minMove && a10<minMove){
-    return {
-      title:'Misto / non determinato',
-      cls:'neu',
-      why:'Il movimento settimanale è troppo piccolo per attribuire un driver rates affidabile.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-    };
-  }
-
-  if(ch2>0 && ch2>=ch10+gap){
-    return {
-      title:'Policy / front-end',
-      cls:'up',
-      why:'Il 2Y sale più del 10Y: domina il repricing della banca centrale e della policy attesa.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-    };
-  }
-
-  if(ch2<0 && ch2<=ch10-gap){
-    return {
-      title:'Policy / front-end',
-      cls:'down',
-      why:'Il 2Y scende più del 10Y: domina un repricing più dovish della policy attesa.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-    };
-  }
-
-  if(ch10>0 && ch10>=ch2+gap){
-    return {
-      title:'Long-end · origine da verificare',
-      cls:'warn',
-      why:'Il 10Y sale più del 2Y. Prima di leggerlo come positivo per FX bisogna separare crescita + real yield, breakeven, term premium e fiscal/supply.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`
-    };
-  }
-
-  if(ch10<0 && ch10<=ch2-gap){
-    return {
-      title:'Long-end · origine da verificare',
-      cls:'info',
-      why:'Il 10Y scende più del 2Y. Il movimento nasce soprattutto dalla parte lunga e va separato tra crescita, real yield, inflazione attesa e premio per la duration.',
-      detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`
-    };
-  }
-
-  return {
-    title:'Misto / policy + long-end',
-    cls:'neu',
-    why:'2Y e 10Y si muovono senza una dominanza abbastanza netta. La lettura resta mista finché real yield, breakeven o term premium non danno una conferma dinamica comparabile.',
-    detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-  };
-};
-
-window.v401RatesOriginCard=function(c,d){
-  const x=window.v401RatesOriginDiagnostic(c,d);
-  return v233RateCard(
-    'Origine del movimento Rates',
-    x.title,
-    x.detail,
-    x.why,
-    x.cls
-  );
-};
-
 window.v401RenderRatesLayers=function(c,d){
   const ng=document.querySelector('#v233RatesGrid');
-  if(ng){
-    const existing=(typeof v233Cards==='function')
-      ? v233Cards(c,d)
-      : window.v401RatesOriginCard(c,d)+window.v401NominalCards(c,d)+window.v401DecompCards(c,d);
-    ng.innerHTML=existing;
-  }
+  const dg=document.querySelector('#v401RatesDecompGrid');
+  if(ng) ng.innerHTML=window.v401NominalCards(c,d);
+  if(dg) dg.innerHTML=window.v401DecompCards(c,d);
   window.v401RenderOis(c);
 };
 })();

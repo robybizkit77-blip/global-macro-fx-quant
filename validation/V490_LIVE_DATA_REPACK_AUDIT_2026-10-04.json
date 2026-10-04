@@ -1,22 +1,24 @@
 {
   "schema": "GMFQ_V490_REPACK_AUDIT_V2",
   "created_at": "2026-10-04",
-  "baseline_ref": "main",
-  "runtime_sha256_before": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
-  "runtime_sha256_after": "752a4f6e1e30adfa9ddd01203593f5a65cabaf432dc713ea4441e243a11668e9",
+  "baseline_ref": "497ceb7bd3f01e69965c05a54416dc07406ae28d",
+  "runtime_sha256_before": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
+  "runtime_sha256_after": "c84ffa8e642569eb33a73fbb688f3f6d87bb6bd5ae32c944eef4ee0dad6c8c23",
   "runtime_changed": true,
   "changed_sections": [
     "D",
     "NATIVE_RATES_DATA",
     "MACRO_THERMOMETER_DATA",
     "V250_COT_CHART_DATA",
-    "MACRO_SERIES"
+    "MACRO_SERIES",
+    "RATES_AUDIT_METADATA"
   ],
   "changed_parts": [
     0,
-    1
+    1,
+    15
   ],
-  "section_count": 13,
+  "section_count": 14,
   "split_join_exact": true,
   "unaffected_parts_byte_identical": true
 }

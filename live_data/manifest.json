@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_V490_LIVE_DATA_LAYER_V1",
   "created_at": "2026-10-04",
-  "runtime_sha256_before": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
+  "runtime_sha256_before": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
   "sections": [
     {
       "key": "D",
@@ -9,8 +9,8 @@
       "assignment_start": 291589,
       "literal_start": 291610,
       "literal_end": 1002124,
-      "bytes": 710606,
-      "sha256": "eb5c948b3abafa0ec107a736deba5406693ab9b855b3ec8ad6fc9121cbcd34f5"
+      "bytes": 711214,
+      "sha256": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176"
     },
     {
       "key": "CERT53",
@@ -45,8 +45,8 @@
       "assignment_start": 1141961,
       "literal_start": 1141998,
       "literal_end": 1266481,
-      "bytes": 124502,
-      "sha256": "5f1374c092f59581dd3c61e1887d0b9e79f1e71ab8f79135abc58e02e4e25a25"
+      "bytes": 126228,
+      "sha256": "1dae43b609aaa998106280d6da25d63ff20a249aa9dabcd11a5f401a96cec401"
     },
     {
       "key": "OIS_DATA",
@@ -63,8 +63,8 @@
       "assignment_start": 1272343,
       "literal_start": 1272385,
       "literal_end": 1289928,
-      "bytes": 17543,
-      "sha256": "06048c012a592f9eb3fd1d4c05baf20d2da8716ece94645b8e7586131404d19d"
+      "bytes": 17527,
+      "sha256": "226efbdc47cf2a975e1e3c696ac3f237fbb80c5d05f67779948130f4e78fda53"
     },
     {
       "key": "NATIVE_LIQ_DATA",
@@ -90,8 +90,8 @@
       "assignment_start": 1377916,
       "literal_start": 1377955,
       "literal_end": 1418944,
-      "bytes": 40989,
-      "sha256": "c793541b42de27233029380d72ec439b16c93ab26ffddcf107da29e815c451d3"
+      "bytes": 41014,
+      "sha256": "7edde3ae6737a4743ad56643c64dc88095a73fb2e46cf7f72fc3ac748842b0dd"
     },
     {
       "key": "V247_COT_STORIES",
@@ -114,14 +114,21 @@
     {
       "key": "MACRO_SERIES",
       "file": "MACRO_SERIES.json",
-      "assignment_start": 1446660,
-      "literal_start": 1446692,
-      "literal_end": 1785664,
-      "bytes": 339108,
-      "sha256": "2d1ed1d498500b2500b97d0fc66efb25a8cf3020fc56d12bad9df8a87435e257"
+      "assignment_start": 1446592,
+      "literal_start": 1446624,
+      "literal_end": 4309144,
+      "bytes": 339206,
+      "sha256": "f588c3bd1970bd9a1460ab8e96422d26342a692527ee857e8e3732fca20e7ff8"
+    },
+    {
+      "key": "RATES_AUDIT_METADATA",
+      "file": "RATES_AUDIT_METADATA.json",
+      "insertion_anchor": "<script id=\"gmfq-runtime-secondary-metadata-completion-20261001\">",
+      "bytes": 1830,
+      "sha256": "2146b46dcb26fcce8ba4270c41448955a5f39190ace3866db3bb4f0b2f687385"
     }
   ],
-  "runtime_sha256_after_roundtrip": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
+  "runtime_sha256_after_roundtrip": "be89d815bab48293644314ba8b8a3f937bdbb9b2b3613f092cbec744a8608bd7",
   "byte_identical_roundtrip": true,
   "parts": [
     {
@@ -132,51 +139,51 @@
     },
     {
       "file": "payload/part-01.txt",
-      "chars": 414547,
-      "bytes": 415109,
-      "sha256": "6ae852d032ac6fe6e402e0e5006e7fdefa624a92ad0bba398d4ba171f72ca678"
+      "chars": 2938050,
+      "bytes": 2938612,
+      "sha256": "137cf71e340b6dd4935d561fd44224a79ae6604f3f6bb4c5a6daae4767b96d4c"
     },
     {
       "file": "payload/part-02.txt",
-      "chars": 53134,
-      "bytes": 53383,
-      "sha256": "7c144b95d850cd1f68f0b54a79f1ce6fa7257304127c86806e037a45fdf21e30"
+      "chars": 52038,
+      "bytes": 52271,
+      "sha256": "57e455da2cd1e939235f40fb06df51bdef9a7b09b2dad4910b5e9891a8831fc6"
     },
     {
       "file": "payload/part-03.txt",
-      "chars": 48714,
-      "bytes": 48923,
-      "sha256": "c27b8fa526838ea188eefdeb44ed7fc05a2250989945422837fd30e8bcd0c3bb"
+      "chars": 48693,
+      "bytes": 48902,
+      "sha256": "bee0dec65954bf30e4dcfdd8fe655e1c8a97367f2be5233c96b93e9c7f8e0773"
     },
     {
       "file": "payload/part-04.txt",
-      "chars": 60183,
-      "bytes": 60393,
-      "sha256": "ee6fb960eb84583f5c99ae3764d42186098230f58de2fb384d1bd2614287e101"
+      "chars": 59218,
+      "bytes": 59439,
+      "sha256": "d7bb4b8af87a4ec49d47faf7baf78f4057cd5f69251b4cbad125ebd20fac785f"
     },
     {
       "file": "payload/part-05.txt",
-      "chars": 46055,
-      "bytes": 46336,
-      "sha256": "50a2e64d72225745b158a88d4de374bc9f73ff42daa7a454c124f730b4ac9dc5"
+      "chars": 45701,
+      "bytes": 45990,
+      "sha256": "ae05b7544167884d6b35a2f4145c2e90984cc7640d053b424edbb2b06258a398"
     },
     {
       "file": "payload/part-06.txt",
-      "chars": 63729,
-      "bytes": 63997,
-      "sha256": "78f653d6556419a0ca3aa036dc538269ae72eff5822c2e0107a3c609a4537555"
+      "chars": 62358,
+      "bytes": 62620,
+      "sha256": "1fff66a000dba5eed5ae12eb59019442d950ef498ec1b8f58f047383b32f5b79"
     },
     {
       "file": "payload/part-07.txt",
-      "chars": 71791,
-      "bytes": 72047,
-      "sha256": "e2f34387dd2706b9be2a0c210cadc19789d489521aef10fbe9841ce93da27b12"
+      "chars": 65976,
+      "bytes": 66205,
+      "sha256": "f35f6d271ec8ccd9c902058babf82a2ba034a5315f4ae782342694b73eb25d05"
     },
     {
       "file": "payload/part-08.txt",
-      "chars": 39733,
-      "bytes": 39807,
-      "sha256": "94e3317c909f9febb139b4235699af8938de11cd39f6c659fcad6f1d0d2d3fbb"
+      "chars": 39741,
+      "bytes": 39815,
+      "sha256": "9ae8be62d0131cf1c4d92b9f1d80f6567677b9648cb694a09857f4e5a231e88f"
     },
     {
       "file": "payload/part-09.txt",
@@ -198,27 +205,27 @@
     },
     {
       "file": "payload/part-12.txt",
-      "chars": 39907,
-      "bytes": 39962,
-      "sha256": "fd5ced003e6ac7218c61025c6626fbbbfbd7242028c069fbbdf24de5f26a3897"
+      "chars": 36256,
+      "bytes": 36293,
+      "sha256": "1b7c8cf5e2a91de6f5092f7e81feef25ceb46e9c0e0959ef70fe05930f775160"
     },
     {
       "file": "payload/part-13.txt",
-      "chars": 49147,
-      "bytes": 49278,
-      "sha256": "11bb0aac427d1481deb304c8a9f522f2b6bd740af089d5c25d90e8109bc16a8e"
+      "chars": 47249,
+      "bytes": 47376,
+      "sha256": "e2797ee0a7ccc553daac61f784542e283b952f7c01d9d903539e0fcc046d6e22"
     },
     {
       "file": "payload/part-14.txt",
-      "chars": 52741,
-      "bytes": 52981,
-      "sha256": "4b5cd7e494ad427446ec651e752b92f7cd8f6d895f853b4e855d2560a930a388"
+      "chars": 52327,
+      "bytes": 52562,
+      "sha256": "bcd0d27b06266881f004b45a3bc0125462f0592e7bec05955171835220799f01"
     },
     {
       "file": "payload/part-15.txt",
-      "chars": 233902,
-      "bytes": 234286,
-      "sha256": "de1c8983767f4f33bc80c69eedc8c1e32833e6347c674177369d68d1263cd55b"
+      "chars": 174009,
+      "bytes": 174308,
+      "sha256": "aba92c1ce90d85cdfc5e7b15afe023cf316985b2eb62f6c805d11d4dedbec10d"
     }
   ]
 }
