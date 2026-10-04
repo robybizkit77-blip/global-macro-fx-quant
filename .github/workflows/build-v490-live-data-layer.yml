@@ -1,0 +1,35 @@
+name: Build v490 Live Data Layer
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/build_v490_live_data_layer.py"
+      - ".github/workflows/build-v490-live-data-layer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract live data and verify byte-identical round trip
+        run: python validation/build_v490_live_data_layer.py
+      - name: Commit extracted live data layer
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- live_data)" ]; then
+            echo "No live_data changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data
+          git commit -m "Extract v490 live data layer with exact round trip"
+          git push
