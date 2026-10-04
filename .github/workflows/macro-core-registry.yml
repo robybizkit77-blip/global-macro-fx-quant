@@ -1,0 +1,32 @@
+name: Macro Core Registry
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - "validation/extract_macro_core_registry.py"
+      - "live_data/sections/MACRO_SERIES.json"
+      - "live_data/sections/D.json"
+      - ".github/workflows/macro-core-registry.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build macro core registry
+        run: python validation/extract_macro_core_registry.py
+      - name: Commit registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/MACRO_CORE_REGISTRY_2026-10-04.json
+          git commit -m "Build macro core registry" || exit 0
+          git push
