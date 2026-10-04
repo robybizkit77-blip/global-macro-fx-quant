@@ -68,8 +68,11 @@ jobs:
               const jpyText=document.body?.innerText||'';
               if (typeof window.openPairDetail==='function') window.openPairDetail('USD/JPY');
               const usdjpy=typeof window.derivePairDecisionFrame==='function' ? window.derivePairDecisionFrame('USD/JPY') : null;
-              if (typeof window.selectNativeCb==='function') window.selectNativeCb('JPY');
-              const oisText=document.body?.innerText||'';
+              const withheldText={};
+              for (const c of ['USD','CHF','NZD']) {
+                if (typeof window.selectNativeCb==='function') window.selectNativeCb(c);
+                withheldText[c]=document.body?.innerText||'';
+              }
               return {
                 title: document.title,
                 finalAudit: audit,
@@ -87,7 +90,7 @@ jobs:
                 sections,
                 currencyStates,
                 usdjpy,
-                coherenceText:{eur:eurText,jpy:jpyText,ois:oisText},
+                coherenceText:{eur:eurText,jpy:jpyText,withheld:withheldText},
                 bodyTextLength: document.body?.innerText?.length || 0
               };
             });
@@ -108,11 +111,14 @@ jobs:
             if(usdjpy.quality!=='CONTRASTO STRUTTURALE FORTE' || usdjpy.fav!=='USD' || usdjpy.macroSide!=='USD' || usdjpy.policySide!=='USD' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY current canonical structure failure: '+JSON.stringify(usdjpy));
             if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
             if(result.coherenceText.jpy.includes('Macro e Tassi/CB favoriscono entrambi JPY')) throw new Error('JPY wording still overstates support');
-            if(!result.coherenceText.ois.includes('front-end osservato') || result.coherenceText.ois.includes('OIS/forward o 2Y')) throw new Error('OIS/front-end wording failure');
 
             const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
             for(const [k,v] of Object.entries(expected)){
               if(result.ois[k]!==v) throw new Error(`OIS ${k}: ${result.ois[k]} != ${v}`);
+            }
+            for (const c of ['USD','CHF','NZD']) {
+              const txt=result.coherenceText.withheld[c]||'';
+              if(!txt.includes('front-end osservato') || txt.includes('OIS/forward o 2Y')) throw new Error(`OIS/front-end wording failure ${c}`);
             }
 
             await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
