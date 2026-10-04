@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_FORWARD_OOS_CHECKPOINT_RUNBOOK_V1",
+  "created_at": "2026-10-04",
+  "branch": "staging-usd-pit-readiness-2026-10-03",
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "canonical_t0": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+  "evaluator": "validation/evaluate_forward_oos_checkpoint.py",
+  "report_template": "validation/FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1_2026-10-04.json",
+  "checkpoints": {
+    "1W": "2026-10-08",
+    "4W": "2026-10-29",
+    "12W": "2026-12-24"
+  },
+  "pre_run_sequence": [
+    "Confirm OOS runtime integrity guard is PASS relative to frozen engine commit.",
+    "Confirm canonical T0 file and rules fingerprint are unchanged.",
+    "Do not alter model rules, thresholds, hierarchy, pair logic, runtime payload or anchor prices.",
+    "Run the requested checkpoint evaluator only on or after its evaluation date.",
+    "If ECB fixing is not yet available, accept WAITING_FOR_ECB_FIXING and rerun later; never substitute another market source."
+  ],
+  "evaluation_sequence": [
+    "Use the first common ECB reference-rate fixing available on or after the checkpoint date.",
+    "Reconstruct all G8 crosses from that single common fixing.",
+    "Score only pairs with a canonical favored side in T0.",
+    "Exclude pairs without a canonical favored side from hit-rate scoring.",
+    "Record overall hit rate, by-quality hit rate and every pair return without changing any signal definition."
+  ],
+  "post_run_sequence": [
+    "Commit the evaluation artifact in validation only.",
+    "Populate the standard checkpoint report from the frozen evaluation artifact.",
+    "Separate what worked, what failed and what is inconclusive.",
+    "Do not tune after 1W or 4W; treat them as evidence accumulation checkpoints.",
+    "After 12W, review 1W+4W+12W jointly before deciding whether any research or model change is justified."
+  ],
+  "failure_handling": {
+    "ecb_fetch_error": "Retry the same canonical ECB source; do not replace it with a different price source for convenience.",
+    "missing_common_fixing": "Return WAITING_FOR_ECB_FIXING and do not create a scored checkpoint artifact.",
+    "fingerprint_mismatch": "STOP. Treat as possible OOS contamination and investigate before evaluation.",
+    "runtime_guard_failure": "STOP. Do not score the checkpoint until the runtime diff is explained and the OOS validity decision is made.",
+    "unexpected_evaluator_error": "Fix validation-only infrastructure if possible; do not modify model rules or T0 to make the run pass."
+  },
+  "interpretation_rules": {
+    "1W": "Early read only. No tuning and no structural conclusion from a single short horizon.",
+    "4W": "Intermediate validation. Compare persistence by signal quality, but still no rule change.",
+    "12W": "First complete forward cycle. Jointly assess all horizons and only then open post-OOS research if warranted."
+  },
+  "guardrails": [
+    "ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE",
+    "No retrospective anchor changes.",
+    "No cherry-picking checkpoints or fixing dates.",
+    "No replacing canonical ECB prices with discretionary alternatives.",
+    "No removal of losing pairs from the frozen eligible set.",
+    "No threshold, weight, turning-point or confidence tuning before the first complete 12W review."
+  ],
+  "decision": "RUNBOOK_READY__WAIT_FOR_NEXT_FORWARD_CHECKPOINT"
+}
