@@ -103,7 +103,7 @@ jobs:
             const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
             for(const [c,v] of Object.entries(expected)) if(out.ois[c]!==v) throw new Error(`OIS ${c}: ${out.ois[c]} != ${v}`);
             const j=out.states.JPY||{};
-            if(j.base!=='MISTA'||j.macro!==0||j.policy!==0) throw new Error('JPY state changed');
+            if(j.base!=='COSTRUTTIVA'||j.macro!==0||j.policy!==1) throw new Error('JPY state changed');
             const usdExpected={
               US_PAYEMS_history_value:['2026-09-01',159044],
               US_UNRATE_history_value:['2026-09-01',4.2],

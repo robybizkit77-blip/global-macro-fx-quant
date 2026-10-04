@@ -129,7 +129,7 @@ jobs:
             if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
 
             const jpy=result.currencyStates.JPY||{};
-            if(jpy.base!=='MISTA' || jpy.macro!==0 || jpy.policy!==0) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
+            if(jpy.base!=='COSTRUTTIVA' || jpy.macro!==0 || jpy.policy!==1) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
             const usdjpy=result.usdjpy||{};
             if(usdjpy.quality!=='CONTRASTO STRUTTURALE FORTE' || usdjpy.fav!=='USD' || usdjpy.macroSide!=='USD' || usdjpy.policySide!=='USD' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY current canonical structure failure: '+JSON.stringify(usdjpy));
             if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
