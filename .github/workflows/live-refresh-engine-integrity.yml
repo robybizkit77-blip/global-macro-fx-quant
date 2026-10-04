@@ -1,4 +1,4 @@
-# gate-trigger: cad-deterministic-browser-assertions-2026-10-04
+# gate-trigger: final-cad-jpy-staging-validation-2026-10-04
 name: Live Refresh Engine Integrity
 
 # Explicit gate request after staged live-data refreshes.
