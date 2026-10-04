@@ -1,0 +1,169 @@
+{
+  "schema": "GMFQ_MACRO_THERMOMETER_DYNAMICS_VALIDATION_V1",
+  "rows": [
+    {
+      "currency": "USD",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "ACCELERA",
+      "pred_acceleration": "ACCELERA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "USD",
+      "key": "labour",
+      "actual_direction": "STABILE",
+      "pred_direction": "STABILE",
+      "direction_match": true,
+      "actual_acceleration": "STABILE",
+      "pred_acceleration": "STABILE",
+      "acceleration_match": true
+    },
+    {
+      "currency": "EUR",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "STABILE",
+      "pred_acceleration": "STABILE",
+      "acceleration_match": true
+    },
+    {
+      "currency": "EUR",
+      "key": "labour",
+      "actual_direction": "STABILE",
+      "pred_direction": "STABILE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "GBP",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "GBP",
+      "key": "labour",
+      "actual_direction": "STABILE",
+      "pred_direction": "STABILE",
+      "direction_match": true,
+      "actual_acceleration": "STABILE",
+      "pred_acceleration": "STABILE",
+      "acceleration_match": true
+    },
+    {
+      "currency": "JPY",
+      "key": "inflation",
+      "actual_direction": "STABILE",
+      "pred_direction": "STABILE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "JPY",
+      "key": "labour",
+      "actual_direction": "SCENDE",
+      "pred_direction": "SCENDE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "CHF",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "ACCELERA",
+      "pred_acceleration": "ACCELERA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "CHF",
+      "key": "labour",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "CAD",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "CAD",
+      "key": "labour",
+      "actual_direction": "STABILE",
+      "pred_direction": "STABILE",
+      "direction_match": true,
+      "actual_acceleration": "ACCELERA",
+      "pred_acceleration": "ACCELERA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "AUD",
+      "key": "inflation",
+      "actual_direction": "SCENDE",
+      "pred_direction": "SCENDE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "AUD",
+      "key": "labour",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "RALLENTA",
+      "pred_acceleration": "RALLENTA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "NZD",
+      "key": "inflation",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "ACCELERA",
+      "pred_acceleration": "ACCELERA",
+      "acceleration_match": true
+    },
+    {
+      "currency": "NZD",
+      "key": "labour",
+      "actual_direction": "SALE",
+      "pred_direction": "SALE",
+      "direction_match": true,
+      "actual_acceleration": "ACCELERA",
+      "pred_acceleration": "ACCELERA",
+      "acceleration_match": true
+    }
+  ],
+  "direction_matches": 16,
+  "acceleration_matches": 16,
+  "total": 16,
+  "status": "PASS"
+}
