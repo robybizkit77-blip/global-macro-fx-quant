@@ -1,5 +1,5 @@
 {
-  "schema": "GMFQ_AUD_RBA_RATES_REFRESH_V1",
+  "schema": "GMFQ_AUD_RBA_RATES_REFRESH_V2",
   "as_of": "2026-09-30",
   "source": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
   "series_2y": "FCMYGBAG2D",
@@ -7,10 +7,13 @@
   "y2": 4.942,
   "y10": 5.344,
   "curve_bp": 40.2,
-  "weekly_reference_2y": "2026-09-16",
-  "weekly_reference_10y": "2026-09-16",
-  "chg2_bp": -5.7,
-  "chg10_bp": -0.4,
-  "curve_state": "Bull steepening",
-  "same_basis": true
+  "weekly_reference_2y": "2026-09-23",
+  "weekly_reference_10y": "2026-09-23",
+  "weekly_reference_y2": 4.947,
+  "weekly_reference_y10": 5.245,
+  "chg2_bp": -0.5,
+  "chg10_bp": 9.9,
+  "curve_state": "Movimento misto",
+  "same_basis": true,
+  "recent_tail_rows_synced": 30
 }
