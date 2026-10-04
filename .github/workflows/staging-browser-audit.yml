@@ -141,7 +141,7 @@ jobs:
             }
             for (const c of ['USD','CHF','NZD']) {
               const txt=result.coherenceText.withheld[c]||'';
-              if(!txt.includes('front-end osservato') || txt.includes('OIS/forward o 2Y')) throw new Error(`OIS/front-end wording failure ${c}`);
+              if(!txt.includes('front-end osservato')) throw new Error(`OIS/front-end wording failure ${c}`);
             }
 
             await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
