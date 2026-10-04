@@ -1,0 +1,114 @@
+{
+  "schema": "GMFQ_USD_MACRO_CORE_REFRESH_V1",
+  "created_at": "2026-10-04",
+  "target": "staging-live-data-refresh-v1-2026-10-04",
+  "write_requested": true,
+  "updates": [
+    {
+      "id": "US_PAYEMS_history_value",
+      "label": "Payrolls",
+      "category": "Lavoro",
+      "action": "append",
+      "old": {
+        "date": "2026-08-01",
+        "value": 159075.0,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-09-01",
+        "value": 159044,
+        "n": 83
+      },
+      "release": "BLS Employment Situation September 2026"
+    },
+    {
+      "id": "US_UNRATE_history_value",
+      "label": "Disoccupazione",
+      "category": "Lead / survey",
+      "action": "append",
+      "old": {
+        "date": "2026-08-01",
+        "value": 4.1,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-09-01",
+        "value": 4.2,
+        "n": 83
+      },
+      "release": "BLS Employment Situation September 2026"
+    },
+    {
+      "id": "US_AHE_TOTAL_PRIVATE_history_value",
+      "label": "Salari orari medi (AHE)",
+      "category": "Lavoro",
+      "action": "append",
+      "old": {
+        "date": "2026-08",
+        "value": 37.75,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-09",
+        "value": 37.81,
+        "n": 83
+      },
+      "release": "BLS Employment Situation September 2026"
+    },
+    {
+      "id": "US_JTSJOL_history_value",
+      "label": "JOLTS — job openings",
+      "category": "Lavoro",
+      "action": "append",
+      "old": {
+        "date": "2026-07",
+        "value": 7271.0,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-08",
+        "value": 7079,
+        "n": 83
+      },
+      "release": "BLS JOLTS August 2026"
+    },
+    {
+      "id": "US_JTSHIR_history_JTSHIR",
+      "label": "JOLTS — hires",
+      "category": "Lavoro",
+      "action": "append",
+      "old": {
+        "date": "2026-07-01",
+        "value": 3.2,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-08-01",
+        "value": 3.3,
+        "n": 83
+      },
+      "release": "BLS JOLTS August 2026"
+    },
+    {
+      "id": "US_JTSQUR_history_JTSQUR",
+      "label": "JOLTS — quits",
+      "category": "Lavoro",
+      "action": "append",
+      "old": {
+        "date": "2026-07-01",
+        "value": 1.9,
+        "n": 82
+      },
+      "new": {
+        "date": "2026-08-01",
+        "value": 1.9,
+        "n": 83
+      },
+      "release": "BLS JOLTS August 2026"
+    }
+  ],
+  "D_sha256_before": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176",
+  "D_sha256_after": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176",
+  "D_unchanged": true,
+  "note": "MACRO_SERIES feeds blockDynamics; D is intentionally not modified because deriveCurrencyState reads D's macro layer."
+}

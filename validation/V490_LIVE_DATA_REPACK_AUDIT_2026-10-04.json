@@ -3,16 +3,18 @@
   "created_at": "2026-10-04",
   "baseline_ref": "main",
   "runtime_sha256_before": "9c37daeef4e7027588d1813ef77073d633d7d3c405b74a07928155156312b64a",
-  "runtime_sha256_after": "5978e76e65a3d792125be7798b607c1a5e9503f6cef0fc3a2b6e6fc1a1995c64",
+  "runtime_sha256_after": "752a4f6e1e30adfa9ddd01203593f5a65cabaf432dc713ea4441e243a11668e9",
   "runtime_changed": true,
   "changed_sections": [
     "D",
     "NATIVE_RATES_DATA",
     "MACRO_THERMOMETER_DATA",
-    "V250_COT_CHART_DATA"
+    "V250_COT_CHART_DATA",
+    "MACRO_SERIES"
   ],
   "changed_parts": [
-    0
+    0,
+    1
   ],
   "section_count": 13,
   "split_join_exact": true,
