@@ -64,10 +64,10 @@
     },
     {
       "file": "payload/part-15.txt",
-      "bytes": 177252
+      "bytes": 196636
     }
   ],
-  "runtime_bytes": 2693882,
+  "runtime_bytes": 2713266,
   "runtime_date_range": {
     "count": 2947,
     "min": "2016-01-01",
@@ -537,10 +537,10 @@
     ],
     "RATES_AUDIT_METADATA": [
       {
-        "assignment_pos": 2682964,
+        "assignment_pos": 2634665,
         "rhs_span": [
-          2683004,
-          2684826
+          2634705,
+          2636527
         ],
         "json_parsed": true,
         "parse_error": null,
