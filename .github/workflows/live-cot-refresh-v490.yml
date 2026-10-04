@@ -5,6 +5,7 @@ on:
     branches: [staging-live-data-refresh-v1-2026-10-04]
     paths:
       - "validation/refresh_cot_live_data.py"
+      - "validation/repack_v490_from_live_data.py"
       - ".github/workflows/live-cot-refresh-v490.yml"
   workflow_dispatch:
 
