@@ -1,0 +1,470 @@
+{
+  "schema": "GMFQ_V490_LIVE_DATA_STATUS_V1",
+  "created_at": "2026-10-04",
+  "dashboard": {
+    "asOf": "2026-09-25",
+    "priceAsOf": "2026-09-28",
+    "latest_date_anywhere": "2026-09-28"
+  },
+  "currencies": {
+    "USD": {
+      "rates": {
+        "date": "2026-09-28",
+        "latest_date": "2026-09-28",
+        "source": "U.S. Treasury Daily Par Yield Curve · 28 Sep 2026",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "2Y": 4.92,
+        "10Y": 5.24,
+        "chg2_bp": 16.0,
+        "chg10_bp": 28.0
+      },
+      "liquidity": {
+        "latest_date": "2026-09-09",
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-10-28",
+        "source": null,
+        "quality": null,
+        "rate": 3.875
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-28",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "EUR": {
+      "rates": {
+        "date": "2026-09-25",
+        "latest_date": "2026-09-25",
+        "source": "ECB AAA Svensson spot curve · validated 25 Sep 2026",
+        "quality": "FULL_CURRENT_VALIDATED",
+        "2Y": 3.23,
+        "10Y": 3.57,
+        "chg2_bp": 6.0,
+        "chg10_bp": 3.0
+      },
+      "liquidity": {
+        "latest_date": "2026-09-25",
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-10-29",
+        "source": null,
+        "quality": null,
+        "rate": 2.5
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-22",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "GBP": {
+      "rates": {
+        "date": "2026-09-25",
+        "latest_date": "2026-09-25",
+        "source": "Bank of England nominal government zero-coupon spot curve · same-basis 18→25 Sep 2026",
+        "quality": "FULL_CURRENT_VALIDATED",
+        "2Y": 4.639,
+        "10Y": 5.384,
+        "chg2_bp": -1.9,
+        "chg10_bp": 9.4
+      },
+      "liquidity": {
+        "latest_date": "2026-09-16",
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-11-05",
+        "source": null,
+        "quality": null,
+        "rate": 3.75
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-22",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "JPY": {
+      "rates": {
+        "date": "2026-09-28",
+        "latest_date": "2026-09-28",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 28 Sep 2026",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "2Y": 1.95,
+        "10Y": 3.08,
+        "chg2_bp": 10.1,
+        "chg10_bp": 9.9
+      },
+      "liquidity": {
+        "latest_date": null,
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-10-30",
+        "source": null,
+        "quality": null,
+        "rate": 1.25
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": null,
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "CHF": {
+      "rates": {
+        "date": "2026-09-25",
+        "latest_date": "2026-09-25",
+        "source": "Market close 25 Sep 2026; storico SNB",
+        "quality": "CURRENT_MARKET_CLOSE",
+        "2Y": 0.362,
+        "10Y": 0.649,
+        "chg2_bp": 5.9,
+        "chg10_bp": 6.8
+      },
+      "liquidity": {
+        "latest_date": null,
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-12-10",
+        "source": null,
+        "quality": null,
+        "rate": 0.0
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-22",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "CAD": {
+      "rates": {
+        "date": "2026-09-25",
+        "latest_date": "2026-09-25",
+        "source": "Market close 25 Sep 2026; storico Bank of Canada",
+        "quality": "CURRENT_MARKET_CLOSE",
+        "2Y": 3.338,
+        "10Y": 3.925,
+        "chg2_bp": 1.8,
+        "chg10_bp": 5.5
+      },
+      "liquidity": {
+        "latest_date": "2026-08-01",
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-10-28",
+        "source": null,
+        "quality": null,
+        "rate": 2.25
+      },
+      "ois": {
+        "as_of": "2026-09-29",
+        "latest_date": "2027-03-03",
+        "status": "WITHHELD",
+        "source": "Montréal Exchange public Canadian Interest Rate Expectations / CRA + Market Review",
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-21",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "AUD": {
+      "rates": {
+        "date": "2026-09-25",
+        "latest_date": "2026-09-25",
+        "source": "Market close 25 Sep 2026; storico RBA",
+        "quality": "CURRENT_MARKET_CLOSE",
+        "2Y": 5.008,
+        "10Y": 5.396,
+        "chg2_bp": 0.9,
+        "chg10_bp": 4.8
+      },
+      "liquidity": {
+        "latest_date": "2026-09-16",
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-11-03",
+        "source": null,
+        "quality": null,
+        "rate": 4.6
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-25",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    },
+    "NZD": {
+      "rates": {
+        "date": "2026-09-28",
+        "latest_date": "2026-09-28",
+        "source": "RBNZ B2 Wholesale interest rates · government bond close · 28 Sep 2026",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "2Y": 3.95,
+        "10Y": 5.13,
+        "chg2_bp": 10.0,
+        "chg10_bp": 18.0
+      },
+      "liquidity": {
+        "latest_date": null,
+        "source": null,
+        "quality": null
+      },
+      "central_bank": {
+        "latest_date": "2026-10-28",
+        "source": null,
+        "quality": null,
+        "rate": 2.75
+      },
+      "ois": {
+        "as_of": null,
+        "latest_date": null,
+        "status": "WITHHELD",
+        "source": null,
+        "quality": null
+      },
+      "macro": {
+        "latest_date": "2026-09-28",
+        "series_keys": null
+      },
+      "cot": {
+        "latest_date": "2026-09-22"
+      }
+    }
+  },
+  "ois_global_as_of": "2026-09-29",
+  "staleness_order": [
+    {
+      "ccy": "CHF",
+      "block": "liquidity",
+      "latest_date": null
+    },
+    {
+      "ccy": "JPY",
+      "block": "liquidity",
+      "latest_date": null
+    },
+    {
+      "ccy": "JPY",
+      "block": "macro",
+      "latest_date": null
+    },
+    {
+      "ccy": "NZD",
+      "block": "liquidity",
+      "latest_date": null
+    },
+    {
+      "ccy": "CAD",
+      "block": "liquidity",
+      "latest_date": "2026-08-01"
+    },
+    {
+      "ccy": "USD",
+      "block": "liquidity",
+      "latest_date": "2026-09-09"
+    },
+    {
+      "ccy": "AUD",
+      "block": "liquidity",
+      "latest_date": "2026-09-16"
+    },
+    {
+      "ccy": "GBP",
+      "block": "liquidity",
+      "latest_date": "2026-09-16"
+    },
+    {
+      "ccy": "CAD",
+      "block": "macro",
+      "latest_date": "2026-09-21"
+    },
+    {
+      "ccy": "AUD",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "CAD",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "CHF",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "CHF",
+      "block": "macro",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "EUR",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "EUR",
+      "block": "macro",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "GBP",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "GBP",
+      "block": "macro",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "JPY",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "NZD",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "USD",
+      "block": "cot",
+      "latest_date": "2026-09-22"
+    },
+    {
+      "ccy": "AUD",
+      "block": "macro",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "AUD",
+      "block": "rates",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "CAD",
+      "block": "rates",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "CHF",
+      "block": "rates",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "EUR",
+      "block": "liquidity",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "EUR",
+      "block": "rates",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "GBP",
+      "block": "rates",
+      "latest_date": "2026-09-25"
+    },
+    {
+      "ccy": "JPY",
+      "block": "rates",
+      "latest_date": "2026-09-28"
+    },
+    {
+      "ccy": "NZD",
+      "block": "macro",
+      "latest_date": "2026-09-28"
+    },
+    {
+      "ccy": "NZD",
+      "block": "rates",
+      "latest_date": "2026-09-28"
+    },
+    {
+      "ccy": "USD",
+      "block": "macro",
+      "latest_date": "2026-09-28"
+    },
+    {
+      "ccy": "USD",
+      "block": "rates",
+      "latest_date": "2026-09-28"
+    }
+  ]
+}
