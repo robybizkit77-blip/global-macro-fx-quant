@@ -2817,6 +2817,37 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 
+<script id="gmfq-live-data-rates_audit_metadata">window.__GMFQ_DATA.RATES_AUDIT_METADATA={
+  "schema": "GMFQ_RATES_AUDIT_METADATA_V1",
+  "audit_date": "2026-10-04",
+  "source_context": "Validated same-basis Rates refresh audits committed on staging",
+  "expected_rates": {
+    "USD": "2026-10-02",
+    "EUR": "2026-10-01",
+    "GBP": "2026-10-01",
+    "JPY": "2026-10-01",
+    "CHF": "2026-09-30",
+    "CAD": "2026-10-01",
+    "AUD": "2026-09-30",
+    "NZD": "2026-10-01"
+  },
+  "rates": {
+    "USD": {"current_as_of":"2026-10-02","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated U.S. Treasury same-basis snapshot retained."},
+    "EUR": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated ECB AAA same-basis snapshot retained."},
+    "GBP": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of England same-basis snapshot retained."},
+    "JPY": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated MOF same-basis 2Y/10Y snapshot retained."},
+    "CHF": {"current_as_of":"2026-09-30","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated SNB same-basis snapshot retained."},
+    "CAD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of Canada same-basis 2Y/10Y snapshot retained."},
+    "AUD": {"current_as_of":"2026-09-30","status":"CURRENT_BY_SOURCE_CADENCE","action":"CURRENT_BY_SOURCE_CADENCE","reason":"Validated RBA F2 observation retained at source-native cadence."},
+    "NZD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated RBNZ B2 same-basis snapshot retained."}
+  },
+  "resolved_audits": {"JPY_RATES":"PASS","CHF_RATES":"PASS","CAD_RATES":"PASS","AUD_RATES":"PASS"}
+};</script>
+
+<script id="gmfq-live-rates-audit-metadata-hydration">
+(function(){'use strict';const M=window.__GMFQ_DATA?.RATES_AUDIT_METADATA;if(!M||M.schema!=='GMFQ_RATES_AUDIT_METADATA_V1')throw new Error('RATES_AUDIT_METADATA_MISSING');const A=window.FINAL_SOURCE_POLICY_AUDIT,P=window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh;if(!A||!P)throw new Error('RATES_AUDIT_CONTEXT_MISSING');A.audit_date=M.audit_date;for(const [ccy,row] of Object.entries(M.rates||{})){const registry=(A.RATES||A.rates||{})[ccy];if(!registry||!P[ccy])throw new Error('RATES_AUDIT_CURRENCY_MISSING:'+ccy);Object.assign(registry,{current_as_of:row.current_as_of,status:row.status,live_metadata_source:M.source_context});Object.assign(P[ccy],{action:row.action,current_as_of:row.current_as_of,reason:row.reason});}window.GMFQ_SOURCE_REGISTRY_REALIGNMENT={status:'PASS',audit_date:M.audit_date,rates:{...M.expected_rates},source_context:M.source_context};document.documentElement.setAttribute('data-source-registry-realignment','PASS');})();
+</script>
+
 <script id="gmfq-post-gate-final-audit-20260930">
 (function(){
   'use strict';
@@ -3796,37 +3827,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-
-<script id="gmfq-live-data-rates_audit_metadata">window.__GMFQ_DATA.RATES_AUDIT_METADATA={
-  "schema": "GMFQ_RATES_AUDIT_METADATA_V1",
-  "audit_date": "2026-10-04",
-  "source_context": "Validated same-basis Rates refresh audits committed on staging",
-  "expected_rates": {
-    "USD": "2026-10-02",
-    "EUR": "2026-10-01",
-    "GBP": "2026-10-01",
-    "JPY": "2026-10-01",
-    "CHF": "2026-09-30",
-    "CAD": "2026-10-01",
-    "AUD": "2026-09-30",
-    "NZD": "2026-10-01"
-  },
-  "rates": {
-    "USD": {"current_as_of":"2026-10-02","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated U.S. Treasury same-basis snapshot retained."},
-    "EUR": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated ECB AAA same-basis snapshot retained."},
-    "GBP": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of England same-basis snapshot retained."},
-    "JPY": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated MOF same-basis 2Y/10Y snapshot retained."},
-    "CHF": {"current_as_of":"2026-09-30","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated SNB same-basis snapshot retained."},
-    "CAD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of Canada same-basis 2Y/10Y snapshot retained."},
-    "AUD": {"current_as_of":"2026-09-30","status":"CURRENT_BY_SOURCE_CADENCE","action":"CURRENT_BY_SOURCE_CADENCE","reason":"Validated RBA F2 observation retained at source-native cadence."},
-    "NZD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated RBNZ B2 same-basis snapshot retained."}
-  },
-  "resolved_audits": {"JPY_RATES":"PASS","CHF_RATES":"PASS","CAD_RATES":"PASS","AUD_RATES":"PASS"}
-};</script>
-
-<script id="gmfq-live-rates-audit-metadata-hydration">
-(function(){'use strict';const M=window.__GMFQ_DATA?.RATES_AUDIT_METADATA;if(!M||M.schema!=='GMFQ_RATES_AUDIT_METADATA_V1')throw new Error('RATES_AUDIT_METADATA_MISSING');const A=window.FINAL_SOURCE_POLICY_AUDIT,P=window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh;if(!A||!P)throw new Error('RATES_AUDIT_CONTEXT_MISSING');A.audit_date=M.audit_date;for(const [ccy,row] of Object.entries(M.rates||{})){const registry=(A.RATES||A.rates||{})[ccy];if(!registry||!P[ccy])throw new Error('RATES_AUDIT_CURRENCY_MISSING:'+ccy);Object.assign(registry,{current_as_of:row.current_as_of,status:row.status,live_metadata_source:M.source_context});Object.assign(P[ccy],{action:row.action,current_as_of:row.current_as_of,reason:row.reason});}window.GMFQ_SOURCE_REGISTRY_REALIGNMENT={status:'PASS',audit_date:M.audit_date,rates:{...M.expected_rates},source_context:M.source_context};document.documentElement.setAttribute('data-source-registry-realignment','PASS');})();
-</script>
 
 <script id="gmfq-runtime-secondary-metadata-completion-20261001">
 (function(){
