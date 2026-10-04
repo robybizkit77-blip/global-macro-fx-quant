@@ -1,0 +1,16 @@
+{
+  "schema": "GMFQ_AUD_RBA_RATES_REFRESH_V1",
+  "as_of": "2026-09-30",
+  "source": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
+  "series_2y": "FCMYGBAG2D",
+  "series_10y": "FCMYGBAG10D",
+  "y2": 4.942,
+  "y10": 5.344,
+  "curve_bp": 40.2,
+  "weekly_reference_2y": "2026-09-16",
+  "weekly_reference_10y": "2026-09-16",
+  "chg2_bp": -5.7,
+  "chg10_bp": -0.4,
+  "curve_state": "Bull steepening",
+  "same_basis": true
+}
