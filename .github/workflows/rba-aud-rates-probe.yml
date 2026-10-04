@@ -1,0 +1,40 @@
+name: RBA AUD Rates Probe
+
+on:
+  push:
+    branches: [staging-live-data-refresh-v1-2026-10-04]
+    paths:
+      - ".github/workflows/rba-aud-rates-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official RBA F2 CSV
+        run: |
+          python - <<'PY'
+          import csv,io,json,pathlib,urllib.request
+          url='https://www.rba.gov.au/statistics/tables/csv/f2-data.csv'
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 GMFQ/1.0'})
+          raw=urllib.request.urlopen(req,timeout=60).read()
+          text=raw.decode('utf-8-sig',errors='replace')
+          rows=list(csv.reader(io.StringIO(text)))
+          out={'schema':'GMFQ_RBA_F2_PROBE_V1','url':url,'head':rows[:14],'tail':rows[-10:]}
+          pathlib.Path('validation/RBA_AUD_RATES_PROBE_2026-10-04.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({'rows':len(rows),'head':rows[:8],'tail':rows[-5:]},ensure_ascii=False,indent=2))
+          PY
+      - name: Commit probe
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/RBA_AUD_RATES_PROBE_2026-10-04.json
+          git commit -m "Probe official RBA F2 rates" || exit 0
+          git push
