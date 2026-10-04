@@ -70,8 +70,9 @@ jobs:
               }
               return {schema:'GMFQ_LIVE_POST_EXECUTION_STATUS_V1',created_at:'2026-10-04',dashboard:{asOf:dashboard.asOf||null,priceAsOf:dashboard.priceAsOf||null,priceLast:last(dashboard.prices)},rates,central_bank:cb,liquidity:liq,ois,cot,currency_states:states,final_audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null};
             });
-            fs.mkdirSync('validation',{recursive:true}); fs.writeFileSync('validation/LIVE_POST_EXECUTION_STATUS_2026-10-04.json',JSON.stringify(out,null,2)+'\n');
-            console.log(JSON.stringify(out)); await browser.close();
+            const jsonValue=(_,v)=>typeof v==='bigint'?v.toString():v;
+            fs.mkdirSync('validation',{recursive:true}); fs.writeFileSync('validation/LIVE_POST_EXECUTION_STATUS_2026-10-04.json',JSON.stringify(out,jsonValue,2)+'\n');
+            console.log(JSON.stringify(out,jsonValue)); await browser.close();
           })().catch(e=>{console.error('::error title=Post-execution snapshot detail::'+String(e?.stack||e));process.exit(1)});
           EOF
           node /tmp/postexec.js
