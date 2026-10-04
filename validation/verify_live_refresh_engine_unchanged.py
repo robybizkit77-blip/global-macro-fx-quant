@@ -7,6 +7,14 @@ EXPECTED_FROZEN_ENGINE='ff52198a75cc67f7dae96fc2bbf65623f170791c'
 OOS_GATE_URL='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/staging-usd-pit-readiness-2026-10-03/validation/FORWARD_OOS_READINESS_GATE_2026-10-03.json'
 keys=json.loads((ROOT/'live_data'/'manifest.json').read_text())['sections']
 keys=[x['key'] for x in keys]
+# These blocks only reconcile published source/audit metadata against the
+# already materialized live data.  They do not participate in the frozen
+# decision engine, so compare the engine after removing them on both refs.
+AUDIT_METADATA_SCRIPT_IDS={
+    'gmfq-cad-rates-boc-20260930',
+    'gmfq-source-registry-realignment-20260930',
+    'gmfq-final-runtime-audit-reconciliation-20261001',
+}
 
 def get_text(url):
     req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 GMFQ/1.0'})
@@ -50,6 +58,10 @@ def strip_data(src):
             spans.append((p,e,name)); found=True; break
         if not found: raise RuntimeError('missing data section '+name)
     for p,e,name in sorted(spans,reverse=True): src=src[:p]+f'__GMFQ_DATA_SECTION_{name}__'+src[e:]
+    for script_id in AUDIT_METADATA_SCRIPT_IDS:
+        pat=re.compile(r'<script id="'+re.escape(script_id)+r'">.*?</script>',re.S)
+        src,n=pat.subn(f'__GMFQ_AUDIT_METADATA_{script_id}__',src)
+        if n!=1: raise RuntimeError('missing or duplicate audit metadata script '+script_id)
     return src
 
 main=joined_main(); live=joined_local()

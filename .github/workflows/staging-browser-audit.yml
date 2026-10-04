@@ -77,6 +77,7 @@ jobs:
                 title: document.title,
                 finalAudit: audit,
                 fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
+                ratesBasis: typeof window.ratesCanonicalBasisIntegrity==='function' ? window.ratesCanonicalBasisIntegrity() : null,
                 ois: {
                   USD: window.GMFQ_OIS?.currency?.('USD')?.status || null,
                   EUR: window.GMFQ_OIS?.currency?.('EUR')?.status || null,
@@ -99,7 +100,7 @@ jobs:
 
             if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
-            if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
+            if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify({audit:result.finalAudit,ratesBasis:result.ratesBasis}));
             if(result.finalAudit?.counts?.currencies!==8 || result.finalAudit?.counts?.pairs!==28) throw new Error('Universe count failure: '+JSON.stringify(result.finalAudit?.counts));
             if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');
             if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
