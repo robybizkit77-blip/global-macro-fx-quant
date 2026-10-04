@@ -4,7 +4,7 @@
   "parts": [
     {
       "file": "payload/part-00.txt",
-      "bytes": 1435548
+      "bytes": 1436058
     },
     {
       "file": "payload/part-01.txt",
@@ -67,14 +67,14 @@
       "bytes": 234286
     }
   ],
-  "runtime_bytes": 2764234,
+  "runtime_bytes": 2764744,
   "runtime_date_range": {
     "count": 2948,
     "min": "2016-01-01",
     "max": "2099-01-02"
   },
   "runtime_validation_manifest_positions": [
-    2569976
+    2570486
   ],
   "data_assignment_keys": [
     "CERT53",
@@ -101,15 +101,15 @@
         "assignment_pos": 291589,
         "rhs_span": [
           291610,
-          1002202
+          1002712
         ],
         "json_parsed": true,
         "parse_error": null,
         "summary": {
           "type": "dict",
-          "date_count": 2822,
+          "date_count": 2825,
           "min_date": "2016-01-01",
-          "max_date": "2026-09-29",
+          "max_date": "2026-10-02",
           "keys": [
             "asOf",
             "cot",
@@ -129,10 +129,10 @@
     ],
     "CERT53": [
       {
-        "assignment_pos": 1002204,
+        "assignment_pos": 1002714,
         "rhs_span": [
-          1002230,
-          1130429
+          1002740,
+          1130939
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -151,10 +151,10 @@
     ],
     "COUNTRY_CTX": [
       {
-        "assignment_pos": 1130431,
+        "assignment_pos": 1130941,
         "rhs_span": [
-          1130462,
-          1137549
+          1130972,
+          1138059
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -179,10 +179,10 @@
     ],
     "WHAT_CHANGED": [
       {
-        "assignment_pos": 1137551,
+        "assignment_pos": 1138061,
         "rhs_span": [
-          1137583,
-          1140356
+          1138093,
+          1140866
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -198,10 +198,10 @@
     ],
     "CURRENCY_DNA": [
       {
-        "assignment_pos": 1140358,
+        "assignment_pos": 1140868,
         "rhs_span": [
-          1140390,
-          1141991
+          1140900,
+          1142501
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 1 (char 2)"
@@ -209,10 +209,10 @@
     ],
     "NATIVE_RATES_DATA": [
       {
-        "assignment_pos": 1142039,
+        "assignment_pos": 1142549,
         "rhs_span": [
-          1142076,
-          1266559
+          1142586,
+          1267069
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -237,10 +237,10 @@
     ],
     "OIS_DATA": [
       {
-        "assignment_pos": 1266607,
+        "assignment_pos": 1267117,
         "rhs_span": [
-          1266635,
-          1272373
+          1267145,
+          1272883
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -260,64 +260,64 @@
         }
       },
       {
-        "assignment_pos": 2576992,
+        "assignment_pos": 2577502,
         "rhs_span": [
-          2577020,
-          2577064
+          2577530,
+          2577574
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2580667,
+        "assignment_pos": 2581177,
         "rhs_span": [
-          2580695,
-          2580739
+          2581205,
+          2581249
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2588245,
+        "assignment_pos": 2588755,
         "rhs_span": [
-          2588273,
-          2588317
+          2588783,
+          2588827
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2628086,
+        "assignment_pos": 2628596,
         "rhs_span": [
-          2628114,
-          2628158
+          2628624,
+          2628668
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2631853,
+        "assignment_pos": 2632363,
         "rhs_span": [
-          2631881,
-          2631925
+          2632391,
+          2632435
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2635931,
+        "assignment_pos": 2636441,
         "rhs_span": [
-          2635959,
-          2636003
+          2636469,
+          2636513
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
       },
       {
-        "assignment_pos": 2716321,
+        "assignment_pos": 2716831,
         "rhs_span": [
-          2716349,
-          2716393
+          2716859,
+          2716903
         ],
         "json_parsed": false,
         "parse_error": "non-json expression"
@@ -325,10 +325,10 @@
     ],
     "MACRO_THERMOMETER_DATA": [
       {
-        "assignment_pos": 1272421,
+        "assignment_pos": 1272931,
         "rhs_span": [
-          1272463,
-          1290006
+          1272973,
+          1290516
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -353,10 +353,10 @@
     ],
     "NATIVE_LIQ_DATA": [
       {
-        "assignment_pos": 1290054,
+        "assignment_pos": 1290564,
         "rhs_span": [
-          1290089,
-          1367856
+          1290599,
+          1368366
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -381,10 +381,10 @@
     ],
     "NATIVE_CB_DATA": [
       {
-        "assignment_pos": 1367904,
+        "assignment_pos": 1368414,
         "rhs_span": [
-          1367938,
-          1377946
+          1368448,
+          1378456
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -409,10 +409,10 @@
     ],
     "V250_COT_CHART_DATA": [
       {
-        "assignment_pos": 1377994,
+        "assignment_pos": 1378504,
         "rhs_span": [
-          1378033,
-          1419047
+          1378543,
+          1419557
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -437,10 +437,10 @@
     ],
     "V247_COT_STORIES": [
       {
-        "assignment_pos": 1419049,
+        "assignment_pos": 1419559,
         "rhs_span": [
-          1419085,
-          1424255
+          1419595,
+          1424765
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -465,10 +465,10 @@
     ],
     "REAL_CALENDAR": [
       {
-        "assignment_pos": 1424303,
+        "assignment_pos": 1424813,
         "rhs_span": [
-          1424336,
-          1434077
+          1424846,
+          1434587
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 3 column 1 (char 4)"
@@ -476,10 +476,10 @@
     ],
     "TOP_THEMES": [
       {
-        "assignment_pos": 1434079,
+        "assignment_pos": 1434589,
         "rhs_span": [
-          1434109,
-          1437157
+          1434619,
+          1437667
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -495,10 +495,10 @@
     ],
     "NEWS_PULSE_STRUCT": [
       {
-        "assignment_pos": 1437159,
+        "assignment_pos": 1437669,
         "rhs_span": [
-          1437196,
-          1444239
+          1437706,
+          1444749
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
@@ -506,10 +506,10 @@
     ],
     "EVENT_TEMPLATES": [
       {
-        "assignment_pos": 1444241,
+        "assignment_pos": 1444751,
         "rhs_span": [
-          1444276,
-          1446691
+          1444786,
+          1447201
         ],
         "json_parsed": false,
         "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
@@ -517,10 +517,10 @@
     ],
     "MACRO_SERIES": [
       {
-        "assignment_pos": 1446763,
+        "assignment_pos": 1447273,
         "rhs_span": [
-          1446795,
-          1785767
+          1447305,
+          1786277
         ],
         "json_parsed": true,
         "parse_error": null,
@@ -547,9 +547,9 @@
   "latest_parsed_assignment_summary": {
     "D": {
       "type": "dict",
-      "date_count": 2822,
+      "date_count": 2825,
       "min_date": "2016-01-01",
-      "max_date": "2026-09-29",
+      "max_date": "2026-10-02",
       "keys": [
         "asOf",
         "cot",

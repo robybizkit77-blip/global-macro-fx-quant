@@ -1,0 +1,113 @@
+{
+  "schema": "GMFQ_ECB_LIVE_FX_REFRESH_V1",
+  "created_at": "2026-10-04",
+  "source": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+GBP+JPY+CHF+CAD+AUD+NZD.EUR.SP00.A?startPeriod=2026-09-25&endPeriod=2026-10-04&format=csvdata",
+  "old_priceAsOf": "2026-09-28",
+  "new_priceAsOf": "2026-10-02",
+  "added_dates": [
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-02"
+  ],
+  "replaced_dates": [],
+  "price_rows_before": 2749,
+  "price_rows_after": 2753,
+  "price_layer_changes": [
+    {
+      "pair": "EUR/GBP",
+      "old": "EUR",
+      "new": "GBP",
+      "r1_pct": -1.1761,
+      "r4_pct": -1.007
+    },
+    {
+      "pair": "EUR/AUD",
+      "old": "AUD",
+      "new": "MISTO",
+      "r1_pct": -0.2713,
+      "r4_pct": 0.2603
+    },
+    {
+      "pair": "EUR/NZD",
+      "old": "EUR",
+      "new": "MISTO",
+      "r1_pct": -0.5272,
+      "r4_pct": 1.2503
+    },
+    {
+      "pair": "GBP/AUD",
+      "old": "AUD",
+      "new": "GBP",
+      "r1_pct": 0.9156,
+      "r4_pct": 1.2802
+    },
+    {
+      "pair": "GBP/CAD",
+      "old": "CAD",
+      "new": "GBP",
+      "r1_pct": 0.2929,
+      "r4_pct": 0.6771
+    },
+    {
+      "pair": "AUD/NZD",
+      "old": "AUD",
+      "new": "MISTO",
+      "r1_pct": -0.2566,
+      "r4_pct": 0.9874
+    },
+    {
+      "pair": "AUD/CAD",
+      "old": "MISTO",
+      "new": "CAD",
+      "r1_pct": -0.6171,
+      "r4_pct": -0.5955
+    },
+    {
+      "pair": "AUD/CHF",
+      "old": "AUD",
+      "new": "CHF",
+      "r1_pct": -1.4903,
+      "r4_pct": -1.5959
+    },
+    {
+      "pair": "USD/CHF",
+      "old": "USD",
+      "new": "MISTO",
+      "r1_pct": -0.1997,
+      "r4_pct": 2.1497
+    },
+    {
+      "pair": "USD/JPY",
+      "old": "JPY",
+      "new": "MISTO",
+      "r1_pct": 0.0538,
+      "r4_pct": 0.914
+    },
+    {
+      "pair": "CAD/CHF",
+      "old": "CAD",
+      "new": "CHF",
+      "r1_pct": -0.8786,
+      "r4_pct": -1.0064
+    },
+    {
+      "pair": "CHF/JPY",
+      "old": "JPY",
+      "new": "MISTO",
+      "r1_pct": 0.2539,
+      "r4_pct": -1.2097
+    }
+  ],
+  "latest_fixing": {
+    "Date": "2026-10-02",
+    "EUR": 1.0,
+    "USD": 1.1225,
+    "GBP": 0.85033,
+    "JPY": 176.99,
+    "CHF": 0.9279,
+    "CAD": 1.5984,
+    "AUD": 1.6176,
+    "NZD": 2.0002
+  }
+}
