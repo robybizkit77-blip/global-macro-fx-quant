@@ -1,5 +1,5 @@
 {
-  "schema": "GMFQ_ECB_LIVE_FX_PRICE_PROBE_V1",
+  "schema": "GMFQ_ECB_LIVE_FX_PRICE_PROBE_V2",
   "created_at": "2026-10-04",
   "source": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+GBP+JPY+CHF+CAD+AUD+NZD.EUR.SP00.A?startPeriod=2026-09-25&endPeriod=2026-10-04&format=csvdata",
   "runtime_priceAsOf": "2026-09-28",
@@ -15,7 +15,7 @@
     "NZD": 2.0071
   },
   "ecb_latest_common_fixing": {
-    "date": "2026-10-02",
+    "Date": "2026-10-02",
     "EUR": 1.0,
     "USD": 1.1225,
     "GBP": 0.85033,
@@ -26,6 +26,485 @@
     "NZD": 2.0002
   },
   "ecb_common_fixing_count": 6,
+  "ecb_common_fixings": [
+    {
+      "Date": "2026-09-25",
+      "EUR": 1.0,
+      "USD": 1.1403,
+      "GBP": 0.86045,
+      "JPY": 179.7,
+      "CHF": 0.9445,
+      "CAD": 1.6127,
+      "AUD": 1.622,
+      "NZD": 2.0108
+    },
+    {
+      "Date": "2026-09-28",
+      "EUR": 1.0,
+      "USD": 1.1378,
+      "GBP": 0.85785,
+      "JPY": 178.5,
+      "CHF": 0.9464,
+      "CAD": 1.6118,
+      "AUD": 1.6199,
+      "NZD": 2.0071
+    },
+    {
+      "Date": "2026-09-29",
+      "EUR": 1.0,
+      "USD": 1.1355,
+      "GBP": 0.85718,
+      "JPY": 178.41,
+      "CHF": 0.9461,
+      "CAD": 1.6101,
+      "AUD": 1.6211,
+      "NZD": 2.0076
+    },
+    {
+      "Date": "2026-09-30",
+      "EUR": 1.0,
+      "USD": 1.1355,
+      "GBP": 0.85463,
+      "JPY": 178.27,
+      "CHF": 0.9478,
+      "CAD": 1.6105,
+      "AUD": 1.6297,
+      "NZD": 2.0115
+    },
+    {
+      "Date": "2026-10-01",
+      "EUR": 1.0,
+      "USD": 1.1298,
+      "GBP": 0.85373,
+      "JPY": 178.49,
+      "CHF": 0.9437,
+      "CAD": 1.6095,
+      "AUD": 1.6255,
+      "NZD": 2.0121
+    },
+    {
+      "Date": "2026-10-02",
+      "EUR": 1.0,
+      "USD": 1.1225,
+      "GBP": 0.85033,
+      "JPY": 176.99,
+      "CHF": 0.9279,
+      "CAD": 1.5984,
+      "AUD": 1.6176,
+      "NZD": 2.0002
+    }
+  ],
   "needs_refresh": true,
-  "pairs": {}
+  "d_top_level_keys": [
+    "asOf",
+    "cot",
+    "currencies",
+    "curve",
+    "flags",
+    "macro",
+    "pairStates",
+    "pairs",
+    "priceAsOf",
+    "prices",
+    "risk"
+  ],
+  "prices_count": 2749,
+  "prices_tail": [
+    {
+      "Date": "2026-09-18",
+      "EUR": 1,
+      "USD": 1.146,
+      "GBP": 0.8588,
+      "JPY": 180.94,
+      "CHF": 0.9462,
+      "CAD": 1.6056,
+      "AUD": 1.6095,
+      "NZD": 2.0068
+    },
+    {
+      "Date": "2026-09-21",
+      "EUR": 1,
+      "USD": 1.149,
+      "GBP": 0.8578,
+      "JPY": 180.7,
+      "CHF": 0.9438,
+      "CAD": 1.6091,
+      "AUD": 1.6098,
+      "NZD": 2.0035
+    },
+    {
+      "Date": "2026-09-22",
+      "EUR": 1,
+      "USD": 1.1463,
+      "GBP": 0.8578,
+      "JPY": 180.17,
+      "CHF": 0.9393,
+      "CAD": 1.6099,
+      "AUD": 1.6122,
+      "NZD": 2.0003
+    },
+    {
+      "Date": "2026-09-23",
+      "EUR": 1,
+      "USD": 1.1411,
+      "GBP": 0.8595,
+      "JPY": 180.2,
+      "CHF": 0.939,
+      "CAD": 1.6077,
+      "AUD": 1.6146,
+      "NZD": 2.0049
+    },
+    {
+      "Date": "2026-09-24",
+      "EUR": 1,
+      "USD": 1.1367,
+      "GBP": 0.85986,
+      "JPY": 180.57,
+      "CHF": 0.9409,
+      "CAD": 1.6047,
+      "AUD": 1.6177,
+      "NZD": 2.0049
+    },
+    {
+      "Date": "2026-09-25",
+      "EUR": 1,
+      "USD": 1.1403,
+      "GBP": 0.86045,
+      "JPY": 179.7,
+      "CHF": 0.9445,
+      "CAD": 1.6127,
+      "AUD": 1.622,
+      "NZD": 2.0108
+    },
+    {
+      "Date": "2026-09-28",
+      "EUR": 1,
+      "USD": 1.1378,
+      "GBP": 0.85785,
+      "JPY": 178.5,
+      "CHF": 0.9464,
+      "CAD": 1.6118,
+      "AUD": 1.6199,
+      "NZD": 2.0071
+    }
+  ],
+  "pairs_count": 28,
+  "pair_names": [
+    "AUD/CAD",
+    "AUD/CHF",
+    "AUD/JPY",
+    "AUD/NZD",
+    "AUD/USD",
+    "CAD/CHF",
+    "CAD/JPY",
+    "CHF/JPY",
+    "EUR/AUD",
+    "EUR/CAD",
+    "EUR/CHF",
+    "EUR/GBP",
+    "EUR/JPY",
+    "EUR/NZD",
+    "EUR/USD",
+    "GBP/AUD",
+    "GBP/CAD",
+    "GBP/CHF",
+    "GBP/JPY",
+    "GBP/NZD",
+    "GBP/USD",
+    "NZD/CAD",
+    "NZD/CHF",
+    "NZD/JPY",
+    "NZD/USD",
+    "USD/CAD",
+    "USD/CHF",
+    "USD/JPY"
+  ],
+  "pairStates_type": "dict",
+  "pairState_samples": {
+    "AUD/CAD": {
+      "state": "DIVERGENT",
+      "state_label": "Divergenza",
+      "layers": {
+        "macro": "AUD",
+        "central_bank": "AUD",
+        "rates": "AUD",
+        "cot": "CAD",
+        "price": "MISTO",
+        "market_pricing": "NON CONFRONTABILE"
+      },
+      "comment": "Al momento il quadro relativo favorisce AUD, ma non va letto come un segnale automatico. Il lead arriva da Rates; confermano Macro, Banca centrale. Restano contrari o non allineati: COT.",
+      "missing": [
+        "Market pricing forward confrontabile",
+        "clear price confirmation"
+      ],
+      "monitor": "Osserva soprattutto i Rates/front-end: devono chiarire se il riprezzamento monetario sostiene davvero la direzione relativa.",
+      "lead": [
+        "Rates"
+      ],
+      "confirms": [
+        "Macro",
+        "Banca centrale"
+      ],
+      "diverges": [
+        "COT"
+      ],
+      "lags": [
+        "Prezzo"
+      ],
+      "pricing_raw": "WITHHELD_NOT_COMPARABLE_PUBLIC_FORWARD_DATA",
+      "cot_alert": "NONE_AS_OF_2026-09-22__ABS_NET_OI_LT_30_PERCENT_FOR_BOTH_LEGS",
+      "convergence": "BASSA",
+      "convergence_count": "3/4",
+      "convergence_winner": "AUD",
+      "data_quality": "CORRENTE COMPLETO",
+      "data_quality_note": "Layer correnti principali aggiornati e confrontabili; market pricing resta separato quando non omogeneo."
+    },
+    "AUD/CHF": {
+      "state": "DIVERGENT",
+      "state_label": "Divergenza",
+      "layers": {
+        "macro": "MISTO",
+        "central_bank": "AUD",
+        "rates": "AUD",
+        "cot": "CHF",
+        "price": "AUD",
+        "market_pricing": "NON CONFRONTABILE"
+      },
+      "comment": "Al momento il quadro relativo favorisce AUD, ma non va letto come un segnale automatico. Il lead arriva da Rates; confermano Banca centrale, Prezzo. Restano contrari o non allineati: COT.",
+      "missing": [
+        "Market pricing forward confrontabile",
+        "price reconfirmation after recent reversal",
+        "clear macro block convergence"
+      ],
+      "monitor": "Osserva soprattutto i Rates/front-end: devono chiarire se il riprezzamento monetario sostiene davvero la direzione relativa.",
+      "lead": [
+        "Rates"
+      ],
+      "confirms": [
+        "Banca centrale",
+        "Prezzo"
+      ],
+      "diverges": [
+        "COT"
+      ],
+      "lags": [
+        "Macro"
+      ],
+      "pricing_raw": "WITHHELD_NOT_COMPARABLE_PUBLIC_FORWARD_DATA",
+      "cot_alert": "NONE_AS_OF_2026-09-22__ABS_NET_OI_LT_30_PERCENT_FOR_BOTH_LEGS",
+      "convergence": "BASSA",
+      "convergence_count": "3/4",
+      "convergence_winner": "AUD",
+      "data_quality": "CORRENTE COMPLETO",
+      "data_quality_note": "Layer correnti principali aggiornati e confrontabili; market pricing resta separato quando non omogeneo."
+    },
+    "AUD/JPY": {
+      "state": "DIVERGENT",
+      "state_label": "Divergenza",
+      "layers": {
+        "macro": "MISTO",
+        "central_bank": "JPY",
+        "rates": "AUD",
+        "cot": "JPY",
+        "price": "JPY",
+        "market_pricing": "NON CONFRONTABILE"
+      },
+      "comment": "Al momento il quadro relativo favorisce JPY, ma non va letto come un segnale automatico. Il lead arriva da Rates; confermano le conferme sono ancora limitate. Restano contrari o non allineati: Banca centrale, COT, Prezzo.",
+      "missing": [
+        "Market pricing forward confrontabile",
+        "price reconfirmation after recent reversal",
+        "clear macro block convergence"
+      ],
+      "monitor": "Osserva soprattutto i Rates/front-end: devono chiarire se il riprezzamento monetario sostiene davvero la direzione relativa.",
+      "lead": [
+        "Rates"
+      ],
+      "confirms": [],
+      "diverges": [
+        "Banca centrale",
+        "COT",
+        "Prezzo"
+      ],
+      "lags": [
+        "Macro"
+      ],
+      "pricing_raw": "WITHHELD_NOT_COMPARABLE_PUBLIC_FORWARD_DATA",
+      "cot_alert": "NONE_AS_OF_2026-09-22__ABS_NET_OI_LT_30_PERCENT_FOR_BOTH_LEGS",
+      "convergence": "BASSA",
+      "convergence_count": "3/4",
+      "convergence_winner": "JPY",
+      "data_quality": "CORRENTE OK · STORICO PARZIALE",
+      "data_quality_note": "Lettura corrente utilizzabile. Alcuni storici secondari JPY/NZD restano limitati per problemi di trasporto ufficiale; non vengono trattati come neutri."
+    }
+  },
+  "pairs": {
+    "AUD/CAD": {
+      "runtime": 0.9949996913389716,
+      "ecb_latest": 0.9881305637982196,
+      "change_pct": -0.6903647911195021,
+      "stored_price_layer": "MISTO"
+    },
+    "AUD/CHF": {
+      "runtime": 0.5842335946663375,
+      "ecb_latest": 0.5736275964391692,
+      "change_pct": -1.8153694556413802,
+      "stored_price_layer": "AUD"
+    },
+    "AUD/JPY": {
+      "runtime": 110.19198715970123,
+      "ecb_latest": 109.41518298714145,
+      "change_pct": -0.7049552264031256,
+      "stored_price_layer": "JPY"
+    },
+    "AUD/NZD": {
+      "runtime": 1.2390271004382987,
+      "ecb_latest": 1.2365232443125618,
+      "change_pct": -0.20208243426242944,
+      "stored_price_layer": "AUD"
+    },
+    "AUD/USD": {
+      "runtime": 0.7023890363602692,
+      "ecb_latest": 0.6939292779426312,
+      "change_pct": -1.20442631927683,
+      "stored_price_layer": "USD"
+    },
+    "CAD/CHF": {
+      "runtime": 0.5871696240228317,
+      "ecb_latest": 0.580518018018018,
+      "change_pct": -1.132825291479156,
+      "stored_price_layer": "CAD"
+    },
+    "CAD/JPY": {
+      "runtime": 110.74575009306366,
+      "ecb_latest": 110.72947947947948,
+      "change_pct": -0.01469186273108658,
+      "stored_price_layer": "JPY"
+    },
+    "CHF/JPY": {
+      "runtime": 188.60946745562129,
+      "ecb_latest": 190.7425369113051,
+      "change_pct": 1.1309450604253035,
+      "stored_price_layer": "JPY"
+    },
+    "EUR/AUD": {
+      "runtime": 1.6199,
+      "ecb_latest": 1.6176,
+      "change_pct": -0.1419840730909283,
+      "stored_price_layer": "AUD"
+    },
+    "EUR/CAD": {
+      "runtime": 1.6118,
+      "ecb_latest": 1.5984,
+      "change_pct": -0.8313686561608025,
+      "stored_price_layer": "CAD"
+    },
+    "EUR/CHF": {
+      "runtime": 0.9464,
+      "ecb_latest": 0.9279,
+      "change_pct": -1.9547759932375341,
+      "stored_price_layer": "CHF"
+    },
+    "EUR/GBP": {
+      "runtime": 0.85785,
+      "ecb_latest": 0.85033,
+      "change_pct": -0.8766101299760964,
+      "stored_price_layer": "EUR"
+    },
+    "EUR/JPY": {
+      "runtime": 178.5,
+      "ecb_latest": 176.99,
+      "change_pct": -0.8459383753501304,
+      "stored_price_layer": "JPY"
+    },
+    "EUR/NZD": {
+      "runtime": 2.0071,
+      "ecb_latest": 2.0002,
+      "change_pct": -0.3437795824821843,
+      "stored_price_layer": "EUR"
+    },
+    "EUR/USD": {
+      "runtime": 1.1378,
+      "ecb_latest": 1.1225,
+      "change_pct": -1.3447002988222767,
+      "stored_price_layer": "USD"
+    },
+    "GBP/AUD": {
+      "runtime": 1.8883254648248526,
+      "ecb_latest": 1.9023202756576856,
+      "change_pct": 0.7411228145530968,
+      "stored_price_layer": "AUD"
+    },
+    "GBP/CAD": {
+      "runtime": 1.8788832546482483,
+      "ecb_latest": 1.8797408065104135,
+      "change_pct": 0.04564157246298439,
+      "stored_price_layer": "CAD"
+    },
+    "GBP/CHF": {
+      "runtime": 1.1032231742146064,
+      "ecb_latest": 1.0912234073830158,
+      "change_pct": -1.0877007582924758,
+      "stored_price_layer": "CHF"
+    },
+    "GBP/JPY": {
+      "runtime": 208.078335373317,
+      "ecb_latest": 208.14272106123505,
+      "change_pct": 0.03094300413473139,
+      "stored_price_layer": "JPY"
+    },
+    "GBP/NZD": {
+      "runtime": 2.33968642536574,
+      "ecb_latest": 2.3522632389778084,
+      "change_pct": 0.5375427012661582,
+      "stored_price_layer": "GBP"
+    },
+    "GBP/USD": {
+      "runtime": 1.3263391035728855,
+      "ecb_latest": 1.3200757353027648,
+      "change_pct": -0.472229782960365,
+      "stored_price_layer": "USD"
+    },
+    "NZD/CAD": {
+      "runtime": 0.8030491754272333,
+      "ecb_latest": 0.7991200879912009,
+      "change_pct": -0.4892710877813955,
+      "stored_price_layer": "CAD"
+    },
+    "NZD/CHF": {
+      "runtime": 0.4715260824074536,
+      "ecb_latest": 0.4639036096390361,
+      "change_pct": -1.6165537926342677,
+      "stored_price_layer": "CHF"
+    },
+    "NZD/JPY": {
+      "runtime": 88.93428329430522,
+      "ecb_latest": 88.48615138486151,
+      "change_pct": -0.5038910674758812,
+      "stored_price_layer": "JPY"
+    },
+    "NZD/USD": {
+      "runtime": 0.5668875492003388,
+      "ecb_latest": 0.5611938806119389,
+      "change_pct": -1.0043735475283477,
+      "stored_price_layer": "USD"
+    },
+    "USD/CAD": {
+      "runtime": 1.4165934259096502,
+      "ecb_latest": 1.4239643652561247,
+      "change_pct": 0.5203285015770387,
+      "stored_price_layer": "USD"
+    },
+    "USD/CHF": {
+      "runtime": 0.8317806292845844,
+      "ecb_latest": 0.8266369710467705,
+      "change_pct": -0.618391202766766,
+      "stored_price_layer": "USD"
+    },
+    "USD/JPY": {
+      "runtime": 156.88170152926702,
+      "ecb_latest": 157.67483296213808,
+      "change_pct": 0.505560192896759,
+      "stored_price_layer": "JPY"
+    }
+  }
 }
