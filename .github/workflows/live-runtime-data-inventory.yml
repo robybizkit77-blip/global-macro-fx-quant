@@ -24,7 +24,7 @@ jobs:
       - name: Commit inventory
         shell: bash
         run: |
-          if git diff --quiet -- validation/LIVE_RUNTIME_DATA_INVENTORY_2026-10-04.json; then
+          if [ -z "$(git status --porcelain -- validation/LIVE_RUNTIME_DATA_INVENTORY_2026-10-04.json)" ]; then
             echo "No inventory change"
             exit 0
           fi
