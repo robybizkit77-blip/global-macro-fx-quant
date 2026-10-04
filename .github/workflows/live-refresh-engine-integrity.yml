@@ -1,4 +1,4 @@
-# gate-trigger: rates-jpy-2026-10-04
+# gate-trigger: rates-all-g8-2026-10-04
 name: Live Refresh Engine Integrity
 
 # Explicit gate request after staged live-data refreshes.
