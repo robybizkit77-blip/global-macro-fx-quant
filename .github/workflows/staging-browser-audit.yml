@@ -5,6 +5,7 @@ on:
     branches:
       - staging-nzd-ois-gate-2026-09-30
       - staging-global-coherence-v490-20260930
+      - staging-live-data-refresh-v1-2026-10-04
   workflow_dispatch:
 
 jobs:
