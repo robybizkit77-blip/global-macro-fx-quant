@@ -1,5 +1,5 @@
 {
-  "schema": "GMFQ_V490_RUNTIME_DATA_INVENTORY_V1",
+  "schema": "GMFQ_V490_RUNTIME_DATA_INVENTORY_V2",
   "created_at": "2026-10-04",
   "parts": [
     {
@@ -68,146 +68,698 @@
     }
   ],
   "runtime_bytes": 2764131,
-  "marker_positions": {
-    "window.__GMFQ_DATA": [
-      291546,
-      291565,
-      291589,
-      1002126,
-      1130353,
-      1137473,
-      1140280,
-      1141918,
-      1141937,
-      1141961,
-      1266486,
-      1266505,
-      1266529,
-      1272300,
-      1272319,
-      1272343,
-      1289933,
-      1289952,
-      1289976,
-      1367783,
-      1367802,
-      1367826,
-      1377873,
-      1377892,
-      1377916,
-      1418946,
-      1424157,
-      1424176,
-      1424200,
-      1433976,
-      1437056,
-      1444138,
-      1446618,
-      1446637,
-      1446660,
-      1785684,
-      1785724,
-      1785754,
-      1792513,
-      1792572,
-      1792629,
-      1911381,
-      1976883,
-      1981174,
-      1988973,
-      1989045,
-      1989655,
-      1989710,
-      2018884,
-      2034348,
-      2452516,
-      2454196,
-      2455162,
-      2457018,
-      2457410,
-      2458574,
-      2461931,
-      2465704,
-      2470610,
-      2473070,
-      2473745,
-      2483278,
-      2483367,
-      2519940,
-      2520020,
-      2546711,
-      2564179,
-      2566169,
-      2566205,
-      2566255,
-      2566322,
-      2576842,
-      2576861,
-      2576889,
-      2576917,
-      2576967,
-      2577006,
-      2579154,
-      2580517,
-      2580536,
-      2580564,
-      2580592,
-      2580642,
-      2580681,
-      2582886,
-      2588095,
-      2588114,
-      2588142,
-      2588170,
-      2588220,
-      2588259,
-      2591217,
-      2627936,
-      2627955,
-      2627983,
-      2628011,
-      2628061,
-      2628100,
-      2628148,
-      2631703,
-      2631722,
-      2631750,
-      2631778,
-      2631828,
-      2631867,
-      2631931,
-      2631983,
-      2635781,
-      2635800,
-      2635828,
-      2635856,
-      2635906,
-      2635945,
-      2639078,
-      2699737,
-      2716171,
-      2716190,
-      2716218,
-      2716246,
-      2716296,
-      2716335,
-      2716395,
-      2718908
+  "runtime_date_range": {
+    "count": 2948,
+    "min": "2016-01-01",
+    "max": "2099-01-02"
+  },
+  "runtime_validation_manifest_positions": [
+    2569873
+  ],
+  "data_assignment_keys": [
+    "CERT53",
+    "COUNTRY_CTX",
+    "CURRENCY_DNA",
+    "D",
+    "EVENT_TEMPLATES",
+    "MACRO_SERIES",
+    "MACRO_THERMOMETER_DATA",
+    "NATIVE_CB_DATA",
+    "NATIVE_LIQ_DATA",
+    "NATIVE_RATES_DATA",
+    "NEWS_PULSE_STRUCT",
+    "OIS_DATA",
+    "REAL_CALENDAR",
+    "TOP_THEMES",
+    "V247_COT_STORIES",
+    "V250_COT_CHART_DATA",
+    "WHAT_CHANGED"
+  ],
+  "assignments": {
+    "D": [
+      {
+        "assignment_pos": 291589,
+        "rhs_span": [
+          291610,
+          1002124
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 2821,
+          "min_date": "2016-01-01",
+          "max_date": "2026-09-28",
+          "keys": [
+            "asOf",
+            "cot",
+            "currencies",
+            "curve",
+            "flags",
+            "macro",
+            "pairStates",
+            "pairs",
+            "priceAsOf",
+            "prices",
+            "risk"
+          ],
+          "length": 11
+        }
+      }
     ],
-    "GMFQ_RUNTIME_VALIDATION_MANIFEST": [
-      2569873
+    "CERT53": [
+      {
+        "assignment_pos": 1002126,
+        "rhs_span": [
+          1002152,
+          1130351
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 0,
+          "min_date": null,
+          "max_date": null,
+          "keys": [
+            "macro",
+            "pairs"
+          ],
+          "length": 2
+        }
+      }
+    ],
+    "COUNTRY_CTX": [
+      {
+        "assignment_pos": 1130353,
+        "rhs_span": [
+          1130384,
+          1137471
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 0,
+          "min_date": null,
+          "max_date": null,
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "WHAT_CHANGED": [
+      {
+        "assignment_pos": 1137473,
+        "rhs_span": [
+          1137505,
+          1140278
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "list",
+          "date_count": 0,
+          "min_date": null,
+          "max_date": null,
+          "keys": null,
+          "length": 8
+        }
+      }
+    ],
+    "CURRENCY_DNA": [
+      {
+        "assignment_pos": 1140280,
+        "rhs_span": [
+          1140312,
+          1141913
+        ],
+        "json_parsed": false,
+        "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 1 (char 2)"
+      }
+    ],
+    "NATIVE_RATES_DATA": [
+      {
+        "assignment_pos": 1141961,
+        "rhs_span": [
+          1141998,
+          1266481
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 433,
+          "min_date": "2025-01-16",
+          "max_date": "2026-09-28",
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "OIS_DATA": [
+      {
+        "assignment_pos": 1266529,
+        "rhs_span": [
+          1266557,
+          1272295
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 5,
+          "min_date": "2026-09-29",
+          "max_date": "2027-03-03",
+          "keys": [
+            "activation_rule",
+            "as_of",
+            "currencies",
+            "schema_version",
+            "status"
+          ],
+          "length": 5
+        }
+      },
+      {
+        "assignment_pos": 2576889,
+        "rhs_span": [
+          2576917,
+          2576961
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2580564,
+        "rhs_span": [
+          2580592,
+          2580636
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2588142,
+        "rhs_span": [
+          2588170,
+          2588214
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2627983,
+        "rhs_span": [
+          2628011,
+          2628055
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2631750,
+        "rhs_span": [
+          2631778,
+          2631822
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2635828,
+        "rhs_span": [
+          2635856,
+          2635900
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      },
+      {
+        "assignment_pos": 2716218,
+        "rhs_span": [
+          2716246,
+          2716290
+        ],
+        "json_parsed": false,
+        "parse_error": "non-json expression"
+      }
+    ],
+    "MACRO_THERMOMETER_DATA": [
+      {
+        "assignment_pos": 1272343,
+        "rhs_span": [
+          1272385,
+          1289928
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 1,
+          "min_date": "2026-08-01",
+          "max_date": "2026-08-01",
+          "keys": [
+            "currencies",
+            "dimensions",
+            "freshness_rule",
+            "lookback_rule",
+            "name",
+            "schema_version",
+            "status",
+            "thresholds"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "NATIVE_LIQ_DATA": [
+      {
+        "assignment_pos": 1289976,
+        "rhs_span": [
+          1290011,
+          1367778
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 420,
+          "min_date": "2016-01-01",
+          "max_date": "2026-09-25",
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "NATIVE_CB_DATA": [
+      {
+        "assignment_pos": 1367826,
+        "rhs_span": [
+          1367860,
+          1377868
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 15,
+          "min_date": "2026-09-02",
+          "max_date": "2026-12-10",
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "V250_COT_CHART_DATA": [
+      {
+        "assignment_pos": 1377916,
+        "rhs_span": [
+          1377955,
+          1418944
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 104,
+          "min_date": "2024-10-01",
+          "max_date": "2026-09-22",
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "V247_COT_STORIES": [
+      {
+        "assignment_pos": 1418946,
+        "rhs_span": [
+          1418982,
+          1424152
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 0,
+          "min_date": null,
+          "max_date": null,
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
+    ],
+    "REAL_CALENDAR": [
+      {
+        "assignment_pos": 1424200,
+        "rhs_span": [
+          1424233,
+          1433974
+        ],
+        "json_parsed": false,
+        "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 3 column 1 (char 4)"
+      }
+    ],
+    "TOP_THEMES": [
+      {
+        "assignment_pos": 1433976,
+        "rhs_span": [
+          1434006,
+          1437054
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "list",
+          "date_count": 0,
+          "min_date": null,
+          "max_date": null,
+          "keys": null,
+          "length": 7
+        }
+      }
+    ],
+    "NEWS_PULSE_STRUCT": [
+      {
+        "assignment_pos": 1437056,
+        "rhs_span": [
+          1437093,
+          1444136
+        ],
+        "json_parsed": false,
+        "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
+      }
+    ],
+    "EVENT_TEMPLATES": [
+      {
+        "assignment_pos": 1444138,
+        "rhs_span": [
+          1444173,
+          1446588
+        ],
+        "json_parsed": false,
+        "parse_error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 2 (char 3)"
+      }
+    ],
+    "MACRO_SERIES": [
+      {
+        "assignment_pos": 1446660,
+        "rhs_span": [
+          1446692,
+          1785664
+        ],
+        "json_parsed": true,
+        "parse_error": null,
+        "summary": {
+          "type": "dict",
+          "date_count": 528,
+          "min_date": "2016-01-01",
+          "max_date": "2026-09-28",
+          "keys": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ],
+          "length": 8
+        }
+      }
     ]
   },
-  "gmfq_data_object_span": [
-    291585,
-    291587
-  ],
-  "gmfq_data_json_parse_error": null,
-  "gmfq_data_json_parsed": true,
-  "top_level": {},
-  "global_date_range": {
-    "count": 0,
-    "min": null,
-    "max": null
-  }
+  "latest_parsed_assignment_summary": {
+    "D": {
+      "type": "dict",
+      "date_count": 2821,
+      "min_date": "2016-01-01",
+      "max_date": "2026-09-28",
+      "keys": [
+        "asOf",
+        "cot",
+        "currencies",
+        "curve",
+        "flags",
+        "macro",
+        "pairStates",
+        "pairs",
+        "priceAsOf",
+        "prices",
+        "risk"
+      ],
+      "length": 11
+    },
+    "CERT53": {
+      "type": "dict",
+      "date_count": 0,
+      "min_date": null,
+      "max_date": null,
+      "keys": [
+        "macro",
+        "pairs"
+      ],
+      "length": 2
+    },
+    "COUNTRY_CTX": {
+      "type": "dict",
+      "date_count": 0,
+      "min_date": null,
+      "max_date": null,
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "WHAT_CHANGED": {
+      "type": "list",
+      "date_count": 0,
+      "min_date": null,
+      "max_date": null,
+      "keys": null,
+      "length": 8
+    },
+    "NATIVE_RATES_DATA": {
+      "type": "dict",
+      "date_count": 433,
+      "min_date": "2025-01-16",
+      "max_date": "2026-09-28",
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "OIS_DATA": {
+      "type": "dict",
+      "date_count": 5,
+      "min_date": "2026-09-29",
+      "max_date": "2027-03-03",
+      "keys": [
+        "activation_rule",
+        "as_of",
+        "currencies",
+        "schema_version",
+        "status"
+      ],
+      "length": 5
+    },
+    "MACRO_THERMOMETER_DATA": {
+      "type": "dict",
+      "date_count": 1,
+      "min_date": "2026-08-01",
+      "max_date": "2026-08-01",
+      "keys": [
+        "currencies",
+        "dimensions",
+        "freshness_rule",
+        "lookback_rule",
+        "name",
+        "schema_version",
+        "status",
+        "thresholds"
+      ],
+      "length": 8
+    },
+    "NATIVE_LIQ_DATA": {
+      "type": "dict",
+      "date_count": 420,
+      "min_date": "2016-01-01",
+      "max_date": "2026-09-25",
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "NATIVE_CB_DATA": {
+      "type": "dict",
+      "date_count": 15,
+      "min_date": "2026-09-02",
+      "max_date": "2026-12-10",
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "V250_COT_CHART_DATA": {
+      "type": "dict",
+      "date_count": 104,
+      "min_date": "2024-10-01",
+      "max_date": "2026-09-22",
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "V247_COT_STORIES": {
+      "type": "dict",
+      "date_count": 0,
+      "min_date": null,
+      "max_date": null,
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    },
+    "TOP_THEMES": {
+      "type": "list",
+      "date_count": 0,
+      "min_date": null,
+      "max_date": null,
+      "keys": null,
+      "length": 7
+    },
+    "MACRO_SERIES": {
+      "type": "dict",
+      "date_count": 528,
+      "min_date": "2016-01-01",
+      "max_date": "2026-09-28",
+      "keys": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "length": 8
+    }
+  },
+  "reference_keys": [
+    "CERT53",
+    "COUNTRY_CTX",
+    "CURRENCY_DNA",
+    "D",
+    "EVENT_TEMPLATES",
+    "MACRO_SERIES",
+    "MACRO_THERMOMETER_DATA",
+    "NATIVE_CB_DATA",
+    "NATIVE_LIQ_DATA",
+    "NATIVE_RATES_DATA",
+    "NEWS_PULSE_STRUCT",
+    "OIS_DATA",
+    "REAL_CALENDAR",
+    "TOP_THEMES",
+    "V247_COT_STORIES",
+    "V250_COT_CHART_DATA",
+    "WHAT_CHANGED"
+  ]
 }
