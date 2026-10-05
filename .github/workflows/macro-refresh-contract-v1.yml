@@ -1,0 +1,79 @@
+name: Macro Refresh Contract V1
+
+on:
+  push:
+    branches:
+      - 'validation-canonical-macro-refresh-v1-*'
+      - 'release-canonical-macro-refresh-v1-*'
+    paths:
+      - 'validation/build_macro_candidate.py'
+      - 'validation/replay_jpy_macro_candidate.py'
+      - 'validation/validate_macro_refresh_contract.py'
+      - 'docs/CANONICAL_MACRO_REFRESH_V1.md'
+      - '.github/workflows/macro-refresh-contract-v1.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Snapshot live data
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/live-before.sha256
+
+      - name: Recover validated JPY replay candidate
+        run: |
+          python3 validation/replay_jpy_macro_candidate.py > /tmp/jpy-replay.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-replay.json'))
+          assert d['status']=='PASS'
+          json.dump(d['candidate'],open('/tmp/jpy-candidate.json','w'),ensure_ascii=False,indent=2)
+          PY
+
+      - name: Build candidate artifacts read-only
+        run: |
+          rm -rf /tmp/gmfq-macro-candidate
+          python3 validation/build_macro_candidate.py \
+            --candidate /tmp/jpy-candidate.json \
+            --output-dir /tmp/gmfq-macro-candidate \
+            | tee /tmp/macro-build.json
+
+      - name: Validate canonical refresh contract
+        run: |
+          python3 validation/validate_macro_refresh_contract.py \
+            --candidate-dir /tmp/gmfq-macro-candidate \
+            --expected-currency JPY \
+            --expected-dimension labour \
+            | tee /tmp/macro-refresh-contract.json
+
+      - name: Verify no live writes
+        run: |
+          sha256sum -c /tmp/live-before.sha256
+          git diff --quiet -- live_data payload
+          echo CANONICAL_MACRO_REFRESH_READ_ONLY_PASS
+
+      - name: Verify frozen live-update contract
+        run: |
+          python3 validation/check_live_update_contract.py | tee /tmp/live-update-contract.json
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-refresh-contract-v1
+          path: |
+            /tmp/jpy-replay.json
+            /tmp/macro-build.json
+            /tmp/macro-refresh-contract.json
+            /tmp/live-update-contract.json
