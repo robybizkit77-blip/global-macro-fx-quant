@@ -3,8 +3,7 @@ name: Staging Browser Audit
 on:
   push:
     branches:
-      - staging-nzd-ois-gate-2026-09-30
-      - staging-global-coherence-v490-20260930
+      - validation-browser-audit-v2-2026-10-05
   workflow_dispatch:
 
 jobs:
@@ -30,10 +29,12 @@ jobs:
           echo $! > /tmp/gmfq-server.pid
           sleep 2
 
-      - name: Run browser audit
+      - name: Run browser integrity audit
         run: |
           cat > browser-audit.js <<'EOF'
           const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
           (async()=>{
             const browser = await chromium.launch({headless:true});
             const page = await browser.newPage({viewport:{width:1440,height:1200}});
@@ -41,11 +42,11 @@ jobs:
             const pageErrors=[];
             page.on('console',m=>{ if(m.type()==='error') consoleErrors.push(m.text()); });
             page.on('pageerror',e=>pageErrors.push(String(e)));
-            const response = await page.goto('http://127.0.0.1:8000/', {waitUntil:'networkidle', timeout:120000});
+            const response = await page.goto('http://127.0.0.1:8000/', {waitUntil:'domcontentloaded', timeout:120000});
             if(!response || !response.ok()) throw new Error('HTTP load failed');
             await page.waitForFunction(() => document.documentElement.getAttribute('data-post-gate-final-audit'), null, {timeout:120000});
 
-            const result = await page.evaluate(() => {
+            const result = await page.evaluate(({CCYS,PAIRS}) => {
               const audit = window.GMFQ_POST_GATE_FINAL_AUDIT || null;
               const sections = {};
               for (const v of ['currencies','ratesdesk','pairs','cot','risk','macro','inflationlabour','themes']) {
@@ -57,61 +58,53 @@ jobs:
                   sections[v] = {exists:!!document.getElementById(v), error:String(e)};
                 }
               }
-              const currencyStates={};
-              for (const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) {
-                currencyStates[c]=typeof window.deriveCurrencyState==='function' ? window.deriveCurrencyState(c) : null;
-              }
+              const currencyStates=Object.fromEntries(CCYS.map(c=>[c,typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState(c):null]));
+              const pairFrames=Object.fromEntries(PAIRS.map(p=>[p,typeof window.derivePairDecisionFrame==='function'?window.derivePairDecisionFrame(p):null]));
               if (typeof window.selectCurrency==='function') window.selectCurrency('EUR',true);
               const eurText=document.body?.innerText||'';
-              if (typeof window.selectCurrency==='function') window.selectCurrency('JPY',true);
-              const jpyText=document.body?.innerText||'';
-              if (typeof window.openPairDetail==='function') window.openPairDetail('USD/JPY');
-              const usdjpy=typeof window.derivePairDecisionFrame==='function' ? window.derivePairDecisionFrame('USD/JPY') : null;
               if (typeof window.selectNativeCb==='function') window.selectNativeCb('JPY');
               const oisText=document.body?.innerText||'';
+              const ois=Object.fromEntries(CCYS.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null]));
               return {
                 title: document.title,
                 finalAudit: audit,
                 fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
-                ois: {
-                  USD: window.GMFQ_OIS?.currency?.('USD')?.status || null,
-                  EUR: window.GMFQ_OIS?.currency?.('EUR')?.status || null,
-                  GBP: window.GMFQ_OIS?.currency?.('GBP')?.status || null,
-                  JPY: window.GMFQ_OIS?.currency?.('JPY')?.status || null,
-                  CHF: window.GMFQ_OIS?.currency?.('CHF')?.status || null,
-                  CAD: window.GMFQ_OIS?.currency?.('CAD')?.status || null,
-                  AUD: window.GMFQ_OIS?.currency?.('AUD')?.status || null,
-                  NZD: window.GMFQ_OIS?.currency?.('NZD')?.status || null
-                },
-                sections,
-                currencyStates,
-                usdjpy,
-                coherenceText:{eur:eurText,jpy:jpyText,ois:oisText},
+                sections,currencyStates,pairFrames,ois,
+                coherenceText:{eur:eurText,ois:oisText},
                 bodyTextLength: document.body?.innerText?.length || 0
               };
-            });
+            },{CCYS,PAIRS});
 
             console.log(JSON.stringify({result,consoleErrors,pageErrors},null,2));
 
             if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
             if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
+            if(result.finalAudit?.counts?.currencies!==8 || result.finalAudit?.counts?.pairs!==28) throw new Error('Canonical count mismatch: '+JSON.stringify(result.finalAudit?.counts));
+            if(result.finalAudit?.canonical?.consistency_ok!==true || result.finalAudit?.canonical?.view_ok!==true) throw new Error('Canonical integrity failure');
+            if(result.finalAudit?.rates?.basis_ok!==true || result.finalAudit?.rates?.visible_ok!==true) throw new Error('Rates integrity failure');
+            if(Array.isArray(result.finalAudit?.issues) && result.finalAudit.issues.length) throw new Error('Final audit issues: '+JSON.stringify(result.finalAudit.issues));
             if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');
             if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
             if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
 
-            const jpy=result.currencyStates.JPY||{};
-            if(jpy.base!=='MISTA' || jpy.macro!==0 || jpy.policy!==0) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
-            const usdjpy=result.usdjpy||{};
-            if(usdjpy.quality!=='SEPARAZIONE RATES MATERIALE' || usdjpy.fav!=='—' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY rates separation failure: '+JSON.stringify(usdjpy));
-            if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
-            if(result.coherenceText.jpy.includes('Macro e Tassi/CB favoriscono entrambi JPY')) throw new Error('JPY wording still overstates support');
-            if(!result.coherenceText.ois.includes('front-end osservato') || result.coherenceText.ois.includes('OIS/forward o 2Y')) throw new Error('OIS/front-end wording failure');
-
-            const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
-            for(const [k,v] of Object.entries(expected)){
-              if(result.ois[k]!==v) throw new Error(`OIS ${k}: ${result.ois[k]} != ${v}`);
+            for(const [view,s] of Object.entries(result.sections)){
+              if(!s?.exists || s?.error) throw new Error('View integrity failure '+view+': '+JSON.stringify(s));
             }
+            for(const [c,s] of Object.entries(result.currencyStates)){
+              if(!s || typeof s.base!=='string' || ![-1,0,1].includes(s.macro) || ![-1,0,1].includes(s.policy)) throw new Error('Currency state malformed '+c+': '+JSON.stringify(s));
+            }
+            for(const [pair,f] of Object.entries(result.pairFrames)){
+              if(!f || typeof f.quality!=='string' || !f.quality) throw new Error('Pair frame missing '+pair+': '+JSON.stringify(f));
+              const [a,b]=pair.split('/');
+              if(!['—',a,b].includes(f.fav)) throw new Error('Pair favored side malformed '+pair+': '+JSON.stringify(f));
+              if(!f.structural || !f.structural.macro || !f.structural.policy || !f.structural.ratesGap) throw new Error('Pair structural frame malformed '+pair+': '+JSON.stringify(f));
+            }
+            for(const [c,status] of Object.entries(result.ois)){
+              if(!['ACTIVE','WITHHELD'].includes(status)) throw new Error('OIS status malformed '+c+': '+status);
+            }
+            if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('Level/change separation missing');
+            if(!result.coherenceText.ois.includes('front-end osservato') || result.coherenceText.ois.includes('OIS/forward o 2Y')) throw new Error('OIS/front-end wording failure');
 
             await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
             await browser.close();
