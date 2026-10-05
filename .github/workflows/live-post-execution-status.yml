@@ -5,6 +5,7 @@ on:
   push:
     branches: [staging-live-data-refresh-v1-2026-10-04]
     paths:
+      - "payload/**"
       - ".github/workflows/live-post-execution-status.yml"
   workflow_dispatch:
 
@@ -41,8 +42,6 @@ jobs:
             await page.waitForTimeout(1200);
             const out=await page.evaluate(()=>{
               const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-              // Read the canonical published registry, not lexical script bindings.
-              // This is the same runtime access path asserted by the browser gates.
               const live=window.__GMFQ_DATA||{};
               const ratesData=window.NATIVE_RATES_DATA||live.NATIVE_RATES_DATA||{};
               const cbData=window.NATIVE_CB_DATA||live.NATIVE_CB_DATA||{};
