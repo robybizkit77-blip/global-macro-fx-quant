@@ -48,28 +48,42 @@
       "dimension": "inflation",
       "role": "core",
       "official_authority": "Eurostat",
-      "upstream_series_id": null,
-      "source_url": null,
+      "upstream_series_id": "prc_hicp_minr",
+      "source_url": "https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en",
+      "source_filters": {
+        "freq": "M",
+        "unit": "RCH_A",
+        "coicop": "CP00",
+        "geo": "EA21"
+      },
       "frequency": "M",
-      "transformation": null,
-      "unit": null,
+      "transformation": "reported_yoy_rate",
+      "unit": "% YoY",
       "adapter_path": null,
       "requires_credential": false,
-      "status": "PLANNED_UNVALIDATED"
+      "status": "SOURCE_IDENTIFIED_UNVALIDATED"
     },
     {
       "currency": "EUR",
       "dimension": "labour",
       "role": "core",
       "official_authority": "Eurostat",
-      "upstream_series_id": null,
-      "source_url": null,
+      "upstream_series_id": "une_rt_m",
+      "source_url": "https://ec.europa.eu/eurostat/databrowser/view/une_rt_m/default/table?lang=en",
+      "source_filters": {
+        "freq": "M",
+        "s_adj": "SA",
+        "age": "TOTAL",
+        "unit": "PC_ACT",
+        "sex": "T",
+        "geo": "EA21"
+      },
       "frequency": "M",
-      "transformation": null,
-      "unit": null,
+      "transformation": "level",
+      "unit": "%",
       "adapter_path": null,
       "requires_credential": false,
-      "status": "PLANNED_UNVALIDATED"
+      "status": "SOURCE_IDENTIFIED_UNVALIDATED"
     },
     {
       "currency": "GBP",
