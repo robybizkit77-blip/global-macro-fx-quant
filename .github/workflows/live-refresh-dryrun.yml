@@ -1,0 +1,104 @@
+name: Live Refresh Dry Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - '.github/workflows/live-refresh-dryrun.yml'
+      - 'validation/simulate_live_refresh.py'
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply harmless live refresh in ephemeral workspace
+        run: python3 validation/simulate_live_refresh.py --apply | tee /tmp/live-refresh-dryrun.json
+
+      - name: Verify propagation scope
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          changed=subprocess.check_output(['git','status','--short'],text=True).splitlines()
+          paths=[x[3:] for x in changed]
+          allowed={'live_data/sections/OIS_DATA.json',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          bad=[p for p in paths if p not in allowed]
+          if bad: raise SystemExit('Unexpected changed files: '+', '.join(bad))
+          if 'live_data/sections/OIS_DATA.json' not in paths: raise SystemExit('OIS_DATA did not change')
+          payload=[p for p in paths if p.startswith('payload/part-')]
+          if not payload: raise SystemExit('No payload part changed')
+          print(json.dumps({'status':'PASS','changed_files':paths,'payload_changed':payload},indent=2))
+          PY
+
+      - name: Verify dry-run marker is inert
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          marker='__gmfq_dry_run_marker'
+          allowed={'live_data/sections/OIS_DATA.json','validation/simulate_live_refresh.py'}
+          hits=[]
+          for p in Path('.').rglob('*'):
+              if not p.is_file() or '.git' in p.parts or p.as_posix() in allowed or p.as_posix().startswith('payload/'):
+                  continue
+              try: txt=p.read_text(errors='ignore')
+              except Exception: continue
+              if marker in txt: hits.append(p.as_posix())
+          if hits: raise SystemExit('Marker referenced by logic: '+', '.join(hits))
+          print('DRY_RUN_MARKER_INERT_PASS')
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/gmfq-live-refresh-server.log 2>&1 &
+          echo $! > /tmp/gmfq-live-refresh-server.pid
+          sleep 2
+
+      - name: Run exact Engine Gate logic on refreshed workspace
+        shell: bash
+        run: |
+          awk "/cat > engine-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/engine-logic-audit.yml > engine-audit.js
+          test -s engine-audit.js
+          node engine-audit.js
+
+      - name: Run exact Browser Gate logic on refreshed workspace
+        shell: bash
+        run: |
+          awk "/cat > browser-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/staging-browser-audit.yml > browser-audit.js
+          test -s browser-audit.js
+          sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8765/#g' browser-audit.js
+          node browser-audit.js
+
+      - name: Confirm production untouched
+        run: |
+          echo 'EPHEMERAL_DRY_RUN_PASS_CANDIDATE'
+          echo 'No commit, no branch push, no main promotion, no gh-pages publication, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-refresh-dryrun-evidence
+          if-no-files-found: warn
+          path: |
+            /tmp/live-refresh-dryrun.json
+            /tmp/gmfq-live-refresh-server.log
+            staging-browser-audit.png
