@@ -1,0 +1,28 @@
+name: COT OI Reconstructability
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/check_cot_oi_reconstructability.py'
+      - '.github/workflows/cot-oi-reconstructability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check uniqueness of inferred open interest
+        run: python3 validation/check_cot_oi_reconstructability.py | tee /tmp/cot-oi-reconstructability.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-oi-reconstructability
+          path: /tmp/cot-oi-reconstructability.json
