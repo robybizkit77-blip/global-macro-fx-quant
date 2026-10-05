@@ -1,0 +1,37 @@
+name: JPY e-Stat Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-macro-source-jpy-estat-v1-2026-10-05
+    paths:
+      - 'validation/sources/jpy_estat_unemployment.py'
+      - 'validation/fixtures/jpy_estat_unemployment_2026-08.json'
+      - 'validation/test_jpy_estat_source.py'
+      - 'validation/build_macro_candidate.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - '.github/workflows/jpy-estat-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile adapter and test
+        run: |
+          python -m py_compile validation/sources/jpy_estat_unemployment.py
+          python -m py_compile validation/test_jpy_estat_source.py
+      - name: Run deterministic source-to-candidate-to-builder contract
+        run: python validation/test_jpy_estat_source.py
+      - name: Confirm repository live data is clean
+        run: |
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
