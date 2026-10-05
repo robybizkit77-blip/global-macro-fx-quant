@@ -1,0 +1,118 @@
+name: CFTC Staging Persist
+
+on:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - '.github/workflows/cftc-staging-persist.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  persist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify official CFTC source
+        run: python3 validation/verify_cftc_current_snapshot.py | tee /tmp/cftc-official-verification.json
+
+      - name: Build and inject canonical COT story
+        run: |
+          python3 validation/build_cot_stories.py --output /tmp/V247_COT_STORIES.built.json > /tmp/cot-builder.json
+          python3 validation/update_live_derived_sections.py --cot /tmp/V247_COT_STORIES.built.json --apply | tee /tmp/cot-injector.json
+
+      - name: Rebuild manifest v2
+        run: |
+          python3 validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          python3 - <<'PY'
+          import json
+          p='/tmp/manifest.v2.json'
+          d=json.load(open(p))
+          if d.get('status')!='PASS': raise SystemExit(d)
+          open('live_data/manifest.v2.json','w').write(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
+          PY
+
+      - name: Verify exact staging change set
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          cot=json.load(open('live_data/sections/V247_COT_STORIES.json'))
+          assert cot['CHF']['signal']=='EXTREME LONG',cot['CHF']
+          assert cot['CAD']['signal']=='NEUTRALE',cot['CAD']
+          assert all('open interest' not in x['funds_detail'].lower() for x in cot.values())
+          changed=subprocess.check_output(['git','status','--short'],text=True).splitlines()
+          paths=[x[3:] for x in changed]
+          allowed={'live_data/sections/V247_COT_STORIES.json','payload/part-00.txt','live_data/manifest.v2.json'}
+          bad=[p for p in paths if p not in allowed]
+          if bad: raise SystemExit('Unexpected changed files: '+', '.join(bad))
+          required={'live_data/sections/V247_COT_STORIES.json','payload/part-00.txt','live_data/manifest.v2.json'}
+          missing=required-set(paths)
+          if missing: raise SystemExit('Expected changes missing: '+', '.join(sorted(missing)))
+          print(json.dumps({'status':'PASS','changed_files':paths},indent=2))
+          PY
+
+      - name: Create exact local staging candidate commit
+        run: |
+          git config user.name 'gmfq-validation-bot'
+          git config user.email 'gmfq-validation-bot@users.noreply.github.com'
+          git add live_data/sections/V247_COT_STORIES.json payload/part-00.txt live_data/manifest.v2.json
+          git commit -m 'Refresh validated CFTC derived story on staging'
+          git rev-parse HEAD | tee /tmp/staging-candidate-sha.txt
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local server from exact candidate
+        run: |
+          python3 -m http.server 8768 --bind 127.0.0.1 > /tmp/gmfq-cftc-persist-server.log 2>&1 &
+          echo $! > /tmp/gmfq-cftc-persist-server.pid
+          sleep 2
+
+      - name: Engine Gate on exact candidate commit
+        shell: bash
+        run: |
+          awk "/cat > engine-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/engine-logic-audit.yml > engine-audit.js
+          test -s engine-audit.js
+          sed -i 's#http://127.0.0.1:8765/#http://127.0.0.1:8768/#g' engine-audit.js
+          node engine-audit.js
+
+      - name: Browser Gate on exact candidate commit
+        shell: bash
+        run: |
+          awk "/cat > browser-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/staging-browser-audit.yml > browser-audit.js
+          test -s browser-audit.js
+          sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8768/#g' browser-audit.js
+          node browser-audit.js
+
+      - name: Push validated staging candidate only
+        run: |
+          git push origin HEAD:design-live-update-pipeline-v1-2026-10-05
+          echo 'STAGING_PERSIST_PASS'
+          echo 'main untouched; gh-pages untouched; schedule disabled.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cftc-staging-persist-evidence
+          if-no-files-found: warn
+          path: |
+            /tmp/cftc-official-verification.json
+            /tmp/cot-builder.json
+            /tmp/cot-injector.json
+            /tmp/manifest.v2.json
+            /tmp/staging-candidate-sha.txt
+            /tmp/gmfq-cftc-persist-server.log
+            staging-browser-audit.png
