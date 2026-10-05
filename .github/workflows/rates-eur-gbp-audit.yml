@@ -1,0 +1,28 @@
+name: Rates EUR GBP Audit
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - staging-rates-eur-gbp-2026-10-05
+    paths:
+      - 'validation/fetch_rates_eur_gbp.py'
+      - '.github/workflows/rates-eur-gbp-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependency
+        run: pip install openpyxl
+      - name: Fetch and compare official EUR GBP rates
+        run: python validation/fetch_rates_eur_gbp.py
+      - name: Upload audit output
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-eur-gbp-audit
+          path: validation/rates_eur_gbp_audit_output.json
