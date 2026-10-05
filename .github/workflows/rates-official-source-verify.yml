@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install workbook parser
+        run: python3 -m pip install --disable-pip-version-check openpyxl
       - name: Verify official rates subset
         run: python3 validation/verify_rates_official_subset.py
       - name: Governance note
