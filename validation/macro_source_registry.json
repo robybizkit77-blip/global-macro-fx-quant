@@ -59,9 +59,9 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "unit": "% YoY",
-      "adapter_path": null,
+      "adapter_path": "validation/sources/eur_eurostat_core.py",
       "requires_credential": false,
-      "status": "SOURCE_IDENTIFIED_UNVALIDATED"
+      "status": "ADAPTER_READY_LIVE_CI_PENDING"
     },
     {
       "currency": "EUR",
@@ -81,37 +81,37 @@
       "frequency": "M",
       "transformation": "level",
       "unit": "%",
-      "adapter_path": null,
+      "adapter_path": "validation/sources/eur_eurostat_core.py",
       "requires_credential": false,
-      "status": "SOURCE_IDENTIFIED_UNVALIDATED"
+      "status": "ADAPTER_READY_LIVE_CI_PENDING"
     },
     {
       "currency": "GBP",
       "dimension": "inflation",
       "role": "core",
       "official_authority": "Office for National Statistics",
-      "upstream_series_id": null,
-      "source_url": null,
+      "upstream_series_id": "D7G7",
+      "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23",
       "frequency": "M",
-      "transformation": null,
-      "unit": null,
-      "adapter_path": null,
+      "transformation": "reported_yoy_rate",
+      "unit": "% YoY",
+      "adapter_path": "validation/sources/gbp_ons_core.py",
       "requires_credential": false,
-      "status": "PLANNED_UNVALIDATED"
+      "status": "ADAPTER_READY_LIVE_CI_PENDING"
     },
     {
       "currency": "GBP",
       "dimension": "labour",
       "role": "core",
       "official_authority": "Office for National Statistics",
-      "upstream_series_id": null,
-      "source_url": null,
+      "upstream_series_id": "MGSX",
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
       "frequency": "M",
-      "transformation": null,
-      "unit": null,
-      "adapter_path": null,
+      "transformation": "level",
+      "unit": "%",
+      "adapter_path": "validation/sources/gbp_ons_core.py",
       "requires_credential": false,
-      "status": "PLANNED_UNVALIDATED"
+      "status": "ADAPTER_READY_LIVE_CI_PENDING"
     },
     {
       "currency": "JPY",
