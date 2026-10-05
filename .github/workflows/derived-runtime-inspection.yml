@@ -1,0 +1,28 @@
+name: Derived Runtime Inspection
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/inspect_derived_runtime.py'
+      - '.github/workflows/derived-runtime-inspection.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect concatenated runtime
+        run: python3 validation/inspect_derived_runtime.py | tee /tmp/derived-runtime-inspection.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: derived-runtime-inspection
+          path: /tmp/derived-runtime-inspection.json
