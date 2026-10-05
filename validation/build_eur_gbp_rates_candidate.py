@@ -4,15 +4,19 @@ import argparse, copy, json, pathlib, sys
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 CURRENT=ROOT/'live_data'/'sections'/'NATIVE_RATES_DATA.json'
-REF_DATE='2026-09-25'
+REF_CUTOFF='2026-09-25'
 TARGET_DATE='2026-10-02'
 
-def find_hist_value(obj,key,date):
+def find_hist_value_on_or_before(obj,key,cutoff):
     h=obj.get(key) or {}; dates=h.get('dates') or []; vals=h.get('values') or []
     if len(dates)!=len(vals): raise ValueError(f'{key}: dates/values mismatch')
+    candidates=[]
     for d,v in zip(dates,vals):
-        if str(d)==date: return float(v)
-    raise ValueError(f'{key}: reference date {date} not found')
+        ds=str(d)
+        if ds<=cutoff:
+            candidates.append((ds,float(v)))
+    if not candidates: raise ValueError(f'{key}: no reference observation on/before {cutoff}')
+    return max(candidates,key=lambda x:x[0])
 
 def append_hist(obj,key,date,value):
     h=obj.get(key)
@@ -35,7 +39,11 @@ def apply_one(out,cur,ccy,src,source_text,quality='FULL_CURRENT_OFFICIAL_SAME_BA
     j=out[ccy]; old=cur[ccy]
     if old.get('date')!='2026-10-01': raise SystemExit(f'{ccy}: unexpected current date {old.get("date")}')
     y2=float(src['2Y']); y10=float(src['10Y'])
-    ref2=find_hist_value(j,'history2',REF_DATE); ref10=find_hist_value(j,'history10',REF_DATE)
+    ref2_date,ref2=find_hist_value_on_or_before(j,'history2',REF_CUTOFF)
+    ref10_date,ref10=find_hist_value_on_or_before(j,'history10',REF_CUTOFF)
+    if ref2_date!=ref10_date:
+        raise SystemExit(f'{ccy}: same-basis reference-date mismatch {ref2_date} vs {ref10_date}')
+    ref_date=ref2_date
     chg2=round((y2-ref2)*100,1); chg10=round((y10-ref10)*100,1)
     j['date']=TARGET_DATE; j['source']=source_text; j['quality']=quality
     j['2Y']=y2; j['10Y']=y10; j['curve_bp']=round((y10-y2)*100,1)
@@ -46,9 +54,10 @@ def apply_one(out,cur,ccy,src,source_text,quality='FULL_CURRENT_OFFICIAL_SAME_BA
     append_hist(j,'history2',TARGET_DATE,y2); append_hist(j,'history10',TARGET_DATE,y10)
     j['freshness_status']='CURRENT_OFFICIAL_SAME_BASIS'
     j['freshness_note']=source_text+' updated through 2026-10-02.'
-    j['weekly2_validation']={'start_date':REF_DATE,'start_value':ref2,'end_date':TARGET_DATE,'end_value':y2,'change_bp':chg2,'source':source_text,'note':'Same-basis weekly change from 2026-09-25 to 2026-10-02.'}
-    j['weekly10_validation']={'start_date':REF_DATE,'start_value':ref10,'end_date':TARGET_DATE,'end_value':y10,'change_bp':chg10,'source':source_text,'note':'Same-basis weekly change from 2026-09-25 to 2026-10-02.'}
-    return {'old_date':old['date'],'new_date':TARGET_DATE,'2Y':y2,'10Y':y10,'curve_bp':j['curve_bp'],'chg2_bp':chg2,'chg10_bp':chg10,'curve_state':j['curve_state']}
+    note=f'Same-basis change from {ref_date} (latest available on/before {REF_CUTOFF}) to {TARGET_DATE}.'
+    j['weekly2_validation']={'start_date':ref_date,'start_value':ref2,'end_date':TARGET_DATE,'end_value':y2,'change_bp':chg2,'source':source_text,'note':note}
+    j['weekly10_validation']={'start_date':ref_date,'start_value':ref10,'end_date':TARGET_DATE,'end_value':y10,'change_bp':chg10,'source':source_text,'note':note}
+    return {'old_date':old['date'],'new_date':TARGET_DATE,'2Y':y2,'10Y':y10,'curve_bp':j['curve_bp'],'reference_date':ref_date,'reference_2Y':ref2,'reference_10Y':ref10,'chg2_bp':chg2,'chg10_bp':chg10,'curve_state':j['curve_state']}
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--source-audit',required=True); ap.add_argument('--output',required=True); a=ap.parse_args()
