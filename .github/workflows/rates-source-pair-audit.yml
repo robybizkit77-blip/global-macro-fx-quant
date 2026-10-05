@@ -1,0 +1,46 @@
+name: Rates Source Pair Audit
+
+on:
+  push:
+    branches:
+      - 'staging-rates-source-v1-2026-10-05'
+    paths:
+      - 'validation/fetch_rates_usd_jpy.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - '.github/workflows/rates-source-pair-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and compare official USD JPY rates
+        run: |
+          python3 validation/fetch_rates_usd_jpy.py | tee /tmp/rates-source-pair-audit.json
+
+      - name: Contract assertions
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/rates-source-pair-audit.json'))
+          assert p['status']=='PASS',p
+          assert p['USD']['state']=='NO_CHANGE',p['USD']
+          assert p['USD']['source']['date']=='2026-10-02',p['USD']
+          assert p['USD']['source']['2Y']==4.83,p['USD']
+          assert p['USD']['source']['10Y']==5.28,p['USD']
+          assert p['JPY']['state']=='ADVANCE_AVAILABLE',p['JPY']
+          assert p['JPY']['source']['date']=='2026-10-02',p['JPY']
+          print(json.dumps({'status':'PASS','USD':p['USD'],'JPY':p['JPY']},indent=2))
+          PY
+
+      - name: Upload source audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-source-pair-audit
+          path: /tmp/rates-source-pair-audit.json
