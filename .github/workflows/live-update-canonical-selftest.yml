@@ -1,0 +1,88 @@
+name: Live Update Canonical Self Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/build_live_manifest_v2.py'
+      - 'validation/update_live_direct_section.py'
+      - '.github/workflows/live-update-canonical-selftest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and validate manifest v2
+        run: |
+          python3 validation/build_live_manifest_v2.py > /tmp/live-manifest-v2.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/live-manifest-v2.json'))
+          assert d['status']=='PASS',d
+          assert d['direct_section_count']==12,d
+          assert d['derived_section_count']==2,d
+          assert d['part_count']==16,d
+          modes={x['key']:x['mode'] for x in d['sections']}
+          assert modes['V247_COT_STORIES']=='DERIVED_BUILDER_REQUIRED'
+          assert modes['RATES_AUDIT_METADATA']=='DERIVED_BUILDER_REQUIRED'
+          print('MANIFEST_V2_PASS')
+          PY
+
+      - name: Generic updater rejects derived sections
+        run: |
+          set +e
+          python3 validation/update_live_direct_section.py --section V247_COT_STORIES --replacement live_data/sections/V247_COT_STORIES.json >/tmp/derived.out 2>&1
+          code=$?
+          set -e
+          test "$code" -ne 0
+          grep -q 'Derived section requires dedicated builder' /tmp/derived.out
+          echo DERIVED_REJECTION_PASS
+
+      - name: Prepare inert OIS replacement
+        run: |
+          python3 - <<'PY'
+          import json
+          p='live_data/sections/OIS_DATA.json'
+          d=json.load(open(p))
+          d['__gmfq_generic_updater_selftest']='PASS'
+          open('/tmp/OIS_DATA.replacement.json','w').write(json.dumps(d,separators=(',',':'),ensure_ascii=False))
+          PY
+
+      - name: Apply generic updater in ephemeral workspace
+        run: python3 validation/update_live_direct_section.py --section OIS_DATA --replacement /tmp/OIS_DATA.replacement.json --apply | tee /tmp/generic-updater.json
+
+      - name: Verify exactly one payload part changed
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          d=json.load(open('/tmp/generic-updater.json'))
+          assert d['status']=='PASS' and d['changed_payload_parts']==[0],d
+          lines=subprocess.check_output(['git','status','--short'],text=True).splitlines()
+          paths=[x[3:] for x in lines]
+          expected={'live_data/sections/OIS_DATA.json','payload/part-00.txt'}
+          if set(paths)!=expected: raise SystemExit(f'Unexpected changed files: {paths}')
+          print('SINGLE_PART_PROPAGATION_PASS')
+          PY
+
+      - name: Confirm no persistence or publish
+        run: |
+          echo 'EPHEMERAL_SELFTEST_ONLY'
+          echo 'No commit, no push, no main, no gh-pages, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-update-canonical-selftest
+          path: |
+            /tmp/live-manifest-v2.json
+            /tmp/generic-updater.json
+            /tmp/derived.out
