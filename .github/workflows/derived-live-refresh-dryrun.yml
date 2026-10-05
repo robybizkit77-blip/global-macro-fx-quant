@@ -73,6 +73,8 @@ jobs:
         run: |
           awk "/cat > engine-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/engine-logic-audit.yml > engine-audit.js
           test -s engine-audit.js
+          sed -i 's#http://127.0.0.1:8765/#http://127.0.0.1:8766/#g' engine-audit.js
+          sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8766/#g' engine-audit.js
           node engine-audit.js
 
       - name: Run exact Browser Gate logic on derived candidate
@@ -80,6 +82,7 @@ jobs:
         run: |
           awk "/cat > browser-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/staging-browser-audit.yml > browser-audit.js
           test -s browser-audit.js
+          sed -i 's#http://127.0.0.1:8765/#http://127.0.0.1:8766/#g' browser-audit.js
           sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8766/#g' browser-audit.js
           node browser-audit.js
 
