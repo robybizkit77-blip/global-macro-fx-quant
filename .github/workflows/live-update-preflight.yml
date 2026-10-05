@@ -1,0 +1,38 @@
+name: Live Update Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - '.github/workflows/live-update-preflight.yml'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/LIVE_UPDATE_PIPELINE_RUNBOOK_V1_2026-10-05.json'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate live data contract
+        run: python3 validation/check_live_update_contract.py
+      - name: Confirm design remains manual-only
+        run: |
+          python3 - <<'PY'
+          import json
+          p='validation/LIVE_UPDATE_PIPELINE_RUNBOOK_V1_2026-10-05.json'
+          d=json.load(open(p))
+          assert d['status']=='DESIGN_READY__MANUAL_ONLY'
+          assert d['scheduling_policy']['enabled'] is False
+          assert d['frozen_model']['rules_fingerprint']=='3356baf0'
+          print('LIVE_UPDATE_PREFLIGHT_DESIGN_PASS')
+          PY
+      - name: Governance note
+        run: |
+          echo 'Read-only preflight only.'
+          echo 'No data collection, no runtime rebuild, no commit, no main promotion, no gh-pages publication.'
