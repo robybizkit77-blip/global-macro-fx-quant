@@ -1,0 +1,7 @@
+{
+  "schema": "GMFQ_RATES_ENGINE_GATE_TRIGGER_V1",
+  "validated_candidate_tree_source": "6a45970d71773c0e219dbe71e0e67daa03a83917",
+  "scope": ["CAD"],
+  "purpose": "Trigger official Engine Logic Audit and Browser Audit on the exact persisted CAD rates candidate tree. No runtime or model logic change.",
+  "oos_restart": false
+}
