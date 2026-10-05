@@ -1,0 +1,49 @@
+name: Rates Unified Audit
+
+on:
+  push:
+    branches:
+      - validation-unified-rates-audit-v1-2026-10-05
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Run unified read-only Rates audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py | tee /tmp/rates-unified-audit.log
+      - name: Confirm read-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload
+          test -f validation/RATES_UNIFIED_AUDIT_OUTPUT.json
+          python - <<'PY'
+          import json
+          p='validation/RATES_UNIFIED_AUDIT_OUTPUT.json'
+          d=json.load(open(p))
+          assert d['status']=='PASS', d
+          assert set(d['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert d['currencies']['CHF']['state']=='WITHHOLD'
+          assert d['summary']['live_fetch_count']==5
+          print('UNIFIED_RATES_AUDIT_CONTRACT_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-unified-audit
+          path: |
+            validation/RATES_UNIFIED_AUDIT_OUTPUT.json
+            /tmp/rates-unified-audit.log
