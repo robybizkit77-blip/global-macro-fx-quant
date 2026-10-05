@@ -30,8 +30,7 @@ def percentile(history: list[float], value: float) -> float:
         raise ValueError("empty history")
     below = sum(1 for x in history if x < value)
     equal = sum(1 for x in history if x == value)
-    pct = 100.0 * (below + 0.5 * equal) / len(history)
-    return round(pct, 1)
+    return round(100.0 * (below + 0.5 * equal) / len(history), 1)
 
 
 def temperature_label(pct: float, thresholds: list[dict[str, Any]]) -> str:
@@ -127,7 +126,6 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     if not isinstance(dates, list) or not isinstance(values, list) or len(dates) != len(values):
         raise ValueError("target MACRO_SERIES entry has invalid dates/values")
 
-    action: str
     if obs_date in dates:
         idx = dates.index(obs_date)
         old_value = float(values[idx])
@@ -147,8 +145,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     series_row["last_value"] = values[-1]
     if c.get("unit") is not None:
         series_row["unit"] = c["unit"]
-    if c.get("frequency") is not None:
-        series_row["frequency"] = c["frequency"]
+    series_row["frequency"] = c["frequency"]
 
     hrow = heatmap["currencies"][currency][dimension]
     if str(hrow.get("series_id")) != str(c["series_id"]) and not c.get("allow_series_id_change", False):
@@ -166,9 +163,8 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     if not isinstance(hist, list):
         raise ValueError("heatmap history missing")
     hist_values = [float(x) for x in hist]
-    previous_as_of = heatmap["currencies"][currency].get("as_of_detail", {}).get(
-        "unemployment" if dimension == "labour" else "inflation"
-    )
+    detail_key = "unemployment" if dimension == "labour" else "inflation"
+    previous_as_of = heatmap["currencies"][currency].get("as_of_detail", {}).get(detail_key)
     if previous_as_of == obs_date and hist_values:
         hist_values[-1] = value
     else:
@@ -190,10 +186,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
         "latest": True,
         "transformation": True,
     }
-
-    detail_key = "unemployment" if dimension == "labour" else "inflation"
-    detail = heatmap["currencies"][currency].setdefault("as_of_detail", {})
-    detail[detail_key] = obs_date
+    heatmap["currencies"][currency].setdefault("as_of_detail", {})[detail_key] = obs_date
 
     return {
         "currency": currency,
@@ -211,14 +204,50 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     }
 
 
+def synthetic_functional_test() -> dict[str, Any]:
+    series = {c: [{"id": f"{c}_TEST", "dates": ["2026-01"], "values": [1.0], "last_date": "2026-01", "last_value": 1.0}] for c in CURRENCIES}
+    heatmap = {
+        "schema_version": "GMFQ_MACRO_HEATMAP_V1",
+        "lookback_rule": {"preferred_years": 10, "minimum_observations": 2},
+        "thresholds": [
+            {"min": 0, "max": 20, "label": "MOLTO_FREDDO"},
+            {"min": 20, "max": 40, "label": "FREDDO"},
+            {"min": 40, "max": 60, "label": "NORMALE"},
+            {"min": 60, "max": 80, "label": "CALDO"},
+            {"min": 80, "max": 100, "label": "MOLTO_CALDO"},
+        ],
+        "currencies": {
+            c: {
+                "inflation": {"series_id": f"{c}_INF", "history": [1.0, 2.0], "as_of": "2026-01"},
+                "labour": {"series_id": f"{c}_LAB", "history": [4.0, 4.1], "as_of": "2026-01"},
+                "as_of_detail": {"inflation": "2026-01", "unemployment": "2026-01"},
+            }
+            for c in CURRENCIES
+        },
+    }
+    validate_roots(series, heatmap)
+    candidate = {
+        "currency": "JPY", "dimension": "labour", "macro_series_id": "JPY_TEST",
+        "observation_date": "2026-02", "value": 4.3, "source": "SELF_TEST",
+        "series_id": "JPY_LAB", "frequency": "M", "transformation": "level"
+    }
+    result = apply_candidate(series, heatmap, candidate)
+    if series["JPY"][0]["last_date"] != "2026-02" or series["JPY"][0]["last_value"] != 4.3:
+        raise ValueError("synthetic MACRO_SERIES mutation failed")
+    if heatmap["currencies"]["JPY"]["labour"]["latest_value"] != 4.3:
+        raise ValueError("synthetic heatmap mutation failed")
+    if heatmap["currencies"]["JPY"]["as_of_detail"]["unemployment"] != "2026-02":
+        raise ValueError("synthetic as_of propagation failed")
+    return result
+
+
 def self_test(series: dict[str, Any], heatmap: dict[str, Any]) -> dict[str, Any]:
     validate_roots(series, heatmap)
     counts = {c: len(series[c]) for c in CURRENCIES}
     if any(v == 0 for v in counts.values()):
         raise ValueError(f"empty currency series arrays: {counts}")
-    checks = {}
-    for c in CURRENCIES:
-        checks[c] = {
+    checks = {
+        c: {
             d: {
                 "series_id": heatmap["currencies"][c][d].get("series_id"),
                 "history_n": len(heatmap["currencies"][c][d].get("history", [])),
@@ -226,19 +255,23 @@ def self_test(series: dict[str, Any], heatmap: dict[str, Any]) -> dict[str, Any]
             }
             for d in DIMENSIONS
         }
+        for c in CURRENCIES
+    }
+    synthetic = synthetic_functional_test()
     return {
         "status": "PASS",
         "mode": "SELF_TEST_READ_ONLY",
         "currencies": list(CURRENCIES),
         "macro_series_counts": counts,
         "heatmap_dimensions": checks,
+        "synthetic_functional_test": synthetic,
         "writes_live_data": False,
         "changes_engine_rules": False,
     }
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Build validated macro/heatmap replacement candidates without touching live data")
+    ap = argparse.ArgumentParser(description="Build macro/heatmap replacement candidates without touching live data")
     ap.add_argument("--candidate", help="Validated observation candidate JSON")
     ap.add_argument("--output-dir", default="/tmp/gmfq-macro-candidate")
     ap.add_argument("--self-test", action="store_true")
