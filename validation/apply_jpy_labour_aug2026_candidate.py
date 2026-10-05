@@ -57,7 +57,6 @@ def main():
     series_before=copy.deepcopy(series)
     thermo_before=copy.deepcopy(thermo)
 
-    # Locate exactly one canonical JPY unemployment series.
     matches=[s for s in series['JPY'] if s.get('label')=='Disoccupazione' and s.get('frequency')=='M']
     if len(matches)!=1:
         raise SystemExit(f'Expected exactly one JPY monthly Disoccupazione series, found {len(matches)}')
@@ -72,13 +71,16 @@ def main():
         raise SystemExit('2026-08 already exists in JPY unemployment series')
     if len(s['dates'])!=len(s['values']):
         raise SystemExit('JPY unemployment dates/values length mismatch')
-    old_series_n=len(s['dates'])
+    old_dates=list(s['dates']); old_values=list(s['values']); old_series_n=len(old_dates)
     s['dates'].append(PERIOD)
     s['values'].append(VALUE)
     s['last_date']=PERIOD
     s['last_value']=VALUE
+    if s['dates'][:-1]!=old_dates or s['values'][:-1]!=old_values:
+        raise SystemExit('JPY unemployment update is not append-only')
 
-    labour=thermo['currencies']['JPY']['labour']
+    jpy=thermo['currencies']['JPY']
+    labour=jpy['labour']
     expected={
         'series_id':'JP_UNEMP_RATE','source':SOURCE,'frequency':'M','transformation':'level',
         'latest_value':2.4,'as_of':'2026-07','percentile':12.1,'temperature_score':12.1,
@@ -90,6 +92,13 @@ def main():
     hist=[float(x) for x in labour['history']]
     if len(hist)!=120 or hist[-5:]!=[2.7,2.5,2.5,2.5,2.4]:
         raise SystemExit('Unexpected JPY labour 120m history geometry/tail')
+    detail=jpy.get('as_of_detail')
+    if not isinstance(detail,dict):
+        raise SystemExit('Missing JPY currency-level as_of_detail')
+    if detail.get('unemployment')!='2026-07':
+        raise SystemExit(f'Unexpected JPY as_of_detail.unemployment: {detail.get("unemployment")!r}')
+    old_inflation_asof=detail.get('inflation')
+
     new_hist=hist[1:]+[VALUE]
     pct=midrank(new_hist,VALUE)
     new_dir=direction(hist[-1],VALUE)
@@ -102,25 +111,27 @@ def main():
     labour['direction']=new_dir
     labour['acceleration']=new_acc
     labour['history']=new_hist
-    if 'as_of_detail' not in labour or not isinstance(labour['as_of_detail'],dict):
-        raise SystemExit('Missing JPY labour as_of_detail')
-    if labour['as_of_detail'].get('unemployment')!='2026-07':
-        raise SystemExit('Unexpected JPY labour as_of_detail.unemployment')
-    labour['as_of_detail']['unemployment']=PERIOD
+    detail['unemployment']=PERIOD
+    if detail.get('inflation')!=old_inflation_asof:
+        raise SystemExit('JPY inflation as_of_detail changed unexpectedly')
 
-    # Guard scope before serialization.
-    for ccy in thermo:
-        pass
-    tb=thermo_before['currencies']
-    ta=thermo['currencies']
+    tb=thermo_before['currencies']; ta=thermo['currencies']
     for ccy in ta:
         if ccy!='JPY' and ta[ccy]!=tb[ccy]:
             raise SystemExit(f'Unexpected thermometer mutation outside JPY: {ccy}')
-    jpy_before=copy.deepcopy(tb['JPY']); jpy_after=copy.deepcopy(ta['JPY'])
-    jpy_before.pop('labour'); jpy_after.pop('labour')
-    if jpy_before!=jpy_after:
-        raise SystemExit('Unexpected JPY thermometer mutation outside labour')
+    before_jpy=copy.deepcopy(tb['JPY']); after_jpy=copy.deepcopy(ta['JPY'])
+    before_labour=before_jpy.pop('labour'); after_labour=after_jpy.pop('labour')
+    before_detail=before_jpy.pop('as_of_detail'); after_detail=after_jpy.pop('as_of_detail')
+    if before_jpy!=after_jpy:
+        raise SystemExit('Unexpected JPY thermometer mutation outside labour/as_of_detail')
+    bd=dict(before_detail); ad=dict(after_detail)
+    bd.pop('unemployment',None); ad.pop('unemployment',None)
+    if bd!=ad:
+        raise SystemExit('Unexpected JPY as_of_detail mutation outside unemployment')
+
     sb=series_before['JPY']; sa=series['JPY']
+    if len(sb)!=len(sa):
+        raise SystemExit('JPY series list length changed')
     for i,(before,after) in enumerate(zip(sb,sa)):
         if before.get('label')!='Disoccupazione' and before!=after:
             raise SystemExit(f'Unexpected JPY MACRO_SERIES mutation at index {i} label={before.get("label")}')
@@ -135,7 +146,6 @@ def main():
         update_series=run_updater('MACRO_SERIES',sr)
         update_thermo=run_updater('MACRO_THERMOMETER_DATA',tr)
 
-    # Rebuild canonical manifest v2 from the now-updated runtime.
     cp=subprocess.run(['python','validation/build_live_manifest_v2.py'],cwd=ROOT,text=True,capture_output=True)
     if cp.returncode:
         raise SystemExit(f'manifest v2 rebuild failed: {cp.stdout}\n{cp.stderr}')
@@ -150,32 +160,23 @@ def main():
 
     result={
         'schema_version':'GMFQ_JPN_LABOUR_AUG2026_CANDIDATE_V1',
-        'status':'PASS',
-        'source':SOURCE,
-        'release_date':RELEASE_DATE,
-        'period':PERIOD,
+        'status':'PASS','source':SOURCE,'release_date':RELEASE_DATE,'period':PERIOD,
         'official_unemployment_rate_sa':VALUE,
         'macro_series':{
-            'old_last_date':'2026-07','old_last_value':2.4,
-            'new_last_date':PERIOD,'new_last_value':VALUE,
-            'old_n':old_series_n,'new_n':len(s['dates']),
-            'append_only':s['dates'][:-1]==matches[0]['dates'][:-1] if False else True
+            'old_last_date':'2026-07','old_last_value':2.4,'new_last_date':PERIOD,'new_last_value':VALUE,
+            'old_n':old_series_n,'new_n':len(s['dates']),'append_only':s['dates'][:-1]==old_dates and s['values'][:-1]==old_values
         },
         'thermometer':{
-            'old_as_of':'2026-07','new_as_of':PERIOD,
-            'old_value':2.4,'new_value':VALUE,
-            'old_percentile':12.1,'new_percentile':pct,
-            'old_label':'MOLTO_FREDDO','new_label':temp_label(pct),
-            'old_direction':'SCENDE','new_direction':new_dir,
-            'old_acceleration':'RALLENTA','new_acceleration':new_acc,
-            'history_n':len(new_hist),
-            'history_tail':new_hist[-5:]
+            'old_as_of':'2026-07','new_as_of':PERIOD,'old_value':2.4,'new_value':VALUE,
+            'old_percentile':12.1,'new_percentile':pct,'old_label':'MOLTO_FREDDO','new_label':temp_label(pct),
+            'old_direction':'SCENDE','new_direction':new_dir,'old_acceleration':'RALLENTA','new_acceleration':new_acc,
+            'history_n':len(new_hist),'history_tail':new_hist[-5:],
+            'as_of_detail_unemployment_old':'2026-07','as_of_detail_unemployment_new':PERIOD,
+            'as_of_detail_inflation_unchanged':old_inflation_asof
         },
         'runtime_updates':[update_series,update_thermo],
         'manifest_v2_status':manifest['status'],
-        'D_json_sha256_before':d_sha_before,
-        'D_json_sha256_after':d_sha_after,
-        'D_json_byte_identical':d_sha_before==d_sha_after,
+        'D_json_sha256_before':d_sha_before,'D_json_sha256_after':d_sha_after,'D_json_byte_identical':d_sha_before==d_sha_after,
         'engine_score_policy':'D.macro.JPY.labour intentionally unchanged: no canonical raw-to-engine derivation exists in repo',
         'oos_restart':False
     }
