@@ -1,0 +1,36 @@
+{
+  "schema": "GMFQ_LIVE_UPDATE_PIPELINE_STATUS_V1",
+  "as_of": "2026-10-05",
+  "branch": "design-live-update-pipeline-v1-2026-10-05",
+  "status": "DIRECT_UPDATE_PATH_READY__DERIVED_BUILDERS_PENDING",
+  "completed": [
+    "read-only contract preflight",
+    "current-runtime content-addressed roundtrip",
+    "ephemeral live refresh dry-run",
+    "Engine Gate PASS after direct-section refresh",
+    "Browser Gate PASS after direct-section refresh",
+    "manifest v2 builder",
+    "persisted manifest v2",
+    "generic direct-section updater",
+    "derived-section hard rejection",
+    "single-part propagation enforcement"
+  ],
+  "direct_sections": 12,
+  "derived_sections": ["V247_COT_STORIES", "RATES_AUDIT_METADATA"],
+  "production_state": {
+    "main_touched": false,
+    "gh_pages_touched": false,
+    "schedule_enabled": false,
+    "collector_enabled": false
+  },
+  "next_required_sequence": [
+    "implement and isolate-test dedicated builder for V247_COT_STORIES",
+    "implement and isolate-test dedicated builder for RATES_AUDIT_METADATA",
+    "manual real-source refresh on staging",
+    "Engine Gate + Browser Gate on exact candidate",
+    "clean release candidate and rollback verification",
+    "only then design/enable scheduled collector workflow"
+  ],
+  "oos_restart_required": false,
+  "reason": "All changes are validation/update-infrastructure only; frozen model rules, thresholds, hierarchy, pair construction and canonical T0 remain unchanged."
+}
