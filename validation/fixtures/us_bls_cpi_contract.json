@@ -1,0 +1,35 @@
+{
+  "status": "REQUEST_SUCCEEDED",
+  "responseTime": 1,
+  "message": ["DETERMINISTIC CONTRACT FIXTURE - synthetic test inputs, not an official downloaded payload"],
+  "Results": {
+    "series": [
+      {
+        "seriesID": "CUSR0000SA0",
+        "data": [
+          {"year": "2026", "period": "M09", "periodName": "September", "value": "103.800"},
+          {"year": "2026", "period": "M08", "periodName": "August", "value": "103.500"},
+          {"year": "2026", "period": "M07", "periodName": "July", "value": "103.200"},
+          {"year": "2026", "period": "M06", "periodName": "June", "value": "103.000"},
+          {"year": "2026", "period": "M05", "periodName": "May", "value": "102.900"},
+          {"year": "2026", "period": "M04", "periodName": "April", "value": "102.700"},
+          {"year": "2026", "period": "M03", "periodName": "March", "value": "102.500"},
+          {"year": "2026", "period": "M02", "periodName": "February", "value": "102.300"},
+          {"year": "2026", "period": "M01", "periodName": "January", "value": "102.100"},
+          {"year": "2025", "period": "M12", "periodName": "December", "value": "101.900"},
+          {"year": "2025", "period": "M11", "periodName": "November", "value": "101.600"},
+          {"year": "2025", "period": "M10", "periodName": "October", "value": "101.300"},
+          {"year": "2025", "period": "M09", "periodName": "September", "value": "100.000"},
+          {"year": "2025", "period": "M08", "periodName": "August", "value": "100.000"},
+          {"year": "2025", "period": "M07", "periodName": "July", "value": "100.000"},
+          {"year": "2025", "period": "M06", "periodName": "June", "value": "100.000"},
+          {"year": "2025", "period": "M05", "periodName": "May", "value": "100.000"},
+          {"year": "2025", "period": "M04", "periodName": "April", "value": "100.000"},
+          {"year": "2025", "period": "M03", "periodName": "March", "value": "100.000"},
+          {"year": "2025", "period": "M02", "periodName": "February", "value": "100.000"},
+          {"year": "2025", "period": "M01", "periodName": "January", "value": "100.000"}
+        ]
+      }
+    ]
+  }
+}
