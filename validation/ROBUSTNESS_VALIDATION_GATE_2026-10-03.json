@@ -1,0 +1,39 @@
+{
+  "schema": "GMFQ_ROBUSTNESS_VALIDATION_GATE_V1",
+  "created_at": "2026-10-03",
+  "engine": {
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0",
+    "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c"
+  },
+  "evidence_layers": {
+    "pit_macro": {
+      "status": "PARTIAL_VALIDATION_ONLY",
+      "validated": ["CAD Growth+Labour", "EUR Growth+Labour", "USD Growth-only"],
+      "not_validated": ["Full G8 PIT macro", "Full 28-pair PIT engine", "Historical PIT price hit-rates"]
+    },
+    "historical_walkforward": {
+      "artifact": "validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json",
+      "status": "PSEUDO_OOS_BENCHMARK_ONLY",
+      "short_horizon": "NO_CONTINUATION_EDGE_AT_1W_4W",
+      "medium_horizon": "SUGGESTIVE_NOT_ROBUST",
+      "reason": "12W pair/basket headline results weaken materially under non-overlap; pair-level non-overlap mean becomes negative and basket mean approximately zero.",
+      "rule": "Do not tune thresholds or promote labels to trading signals from this benchmark."
+    },
+    "forward_oos": {
+      "artifact": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+      "status": "ACTIVE_FROZEN",
+      "t0_effective_date": "2026-10-01",
+      "checkpoints": {"1W":"2026-10-08","4W":"2026-10-29","12W":"2026-12-24"},
+      "rule": "ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE",
+      "evaluation": "Use first available ECB reference-rate observation on or after each checkpoint; no threshold tuning and no rule changes within the OOS regime."
+    }
+  },
+  "current_decision": {
+    "architecture": "KEEP_UNCHANGED",
+    "strong_structural_contrast": "RESEARCH_ATTENTION_HIERARCHY_NOT_AUTOMATIC_TRADE_SIGNAL",
+    "partial_relative_advantage": "MONITOR_ONLY",
+    "threshold_tuning": "PROHIBITED_BEFORE_FORWARD_OOS_EVIDENCE",
+    "next_valid_action": "Evaluate frozen forward OOS at 1W checkpoint on or after 2026-10-08, without changing rules beforehand."
+  }
+}
