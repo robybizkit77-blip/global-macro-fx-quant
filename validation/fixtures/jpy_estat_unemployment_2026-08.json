@@ -1,0 +1,42 @@
+{
+  "GET_STATS_DATA": {
+    "RESULT": {"STATUS": 0, "ERROR_MSG": ""},
+    "STATISTICAL_DATA": {
+      "CLASS_INF": {
+        "CLASS_OBJ": [
+          {
+            "@id": "tab",
+            "CLASS": [{"@code": "01", "@name": "Unemployment rate (Seasonally adjusted)"}]
+          },
+          {
+            "@id": "cat01",
+            "CLASS": [{"@code": "00", "@name": "Both sexes"}]
+          },
+          {
+            "@id": "cat02",
+            "CLASS": [{"@code": "15", "@name": "15 years old or more"}]
+          },
+          {
+            "@id": "area",
+            "CLASS": [{"@code": "00000", "@name": "All Japan"}]
+          },
+          {
+            "@id": "time",
+            "CLASS": [
+              {"@code": "202606", "@name": "2026 06"},
+              {"@code": "202607", "@name": "2026 07"},
+              {"@code": "202608", "@name": "2026 08"}
+            ]
+          }
+        ]
+      },
+      "DATA_INF": {
+        "VALUE": [
+          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202606", "@unit": "%", "$": "2.5"},
+          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202607", "@unit": "%", "$": "2.3"},
+          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202608", "@unit": "%", "$": "2.5"}
+        ]
+      }
+    }
+  }
+}
