@@ -7,6 +7,7 @@ on:
     paths:
       - 'validation/audit_jpy_labour_paths.py'
       - 'validation/reverse_audit_jpy_labour.py'
+      - 'validation/reverse_audit_macro_thermometer_dynamics.py'
       - '.github/workflows/jpy-labour-propagation-audit.yml'
       - 'live_data/sections/D.json'
       - 'live_data/sections/MACRO_SERIES.json'
@@ -28,6 +29,8 @@ jobs:
         run: python validation/audit_jpy_labour_paths.py
       - name: Reverse-audit JPY labour derivation
         run: python validation/reverse_audit_jpy_labour.py
+      - name: Reverse-audit macro thermometer dynamics
+        run: python validation/reverse_audit_macro_thermometer_dynamics.py
       - name: Upload audit evidence
         uses: actions/upload-artifact@v4
         with:
@@ -35,3 +38,4 @@ jobs:
           path: |
             validation/JPN_LABOUR_PROPAGATION_AUDIT_2026-10-05.json
             validation/JPN_LABOUR_REVERSE_AUDIT_2026-10-05.json
+            validation/MACRO_THERMOMETER_DYNAMICS_REVERSE_AUDIT_2026-10-05.json
