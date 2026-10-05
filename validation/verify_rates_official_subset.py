@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import datetime as dt, html, io, json, pathlib, re, sys, urllib.request
+import datetime as dt, html, io, json, pathlib, re, sys, urllib.error, urllib.request
 from openpyxl import load_workbook
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -10,15 +10,15 @@ UA='Mozilla/5.0 GMFQ-rates-validator/1.0'
 SOURCES={
  'USD':{
    'url':'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve',
-   'kind':'treasury'
+   'kind':'treasury','required':True
  },
  'CAD':{
    'url':'https://www.bankofcanada.ca/rates/interest-rates/canadian-bonds/',
-   'kind':'boc'
+   'kind':'boc','required':True
  },
  'NZD':{
    'url':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx',
-   'kind':'rbnz_xlsx'
+   'kind':'rbnz_xlsx','required':False
  }
 }
 
@@ -26,9 +26,6 @@ def fetch_bytes(url:str)->bytes:
     req=urllib.request.Request(url,headers={'User-Agent':UA})
     with urllib.request.urlopen(req,timeout=45) as r:
         return r.read()
-
-def fetch_text(url:str)->str:
-    return fetch_bytes(url).decode('utf-8','replace')
 
 def textify(raw:str)->str:
     s=re.sub(r'<script[\s\S]*?</script>',' ',raw,flags=re.I)
@@ -91,7 +88,7 @@ def parse_rbnz_xlsx(raw:bytes):
     return max(candidates,key=lambda x:x[0])
 
 def main()->int:
-    results={}; failures=[]
+    results={}; failures=[]; blocked=[]; verified=[]
     for c,s in SOURCES.items():
         try:
             raw=fetch_bytes(s['url'])
@@ -101,19 +98,28 @@ def main()->int:
             else: raise ValueError('unknown source kind')
             cur=RATES[c]
             row={
+              'verification_status':'VERIFIED',
               'official_latest':date,'official_2Y':y2,'official_10Y':y10,
               'runtime_date':cur.get('date'),'runtime_2Y':cur.get('2Y'),'runtime_10Y':cur.get('10Y'),
               'date_relation':'SAME' if date==cur.get('date') else ('NEWER' if date>str(cur.get('date')) else 'OLDER'),
               'values_match': abs(float(y2)-float(cur.get('2Y')))<1e-9 and abs(float(y10)-float(cur.get('10Y')))<1e-9,
               'source':s['url']
             }
-            results[c]=row
+            results[c]=row; verified.append(c)
             if row['date_relation']=='OLDER': failures.append(f'{c}: official source parsed older than runtime')
             if row['date_relation']=='SAME' and not row['values_match']: failures.append(f'{c}: same-date official values mismatch runtime')
+        except urllib.error.HTTPError as e:
+            if not s.get('required') and e.code in (401,403):
+                results[c]={'verification_status':'SOURCE_ACCESS_BLOCKED','http_status':e.code,'source':s['url']}
+                blocked.append(c)
+            else:
+                results[c]={'verification_status':'ERROR','error':str(e),'source':s['url']}
+                failures.append(f'{c}: {e}')
         except Exception as e:
-            results[c]={'error':str(e),'source':s['url']}; failures.append(f'{c}: {e}')
-    status='PASS' if not failures else 'FAIL'
-    print(json.dumps({'status':status,'failures':failures,'results':results},indent=2))
+            results[c]={'verification_status':'ERROR','error':str(e),'source':s['url']}
+            failures.append(f'{c}: {e}')
+    status='PASS_WITH_BLOCKED_SOURCES' if not failures and blocked else ('PASS' if not failures else 'FAIL')
+    print(json.dumps({'status':status,'failures':failures,'verified':verified,'blocked':blocked,'results':results},indent=2))
     return 0 if not failures else 2
 
 if __name__=='__main__': sys.exit(main())
