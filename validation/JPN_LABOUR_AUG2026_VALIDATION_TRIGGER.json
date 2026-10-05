@@ -1,0 +1,7 @@
+{
+  "schema_version": "GMFQ_JPN_LABOUR_VALIDATION_TRIGGER_V1",
+  "runtime_candidate_sha": "fe2548e2d4b7a4313c05d143177acd137206c0d7",
+  "staging_head_before_validation": "e655459e15bfe85e5926e0a057798da40168c4a3",
+  "runtime_files_changed_by_trigger": false,
+  "purpose": "run canonical Engine Logic Audit and Browser Audit on identical JPY Aug 2026 candidate runtime"
+}
