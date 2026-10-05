@@ -70,18 +70,36 @@ def resolve_ids() -> tuple[str, str, str, str]:
     h = heat["currencies"]["USD"]["labour"]
     heat_series_id = str(h["series_id"])
     rows = series["USD"]
-    exact = [r for r in rows if str(r.get("id")) == heat_series_id]
-    if len(exact) != 1:
+    by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
+
+    # Prefer exact canonical IDs, then only accepted history-ID conventions that
+    # actually exist in MACRO_SERIES. Never invent or select an absent target.
+    candidate_ids = (
+        heat_series_id,
+        f"US_{heat_series_id}_history_value",
+        f"US_{heat_series_id}_history_{heat_series_id}",
+        f"USD_{heat_series_id}_history_value",
+        f"USD_{heat_series_id}_history_{heat_series_id}",
+    )
+    convention_hits = [cid for cid in candidate_ids if cid in by_id]
+    if len(convention_hits) == 1:
+        macro_series_id = convention_hits[0]
+    elif len(convention_hits) > 1:
+        raise ValueError(f"ambiguous USD unemployment canonical IDs: {convention_hits}")
+    else:
+        # Final fallback: explicit unemployment naming only, and still require uniqueness.
         hits = []
         for r in rows:
             text = " ".join(str(r.get(k, "")) for k in ("id", "name", "title", "indicator", "label")).lower()
-            if "unemp" in text:
+            if "unemp" in text or "disoccup" in text:
                 hits.append(r)
         if len(hits) != 1:
-            raise ValueError(f"cannot resolve unique USD unemployment MACRO_SERIES row; heatmap series_id={heat_series_id!r}")
+            raise ValueError(
+                f"cannot resolve unique USD unemployment MACRO_SERIES row; "
+                f"heatmap series_id={heat_series_id!r}; convention_hits={convention_hits}; semantic_hits={len(hits)}"
+            )
         macro_series_id = str(hits[0]["id"])
-    else:
-        macro_series_id = str(exact[0]["id"])
+
     return macro_series_id, heat_series_id, str(h.get("frequency", "M")), str(h.get("transformation", "level"))
 
 
