@@ -72,11 +72,12 @@ jobs:
             'live_data/sections/NATIVE_RATES_DATA.json',
             'live_data/sections/RATES_AUDIT_METADATA.json',
             'live_data/manifest.v2.json',
-            'payload/part-00.txt'
+            'payload/part-00.txt',
+            'payload/part-15.txt'
           }
           bad=[x for x in changed if x not in allowed]
           if bad: raise SystemExit('Unexpected candidate files: '+repr(bad))
-          required={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt'}
+          required=set(allowed)
           missing=sorted(required-set(changed))
           if missing: raise SystemExit('Expected changed files missing: '+repr(missing))
           print({'status':'PASS','changed':changed})
@@ -89,6 +90,7 @@ jobs:
           git add live_data/sections/NATIVE_RATES_DATA.json \
                   live_data/sections/RATES_AUDIT_METADATA.json \
                   live_data/manifest.v2.json \
-                  payload/part-00.txt
+                  payload/part-00.txt \
+                  payload/part-15.txt
           git commit -m 'Apply official JPY rates refresh for 2026-10-02'
           git push origin HEAD:validation-rates-jpy-2026-10-05
