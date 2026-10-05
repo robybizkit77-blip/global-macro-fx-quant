@@ -1,0 +1,46 @@
+name: Macro JPY Replay V1
+on:
+  push:
+    branches:
+      - 'validation-macro-jpy-replay-v1-*'
+      - 'release-macro-jpy-replay-v1-*'
+      - 'release-generic-macro-updater-v1-*'
+    paths:
+      - 'validation/replay_jpy_macro_candidate.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/macro-jpy-replay-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Replay approved JPY labour refresh
+        run: python3 validation/replay_jpy_macro_candidate.py | tee /tmp/jpy-replay.json
+      - name: Verify replay contract
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-replay.json'))
+          assert d['status']=='PASS'
+          assert d['macro_series_exact_match'] is True
+          assert d['heatmap_exact_match'] is True
+          assert d['live_data_written'] is False
+          assert d['engine_rules_changed'] is False
+          print('JPY_MACRO_REPLAY_EXACT_PARITY_PASS')
+          PY
+      - name: Verify read-only
+        run: |
+          git diff --quiet -- live_data payload || exit 1
+          echo READ_ONLY_PASS
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-jpy-replay-v1
+          path: /tmp/jpy-replay.json
