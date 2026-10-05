@@ -1,4 +1,4 @@
-name: Static Runtime Benchmark
+name: Batched Refresh Benchmark
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  static-runtime-benchmark:
+  batched-refresh-benchmark:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -15,11 +15,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Build static probe
+      - name: Build baseline and batched probes
         run: |
-          cat payload/part-00.txt payload/part-01.txt payload/part-02.txt payload/part-03.txt payload/part-04.txt payload/part-05.txt payload/part-06.txt payload/part-07.txt payload/part-08.txt payload/part-09.txt payload/part-10.txt payload/part-11.txt payload/part-12.txt payload/part-13.txt payload/part-14.txt payload/part-15.txt > static-probe.html
-          grep -q 'GMFQ_RUNTIME_VALIDATION_MANIFEST' static-probe.html
-          wc -c static-probe.html
+          cat payload/part-00.txt payload/part-01.txt payload/part-02.txt payload/part-03.txt payload/part-04.txt payload/part-05.txt payload/part-06.txt payload/part-07.txt payload/part-08.txt payload/part-09.txt payload/part-10.txt payload/part-11.txt payload/part-12.txt payload/part-13.txt payload/part-14.txt payload/part-15.txt > baseline.html
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('baseline.html').read_text()
+          needle='stableModelRefresh()'
+          n=s.count(needle)
+          s=s.replace(needle,"(window.__GMFQ_STABLE_REFRESH_QUEUED=true)")
+          marker='<script id="gmfq-post-gate-final-audit-settlement">'
+          if marker not in s:
+              raise SystemExit('final audit marker missing')
+          one="<script id=\"gmfq-single-final-stable-refresh\">try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){console.error('single-final-refresh',e);}</script>\n"
+          s=s.replace(marker,one+marker,1)
+          Path('batched.html').write_text(s)
+          print('stable_refresh_calls_replaced=',n)
+          PY
+          grep -q 'GMFQ_RUNTIME_VALIDATION_MANIFEST' baseline.html
+          grep -q 'gmfq-single-final-stable-refresh' batched.html
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
@@ -29,7 +43,7 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
           sleep 2
-      - name: Compare loader vs static runtime
+      - name: Compare baseline vs batched refresh
         run: |
           cat > benchmark.js <<'EOF'
           const { chromium } = require('playwright');
@@ -49,41 +63,53 @@ jobs:
             const domContentLoadedMs=Date.now()-t0;
             await page.waitForFunction(()=>document.title.startsWith('GLOBAL MACRO FX QUANT —'),null,{timeout:120000});
             const runtimeTitleMs=Date.now()-t0;
-            await page.waitForFunction(()=>{const txt=document.body?.innerText||'';return txt.length>1000&&!txt.trim().startsWith('Caricamento GLOBAL MACRO FX QUANT');},null,{timeout:120000});
+            await page.waitForFunction(()=>{const txt=document.body?.innerText||'';return txt.length>1000;},null,{timeout:120000});
             const usableUiMs=Date.now()-t0;
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
             const finalAuditMs=Date.now()-t0;
-            const metrics=await page.evaluate(()=>{
+            const state=await page.evaluate(()=>{
               const longTasks=window.__GMFQ_LONG_TASKS||[];
-              const nav=performance.getEntriesByType('navigation')[0];
+              const currencies={};
+              for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) currencies[c]=window.deriveCurrencyState?.(c)||null;
+              const pairs={};
+              const list=Array.isArray(window.D?.pairs)?window.D.pairs:[];
+              for(const p of list) pairs[p]=window.derivePairDecisionFrame?.(p)||null;
               return {
                 finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                fullAudit:window.GMFQ_FULL_SYSTEM_AUDIT||null,
+                currencies,pairs,
+                ois:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null])),
                 longTaskCount:longTasks.length,
                 longTaskTotalMs:longTasks.reduce((a,e)=>a+e.duration,0),
                 longestLongTaskMs:longTasks.reduce((a,e)=>Math.max(a,e.duration),0),
-                topLongTasks:longTasks.sort((a,b)=>b.duration-a.duration).slice(0,8),
-                transferSize:nav?.transferSize||0,
-                encodedBodySize:nav?.encodedBodySize||0,
-                bodyTextLength:document.body?.innerText?.length||0
+                bodyTextLength:document.body?.innerText?.length||0,
+                queued:window.__GMFQ_STABLE_REFRESH_QUEUED===true
               };
             });
             await context.close();
-            return {label,domContentLoadedMs,runtimeTitleMs,usableUiMs,finalAuditMs,errors,metrics};
+            return {label,domContentLoadedMs,runtimeTitleMs,usableUiMs,finalAuditMs,errors,state};
+          }
+          function canonical(x){
+            return JSON.stringify({finalAudit:x.state.finalAudit,fullAudit:x.state.fullAudit,currencies:x.state.currencies,pairs:x.state.pairs,ois:x.state.ois});
           }
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const loader=await measure(browser,'','loader');
-            const statik=await measure(browser,'static-probe.html','static');
+            const baseline=await measure(browser,'baseline.html','baseline');
+            const batched=await measure(browser,'batched.html','batched');
+            const identical=canonical(baseline)===canonical(batched);
             const comparison={
-              usableUiImprovementMs:loader.usableUiMs-statik.usableUiMs,
-              usableUiImprovementPct:Number((100*(loader.usableUiMs-statik.usableUiMs)/loader.usableUiMs).toFixed(2)),
-              finalAuditImprovementMs:loader.finalAuditMs-statik.finalAuditMs,
-              longestTaskImprovementMs:loader.metrics.longestLongTaskMs-statik.metrics.longestLongTaskMs
+              identicalCanonicalState:identical,
+              usableUiImprovementMs:baseline.usableUiMs-batched.usableUiMs,
+              usableUiImprovementPct:Number((100*(baseline.usableUiMs-batched.usableUiMs)/baseline.usableUiMs).toFixed(2)),
+              finalAuditImprovementMs:baseline.finalAuditMs-batched.finalAuditMs,
+              longTaskTotalImprovementMs:baseline.state.longTaskTotalMs-batched.state.longTaskTotalMs,
+              longestTaskImprovementMs:baseline.state.longestLongTaskMs-batched.state.longestLongTaskMs
             };
-            console.log(JSON.stringify({loader,static:statik,comparison},null,2));
-            if(loader.errors.length||statik.errors.length) throw new Error('Browser errors detected');
-            if(loader.metrics.finalAudit?.status!=='PASS'||statik.metrics.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
+            console.log(JSON.stringify({baseline,batched,comparison},null,2));
+            if(baseline.errors.length||batched.errors.length) throw new Error('Browser errors detected');
+            if(baseline.state.finalAudit?.status!=='PASS'||batched.state.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
+            if(!identical) throw new Error('Canonical state differs after batching stableModelRefresh');
             await browser.close();
-          })().catch(e=>{console.error('::error title=Static runtime benchmark::'+String(e.message||e));process.exit(1);});
+          })().catch(e=>{console.error('::error title=Batched refresh benchmark::'+String(e.message||e));process.exit(1);});
           EOF
           node benchmark.js
