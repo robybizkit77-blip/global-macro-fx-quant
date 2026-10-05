@@ -1,0 +1,47 @@
+name: Macro Data Candidate Verify V1
+
+on:
+  push:
+    branches:
+      - validation-macro-data-candidate-2026-10-05
+    paths:
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'payload/part-00.txt'
+      - 'payload/part-01.txt'
+      - 'live_data/manifest.v2.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Require 16/16 Macro Series ↔ Heatmap alignment
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --output /tmp/macro-data-candidate-alignment.json
+
+      - name: Require live update contract
+        run: python validation/check_live_update_contract.py
+
+      - name: Require runtime snapshot integrity
+        run: python validation/rebuild_live_data_runtime.py --verify-only
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-data-candidate-verify-v1
+          if-no-files-found: warn
+          retention-days: 14
+          path: /tmp/macro-data-candidate-alignment.json
