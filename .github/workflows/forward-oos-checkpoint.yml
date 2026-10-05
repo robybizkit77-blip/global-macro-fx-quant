@@ -17,6 +17,7 @@ on:
       - research-pit-walkforward-v1-2026-10-05
     paths:
       - '.github/workflows/forward-oos-checkpoint.yml'
+      - 'validation/build_forward_oos_checkpoint_report.py'
 
 permissions:
   contents: read
@@ -32,53 +33,45 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import json, pathlib, re, sys
-
-          t0_path = pathlib.Path('validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json')
-          evaluator_path = pathlib.Path('validation/evaluate_forward_oos_checkpoint.py')
-          readiness_path = pathlib.Path('validation/PRE_1W_OOS_READINESS_2026-10-05.json')
-          runbook_path = pathlib.Path('validation/FORWARD_OOS_CHECKPOINT_RUNBOOK_V1_2026-10-04.json')
-          template_path = pathlib.Path('validation/FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1_2026-10-04.json')
-
-          required = [t0_path, evaluator_path, readiness_path, runbook_path, template_path]
-          missing = [str(p) for p in required if not p.exists()]
-          if missing:
-              raise SystemExit('Missing OOS contract files: ' + ', '.join(missing))
-
-          t0 = json.loads(t0_path.read_text())
-          readiness = json.loads(readiness_path.read_text())
-          runbook = json.loads(runbook_path.read_text())
-          template = json.loads(template_path.read_text())
-          evaluator = evaluator_path.read_text()
-
-          expected_fingerprint = '3356baf0'
-          expected_freeze = 'ff52198a75cc67f7dae96fc2bbf65623f170791c'
-          expected_dates = {'1W':'2026-10-08','4W':'2026-10-29','12W':'2026-12-24'}
-
-          checks = {
-              't0_schema': t0.get('schema') == 'GMFQ_CANONICAL_OOS_T0_V3',
-              't0_fingerprint': t0.get('rules_fingerprint') == expected_fingerprint,
-              't0_pairs_28': len(t0.get('pairs', {})) == 28,
-              't0_currencies_8': len(t0.get('currencies', {})) == 8,
-              't0_dates': all(t0.get('checkpoints', {}).get(k, {}).get('evaluation_date') == v for k,v in expected_dates.items()),
-              'readiness_decision': readiness.get('decision') == 'READY_FOR_1W_CHECKPOINT__DO_NOT_RUN_EARLY',
-              'readiness_fingerprint': readiness.get('frozen_oos', {}).get('rules_fingerprint') == expected_fingerprint,
-              'readiness_freeze': readiness.get('frozen_oos', {}).get('frozen_engine_commit') == expected_freeze,
-              'runbook_fingerprint': runbook.get('rules_fingerprint') == expected_fingerprint,
-              'runbook_freeze': runbook.get('frozen_engine_commit') == expected_freeze,
-              'template_fingerprint': template.get('rules_fingerprint') == expected_fingerprint,
-              'template_freeze': template.get('engine_freeze_sha') == expected_freeze,
-              'evaluator_fingerprint_constant': "FINGERPRINT='3356baf0'" in evaluator,
-              'evaluator_freeze_constant': "FREEZE_SHA='ff52198a75cc67f7dae96fc2bbf65623f170791c'" in evaluator,
-              'ecb_only_source': 'data-api.ecb.europa.eu' in evaluator and 'ECB euro foreign exchange reference rates' in evaluator,
-              'early_run_guard': 'if today<target:' in evaluator,
-              'common_fixing_rule': 'first_common_fixing' in evaluator,
+          import json, pathlib
+          t0_path=pathlib.Path('validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json')
+          evaluator_path=pathlib.Path('validation/evaluate_forward_oos_checkpoint.py')
+          reporter_path=pathlib.Path('validation/build_forward_oos_checkpoint_report.py')
+          readiness_path=pathlib.Path('validation/PRE_1W_OOS_READINESS_2026-10-05.json')
+          runbook_path=pathlib.Path('validation/FORWARD_OOS_CHECKPOINT_RUNBOOK_V1_2026-10-04.json')
+          template_path=pathlib.Path('validation/FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1_2026-10-04.json')
+          required=[t0_path,evaluator_path,reporter_path,readiness_path,runbook_path,template_path]
+          missing=[str(p) for p in required if not p.exists()]
+          if missing: raise SystemExit('Missing OOS contract files: '+', '.join(missing))
+          t0=json.loads(t0_path.read_text()); readiness=json.loads(readiness_path.read_text()); runbook=json.loads(runbook_path.read_text()); template=json.loads(template_path.read_text())
+          evaluator=evaluator_path.read_text(); reporter=reporter_path.read_text()
+          fp='3356baf0'; freeze='ff52198a75cc67f7dae96fc2bbf65623f170791c'; dates={'1W':'2026-10-08','4W':'2026-10-29','12W':'2026-12-24'}
+          checks={
+            't0_schema':t0.get('schema')=='GMFQ_CANONICAL_OOS_T0_V3',
+            't0_fingerprint':t0.get('rules_fingerprint')==fp,
+            't0_pairs_28':len(t0.get('pairs',{}))==28,
+            't0_currencies_8':len(t0.get('currencies',{}))==8,
+            't0_dates':all(t0.get('checkpoints',{}).get(k,{}).get('evaluation_date')==v for k,v in dates.items()),
+            'readiness_decision':readiness.get('decision')=='READY_FOR_1W_CHECKPOINT__DO_NOT_RUN_EARLY',
+            'readiness_fingerprint':readiness.get('frozen_oos',{}).get('rules_fingerprint')==fp,
+            'readiness_freeze':readiness.get('frozen_oos',{}).get('frozen_engine_commit')==freeze,
+            'runbook_fingerprint':runbook.get('rules_fingerprint')==fp,
+            'runbook_freeze':runbook.get('frozen_engine_commit')==freeze,
+            'template_fingerprint':template.get('rules_fingerprint')==fp,
+            'template_freeze':template.get('engine_freeze_sha')==freeze,
+            'evaluator_contract':"FINGERPRINT='3356baf0'" in evaluator and "FREEZE_SHA='ff52198a75cc67f7dae96fc2bbf65623f170791c'" in evaluator,
+            'reporter_contract':"FINGERPRINT='3356baf0'" in reporter and "FREEZE_SHA='ff52198a75cc67f7dae96fc2bbf65623f170791c'" in reporter,
+            'ecb_only_source':'data-api.ecb.europa.eu' in evaluator and 'ECB euro foreign exchange reference rates' in evaluator,
+            'early_run_guard':'if today<target:' in evaluator,
+            'common_fixing_rule':'first_common_fixing' in evaluator,
           }
-          failed = [k for k,v in checks.items() if not v]
-          print(json.dumps({'status':'PASS' if not failed else 'FAIL','checks':checks,'failed':failed}, indent=2))
-          if failed:
-              raise SystemExit('OOS preflight failed: ' + ', '.join(failed))
+          failed=[k for k,v in checks.items() if not v]
+          print(json.dumps({'status':'PASS' if not failed else 'FAIL','checks':checks,'failed':failed},indent=2))
+          if failed: raise SystemExit('OOS preflight failed: '+', '.join(failed))
           PY
+
+      - name: Reporter deterministic self-test
+        run: python3 validation/build_forward_oos_checkpoint_report.py --self-test
 
       - name: ECB source smoke test
         run: python3 validation/evaluate_forward_oos_checkpoint.py --smoke-test-ecb
@@ -95,18 +88,14 @@ jobs:
             CHECKPOINT="${{ inputs.checkpoint }}"
             TODAY_ARG=""
           fi
-
           python3 validation/evaluate_forward_oos_checkpoint.py --checkpoint "$CHECKPOINT" $TODAY_ARG | tee /tmp/oos-checkpoint-output.json
-
           if [ "${{ github.event_name }}" = "push" ]; then
             python3 - <<'PY'
           import json, pathlib
           out=json.loads(pathlib.Path('/tmp/oos-checkpoint-output.json').read_text())
-          if out.get('status')!='WAITING':
-              raise SystemExit('Self-test expected WAITING before 1W checkpoint, got '+str(out.get('status')))
+          if out.get('status')!='WAITING': raise SystemExit('Self-test expected WAITING before 1W checkpoint, got '+str(out.get('status')))
           artifact=pathlib.Path('validation/FORWARD_OOS_1W_EVALUATION_2026-10-08.json')
-          if artifact.exists():
-              raise SystemExit('Early-run guard failed: evaluation artifact was created before checkpoint date')
+          if artifact.exists(): raise SystemExit('Early-run guard failed: evaluation artifact was created before checkpoint date')
           print('EARLY_RUN_GUARD_PASS')
           PY
           fi
@@ -116,33 +105,33 @@ jobs:
         shell: bash
         run: |
           CHECKPOINT="${{ inputs.checkpoint }}"
-          case "$CHECKPOINT" in
-            1W) TARGET=2026-10-08 ;;
-            4W) TARGET=2026-10-29 ;;
-            12W) TARGET=2026-12-24 ;;
-          esac
+          case "$CHECKPOINT" in 1W) TARGET=2026-10-08 ;; 4W) TARGET=2026-10-29 ;; 12W) TARGET=2026-12-24 ;; esac
           FILE="validation/FORWARD_OOS_${CHECKPOINT}_EVALUATION_${TARGET}.json"
           python3 - "$FILE" "$CHECKPOINT" "$TARGET" <<'PY'
-          import json, pathlib, sys
+          import json,pathlib,sys
           p=pathlib.Path(sys.argv[1]); checkpoint=sys.argv[2]; target=sys.argv[3]
           if not p.exists():
-              print('No scored artifact created. This is valid when status is WAITING or WAITING_FOR_ECB_FIXING.')
-              raise SystemExit(0)
+              print('No scored artifact created. Valid when WAITING or WAITING_FOR_ECB_FIXING.'); raise SystemExit(0)
           d=json.loads(p.read_text())
-          checks={
-            'status': d.get('status')=='EVALUATED',
-            'checkpoint': d.get('checkpoint')==checkpoint,
-            'target': d.get('evaluation_target')==target,
-            'fingerprint': d.get('rules_fingerprint')=='3356baf0',
-            'freeze': d.get('engine_freeze_sha')=='ff52198a75cc67f7dae96fc2bbf65623f170791c',
-            'source': d.get('price_source')=='ECB euro foreign exchange reference rates',
-            'pair_results_28': len(d.get('pair_results',[]))==28,
-          }
+          checks={'status':d.get('status')=='EVALUATED','checkpoint':d.get('checkpoint')==checkpoint,'target':d.get('evaluation_target')==target,'fingerprint':d.get('rules_fingerprint')=='3356baf0','freeze':d.get('engine_freeze_sha')=='ff52198a75cc67f7dae96fc2bbf65623f170791c','source':d.get('price_source')=='ECB euro foreign exchange reference rates','pair_results_28':len(d.get('pair_results',[]))==28}
           failed=[k for k,v in checks.items() if not v]
           print(json.dumps({'artifact':str(p),'checks':checks,'failed':failed},indent=2))
-          if failed:
-              raise SystemExit('Produced OOS artifact failed validation: '+', '.join(failed))
+          if failed: raise SystemExit('Produced OOS artifact failed validation: '+', '.join(failed))
           PY
+
+      - name: Build standard checkpoint report
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          CHECKPOINT="${{ inputs.checkpoint }}"
+          case "$CHECKPOINT" in 1W) TARGET=2026-10-08 ;; 4W) TARGET=2026-10-29 ;; 12W) TARGET=2026-12-24 ;; esac
+          EVAL="validation/FORWARD_OOS_${CHECKPOINT}_EVALUATION_${TARGET}.json"
+          REPORT="validation/FORWARD_OOS_${CHECKPOINT}_REPORT_${TARGET}.json"
+          if [ -f "$EVAL" ]; then
+            python3 validation/build_forward_oos_checkpoint_report.py --evaluation "$EVAL" --output "$REPORT"
+          else
+            echo 'No EVALUATED artifact present; report not built.'
+          fi
 
       - name: Upload checkpoint outputs for review
         if: always()
@@ -153,10 +142,11 @@ jobs:
           path: |
             /tmp/oos-checkpoint-output.json
             validation/FORWARD_OOS_*_EVALUATION_*.json
+            validation/FORWARD_OOS_*_REPORT_*.json
 
       - name: Governance note
         if: always()
         run: |
           echo 'This workflow never commits OOS results automatically.'
-          echo 'Review the artifact first; only validated evaluation output may be committed to validation/.'
+          echo 'Review evaluation + report first; only validated artifacts may be committed to validation/.'
           echo 'No model tuning is allowed at 1W or 4W.'
