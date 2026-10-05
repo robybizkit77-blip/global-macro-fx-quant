@@ -1,0 +1,1 @@
+Canonical macro refresh validation branch frozen after E2E validation. No production data changes are contained in this branch.
