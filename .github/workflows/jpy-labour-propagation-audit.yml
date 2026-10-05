@@ -1,0 +1,32 @@
+name: JPY Labour Propagation Audit
+
+on:
+  push:
+    branches:
+      - staging-macro-jpy-labour-v1-2026-10-05
+    paths:
+      - 'validation/audit_jpy_labour_paths.py'
+      - '.github/workflows/jpy-labour-propagation-audit.yml'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run read-only JPY labour path audit
+        run: python validation/audit_jpy_labour_paths.py
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-labour-propagation-audit
+          path: validation/JPN_LABOUR_PROPAGATION_AUDIT_2026-10-05.json
