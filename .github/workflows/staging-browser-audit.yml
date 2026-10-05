@@ -1,4 +1,4 @@
-name: Startup Timing Probe
+name: Static Runtime Benchmark
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  startup-timing-probe:
+  static-runtime-benchmark:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -15,6 +15,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Build static probe
+        run: |
+          cat payload/part-00.txt payload/part-01.txt payload/part-02.txt payload/part-03.txt payload/part-04.txt payload/part-05.txt payload/part-06.txt payload/part-07.txt payload/part-08.txt payload/part-09.txt payload/part-10.txt payload/part-11.txt payload/part-12.txt payload/part-13.txt payload/part-14.txt payload/part-15.txt > static-probe.html
+          grep -q 'GMFQ_RUNTIME_VALIDATION_MANIFEST' static-probe.html
+          wc -c static-probe.html
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
@@ -24,66 +29,61 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
           sleep 2
-      - name: Measure startup phases
+      - name: Compare loader vs static runtime
         run: |
-          cat > startup-timing-probe.js <<'EOF'
+          cat > benchmark.js <<'EOF'
           const { chromium } = require('playwright');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+          async function measure(browser,path,label){
+            const context=await browser.newContext({viewport:{width:1440,height:1200}});
+            const page=await context.newPage();
             await page.addInitScript(()=>{
               window.__GMFQ_LONG_TASKS=[];
-              try{
-                new PerformanceObserver(list=>{
-                  for(const e of list.getEntries()) window.__GMFQ_LONG_TASKS.push({start:e.startTime,duration:e.duration});
-                }).observe({entryTypes:['longtask']});
-              }catch(e){}
+              try{new PerformanceObserver(list=>{for(const e of list.getEntries()) window.__GMFQ_LONG_TASKS.push({start:e.startTime,duration:e.duration});}).observe({entryTypes:['longtask']});}catch(e){}
             });
-            const t0=Date.now();
             const errors=[];
             page.on('pageerror',e=>errors.push(String(e)));
             page.on('console',m=>{if(m.type()==='error') errors.push(m.text());});
-            const r=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
-            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            const t0=Date.now();
+            const r=await page.goto('http://127.0.0.1:8000/'+path,{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error(label+' HTTP load failed');
             const domContentLoadedMs=Date.now()-t0;
-
             await page.waitForFunction(()=>document.title.startsWith('GLOBAL MACRO FX QUANT —'),null,{timeout:120000});
             const runtimeTitleMs=Date.now()-t0;
-
-            await page.waitForFunction(()=>{
-              const txt=document.body?.innerText||'';
-              return txt.length>1000 && !txt.trim().startsWith('Caricamento GLOBAL MACRO FX QUANT');
-            },null,{timeout:120000});
+            await page.waitForFunction(()=>{const txt=document.body?.innerText||'';return txt.length>1000&&!txt.trim().startsWith('Caricamento GLOBAL MACRO FX QUANT');},null,{timeout:120000});
             const usableUiMs=Date.now()-t0;
-
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
             const finalAuditMs=Date.now()-t0;
-
             const metrics=await page.evaluate(()=>{
-              const nav=performance.getEntriesByType('navigation')[0];
               const longTasks=window.__GMFQ_LONG_TASKS||[];
-              const resources=performance.getEntriesByType('resource').filter(e=>e.name.includes('/payload/part-'));
+              const nav=performance.getEntriesByType('navigation')[0];
               return {
-                navigation:nav?{
-                  responseEnd:nav.responseEnd,
-                  domInteractive:nav.domInteractive,
-                  domContentLoadedEventEnd:nav.domContentLoadedEventEnd,
-                  loadEventEnd:nav.loadEventEnd
-                }:null,
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
                 longTaskCount:longTasks.length,
                 longTaskTotalMs:longTasks.reduce((a,e)=>a+e.duration,0),
                 longestLongTaskMs:longTasks.reduce((a,e)=>Math.max(a,e.duration),0),
-                longTasks:longTasks.sort((a,b)=>b.duration-a.duration).slice(0,20),
-                payloadTransferBytes:resources.reduce((a,e)=>a+(e.transferSize||0),0),
-                payloadEncodedBytes:resources.reduce((a,e)=>a+(e.encodedBodySize||0),0),
-                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                topLongTasks:longTasks.sort((a,b)=>b.duration-a.duration).slice(0,8),
+                transferSize:nav?.transferSize||0,
+                encodedBodySize:nav?.encodedBodySize||0,
                 bodyTextLength:document.body?.innerText?.length||0
               };
             });
-            console.log(JSON.stringify({domContentLoadedMs,runtimeTitleMs,usableUiMs,finalAuditMs,errors,metrics},null,2));
-            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
-            if(metrics.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
+            await context.close();
+            return {label,domContentLoadedMs,runtimeTitleMs,usableUiMs,finalAuditMs,errors,metrics};
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const loader=await measure(browser,'','loader');
+            const statik=await measure(browser,'static-probe.html','static');
+            const comparison={
+              usableUiImprovementMs:loader.usableUiMs-statik.usableUiMs,
+              usableUiImprovementPct:Number((100*(loader.usableUiMs-statik.usableUiMs)/loader.usableUiMs).toFixed(2)),
+              finalAuditImprovementMs:loader.finalAuditMs-statik.finalAuditMs,
+              longestTaskImprovementMs:loader.metrics.longestLongTaskMs-statik.metrics.longestLongTaskMs
+            };
+            console.log(JSON.stringify({loader,static:statik,comparison},null,2));
+            if(loader.errors.length||statik.errors.length) throw new Error('Browser errors detected');
+            if(loader.metrics.finalAudit?.status!=='PASS'||statik.metrics.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
             await browser.close();
-          })().catch(e=>{console.error('::error title=Startup timing probe::'+String(e.message||e));process.exit(1);});
+          })().catch(e=>{console.error('::error title=Static runtime benchmark::'+String(e.message||e));process.exit(1);});
           EOF
-          node startup-timing-probe.js
+          node benchmark.js
