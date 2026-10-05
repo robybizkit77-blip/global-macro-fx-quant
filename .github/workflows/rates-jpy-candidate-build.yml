@@ -1,0 +1,94 @@
+name: Rates JPY Candidate Build
+
+on:
+  push:
+    branches:
+      - 'validation-rates-jpy-2026-10-05'
+    paths:
+      - '.github/workflows/rates-jpy-candidate-build.yml'
+      - 'validation/fetch_rates_usd_jpy.py'
+      - 'validation/build_jpy_rates_candidate.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch official source audit
+        run: |
+          python3 validation/fetch_rates_usd_jpy.py > /tmp/rates-source-audit.json
+          cat /tmp/rates-source-audit.json
+
+      - name: Build JPY rates replacement
+        run: |
+          python3 validation/build_jpy_rates_candidate.py \
+            --source-audit /tmp/rates-source-audit.json \
+            --output /tmp/NATIVE_RATES_DATA.json \
+            | tee /tmp/jpy-candidate-summary.json
+
+      - name: Apply direct rates section
+        run: |
+          python3 validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/NATIVE_RATES_DATA.json \
+            --apply \
+            | tee /tmp/direct-update.json
+
+      - name: Build rates audit metadata
+        run: |
+          python3 validation/build_rates_audit_metadata.py \
+            --audit-date 2026-10-05 \
+            --output /tmp/RATES_AUDIT_METADATA.json \
+            | tee /tmp/rates-audit-builder.json
+
+      - name: Apply derived rates metadata
+        run: |
+          python3 validation/update_live_derived_sections.py \
+            --rates /tmp/RATES_AUDIT_METADATA.json \
+            --apply \
+            | tee /tmp/derived-update.json
+
+      - name: Rebuild manifest v2
+        run: |
+          python3 validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python3 validation/check_live_update_contract.py
+
+      - name: Enforce candidate scope
+        run: |
+          git status --short
+          python3 - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','diff','--name-only']).decode().splitlines()
+          allowed={
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/RATES_AUDIT_METADATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt'
+          }
+          bad=[x for x in changed if x not in allowed]
+          if bad: raise SystemExit('Unexpected candidate files: '+repr(bad))
+          required={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt'}
+          missing=sorted(required-set(changed))
+          if missing: raise SystemExit('Expected changed files missing: '+repr(missing))
+          print({'status':'PASS','changed':changed})
+          PY
+
+      - name: Commit validated candidate to branch
+        run: |
+          git config user.name 'robybizkit77-blip'
+          git config user.email 'robybizkit77@gmail.com'
+          git add live_data/sections/NATIVE_RATES_DATA.json \
+                  live_data/sections/RATES_AUDIT_METADATA.json \
+                  live_data/manifest.v2.json \
+                  payload/part-00.txt
+          git commit -m 'Apply official JPY rates refresh for 2026-10-02'
+          git push origin HEAD:validation-rates-jpy-2026-10-05
