@@ -1,0 +1,76 @@
+name: Live Update Preflight V1
+
+on:
+  push:
+    branches:
+      - 'validation-live-update-preflight-v1-2026-10-05'
+    paths:
+      - '.github/workflows/live-update-preflight-v1.yml'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'live_data/**'
+      - 'payload/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify frozen model contract and live-data integrity
+        run: |
+          python3 validation/check_live_update_contract.py | tee /tmp/live-update-contract.json
+
+      - name: Verify deterministic no-op runtime rebuild
+        run: |
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/live-update-runtime-roundtrip.json
+
+      - name: Verify preflight is read-only
+        shell: bash
+        run: |
+          if ! git diff --quiet -- . ':(exclude).github/workflows/live-update-preflight-v1.yml'; then
+            echo 'Preflight modified tracked repository data/runtime files unexpectedly.'
+            git status --short
+            git diff --stat
+            exit 1
+          fi
+          echo 'READ_ONLY_PREFLIGHT_PASS'
+
+      - name: Verify frozen OOS boundary
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          t0=json.loads(pathlib.Path('validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json').read_text())
+          expected={
+            'model_rules_version':'9.3-pair-attention-hierarchy',
+            'rules_fingerprint':'3356baf0',
+            'oos_rule':'ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE',
+          }
+          got={k:t0.get(k) for k in expected}
+          bad={k:(got[k],v) for k,v in expected.items() if got[k]!=v}
+          if bad:
+            raise SystemExit('Frozen OOS boundary mismatch: '+repr(bad))
+          print(json.dumps({'status':'PASS','frozen_boundary':got},indent=2))
+          PY
+
+      - name: Upload preflight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-update-preflight-v1
+          if-no-files-found: warn
+          path: |
+            /tmp/live-update-contract.json
+            /tmp/live-update-runtime-roundtrip.json
+
+      - name: Governance note
+        if: always()
+        run: |
+          echo 'This workflow is validation-only and read-only.'
+          echo 'It does not collect data, change live_data, rebuild production, promote main, publish gh-pages, or alter OOS T0.'
+          echo 'Engine Logic Audit and Staging Browser Audit run independently on validation-* pushes and must also be green before any future promotion.'
