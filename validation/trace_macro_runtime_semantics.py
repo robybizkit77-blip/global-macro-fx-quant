@@ -23,7 +23,6 @@ for rx in patterns:
     hits=list(re.finditer(rx,runtime,re.I))
     report['patterns'][rx]={'count':len(hits),'contexts':contexts(rx)}
 
-# Extract compact snippets around likely threshold code operators near temperature terms.
 threshold_snips=[]
 for term in ['MOLTO_FREDDO','MOLTO_CALDO','temperature_label','temperature_score']:
     for m in re.finditer(term,runtime,re.I):
@@ -38,6 +37,6 @@ print(json.dumps({
     'counts':{k:v['count'] for k,v in report['patterns'].items()},
     'threshold_candidate_count':len(threshold_snips),
     'threshold_candidates':threshold_snips[:8],
-    'D_macro_contexts':report['patterns'][r'D\\.macro']['contexts'][:10],
+    'D_macro_contexts':report['patterns'][r'D\.macro']['contexts'][:10],
     'thermometer_contexts':report['patterns']['MACRO_THERMOMETER_DATA']['contexts'][:10]
 },indent=2,ensure_ascii=False))
