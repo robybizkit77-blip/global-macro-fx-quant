@@ -1,0 +1,130 @@
+name: Macro Data Candidate Build V1
+
+on:
+  push:
+    branches:
+      - validation-macro-data-candidate-2026-10-05
+    paths:
+      - '.github/workflows/macro-data-candidate-build-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-commit-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-macro-data-candidate-2026-10-05
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot candidate branch data
+        run: |
+          cp live_data/sections/MACRO_SERIES.json /tmp/MACRO_SERIES.before.json
+          cp live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/MACRO_THERMOMETER_DATA.before.json
+
+      - name: Apply EUR labour from official Eurostat source
+        run: |
+          rm -rf /tmp/macro-candidate-step && mkdir -p /tmp/macro-candidate-step
+          python validation/sources/eur_eurostat_unemployment.py \
+            --output /tmp/macro-candidate-step/candidate.json \
+            --audit-output /tmp/macro-candidate-step/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/macro-candidate-step/candidate.json \
+            --output-dir /tmp/macro-candidate-step/built
+          cp /tmp/macro-candidate-step/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/macro-candidate-step/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Apply EUR inflation from official Eurostat source
+        run: |
+          rm -rf /tmp/macro-candidate-step && mkdir -p /tmp/macro-candidate-step
+          python validation/sources/eur_eurostat_hicp.py \
+            --output /tmp/macro-candidate-step/candidate.json \
+            --audit-output /tmp/macro-candidate-step/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/macro-candidate-step/candidate.json \
+            --output-dir /tmp/macro-candidate-step/built
+          cp /tmp/macro-candidate-step/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/macro-candidate-step/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Apply AUD labour from official ABS source
+        run: |
+          rm -rf /tmp/macro-candidate-step && mkdir -p /tmp/macro-candidate-step
+          python validation/sources/aud_abs_unemployment.py \
+            --output /tmp/macro-candidate-step/candidate.json \
+            --audit-output /tmp/macro-candidate-step/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/macro-candidate-step/candidate.json \
+            --output-dir /tmp/macro-candidate-step/built
+          cp /tmp/macro-candidate-step/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/macro-candidate-step/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Require global alignment before commit
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --output /tmp/macro-data-candidate-alignment.json
+
+      - name: Require exact data-change scope
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          before_s=json.loads(Path('/tmp/MACRO_SERIES.before.json').read_text())
+          after_s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          before_h=json.loads(Path('/tmp/MACRO_THERMOMETER_DATA.before.json').read_text())
+          after_h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+
+          expected={
+            ('EUR','EA_UNEMP_history_value'),
+            ('EUR','EA_HICP_HEADLINE_YOY_history_value'),
+            ('AUD','AU_UNEMP_RATE_history_value'),
+          }
+          changed=[]
+          for ccy in sorted(set(before_s)|set(after_s)):
+            b={str(r.get('id')):r for r in before_s.get(ccy,[]) if isinstance(r,dict)}
+            a={str(r.get('id')):r for r in after_s.get(ccy,[]) if isinstance(r,dict)}
+            for sid in sorted(set(b)|set(a)):
+              if b.get(sid)!=a.get(sid): changed.append((ccy,sid))
+          assert set(changed)==expected, {'unexpected_series_scope':changed}
+
+          allowed_heat={
+            ('EUR','labour'),('EUR','inflation'),('EUR','as_of_detail'),
+            ('AUD','labour'),('AUD','as_of_detail')
+          }
+          changed_heat=[]
+          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'):
+            b=before_h['currencies'][ccy]; a=after_h['currencies'][ccy]
+            for key in sorted(set(b)|set(a)):
+              if b.get(key)!=a.get(key): changed_heat.append((ccy,key))
+          assert set(changed_heat).issubset(allowed_heat), {'unexpected_heatmap_scope':changed_heat}
+          print(json.dumps({'status':'PASS','series_changed':changed,'heatmap_changed':changed_heat}, indent=2))
+          PY
+
+      - name: Run frozen live update contract on candidate tree
+        run: python validation/check_live_update_contract.py
+
+      - name: Commit only validated data artifacts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git diff --cached --quiet && { echo 'No candidate data changes produced'; exit 1; }
+          git commit -m 'Reconcile validated macro history with live official sources'
+          git push origin HEAD:validation-macro-data-candidate-2026-10-05
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-data-candidate-build-v1
+          if-no-files-found: warn
+          retention-days: 14
+          path: /tmp/macro-data-candidate-alignment.json
