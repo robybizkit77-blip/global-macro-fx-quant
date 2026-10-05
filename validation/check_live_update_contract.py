@@ -5,9 +5,11 @@ import hashlib, json, pathlib, sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'live_data' / 'manifest.v2.json'
 LEGACY_MANIFEST = ROOT / 'live_data' / 'manifest.json'
+T0 = ROOT / 'validation' / 'CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json'
 SECTIONS_DIR = ROOT / 'live_data' / 'sections'
 PAYLOAD_DIR = ROOT / 'payload'
 EXPECTED_FP = '3356baf0'
+EXPECTED_MODEL = '9.3-pair-attention-hierarchy'
 EXPECTED_PARTS = [PAYLOAD_DIR / f'part-{i:02d}.txt' for i in range(16)]
 DERIVED = {'V247_COT_STORIES', 'RATES_AUDIT_METADATA'}
 
@@ -93,15 +95,19 @@ def main() -> int:
     if derived_count!=2:
         failures.append('expected exactly two derived sections')
 
-    wf_dir=ROOT/'.github'/'workflows'
-    fingerprint_mentions=[]
-    for p in wf_dir.glob('*.yml'):
-        txt=p.read_text(errors='replace')
-        if EXPECTED_FP in txt:
-            fingerprint_mentions.append(p.name)
-    details['fingerprint_mentions']=fingerprint_mentions
-    if not fingerprint_mentions:
-        failures.append('rules fingerprint not guarded by any workflow')
+    if not T0.exists():
+        failures.append('canonical OOS T0 missing')
+    else:
+        t0=json.loads(T0.read_text())
+        details['frozen_model_rules_version']=t0.get('model_rules_version')
+        details['frozen_rules_fingerprint']=t0.get('rules_fingerprint')
+        details['oos_rule']=t0.get('oos_rule')
+        if t0.get('model_rules_version')!=EXPECTED_MODEL:
+            failures.append('frozen model version mismatch')
+        if t0.get('rules_fingerprint')!=EXPECTED_FP:
+            failures.append('frozen rules fingerprint mismatch')
+        if t0.get('oos_rule')!='ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE':
+            failures.append('OOS rule mismatch')
 
     status='PASS' if not failures else 'FAIL'
     print(json.dumps({'status':status,'failures':failures,'details':details},indent=2))
