@@ -2,29 +2,36 @@
   "schema": "GMFQ_LIVE_UPDATE_PIPELINE_STATUS_V1",
   "as_of": "2026-10-05",
   "branch": "design-live-update-pipeline-v1-2026-10-05",
-  "status": "ALL_DIRECT_AND_DERIVED_BUILDERS_READY__DERIVED_INJECTION_PENDING",
+  "status": "DIRECT_AND_DERIVED_UPDATE_PATHS_READY__REAL_SOURCE_REFRESH_PENDING",
   "completed": [
     "read-only contract preflight",
     "current-runtime content-addressed roundtrip",
-    "ephemeral live refresh dry-run",
+    "ephemeral direct live refresh dry-run",
     "Engine Gate PASS after direct-section refresh",
     "Browser Gate PASS after direct-section refresh",
     "manifest v2 builder",
     "persisted manifest v2",
     "generic direct-section updater",
-    "derived-section hard rejection",
+    "derived-section hard rejection from generic updater",
     "single-part propagation enforcement",
     "V247_COT_STORIES deterministic builder",
-    "V247_COT_STORIES isolated self-test PASS",
-    "two stale historical COT signal labels identified: CHF and CAD",
+    "canonical COT 20/80 signal rule enforced",
+    "stale COT signal labels identified: CHF and CAD",
+    "orphan historical COT open-interest values traced and proven non-reconstructable uniquely",
+    "COT builder policy: omit orphan open interest rather than infer it",
     "RATES_AUDIT_METADATA deterministic builder",
     "RATES_AUDIT_METADATA exact-current reproduction PASS",
-    "RATES_AUDIT_METADATA no-rate-value-inference guard PASS"
+    "RATES_AUDIT_METADATA no-rate-value-inference guard PASS",
+    "dedicated deterministic derived-runtime injector",
+    "derived injector safe-scope validation PASS",
+    "derived runtime Engine Gate PASS",
+    "derived runtime Browser Gate PASS",
+    "derived end-to-end dry-run 37302130601 PASS"
   ],
   "direct_sections": 12,
   "derived_sections": {
-    "V247_COT_STORIES": "BUILDER_READY__ISOLATED_SELFTEST_PASS",
-    "RATES_AUDIT_METADATA": "BUILDER_READY__ISOLATED_SELFTEST_PASS"
+    "V247_COT_STORIES": "BUILDER_AND_INJECTOR_READY__E2E_GATE_PASS",
+    "RATES_AUDIT_METADATA": "BUILDER_AND_INJECTOR_READY__E2E_GATE_PASS"
   },
   "production_state": {
     "main_touched": false,
@@ -35,13 +42,13 @@
     "rates_metadata_write_published": false
   },
   "next_required_sequence": [
-    "implement dedicated deterministic derived-runtime injection path for validated derived outputs",
-    "isolated derived injection dry-run",
-    "manual real-source refresh on staging",
-    "Engine Gate + Browser Gate on exact candidate",
+    "manual real-source refresh on staging using canonical collectors/validated inputs",
+    "rebuild direct and derived sections through canonical update paths",
+    "Engine Gate + Browser Gate on exact real-source candidate",
     "clean release candidate and rollback verification",
+    "promote only after all gates are green",
     "only then design/enable scheduled collector workflow"
   ],
   "oos_restart_required": false,
-  "reason": "All changes remain validation/update-infrastructure only; both derived builders reproduce or enforce already-approved semantics and do not alter model rules, weights, hierarchy, pair construction or canonical T0."
+  "reason": "All work remains data/update infrastructure and correction of stale COT presentation labels under the already-canonical 20/80 rule; model direction, weights, hierarchy, pair construction, frozen engine and canonical T0 are unchanged."
 }
