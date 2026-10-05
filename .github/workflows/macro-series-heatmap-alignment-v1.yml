@@ -1,0 +1,37 @@
+name: Macro Series Heatmap Alignment V1
+
+on:
+  push:
+    branches:
+      - validation-macro-source-eur-eurostat-v1-2026-10-05
+    paths:
+      - 'validation/check_macro_series_heatmap_alignment.py'
+      - '.github/workflows/macro-series-heatmap-alignment-v1.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  alignment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check live Macro Series ↔ Heatmap alignment
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --output /tmp/macro-series-heatmap-alignment.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-series-heatmap-alignment-v1
+          if-no-files-found: warn
+          retention-days: 14
+          path: /tmp/macro-series-heatmap-alignment.json
