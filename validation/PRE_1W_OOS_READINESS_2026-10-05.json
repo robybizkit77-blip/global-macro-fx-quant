@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_PRE_1W_OOS_READINESS_V1",
+  "created_at": "2026-10-05",
+  "branch": "research-pit-walkforward-v1-2026-10-05",
+  "checkpoint": {
+    "name": "1W",
+    "evaluation_date": "2026-10-08",
+    "status": "WAITING_FOR_DATE"
+  },
+  "frozen_oos": {
+    "canonical_t0": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+    "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "evaluator": "validation/evaluate_forward_oos_checkpoint.py",
+    "runbook": "validation/FORWARD_OOS_CHECKPOINT_RUNBOOK_V1_2026-10-04.json",
+    "report_template": "validation/FORWARD_OOS_CHECKPOINT_REPORT_TEMPLATE_V1_2026-10-04.json"
+  },
+  "latest_validated_main": {
+    "commit": "51e27d3ff1f31ad7644b77c04b4a1d331d4aa091",
+    "change_scope": "workflow-only",
+    "engine_logic_audit": "PASS",
+    "staging_browser_audit": "PASS",
+    "oos_restart_required": false
+  },
+  "pre_checkpoint_checks": [
+    "Confirm canonical T0 file is byte-identical to frozen baseline.",
+    "Confirm rules fingerprint remains 3356baf0.",
+    "Confirm no thresholds, weights, hierarchy, pair construction, anchor methodology or frozen signal state changed.",
+    "Confirm evaluator and runbook remain unchanged except validation-only metadata if any.",
+    "Run 1W evaluator only on or after 2026-10-08.",
+    "Use first common ECB reference-rate fixing on or after 2026-10-08.",
+    "If the common fixing is unavailable, return WAITING_FOR_ECB_FIXING and do not substitute another source.",
+    "Score only T0 pairs with a favored side; do not add or remove pairs after seeing returns.",
+    "Do not tune the model after the 1W result."
+  ],
+  "decision": "READY_FOR_1W_CHECKPOINT__DO_NOT_RUN_EARLY"
+}
