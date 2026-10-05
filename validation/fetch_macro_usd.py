@@ -1,28 +1,36 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import csv, io, json, pathlib, sys, urllib.request
+import csv, io, json, pathlib, sys, time, urllib.request
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 CURRENT=ROOT/'live_data'/'sections'/'MACRO_THERMOMETER_DATA.json'
-URL='https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL,UNRATE'
+BASE='https://fred.stlouisfed.org/graph/fredgraph.csv?id={}'
 
-def fetch():
-    req=urllib.request.Request(URL,headers={'User-Agent':'GMFQ-Macro-Audit/1.0'})
-    with urllib.request.urlopen(req,timeout=30) as r:
-        return r.read().decode('utf-8-sig')
-
-def num(v):
-    try: return float(v)
-    except Exception: return None
+def fetch_series(series_id):
+    url=BASE.format(series_id)
+    last=None
+    for attempt in range(3):
+        try:
+            req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-Macro-Audit/1.0'})
+            with urllib.request.urlopen(req,timeout=45) as r:
+                text=r.read().decode('utf-8-sig')
+            rows=list(csv.DictReader(io.StringIO(text)))
+            out=[]
+            for row in rows:
+                dt=row.get('observation_date') or row.get('DATE') or row.get('date')
+                raw=row.get(series_id)
+                try: val=float(raw)
+                except Exception: continue
+                if dt: out.append((dt,val))
+            if out: return out
+            raise ValueError('empty series '+series_id)
+        except Exception as e:
+            last=e
+            if attempt<2: time.sleep(2*(attempt+1))
+    raise last
 
 def main():
-    text=fetch(); rows=list(csv.DictReader(io.StringIO(text)))
-    cpi=[]; un=[]
-    for r in rows:
-        dt=r.get('observation_date') or r.get('DATE') or r.get('date')
-        a=num(r.get('CPIAUCSL')); b=num(r.get('UNRATE'))
-        if dt and a is not None: cpi.append((dt,a))
-        if dt and b is not None: un.append((dt,b))
+    cpi=fetch_series('CPIAUCSL'); un=fetch_series('UNRATE')
     if len(cpi)<13 or not un: raise SystemExit('insufficient FRED data')
     cpi_by_date=dict(cpi); cpi_date,cpi_idx=cpi[-1]
     y,m,_=map(int,cpi_date.split('-')); prev=f'{y-1:04d}-{m:02d}-01'
