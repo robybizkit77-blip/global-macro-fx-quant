@@ -1,0 +1,37 @@
+name: Live Runtime Roundtrip
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - '.github/workflows/live-runtime-roundtrip.yml'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'live_data/sections/**'
+      - 'payload/**'
+
+permissions:
+  contents: read
+
+jobs:
+  roundtrip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify content-addressed section mapping and no-op roundtrip
+        run: |
+          python3 validation/rebuild_live_data_runtime.py --verify-only --write-snapshot /tmp/live-runtime-snapshot-v2.json
+      - name: Upload runtime snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-runtime-snapshot-v2
+          path: /tmp/live-runtime-snapshot-v2.json
+          if-no-files-found: warn
+      - name: Governance note
+        if: always()
+        run: |
+          echo 'Verification only: no payload or live_data file is modified.'
+          echo 'No main/gh-pages publication occurs in this workflow.'
