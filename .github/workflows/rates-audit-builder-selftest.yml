@@ -1,0 +1,61 @@
+name: Rates Audit Builder Self Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/build_rates_audit_metadata.py'
+      - '.github/workflows/rates-audit-builder-selftest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build rates audit metadata from validated rates snapshot
+        run: python3 validation/build_rates_audit_metadata.py --audit-date 2026-10-04 --output /tmp/RATES_AUDIT_METADATA.built.json --audit-current > /tmp/rates-audit-builder.json
+
+      - name: Validate exact current reproduction
+        run: |
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/rates-audit-builder.json'))
+          out=json.load(open('/tmp/RATES_AUDIT_METADATA.built.json'))
+          assert a['status']=='PASS' and a['currencies']==8,a
+          assert a['matches_current'] is True,a
+          assert out['schema']=='GMFQ_RATES_AUDIT_METADATA_V1'
+          assert set(out['expected_rates'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert out['rates']['AUD']['status']=='CURRENT_BY_SOURCE_CADENCE'
+          assert out['rates']['USD']['status']=='CURRENT_OFFICIAL'
+          assert out['rates']['CAD']['status']=='CURRENT_OFFICIAL_SAME_BASIS'
+          print('RATES_AUDIT_BUILDER_PASS__EXACT_CURRENT_REPRODUCTION')
+          PY
+
+      - name: Confirm builder does not infer rates
+        run: |
+          grep -q "d.get('date')" validation/build_rates_audit_metadata.py
+          ! grep -q "\['2Y'\]" validation/build_rates_audit_metadata.py
+          ! grep -q "\['10Y'\]" validation/build_rates_audit_metadata.py
+          echo NO_RATE_VALUE_INFERENCE_PASS
+
+      - name: Confirm no persistence or publish
+        run: |
+          test -z "$(git status --short)"
+          echo 'READ_ONLY_BUILDER_SELFTEST_PASS'
+          echo 'No live section write, no payload write, no main, no gh-pages, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-audit-builder-selftest
+          path: |
+            /tmp/rates-audit-builder.json
+            /tmp/RATES_AUDIT_METADATA.built.json
