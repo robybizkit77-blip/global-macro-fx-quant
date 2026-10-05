@@ -1,0 +1,72 @@
+{
+  "schema": "GMFQ_PIT_BACKTEST_FINAL_AUDIT_V1",
+  "created_at": "2026-10-03",
+  "engine": {
+    "branch": "engine-freeze-v1-2026-10-02",
+    "commit_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "rules_fingerprint": "3356baf0"
+  },
+  "dataset": {
+    "canonical_freeze": "validation/PIT_DATASET_FREEZE_V1_2026-10-03.json",
+    "coverage_manifest": "validation/pit_batch/G8_PIT_DATASET_FREEZE_V1_2026-10-03.json",
+    "freeze_gate": "validation/PIT_FREEZE_GATE_V1_2026-10-03.json",
+    "macro_replay": "validation/PIT_MACRO_REPLAY_V1_2026-10-03.json"
+  },
+  "data_phase": {
+    "status": "CLOSED_FROZEN",
+    "planned_series": 49,
+    "pit_ready_series": 10,
+    "withheld_series": 39,
+    "pending_series": 0,
+    "guardrails": [
+      "PIT/first-release observations only",
+      "No revised-history fallback for PIT validation",
+      "Withheld inputs do not vote",
+      "No additional provider pipelines after stopping-rule trigger"
+    ]
+  },
+  "currency_readiness": {
+    "USD": "PIT_GROWTH_ONLY_MACRO_OVERALL_WITHHELD",
+    "EUR": "PIT_GROWTH_AND_LABOUR_READY",
+    "CAD": "PIT_GROWTH_AND_LABOUR_READY",
+    "GBP": "WITHHELD_PIT",
+    "JPY": "WITHHELD_PIT",
+    "CHF": "WITHHELD_PIT",
+    "AUD": "WITHHELD_PIT",
+    "NZD": "WITHHELD_PIT"
+  },
+  "validation": {
+    "freeze_gate": "PASS",
+    "pit_macro_replay": "PASS",
+    "usd_growth_inputs": ["US_INDPRO_history_value", "US_PI_history_PI", "US_NEWORDER_history_NEWORDER"],
+    "usd_macro_overall": "WITHHELD_BY_DESIGN_LABOUR_UNAVAILABLE",
+    "eur_macro_replay": "AVAILABLE",
+    "cad_macro_replay": "AVAILABLE",
+    "full_g8_pit_backtest": "NOT_SUPPORTED_BY_CURRENT_PIT_COVERAGE",
+    "eurcad_price_oos": "WITHHELD_RECONSTRUCTION"
+  },
+  "price_oos_withheld_reason": {
+    "status": "WITHHELD_RECONSTRUCTION",
+    "reason": "Frozen historical runtime does not expose reusable EURUSD, USDCAD, EURCAD, or a complete canonical FX price matrix. Reconstructing them would require a new price-data pipeline, which is excluded by the stopping rule.",
+    "locator_artifact": "validation/FX_PRICE_CROSS_LOCATOR_2026-10-03.json"
+  },
+  "what_is_validated": [
+    "The v9.3 macro block math has been replayed on PIT/first-release data for available currencies without revised-history fallback.",
+    "USD Growth replay uses INDPRO, Personal Income and NEWORDER first-release inputs; overall USD Macro remains withheld because Labour is unavailable.",
+    "EUR and CAD have usable PIT Growth+Labour macro replay.",
+    "The dataset freeze gate prevents pending/withheld series from voting."
+  ],
+  "what_is_not_validated": [
+    "A full 8-currency PIT backtest of the complete engine.",
+    "A full PIT Macro+Rates+CB/OIS+COT+Liquidity replay across all 28 pairs.",
+    "Price-forward hit rates from the newly frozen PIT macro sample, because the canonical historical FX price matrix is not present in the frozen runtime artifacts."
+  ],
+  "legacy_benchmark": {
+    "artifact": "validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json",
+    "status": "PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY",
+    "use": "Benchmark only; macro layer there uses current-revised history and must not be presented as PIT backtest evidence."
+  },
+  "decision": "STOP_DATA_AND_RECONSTRUCTION_PHASE",
+  "next_step": "Treat this audit as the validation boundary. Continue with walk-forward/robustness and model interpretation only where evidence is supported, keeping PIT-validated evidence separate from pseudo-OOS benchmark evidence and without threshold tuning from the partial PIT sample."
+}
