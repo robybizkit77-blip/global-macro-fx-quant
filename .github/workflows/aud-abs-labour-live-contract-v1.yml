@@ -1,0 +1,108 @@
+name: AUD ABS Labour Live Contract V1
+
+on:
+  push:
+    branches:
+      - validation-macro-source-eur-eurostat-v1-2026-10-05
+    paths:
+      - 'validation/sources/aud_abs_unemployment.py'
+      - 'validation/check_macro_series_heatmap_alignment.py'
+      - '.github/workflows/aud-abs-labour-live-contract-v1.yml'
+      - 'validation/build_macro_candidate.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot live data hashes
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json > /tmp/macro_series.before
+          sha256sum live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/macro_heatmap.before
+
+      - name: Fetch official ABS unemployment release
+        run: |
+          mkdir -p /tmp/gmfq-aud-abs-live
+          python validation/sources/aud_abs_unemployment.py \
+            --output /tmp/gmfq-aud-abs-live/candidate.json \
+            --audit-output /tmp/gmfq-aud-abs-live/source-audit.json
+
+      - name: Pass candidate through canonical builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-aud-abs-live/candidate.json \
+            --output-dir /tmp/gmfq-aud-abs-live/built
+
+      - name: Assert live ABS source contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-aud-abs-live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gmfq-aud-abs-live/source-audit.json').read_text())
+          s=json.loads(Path('/tmp/gmfq-aud-abs-live/built/summary.json').read_text())
+          assert c['currency']=='AUD', c
+          assert c['dimension']=='labour', c
+          assert c['source']=='Australian Bureau of Statistics', c
+          assert a['mode']=='live', a
+          assert a['seasonal_adjustment']=='seasonally adjusted', a
+          assert a['live_data_written'] is False, a
+          assert s['status']=='PASS', s
+          assert s['live_data_modified'] is False, s
+          assert s['observation_date']==c['observation_date'], (s,c)
+          assert float(s['new_value'])==float(c['value']), (s,c)
+          print(json.dumps({
+            'status':'PASS',
+            'release_url':a['release_url'],
+            'observation_date':c['observation_date'],
+            'value':c['value'],
+            'prior_value':a['prior_value'],
+            'delta':a['delta'],
+            'series_action':s['series_action'],
+            'live_data_modified':False
+          }, indent=2))
+          PY
+
+      - name: Verify AUD labour is aligned in built candidate
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --series-path /tmp/gmfq-aud-abs-live/built/MACRO_SERIES.json \
+            --heatmap-path /tmp/gmfq-aud-abs-live/built/MACRO_THERMOMETER_DATA.json \
+            --currency AUD \
+            --dimension labour \
+            --output /tmp/gmfq-aud-abs-live/target-alignment.json
+
+      - name: Confirm live data remained untouched
+        run: |
+          sha256sum -c /tmp/macro_series.before
+          sha256sum -c /tmp/macro_heatmap.before
+          git diff --exit-code -- \
+            live_data/sections/MACRO_SERIES.json \
+            live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Run frozen live contract
+        run: python validation/check_live_update_contract.py
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-abs-labour-live-contract-v1
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            /tmp/gmfq-aud-abs-live/candidate.json
+            /tmp/gmfq-aud-abs-live/source-audit.json
+            /tmp/gmfq-aud-abs-live/built/summary.json
+            /tmp/gmfq-aud-abs-live/target-alignment.json
