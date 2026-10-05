@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import datetime as dt, html, io, json, pathlib, re, sys, urllib.error, urllib.request
+import csv, datetime as dt, html, io, json, pathlib, re, sys, urllib.error, urllib.request
 from openpyxl import load_workbook
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -11,6 +11,10 @@ SOURCES={
  'USD':{
    'url':'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve',
    'kind':'treasury','required':True
+ },
+ 'EUR':{
+   'url':'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_{tenor}?startPeriod=2026-09-25&format=csvdata',
+   'kind':'ecb_pair','required':True
  },
  'CAD':{
    'url':'https://www.bankofcanada.ca/rates/interest-rates/canadian-bonds/',
@@ -23,7 +27,7 @@ SOURCES={
 }
 
 def fetch_bytes(url:str)->bytes:
-    req=urllib.request.Request(url,headers={'User-Agent':UA})
+    req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/html,*/*'})
     with urllib.request.urlopen(req,timeout=45) as r:
         return r.read()
 
@@ -49,6 +53,25 @@ def parse_treasury(raw:str):
             found.append((f'{yyyy}-{mm}-{dd}',tail[1],tail[5]))
     if not found: raise ValueError('Treasury: no parsable daily rows')
     return max(found,key=lambda x:x[0])
+
+def parse_ecb_csv(raw:bytes):
+    txt=raw.decode('utf-8-sig','replace')
+    reader=csv.DictReader(io.StringIO(txt))
+    found=[]
+    for row in reader:
+        d=row.get('TIME_PERIOD') or row.get('TIME PERIOD') or row.get('time_period')
+        v=row.get('OBS_VALUE') or row.get('OBS VALUE') or row.get('obs_value')
+        if not d or v in (None,''): continue
+        try: found.append((str(d)[:10],float(v)))
+        except: continue
+    if not found: raise ValueError('ECB: no parsable TIME_PERIOD/OBS_VALUE rows')
+    return max(found,key=lambda x:x[0])
+
+def parse_ecb_pair(url_template:str):
+    d2,y2=parse_ecb_csv(fetch_bytes(url_template.format(tenor='2Y')))
+    d10,y10=parse_ecb_csv(fetch_bytes(url_template.format(tenor='10Y')))
+    if d2!=d10: raise ValueError(f'ECB tenor dates differ: 2Y={d2},10Y={d10}')
+    return d2,y2,y10
 
 def parse_boc(raw:str):
     t=textify(raw)
@@ -91,11 +114,14 @@ def main()->int:
     results={}; failures=[]; blocked=[]; verified=[]
     for c,s in SOURCES.items():
         try:
-            raw=fetch_bytes(s['url'])
-            if s['kind']=='treasury': date,y2,y10=parse_treasury(raw.decode('utf-8','replace'))
-            elif s['kind']=='boc': date,y2,y10=parse_boc(raw.decode('utf-8','replace'))
-            elif s['kind']=='rbnz_xlsx': date,y2,y10=parse_rbnz_xlsx(raw)
-            else: raise ValueError('unknown source kind')
+            if s['kind']=='ecb_pair':
+                date,y2,y10=parse_ecb_pair(s['url'])
+            else:
+                raw=fetch_bytes(s['url'])
+                if s['kind']=='treasury': date,y2,y10=parse_treasury(raw.decode('utf-8','replace'))
+                elif s['kind']=='boc': date,y2,y10=parse_boc(raw.decode('utf-8','replace'))
+                elif s['kind']=='rbnz_xlsx': date,y2,y10=parse_rbnz_xlsx(raw)
+                else: raise ValueError('unknown source kind')
             cur=RATES[c]
             row={
               'verification_status':'VERIFIED',
