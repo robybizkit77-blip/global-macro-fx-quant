@@ -28,6 +28,24 @@ def changed_ids(before_rows, after_rows):
     return [k for k in sorted(set(b) | set(a)) if b.get(k) != a.get(k)]
 
 
+def field_diffs(actual: dict, expected: dict):
+    out = {}
+    for key in sorted(set(actual) | set(expected)):
+        if actual.get(key) != expected.get(key):
+            av = actual.get(key)
+            ev = expected.get(key)
+            if key == "history" and isinstance(av, list) and isinstance(ev, list):
+                out[key] = {
+                    "actual_n": len(av),
+                    "expected_n": len(ev),
+                    "actual_tail": av[-6:],
+                    "expected_tail": ev[-6:],
+                }
+            else:
+                out[key] = {"actual": av, "expected": ev}
+    return out
+
+
 def main() -> int:
     before_series = git_json(BEFORE, SERIES_PATH)
     after_series = git_json(AFTER, SERIES_PATH)
@@ -61,6 +79,7 @@ def main() -> int:
 
     series_equal = replay_series == after_series
     heat_equal = replay_heat == after_heat
+    h_actual = replay_heat["currencies"]["JPY"]["labour"]
 
     result = {
         "status": "PASS" if series_equal and heat_equal else "FAIL",
@@ -82,7 +101,8 @@ def main() -> int:
         }
     if not heat_equal:
         result["heatmap_diagnostics"] = {
-            "jpy_labour_equal": replay_heat["currencies"]["JPY"]["labour"] == h_after,
+            "jpy_labour_equal": h_actual == h_after,
+            "jpy_labour_field_diffs": field_diffs(h_actual, h_after),
             "jpy_as_of_detail_equal": replay_heat["currencies"]["JPY"].get("as_of_detail") == after_heat["currencies"]["JPY"].get("as_of_detail"),
             "changed_currency_keys_vs_after": [c for c in replay_heat["currencies"] if replay_heat["currencies"].get(c) != after_heat["currencies"].get(c)],
         }
