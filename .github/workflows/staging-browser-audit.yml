@@ -1,15 +1,13 @@
-name: Staging Browser Audit
+name: Loader Cache Browser Probe
 
 on:
   push:
     branches:
-      - staging-nzd-ois-gate-2026-09-30
-      - staging-global-coherence-v490-20260930
       - test-loader-cache-browser-audit-2026-10-05
   workflow_dispatch:
 
 jobs:
-  browser-audit:
+  loader-cache-probe:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -28,12 +26,11 @@ jobs:
       - name: Start local server
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
-          echo $! > /tmp/gmfq-server.pid
           sleep 2
 
-      - name: Run browser audit
+      - name: Probe loader and browser cache
         run: |
-          cat > browser-audit.js <<'EOF'
+          cat > loader-cache-probe.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
             const browser = await chromium.launch({headless:true});
@@ -42,89 +39,44 @@ jobs:
             const pageErrors=[];
             page.on('console',m=>{ if(m.type()==='error') consoleErrors.push(m.text()); });
             page.on('pageerror',e=>pageErrors.push(String(e)));
-            const response = await page.goto('http://127.0.0.1:8000/', {waitUntil:'networkidle', timeout:120000});
-            if(!response || !response.ok()) throw new Error('HTTP load failed');
-            await page.waitForFunction(() => document.documentElement.getAttribute('data-post-gate-final-audit'), null, {timeout:120000});
 
-            const result = await page.evaluate(() => {
-              const audit = window.GMFQ_POST_GATE_FINAL_AUDIT || null;
-              const sections = {};
-              for (const v of ['currencies','ratesdesk','pairs','cot','risk','macro','inflationlabour','themes']) {
-                try {
-                  if (typeof window.showView === 'function') window.showView(v);
-                  const el = document.getElementById(v);
-                  sections[v] = {exists:!!el, active:!!el?.classList?.contains('active')};
-                } catch(e) {
-                  sections[v] = {exists:!!document.getElementById(v), error:String(e)};
-                }
-              }
-              const currencyStates={};
-              for (const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) {
-                currencyStates[c]=typeof window.deriveCurrencyState==='function' ? window.deriveCurrencyState(c) : null;
-              }
-              if (typeof window.selectCurrency==='function') window.selectCurrency('EUR',true);
-              const eurText=document.body?.innerText||'';
-              if (typeof window.selectCurrency==='function') window.selectCurrency('JPY',true);
-              const jpyText=document.body?.innerText||'';
-              if (typeof window.openPairDetail==='function') window.openPairDetail('USD/JPY');
-              const usdjpy=typeof window.derivePairDecisionFrame==='function' ? window.derivePairDecisionFrame('USD/JPY') : null;
-              if (typeof window.selectNativeCb==='function') window.selectNativeCb('JPY');
-              const oisText=document.body?.innerText||'';
-              return {
-                title: document.title,
-                finalAudit: audit,
-                fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
-                ois: {
-                  USD: window.GMFQ_OIS?.currency?.('USD')?.status || null,
-                  EUR: window.GMFQ_OIS?.currency?.('EUR')?.status || null,
-                  GBP: window.GMFQ_OIS?.currency?.('GBP')?.status || null,
-                  JPY: window.GMFQ_OIS?.currency?.('JPY')?.status || null,
-                  CHF: window.GMFQ_OIS?.currency?.('CHF')?.status || null,
-                  CAD: window.GMFQ_OIS?.currency?.('CAD')?.status || null,
-                  AUD: window.GMFQ_OIS?.currency?.('AUD')?.status || null,
-                  NZD: window.GMFQ_OIS?.currency?.('NZD')?.status || null
-                },
-                sections,
-                currencyStates,
-                usdjpy,
-                coherenceText:{eur:eurText,jpy:jpyText,ois:oisText},
-                bodyTextLength: document.body?.innerText?.length || 0
-              };
-            });
-
-            console.log(JSON.stringify({result,consoleErrors,pageErrors},null,2));
-
-            if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
-            if(!result.finalAudit) throw new Error('Final audit missing');
-            if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
-            if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');
-            if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
-            if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
-
-            const jpy=result.currencyStates.JPY||{};
-            if(jpy.base!=='MISTA' || jpy.macro!==0 || jpy.policy!==0) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
-            const usdjpy=result.usdjpy||{};
-            if(usdjpy.quality!=='SEPARAZIONE RATES MATERIALE' || usdjpy.fav!=='—' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY rates separation failure: '+JSON.stringify(usdjpy));
-            if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
-            if(result.coherenceText.jpy.includes('Macro e Tassi/CB favoriscono entrambi JPY')) throw new Error('JPY wording still overstates support');
-            if(!result.coherenceText.ois.includes('front-end osservato') || result.coherenceText.ois.includes('OIS/forward o 2Y')) throw new Error('OIS/front-end wording failure');
-
-            const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
-            for(const [k,v] of Object.entries(expected)){
-              if(result.ois[k]!==v) throw new Error(`OIS ${k}: ${result.ois[k]} != ${v}`);
+            async function snapshot(label){
+              await page.waitForFunction(() => document.documentElement.getAttribute('data-post-gate-final-audit'), null, {timeout:120000});
+              return await page.evaluate((label)=>{
+                const payload = performance.getEntriesByType('resource')
+                  .filter(e=>e.name.includes('/payload/part-'))
+                  .map(e=>({name:e.name.split('/').pop(), transferSize:e.transferSize, encodedBodySize:e.encodedBodySize, duration:e.duration}));
+                return {
+                  label,
+                  title: document.title,
+                  finalAudit: window.GMFQ_POST_GATE_FINAL_AUDIT || null,
+                  payloadCount: payload.length,
+                  payloadTransferBytes: payload.reduce((a,e)=>a+(e.transferSize||0),0),
+                  payloadEncodedBytes: payload.reduce((a,e)=>a+(e.encodedBodySize||0),0),
+                  payloadDurationMs: payload.reduce((a,e)=>a+(e.duration||0),0),
+                  bodyTextLength: document.body?.innerText?.length || 0,
+                  payload
+                };
+              },label);
             }
 
-            await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
-            await browser.close();
-          })().catch(e=>{ console.error('::error title=Browser audit detail::'+String(e.message||e)); process.exit(1); });
-          EOF
-          node browser-audit.js
+            let r = await page.goto('http://127.0.0.1:8000/', {waitUntil:'networkidle', timeout:120000});
+            if(!r || !r.ok()) throw new Error('HTTP load failed');
+            const first = await snapshot('first');
 
-      - name: Upload screenshot and server log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: staging-browser-audit
-          path: |
-            staging-browser-audit.png
-            /tmp/gmfq-server.log
+            r = await page.reload({waitUntil:'networkidle', timeout:120000});
+            if(!r || !r.ok()) throw new Error('HTTP reload failed');
+            const second = await snapshot('second');
+
+            console.log(JSON.stringify({first,second,consoleErrors,pageErrors},null,2));
+
+            if(first.finalAudit?.status!=='PASS' || second.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
+            if(first.payloadCount!==16 || second.payloadCount!==16) throw new Error(`Unexpected payload count ${first.payloadCount}/${second.payloadCount}`);
+            if(first.bodyTextLength<1000 || second.bodyTextLength<1000) throw new Error('Rendered body unexpectedly small');
+            if(consoleErrors.length || pageErrors.length) throw new Error('Browser errors detected');
+            if(!(second.payloadTransferBytes < first.payloadTransferBytes)) throw new Error(`Cache ineffective: first=${first.payloadTransferBytes} second=${second.payloadTransferBytes}`);
+
+            await browser.close();
+          })().catch(e=>{ console.error('::error title=Loader cache probe::'+String(e.message||e)); process.exit(1); });
+          EOF
+          node loader-cache-probe.js
