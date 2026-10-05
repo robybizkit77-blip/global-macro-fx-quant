@@ -1,0 +1,40 @@
+{
+  "schema": "GMFQ_OOS_LIVE_REFRESH_CONTINUITY_V1",
+  "created_at": "2026-10-05",
+  "canonical_t0": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+  "t0_effective_date": "2026-10-01",
+  "rules_fingerprint": "3356baf0",
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "live_refresh_validation": {
+    "validated_staging_commit": "75abd075473ec27dfa8f9f508fb4bd45a0b8ea4d",
+    "gates": [
+      "Engine Integrity",
+      "Live Refresh Browser Gate",
+      "Staging Browser Audit",
+      "Live Post Execution Status"
+    ],
+    "all_green_same_commit": true
+  },
+  "production_promotion": {
+    "main_commit": "529acdd6026c88ecee8451e2e5bc36c740eece7d",
+    "gh_pages_commit": "3da2434ade53723714edaa100d0cea43dc32d38b",
+    "shared_tree": "6d16ecbcd45fd5c083e65612f07c9594d0c5ffca",
+    "scope": "approved live runtime/data only; validation/probes/triggers excluded"
+  },
+  "governance_check": {
+    "reference": "validation/LIVE_VS_OOS_DATA_BOUNDARY_V1_2026-10-04.json",
+    "t0_mutated": false,
+    "rules_fingerprint_changed": false,
+    "thresholds_or_weights_changed": false,
+    "pair_direction_method_changed": false,
+    "checkpoint_method_changed": false,
+    "live_data_refresh_allowed": true
+  },
+  "decision": "OOS_CONTINUES__NO_RESTART_REQUIRED",
+  "next_checkpoint": {
+    "label": "1W",
+    "evaluation_date": "2026-10-08",
+    "rule": "Use frozen T0 signal state and first common ECB fixing on or after the checkpoint date."
+  },
+  "guardrail": "Do not use current live dashboard states to rewrite T0 or its favored pair set."
+}
