@@ -20,14 +20,14 @@
       "dimension": "inflation",
       "role": "core",
       "official_authority": "U.S. Bureau of Labor Statistics",
-      "upstream_series_id": null,
-      "source_url": null,
+      "upstream_series_id": "CUSR0000SA0",
+      "source_url": "https://data.bls.gov/timeseries/CUSR0000SA0",
       "frequency": "M",
-      "transformation": null,
-      "unit": null,
-      "adapter_path": null,
+      "transformation": "yoy_pct_from_index",
+      "unit": "% YoY",
+      "adapter_path": "validation/sources/us_bls_cpi.py",
       "requires_credential": false,
-      "status": "PLANNED_UNVALIDATED"
+      "status": "ADAPTER_READY_LIVE_CI_PENDING"
     },
     {
       "currency": "USD",
