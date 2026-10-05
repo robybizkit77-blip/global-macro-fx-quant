@@ -1,0 +1,32 @@
+name: Macro USD Audit V1
+on:
+  push:
+    branches:
+      - validation-macro-inventory-v1-2026-10-05
+    paths:
+      - 'validation/fetch_macro_usd.py'
+      - '.github/workflows/macro-usd-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official USD macro source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/fetch_macro_usd.py | tee /tmp/macro-usd-audit.json
+      - name: Enforce read-only scope
+        run: git diff --exit-code -- live_data payload
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-usd-audit-v1
+          path: /tmp/macro-usd-audit.json
