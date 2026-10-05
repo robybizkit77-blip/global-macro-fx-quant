@@ -54,12 +54,11 @@ def acceleration(values: list[float]) -> str:
         return "STABILE"
     d1 = values[-2] - values[-3]
     d2 = values[-1] - values[-2]
+    dd = d2 - d1
     eps = 1e-12
-    if abs(d2) <= eps and abs(d1) <= eps:
-        return "STABILE"
-    if abs(d2) > abs(d1) + eps:
+    if dd > eps:
         return "ACCELERA"
-    if abs(d2) + eps < abs(d1):
+    if dd < -eps:
         return "RALLENTA"
     return "STABILE"
 
