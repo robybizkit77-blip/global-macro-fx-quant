@@ -13,6 +13,10 @@ DEFAULT_HEATMAP = ROOT / "live_data" / "sections" / "MACRO_THERMOMETER_DATA.json
 CURRENCIES = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
 DIMENSIONS = ("inflation", "labour")
 DETAIL_KEY = {"inflation": "inflation", "labour": "unemployment"}
+SERIES_ALIASES = {
+    ("GBP", "inflation"): "UK_CPI_HEADLINE_YOY_history_value",
+    ("GBP", "labour"): "UK_UNEMP_RATE_history_value",
+}
 
 
 def load(path: Path) -> Any:
@@ -26,7 +30,14 @@ def same_value(a: Any, b: Any) -> bool:
         return False
 
 
-def bind_series(rows: list[dict[str, Any]], source_series_id: str) -> tuple[dict[str, Any] | None, str, int]:
+def bind_series(rows: list[dict[str, Any]], source_series_id: str, currency: str, dimension: str) -> tuple[dict[str, Any] | None, str, int]:
+    alias_id = SERIES_ALIASES.get((currency, dimension))
+    if alias_id:
+        aliases = [r for r in rows if isinstance(r, dict) and str(r.get("id")) == alias_id]
+        if len(aliases) == 1:
+            return aliases[0], "EXPLICIT_ALIAS", 1
+        return None, "ALIAS_NOT_FOUND" if not aliases else "ALIAS_AMBIGUOUS", len(aliases)
+
     exact = [r for r in rows if isinstance(r, dict) and str(r.get("id")) == source_series_id]
     if len(exact) == 1:
         return exact[0], "EXACT", 1
@@ -58,6 +69,8 @@ def main() -> int:
     ap.add_argument("--series-path", type=Path, default=DEFAULT_SERIES)
     ap.add_argument("--heatmap-path", type=Path, default=DEFAULT_HEATMAP)
     ap.add_argument("--output", type=Path)
+    ap.add_argument("--currency", choices=CURRENCIES)
+    ap.add_argument("--dimension", choices=DIMENSIONS)
     args = ap.parse_args()
 
     series = load(args.series_path)
@@ -65,10 +78,13 @@ def main() -> int:
     checks: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
 
-    for currency in CURRENCIES:
+    currencies = (args.currency,) if args.currency else CURRENCIES
+    dimensions = (args.dimension,) if args.dimension else DIMENSIONS
+
+    for currency in currencies:
         rows = series.get(currency, [])
         hccy = heatmap.get("currencies", {}).get(currency, {})
-        for dimension in DIMENSIONS:
+        for dimension in dimensions:
             hrow = hccy.get(dimension, {})
             source_series_id = str(hrow.get("series_id", ""))
             item: dict[str, Any] = {
@@ -77,7 +93,7 @@ def main() -> int:
                 "heatmap_series_id": source_series_id,
                 "heatmap_transformation": hrow.get("transformation"),
             }
-            row, binding, matches = bind_series(rows, source_series_id)
+            row, binding, matches = bind_series(rows, source_series_id, currency, dimension)
             item["binding"] = binding
             if row is None:
                 item.update({
@@ -147,6 +163,7 @@ def main() -> int:
         "failure_items": failures,
         "details": checks,
         "read_only": True,
+        "scope": {"currency": args.currency, "dimension": args.dimension},
     }
     text = json.dumps(result, ensure_ascii=False, indent=2)
     print(text)
