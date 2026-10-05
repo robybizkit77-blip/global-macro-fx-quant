@@ -6,6 +6,7 @@ on:
       - validation-macro-source-eur-eurostat-v1-2026-10-05
     paths:
       - 'validation/sources/eur_eurostat_unemployment.py'
+      - 'validation/check_macro_series_heatmap_alignment.py'
       - '.github/workflows/eur-eurostat-live-contract-v1.yml'
       - 'validation/build_macro_candidate.py'
       - 'live_data/sections/MACRO_SERIES.json'
@@ -75,6 +76,15 @@ jobs:
           }, indent=2))
           PY
 
+      - name: Verify EUR labour is aligned in built candidate
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --series-path /tmp/gmfq-eur-eurostat-live/built/MACRO_SERIES.json \
+            --heatmap-path /tmp/gmfq-eur-eurostat-live/built/MACRO_THERMOMETER_DATA.json \
+            --currency EUR \
+            --dimension labour \
+            --output /tmp/gmfq-eur-eurostat-live/target-alignment.json
+
       - name: Confirm live data remained untouched
         run: |
           sha256sum -c /tmp/macro_series.before
@@ -96,3 +106,4 @@ jobs:
             /tmp/gmfq-eur-eurostat-live/candidate.json
             /tmp/gmfq-eur-eurostat-live/source-audit.json
             /tmp/gmfq-eur-eurostat-live/built/summary.json
+            /tmp/gmfq-eur-eurostat-live/target-alignment.json
