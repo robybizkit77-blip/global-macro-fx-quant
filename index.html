@@ -21,7 +21,7 @@
  if(refreshCalls!==26) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
  const marker='<script id="gmfq-post-gate-final-audit-settlement">';
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
- const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</script>\n';
+ const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
  html=html.replace(marker,finalRefresh+marker);
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
