@@ -2,7 +2,7 @@
   "schema": "GMFQ_LIVE_UPDATE_PIPELINE_STATUS_V1",
   "as_of": "2026-10-05",
   "branch": "design-live-update-pipeline-v1-2026-10-05",
-  "status": "DIRECT_UPDATE_PATH_READY__COT_DERIVED_BUILDER_READY__RATES_BUILDER_PENDING",
+  "status": "ALL_DIRECT_AND_DERIVED_BUILDERS_READY__DERIVED_INJECTION_PENDING",
   "completed": [
     "read-only contract preflight",
     "current-runtime content-addressed roundtrip",
@@ -16,28 +16,32 @@
     "single-part propagation enforcement",
     "V247_COT_STORIES deterministic builder",
     "V247_COT_STORIES isolated self-test PASS",
-    "two stale historical COT signal labels identified: CHF and CAD"
+    "two stale historical COT signal labels identified: CHF and CAD",
+    "RATES_AUDIT_METADATA deterministic builder",
+    "RATES_AUDIT_METADATA exact-current reproduction PASS",
+    "RATES_AUDIT_METADATA no-rate-value-inference guard PASS"
   ],
   "direct_sections": 12,
   "derived_sections": {
     "V247_COT_STORIES": "BUILDER_READY__ISOLATED_SELFTEST_PASS",
-    "RATES_AUDIT_METADATA": "BUILDER_PENDING"
+    "RATES_AUDIT_METADATA": "BUILDER_READY__ISOLATED_SELFTEST_PASS"
   },
   "production_state": {
     "main_touched": false,
     "gh_pages_touched": false,
     "schedule_enabled": false,
     "collector_enabled": false,
-    "cot_story_corrections_published": false
+    "cot_story_corrections_published": false,
+    "rates_metadata_write_published": false
   },
   "next_required_sequence": [
-    "implement and isolate-test dedicated builder for RATES_AUDIT_METADATA",
-    "implement dedicated derived-runtime injection path for validated derived outputs",
+    "implement dedicated deterministic derived-runtime injection path for validated derived outputs",
+    "isolated derived injection dry-run",
     "manual real-source refresh on staging",
     "Engine Gate + Browser Gate on exact candidate",
     "clean release candidate and rollback verification",
     "only then design/enable scheduled collector workflow"
   ],
   "oos_restart_required": false,
-  "reason": "All changes remain validation/update-infrastructure only; the COT builder applies the already-canonical 20/80 percentile interpretation and does not alter model direction, weights, hierarchy, pair construction or canonical T0."
+  "reason": "All changes remain validation/update-infrastructure only; both derived builders reproduce or enforce already-approved semantics and do not alter model rules, weights, hierarchy, pair construction or canonical T0."
 }
