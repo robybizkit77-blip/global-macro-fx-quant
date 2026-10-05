@@ -1,0 +1,1 @@
+{"schema":"GMFQ_VALIDATION_GATE_TRIGGER_V1","candidate_parent":"a8eb341873b3c6096d101321a665be5745ed96e0","scope":"JPY_RATES_2026-10-02","runtime_change":false,"purpose":"Trigger official Engine Logic Audit and Staging Browser Audit on the persisted candidate tree."}
