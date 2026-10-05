@@ -1,0 +1,61 @@
+name: COT Stories Builder Self Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/build_cot_stories.py'
+      - '.github/workflows/cot-stories-builder-selftest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build COT stories from V250 canonical series
+        run: python3 validation/build_cot_stories.py --output /tmp/V247_COT_STORIES.built.json --audit-current > /tmp/cot-stories-audit.json
+
+      - name: Validate deterministic builder and expected historical drift
+        run: |
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/cot-stories-audit.json'))
+          out=json.load(open('/tmp/V247_COT_STORIES.built.json'))
+          assert a['status']=='PASS' and a['currencies']==8,a
+          assert a['extreme_low']==20 and a['extreme_high']==80,a
+          assert set(out)=={'EUR','GBP','JPY','CHF','AUD','NZD','CAD','USD'}
+          drift=a['current_drift']
+          print(json.dumps(drift,indent=2,ensure_ascii=False))
+          # All non-signal narrative fields must reproduce current stories exactly.
+          nonsignal=[d for d in drift if d['field']!='signal']
+          if nonsignal: raise SystemExit('Unexpected narrative drift: '+json.dumps(nonsignal,ensure_ascii=False))
+          actual={(d['currency'],d['current'],d['built']) for d in drift}
+          expected={
+            ('CHF','NEUTRALE','EXTREME LONG'),
+            ('CAD','EXTREME LONG','NEUTRALE')
+          }
+          if actual!=expected: raise SystemExit('Unexpected signal drift: '+json.dumps(drift,ensure_ascii=False))
+          print('COT_STORIES_BUILDER_PASS__2_STALE_SIGNAL_LABELS_IDENTIFIED')
+          PY
+
+      - name: Confirm no persistence or publish
+        run: |
+          test -z "$(git status --short)"
+          echo 'READ_ONLY_BUILDER_SELFTEST_PASS'
+          echo 'No live section write, no payload write, no main, no gh-pages, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-stories-builder-selftest
+          path: |
+            /tmp/cot-stories-audit.json
+            /tmp/V247_COT_STORIES.built.json
