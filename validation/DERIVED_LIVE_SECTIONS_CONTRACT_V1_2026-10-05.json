@@ -1,37 +1,42 @@
 {
   "schema": "GMFQ_DERIVED_LIVE_SECTIONS_CONTRACT_V1",
   "created_at": "2026-10-05",
-  "status": "ALL_DERIVED_BUILDERS_READY__INJECTION_PENDING",
+  "status": "ALL_DERIVED_BUILDERS_AND_INJECTOR_READY__E2E_PASS",
+  "injector": {
+    "path": "validation/update_live_derived_sections.py",
+    "status": "E2E_DRYRUN_PASS",
+    "run_id": 37302130601,
+    "safety": ["exact assignment anchor", "JSON raw-decode boundary", "single-payload-part requirement", "schema validation", "safe-scope validation", "no publish from dry-run"]
+  },
   "sections": [
     {
       "key": "V247_COT_STORIES",
       "file": "live_data/sections/V247_COT_STORIES.json",
-      "mode": "DERIVED_BUILDER_READY",
+      "mode": "DERIVED_BUILDER_AND_INJECTOR_READY",
       "direct_update_allowed": false,
       "builder": "validation/build_cot_stories.py",
-      "builder_status": "ISOLATED_SELFTEST_PASS",
-      "builder_run_id": 37300171875,
       "canonical_inputs": ["live_data/sections/V250_COT_CHART_DATA.json", "price confirmation only when separately validated"],
       "rules": {
         "extreme_long_percentile_gte": 80,
         "extreme_short_percentile_lte": 20,
-        "cot_role": "positioning/risk context only; never standalone directional bias"
+        "cot_role": "positioning/risk context only; never standalone directional bias",
+        "price_confirmation": "WITHHELD unless separately validated",
+        "open_interest": "omit when exact validated source is absent; never infer from rounded Net/OI"
       },
       "historical_drift_identified": [
-        "CHF current stored label NEUTRALE -> canonical EXTREME LONG at percentile 84.6",
-        "CAD current stored label EXTREME LONG -> canonical NEUTRALE at percentile 65.4"
+        "CHF stored/runtime label NEUTRALE -> canonical EXTREME LONG at percentile 84.6",
+        "CAD stored/runtime label EXTREME LONG -> canonical NEUTRALE at percentile 65.4",
+        "runtime story open-interest values are orphan historical values and are not present in current canonical source sections"
       ],
-      "validation": "All non-signal narrative fields reproduced exactly from current V250 data; only the two stale signal labels differ.",
-      "required_before_real_write": ["apply through dedicated derived-runtime injection path", "Engine Gate PASS", "Browser Gate PASS"]
+      "reconstructability_audit": "Net/OI rounded to 3 decimals does not uniquely determine open interest; candidate counts range from 2 to 115 on current G8 records, so inference is prohibited.",
+      "validation": "Derived injection with canonical COT corrections and omitted orphan OI passed Engine Gate and Browser Gate in run 37302130601."
     },
     {
       "key": "RATES_AUDIT_METADATA",
       "file": "live_data/sections/RATES_AUDIT_METADATA.json",
-      "mode": "DERIVED_BUILDER_READY",
+      "mode": "DERIVED_BUILDER_AND_INJECTOR_READY",
       "direct_update_allowed": false,
       "builder": "validation/build_rates_audit_metadata.py",
-      "builder_status": "ISOLATED_SELFTEST_PASS",
-      "builder_run_id": 37300679681,
       "canonical_inputs": ["live_data/sections/NATIVE_RATES_DATA.json", "explicit audit_date supplied by validated refresh run"],
       "rules": {
         "date_policy": "copy current validated per-currency date; never infer",
@@ -39,10 +44,9 @@
         "same_basis_policy": "preserve approved per-currency source/status semantics",
         "aud_source_cadence": "preserved explicitly"
       },
-      "validation": "Builder reproduced the current RATES_AUDIT_METADATA object exactly for audit_date 2026-10-04 and passed no-rate-value-inference guard.",
-      "required_before_real_write": ["apply through dedicated derived-runtime injection path", "settled_after_cad_chain compatible", "Engine Gate PASS", "Browser Gate PASS"]
+      "validation": "Builder reproduced current metadata exactly; derived injection was a runtime no-op for the current snapshot and full Engine/Browser gates passed in run 37302130601."
     }
   ],
   "hard_rule": "Neither derived section may be passed through the generic direct-section updater.",
-  "activation_gate": "Both builders are validated; next gate is a dedicated deterministic derived-runtime injection path followed by Engine and Browser validation."
+  "activation_gate": "Derived path is validated. Next required gate is a manual real-source refresh on staging before any production promotion or scheduling."
 }
