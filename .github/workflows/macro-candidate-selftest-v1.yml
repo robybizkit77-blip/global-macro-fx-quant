@@ -1,0 +1,70 @@
+name: Macro Candidate Self-Test V1
+
+on:
+  push:
+    branches:
+      - 'validation-generic-macro-updater-v1-*'
+      - 'release-generic-macro-updater-v1-*'
+    paths:
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/macro-candidate-selftest-v1.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Snapshot tracked live data
+        run: |
+          git status --short
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/macro-before.sha256
+
+      - name: Run generic macro candidate builder self-test
+        run: |
+          python3 validation/build_macro_candidate.py --self-test | tee /tmp/macro-candidate-selftest.json
+          python3 - <<'PY'
+          import json
+          p='/tmp/macro-candidate-selftest.json'
+          d=json.load(open(p))
+          assert d['status']=='PASS'
+          assert d['mode']=='SELF_TEST_READ_ONLY'
+          assert d['currencies']==['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
+          assert d['writes_live_data'] is False
+          assert d['changes_engine_rules'] is False
+          s=d['synthetic_functional_test']
+          assert s['currency']=='JPY' and s['dimension']=='labour'
+          assert s['series_action']=='APPEND_NEW'
+          assert s['new_value']==4.3
+          print('GENERIC_MACRO_CANDIDATE_SELF_TEST_PASS')
+          PY
+
+      - name: Verify self-test is read-only
+        run: |
+          sha256sum -c /tmp/macro-before.sha256
+          if ! git diff --quiet -- live_data payload; then
+            echo 'Generic macro candidate self-test modified live data/runtime unexpectedly.'
+            git status --short
+            exit 1
+          fi
+          echo 'READ_ONLY_PASS'
+
+      - name: Verify live update contract still passes
+        run: |
+          python3 validation/check_live_update_contract.py | tee /tmp/live-contract-after-macro-selftest.json
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-candidate-selftest-v1
+          path: |
+            /tmp/macro-candidate-selftest.json
+            /tmp/live-contract-after-macro-selftest.json
