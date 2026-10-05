@@ -1,0 +1,32 @@
+name: Macro Unified Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'validation-macro-unified-audit-*'
+    paths:
+      - 'validation/run_macro_audit.py'
+      - '.github/workflows/macro-unified-audit.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/D.json'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run unified Macro audit
+        run: python validation/run_macro_audit.py
+      - name: Verify read-only scope
+        run: |
+          git diff --exit-code -- live_data payload
+          test -f validation/MACRO_UNIFIED_AUDIT_V1.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-unified-audit-v1
+          path: validation/MACRO_UNIFIED_AUDIT_V1.json
