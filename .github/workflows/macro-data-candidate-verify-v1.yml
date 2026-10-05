@@ -5,6 +5,7 @@ on:
     branches:
       - validation-macro-data-candidate-2026-10-05
     paths:
+      - '.github/workflows/macro-data-candidate-verify-v1.yml'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'payload/part-00.txt'
