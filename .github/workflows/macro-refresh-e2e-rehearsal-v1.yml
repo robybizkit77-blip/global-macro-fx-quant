@@ -1,0 +1,106 @@
+name: Macro Refresh E2E Rehearsal V1
+
+on:
+  push:
+    branches:
+      - 'validation-canonical-macro-refresh-v1-*'
+    paths:
+      - '.github/workflows/macro-refresh-e2e-rehearsal-v1.yml'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/replay_jpy_macro_candidate.py'
+      - 'validation/validate_macro_refresh_contract.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-rehearsal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Snapshot repository live state
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/repo-live-before.sha256
+
+      - name: Reconstruct historical source to approved target
+        run: |
+          python3 - <<'PY'
+          import copy, json, pathlib, subprocess, sys
+          ROOT=pathlib.Path.cwd()
+          sys.path.insert(0,str(ROOT/'validation'))
+          from build_macro_candidate import apply_candidate
+          BEFORE='0467d03f500dbaaf640bc653466457c5962e88b5'
+          AFTER='f1bb0f6256277f092f0d540a9c34d63dc7ddbd60'
+          SERIES='live_data/sections/MACRO_SERIES.json'
+          HEAT='live_data/sections/MACRO_THERMOMETER_DATA.json'
+          def gj(ref,path):
+              return json.loads(subprocess.check_output(['git','show',f'{ref}:{path}'],text=True))
+          before_series=gj(BEFORE,SERIES)
+          before_heat=gj(BEFORE,HEAT)
+          after_series=gj(AFTER,SERIES)
+          after_heat=gj(AFTER,HEAT)
+          bm={r.get('id'):r for r in before_series['JPY']}
+          am={r.get('id'):r for r in after_series['JPY']}
+          changed=[k for k in sorted(set(bm)|set(am)) if bm.get(k)!=am.get(k)]
+          assert len(changed)==1, changed
+          sid=changed[0]
+          ar=am[sid]
+          h=after_heat['currencies']['JPY']['labour']
+          candidate={
+            'currency':'JPY','dimension':'labour','macro_series_id':sid,
+            'observation_date':ar['last_date'],'value':ar['last_value'],
+            'source':h['source'],'series_id':h['series_id'],
+            'frequency':h['frequency'],'transformation':h['transformation']
+          }
+          if ar.get('unit') is not None: candidate['unit']=ar['unit']
+          promoted_series=copy.deepcopy(before_series)
+          promoted_heat=copy.deepcopy(before_heat)
+          summary=apply_candidate(promoted_series,promoted_heat,candidate)
+          assert promoted_series==after_series, 'MACRO_SERIES promotion mismatch'
+          assert promoted_heat==after_heat, 'HEATMAP promotion mismatch'
+          out=pathlib.Path('/tmp/gmfq-promoted/live_data/sections')
+          out.mkdir(parents=True,exist_ok=True)
+          (out/'MACRO_SERIES.json').write_text(json.dumps(promoted_series,ensure_ascii=False,separators=(',',':'))+'\n')
+          (out/'MACRO_THERMOMETER_DATA.json').write_text(json.dumps(promoted_heat,ensure_ascii=False,separators=(',',':'))+'\n')
+          pathlib.Path('/tmp/gmfq-promoted/candidate.json').write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+'\n')
+          pathlib.Path('/tmp/gmfq-promoted/summary.json').write_text(json.dumps({'status':'PASS','before':BEFORE,'after':AFTER,'summary':summary},ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({'status':'PASS','promotion_exact_parity':True,'summary':summary},ensure_ascii=False,indent=2))
+          PY
+
+      - name: Build promoted sandbox repository
+        run: |
+          rm -rf /tmp/gmfq-e2e-repo
+          mkdir -p /tmp/gmfq-e2e-repo
+          cp -a . /tmp/gmfq-e2e-repo/
+          cp /tmp/gmfq-promoted/live_data/sections/MACRO_SERIES.json /tmp/gmfq-e2e-repo/live_data/sections/MACRO_SERIES.json
+          cp /tmp/gmfq-promoted/live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/gmfq-e2e-repo/live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Validate promoted sandbox contract
+        working-directory: /tmp/gmfq-e2e-repo
+        run: |
+          python3 validation/check_live_update_contract.py | tee /tmp/e2e-live-contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/e2e-runtime-roundtrip.json
+
+      - name: Verify production repository remained untouched
+        run: |
+          sha256sum -c /tmp/repo-live-before.sha256
+          git diff --quiet -- live_data payload
+          echo E2E_REHEARSAL_NO_PRODUCTION_WRITE_PASS
+
+      - name: Upload rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-refresh-e2e-rehearsal-v1
+          path: |
+            /tmp/gmfq-promoted/candidate.json
+            /tmp/gmfq-promoted/summary.json
+            /tmp/e2e-live-contract.json
+            /tmp/e2e-runtime-roundtrip.json
