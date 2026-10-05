@@ -39,8 +39,12 @@ def main() -> int:
         raw=p.read_bytes()
         actual=sha256_bytes(raw)
         row['hash_match']=(actual==expected)
+        row['actual_bytes']=len(raw)
+        row['manifest_bytes']=s.get('bytes')
         if expected and actual!=expected:
             failures.append(f'hash mismatch {name}')
+        if isinstance(s.get('bytes'), int) and len(raw)!=s['bytes']:
+            failures.append(f'byte-size mismatch {name}')
         try:
             json.loads(raw.decode('utf-8'))
             row['json_valid']=True
@@ -49,12 +53,42 @@ def main() -> int:
         section_results.append(row)
     details['sections']=section_results
 
+    manifest_parts={p.get('file'):p for p in (manifest.get('parts') or []) if p.get('file')}
     payload_results=[]
-    for name in EXPECTED_PARTS:
-        p=PAYLOAD_DIR/name
-        ok=p.exists() and p.stat().st_size>0
-        payload_results.append({'file':name,'present_nonempty':ok})
-        if not ok: failures.append(f'missing/empty payload {name}')
+    for short_name in EXPECTED_PARTS:
+        rel=f'payload/{short_name}'
+        p=PAYLOAD_DIR/short_name
+        row={'file':rel,'present_nonempty':False,'manifest_entry':rel in manifest_parts}
+        if not p.exists() or p.stat().st_size<=0:
+            failures.append(f'missing/empty payload {short_name}')
+            payload_results.append(row)
+            continue
+        raw=p.read_bytes()
+        text=raw.decode('utf-8')
+        row['present_nonempty']=True
+        row['actual_bytes']=len(raw)
+        row['actual_chars']=len(text)
+        row['actual_sha256']=sha256_bytes(raw)
+        mp=manifest_parts.get(rel)
+        if not mp:
+            failures.append(f'manifest missing payload entry {rel}')
+        else:
+            row['manifest_bytes']=mp.get('bytes')
+            row['manifest_chars']=mp.get('chars')
+            row['manifest_sha256']=mp.get('sha256')
+            row['bytes_match']=mp.get('bytes')==len(raw)
+            row['chars_match']=mp.get('chars')==len(text)
+            row['hash_match']=mp.get('sha256')==row['actual_sha256']
+            if not row['bytes_match']:
+                failures.append(f'payload byte-size mismatch {rel}')
+            if not row['chars_match']:
+                failures.append(f'payload char-size mismatch {rel}')
+            if not row['hash_match']:
+                failures.append(f'payload hash mismatch {rel}')
+        payload_results.append(row)
+    extra_manifest_parts=sorted(set(manifest_parts)-{f'payload/{n}' for n in EXPECTED_PARTS})
+    if extra_manifest_parts:
+        failures.append('manifest contains unexpected payload parts: '+', '.join(extra_manifest_parts))
     details['payload_parts']=payload_results
 
     # Guard the frozen rules fingerprint wherever current workflows declare it.
