@@ -1,0 +1,456 @@
+{
+  "schema": "GMFQ_LIVE_POST_EXECUTION_STATUS_V1",
+  "created_at": "2026-10-04",
+  "dashboard": {
+    "asOf": "2026-09-25",
+    "priceAsOf": "2026-10-02",
+    "priceLast": {
+      "Date": "2026-10-02",
+      "EUR": 1,
+      "USD": 1.1225,
+      "GBP": 0.85033,
+      "JPY": 176.99,
+      "CHF": 0.9279,
+      "CAD": 1.5984,
+      "AUD": 1.6176,
+      "NZD": 2.0002
+    }
+  },
+  "rates": {
+    "USD": {
+      "date": "2026-10-02",
+      "source": "U.S. Treasury Daily Par Yield Curve · 2 Oct 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 4.83,
+      "y10": 5.28,
+      "chg2_bp": 2,
+      "chg10_bp": 11,
+      "curve_bp": 45,
+      "history2_last": "2026-10-02",
+      "history10_last": "2026-10-02"
+    },
+    "EUR": {
+      "date": "2026-09-29",
+      "source": "ECB AAA Svensson spot curve · official ECB Data Portal",
+      "quality": "FULL_CURRENT_VALIDATED",
+      "y2": 3.2105877756,
+      "y10": 3.6076715398,
+      "chg2_bp": 7.502464359999994,
+      "chg10_bp": 15.493168769999999,
+      "curve_bp": 39.70837642,
+      "history2_last": "2026-10-01",
+      "history10_last": "2026-10-01"
+    },
+    "GBP": {
+      "date": "2026-09-29",
+      "source": "Bank of England · UK nominal government zero-coupon spot curve · official latest yield curve data",
+      "quality": "FULL_CURRENT_VALIDATED",
+      "y2": 4.684827469902199,
+      "y10": 5.380692223244884,
+      "chg2_bp": 11.116716229805235,
+      "chg10_bp": 16.935960248300663,
+      "curve_bp": 69.58647533426844,
+      "history2_last": "2026-09-29",
+      "history10_last": "2026-09-29"
+    },
+    "JPY": {
+      "date": "2026-10-01",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 1 Oct 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 1.939,
+      "y10": 3.092,
+      "chg2_bp": 9,
+      "chg10_bp": 11.1,
+      "curve_bp": 115.3,
+      "history2_last": "2026-10-01",
+      "history10_last": "2026-10-01"
+    },
+    "CHF": {
+      "date": "2026-09-30",
+      "source": "Swiss National Bank · spot interest rates on Swiss Confederation bonds · rendeiduebd",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 0.287,
+      "y10": 0.586,
+      "chg2_bp": -3.7,
+      "chg10_bp": 1.1,
+      "curve_bp": 29.9,
+      "history2_last": "2026-09-30",
+      "history10_last": "2026-09-30"
+    },
+    "CAD": {
+      "date": "2026-10-01",
+      "source": "Bank of Canada · selected benchmark Government of Canada bond yields · 1 Oct 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 3.27,
+      "y10": 3.94,
+      "chg2_bp": -2.0000000000000018,
+      "chg10_bp": 10.000000000000009,
+      "curve_bp": 67,
+      "history2_last": "2026-10-01",
+      "history10_last": "2026-10-01"
+    },
+    "AUD": {
+      "date": "2026-09-30",
+      "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 4.942,
+      "y10": 5.344,
+      "chg2_bp": -0.5,
+      "chg10_bp": 9.9,
+      "curve_bp": 40.2,
+      "history2_last": "2026-09-30",
+      "history10_last": "2026-09-30"
+    },
+    "NZD": {
+      "date": "2026-10-01",
+      "source": "RBNZ B2 Wholesale interest rates · government bond close · 1 Oct 2026",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "y2": 3.89,
+      "y10": 5.1,
+      "chg2_bp": -4,
+      "chg10_bp": -1,
+      "curve_bp": 121,
+      "history2_last": "2026-10-01",
+      "history10_last": "2026-10-01"
+    }
+  },
+  "central_bank": {
+    "USD": {
+      "rate": 3.875
+    },
+    "EUR": {
+      "rate": 2.5
+    },
+    "GBP": {
+      "rate": 3.75
+    },
+    "JPY": {
+      "rate": 1.25
+    },
+    "CHF": {
+      "rate": 0
+    },
+    "CAD": {
+      "rate": 2.25
+    },
+    "AUD": {
+      "rate": 4.6
+    },
+    "NZD": {
+      "rate": 2.75
+    }
+  },
+  "liquidity": {
+    "USD": {
+      "date": "2026-08"
+    },
+    "EUR": {
+      "date": "2026-09-25"
+    },
+    "GBP": {
+      "date": "2026-09-16"
+    },
+    "JPY": {
+      "date": "2026-08"
+    },
+    "CHF": {
+      "date": "2026-07"
+    },
+    "CAD": {
+      "date": "2026-08-01"
+    },
+    "AUD": {
+      "date": "2026-09-16"
+    },
+    "NZD": {
+      "date": "2026-07 · released 2026-08-31"
+    }
+  },
+  "ois": {
+    "USD": {
+      "status": "WITHHELD"
+    },
+    "EUR": {
+      "status": "ACTIVE"
+    },
+    "GBP": {
+      "status": "ACTIVE"
+    },
+    "JPY": {
+      "status": "ACTIVE"
+    },
+    "CHF": {
+      "status": "WITHHELD"
+    },
+    "CAD": {
+      "status": "ACTIVE"
+    },
+    "AUD": {
+      "status": "ACTIVE"
+    },
+    "NZD": {
+      "status": "WITHHELD"
+    }
+  },
+  "cot": {
+    "USD": {
+      "date": "2026-09-29",
+      "percentile": 78.846154
+    },
+    "EUR": {
+      "date": "2026-09-29",
+      "percentile": 8.653846
+    },
+    "GBP": {
+      "date": "2026-09-29",
+      "percentile": 3.846154
+    },
+    "JPY": {
+      "date": "2026-09-29",
+      "percentile": 64.423077
+    },
+    "CHF": {
+      "date": "2026-09-29",
+      "percentile": 84.615385
+    },
+    "CAD": {
+      "date": "2026-09-29",
+      "percentile": 65.384615
+    },
+    "AUD": {
+      "date": "2026-09-29",
+      "percentile": 33.653846
+    },
+    "NZD": {
+      "date": "2026-09-29",
+      "percentile": 76.923077
+    }
+  },
+  "currency_states": {
+    "USD": {
+      "c": "USD",
+      "base": "FORTE",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "P70 WARNING LONG",
+      "improving": true,
+      "improvementState": "MIGLIORA",
+      "pos": 2,
+      "neg": 0,
+      "price": 0,
+      "pct": 78.846154,
+      "netoi": 22.3,
+      "netoiSigned": 22.3,
+      "macro": 1,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": 1,
+      "liquidityOverlay": "LIQUIDITÀ FAVOREVOLE",
+      "driver": "Macro + Rates / aspettative CB",
+      "story": "Macro + Rates / aspettative CB è il driver dominante · il prezzo non dà ancora una conferma risolutiva · liquidità favorevole · candidato p70 · early warning sul posizionamento."
+    },
+    "EUR": {
+      "c": "EUR",
+      "base": "COSTRUTTIVA",
+      "confirmation": "PREZZO DIVERGE",
+      "cotRisk": "ESTREMO SHORT",
+      "improving": false,
+      "improvementState": "TURNING POINT",
+      "pos": 1,
+      "neg": 0,
+      "price": -1,
+      "pct": 8.653846,
+      "netoi": 6.4,
+      "netoiSigned": -6.4,
+      "macro": 0,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": 0,
+      "liquidityOverlay": "LIQUIDITÀ NEUTRA",
+      "driver": "Rates / aspettative CB",
+      "story": "Rates / aspettative CB è il driver dominante · il prezzo diverge dalla struttura · estremo cot · p9 sul posizionamento."
+    },
+    "GBP": {
+      "c": "GBP",
+      "base": "COSTRUTTIVA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "ESTREMO SHORT · CONCENTRAZIONE SHORT · Net/OI -33.7%",
+      "improving": false,
+      "improvementState": "TURNING POINT",
+      "pos": 1,
+      "neg": 0,
+      "price": 0,
+      "pct": 3.846154,
+      "netoi": 33.7,
+      "netoiSigned": -33.7,
+      "macro": 0,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": 0,
+      "liquidityOverlay": "LIQUIDITÀ NEUTRA",
+      "driver": "Rates / aspettative CB",
+      "story": "Rates / aspettative CB è il driver dominante · Prezzo è in ritardo · il prezzo non dà ancora una conferma risolutiva · estremo cot · p4 · concentrazione short net/oi -33.7% sul posizionamento."
+    },
+    "JPY": {
+      "c": "JPY",
+      "base": "COSTRUTTIVA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "",
+      "improving": false,
+      "improvementState": "EARLY SHIFT POSITIVO",
+      "pos": 1,
+      "neg": 0,
+      "price": 0,
+      "pct": 64.423077,
+      "netoi": 19,
+      "netoiSigned": 19,
+      "macro": 0,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": -1,
+      "liquidityOverlay": "LIQUIDITÀ CONTRARIA",
+      "driver": "Rates / aspettative CB",
+      "story": "Rates / aspettative CB è il driver dominante · Prezzo è in ritardo · il prezzo non dà ancora una conferma risolutiva · liquidità contraria."
+    },
+    "CHF": {
+      "c": "CHF",
+      "base": "MISTA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "ESTREMO LONG",
+      "improving": false,
+      "improvementState": "TURNING POINT",
+      "pos": 0,
+      "neg": 0,
+      "price": 0,
+      "pct": 84.615385,
+      "netoi": 20,
+      "netoiSigned": -20,
+      "macro": 0,
+      "policy": 0,
+      "policyContext": "POLICY NON RISOLUTIVA",
+      "liq": -1,
+      "liquidityOverlay": "LIQUIDITÀ CONTRARIA",
+      "driver": "Non determinato",
+      "story": "Perché si muove non ancora identificato · Prezzo è in ritardo · il prezzo non dà ancora una conferma risolutiva · liquidità contraria · estremo cot · p85 sul posizionamento."
+    },
+    "CAD": {
+      "c": "CAD",
+      "base": "COSTRUTTIVA",
+      "confirmation": "PREZZO CONFERMA",
+      "cotRisk": "",
+      "improving": false,
+      "improvementState": "TURNING POINT",
+      "pos": 1,
+      "neg": 0,
+      "price": 1,
+      "pct": 65.384615,
+      "netoi": 17.1,
+      "netoiSigned": -17.1,
+      "macro": 1,
+      "policy": 0,
+      "policyContext": "POLICY NON RISOLUTIVA",
+      "liq": 1,
+      "liquidityOverlay": "LIQUIDITÀ FAVOREVOLE",
+      "driver": "Macro",
+      "story": "Macro è il driver dominante · Rates / aspettative CB è in ritardo · il prezzo conferma la struttura · liquidità favorevole."
+    },
+    "AUD": {
+      "c": "AUD",
+      "base": "FORTE",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "",
+      "improving": false,
+      "improvementState": "EARLY SHIFT NEGATIVO",
+      "pos": 2,
+      "neg": 0,
+      "price": 0,
+      "pct": 33.653846,
+      "netoi": 15.3,
+      "netoiSigned": -15.3,
+      "macro": 1,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": 0,
+      "liquidityOverlay": "LIQUIDITÀ NEUTRA",
+      "driver": "Macro + Rates / aspettative CB",
+      "story": "Macro + Rates / aspettative CB è il driver dominante · Rates / aspettative CB è in ritardo · il prezzo non dà ancora una conferma risolutiva."
+    },
+    "NZD": {
+      "c": "NZD",
+      "base": "COSTRUTTIVA",
+      "confirmation": "PREZZO NON RISOLUTIVO",
+      "cotRisk": "P70 WARNING LONG",
+      "improving": false,
+      "improvementState": "EARLY SHIFT POSITIVO",
+      "pos": 1,
+      "neg": 0,
+      "price": 0,
+      "pct": 76.923077,
+      "netoi": 11.2,
+      "netoiSigned": -11.2,
+      "macro": 0,
+      "policy": 1,
+      "policyContext": "CB CONFERMA RATES",
+      "liq": 0,
+      "liquidityOverlay": "LIQUIDITÀ NEUTRA",
+      "driver": "Rates / aspettative CB",
+      "story": "Rates / aspettative CB è il driver dominante · Rates / aspettative CB è in ritardo · il prezzo non dà ancora una conferma risolutiva · candidato p70 · early warning sul posizionamento."
+    }
+  },
+  "final_audit": {
+    "status": "PASS",
+    "as_of": "2026-09-30",
+    "counts": {
+      "currencies": 8,
+      "pairs": 28
+    },
+    "canonical": {
+      "consistency_ok": true,
+      "view_ok": true
+    },
+    "rates": {
+      "basis_ok": true,
+      "visible_ok": true
+    },
+    "ois": {
+      "USD": "WITHHELD",
+      "EUR": "ACTIVE",
+      "GBP": "ACTIVE",
+      "JPY": "ACTIVE",
+      "CHF": "WITHHELD",
+      "CAD": "ACTIVE",
+      "AUD": "ACTIVE",
+      "NZD": "WITHHELD"
+    },
+    "gates": {
+      "AUD": "PASS",
+      "EUR": "PASS",
+      "USD": "WITHHELD",
+      "JPY": "PASS",
+      "CHF": "WITHHELD_ILLIQUID",
+      "NZD": "WITHHELD_NO_DIRECT_PUBLIC_STRIP",
+      "GBP": "PASS",
+      "CAD": "PASS"
+    },
+    "source_quality": {
+      "USD": "WITHHELD_PUBLIC_STRIP_INCOMPLETE",
+      "EUR": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+      "GBP": "COMPLETO_DIRECT_OFFICIAL",
+      "JPY": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+      "CHF": "WITHHELD_LIQUIDITY_BASIS",
+      "CAD": "COMPLETO_DIRECT_EXCHANGE",
+      "AUD": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+      "NZD": "WITHHELD_NO_PUBLIC_FULL_OIS_CURVE"
+    },
+    "issues": [],
+    "cad_hydration": {
+      "status": "PASS",
+      "values": {
+        "2Y": 3.27,
+        "10Y": 3.94,
+        "curve_bp": 67
+      },
+      "metadata_ok": true
+    },
+    "settled_after_cad_chain": true
+  }
+}
