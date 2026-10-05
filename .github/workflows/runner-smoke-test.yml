@@ -1,0 +1,23 @@
+name: Runner Smoke Test
+
+on:
+  push:
+    branches:
+      - diag-runner-smoke-2026-10-05
+    paths:
+      - '.github/workflows/runner-smoke-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Confirm GitHub-hosted runner executes
+        run: |
+          echo "RUNNER_SMOKE_PASS"
+          uname -a
+          date -u
