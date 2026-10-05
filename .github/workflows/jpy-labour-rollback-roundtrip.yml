@@ -1,0 +1,28 @@
+name: JPY Labour Rollback Roundtrip
+
+on:
+  push:
+    branches:
+      - validation-macro-jpy-labour-v1-2026-10-05
+    paths:
+      - 'validation/test_jpy_labour_rollback_roundtrip.py'
+      - '.github/workflows/jpy-labour-rollback-roundtrip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rollback-roundtrip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test canonical rollback and candidate reapply
+        run: python validation/test_jpy_labour_rollback_roundtrip.py
+      - name: Confirm workspace returns to committed candidate
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json live_data/sections/D.json
