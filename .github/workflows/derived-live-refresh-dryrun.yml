@@ -1,0 +1,102 @@
+name: Derived Live Refresh Dry Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/update_live_derived_sections.py'
+      - 'validation/build_cot_stories.py'
+      - 'validation/build_rates_audit_metadata.py'
+      - '.github/workflows/derived-live-refresh-dryrun.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build validated derived outputs
+        run: |
+          python3 validation/build_cot_stories.py --output /tmp/V247_COT_STORIES.built.json > /tmp/cot-builder.json
+          python3 validation/build_rates_audit_metadata.py --audit-date 2026-10-04 --output /tmp/RATES_AUDIT_METADATA.built.json > /tmp/rates-builder.json
+
+      - name: Apply derived injector in ephemeral workspace
+        run: |
+          python3 validation/update_live_derived_sections.py \
+            --cot /tmp/V247_COT_STORIES.built.json \
+            --rates /tmp/RATES_AUDIT_METADATA.built.json \
+            --apply | tee /tmp/derived-injector.json
+
+      - name: Verify canonical COT corrections and safe scope
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          cot=json.load(open('live_data/sections/V247_COT_STORIES.json'))
+          assert cot['CHF']['signal']=='EXTREME LONG',cot['CHF']
+          assert cot['CAD']['signal']=='NEUTRALE',cot['CAD']
+          assert all('open interest' not in x['funds_detail'].lower() for x in cot.values())
+          inj=json.load(open('/tmp/derived-injector.json'))
+          assert inj['status']=='PASS',inj
+          changed=subprocess.check_output(['git','status','--short'],text=True).splitlines()
+          paths=[x[3:] for x in changed]
+          allowed={'live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          bad=[p for p in paths if p not in allowed]
+          if bad: raise SystemExit('Unexpected changed files: '+', '.join(bad))
+          payload=[p for p in paths if p.startswith('payload/part-')]
+          if not payload: raise SystemExit('No derived runtime payload changed')
+          print(json.dumps({'status':'PASS','changed_files':paths,'payload_changed':payload,'injector':inj},indent=2))
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8766 --bind 127.0.0.1 > /tmp/gmfq-derived-refresh-server.log 2>&1 &
+          echo $! > /tmp/gmfq-derived-refresh-server.pid
+          sleep 2
+
+      - name: Run exact Engine Gate logic on derived candidate
+        shell: bash
+        run: |
+          awk "/cat > engine-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/engine-logic-audit.yml > engine-audit.js
+          test -s engine-audit.js
+          node engine-audit.js
+
+      - name: Run exact Browser Gate logic on derived candidate
+        shell: bash
+        run: |
+          awk "/cat > browser-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/staging-browser-audit.yml > browser-audit.js
+          test -s browser-audit.js
+          sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8766/#g' browser-audit.js
+          node browser-audit.js
+
+      - name: Confirm no persistence or publish
+        run: |
+          echo 'DERIVED_REFRESH_EPHEMERAL_PASS_CANDIDATE'
+          echo 'No commit of generated data, no main, no gh-pages, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: derived-live-refresh-dryrun-evidence
+          if-no-files-found: warn
+          path: |
+            /tmp/cot-builder.json
+            /tmp/rates-builder.json
+            /tmp/derived-injector.json
+            /tmp/gmfq-derived-refresh-server.log
+            staging-browser-audit.png
