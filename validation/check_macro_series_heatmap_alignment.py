@@ -26,6 +26,26 @@ def same_value(a: Any, b: Any) -> bool:
         return False
 
 
+def bind_series(rows: list[dict[str, Any]], source_series_id: str) -> tuple[dict[str, Any] | None, str, int]:
+    exact = [r for r in rows if isinstance(r, dict) and str(r.get("id")) == source_series_id]
+    if len(exact) == 1:
+        return exact[0], "EXACT", 1
+    if len(exact) > 1:
+        return None, "EXACT_AMBIGUOUS", len(exact)
+
+    # Historical IDs in MACRO_SERIES wrap the source ID, e.g. EA_UNEMP_history_value.
+    # Only accept a unique containment match; ambiguity is a hard failure.
+    contained = [
+        r for r in rows
+        if isinstance(r, dict)
+        and source_series_id
+        and source_series_id.lower() in str(r.get("id", "")).lower()
+    ]
+    if len(contained) == 1:
+        return contained[0], "UNIQUE_CONTAINMENT", 1
+    return None, "CONTAINMENT_AMBIGUOUS" if contained else "NOT_FOUND", len(contained)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Verify MACRO_SERIES latest points are aligned with Macro Heatmap")
     ap.add_argument("--series-path", type=Path, default=DEFAULT_SERIES)
@@ -43,20 +63,21 @@ def main() -> int:
         hccy = heatmap.get("currencies", {}).get(currency, {})
         for dimension in DIMENSIONS:
             hrow = hccy.get(dimension, {})
-            series_id = hrow.get("series_id")
+            source_series_id = str(hrow.get("series_id", ""))
             item: dict[str, Any] = {
                 "currency": currency,
                 "dimension": dimension,
-                "series_id": series_id,
+                "heatmap_series_id": source_series_id,
             }
-            hits = [r for r in rows if isinstance(r, dict) and r.get("id") == series_id]
-            if len(hits) != 1:
-                item.update({"status": "FAIL", "reason": "SERIES_BINDING", "matches": len(hits)})
+            row, binding, matches = bind_series(rows, source_series_id)
+            item["binding"] = binding
+            if row is None:
+                item.update({"status": "FAIL", "reason": "SERIES_BINDING", "matches": matches})
                 failures.append(item)
                 checks.append(item)
                 continue
 
-            row = hits[0]
+            item["macro_series_id"] = row.get("id")
             dates = row.get("dates")
             values = row.get("values")
             if not isinstance(dates, list) or not isinstance(values, list) or not dates or len(dates) != len(values):
