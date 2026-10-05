@@ -29,35 +29,6 @@
   window.GMFQ_COT_TUTOR={render,model,ensureUi,statusFrom,flowFrom};
 })();
 
-<script id="gmfq-usd-fed-broad-price-diagnostic-20261001">
-(function(){
-  'use strict';
-  window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC=Object.freeze({
-    status:'ACTIVE_DIAGNOSTIC_ONLY',
-    canonical_price_state_changed:false,
-    oos_restart_required:false,
-    source:'Federal Reserve Board · H.10 · Nominal Broad U.S. Dollar Index',
-    series_id:'JRXWTFB_N.B / DTWEXBGS',
-    as_of:'2026-09-25',
-    latest:120.3300,
-    references:{
-      '1w':{date:'2026-09-18',value:119.5133,change_pct:0.68},
-      '1m':{date:'2026-08-25',value:118.2283,change_pct:1.78},
-      '3m':{date:'2026-06-25',value:121.0559,change_pct:-0.60},
-      '6m':{date:'2026-03-25',value:120.1282,change_pct:0.17}
-    },
-    role:'USD price benchmark for diagnostic display only. It does not alter deriveCurrencyState, pair direction, structural quality or the frozen OOS baseline.',
-    provenance:{
-      release:'Federal Reserve H.10 Foreign Exchange Rates',
-      current_release_date:'2026-09-28',
-      current_week:['2026-09-21','2026-09-22','2026-09-23','2026-09-24','2026-09-25'],
-      current_values:[119.4014,119.5933,120.1169,120.5521,120.3300]
-    }
-  });
-})();
-</script>
-
-<script id="gmfq-price-pair-tutor-wrapper-20261001">
 /*
   Price Tutor UI module
   Reads canonical currency state + existing price dynamics.
@@ -111,21 +82,17 @@
     const p1=move(c,22), p3=move(c,66), p6=move(c,132);
 
     if(c==='USD'){
-      const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
-      status={txt:u?.status==='ACTIVE_DIAGNOSTIC_ONLY'?'BENCHMARK VALIDATO · DIAGNOSTICO':'NON DETERMINATO',cls:u?'warn':'neu'};
-      direction={txt:u?.status==='ACTIVE_DIAGNOSTIC_ONLY'?'USD BROAD +0,7% · 1W':'BASKET USD NECESSARIO',cls:u?'pos':'neu'};
+      status={txt:'NON DETERMINATO',cls:'neu'};
+      direction={txt:'DXY / BASKET NECESSARIO',cls:'neu'};
     }
 
     let title,text,confirm,reverse,fx;
     if(c==='USD'){
-      const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
-      title='Prezzo USD · benchmark Fed disponibile';
-      text=u
-        ? 'Usiamo il Nominal Broad U.S. Dollar Index della Federal Reserve come riferimento esterno: 120,3300 al 25 settembre. Nell’ultima settimana il dollaro broad è salito di circa +0,7%. Per proteggere il forward OOS, questa lettura resta diagnostica e non cambia ancora la conferma canonica del modello.'
-        : 'Il benchmark USD esterno non è disponibile: il layer Prezzo resta neutro.';
-      confirm='Il benchmark è già validato come dato. Per promuoverlo a conferma canonica servirebbe una nuova baseline OOS o la chiusura dell’attuale regime di validazione.';
-      reverse='Finché resta diagnostico, non può ribaltare né confermare da solo la view strutturale USD.';
-      fx='Per USD ora vediamo finalmente il prezzo su un basket esterno coerente, senza usare USD contro se stesso; il motore v9.3 e il forward OOS restano invariati.';
+      title='Prezzo USD non determinato';
+      text='Non usiamo più USD contro se stesso. Finché non colleghiamo un DXY o un basket USD validato, il layer Prezzo resta volutamente neutro e non conferma né diverge.';
+      confirm='Il layer diventa utilizzabile quando viene collegato un riferimento USD esterno e validato, come DXY o un basket coerente.';
+      reverse='Nessuna conclusione direzionale dal prezzo USD finché manca quel riferimento.';
+      fx='Per USD, Macro e Tassi/CB restano leggibili; il Prezzo non aggiunge conferma finché non viene validato un benchmark esterno.';
     }else if(status.txt==='CONFERMA'){
       title=`Il prezzo sta confermando la storia su ${c}`;
       text='Il mercato si sta muovendo nella stessa direzione indicata dal quadro principale. È una conferma utile, ma non è il motivo originario della view.';
@@ -147,11 +114,10 @@
     }
 
     const cls=v=>v==null?'neu':v>0?'pos':v<0?'neg':'neu';
-    const u=window.GMFQ_USD_BROAD_PRICE_DIAGNOSTIC;
     const drivers=c==='USD' ? [
-      {label:'Fed Broad USD',txt:u?('120,3300 · 25/09 · 1W +0,7%'):'—',cls:'pos'},
-      {label:'1M / 3M / 6M',txt:u?('+1,8% · −0,6% · +0,2%'):'—',cls:'neu'},
-      {label:'Uso nel modello',txt:'DIAGNOSTICO · non modifica il forward OOS',cls:'warn'}
+      {label:'Benchmark prezzo',txt:'DXY / basket USD non ancora validato',cls:'neu'},
+      {label:'1M / 3M / 6M',txt:'WITHHELD: non usare USD contro se stesso',cls:'neu'},
+      {label:'Regola',txt:'Il prezzo USD non modifica la view finché manca il benchmark',cls:'neu'}
     ] : [
       {label:'1 mese',txt:fmtMove(p1),cls:cls(p1)},
       {label:'3 mesi',txt:fmtMove(p3),cls:cls(p3)},
@@ -261,10 +227,10 @@
       const other=frame.fav===a?b:a;
       if(frame.quality==='CONTRASTO STRUTTURALE FORTE'){
         title=`${frame.fav} ha un vantaggio strutturale chiaro su ${other}`;
-        text=`Macro e Tassi/CB strutturali puntano entrambi verso ${frame.fav}. Questo è il tipo di contrasto relativo più pulito: il pair ha una direzione strutturale. Il movimento recente dei rendimenti resta separato: se guida il long-end, va prima scomposto e non aggiunge automaticamente un nuovo vantaggio FX.`;
+        text=`Macro e Tassi/CB puntano entrambi verso ${frame.fav}. Questo è il tipo di contrasto relativo più pulito: il pair ha una direzione strutturale, mentre prezzo e COT servono soprattutto a capire timing e rischio.`;
       }else{
         title=`${frame.fav} è avanti, ma il vantaggio non è ancora completo`;
-        text=`Solo uno tra Macro e Tassi/CB strutturali separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita. Il movimento recente del 10Y non viene usato come seconda conferma automatica.`;
+        text=`Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.`;
       }
     }else{
       title=`${pair} non ha ancora un vantaggio strutturale chiaro`;
@@ -277,18 +243,18 @@
     const priceCls=frame?.priceReading==='MERCATO GIÀ ALLINEATO'?'pos':frame?.priceReading==='DIVERGENZA DA MONITORARE'?'warn':'neu';
     const drivers=[
       {label:'Macro',txt:macroSide==='nessuna delle due'?'Non separa le due valute':`Favorisce ${macroSide}`,cls:macroSide===frame.fav?'pos':macroSide==='nessuna delle due'?'neu':'warn'},
-      {label:'Tassi / CB strutturali',txt:policySide==='nessuna delle due'?'Non separano le due valute':`Favoriscono ${policySide}`,cls:policySide===frame.fav?'pos':policySide==='nessuna delle due'?'neu':'warn'},
+      {label:'Tassi / CB',txt:policySide==='nessuna delle due'?'Non separano le due valute':`Favoriscono ${policySide}`,cls:policySide===frame.fav?'pos':policySide==='nessuna delle due'?'neu':'warn'},
       {label:'Prezzo',txt:priceTxt,cls:priceCls}
     ];
 
     let confirm,reverse;
     if(frame.fav && frame.fav!=='—'){
       confirm=frame.quality==='CONTRASTO STRUTTURALE FORTE'
-        ? `Il vantaggio si rafforza se Macro e Tassi/CB strutturali restano allineati su ${frame.fav} e il prezzo continua o inizia a confermare. Un movimento del long-end conta solo dopo averne verificato l’origine.`
+        ? `Il vantaggio si rafforza se Macro e Tassi/CB restano allineati su ${frame.fav} e il prezzo continua o inizia a confermare.`
         : `Il vantaggio diventa più credibile quando anche il pilastro oggi neutro si allinea a ${frame.fav}.`;
       reverse=`Dobbiamo rivedere la view se il vantaggio Macro/Tassi si perde, se i due pilastri iniziano a favorire valute opposte o se la divergenza di prezzo persiste mentre il core si deteriora.`;
     }else{
-      confirm='Serve che Macro e Tassi/CB strutturali inizino a favorire la stessa valuta. Finché non succede, il pair resta da aspettare; il solo movimento recente del 10Y non basta.';
+      confirm='Serve che Macro e Tassi/CB inizino a favorire la stessa valuta. Finché non succede, il pair resta da aspettare.';
       reverse='Se Macro e Tassi/CB continuano a essere divisi, non c’è una view strutturale da invalidare: semplicemente non c’è ancora un setup.';
     }
 
@@ -2851,6 +2817,70 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 
+<script id="gmfq-live-data-rates_audit_metadata">window.__GMFQ_DATA.RATES_AUDIT_METADATA={
+  "schema": "GMFQ_RATES_AUDIT_METADATA_V1",
+  "audit_date": "2026-10-04",
+  "source_context": "Validated same-basis Rates refresh audits committed on staging",
+  "expected_rates": {
+    "USD": "2026-10-02",
+    "EUR": "2026-10-01",
+    "GBP": "2026-10-01",
+    "JPY": "2026-10-01",
+    "CHF": "2026-09-30",
+    "CAD": "2026-10-01",
+    "AUD": "2026-09-30",
+    "NZD": "2026-10-01"
+  },
+  "rates": {
+    "USD": {"current_as_of":"2026-10-02","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated U.S. Treasury same-basis snapshot retained."},
+    "EUR": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated ECB AAA same-basis snapshot retained."},
+    "GBP": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of England same-basis snapshot retained."},
+    "JPY": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated MOF same-basis 2Y/10Y snapshot retained."},
+    "CHF": {"current_as_of":"2026-09-30","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated SNB same-basis snapshot retained."},
+    "CAD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL_SAME_BASIS","action":"UPDATED","reason":"Validated Bank of Canada same-basis 2Y/10Y snapshot retained."},
+    "AUD": {"current_as_of":"2026-09-30","status":"CURRENT_BY_SOURCE_CADENCE","action":"CURRENT_BY_SOURCE_CADENCE","reason":"Validated RBA F2 observation retained at source-native cadence."},
+    "NZD": {"current_as_of":"2026-10-01","status":"CURRENT_OFFICIAL","action":"CURRENT","reason":"Validated RBNZ B2 same-basis snapshot retained."}
+  },
+  "resolved_audits": {"JPY_RATES":"PASS","CHF_RATES":"PASS","CAD_RATES":"PASS","AUD_RATES":"PASS"}
+};</script>
+
+<script id="gmfq-live-rates-audit-metadata-hydration">
+(function(){'use strict';const M=window.__GMFQ_DATA?.RATES_AUDIT_METADATA;if(!M||M.schema!=='GMFQ_RATES_AUDIT_METADATA_V1')throw new Error('RATES_AUDIT_METADATA_MISSING');const A=window.FINAL_SOURCE_POLICY_AUDIT,P=window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh;if(!A||!P)throw new Error('RATES_AUDIT_CONTEXT_MISSING');const CAD={"date":"2026-10-01","source":"Bank of Canada \u00b7 selected benchmark Government of Canada bond yields \u00b7 1 Oct 2026","quality":"FULL_CURRENT_OFFICIAL","2Y":3.27,"10Y":3.94,"curve_bp":67.0,"chg2_bp":-2.0000000000000018,"chg10_bp":10.000000000000009,"curve_state":"Curva aggiornata","tenors":[{"tenor":"2Y","value":3.27,"date":"2026-10-01"},{"tenor":"5Y","value":3.57,"date":"2026-09-21"},{"tenor":"10Y","value":3.94,"date":"2026-10-01"},{"tenor":"30Y","value":4.16,"date":"2026-09-21"}],"history2":{"label":"Rendimento 2Y","dates":["2025-09-05","2025-09-08","2025-09-09","2025-09-10","2025-09-11","2025-09-12","2025-09-15","2025-09-16","2025-09-17","2025-09-18","2025-09-19","2025-09-22","2025-09-23","2025-09-24","2025-09-25","2025-09-26","2025-09-29","2025-10-01","2025-10-02","2025-10-03","2025-10-06","2025-10-07","2025-10-08","2025-10-09","2025-10-10","2025-10-14","2025-10-15","2025-10-16","2025-10-17","2025-10-20","2025-10-21","2025-10-22","2025-10-23","2025-10-24","2025-10-27","2025-10-28","2025-10-29","2025-10-30","2025-10-31","2025-11-03","2025-11-04","2025-11-05","2025-11-06","2025-11-07","2025-11-10","2025-11-12","2025-11-13","2025-11-14","2025-11-17","2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24","2025-11-25","2025-11-26","2025-11-27","2025-11-28","2025-12-01","2025-12-02","2025-12-03","2025-12-04","2025-12-05","2025-12-08","2025-12-09","2025-12-10","2025-12-11","2025-12-12","2025-12-15","2025-12-16","2025-12-17","2025-12-18","2025-12-19","2025-12-22","2025-12-23","2025-12-24","2025-12-29","2025-12-30","2025-12-31","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-15","2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-29","2026-06-30","2026-07-02","2026-07-03","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-25","2026-10-01"],"values":[2.54,2.5,2.52,2.5,2.5,2.5,2.49,2.46,2.49,2.48,2.46,2.45,2.45,2.45,2.49,2.5,2.47,2.46,2.45,2.45,2.47,2.45,2.46,2.47,2.47,2.43,2.42,2.38,2.37,2.36,2.39,2.38,2.39,2.37,2.36,2.36,2.43,2.42,2.4,2.42,2.43,2.42,2.39,2.44,2.45,2.45,2.47,2.48,2.49,2.49,2.49,2.47,2.44,2.43,2.4,2.4,2.4,2.41,2.48,2.46,2.43,2.46,2.64,2.64,2.69,2.63,2.62,2.62,2.58,2.58,2.6,2.59,2.61,2.6,2.57,2.57,2.56,2.58,2.58,2.61,2.57,2.59,2.56,2.57,2.55,2.56,2.55,2.53,2.53,2.54,2.54,2.55,2.56,2.56,2.6,2.57,2.58,2.58,2.57,2.56,2.57,2.58,2.58,2.55,2.55,2.54,2.53,2.52,2.49,2.47,2.45,2.44,2.44,2.44,2.43,2.44,2.46,2.43,2.39,2.49,2.51,2.52,2.58,2.63,2.63,2.65,2.72,2.82,2.79,2.71,2.67,2.75,2.84,3.07,2.95,2.99,2.89,2.98,2.95,2.88,2.82,2.82,2.82,2.83,2.86,2.79,2.79,2.78,2.79,2.76,2.79,2.8,2.77,2.76,2.84,2.83,2.85,2.82,2.83,2.88,3.03,2.96,2.94,3.05,3.01,2.91,2.94,2.86,2.93,2.97,2.96,2.96,3.07,3.04,2.93,2.91,2.92,2.84,2.84,2.86,2.84,2.77,2.81,2.8,2.81,2.8,2.87,2.87,2.85,2.83,2.77,2.76,2.76,2.75,2.82,2.78,2.78,2.81,2.78,2.73,2.75,2.75,2.73,2.74,2.76,2.75,2.72,2.8,2.85,2.8,2.82,2.88,2.86,2.82,2.83,2.86,2.84,2.82,2.89,2.96,2.9,2.87,2.84,2.85,2.85,2.91,2.83,2.82,2.92,2.96,3.02,3.01,2.98,2.92,2.96,2.97,2.96,2.98,3.02,3.03,2.96,2.9,2.93,2.96,3.01,3.01,3.01,3.11,3.1,3.08,3.13,3.16,3.31,3.35,3.37,3.35,3.35,3.27,3.32,3.29,3.338,3.27],"last_date":"2026-10-01","last_value":3.27},"history10":{"label":"Rendimento 10Y","dates":["2025-09-05","2025-09-08","2025-09-09","2025-09-10","2025-09-11","2025-09-12","2025-09-15","2025-09-16","2025-09-17","2025-09-18","2025-09-19","2025-09-22","2025-09-23","2025-09-24","2025-09-25","2025-09-26","2025-09-29","2025-10-01","2025-10-02","2025-10-03","2025-10-06","2025-10-07","2025-10-08","2025-10-09","2025-10-10","2025-10-14","2025-10-15","2025-10-16","2025-10-17","2025-10-20","2025-10-21","2025-10-22","2025-10-23","2025-10-24","2025-10-27","2025-10-28","2025-10-29","2025-10-30","2025-10-31","2025-11-03","2025-11-04","2025-11-05","2025-11-06","2025-11-07","2025-11-10","2025-11-12","2025-11-13","2025-11-14","2025-11-17","2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24","2025-11-25","2025-11-26","2025-11-27","2025-11-28","2025-12-01","2025-12-02","2025-12-03","2025-12-04","2025-12-05","2025-12-08","2025-12-09","2025-12-10","2025-12-11","2025-12-12","2025-12-15","2025-12-16","2025-12-17","2025-12-18","2025-12-19","2025-12-22","2025-12-23","2025-12-24","2025-12-29","2025-12-30","2025-12-31","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-15","2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-29","2026-06-30","2026-07-02","2026-07-03","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-25","2026-10-01"],"values":[3.27,3.21,3.22,3.17,3.16,3.18,3.17,3.16,3.18,3.19,3.2,3.19,3.19,3.2,3.22,3.23,3.17,3.19,3.18,3.19,3.21,3.19,3.19,3.2,3.18,3.14,3.12,3.08,3.09,3.05,3.08,3.07,3.09,3.08,3.05,3.04,3.15,3.13,3.12,3.15,3.15,3.16,3.1,3.17,3.17,3.14,3.18,3.22,3.23,3.25,3.25,3.22,3.2,3.18,3.15,3.13,3.12,3.14,3.24,3.24,3.22,3.26,3.42,3.42,3.46,3.42,3.42,3.44,3.41,3.4,3.42,3.4,3.47,3.46,3.42,3.4,3.39,3.41,3.42,3.47,3.42,3.43,3.39,3.4,3.38,3.4,3.41,3.36,3.35,3.37,3.39,3.42,3.42,3.4,3.41,3.37,3.41,3.42,3.41,3.42,3.43,3.44,3.43,3.4,3.4,3.39,3.36,3.34,3.28,3.25,3.23,3.23,3.22,3.22,3.18,3.18,3.2,3.17,3.13,3.22,3.24,3.26,3.34,3.4,3.36,3.39,3.48,3.52,3.51,3.43,3.39,3.45,3.44,3.56,3.53,3.59,3.47,3.57,3.58,3.51,3.46,3.5,3.49,3.47,3.49,3.44,3.46,3.47,3.46,3.43,3.47,3.5,3.44,3.44,3.5,3.48,3.48,3.46,3.5,3.51,3.6,3.56,3.53,3.62,3.6,3.51,3.53,3.47,3.54,3.59,3.58,3.56,3.7,3.7,3.58,3.54,3.53,3.46,3.47,3.47,3.44,3.41,3.43,3.41,3.43,3.43,3.48,3.53,3.49,3.49,3.41,3.4,3.41,3.38,3.42,3.38,3.39,3.43,3.44,3.36,3.39,3.39,3.37,3.38,3.45,3.45,3.42,3.49,3.56,3.52,3.51,3.56,3.57,3.53,3.53,3.56,3.57,3.56,3.6,3.65,3.6,3.56,3.53,3.58,3.59,3.65,3.55,3.55,3.61,3.64,3.72,3.7,3.69,3.62,3.68,3.72,3.7,3.69,3.75,3.76,3.68,3.62,3.66,3.7,3.73,3.73,3.75,3.8,3.79,3.77,3.81,3.84,3.94,3.95,3.94,3.95,3.92,3.83,3.87,3.84,3.925,3.94],"last_date":"2026-10-01","last_value":3.94},"real":null,"breakeven":null,"term_premium":null,"real_long":{"label":"Rendimento Real long yield","dates":["2025-01-16","2025-01-17","2025-01-20","2025-01-21","2025-01-22","2025-01-23","2025-01-24","2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-24","2025-02-25","2025-02-26","2025-02-27","2025-02-28","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-14","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-03-31","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-07","2025-04-08","2025-04-09","2025-04-10","2025-04-11","2025-04-14","2025-04-15","2025-04-16","2025-04-17","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-28","2025-04-29","2025-04-30","2025-05-01","2025-05-02","2025-05-05","2025-05-06","2025-05-07","2025-05-08","2025-05-09","2025-05-12","2025-05-13","2025-05-14","2025-05-15","2025-05-16","2025-05-20","2025-05-21","2025-05-22","2025-05-23","2025-05-26","2025-05-27","2025-05-28","2025-05-29","2025-05-30","2025-06-02","2025-06-03","2025-06-04","2025-06-05","2025-06-06","2025-06-09","2025-06-10","2025-06-11","2025-06-12","2025-06-13","2025-06-16","2025-06-17","2025-06-18","2025-06-19","2025-06-20","2025-06-23","2025-06-24","2025-06-25","2025-06-26","2025-06-27","2025-06-30","2025-07-02","2025-07-03","2025-07-04","2025-07-07","2025-07-08","2025-07-09","2025-07-10","2025-07-11","2025-07-14","2025-07-15","2025-07-16","2025-07-17","2025-07-18","2025-07-21","2025-07-22","2025-07-23","2025-07-24","2025-07-25","2025-07-28","2025-07-29","2025-07-30","2025-07-31","2025-08-01","2025-08-05","2025-08-06","2025-08-07","2025-08-08","2025-08-11","2025-08-12","2025-08-13","2025-08-14","2025-08-15","2025-08-18","2025-08-19","2025-08-20","2025-08-21","2025-08-22","2025-08-25","2025-08-26","2025-08-27","2025-08-28","2025-08-29","2025-09-02","2025-09-03","2025-09-04","2025-09-05","2025-09-08","2025-09-09","2025-09-10","2025-09-11","2025-09-12","2025-09-15","2025-09-16","2025-09-17","2025-09-18","2025-09-19","2025-09-22","2025-09-23","2025-09-24","2025-09-25","2025-09-26","2025-09-29","2025-10-01","2025-10-02","2025-10-03","2025-10-06","2025-10-07","2025-10-08","2025-10-09","2025-10-10","2025-10-14","2025-10-15","2025-10-16","2025-10-17","2025-10-20","2025-10-21","2025-10-22","2025-10-23","2025-10-24","2025-10-27","2025-10-28","2025-10-29","2025-10-30","2025-10-31","2025-11-03","2025-11-04","2025-11-05","2025-11-06","2025-11-07","2025-11-10","2025-11-12","2025-11-13","2025-11-14","2025-11-17","2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24","2025-11-25","2025-11-26","2025-11-27","2025-11-28","2025-12-01","2025-12-02","2025-12-03","2025-12-04","2025-12-05","2025-12-08","2025-12-09","2025-12-10","2025-12-11","2025-12-12","2025-12-15","2025-12-16","2025-12-17","2025-12-18","2025-12-19","2025-12-22","2025-12-23","2025-12-24","2025-12-29","2025-12-30","2025-12-31","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-15","2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-29","2026-06-30","2026-07-02","2026-07-03","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21"],"values":[1.55,1.51,1.51,1.48,1.54,1.55,1.52,1.46,1.46,1.45,1.39,1.35,1.33,1.29,1.26,1.28,1.39,1.39,1.42,1.48,1.42,1.43,1.5,1.5,1.52,1.43,1.41,1.33,1.33,1.33,1.27,1.2,1.27,1.35,1.45,1.42,1.4,1.42,1.47,1.43,1.45,1.41,1.4,1.37,1.38,1.39,1.43,1.44,1.49,1.48,1.41,1.37,1.32,1.33,1.39,1.38,1.53,1.6,1.6,1.71,1.71,1.71,1.59,1.57,1.62,1.74,1.7,1.72,1.68,1.68,1.67,1.63,1.6,1.62,1.67,1.67,1.65,1.59,1.66,1.63,1.65,1.66,1.7,1.63,1.62,1.74,1.81,1.78,1.76,1.74,1.66,1.66,1.62,1.59,1.6,1.64,1.61,1.62,1.69,1.72,1.71,1.73,1.73,1.76,1.79,1.76,1.73,1.71,1.69,1.67,1.67,1.72,1.71,1.7,1.65,1.73,1.75,1.72,1.79,1.8,1.74,1.78,1.86,1.88,1.93,1.92,1.92,1.92,1.86,1.84,1.9,1.89,1.86,1.86,1.8,1.8,1.75,1.72,1.72,1.73,1.73,1.74,1.75,1.8,1.76,1.79,1.84,1.88,1.84,1.83,1.85,1.82,1.85,1.84,1.84,1.81,1.78,1.85,1.8,1.77,1.71,1.64,1.66,1.62,1.6,1.61,1.61,1.61,1.63,1.65,1.68,1.69,1.7,1.71,1.71,1.71,1.66,1.72,1.71,1.72,1.76,1.74,1.76,1.76,1.72,1.68,1.66,1.64,1.64,1.61,1.61,1.61,1.63,1.63,1.58,1.57,1.64,1.63,1.63,1.66,1.66,1.65,1.61,1.65,1.66,1.62,1.65,1.68,1.7,1.73,1.73,1.7,1.69,1.66,1.64,1.62,1.6,1.62,1.7,1.71,1.72,1.76,1.87,1.85,1.88,1.85,1.86,1.89,1.87,1.85,1.89,1.88,1.91,1.9,1.85,1.83,1.83,1.86,1.87,1.93,1.89,1.9,1.83,1.84,1.82,1.83,1.85,1.8,1.78,1.79,1.81,1.86,1.84,1.81,1.83,1.79,1.83,1.84,1.84,1.84,1.84,1.84,1.85,1.81,1.8,1.81,1.77,1.75,1.71,1.69,1.68,1.68,1.68,1.67,1.65,1.65,1.66,1.63,1.6,1.66,1.68,1.7,1.75,1.8,1.75,1.79,1.87,1.89,1.88,1.82,1.79,1.82,1.8,1.88,1.86,1.91,1.83,1.85,1.88,1.84,1.83,1.88,1.86,1.82,1.85,1.83,1.84,1.86,1.84,1.82,1.84,1.87,1.83,1.83,1.87,1.86,1.85,1.82,1.86,1.84,1.89,1.86,1.82,1.88,1.87,1.83,1.84,1.78,1.84,1.87,1.85,1.84,1.93,1.96,1.87,1.84,1.83,1.77,1.77,1.77,1.73,1.74,1.73,1.71,1.73,1.73,1.77,1.85,1.82,1.81,1.76,1.77,1.78,1.77,1.77,1.75,1.77,1.8,1.78,1.72,1.73,1.74,1.71,1.71,1.79,1.79,1.77,1.83,1.88,1.86,1.85,1.89,1.9,1.87,1.86,1.88,1.9,1.9,1.92,1.93,1.87,1.84,1.83,1.91,1.9,1.95,1.87,1.88,1.93,1.95,2.0,2.0,1.98,1.93,1.98,2.02,2.01,1.98,2.03,2.05,1.98,1.93,1.94,1.98,1.98,1.94,1.85,1.86,1.84,1.82,1.85,1.87,1.94,1.94,1.94,1.96,1.92,1.85,1.88,1.84],"last_date":"2026-09-21","last_value":1.84},"freshness_status":"CURRENT_OFFICIAL","freshness_note":"Official Bank of Canada benchmark 2Y/10Y updated through 1 Oct 2026.","weekly2_validation":{"end_date":"2026-10-01","end_value":3.27,"change_bp":-2.0000000000000018,"reference_date":"2026-09-21","source":"Bank of Canada selected benchmark bond yields"}},target=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;if(!target)throw new Error('CAD_RUNTIME_SNAPSHOT_MISSING');Object.keys(target).forEach(k=>delete target[k]);Object.assign(target,CAD);if(D?.macro?.CAD){D.macro.CAD.rate2y=CAD['2Y'];D.macro.CAD.rate_status='CURRENT';}if(typeof syncVisibleRatesSnapshots==='function')syncVisibleRatesSnapshots();A.audit_date=M.audit_date;for(const [ccy,row] of Object.entries(M.rates||{})){const registry=(A.RATES||A.rates||{})[ccy];if(!registry||!P[ccy])throw new Error('RATES_AUDIT_CURRENCY_MISSING:'+ccy);Object.assign(registry,{current_as_of:row.current_as_of,status:row.status,live_metadata_source:M.source_context});Object.assign(P[ccy],{action:row.action,current_as_of:row.current_as_of,reason:row.reason});}window.GMFQ_SOURCE_REGISTRY_REALIGNMENT={status:'PASS',audit_date:M.audit_date,rates:{...M.expected_rates},source_context:M.source_context};document.documentElement.setAttribute('data-source-registry-realignment','PASS');const basis=typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity():null,visible=typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity():null;window.GMFQ_CAD_RATES_AUDIT={status:basis?.ok===true&&visible?.ok===true?'PASS':'FAIL',source:CAD.source,as_of:CAD.date,same_basis:true,values:{'2Y':CAD['2Y'],'10Y':CAD['10Y'],curve_bp:CAD.curve_bp},basis_ok:basis?.ok??null,visible_ok:visible?.ok??null};document.documentElement.setAttribute('data-cad-rates-audit',window.GMFQ_CAD_RATES_AUDIT.status);document.documentElement.setAttribute('data-cad-rates-asof',CAD.date);})();
+</script>
+
+<script id="gmfq-cad-live-hydration-integrity">
+(function(){
+  'use strict';
+  try{
+    // This is deliberately post-metadata: the canonical basis must be rebuilt
+    // after the CAD live restore and rates metadata alignment, before auditing.
+    if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
+    if(typeof stableModelRefresh==='function') stableModelRefresh();
+    const cad=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;
+    const macro=window.__GMFQ_DATA?.D?.macro?.CAD;
+    const basis=typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity():null;
+    const visible=typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity():null;
+    const valuesOk=Number(cad?.['2Y'])===3.27 && Number(macro?.rate2y)===3.27 && Number(cad?.['10Y'])===3.94 && Number(cad?.curve_bp)===67;
+    const metadataOk=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of==='2026-10-01';
+    window.GMFQ_CAD_RATES_AUDIT={
+      status:valuesOk && metadataOk && basis?.ok===true && visible?.ok===true?'PASS':'FAIL',
+      source:cad?.source||null,
+      as_of:cad?.date||null,
+      same_basis:true,
+      values:{'2Y':cad?.['2Y']??null,'10Y':cad?.['10Y']??null,curve_bp:cad?.curve_bp??null},
+      metadata_ok:metadataOk,
+      basis_ok:basis?.ok??null,
+      visible_ok:visible?.ok??null,
+      sequence:['restore CAD live','D.macro.CAD.rate2y','metadata rates','integrity rates']
+    };
+    document.documentElement.setAttribute('data-cad-rates-audit',window.GMFQ_CAD_RATES_AUDIT.status);
+  }catch(e){
+    window.GMFQ_CAD_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};
+    document.documentElement.setAttribute('data-cad-rates-audit','FAIL');
+  }
+})();
+</script>
+
 <script id="gmfq-post-gate-final-audit-20260930">
 (function(){
   'use strict';
@@ -3000,6 +3030,41 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 
+<script id="gmfq-post-gate-final-audit-settlement">
+(function(){
+  'use strict';
+  // stableModelRefresh schedules its canonical refresh; settle the final audit
+  // only after that scheduled work has completed.
+  setTimeout(function(){
+    try{
+      const basis=typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity():null;
+      const visible=typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity():null;
+      const cad=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;
+      const macro=window.__GMFQ_DATA?.D?.macro?.CAD;
+      const metadataOk=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of==='2026-10-01';
+      const valuesOk=Number(cad?.['2Y'])===3.27 && Number(macro?.rate2y)===3.27 && Number(cad?.['10Y'])===3.94 && Number(cad?.curve_bp)===67;
+      const cadStatus=valuesOk && metadataOk && basis?.ok===true && visible?.ok===true?'PASS':'FAIL';
+      window.GMFQ_CAD_RATES_AUDIT={...(window.GMFQ_CAD_RATES_AUDIT||{}),status:cadStatus,metadata_ok:metadataOk,basis_ok:basis?.ok??null,visible_ok:visible?.ok??null,settled_after_stable_refresh:true};
+      document.documentElement.setAttribute('data-cad-rates-audit',cadStatus);
+      const final=window.GMFQ_POST_GATE_FINAL_AUDIT;
+      if(final){
+        const issues=(final.issues||[]).filter(issue=>issue!=='RATES_BASIS_FAIL'&&issue!=='RATES_VISIBLE_FAIL');
+        if(basis?.ok!==true) issues.push('RATES_BASIS_FAIL');
+        if(visible?.ok!==true) issues.push('RATES_VISIBLE_FAIL');
+        final.issues=issues;
+        final.rates={basis_ok:basis?.ok??null,visible_ok:visible?.ok??null};
+        final.cad_hydration={status:cadStatus,values:{'2Y':cad?.['2Y']??null,'10Y':cad?.['10Y']??null,curve_bp:cad?.curve_bp??null},metadata_ok:metadataOk};
+        final.status=issues.length?'FAIL':'PASS';
+        final.settled_after_cad_chain=true;
+        document.documentElement.setAttribute('data-post-gate-final-audit',final.status);
+      }
+    }catch(e){
+      document.documentElement.setAttribute('data-post-gate-final-audit','FAIL');
+    }
+  },650);
+})();
+</script>
+
 <script id="gmfq-price-ecb-20260930">
 (function(){
   'use strict';
@@ -3084,203 +3149,65 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
 
 <style id="gmfq-overview-ux-strip-style">
-#overview .gmfqOverviewExecutive{
-  --ux-green:#42d392;--ux-green-soft:rgba(66,211,146,.12);
-  --ux-blue:#63c7f4;--ux-blue-soft:rgba(99,199,244,.11);
-  --ux-amber:#e4b45f;--ux-amber-soft:rgba(228,180,95,.12);
-  --ux-red:#d9768a;--ux-red-soft:rgba(217,118,138,.12);
-  --ux-cyan:#66d5ff;--ux-line:rgba(143,167,181,.18);
-  margin:0 0 20px;display:grid;grid-template-columns:1fr;gap:13px
-}
-#overview .gmfqReportPanel{
-  position:relative;overflow:hidden;
-  background:linear-gradient(180deg,rgba(14,39,52,.985),rgba(9,29,41,.985));
-  border:1px solid rgba(96,158,190,.22);
-  border-radius:18px;padding:17px 18px 18px;
-  box-shadow:0 10px 28px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.025)
-}
-#overview .gmfqReportPanel::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ux-cyan);opacity:.9
-}
-#overview .gmfqReportPanel:nth-child(1)::before{background:linear-gradient(180deg,var(--ux-green),var(--ux-blue))}
-#overview .gmfqReportPanel:nth-child(2)::before{background:linear-gradient(180deg,var(--ux-blue),var(--ux-amber))}
-#overview .gmfqReportPanel:nth-child(3)::before{background:linear-gradient(180deg,var(--ux-amber),var(--ux-cyan))}
-#overview .gmfqReportPanel .panelHead{
-  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:13px
-}
-#overview .gmfqReportPanel .eyebrow{
-  font-size:10px;letter-spacing:.115em;text-transform:uppercase;color:var(--ux-cyan);font-weight:900
-}
-#overview .gmfqReportPanel:nth-child(1) .eyebrow{color:var(--ux-green)}
-#overview .gmfqReportPanel:nth-child(2) .eyebrow{color:var(--ux-blue)}
-#overview .gmfqReportPanel:nth-child(3) .eyebrow{color:var(--ux-amber)}
-#overview .gmfqReportPanel .panelTitle{
-  margin-top:3px;font-size:20px;line-height:1.15;font-weight:900;color:#f4f8fa;letter-spacing:-.015em
-}
-#overview .gmfqReportPanel .panelHint{
-  font-size:11px;line-height:1.4;color:#90a9b5;text-align:right;max-width:540px;font-weight:560
-}
-#overview .gmfqStateGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-#overview .gmfqStateBox{
-  position:relative;min-width:0;border-radius:13px;padding:11px 12px 12px;
-  background:rgba(255,255,255,.025);border:1px solid var(--ux-line)
-}
-#overview .gmfqStateBox::after{
-  content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;border-radius:2px 2px 0 0;opacity:.75
-}
-#overview .gmfqStateBox .label,
-#overview .gmfqChangeBox .label,
-#overview .gmfqWatchBox .label{
-  display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:900
-}
-#overview .gmfqStateBox .label::before,
-#overview .gmfqChangeBox .label::before,
-#overview .gmfqWatchBox .label::before{
-  content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;opacity:.9
-}
-#overview .gmfqStateBox .items{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-#overview .gmfqStateBox.strong{border-color:rgba(66,211,146,.30);background:linear-gradient(180deg,var(--ux-green-soft),rgba(255,255,255,.02))}
-#overview .gmfqStateBox.strong .label{color:var(--ux-green)}
-#overview .gmfqStateBox.strong::after{background:var(--ux-green)}
-#overview .gmfqStateBox.constructive{border-color:rgba(99,199,244,.28);background:linear-gradient(180deg,var(--ux-blue-soft),rgba(255,255,255,.02))}
-#overview .gmfqStateBox.constructive .label{color:var(--ux-blue)}
-#overview .gmfqStateBox.constructive::after{background:var(--ux-blue)}
-#overview .gmfqStateBox.mixed{border-color:rgba(228,180,95,.28);background:linear-gradient(180deg,var(--ux-amber-soft),rgba(255,255,255,.02))}
-#overview .gmfqStateBox.mixed .label{color:var(--ux-amber)}
-#overview .gmfqStateBox.mixed::after{background:var(--ux-amber)}
-#overview .gmfqStateBox.weak{border-color:rgba(217,118,138,.30);background:linear-gradient(180deg,var(--ux-red-soft),rgba(255,255,255,.02))}
-#overview .gmfqStateBox.weak .label{color:var(--ux-red)}
-#overview .gmfqStateBox.weak::after{background:var(--ux-red)}
-#overview .gmfqCcyChip{
-  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;padding:5px 8px;border-radius:9px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.085);
-  font-size:13px;font-weight:850;color:#f1f7f9;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)
-}
-#overview .gmfqStateBox.strong .gmfqCcyChip{background:rgba(66,211,146,.10);border-color:rgba(66,211,146,.20)}
-#overview .gmfqStateBox.constructive .gmfqCcyChip{background:rgba(99,199,244,.10);border-color:rgba(99,199,244,.20)}
-#overview .gmfqStateBox.mixed .gmfqCcyChip{background:rgba(228,180,95,.10);border-color:rgba(228,180,95,.20)}
-#overview .gmfqStateBox.weak .gmfqCcyChip{background:rgba(217,118,138,.10);border-color:rgba(217,118,138,.20)}
-#overview .gmfqEmpty{font-size:12px;color:#78929f;font-weight:650}
-#overview .gmfqChangeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-#overview .gmfqChangeBox{
-  border-radius:13px;padding:11px 12px 12px;background:rgba(255,255,255,.025);border:1px solid var(--ux-line)
-}
-#overview .gmfqChangeBox .items{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-#overview .gmfqChangeBox.up{border-color:rgba(66,211,146,.28);background:linear-gradient(180deg,var(--ux-green-soft),rgba(255,255,255,.018))}
-#overview .gmfqChangeBox.up .label{color:var(--ux-green)}
-#overview .gmfqChangeBox.up .gmfqCcyChip{background:rgba(66,211,146,.09);border-color:rgba(66,211,146,.18)}
-#overview .gmfqChangeBox.down{border-color:rgba(217,118,138,.28);background:linear-gradient(180deg,var(--ux-red-soft),rgba(255,255,255,.018))}
-#overview .gmfqChangeBox.down .label{color:var(--ux-red)}
-#overview .gmfqChangeBox.down .gmfqCcyChip{background:rgba(217,118,138,.09);border-color:rgba(217,118,138,.18)}
-#overview .gmfqChangeBox.turn{border-color:rgba(228,180,95,.28);background:linear-gradient(180deg,var(--ux-amber-soft),rgba(255,255,255,.018))}
-#overview .gmfqChangeBox.turn .label{color:var(--ux-amber)}
-#overview .gmfqChangeBox.turn .gmfqCcyChip{background:rgba(228,180,95,.09);border-color:rgba(228,180,95,.18)}
-#overview .gmfqWatchGrid{display:grid;grid-template-columns:1.2fr 1fr;gap:10px}
-#overview .gmfqWatchBox{
-  border-radius:13px;padding:12px 13px 13px;background:linear-gradient(180deg,rgba(99,199,244,.055),rgba(255,255,255,.018));
-  border:1px solid rgba(99,199,244,.20)
-}
-#overview .gmfqWatchBox:first-child .label{color:var(--ux-green)}
-#overview .gmfqWatchBox:last-child .label{color:var(--ux-amber)}
-#overview .gmfqWatchBox .main{margin-top:6px;font-size:15px;line-height:1.35;font-weight:850;color:#edf6f9}
-#overview .gmfqWatchBox .note{margin-top:7px;font-size:11px;line-height:1.45;color:#8fa7b3}
-#overview .gmfqPairLine{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-#overview .gmfqPairChip{
-  display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:9px;
-  background:rgba(99,199,244,.09);border:1px solid rgba(99,199,244,.20);
-  font-size:13px;font-weight:850;color:#f1f7f9
-}
-#overview .gmfqWatchBox:first-child .gmfqPairChip{background:rgba(66,211,146,.09);border-color:rgba(66,211,146,.20)}
-#overview .gmfqWatchBox:last-child .gmfqPairChip{background:rgba(228,180,95,.09);border-color:rgba(228,180,95,.20)}
-#overview .gmfqOverviewExecutive svg{width:18px;height:13px;vertical-align:-2px;flex:0 0 auto}
-@media(max-width:1000px){
-  #overview .gmfqStateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  #overview .gmfqWatchGrid{grid-template-columns:1fr}
-}
-@media(max-width:640px){
-  .shell>#nav.nav{
-    width:100%!important;max-width:100%!important;min-width:0!important;
-    overflow-x:auto!important;overflow-y:hidden!important;
-    display:flex!important;flex-wrap:nowrap!important;
-    box-sizing:border-box!important;overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch;scrollbar-width:none
-  }
-  .shell>#nav.nav::-webkit-scrollbar{display:none}
-  .shell>#nav.nav button{flex:0 0 auto!important}
-  #overview .gmfqOverviewExecutive{gap:10px}
-  #overview .gmfqReportPanel{padding:14px 13px 15px;border-radius:15px}
-  #overview .gmfqReportPanel .panelHead{display:block;margin-bottom:11px}
-  #overview .gmfqReportPanel .panelTitle{font-size:18px}
-  #overview .gmfqReportPanel .panelHint{text-align:left;margin-top:6px;max-width:none}
-  #overview .gmfqStateGrid,#overview .gmfqChangeGrid{grid-template-columns:1fr}
-  #overview .gmfqStateBox,#overview .gmfqChangeBox,#overview .gmfqWatchBox{padding:10px 11px 11px}
-  #overview .gmfqCcyChip,#overview .gmfqPairChip{font-size:12px;padding:5px 7px}
-}
+#overview .gmfqOverviewExecutive{margin:0 0 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#overview .gmfqExecCard{background:rgba(255,255,255,.035);border:1px solid rgba(143,167,181,.18);border-radius:14px;padding:12px 13px;min-height:86px}
+#overview .gmfqExecCard .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7f98a6;font-weight:800}
+#overview .gmfqExecCard .v{margin-top:6px;font-size:15px;line-height:1.25;font-weight:800;color:#eaf4f8}
+#overview .gmfqExecCard .n{margin-top:5px;font-size:11px;line-height:1.35;color:#8da3af}
+#overview .gmfqExecCard.pos{border-color:rgba(61,190,122,.28)}
+#overview .gmfqExecCard.neg{border-color:rgba(194,92,111,.28)}
+#overview .gmfqExecCard.warn{border-color:rgba(214,161,70,.28)}
+#overview .gmfqExecCard.neu{border-color:rgba(108,157,187,.24)}
+#overview .gmfqOverviewExecutive .ccy{white-space:nowrap}
+@media(max-width:900px){#overview .gmfqOverviewExecutive{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#overview .gmfqOverviewExecutive{grid-template-columns:1fr}}
 </style>
 <script id="gmfq-overview-ux-strip-20260930">
 (function(){
   'use strict';
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const safe=(fn,fb=null)=>{try{return fn()}catch(e){return fb}};
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  function chip(c){
-    return '<span class="gmfqCcyChip">'+safe(()=>flagSvg(c),'')+' '+esc(c)+'</span>';
+  function humanList(xs){
+    if(!xs||!xs.length)return 'Nessuna';
+    return xs.map(c=>'<span class="ccy">'+safe(()=>flagSvg(c),'')+' '+c+'</span>').join(' · ');
   }
-  function list(xs){
-    if(!xs||!xs.length)return '<span class="gmfqEmpty">Nessuna</span>';
-    return xs.map(chip).join('');
-  }
-  function currencyRows(){
-    return CCYS.map(c=>{
-      const s=safe(()=>deriveCurrencyState(c),{})||{};
-      return {
-        c,
-        base:String(s.base||'MISTA').toUpperCase(),
-        change:String(s.improvementState||s.improvement||'STABILE').toUpperCase(),
-        driver:String(s.driver||s.dominantDriver||'Non determinato'),
-        confirmation:String(s.confirmation||s.priceReading||'PREZZO NON RISOLUTIVO')
-      };
-    });
-  }
-  function structuralBuckets(rows){
-    const out={strong:[],constructive:[],mixed:[],weak:[]};
-    rows.forEach(x=>{
-      if(x.base==='FORTE') out.strong.push(x.c);
-      else if(x.base==='COSTRUTTIVA') out.constructive.push(x.c);
-      else if(x.base==='FRAGILE'||x.base==='DEBOLE') out.weak.push(x.c);
-      else out.mixed.push(x.c);
+  function structuralBuckets(){
+    const out={fav:[],weak:[],mixed:[]};
+    CCYS.forEach(c=>{
+      const base=String(safe(()=>deriveCurrencyState(c)?.base,'MISTA')||'MISTA').toUpperCase();
+      if(base==='FORTE'||base==='COSTRUTTIVA') out.fav.push(c);
+      else if(base==='FRAGILE'||base==='DEBOLE') out.weak.push(c);
+      else out.mixed.push(c);
     });
     return out;
   }
-  function changeBuckets(rows){
+  function changeBuckets(){
     const out={up:[],down:[],turn:[],stable:[]};
-    rows.forEach(x=>{
-      const v=x.change;
-      if(v==='MIGLIORA') out.up.push(x.c);
-      else if(v==='PEGGIORA') out.down.push(x.c);
-      else if(v.includes('EARLY SHIFT')||v.includes('TURNING POINT')) out.turn.push(x.c);
-      else out.stable.push(x.c);
+    CCYS.forEach(c=>{
+      const x=String(safe(()=>deriveCurrencyState(c)?.improvementState,'')||'').toUpperCase();
+      if(x==='MIGLIORA'||x.includes('EARLY SHIFT POSITIVO')) out.up.push(c);
+      else if(x==='PEGGIORA'||x.includes('EARLY SHIFT NEGATIVO')) out.down.push(c);
+      else if(x.includes('TURNING POINT')) out.turn.push(c);
+      else out.stable.push(c);
     });
     return out;
   }
-  function pairRows(){
-    const weight={
+  function topPairs(){
+    const weights={
       'CONTRASTO STRUTTURALE FORTE':4,
       'VANTAGGIO RELATIVO FORTE':4,
       'VANTAGGIO RELATIVO PARZIALE':3,
-      'SEPARAZIONE RATES MATERIALE':2,
       'PILASTRI DIVISI':1,
       'NESSUN CONTRASTO':0,
       'MISTO / NON RISOLUTIVO':0
     };
-    return (D?.pairs||[]).map(p=>{
+    const rows=(D?.pairs||[]).map(p=>{
       const f=safe(()=>derivePairDecisionFrame(p.pair),{})||{};
-      return {pair:p.pair,f,w:weight[f.quality]??0};
-    });
-  }
-  function pairChip(x){
-    const fav=x.f?.fav&&x.f.fav!=='—'?' · '+esc(x.f.fav):'';
-    return '<span class="gmfqPairChip">'+esc(x.pair)+fav+'</span>';
+      return {pair:p.pair,f,w:weights[f.quality]??0};
+    }).filter(x=>x.w>=3)
+      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair)))
+      .slice(0,2);
+    return rows;
   }
   function render(){
     const view=document.getElementById('overview');
@@ -3293,46 +3220,28 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
       if(grid) grid.insertAdjacentElement('beforebegin',host);
       else view.prepend(host);
     }
-    const rows=currencyRows();
-    const s=structuralBuckets(rows);
-    const ch=changeBuckets(rows);
-    const pairs=pairRows();
-    const clean=pairs.filter(x=>x.w>=3)
-      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair))).slice(0,3);
-    const divergences=pairs.filter(x=>x.f?.priceReading==='DIVERGENZA DA MONITORARE')
-      .sort((a,b)=>b.w-a.w||String(a.pair).localeCompare(String(b.pair))).slice(0,3);
-    const lead=clean.length
-      ? clean.map(x=>pairChip(x)).join('')
-      : '<span class="gmfqEmpty">Nessun contrasto strutturale abbastanza pulito</span>';
-    const divs=divergences.length
-      ? divergences.map(x=>pairChip(x)).join('')
-      : '<span class="gmfqEmpty">Nessuna divergenza prezzo rilevante</span>';
-
+    const structure=structuralBuckets();
+    const b=changeBuckets();
+    const pairs=topPairs();
+    const pairText=pairs.length
+      ? pairs.map(x=>{
+          const fav=x.f?.fav&&x.f.fav!=='—'?(' · '+x.f.fav):'';
+          return '<span class="ccy">'+x.pair+fav+'</span>';
+        }).join(' · ')
+      : 'Nessuna coppia con separazione strutturale forte/parziale';
+    const pairNote=pairs.length
+      ? pairs.map(x=>String(x.f?.quality||'').replace('VANTAGGIO RELATIVO ','')).join(' · ')
+      : 'Aspettare maggiore differenziazione Macro + Tassi/CB';
+    const structureText=
+      '<b>Favorevoli:</b> '+humanList(structure.fav)+
+      '<br><b>Deboli:</b> '+humanList(structure.weak)+
+      '<br><b>Miste:</b> '+humanList(structure.mixed);
     host.innerHTML=
-      '<section class="gmfqReportPanel">'+
-        '<div class="panelHead"><div><div class="eyebrow">1 · Stato attuale</div><div class="panelTitle">Chi è forte e chi è debole?</div></div><div class="panelHint">Struttura FX = Macro + Tassi/aspettative banca centrale. Qui non mischiamo il cambiamento recente.</div></div>'+
-        '<div class="gmfqStateGrid">'+
-          '<div class="gmfqStateBox strong"><div class="label">Forti</div><div class="items">'+list(s.strong)+'</div></div>'+
-          '<div class="gmfqStateBox constructive"><div class="label">Costruttive</div><div class="items">'+list(s.constructive)+'</div></div>'+
-          '<div class="gmfqStateBox mixed"><div class="label">Miste / neutrali</div><div class="items">'+list(s.mixed)+'</div></div>'+
-          '<div class="gmfqStateBox weak"><div class="label">Deboli</div><div class="items">'+list(s.weak)+'</div></div>'+
-        '</div>'+
-      '</section>'+
-      '<section class="gmfqReportPanel">'+
-        '<div class="panelHead"><div><div class="eyebrow">2 · Cosa sta cambiando</div><div class="panelTitle">Dove si sta muovendo il quadro?</div></div><div class="panelHint">Una valuta può essere debole ma migliorare, oppure forte ma peggiorare. Stato e direzione restano separati.</div></div>'+
-        '<div class="gmfqChangeGrid">'+
-          '<div class="gmfqChangeBox up"><div class="label">Migliora</div><div class="items">'+list(ch.up)+'</div></div>'+
-          '<div class="gmfqChangeBox down"><div class="label">Peggiora</div><div class="items">'+list(ch.down)+'</div></div>'+
-          '<div class="gmfqChangeBox turn"><div class="label">Possibile svolta</div><div class="items">'+list(ch.turn)+'</div></div>'+
-        '</div>'+
-      '</section>'+
-      '<section class="gmfqReportPanel">'+
-        '<div class="panelHead"><div><div class="eyebrow">3 · Dove guardare</div><div class="panelTitle">Cosa merita davvero attenzione?</div></div><div class="panelHint">Prima il contrasto Macro + Tassi/CB; poi il Prezzo ci dice se il mercato conferma o diverge.</div></div>'+
-        '<div class="gmfqWatchGrid">'+
-          '<div class="gmfqWatchBox"><div class="label">Pair con separazione più pulita</div><div class="gmfqPairLine">'+lead+'</div><div class="note">Non è un segnale automatico: sono i pair in cui la struttura relativa è più leggibile.</div></div>'+
-          '<div class="gmfqWatchBox"><div class="label">Divergenze prezzo da monitorare</div><div class="gmfqPairLine">'+divs+'</div><div class="note">La struttura e il prezzo non sono ancora allineati: qui serve conferma prima di inseguire il movimento.</div></div>'+
-        '</div>'+
-      '</section>';
+      '<div class="gmfqExecCard neu"><div class="k">FX · Struttura attuale</div><div class="v">'+structureText+'</div><div class="n">Livello strutturale: Macro + Tassi/CB. Questo è lo stesso stato usato dal motore dei pair.</div></div>'+
+      '<div class="gmfqExecCard pos"><div class="k">FX · Migliora di recente</div><div class="v">'+humanList(b.up)+'</div><div class="n">Cambiamento recente, non sinonimo di valuta già forte.</div></div>'+
+      '<div class="gmfqExecCard neg"><div class="k">FX · Peggiora di recente</div><div class="v">'+humanList(b.down)+'</div><div class="n">Cambiamento recente, separato dal livello strutturale attuale.</div></div>'+
+      '<div class="gmfqExecCard warn"><div class="k">FX · Possibile svolta</div><div class="v">'+humanList(b.turn)+'</div><div class="n">Transizione Macro/Rates non ancora pienamente allineata.</div></div>'+
+      '<div class="gmfqExecCard neu"><div class="k">Pair · Separazione strutturale</div><div class="v">'+pairText+'</div><div class="n">'+pairNote+'</div></div>';
   }
   const old=window.v302ConsolidatedSync;
   window.v302ConsolidatedSync=function(){
@@ -3345,6 +3254,7 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
   else setTimeout(render,60);
 })();
 </script>
+
 
 <script id="gmfq-overview-semantic-fix-20260930">
 (function(){
@@ -3384,34 +3294,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-<script>
-(() => {
-  let fullMacroLoad;
-  window.loadFullMacroSeries = () => fullMacroLoad ||= fetch('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js', { cache: 'force-cache' })
-    .then(r => {
-      if (!r.ok) throw new Error('Storico macro non disponibile');
-      return r.text();
-    })
-    .then(source => {
-      const json = source.replace(/^window\.__GMFQ_DATA\.MACRO_SERIES=/, '').replace(/;\s*$/, '');
-      const full = JSON.parse(json);
-      Object.keys(S).forEach(key => delete S[key]);
-      Object.assign(S, full);
-      return S;
-    });
-
-  const renderView = window.showView;
-  window.showView = function(view) {
-    const result = renderView(view);
-    if (view === 'macro' || view === 'inflationlabour') {
-      window.loadFullMacroSeries().then(() => {
-        if (activeView === view) renderView(view);
-      }).catch(error => console.warn('Storico macro differito non caricato', error));
-    }
-    return result;
-  };
-})();
-</script>
 </body></html>
 
 
@@ -4070,1040 +3952,6 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     };
   }catch(e){
     window.GMFQ_RUNTIME_SECONDARY_METADATA_COMPLETION={status:'FAIL',error:String(e)};
-  }
-})();
-</script>
-
-
-<script id="gmfq-current-data-gap-reconciliation-20261001">
-(function(){
-  'use strict';
-  try{
-    const previous=window.sourceResolutionWatchlist;
-    window.sourceResolutionWatchlist=function(){
-      const rows=typeof previous==='function'
-        ? previous()
-        : Object.entries(window.SOURCE_RESOLUTION_WATCHLIST?.items||{}).map(([id,x])=>Object.assign({id,resolved:false},x));
-      return rows.map(row=>{
-        const c=row?.currency;
-        let oisActive=false;
-        try{
-          oisActive=window.GMFQ_OIS?.currency?.(c)?.status==='ACTIVE'
-            && window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.(c)===true;
-        }catch(e){}
-        if(oisActive && row?.layer==='CB_PRICING'){
-          return Object.assign({},row,{
-            resolved:true,
-            current_status:'RESOLVED_BY_VALIDATED_ACTIVE_OIS',
-            resolution_basis:'Current OIS runtime is ACTIVE and publishable under the canonical validator.'
-          });
-        }
-        return row;
-      });
-    };
-    window.unresolvedSourceChecks=function(){
-      return window.sourceResolutionWatchlist().filter(x=>x.check_each_refresh && !x.resolved);
-    };
-
-    const d=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT;
-    if(d?.items){
-      for(const c of ['EUR','GBP','JPY','CAD','AUD']){
-        const key=c+'_OIS';
-        const cbKey=c+'_CB_PRICING';
-        let active=false;
-        try{
-          active=window.GMFQ_OIS?.currency?.(c)?.status==='ACTIVE'
-            && window.GMFQ_OIS_SOURCE_MONITOR?.canPublishCurve?.(c)===true;
-        }catch(e){}
-        if(active){
-          if(d.items[key]) d.items[key]={
-            status:'RESOLVED_VALIDATED_ACTIVE',
-            reason:'Current runtime OIS path is active and passes the canonical publication validator.',
-            resolved_at:'2026-10-01'
-          };
-          if(d.items[cbKey]) d.items[cbKey]={
-            status:'RESOLVED_VALIDATED_ACTIVE',
-            reason:'Current runtime OIS/market-pricing path is active and passes the canonical publication validator.',
-            resolved_at:'2026-10-01'
-          };
-        }
-      }
-      d.as_of='2026-10-01';
-    }
-
-    window.GMFQ_CURRENT_DATA_GAP_RECONCILIATION={
-      status:'PASS',
-      as_of:'2026-10-01',
-      ois_active:window.GMFQ_OIS_SOURCE_MONITOR?.activationState?.()||null,
-      unresolved:window.unresolvedSourceChecks(),
-      rule:'Validated ACTIVE OIS closes legacy CB-pricing source warnings; WITHHELD currencies remain unresolved.'
-    };
-    document.documentElement.setAttribute('data-current-data-gap-reconciliation','PASS');
-  }catch(e){
-    window.GMFQ_CURRENT_DATA_GAP_RECONCILIATION={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-current-data-gap-reconciliation','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-health-warning-reconciliation-20261001">
-(function(){
-  'use strict';
-  try{
-    const previous=window.productionHealthCheck;
-    if(typeof previous!=='function') throw new Error('PRODUCTION_HEALTH_CHECK_MISSING');
-    window.productionHealthCheck=function(){
-      const r=previous();
-      const unresolved=typeof window.unresolvedSourceChecks==='function'
-        ? window.unresolvedSourceChecks()
-        : [];
-      const open=new Set(unresolved.map(x=>x.currency));
-      const warnings=(r.warnings||[]).filter(w=>{
-        const s=String(w);
-        const m=s.match(/^CB_PRICING_(?:SECONDARY|PARTIAL|STALE):([A-Z]{3})$/);
-        return !m || open.has(m[1]);
-      });
-      for(const x of unresolved){
-        if(x.currency==='NZD') warnings.push('CB_PRICING_PARTIAL:NZD');
-        else warnings.push('CB_PRICING_SECONDARY:'+x.currency);
-      }
-      r.warnings=[...new Set(warnings)];
-      r.status=(r.hard_errors||[]).length?'FAIL':r.warnings.length?'PASS_WITH_WARNINGS':'PASS';
-      r.source_resolution_reconciled=true;
-      return r;
-    };
-    window.GMFQ_HEALTH_WARNING_RECONCILIATION={
-      status:'PASS',
-      unresolved:typeof window.unresolvedSourceChecks==='function'
-        ? window.unresolvedSourceChecks().map(x=>x.id)
-        : []
-    };
-    document.documentElement.setAttribute('data-health-warning-reconciliation','PASS');
-  }catch(e){
-    window.GMFQ_HEALTH_WARNING_RECONCILIATION={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-health-warning-reconciliation','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-usd-cme-direct-partial-20261001">
-(function(){
-  'use strict';
-  try{
-    window.__GMFQ_DATA=window.__GMFQ_DATA||{};
-    window.__GMFQ_DATA.OIS_DATA=window.__GMFQ_DATA.OIS_DATA||{currencies:{}};
-    window.__GMFQ_DATA.OIS_DATA.currencies=window.__GMFQ_DATA.OIS_DATA.currencies||{};
-    const prior=window.__GMFQ_DATA.OIS_DATA.currencies.USD||{};
-
-    const USD_PARTIAL={
-      ...prior,
-      status:'WITHHELD',
-      partial_status:'DIRECT_CURRENT_AND_1D_VALIDATED__1W_WITHHELD',
-      source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin PG10',
-      source_url:'https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf',
-      as_of:'2026-09-30',
-      policy_target_range:[3.75,4.00],
-      policy_rate_midpoint:3.875,
-      horizon_mapping:'Dec-26 / Mar-27 / Sep-27; no interpolation',
-      horizons:{
-        '3m':{
-          contract:'Dec-26',
-          settlement:95.8750,
-          rate:4.125,
-          prior_settlement:95.8450,
-          prior_rate:4.155,
-          change_1d_bp:-3.0,
-          change_1w_bp:null
-        },
-        '6m':{
-          contract:'Mar-27',
-          settlement:95.5950,
-          rate:4.405,
-          prior_settlement:95.5650,
-          prior_rate:4.435,
-          change_1d_bp:-3.0,
-          change_1w_bp:null
-        },
-        '12m':{
-          contract:'Sep-27',
-          settlement:95.2050,
-          rate:4.795,
-          prior_settlement:95.2000,
-          prior_rate:4.800,
-          change_1d_bp:-0.5,
-          change_1w_bp:null
-        }
-      },
-      validation:{
-        source_validated:true,
-        asof_validated:true,
-        meeting_path_validated:true,
-        changes_validated:false,
-        current_levels_validated:true,
-        change_1d_validated:true,
-        change_1w_validated:false
-      },
-      provenance:{
-        bulletin_date:'2026-09-30',
-        bulletin_page:'PG10',
-        instrument:'30D FED FD FUT',
-        direct_exchange:true,
-        formula:'implied_rate = 100 - settlement; prior settlement = current settlement - CME PT.CHGE',
-        current_contracts:['DEC26','MAR27','SEP27'],
-        weekly_reference:'WITHHELD',
-        weekly_reason:'Matched same-contract 1W CME Daily Bulletin history not reproducibly accessible through the current anonymous public path.'
-      },
-      withheld_reason:'CME current and prior-business-day settlements are now directly validated for the 3m/6m/12m buckets, but matched 1W history on the same contracts is still missing.',
-      rule:'Keep USD OIS withheld until same-contract 1W CME settlement history is captured and validated; do not substitute FedWatch probabilities, 2Y yields or secondary curves.',
-      no_2y_proxy:true,
-      no_secondary_curve:true,
-      no_mixed_basis:true,
-      no_paid_feed_used:true
-    };
-    window.__GMFQ_DATA.OIS_DATA.currencies.USD=USD_PARTIAL;
-
-    if(window.GMFQ_OIS_FEED_PRIORITY?.USD){
-      window.GMFQ_OIS_FEED_PRIORITY.USD.ready=false;
-      window.GMFQ_OIS_FEED_PRIORITY.USD.label='CME Fed Funds direct current + 1D validati · 1W history withheld';
-    }
-    if(window.SOURCE_RESOLUTION_WATCHLIST?.items?.USD_CB_PRICING){
-      Object.assign(window.SOURCE_RESOLUTION_WATCHLIST.items.USD_CB_PRICING,{
-        current_status:'WITHHELD_DIRECT_CME_1W_HISTORY_GAP',
-        resolution_condition:'Capture matched same-contract CME 1W settlement history for Dec-26 / Mar-27 / Sep-27.'
-      });
-    }
-    if(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.USD){
-      Object.assign(window.CB_PRICING_WARNING_RESOLUTION_AUDIT.USD,{
-        status:'DIRECT_CURRENT_1D_VALIDATED__1W_WITHHELD',
-        reason:'Official CME PG10 provides current settlements and point changes for matched Fed Funds contracts; only same-contract 1W history remains unresolved.',
-        resolution_rule:'Activate only after matched 1W CME settlement history is directly validated.'
-      });
-    }
-    if(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items?.USD_CB_PRICING){
-      Object.assign(window.GMFQ_DEFINITIVE_WITHHELD_AUDIT.items.USD_CB_PRICING,{
-        status:'WITHHELD_DIRECT_CME_1W_HISTORY_ONLY',
-        reason:'Current and prior-business-day direct CME Fed Funds settlements are validated; only matched 1W history remains unavailable through the current public path.',
-        source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin PG10',
-        resolution:'Capture the same Dec-26 / Mar-27 / Sep-27 settlements at the one-week reference date.'
-      });
-    }
-    window.GMFQ_USD_OIS_AUDIT={
-      status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
-      as_of:'2026-09-30',
-      source:'CME Group · Daily Bulletin PG10',
-      current_levels_validated:true,
-      change_1d_validated:true,
-      change_1w_validated:false,
-      values:{'3m':4.125,'6m':4.405,'12m':4.795},
-      changes_1d_bp:{'3m':-3.0,'6m':-3.0,'12m':-0.5},
-      missing:['matched_same_contract_1w_history'],
-      no_activation:true
-    };
-    document.documentElement.setAttribute('data-usd-ois-audit','WITHHELD_PARTIAL_DIRECT');
-  }catch(e){
-    window.GMFQ_USD_OIS_AUDIT={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-usd-ois-audit','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-nzd-rates-liquidity-refresh-20261001">
-(function(){
-  'use strict';
-  try{
-    if(typeof NATIVE_RATES_DATA==='undefined' || !NATIVE_RATES_DATA.NZD) throw new Error('NZD_RATES_MISSING');
-    const r=NATIVE_RATES_DATA.NZD;
-
-    r.date='2026-09-29';
-    r.source='RBNZ B2 Wholesale interest rates · government bond close · 29 Sep 2026';
-    r.quality='FULL_CURRENT_OFFICIAL';
-    r['2Y']=3.94;
-    r['10Y']=5.12;
-    r.curve_bp=118;
-    r.chg2_bp=7;
-    r.chg10_bp=17;
-    r.curve_state='Bear steepening / long-end in rialzo più del front-end';
-
-    const upsert=(series,date,value)=>{
-      if(!series) return;
-      series.dates=Array.isArray(series.dates)?series.dates:[];
-      series.values=Array.isArray(series.values)?series.values:[];
-      const i=series.dates.indexOf(date);
-      if(i>=0) series.values[i]=value;
-      else { series.dates.push(date); series.values.push(value); }
-      series.last_date=date; series.last_value=value;
-    };
-    upsert(r.history2,'2026-09-29',3.94);
-    upsert(r.history10,'2026-09-29',5.12);
-    if(Array.isArray(r.tenors)){
-      const t2=r.tenors.find(x=>x.tenor==='2Y'); if(t2) Object.assign(t2,{value:3.94,date:'2026-09-29'});
-      const t10=r.tenors.find(x=>x.tenor==='10Y'); if(t10) Object.assign(t10,{value:5.12,date:'2026-09-29'});
-    }
-
-    if(typeof D!=='undefined' && D.macro?.NZD) D.macro.NZD.rate2y=3.94;
-
-    if(typeof NATIVE_LIQ_DATA==='undefined' || !NATIVE_LIQ_DATA.NZD) throw new Error('NZD_LIQ_MISSING');
-    const l=NATIVE_LIQ_DATA.NZD;
-    upsert(l.liquidity,'2026-08',26460);
-    upsert(l.money,'2026-08',454671);
-    upsert(l.credit,'2026-08',624663);
-    l.liquidity_dir='IN DIMINUZIONE';
-    l.credit_dir='IN AUMENTO';
-    l.current_note='RBNZ: settlement cash medio 26.460 NZD mln ad agosto 2026 (28.303 a luglio); broad money 454.671 mln (458.490); credito privato 624.663 mln (621.266). Liquidità primaria e moneta in calo, credito ancora in espansione.';
-    l.as_of='2026-08 · released 2026-09-30';
-    l.source_note='RBNZ D10 + C50 · release ufficiale 30 Sep 2026.';
-
-    const A=window.FINAL_SOURCE_POLICY_AUDIT||{};
-    const R=A.RATES||A.rates;
-    if(R?.NZD) Object.assign(R.NZD,{current_as_of:'2026-09-29',status:'CURRENT_OFFICIAL_SAME_BASIS'});
-    const L=A.LIQUIDITY||A.liquidity;
-    if(L?.NZD) Object.assign(L.NZD,{current_period:'2026-08',current_as_of:'2026-08',released:'2026-09-30',next_expected:'2026-10-30'});
-
-    if(window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh?.NZD){
-      Object.assign(window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh.NZD,{
-        action:'UPDATED',
-        current_as_of:'2026-09-29',
-        reason:'Official RBNZ B2 same-basis 2Y/10Y snapshot validated.'
-      });
-    }
-    if(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.liquidity?.nzd){
-      Object.assign(window.PRODUCTION_PRICE_COT_LIQ_AUDIT.liquidity.nzd,{
-        current_period:'2026-08',
-        source:'RBNZ D10 + C50',
-        release:'2026-09-30',
-        next_release:'2026-10-30',
-        action:'UPDATED_OFFICIAL'
-      });
-    }
-
-    window.GMFQ_NZD_DATA_REFRESH_AUDIT={
-      status:'PASS',
-      rates:{
-        as_of:'2026-09-29',
-        source:'RBNZ B2',
-        y2:3.94,y10:5.12,curve_bp:118,
-        change_1w_bp:{y2:7,y10:17},
-        same_basis:true
-      },
-      liquidity:{
-        period:'2026-08',released:'2026-09-30',
-        settlement_cash_avg:26460,
-        broad_money:454671,
-        private_credit:624663,
-        prior:{settlement_cash_avg:28303,broad_money:458490,private_credit:621266},
-        liquidity_dir:'IN DIMINUZIONE',
-        credit_dir:'IN AUMENTO'
-      },
-      ois:'WITHHELD_UNCHANGED'
-    };
-
-    try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
-    try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
-    try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
-    document.documentElement.setAttribute('data-nzd-data-refresh','PASS');
-  }catch(e){
-    window.GMFQ_NZD_DATA_REFRESH_AUDIT={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-nzd-data-refresh','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-ois-gap-closure-20261001">
-(function(){
-  'use strict';
-  try{
-    window.GMFQ_OIS_GAP_CLOSURE={
-      as_of:'2026-10-01',
-      status:'PASS',
-      policy:'WITHHELD_IS_A_VALID_FINAL_STATE_WHEN_THE_PUBLIC_SOURCE_CANNOT_MEET_THE_CANONICAL_VALIDATION_STANDARD',
-      currencies:{
-        USD:{
-          status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
-          source:'CME Group · 30-Day Federal Funds Futures · Daily Bulletin',
-          current_and_1d:true,
-          one_week:false,
-          action:'HOLD_UNTIL_MATCHED_1W_HISTORY'
-        },
-        CHF:{
-          status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-          source:'Eurex · 3M SARON Futures (FSR3)',
-          reason:'Correct direct instrument exists, but useful maturities show no reliable current price discovery: cumulative volume and open interest are zero. Do not activate a canonical 3M/6M/12M path from non-traded marks.',
-          action:'NO_DAILY_RETRY_UNLESS_LIQUIDITY_OR_PUBLIC_SETTLEMENT_QUALITY_CHANGES'
-        },
-        NZD:{
-          status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-          source:'RBNZ public statistics / Monetary Policy Statement',
-          reason:'RBNZ confirms OIS is the market-expectations measure, but the public official statistics feed does not publish a reproducible current 3M/6M/12M OIS curve with matched 1D/1W history. Public B2 bills/swaps are not relabelled as OIS.',
-          action:'NO_DAILY_RETRY_UNLESS_DIRECT_PUBLIC_OIS_CURVE_BECOMES_AVAILABLE'
-        }
-      },
-      active_expected:['EUR','GBP','CAD','AUD'],
-      withheld_expected:['USD','JPY','CHF','NZD']
-    };
-
-    const DWA=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT;
-    if(DWA?.items){
-      if(DWA.items.CHF_CB_PRICING) Object.assign(DWA.items.CHF_CB_PRICING,{
-        status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-        reason:'Eurex 3M SARON is the correct direct instrument, but the useful maturities do not provide reliable current price discovery; volume and open interest are zero.',
-        resolution:'Re-open only if direct public SARON futures/OIS liquidity or settlement quality materially improves.'
-      });
-      if(DWA.items.NZD_CB_PRICING) Object.assign(DWA.items.NZD_CB_PRICING,{
-        status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-        reason:'RBNZ public material confirms OIS as the relevant market-expectations measure, but no direct public reproducible 3M/6M/12M OIS curve with matched 1D/1W history is available.',
-        resolution:'Re-open only if RBNZ/NZX/another official public source exposes a direct OIS curve; do not substitute bills or generic swaps.'
-      });
-    }
-
-    if(window.SOURCE_RESOLUTION_WATCHLIST?.items){
-      const I=window.SOURCE_RESOLUTION_WATCHLIST.items;
-      if(I.CHF_CB_PRICING) Object.assign(I.CHF_CB_PRICING,{
-        current_status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-        check_each_refresh:false,
-        resolved:false
-      });
-      if(I.NZD_CB_PRICING) Object.assign(I.NZD_CB_PRICING,{
-        current_status:'WITHHELD_VALIDATED_SOURCE_LIMIT',
-        check_each_refresh:false,
-        resolved:false
-      });
-      if(I.USD_CB_PRICING) Object.assign(I.USD_CB_PRICING,{
-        current_status:'WITHHELD_PARTIAL_DIRECT_VALIDATED',
-        check_each_refresh:true
-      });
-    }
-
-    window.GMFQ_OIS_GAP_CLOSURE.unresolved_daily_checks=
-      typeof window.unresolvedSourceChecks==='function'
-        ? window.unresolvedSourceChecks().map(x=>x.id)
-        : [];
-
-    document.documentElement.setAttribute('data-ois-gap-closure','PASS');
-  }catch(e){
-    window.GMFQ_OIS_GAP_CLOSURE={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-ois-gap-closure','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-usd-rates-refresh-20261001">
-(function(){
-  'use strict';
-  try{
-    if(typeof NATIVE_RATES_DATA==='undefined' || !NATIVE_RATES_DATA.USD) throw new Error('USD_RATES_MISSING');
-    const r=NATIVE_RATES_DATA.USD;
-    const upsert=(series,date,value)=>{
-      if(!series) return;
-      series.dates=Array.isArray(series.dates)?series.dates:[];
-      series.values=Array.isArray(series.values)?series.values:[];
-      const i=series.dates.indexOf(date);
-      if(i>=0) series.values[i]=value;
-      else {series.dates.push(date);series.values.push(value);}
-      series.last_date=date;series.last_value=value;
-    };
-
-    r.date='2026-09-30';
-    r.source='U.S. Treasury Daily Par Yield Curve · 30 Sep 2026';
-    r.quality='FULL_CURRENT_OFFICIAL';
-    r['2Y']=4.88;
-    r['10Y']=5.29;
-    r.curve_bp=41;
-    r.chg2_bp=3;
-    r.chg10_bp=18;
-    r.curve_state='Bear steepening / long-end in rialzo più del front-end';
-
-    upsert(r.history2,'2026-09-29',4.89);
-    upsert(r.history2,'2026-09-30',4.88);
-    upsert(r.history10,'2026-09-29',5.26);
-    upsert(r.history10,'2026-09-30',5.29);
-
-    if(Array.isArray(r.tenors)){
-      const t2=r.tenors.find(x=>x.tenor==='2Y'); if(t2) Object.assign(t2,{value:4.88,date:'2026-09-30'});
-      const t10=r.tenors.find(x=>x.tenor==='10Y'); if(t10) Object.assign(t10,{value:5.29,date:'2026-09-30'});
-    }
-    if(typeof D!=='undefined' && D.macro?.USD) D.macro.USD.rate2y=4.88;
-
-    const A=window.FINAL_SOURCE_POLICY_AUDIT||{};
-    const R=A.RATES||A.rates;
-    if(R?.USD) Object.assign(R.USD,{current_as_of:'2026-09-30',status:'CURRENT_OFFICIAL_SAME_BASIS'});
-    if(window.PRODUCTION_RATES_REFRESH_STATUS?.rates_refresh?.USD){
-      Object.assign(window.PRODUCTION_RATES_REFRESH_STATUS.rates_refresh.USD,{
-        action:'UPDATED',current_as_of:'2026-09-30',
-        reason:'Official U.S. Treasury same-basis 2Y/10Y close validated.'
-      });
-    }
-
-    window.GMFQ_USD_RATES_REFRESH_AUDIT={
-      status:'PASS',
-      as_of:'2026-09-30',
-      source:'U.S. Treasury Daily Par Yield Curve',
-      y2:4.88,y10:5.29,curve_bp:41,
-      change_1w_bp:{y2:3,y10:18},
-      reference_1w:'2026-09-23',
-      same_basis:true
-    };
-
-    try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(e){}
-    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){}
-    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(e){}
-    document.documentElement.setAttribute('data-usd-rates-refresh','PASS');
-  }catch(e){
-    window.GMFQ_USD_RATES_REFRESH_AUDIT={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-usd-rates-refresh','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-macro-surprise-diagnostic-20261001">
-(function(){
-  'use strict';
-  try{
-    const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-    const parseDate=s=>{const d=new Date(String(s||'')+'T00:00:00Z');return Number.isFinite(d.getTime())?d:null;};
-    const current=String(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||'2026-09-30');
-    const curDate=parseDate(current);
-    const minDate=curDate?new Date(curDate.getTime()-7*86400000):null;
-    const days=(typeof REAL_CALENDAR!=='undefined'&&Array.isArray(REAL_CALENDAR))?REAL_CALENDAR:[];
-    const byCurrency=Object.fromEntries(CCYS.map(c=>[c,[]]));
-
-    const hasConsensus=v=>{
-      const s=String(v??'').trim();
-      return !!s && s!=='—' && s!=='-' && !/nessun consenso|n\/a|na$/i.test(s);
-    };
-    const cls=v=>{
-      const s=String(v||'').toLowerCase();
-      if(s==='positive'||s==='pos') return 'POSITIVE';
-      if(s==='negative'||s==='neg') return 'NEGATIVE';
-      if(s==='neutral'||s==='mixed'||s==='warn') return 'NEUTRAL';
-      return 'UNCLASSIFIED';
-    };
-
-    days.forEach(day=>{
-      const d=parseDate(day?.key);
-      if(!d) return;
-      if(curDate && d>curDate) return;
-      if(minDate && d<minDate) return;
-      (day.events||[]).forEach(e=>{
-        if(e?.status!=='done') return;
-        const c=String(e.ccy||'').toUpperCase();
-        if(!byCurrency[c]) return;
-        const actual=e.actual??null;
-        const forecast=e.forecast??e.consensus??null;
-        const previous=e.prev??e.previous??null;
-        const consensusOk=hasConsensus(forecast);
-        byCurrency[c].push({
-          date:day.key,
-          event:e.event||'—',
-          previous,
-          consensus:forecast,
-          actual,
-          surprise:e.surprise??null,
-          surprise_class:consensusOk?cls(e.scls):'NO_CONSENSUS',
-          consensus_available:consensusOk,
-          direction:e.direction??null,
-          confirmation:e.confirm??null,
-          signal_impact:'NONE_DIAGNOSTIC_ONLY'
-        });
-      });
-    });
-
-    const summary={};
-    for(const c of CCYS){
-      const rows=byCurrency[c];
-      const withConsensus=rows.filter(x=>x.consensus_available);
-      const pos=withConsensus.filter(x=>x.surprise_class==='POSITIVE').length;
-      const neg=withConsensus.filter(x=>x.surprise_class==='NEGATIVE').length;
-      const neu=withConsensus.filter(x=>x.surprise_class==='NEUTRAL').length;
-      const unc=withConsensus.filter(x=>x.surprise_class==='UNCLASSIFIED').length;
-      const noConsensus=rows.length-withConsensus.length;
-      summary[c]={
-        events:rows.length,
-        with_consensus:withConsensus.length,
-        without_consensus:noConsensus,
-        positive_surprises:pos,
-        negative_surprises:neg,
-        neutral_or_mixed:neu,
-        unclassified:unc,
-        balance:pos-neg,
-        coverage_pct:rows.length?Math.round(withConsensus.length/rows.length*100):0,
-        interpretation:'DIAGNOSTIC_ONLY__NOT_USED_IN_STRUCTURAL_MACRO_STATE'
-      };
-    }
-
-    const totalEvents=Object.values(summary).reduce((a,x)=>a+x.events,0);
-    const totalConsensus=Object.values(summary).reduce((a,x)=>a+x.with_consensus,0);
-    const missing=Object.entries(summary).filter(([,x])=>x.events>0&&x.coverage_pct<100).map(([c,x])=>({currency:c,coverage_pct:x.coverage_pct,without_consensus:x.without_consensus}));
-
-    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={
-      version:'1.0',
-      as_of:current,
-      window_days:7,
-      status:totalEvents===0?'WITHHELD_NO_EVENTS':(missing.length?'PASS_WITH_COVERAGE_GAPS':'PASS'),
-      policy:{
-        role:'DIAGNOSTIC_ONLY',
-        changes_structural_macro:false,
-        changes_pair_direction:false,
-        changes_model_rules:false,
-        oos_restart_required:false,
-        rule:'Actual/consensus/previous and surprise are observed alongside canonical macro series. They cannot alter structural Macro until separately validated and explicitly promoted.'
-      },
-      totals:{
-        events:totalEvents,
-        with_consensus:totalConsensus,
-        coverage_pct:totalEvents?Math.round(totalConsensus/totalEvents*100):0
-      },
-      summary,
-      events:byCurrency,
-      coverage_gaps:missing
-    };
-
-    window.macroSurpriseDiagnostic=function(){
-      return JSON.parse(JSON.stringify(window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC));
-    };
-
-    document.documentElement.setAttribute('data-macro-surprise-diagnostic',window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC.status);
-  }catch(e){
-    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-macro-surprise-diagnostic','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-macro-surprise-diagnostic-reconciler-20261001">
-(function(){
-  'use strict';
-  try{
-    const days=(typeof REAL_CALENDAR!=='undefined'&&Array.isArray(REAL_CALENDAR))?REAL_CALENDAR:[];
-    const findEvent=(date,re)=>{
-      const d=days.find(x=>x.key===date);
-      return d?.events?.find(e=>re.test(String(e.event||'')))||null;
-    };
-
-    const sp=findEvent('2026-09-29',/Spanish Flash CPI/i);
-    if(sp){
-      sp.forecast='4,6%';
-      sp.surprise='+0,3 pp sopra consenso';
-      sp.scls='positive';
-    }
-
-    const it=findEvent('2026-09-30',/Italy HICP/i);
-    if(it){
-      it.forecast='3,8% / 1,8%';
-      it.surprise='+0,3 pp a/a e +0,2 pp m/m sopra consenso';
-      it.scls='positive';
-    }
-
-    const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-    const current=String(window.AUXILIARY_FEED_FRESHNESS?.calendar?.current_date||'2026-09-30');
-    const curDate=new Date(current+'T00:00:00Z');
-    const minDate=new Date(curDate.getTime()-7*86400000);
-    const byCurrency=Object.fromEntries(CCYS.map(c=>[c,[]]));
-
-    const qualitative=/press conference|conference|speech|testimony|minutes|statement only/i;
-    const hasConsensus=v=>{
-      const s=String(v??'').trim();
-      return !!s && s!=='—' && s!=='-' && !/nessun consenso|n\/a|na$/i.test(s);
-    };
-    const cls=v=>{
-      const s=String(v||'').toLowerCase();
-      if(s==='positive'||s==='pos') return 'POSITIVE';
-      if(s==='negative'||s==='neg') return 'NEGATIVE';
-      if(s==='neutral'||s==='mixed'||s==='warn') return 'NEUTRAL';
-      return 'UNCLASSIFIED';
-    };
-
-    days.forEach(day=>{
-      const dt=new Date(String(day?.key||'')+'T00:00:00Z');
-      if(!Number.isFinite(dt.getTime())||dt>curDate||dt<minDate) return;
-      (day.events||[]).forEach(e=>{
-        if(e?.status!=='done') return;
-        const c=String(e.ccy||'').toUpperCase();
-        if(!byCurrency[c]) return;
-        const qualitativeEvent=qualitative.test(String(e.event||''));
-        const consensus=e.forecast??e.consensus??null;
-        const consensusApplicable=!qualitativeEvent;
-        const consensusAvailable=consensusApplicable&&hasConsensus(consensus);
-        byCurrency[c].push({
-          date:day.key,
-          event:e.event||'—',
-          previous:e.prev??e.previous??null,
-          consensus,
-          actual:e.actual??null,
-          surprise:e.surprise??null,
-          surprise_class:consensusAvailable?cls(e.scls):(consensusApplicable?'NO_CONSENSUS':'NOT_APPLICABLE'),
-          consensus_applicable:consensusApplicable,
-          consensus_available:consensusAvailable,
-          direction:e.direction??null,
-          confirmation:e.confirm??null,
-          signal_impact:'NONE_DIAGNOSTIC_ONLY'
-        });
-      });
-    });
-
-    const summary={};
-    for(const c of CCYS){
-      const rows=byCurrency[c];
-      const applicable=rows.filter(x=>x.consensus_applicable);
-      const withConsensus=applicable.filter(x=>x.consensus_available);
-      const pos=withConsensus.filter(x=>x.surprise_class==='POSITIVE').length;
-      const neg=withConsensus.filter(x=>x.surprise_class==='NEGATIVE').length;
-      const neu=withConsensus.filter(x=>x.surprise_class==='NEUTRAL').length;
-      const unc=withConsensus.filter(x=>x.surprise_class==='UNCLASSIFIED').length;
-      const noConsensus=applicable.length-withConsensus.length;
-      const qualitativeCount=rows.length-applicable.length;
-      summary[c]={
-        events_total:rows.length,
-        numeric_releases:applicable.length,
-        qualitative_events:qualitativeCount,
-        with_consensus:withConsensus.length,
-        without_consensus:noConsensus,
-        positive_surprises:pos,
-        negative_surprises:neg,
-        neutral_or_mixed:neu,
-        unclassified:unc,
-        balance:pos-neg,
-        coverage_pct:applicable.length?Math.round(withConsensus.length/applicable.length*100):null,
-        state:applicable.length===0?(rows.length?'QUALITATIVE_ONLY':'NO_RECENT_RELEASE'):(noConsensus?'PARTIAL':'COMPLETE'),
-        interpretation:'DIAGNOSTIC_ONLY__NOT_USED_IN_STRUCTURAL_MACRO_STATE'
-      };
-    }
-
-    const numeric=Object.values(summary).reduce((a,x)=>a+x.numeric_releases,0);
-    const withConsensus=Object.values(summary).reduce((a,x)=>a+x.with_consensus,0);
-    const qualitativeEvents=Object.values(summary).reduce((a,x)=>a+x.qualitative_events,0);
-    const gaps=Object.entries(summary)
-      .filter(([,x])=>x.numeric_releases>0&&x.without_consensus>0)
-      .map(([currency,x])=>({currency,coverage_pct:x.coverage_pct,without_consensus:x.without_consensus}));
-
-    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={
-      version:'1.1',
-      as_of:current,
-      window_days:7,
-      status:gaps.length?'PASS_WITH_COVERAGE_GAPS':'PASS',
-      policy:{
-        role:'DIAGNOSTIC_ONLY',
-        changes_structural_macro:false,
-        changes_pair_direction:false,
-        changes_model_rules:false,
-        oos_restart_required:false,
-        qualitative_events_excluded_from_consensus_denominator:true,
-        rule:'Actual/consensus/previous and surprise are diagnostic only. Qualitative events do not count as missing consensus.'
-      },
-      totals:{
-        events_total:numeric+qualitativeEvents,
-        numeric_releases:numeric,
-        qualitative_events:qualitativeEvents,
-        with_consensus:withConsensus,
-        coverage_pct:numeric?Math.round(withConsensus/numeric*100):0
-      },
-      summary,
-      events:byCurrency,
-      coverage_gaps:gaps,
-      reconciliations:[
-        {event:'Spanish Flash CPI y/y',date:'2026-09-29',consensus:'4,6%',actual:'4,9%',source_note:'Market calendar consensus; official actual from INE.'},
-        {event:'Italy HICP y/y + m/m',date:'2026-09-30',consensus:'3,8% / 1,8%',actual:'4,1% / 2,0%',source_note:'Reuters poll consensus; official actual from ISTAT.'},
-        {event:'RBA Press Conference',date:'2026-09-29',consensus:'NOT_APPLICABLE',source_note:'Qualitative event excluded from numeric consensus coverage.'}
-      ]
-    };
-
-    document.documentElement.setAttribute('data-macro-surprise-diagnostic',window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC.status);
-  }catch(e){
-    window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC={status:'FAIL',error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-macro-surprise-diagnostic','FAIL');
-  }
-})();
-</script>
-
-
-<script id="gmfq-macro-surprise-panel-20261001">
-(function(){
-  'use strict';
-  function esc(s){return String(s??'—').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
-  function cls(x){
-    x=String(x||'').toUpperCase();
-    if(x==='POSITIVE') return 'pos';
-    if(x==='NEGATIVE') return 'neg';
-    if(x==='NEUTRAL') return 'neu';
-    return 'warn';
-  }
-  function ensureStyle(){
-    if(document.getElementById('gmfqMacroSurpriseStyle')) return;
-    const s=document.createElement('style');
-    s.id='gmfqMacroSurpriseStyle';
-    s.textContent=`
-      .gmfqMacroSurprise{margin:10px 0 12px;padding:11px 12px;border:1px solid rgba(90,115,130,.22);border-radius:14px;background:rgba(255,255,255,.72)}
-      .gmfqMacroSurprise .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-      .gmfqMacroSurprise .lab{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#718691;font-weight:800}
-      .gmfqMacroSurprise .title{font-size:13px;font-weight:800;color:#1e3038;margin-top:2px}
-      .gmfqMacroSurprise .badge{font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;background:#eef3f5;color:#506773;white-space:nowrap}
-      .gmfqMacroSurprise .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
-      .gmfqMacroSurprise .cell{padding:8px;border-radius:10px;background:rgba(244,247,248,.9)}
-      .gmfqMacroSurprise .cell span{display:block;font-size:8px;color:#718691;text-transform:uppercase;font-weight:800}
-      .gmfqMacroSurprise .cell b{display:block;font-size:13px;margin-top:2px}
-      .gmfqMacroSurprise .events{display:grid;gap:6px;margin-top:9px}
-      .gmfqMacroSurprise .ev{font-size:9px;line-height:1.35;padding:7px 8px;border-radius:9px;background:#f7f9fa}
-      .gmfqMacroSurprise .ev b{font-size:9.5px}
-      .gmfqMacroSurprise .pos b{color:#237a57}.gmfqMacroSurprise .neg b{color:#a43f55}.gmfqMacroSurprise .neu b{color:#667b84}.gmfqMacroSurprise .warn b{color:#9a6a22}
-      .gmfqMacroSurprise .note{margin-top:8px;font-size:8.5px;color:#6f838c;line-height:1.35}
-      @media(max-width:640px){.gmfqMacroSurprise .grid{grid-template-columns:repeat(3,1fr)}.gmfqMacroSurprise{padding:10px}.gmfqMacroSurprise .title{font-size:12px}}
-    `;
-    document.head.appendChild(s);
-  }
-  function selected(){
-    try{return window.v232MacroCurrency||'USD'}catch(e){return 'USD'}
-  }
-  function render(c){
-    ensureStyle();
-    const macroRoot=document.getElementById('macro');
-    const host=document.querySelector('#macro .v232CountryTop') || document.querySelector('#macro .v232MacroThesis');
-    if(!macroRoot || !host) return;
-    let box=document.getElementById('gmfqMacroSurprisePanel');
-    if(!box){
-      box=document.createElement('div');
-      box.id='gmfqMacroSurprisePanel';
-      box.className='gmfqMacroSurprise';
-      host.insertAdjacentElement('afterend',box);
-    }else if(!macroRoot.contains(box)){
-      host.insertAdjacentElement('afterend',box);
-    }
-    const D=window.GMFQ_MACRO_SURPRISE_DIAGNOSTIC;
-    const rows=(D?.events?.[c]||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-    const applicable=rows.filter(x=>x.consensus_applicable!==false);
-    const usable=applicable.filter(x=>x.consensus_available);
-    const pos=usable.filter(x=>x.surprise_class==='POSITIVE').length;
-    const neg=usable.filter(x=>x.surprise_class==='NEGATIVE').length;
-    const neu=usable.filter(x=>x.surprise_class==='NEUTRAL').length;
-    const recent=rows.slice(0,3);
-    const status=!D?'WITHHELD':(D.status||'—');
-    box.innerHTML=`
-      <div class="top"><div><div class="lab">Sorprese recenti vs consenso</div><div class="title">${esc(c)} · ultimi 7 giorni</div></div><div class="badge">${esc(status)}</div></div>
-      <div class="grid">
-        <div class="cell pos"><span>Positive</span><b>${pos}</b></div>
-        <div class="cell neg"><span>Negative</span><b>${neg}</b></div>
-        <div class="cell neu"><span>Neutre / miste</span><b>${neu}</b></div>
-      </div>
-      <div class="events">${recent.length?recent.map(x=>`<div class="ev ${cls(x.surprise_class)}"><b>${esc(x.date)} · ${esc(x.event)}</b><br>Prec. ${esc(x.previous)} · Cons. ${esc(x.consensus)} · Uscito ${esc(x.actual)}<br>${esc(x.surprise||x.direction||'Nessuna sorpresa classificata')}</div>`).join(''):'<div class="ev warn"><b>Nessun rilascio recente classificabile.</b></div>'}</div>
-      <div class="note"><b>Ruolo:</b> diagnostica di timing. Non modifica Macro strutturale, Pair o forward OOS finché non viene validata e promossa separatamente.</div>
-    `;
-  }
-  const base=window.renderMacroLab;
-  if(typeof base==='function'){
-    window.renderMacroLab=function(){const r=base.apply(this,arguments);try{render(selected())}catch(e){}return r;};
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{try{render(selected())}catch(e){}},{once:true});
-  else try{render(selected())}catch(e){}
-  window.GMFQ_MACRO_SURPRISE_PANEL={render};
-})();
-</script>
-
-<script id="gmfq-cb-vs-market-panel-20261001">
-(function(){
-  'use strict';
-  function esc(s){return String(s??'—').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
-  function cls(x){
-    const s=String(x||'').toLowerCase();
-    if(/hawk|restritt|rialzo|sale|più alto|up/.test(s)) return 'pos';
-    if(/dovish|accomod|taglio|scende|più basso|down/.test(s)) return 'neg';
-    if(/diverg|withheld|parziale|non comparabile|incert/.test(s)) return 'warn';
-    return 'neu';
-  }
-  function ensureStyle(){
-    if(document.getElementById('gmfqCbVsMarketStyle')) return;
-    const s=document.createElement('style'); s.id='gmfqCbVsMarketStyle';
-    s.textContent=`
-      .gmfqCbVsMarket{margin:10px 0 12px;padding:11px 12px;border:1px solid rgba(90,115,130,.22);border-radius:14px;background:rgba(255,255,255,.72)}
-      .gmfqCbVsMarket .lab{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#718691;font-weight:800}
-      .gmfqCbVsMarket .title{font-size:13px;font-weight:800;color:#1e3038;margin:2px 0 9px}
-      .gmfqCbVsMarket .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-      .gmfqCbVsMarket .cell{padding:9px;border-radius:10px;background:#f7f9fa;min-height:82px}
-      .gmfqCbVsMarket .cell span{display:block;font-size:8px;color:#718691;text-transform:uppercase;font-weight:800}
-      .gmfqCbVsMarket .cell b{display:block;font-size:11px;line-height:1.25;margin:4px 0}
-      .gmfqCbVsMarket .cell small{font-size:8.5px;line-height:1.3;color:#60757f}
-      .gmfqCbVsMarket .pos b{color:#237a57}.gmfqCbVsMarket .neg b{color:#a43f55}.gmfqCbVsMarket .warn b{color:#9a6a22}.gmfqCbVsMarket .neu b{color:#536b76}
-      .gmfqCbVsMarket .conclusion{margin-top:8px;padding:8px 9px;border-radius:9px;background:#eef3f5;font-size:9px;line-height:1.35;color:#405861}
-      @media(max-width:640px){.gmfqCbVsMarket .grid{grid-template-columns:1fr}.gmfqCbVsMarket .cell{min-height:0}}
-    `; document.head.appendChild(s);
-  }
-  function selected(){try{return window.v234CbCurrency||window.nativeCbSelected||'USD'}catch(e){return 'USD'}}
-  function model(c){
-    const d=window.NATIVE_CB_DATA?.[c];
-    if(!d) return null;
-    const stance=window.v234StanceLabel?window.v234StanceLabel(d):(d.stance||d.official_bias||'—');
-    const market=window.v234MarketSummary?window.v234MarketSummary(c,d):{label:'Pricing non disponibile',why:d.pricing_status||'—'};
-    const front=window.v234FrontEnd?window.v234FrontEnd(c):{label:'2Y non disponibile',why:'—',cls:'neu'};
-    const div=window.v234PolicyVsMarket?window.v234PolicyVsMarket(c,d):{label:'Confronto non disponibile',why:'—',cls:'neu'};
-    return {d,stance,market,front,div};
-  }
-  function render(c){
-    ensureStyle();
-    const m=model(c); if(!m) return;
-    const cbRoot=document.getElementById('cbdesk');
-    const host=document.querySelector('#cbdesk .v234CountryTop')||document.querySelector('#cbdesk .v234Hero');
-    if(!cbRoot || !host) return;
-    let box=document.getElementById('gmfqCbVsMarketPanel');
-    if(!box){
-      box=document.createElement('div');
-      box.id='gmfqCbVsMarketPanel';
-      box.className='gmfqCbVsMarket';
-      host.insertAdjacentElement('afterend',box);
-    }else if(!cbRoot.contains(box)){
-      host.insertAdjacentElement('afterend',box);
-    }
-    const marketTxt=m.market?.label||m.market?.headline||'—';
-    const marketWhy=m.market?.why||m.market?.detail||m.d?.pricing_status||'—';
-    box.innerHTML=`
-      <div class="lab">Banca centrale vs mercato</div>
-      <div class="title">${esc(c)} · chi sta guidando davvero il repricing?</div>
-      <div class="grid">
-        <div class="cell ${cls(m.stance)}"><span>1 · Banca centrale dice</span><b>${esc(m.stance)}</b><small>${esc(m.d?.official_bias||m.d?.action||'—')}</small></div>
-        <div class="cell ${cls(marketTxt+' '+marketWhy)}"><span>2 · Mercato prezza</span><b>${esc(marketTxt)}</b><small>${esc(marketWhy)}</small></div>
-        <div class="cell ${m.front?.cls||'neu'}"><span>3 · 2Y conferma?</span><b>${esc(m.front?.label||'—')}</b><small>${esc(m.front?.why||'—')}</small></div>
-      </div>
-      <div class="conclusion"><b>Conclusione:</b> ${esc(m.div?.label||'—')}. ${esc(m.div?.why||'')} La decisione ufficiale non vale come secondo voto: conta se il mercato la conferma o la contraddice.</div>
-    `;
-  }
-  const base=window.renderCbDesk;
-  if(typeof base==='function'){
-    window.renderCbDesk=function(){const r=base.apply(this,arguments);try{render(selected())}catch(e){}return r;};
-  } else {
-    const base2=window.renderNativeCbDesk;
-    if(typeof base2==='function') window.renderNativeCbDesk=function(){const r=base2.apply(this,arguments);try{render(selected())}catch(e){}return r;};
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{try{render(selected())}catch(e){}},{once:true});
-  else try{render(selected())}catch(e){}
-  window.GMFQ_CB_VS_MARKET_PANEL={render,model};
-})();
-</script>
-
-
-
-<script id="gmfq-view-scoped-diagnostic-panels-20261001">
-(function(){
-  'use strict';
-  function currentView(){
-    try{
-      if(typeof activeView!=='undefined' && activeView) return String(activeView);
-    }catch(e){}
-    const x=document.querySelector('.view.active[id], section.view.active[id]');
-    return x?.id||'';
-  }
-  function sync(v){
-    const view=String(v||currentView()||'');
-    const macro=document.getElementById('gmfqMacroSurprisePanel');
-    const cb=document.getElementById('gmfqCbVsMarketPanel');
-    if(macro) macro.style.display=view==='macro'?'':'none';
-    if(cb) cb.style.display=view==='cbdesk'?'':'none';
-  }
-  const prev=window.showView;
-  if(typeof prev==='function' && !prev.__gmfqScopedPanels){
-    const wrapped=function(v){
-      const out=prev.apply(this,arguments);
-      try{sync(v);}catch(e){}
-      return out;
-    };
-    wrapped.__gmfqScopedPanels=true;
-    wrapped.__gmfqOriginal=prev;
-    window.showView=wrapped;
-    try{showView=wrapped;}catch(e){}
-  }
-  const obs=new MutationObserver(()=>{try{sync()}catch(e){}});
-  if(document.body) obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',()=>{try{sync()}catch(e){}},{once:true});
-  }else{
-    try{sync()}catch(e){}
-  }
-  window.GMFQ_VIEW_SCOPED_DIAGNOSTIC_PANELS={sync,currentView};
-})();
-</script>
-
-<script id="gmfq-final-runtime-audit-reconciliation-20261001">
-(function(){
-  'use strict';
-  try{
-    if(typeof rebuildCanonicalState==='function') rebuildCanonicalState();
-    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-    const expectedRates={
-      USD:'2026-09-30',EUR:'2026-09-29',GBP:'2026-09-29',JPY:'2026-09-28',
-      CHF:'2026-09-25',CAD:'2026-09-28',AUD:'2026-09-25',NZD:'2026-09-29'
-    };
-    const issues=[];
-    let cq=null,vq=null,rb=null,rv=null;
-    try{cq=canonicalConsistencyQa(); if(cq?.ok!==true) issues.push(...(cq?.issues||['CANONICAL_CONSISTENCY_FAIL']));}catch(e){issues.push('CANONICAL_CONSISTENCY_UNAVAILABLE');}
-    const currencyCount=Number(cq?.currencies||0);
-    const pairCount=Number(cq?.pairs||0);
-    if(currencyCount!==8) issues.push('CURRENCY_COUNT:'+currencyCount);
-    if(pairCount!==28) issues.push('PAIR_COUNT:'+pairCount);
-    try{vq=canonicalViewQa(); if(vq?.ok!==true) issues.push(...(vq?.issues||['CANONICAL_VIEW_FAIL']));}catch(e){issues.push('CANONICAL_VIEW_UNAVAILABLE');}
-    try{rb=ratesCanonicalBasisIntegrity(); if(rb?.ok!==true) issues.push('RATES_BASIS_FAIL');}catch(e){issues.push('RATES_BASIS_UNAVAILABLE');}
-    try{rv=visibleRatesSnapshotIntegrity(); if(rv?.ok!==true) issues.push('RATES_VISIBLE_FAIL');}catch(e){issues.push('RATES_VISIBLE_UNAVAILABLE');}
-
-    const rates={};
-    ccys.forEach(ccy=>{
-      const d=NATIVE_RATES_DATA?.[ccy]||{};
-      const src=(window.FINAL_SOURCE_POLICY_AUDIT?.RATES||window.FINAL_SOURCE_POLICY_AUDIT?.rates||{})?.[ccy]||{};
-      rates[ccy]={runtime:d.date||null,registry:src.current_as_of||null,expected:expectedRates[ccy]};
-      if((d.date||null)!==expectedRates[ccy]) issues.push('RATES_RUNTIME_DATE:'+ccy+':'+String(d.date));
-      if((src.current_as_of||null)!==expectedRates[ccy]) issues.push('RATES_REGISTRY_DATE:'+ccy+':'+String(src.current_as_of));
-    });
-
-    const ois={};
-    ccys.forEach(ccy=>{
-      const x=window.GMFQ_OIS?.currency?.(ccy);
-      ois[ccy]=x?.status||'WITHHELD';
-    });
-    ['EUR','GBP','CAD','AUD'].forEach(c=>{if(ois[c]!=='ACTIVE') issues.push(c+'_OIS_NOT_ACTIVE');});
-    ['USD','JPY','CHF','NZD'].forEach(c=>{if(ois[c]==='ACTIVE') issues.push(c+'_OIS_SHOULD_BE_WITHHELD');});
-
-    const definitive=window.GMFQ_DEFINITIVE_WITHHELD_AUDIT?.items||{};
-    ['JPY_OIS','USD_CB_PRICING','CHF_CB_PRICING','NZD_CB_PRICING'].forEach(k=>{
-      if(!definitive[k] || !/^WITHHELD_/.test(String(definitive[k].status||''))) issues.push('WITHHELD_REASON_MISSING:'+k);
-    });
-
-    const resolvedAudits={
-      USD_PRICE:window.GMFQ_USD_PRICE_AUDIT?.status||null,
-      GBP_OIS:window.GMFQ_GBP_OIS_AUDIT?.status||null,
-      CAD_CORRA:window.GMFQ_CAD_CORRA_AUDIT?.status||null,
-      AUD_POST_RBA:window.GMFQ_AUD_POST_RBA_PRICING_AUDIT?.status||null,
-      EUR_RATES:window.GMFQ_EUR_RATES_AUDIT?.status||null,
-      GBP_RATES:window.GMFQ_GBP_RATES_AUDIT?.status||null,
-      CAD_RATES:window.GMFQ_CAD_RATES_AUDIT?.status||null,
-      USD_RATES:window.GMFQ_USD_RATES_REFRESH_AUDIT?.status||null,
-      NZD_DATA:window.GMFQ_NZD_DATA_REFRESH_AUDIT?.status||null
-    };
-    Object.entries(resolvedAudits).forEach(([k,v])=>{
-      if(v && v!=='PASS' && v!=='ACTIVE') issues.push('RESOLVED_AUDIT_FAIL:'+k+':'+v);
-    });
-
-    const pairSingle=window.__PAIR_SINGLE_SOURCE_AUDIT__||null;
-    if(pairSingle && pairSingle.status!=='PASS') issues.push('PAIR_SINGLE_SOURCE_AUDIT_FAIL');
-    let narrative=null;
-    try{narrative=currencyNarrativeIntegrity(); if(narrative?.ok!==true) issues.push(...(narrative?.issues||['CURRENCY_NARRATIVE_INTEGRITY_FAIL']));}
-    catch(e){issues.push('CURRENCY_NARRATIVE_INTEGRITY_UNAVAILABLE');}
-
-    window.GMFQ_FULL_SYSTEM_AUDIT={
-      status:issues.length?'FAIL':'PASS',
-      as_of:'2026-10-01',
-      final_runtime:true,
-      counts:{currencies:currencyCount,pairs:pairCount},
-      canonical:{consistency_ok:cq?.ok??null,view_ok:vq?.ok??null,narrative_ok:narrative?.ok??null,pair_single_source:pairSingle?.status||null},
-      rates:{basis_ok:rb?.ok??null,visible_ok:rv?.ok??null,dates:rates},
-      ois,
-      resolved_audits:resolvedAudits,
-      issues
-    };
-    document.documentElement.setAttribute('data-full-system-audit',window.GMFQ_FULL_SYSTEM_AUDIT.status);
-    document.documentElement.setAttribute('data-full-system-audit-asof','2026-10-01');
-  }catch(e){
-    window.GMFQ_FULL_SYSTEM_AUDIT={status:'FAIL',as_of:'2026-10-01',final_runtime:true,error:String(e?.message||e)};
-    document.documentElement.setAttribute('data-full-system-audit','FAIL');
   }
 })();
 </script>

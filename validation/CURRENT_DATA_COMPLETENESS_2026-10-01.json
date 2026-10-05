@@ -1,0 +1,177 @@
+{
+  "schema": "GMFQ_CURRENT_DATA_COMPLETENESS_V1",
+  "as_of": "2026-10-01",
+  "scope": "CURRENT_OPERATIONAL_RUNTIME_ONLY",
+  "methodology": {
+    "denominator": 6,
+    "blocks": [
+      "Macro core",
+      "Rates current",
+      "CB/OIS pricing",
+      "COT",
+      "Price",
+      "Liquidity current"
+    ],
+    "scoring": "1 point only when the current operational block is validated/usable; WITHHELD counts 0. Secondary quarantined series do not reduce Macro core if excluded from decision use.",
+    "caveat": "This score is not the historical backtest completeness score."
+  },
+  "shared_runtime": {
+    "metadata": "204/204 source_file/frequency/unit complete",
+    "cot": "8/8 current weekly canonical coverage",
+    "price_pairs": "28/28 pair matrix available from ECB reference-rate framework",
+    "quarantined_secondary_series": [
+      "USD SLOOS C&I large/middle — excluded pending explicit source-column mapping",
+      "CHF SECO consumer sentiment — excluded pending unambiguous reconstruction"
+    ]
+  },
+  "currencies": {
+    "USD": {
+      "score_blocks": "4/6",
+      "current_completeness_pct": 67,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "WITHHELD_PARTIAL_DIRECT_VALIDATED",
+        "cot": "ACTIVE",
+        "price": "WITHHELD_CANONICAL__DIAGNOSTIC_FED_BROAD_ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": [
+        "OIS: direct CME current + 1D validated, matched same-contract 1W history still missing",
+        "Price: Federal Reserve H.10 Nominal Broad U.S. Dollar Index is now connected as a validated diagnostic benchmark, but canonical promotion is withheld to preserve the frozen OOS baseline"
+      ]
+    },
+    "EUR": {
+      "score_blocks": "6/6",
+      "current_completeness_pct": 100,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "ACTIVE",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": []
+    },
+    "GBP": {
+      "score_blocks": "6/6",
+      "current_completeness_pct": 100,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "ACTIVE",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": []
+    },
+    "JPY": {
+      "score_blocks": "6/6",
+      "current_completeness_pct": 100,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "ACTIVE",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": [
+        "OIS long buckets have thinner liquidity; retained as explicit quality caution, not WITHHELD"
+      ]
+    },
+    "CHF": {
+      "score_blocks": "5/6",
+      "current_completeness_pct": 83,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "WITHHELD_VALIDATED_SOURCE_LIMIT",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": [
+        "OIS: correct direct SARON futures instrument identified, but useful maturities lack reliable current price discovery",
+        "Secondary SECO consumer-sentiment series quarantined; does not block Macro core"
+      ]
+    },
+    "CAD": {
+      "score_blocks": "6/6",
+      "current_completeness_pct": 100,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "ACTIVE",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": []
+    },
+    "AUD": {
+      "score_blocks": "6/6",
+      "current_completeness_pct": 100,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "ACTIVE",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": [
+        "Longer ASX OIS buckets show thinner visible activity; official settlements remain validated"
+      ]
+    },
+    "NZD": {
+      "score_blocks": "5/6",
+      "current_completeness_pct": 83,
+      "blocks": {
+        "macro_core": "ACTIVE",
+        "rates_current": "ACTIVE",
+        "cb_ois_pricing": "WITHHELD_VALIDATED_SOURCE_LIMIT",
+        "cot": "ACTIVE",
+        "price": "ACTIVE",
+        "liquidity_current": "ACTIVE"
+      },
+      "gaps": [
+        "OIS: no direct public reproducible 3M/6M/12M OIS curve with matched 1D/1W history",
+        "Current liquidity is active after RBNZ D10+C50 refresh; historical liquidity replay remains a separate limitation"
+      ]
+    }
+  },
+  "historical_replay_caveats": {
+    "statement": "No currency should be called 100% complete for full historical replay.",
+    "rates_history": "7/8 same-basis historical coverage; EUR historical rates withheld",
+    "cb_ois_history": "Historical point-in-time CB/OIS replay withheld",
+    "liquidity_history": "Historical liquidity backtest 7/8; NZD historical liquidity withheld",
+    "implication": "Current operational 100% does not imply full historical/pseudo-OOS 100%."
+  },
+  "next_priority": [
+    "USD: capture matched same-contract 1W CME Fed Funds futures history",
+    "After current OOS regime or with an explicit new baseline: consider promoting the validated Fed broad USD benchmark from diagnostic to canonical Price confirmation",
+    "Rates decomposition: add comparable weekly changes for real yield / breakeven / term premium where official data supports them",
+    "Do not force CHF or NZD OIS activation unless direct public source quality materially improves"
+  ],
+  "model_safety": {
+    "changes_model_rules": false,
+    "changes_currency_state": false,
+    "changes_pair_direction": false,
+    "oos_restart_required": false
+  },
+  "progress_updates": [
+    {
+      "date": "2026-10-01",
+      "item": "USD price benchmark",
+      "status": "DIAGNOSTIC_VALIDATED_NOT_CANONICAL",
+      "source": "Federal Reserve H.10 Nominal Broad U.S. Dollar Index",
+      "as_of": "2026-09-25",
+      "latest": 120.33,
+      "one_week_change_pct": 0.68,
+      "oos_impact": "NONE"
+    }
+  ]
+}
