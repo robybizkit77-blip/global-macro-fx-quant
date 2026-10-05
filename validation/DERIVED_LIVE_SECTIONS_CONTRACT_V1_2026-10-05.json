@@ -1,16 +1,28 @@
 {
   "schema": "GMFQ_DERIVED_LIVE_SECTIONS_CONTRACT_V1",
   "created_at": "2026-10-05",
-  "status": "CONTRACT_DEFINED__BUILDERS_PENDING",
+  "status": "COT_BUILDER_READY__RATES_BUILDER_PENDING",
   "sections": [
     {
       "key": "V247_COT_STORIES",
       "file": "live_data/sections/V247_COT_STORIES.json",
-      "mode": "DERIVED_BUILDER_REQUIRED",
+      "mode": "DERIVED_BUILDER_READY",
       "direct_update_allowed": false,
-      "reason": "Current runtime no longer contains the stored JSON as one exact literal block after runtime optimization/transform.",
-      "canonical_inputs": ["validated CFTC COT source data", "price confirmation only when separately validated"],
-      "required_builder_properties": ["deterministic", "source/as-of explicit", "no invented price confirmation", "same COT interpretation rules", "output validated by Engine Gate and Browser Gate"]
+      "builder": "validation/build_cot_stories.py",
+      "builder_status": "ISOLATED_SELFTEST_PASS",
+      "builder_run_id": 37300171875,
+      "canonical_inputs": ["live_data/sections/V250_COT_CHART_DATA.json", "price confirmation only when separately validated"],
+      "rules": {
+        "extreme_long_percentile_gte": 80,
+        "extreme_short_percentile_lte": 20,
+        "cot_role": "positioning/risk context only; never standalone directional bias"
+      },
+      "historical_drift_identified": [
+        "CHF current stored label NEUTRALE -> canonical EXTREME LONG at percentile 84.6",
+        "CAD current stored label EXTREME LONG -> canonical NEUTRALE at percentile 65.4"
+      ],
+      "validation": "All non-signal narrative fields reproduced exactly from current V250 data; only the two stale signal labels differ.",
+      "required_before_real_write": ["apply through dedicated derived-runtime injection path", "Engine Gate PASS", "Browser Gate PASS"]
     },
     {
       "key": "RATES_AUDIT_METADATA",
