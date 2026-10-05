@@ -26,11 +26,14 @@ jobs:
       - name: Fetch official EUR GBP source audit
         run: python validation/fetch_rates_eur_gbp.py > /tmp/rates-eur-gbp-audit.json
       - name: Build EUR GBP rates replacement
+        shell: bash
         run: |
+          set -euo pipefail
           python validation/build_eur_gbp_rates_candidate.py \
             --source-audit /tmp/rates-eur-gbp-audit.json \
             --output /tmp/NATIVE_RATES_DATA.json \
             | tee /tmp/eur-gbp-candidate-summary.json
+          test -s /tmp/NATIVE_RATES_DATA.json
       - name: Apply direct rates section
         run: |
           python validation/update_live_direct_section.py \
