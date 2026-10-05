@@ -1,0 +1,3 @@
+Unified final staging gate trigger.
+Purpose: run Engine Integrity, Live Refresh Browser Gate, Staging Browser Audit, and Live Post Execution Status on the same commit SHA.
+No model, data, or runtime logic changes.
