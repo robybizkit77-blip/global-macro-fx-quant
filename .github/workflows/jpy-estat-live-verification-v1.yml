@@ -2,11 +2,6 @@ name: JPY e-Stat Live Verification V1
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - validation-macro-source-jpy-estat-v1-2026-10-05
-    paths:
-      - '.github/workflows/jpy-estat-live-verification-v1.yml'
 
 permissions:
   contents: read
