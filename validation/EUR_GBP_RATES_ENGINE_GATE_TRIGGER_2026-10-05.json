@@ -1,0 +1,7 @@
+{
+  "schema": "GMFQ_RATES_ENGINE_GATE_TRIGGER_V1",
+  "validated_candidate_tree_source": "447d8cbc3ffa0ace5bcb3d6b3c7a686a2dbe5efe",
+  "scope": ["EUR", "GBP"],
+  "purpose": "Trigger official Engine Logic Audit and Browser Audit on the exact persisted EUR/GBP rates candidate tree. No runtime or model logic change.",
+  "oos_restart": false
+}
