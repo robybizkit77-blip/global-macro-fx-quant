@@ -1,0 +1,83 @@
+name: Rates Auto Candidate V1
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Run current unified Rates audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/rates-audit.json
+          python validation/build_rates_candidate_from_audit.py \
+            --audit /tmp/rates-audit.json \
+            --output /tmp/NATIVE_RATES_DATA.json \
+            | tee /tmp/candidate-summary.json
+      - name: Enforce no-write path when there are no updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/candidate-summary.json'))
+          if s['status']=='NO_UPDATES':
+              a=open('/tmp/NATIVE_RATES_DATA.json','rb').read().rstrip(b'\n')
+              b=open('live_data/sections/NATIVE_RATES_DATA.json','rb').read().rstrip(b'\n')
+              assert a==b, 'NO_UPDATES candidate differs from current Rates section'
+              print('NO_UPDATE_PATH_PASS')
+          elif s['status']=='CANDIDATE_READY':
+              print('LIVE_UPDATE_AVAILABLE_PATH_READY',s['changed_currencies'])
+          else:
+              raise SystemExit('unexpected candidate status '+repr(s))
+          PY
+          git diff --exit-code -- live_data payload
+      - name: Build complete candidate when updates exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/candidate-summary.json'))['status'])")
+          if [ "$STATUS" = "NO_UPDATES" ]; then
+            echo 'No Rates update available; candidate application skipped.'
+            exit 0
+          fi
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/NATIVE_RATES_DATA.json --apply
+          python validation/build_rates_audit_metadata.py --audit-date "$(date -u +%Y-%m-%d)" --output /tmp/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py --rates /tmp/RATES_AUDIT_METADATA.json --apply
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          git diff --name-only > /tmp/candidate-files.txt
+          python - <<'PY'
+          changed=set(open('/tmp/candidate-files.txt').read().splitlines())
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-15.txt'}
+          bad=sorted(changed-allowed)
+          if bad: raise SystemExit('Unexpected candidate files: '+repr(bad))
+          if not changed: raise SystemExit('CANDIDATE_READY but no candidate files changed')
+          print({'status':'CANDIDATE_SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Upload candidate evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-auto-candidate-v1
+          path: |
+            /tmp/rates-audit.json
+            /tmp/candidate-summary.json
+            /tmp/NATIVE_RATES_DATA.json
+            /tmp/RATES_AUDIT_METADATA.json
+            /tmp/candidate-files.txt
+            live_data/manifest.v2.json
+            live_data/sections/NATIVE_RATES_DATA.json
+            live_data/sections/RATES_AUDIT_METADATA.json
+            payload/part-00.txt
+            payload/part-15.txt
+          if-no-files-found: ignore
