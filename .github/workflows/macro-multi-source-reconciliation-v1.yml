@@ -1,0 +1,164 @@
+name: Macro Multi Source Reconciliation V1
+
+on:
+  push:
+    branches:
+      - validation-macro-source-eur-eurostat-v1-2026-10-05
+    paths:
+      - '.github/workflows/macro-multi-source-reconciliation-v1.yml'
+      - 'validation/sources/eur_eurostat_unemployment.py'
+      - 'validation/sources/eur_eurostat_hicp.py'
+      - 'validation/sources/aud_abs_unemployment.py'
+      - 'validation/check_macro_series_heatmap_alignment.py'
+      - 'validation/build_macro_candidate.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot original live hashes
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json > /tmp/original-series.sha
+          sha256sum live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/original-heatmap.sha
+
+      - name: Create isolated rehearsal workspace
+        run: |
+          rm -rf /tmp/gmfq-reconciliation
+          mkdir -p /tmp/gmfq-reconciliation
+          cp -a . /tmp/gmfq-reconciliation/repo
+
+      - name: EUR labour — source to candidate to sandbox state
+        working-directory: /tmp/gmfq-reconciliation/repo
+        run: |
+          mkdir -p /tmp/gmfq-reconciliation/eur-labour
+          python validation/sources/eur_eurostat_unemployment.py \
+            --output /tmp/gmfq-reconciliation/eur-labour/candidate.json \
+            --audit-output /tmp/gmfq-reconciliation/eur-labour/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-reconciliation/eur-labour/candidate.json \
+            --output-dir /tmp/gmfq-reconciliation/eur-labour/built
+          cp /tmp/gmfq-reconciliation/eur-labour/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/gmfq-reconciliation/eur-labour/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: EUR inflation — source to candidate to sandbox state
+        working-directory: /tmp/gmfq-reconciliation/repo
+        run: |
+          mkdir -p /tmp/gmfq-reconciliation/eur-inflation
+          python validation/sources/eur_eurostat_hicp.py \
+            --output /tmp/gmfq-reconciliation/eur-inflation/candidate.json \
+            --audit-output /tmp/gmfq-reconciliation/eur-inflation/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-reconciliation/eur-inflation/candidate.json \
+            --output-dir /tmp/gmfq-reconciliation/eur-inflation/built
+          cp /tmp/gmfq-reconciliation/eur-inflation/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/gmfq-reconciliation/eur-inflation/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: AUD labour — source to candidate to sandbox state
+        working-directory: /tmp/gmfq-reconciliation/repo
+        run: |
+          mkdir -p /tmp/gmfq-reconciliation/aud-labour
+          python validation/sources/aud_abs_unemployment.py \
+            --output /tmp/gmfq-reconciliation/aud-labour/candidate.json \
+            --audit-output /tmp/gmfq-reconciliation/aud-labour/audit.json
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-reconciliation/aud-labour/candidate.json \
+            --output-dir /tmp/gmfq-reconciliation/aud-labour/built
+          cp /tmp/gmfq-reconciliation/aud-labour/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/gmfq-reconciliation/aud-labour/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Require global 16-cell alignment in final sandbox
+        working-directory: /tmp/gmfq-reconciliation/repo
+        run: |
+          python validation/check_macro_series_heatmap_alignment.py \
+            --output /tmp/gmfq-reconciliation/final-alignment.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/gmfq-reconciliation/final-alignment.json').read_text())
+          assert r['status']=='PASS', r
+          assert r['checks']==16, r
+          assert r['failures']==0, r
+          print(json.dumps({'status':'PASS','checks':r['checks'],'failures':r['failures']}, indent=2))
+          PY
+
+      - name: Require only intended macro targets changed in sandbox
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          orig_s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          orig_h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          final_s=json.loads(Path('/tmp/gmfq-reconciliation/repo/live_data/sections/MACRO_SERIES.json').read_text())
+          final_h=json.loads(Path('/tmp/gmfq-reconciliation/repo/live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+
+          intended_series={
+            ('EUR','EA_UNEMP_history_value'),
+            ('EUR','EA_HICP_HEADLINE_YOY_history_value'),
+            ('AUD','AU_UNEMP_RATE_history_value'),
+          }
+          changed=[]
+          for ccy in sorted(set(orig_s)|set(final_s)):
+            before={str(r.get('id')):r for r in orig_s.get(ccy,[]) if isinstance(r,dict)}
+            after={str(r.get('id')):r for r in final_s.get(ccy,[]) if isinstance(r,dict)}
+            for sid in sorted(set(before)|set(after)):
+              if before.get(sid)!=after.get(sid): changed.append((ccy,sid))
+          assert set(changed)==intended_series, {'changed':changed}
+
+          allowed_heat={
+            ('EUR','labour'),('EUR','inflation'),('EUR','as_of_detail'),
+            ('AUD','labour'),('AUD','as_of_detail')
+          }
+          changed_heat=[]
+          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'):
+            b=orig_h['currencies'][ccy]; a=final_h['currencies'][ccy]
+            for key in sorted(set(b)|set(a)):
+              if b.get(key)!=a.get(key): changed_heat.append((ccy,key))
+          assert set(changed_heat).issubset(allowed_heat), {'changed_heat':changed_heat}
+          assert ('EUR','labour') in changed_heat
+          assert ('EUR','inflation') in changed_heat
+          assert ('AUD','labour') in changed_heat
+          print(json.dumps({'status':'PASS','series_changed':changed,'heatmap_changed':changed_heat}, indent=2))
+          PY
+
+      - name: Confirm original checkout remained byte-identical
+        run: |
+          sha256sum -c /tmp/original-series.sha
+          sha256sum -c /tmp/original-heatmap.sha
+          git diff --exit-code -- \
+            live_data/sections/MACRO_SERIES.json \
+            live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Archive final reconciled candidate artifacts
+        run: |
+          mkdir -p /tmp/gmfq-reconciliation/evidence
+          cp /tmp/gmfq-reconciliation/repo/live_data/sections/MACRO_SERIES.json /tmp/gmfq-reconciliation/evidence/MACRO_SERIES.json
+          cp /tmp/gmfq-reconciliation/repo/live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/gmfq-reconciliation/evidence/MACRO_THERMOMETER_DATA.json
+          cp /tmp/gmfq-reconciliation/final-alignment.json /tmp/gmfq-reconciliation/evidence/final-alignment.json
+
+      - name: Upload reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-multi-source-reconciliation-v1
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            /tmp/gmfq-reconciliation/evidence/
+            /tmp/gmfq-reconciliation/eur-labour/candidate.json
+            /tmp/gmfq-reconciliation/eur-labour/audit.json
+            /tmp/gmfq-reconciliation/eur-inflation/candidate.json
+            /tmp/gmfq-reconciliation/eur-inflation/audit.json
+            /tmp/gmfq-reconciliation/aud-labour/candidate.json
+            /tmp/gmfq-reconciliation/aud-labour/audit.json
