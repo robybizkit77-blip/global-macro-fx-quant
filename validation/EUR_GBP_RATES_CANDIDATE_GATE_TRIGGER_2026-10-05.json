@@ -1,0 +1,8 @@
+{
+  "schema": "GMFQ_RATES_CANDIDATE_GATE_TRIGGER_V1",
+  "candidate_commit": "90d47b6",
+  "scope": ["EUR", "GBP"],
+  "data_as_of": "2026-10-02",
+  "purpose": "Trigger official Engine Logic Audit and Staging Browser Audit on the persisted EUR/GBP rates candidate. This file does not alter runtime data or model logic.",
+  "oos_restart": false
+}
