@@ -1,0 +1,28 @@
+name: COT Story Open Interest Trace
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/trace_cot_story_open_interest.py'
+      - '.github/workflows/cot-story-open-interest-trace.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trace exact story OI values
+        run: python3 validation/trace_cot_story_open_interest.py | tee /tmp/cot-story-oi-trace.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-story-open-interest-trace
+          path: /tmp/cot-story-oi-trace.json
