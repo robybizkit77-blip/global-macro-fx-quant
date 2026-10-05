@@ -242,9 +242,7 @@ return r;
 };
 }
 window.FORWARD_VALIDATION_POLICY=deepFreeze({
-status:'AUXILIARY_SHORT_HORIZON_MONITOR',
-canonical_decisive_path:'validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json',
-canonical_horizons:['1W','4W','12W'],
+status:'READY',
 snapshot_mode:'APPEND_ONLY_TAMPER_EVIDENT',
 no_rewrite:true,
 outcomes_separate:true,
@@ -350,8 +348,6 @@ id:BASELINE_ID,
 source_version:'v360',
 frozen_on:'2026-09-29',
 status:'FROZEN',
-role:'AUXILIARY_SHORT_HORIZON_RUNTIME_LEDGER',
-canonical_decisive_path:'validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json',
 rule_change_policy:'ANY_MODEL_RULE_CHANGE_RESTARTS_OOS',
 horizons:Object.freeze(['1D','3D','1W','2W']),
 layers:Object.freeze({
@@ -632,61 +628,7 @@ return {n:vals.length,hit,mean,median};
 function overlaySubset(rows,kind,value){
 return rows.filter(x=>String(x.overlay_tags?.[kind]||'')===String(value));
 }
-let __gmfqCanonicalOosV3=null;
-let __gmfqCanonicalOosV3Loading=false;
-function ensureCanonicalOosPanel(){
-  const desk=document.getElementById('forwarddesk');
-  const cards=document.getElementById('fwdTopCards');
-  if(!desk||!cards) return null;
-  let box=document.getElementById('gmfqCanonicalOosV3');
-  if(!box){
-    box=document.createElement('div');
-    box.id='gmfqCanonicalOosV3';
-    box.style.cssText='margin:0 0 14px;padding:14px 16px;border:1px solid rgba(99,199,244,.28);border-radius:14px;background:rgba(20,48,63,.72);line-height:1.45';
-    cards.insertAdjacentElement('beforebegin',box);
-  }
-  return box;
-}
-function renderCanonicalOosV3(){
-  const box=ensureCanonicalOosPanel();
-  if(!box) return;
-  const d=__gmfqCanonicalOosV3;
-  if(!d){
-    box.innerHTML='<b>OOS canonico V3</b><div style="margin-top:5px;color:#8fa7b3">Caricamento baseline validata…</div>';
-    if(!__gmfqCanonicalOosV3Loading){
-      __gmfqCanonicalOosV3Loading=true;
-      fetch('validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json',{cache:'no-store'})
-        .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-        .then(x=>{
-          __gmfqCanonicalOosV3=x;
-          window.CANONICAL_OOS_T0_V3=x;
-          __gmfqCanonicalOosV3Loading=false;
-          try{renderCanonicalOosV3();}catch(e){}
-        })
-        .catch(e=>{
-          __gmfqCanonicalOosV3Loading=false;
-          box.innerHTML='<b>OOS canonico V3 · WITHHELD</b><div style="margin-top:5px;color:#d9a96c">Impossibile leggere il file canonico: '+String(e?.message||e)+'</div>';
-        });
-    }
-    return;
-  }
-  const cp=d.checkpoints||{};
-  const strong=Object.values(d.pairs||{}).filter(x=>x.quality==='CONTRASTO STRUTTURALE FORTE').length;
-  const partial=Object.values(d.pairs||{}).filter(x=>x.quality==='VANTAGGIO RELATIVO PARZIALE').length;
-  box.innerHTML=
-    '<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#63c7f4;font-weight:800">Forward decisivo</div>'+
-    '<div style="font-size:18px;font-weight:900;margin-top:2px">OOS CANONICO V3 · T0 '+String(d.t0_effective_date||'2026-10-01')+'</div>'+
-    '<div style="margin-top:6px;color:#b7c8d1">Regole '+String(d.model_rules_version||'—')+' · fingerprint <b>'+String(d.rules_fingerprint||'—')+'</b> · health '+String(d.health_status||'—')+'</div>'+
-    '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:7px">'+
-      '<span class="fwdBadge pass">1W · '+String(cp['1W']?.evaluation_date||'2026-10-08')+'</span>'+
-      '<span class="fwdBadge pass">4W · '+String(cp['4W']?.evaluation_date||'2026-10-29')+'</span>'+
-      '<span class="fwdBadge pass">12W · '+String(cp['12W']?.evaluation_date||'2026-12-24')+'</span>'+
-    '</div>'+
-    '<div style="margin-top:8px;color:#8fa7b3">28 pair congelati · '+strong+' contrasti strutturali forti · '+partial+' vantaggi relativi parziali. Nessun tuning durante il regime OOS.</div>'+
-    '<div style="margin-top:6px;color:#e4b45f"><b>Nota:</b> le tabelle 1D / 3D / 1W / 2W sotto sono il monitor corto ausiliario storico; non sostituiscono questo OOS V3.</div>';
-}
 function render(){
-renderCanonicalOosV3();
 const {ledger,outcomes,integrity}=loadData();
 const badge=document.getElementById('fwdIntegrity');
 if(badge){
@@ -700,10 +642,10 @@ const last=ledger.at(-1);
 const cards=document.getElementById('fwdTopCards');
 if(cards){
 cards.innerHTML=[
-['Snapshot aux',snapshots,'Monitor corto 1D/3D/1W/2W'],
-['Outcome aux',matured,'Orizzonti corti già maturati'],
-['Rule breaks aux',ruleBreaks,ruleBreaks?'Nuovo regime nel ledger corto':'Nessuna rottura nel ledger corto'],
-['Ultimo T0 aux',last?.snapshot?.freshness?.PRICE?.as_of||'—',last?.snapshot_id||'Nessuno snapshot']
+['Snapshot',snapshots,'Segnali congelati'],
+['Outcome',matured,'Orizzonti già maturati'],
+['Rule breaks',ruleBreaks,ruleBreaks?'Serve nuovo regime OOS':'Nessuna modifica regole'],
+['Ultimo T0',last?.snapshot?.freshness?.PRICE?.as_of||'—',last?.snapshot_id||'Nessuno snapshot']
 ].map(([k,v,s])=>`<div class="fwdCard"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
 }
 const horizons=['1D','3D','1W','2W'];
@@ -743,7 +685,7 @@ if(robust){
 let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Basket mean</div><div>Errore standard</div><div>95% CI</div><div>Affidabilità</div></div>`;
 ['1D','3D','1W','2W'].forEach(h=>{
 const st=window.snapshotStats(outcomes,h);
-const rel=!st.n?{label:'In attesa',cls:'fwdNeu'}:st.n<10?{label:'Troppo presto',cls:'fwdWarn'}:st.n<20?{label:'Preliminare',cls:'fwdWarn'}:st.n<40?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};
+const rel=reliabilityLabel(st);
 const ci=(Number.isFinite(st.ciLow)&&Number.isFinite(st.ciHigh))
 ? `${fmtN(st.ciLow)}% / ${fmtN(st.ciHigh)}%`
 : '—';
@@ -755,7 +697,7 @@ const risk=document.getElementById('fwdRiskTable');
 if(risk){
 let html=`<div class="fwdRow head"><div>Orizzonte</div><div>N snapshot</div><div>Vol basket</div><div>Sharpe desc.</div><div>Sortino desc.</div><div>Max DD</div></div>`;
 ['1D','3D','1W','2W'].forEach(h=>{
-const rs=window.pathRiskStats(window.snapshotBasketSeries(outcomes,h));
+const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));
 html+=`<div class="fwdRow"><b>${h}</b><div>${rs.n}</div><div>${fmtN(rs.vol)}%</div><div class="${rs.sharpe>0?'fwdPos':rs.sharpe<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sharpe)}</div><div class="${rs.sortino>0?'fwdPos':rs.sortino<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.sortino)}</div><div class="${rs.maxDD<0?'fwdNeg':'fwdNeu'}">${fmtN(rs.maxDD)}%</div></div>`;
 });
 risk.innerHTML=html;
@@ -772,7 +714,7 @@ const defs=[
 ];
 let html=`<div class="fwdRow head"><div>Overlay · 1W</div><div>N snapshot</div><div>Δ medio vs Core</div><div>Δ mediano</div><div>% snapshot > Core</div><div>Lettura</div></div>`;
 defs.forEach(([lab,k,v])=>{
-const s=window.pairedOverlayStats(outcomes,'1W',k,v);
+const s=pairedOverlayStats(outcomes,'1W',k,v);
 const read=s.n<10?'Troppo presto':
 s.deltaMean>0 && s.positiveShare>0.55?'Valore aggiunto preliminare':
 s.deltaMean<0 && s.positiveShare<0.45?'Peggiora Core preliminarmente':'Misto';

@@ -201,14 +201,14 @@ text:`Estensione non elevata · 1M ${current>=0?'+':''}${current.toFixed(1)}% ·
 function recentChangeSignal(c){
 const st=safe(()=>deriveCurrencyState(c),null);
 const x=String(st?.improvementState||'').toUpperCase();
-if(x==='MIGLIORA'){
+if(x==='MIGLIORA' || x.includes('EARLY SHIFT POSITIVO')){
 return {side:'POS', text:`${c} sta migliorando`};
 }
-if(x==='PEGGIORA'){
+if(x==='PEGGIORA' || x.includes('EARLY SHIFT NEGATIVO')){
 return {side:'NEG', text:`${c} sta peggiorando`};
 }
-if(x.includes('EARLY SHIFT') || x.includes('TURNING POINT')){
-return {side:'TRANSITION', text:`${c} è in possibile svolta da confermare`};
+if(x.includes('TURNING POINT')){
+return {side:'TRANSITION', text:`${c} è in possibile svolta`};
 }
 if(x.includes('STABILE')){
 return {side:'NEUTRAL', text:`${c} è stabile`};
@@ -362,7 +362,7 @@ if(st.n<20) return {label:'Preliminare',cls:'fwdWarn'};
 if(st.n<40) return {label:'Campione in costruzione',cls:'fwdWarn'};
 return {label:'Più affidabile',cls:'fwdPos'};
 }
-window.snapshotBasketSeries=function(outcomes,horizon){
+function snapshotBasketSeries(outcomes,horizon){
 return outcomes
 .filter(o=>o.horizon===horizon)
 .map(o=>{
@@ -376,8 +376,8 @@ value:vals.reduce((a,b)=>a+b,0)/vals.length
 };
 })
 .filter(Boolean);
-};
-window.pathRiskStats=function(series){
+}
+function pathRiskStats(series){
 const vals=series.map(x=>Number(x.value)).filter(Number.isFinite);
 const n=vals.length;
 if(!n) return {n:0,mean:null,vol:null,sharpe:null,sortino:null,maxDD:null};
@@ -399,8 +399,8 @@ const dd=(equity/peak-1)*100;
 if(dd<maxDD) maxDD=dd;
 });
 return {n,mean,vol,sharpe,sortino,maxDD};
-};
-window.pairedOverlayStats=function(outcomes,horizon,kind,value){
+}
+function pairedOverlayStats(outcomes,horizon,kind,value){
 const grouped=[];
 outcomes.filter(o=>o.horizon===horizon).forEach(o=>{
 const all=Object.values(o?.result?.pair_results||{})
@@ -427,7 +427,7 @@ const var_=ds.length>1?ds.reduce((z,x)=>z+(x-mean)**2,0)/(ds.length-1):null;
 const se=var_!=null?Math.sqrt(var_/ds.length):null;
 const positiveShare=ds.filter(x=>x>0).length/ds.length;
 return {n:ds.length,deltaMean:mean,deltaMedian:median,positiveShare,se};
-};
+}
 function render(){
 const box=document.getElementById('v302PairSummary');
 if(!box) return;

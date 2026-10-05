@@ -219,7 +219,7 @@ cls:'neu'
 }
 return v228RelativeRow(
 pair,frame.fav,side,
-`Struttura Tassi/CB: ${side} ha il vantaggio relativo (${a}: ${words(aVal)} · ${b}: ${words(bVal)}). Questa è una lettura strutturale del front-end/policy, separata dal movimento recente del long-end.`, 
+`Struttura Tassi/CB: ${side} ha il vantaggio relativo (${a}: ${words(aVal)} · ${b}: ${words(bVal)}).`,
 'core'
 );
 }
@@ -273,7 +273,7 @@ if(macro.cls==='pos' && rates.cls==='pos'){
 return {driver:'Macro + Tassi/CB',why:`Entrambi i pilastri strutturali favoriscono ${frame.fav}.`};
 }
 if(rates.cls==='pos'){
-return {driver:'Tassi/CB strutturali',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto da front-end/policy. Il movimento recente del long-end non aggiunge automaticamente un nuovo vantaggio.`};
+return {driver:'Tassi/CB',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto da Tassi/CB.`};
 }
 if(macro.cls==='pos'){
 return {driver:'Macro',why:`Il vantaggio strutturale di ${frame.fav} nasce soprattutto dalla Macro.`};
@@ -305,7 +305,7 @@ const missing=macro.cls==='pos'?'Tassi/CB':'Macro';
 watch=`${frame.fav} ha un vantaggio parziale: guarda se anche ${missing} inizierà a separare le due valute.`;
 }
 const confirm=frame.quality==='CONTRASTO STRUTTURALE FORTE'
-? `Macro e Tassi/CB strutturali devono continuare a favorire ${frame.fav}; Prezzo/COT/Liquidità restano qualificatori del setup. Il long-end recente resta diagnostico finché non ne è verificata l’origine.`
+? `Macro e Tassi/CB devono continuare a favorire ${frame.fav}; Prezzo/COT/Liquidità restano qualificatori del setup.`
 : `Il pilastro oggi favorevole a ${frame.fav} deve restare valido e l'altro deve eventualmente convergere.`;
 const invalidate=`Il vantaggio strutturale di ${frame.fav} si indebolisce se il pilastro che oggi lo sostiene torna neutrale o passa a favore di ${other}; cambia davvero lato solo quando Macro/Tassi-CB lo giustificano.`;
 return {watch,confirm,invalidate};
@@ -482,7 +482,8 @@ var v245ChartKey='net';
 const V247_COT_STORIES=window.__GMFQ_DATA.V247_COT_STORIES;
 const V247_COT_FOCUS=[{"ccy":"GBP","title":"GBP · short molto affollato","why":"5° percentile e ⚠ Net/OI −33,7%.","change":"Entrano ancora nuovi short.","confirm":"GBP continua a sottoperformare.","lose":"Parte short covering e il prezzo smette di fare nuovi minimi."},{"ccy":"JPY","title":"JPY · cambio di impulso","why":"Net long ancora positivo, ma −48,4K in 1W.","change":"Il flusso settimanale si gira contro JPY.","confirm":"Altra liquidazione long / nuovi short.","lose":"Riprendono i long e il prezzo recupera."},{"ccy":"NZD","title":"NZD · deterioramento rapido","why":"Percentile 100° → 78°, ΔNet/OI −21,6%.","change":"Da positioning forte a flusso nettamente negativo.","confirm":"Persistono liquidazione long / nuovi short.","lose":"Il Net si stabilizza e NZD recupera."}];
 function v247SignalClass(sig){
-if(sig==='EXTREME SHORT'||sig==='EXTREME LONG')return 'warn';
+if(sig==='EXTREME SHORT')return 'neg';
+if(sig==='EXTREME LONG')return 'pos';
 return 'neu';
 }
 function v245RenderCards(){
@@ -686,26 +687,6 @@ return 'Net COT invariato';
 const TOP_THEMES=window.__GMFQ_DATA.TOP_THEMES;
 const NEWS_PULSE_STRUCT=window.__GMFQ_DATA.NEWS_PULSE_STRUCT;
 let newsFilter='all';
-function newsPulseFreshness(){
-  const raw=window.AUXILIARY_FEED_FRESHNESS?.news?.as_of || null;
-  const status=window.AUXILIARY_FEED_FRESHNESS?.news?.status || 'UNKNOWN';
-  if(!raw) return {fresh:false,asOf:null,status,reason:'timestamp news non disponibile'};
-  const d=new Date(raw);
-  if(!Number.isFinite(d.getTime())) return {fresh:false,asOf:raw,status,reason:'timestamp news non interpretabile'};
-  const now=new Date();
-  const localDate=x=>[
-    x.getFullYear(),
-    String(x.getMonth()+1).padStart(2,'0'),
-    String(x.getDate()).padStart(2,'0')
-  ].join('-');
-  const fresh=localDate(d)===localDate(now);
-  return {
-    fresh,
-    asOf:raw,
-    status,
-    reason:fresh?'feed validato oggi':'ultimo feed validato in una giornata precedente'
-  };
-}
 function npStatusMeta(s){
 if(s==='change') return {label:'CAMBIA IL QUADRO',cls:'change'};
 if(s==='reinforce') return {label:'RAFFORZA LA NARRATIVA',cls:'reinforce'};
@@ -768,19 +749,12 @@ const cats=['all','Macro','CB','Rates','Geo','Energy','Trade','Risk'];
 filters.innerHTML=cats.map(k=>`<button class="${newsFilter===k?'active':''}" data-news="${k}">${humanCat(k)}</button>`).join('');
 filters.querySelectorAll('button').forEach(b=>b.onclick=()=>{newsFilter=b.dataset.news;renderNewsPulse();});
 const nar=newsPulseNarrative();
-const fresh=newsPulseFreshness();
-narrative.textContent=fresh.fresh
-  ? simplify(nar.text)
-  : `Feed News Pulse non aggiornato alla giornata corrente. Ultima validazione: ${fresh.asOf||'—'}. Le card sotto restano solo contesto precedente, non aggiornamento live.`;
-narrativeWatch.textContent=fresh.fresh
-  ? simplify(nar.watch)
-  : 'Prima di usarlo operativamente serve un nuovo refresh del feed News Pulse.';
-const narMeta=fresh.fresh
-  ? humanStatus(
-      nar.state==='CAMBIA IL QUADRO'?'change':
-      nar.state==='RISCHIO DA MONITORARE'?'watch':'context'
-    )
-  : {label:'FEED NON AGGIORNATO',cls:'watch'};
+narrative.textContent=simplify(nar.text);
+narrativeWatch.textContent=simplify(nar.watch);
+const narMeta=humanStatus(
+nar.state==='CAMBIA IL QUADRO'?'change':
+nar.state==='RISCHIO DA MONITORARE'?'watch':'context'
+);
 heroState.textContent=narMeta.label;
 heroState.className='np396State '+narMeta.cls;
 // Latest changes: show at most 4.
@@ -812,63 +786,56 @@ const main=document.getElementById('tt392Main');
 const more=document.getElementById('tt392MoreGrid');
 if(!main || !more) return;
 const plain=(t)=>{
-  const ccy=String(t?.ccy||'');
-  const ccy2=String(t?.ccy2||'');
-  try{
-    if(ccy && ccy2){
-      const pair=ccy+'/'+ccy2;
-      const frame=derivePairDecisionFrame(pair);
-      const drv=derivePairDriverStructure(pair);
-      const fav=frame?.fav && frame.fav!=='—' ? frame.fav : null;
-      const quality=frame?.quality||'NON RISOLUTIVO';
-      const price=frame?.priceReading||'PREZZO NON RISOLUTIVO';
-      return {
-        title:`${pair} · ${fav?`vantaggio strutturale ${fav}`:'nessun vantaggio strutturale pulito'}`,
-        story:fav
-          ? `La struttura corrente favorisce ${fav}. Qualità: ${quality}. Il prezzo resta una conferma separata: ${price.toLowerCase()}.`
-          : `Macro e Tassi/CB non separano ancora abbastanza ${ccy} e ${ccy2}. Il tema resta da osservare, non da forzare.`,
-        why:drv?.reason||'Il confronto va letto attraverso Macro e Tassi/CB strutturali.',
-        confirm:fav
-          ? `Macro e Tassi/CB strutturali devono restare allineati su ${fav}; il prezzo può confermare ma non decide la struttura.`
-          : 'Serve una differenza più chiara tra Macro e Tassi/CB delle due valute.',
-        stop:fav
-          ? `Il tema perde forza se il vantaggio strutturale di ${fav} si riduce o i due pilastri iniziano a divergere.`
-          : 'Il tema resta non risolutivo finché i pilastri restano divisi.'
-      };
-    }
-
-    const st=deriveCurrencyState(ccy)||{};
-    const drv=deriveCurrencyDriver(ccy)||'Non determinato';
-    const plan=deriveCurrencyActionPlan(ccy)||{};
-    const baseMap={
-      FORTE:'struttura ben sostenuta',
-      COSTRUTTIVA:'supporto strutturale parziale',
-      MISTA:'struttura mista',
-      DEBOLE:'struttura debole',
-      FRAGILE:'struttura fragile'
-    };
-    const base=baseMap[st.base]||'struttura non determinata';
-    const price=st.confirmation==='PREZZO CONFERMA'
-      ? 'Il prezzo conferma la struttura, ma non aggiunge da solo nuovo vantaggio.'
-      : st.confirmation==='PREZZO DIVERGE'
-        ? 'Il prezzo diverge: la struttura va confermata prima di inseguire il movimento.'
-        : st.confirmation==='PREZZO SENZA STRUTTURA'
-          ? 'Il prezzo si muove senza una struttura Macro + Tassi/CB pulita.'
-          : 'Il prezzo non è ancora risolutivo.';
-    return {
-      title:`${ccy} · ${base}`,
-      story:typeof deriveCurrencyStory==='function'
-        ? deriveCurrencyStory(ccy)
-        : `${ccy}: quadro corrente derivato da Macro + Tassi/CB.`,
-      why:drv==='Non determinato'
-        ? 'Nessun pilastro strutturale unico sostiene oggi la lettura.'
-        : `${drv} sostiene la struttura corrente. ${price}`,
-      confirm:plan.strengthen||'Serve maggiore allineamento tra Macro e Tassi/CB.',
-      stop:plan.weaken||'Il tema perde forza se il core strutturale si deteriora.'
-    };
-  }catch(e){
-    return {title:t.title,story:t.body,why:t.lead,confirm:t.confirm,stop:t.invalidate};
-  }
+if(t.ccy==='USD') return {
+title:'USD · I tassi USA stanno ancora sostenendo il dollaro?',
+story:'I dati USA restano solidi. Per il dollaro conta soprattutto se i rendimenti a breve restano alti e il mercato mantiene aspettative Fed restrittive.',
+why:'Se il 2Y USA resta alto, il dollaro mantiene un vantaggio relativo contro valute con tassi in calo.',
+confirm:'2Y USA stabile o in rialzo + dollaro che continua a tenere sui cross.',
+stop:'2Y USA in calo e inflazione attesa in rientro.'
+};
+if(t.ccy==='EUR') return {
+title:'EUR · Liquidità migliore, ma servono conferme da tassi e domanda',
+story:'La moneta in circolazione migliora, ma credito e domanda restano misti. Per l’euro serve una conferma dai tassi europei e dai cross.',
+why:'Dati monetari migliori aiutano solo se cambiano davvero le aspettative sui tassi o la crescita.',
+confirm:'Bund 2Y in rialzo o stabile + domanda/credito migliori + EUR che reagisce.',
+stop:'Domanda e credito peggiorano e il Bund 2Y continua a scendere.'
+};
+if(t.ccy==='GBP') return {
+title:'GBP · Salari e inflazione possono tenere la BoE più restrittiva?',
+story:'La sterlina dipende dalla persistenza di salari e inflazione. Se restano alti, la BoE può mantenere i tassi più restrittivi più a lungo.',
+why:'La GBP ha più supporto quando il mercato rinvia i tagli BoE e il 2Y britannico tiene.',
+confirm:'Salari/inflazione persistenti + Gilt 2Y che smette di scendere o torna a salire.',
+stop:'Salari e inflazione rallentano insieme e il Gilt 2Y continua a scendere.'
+};
+if(t.ccy==='JPY') return {
+title:'JPY · Lo yen ha bisogno di conferme da salari, inflazione e tassi',
+story:'Un singolo dato non basta. Per uno yen più forte servono salari, inflazione e rendimenti giapponesi che inizino a muoversi insieme.',
+why:'Lo yen diventa più interessante solo se il mercato prezza una BoJ più restrittiva e il JGB 2Y reagisce.',
+confirm:'Salari e inflazione servizi solidi + JGB 2Y in rialzo + JPY che inizia a rafforzarsi.',
+stop:'Inflazione servizi rallenta e il JGB 2Y non reagisce.'
+};
+if(t.ccy==='AUD' && t.ccy2==='NZD') return {
+title:'AUD / NZD · Cina e propensione al rischio aiutano o frenano?',
+story:'Cina, commodity e propensione al rischio possono aiutare AUD e NZD, ma non devono sostituire i segnali domestici.',
+why:'Il vento globale conta, ma il movimento è più credibile se anche i tassi domestici confermano.',
+confirm:'Cina/risk favorevoli + AU/NZ 2Y nella stessa direzione + cross che confermano.',
+stop:'Il sostegno esterno si gira e i tassi domestici non compensano.'
+};
+if(t.ccy==='CAD') return {
+title:'CAD · Petrolio forte: basta davvero per aiutare il dollaro canadese?',
+story:'Il petrolio aiuta il CAD, ma da solo non basta. Serve che anche i tassi canadesi o i dati interni vadano nella stessa direzione.',
+why:'Un petrolio forte è più utile al CAD quando il Canada 2Y non sta scendendo contro gli altri paesi.',
+confirm:'Petrolio forte + Canada 2Y stabile/in rialzo + CAD che reagisce.',
+stop:'Petrolio perde forza oppure Canada 2Y scende.'
+};
+if(t.ccy==='CHF') return {
+title:'CHF · SNB accomodante contro domanda di rifugio',
+story:'Lo CHF riceve due spinte opposte: una SNB accomodante lo frena, mentre il risk-off può rafforzarlo come valuta rifugio.',
+why:'Il CHF può salire anche con tassi poco favorevoli se il mercato entra in modalità difensiva.',
+confirm:'Risk-off in aumento + CHF forte su EURCHF/USDCHF.',
+stop:'Il risk-off rientra e torna a dominare la politica accomodante della SNB.'
+};
+return {title:t.title,story:t.body,why:t.lead,confirm:t.confirm,stop:t.invalidate};
 };
 const rateBox=(t)=>{
 const cs=[t.ccy,t.ccy2].filter(Boolean).map(c=>{
@@ -956,28 +923,28 @@ const r=ratesTrend(c);
 let priority=99, bucket='stable', cls='flat', label='Nessun cambiamento', status='—';
 let changed='', why='', watch='';
 if(d.state==='MIGLIORA'){
-priority=1; bucket='active'; cls='up'; label='Miglioramento recente'; status='CAMBIAMENTO RECENTE CONFERMATO';
+priority=1; bucket='active'; cls='up'; label='Sta migliorando'; status='CAMBIAMENTO CONFERMATO';
 changed='Macro e tassi stanno migliorando insieme.';
-why='Macro e front-end stanno migliorando insieme: è un cambiamento recente più completo, ma non equivale automaticamente a dire che la valuta è strutturalmente forte.';
+why='Economia e tassi stanno diventando più favorevoli nello stesso momento: è il cambiamento più completo.';
 watch=s.price===1
 ? 'Il prezzo sta già confermando. Controlla che Macro e tassi mantengano il miglioramento.'
 : 'Manca soprattutto la conferma del prezzo.';
 }else if(d.state==='PEGGIORA'){
-priority=1; bucket='active'; cls='down'; label='Peggioramento recente'; status='CAMBIAMENTO RECENTE CONFERMATO';
+priority=1; bucket='active'; cls='down'; label='Sta peggiorando'; status='CAMBIAMENTO CONFERMATO';
 changed='Macro e tassi stanno peggiorando insieme.';
-why='Macro e front-end stanno peggiorando insieme: è un deterioramento recente più completo, ma va distinto dallo stato strutturale della valuta.';
+why='Economia e tassi stanno diventando meno favorevoli nello stesso momento: il deterioramento è più completo.';
 watch=s.price===-1
 ? 'Il prezzo sta già confermando. Controlla che Macro e tassi non recuperino.'
 : 'Manca soprattutto la conferma del prezzo.';
 }else if(d.state==='EARLY SHIFT POSITIVO'){
 priority=2; bucket='active'; cls='warn'; label='Possibile miglioramento'; status='DA CONFERMARE';
 changed='I tassi stanno migliorando, ma la Macro non ha ancora confermato.';
-why='È un segnale preliminare di miglioramento recente; non modifica da solo lo stato strutturale della valuta.';
+why='È il segnale preliminare più vicino a diventare un miglioramento vero.';
 watch='Serve una conferma dai dati Macro oppure una continuazione chiara del movimento dei tassi.';
 }else if(d.state==='EARLY SHIFT NEGATIVO'){
 priority=2; bucket='active'; cls='warn'; label='Possibile peggioramento'; status='DA CONFERMARE';
 changed='I tassi stanno peggiorando, ma la Macro non ha ancora confermato.';
-why='È un segnale preliminare di peggioramento recente; non modifica da solo lo stato strutturale della valuta.';
+why='È il segnale preliminare più vicino a diventare un peggioramento vero.';
 watch='Serve un peggioramento dei dati Macro oppure una continuazione chiara del movimento dei tassi.';
 }else if(d.state==='TURNING POINT'){
 priority=3; bucket='active'; cls='warn'; status='PRIMO SEGNALE';

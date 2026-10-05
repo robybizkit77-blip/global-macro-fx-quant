@@ -7,35 +7,10 @@ function v233Cards(c,d){
 const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp), curve=v233CurveInterpretation(d);
 const ten5=(d.tenors||[]).find(x=>x.tenor==='5Y');
 const long=(d.tenors||[]).slice(-1)[0];
-const num=x=>(x===null||x===undefined||x==='')?null:(Number.isFinite(Number(x))?Number(x):null);
-const ch2=num(d?.chg2_bp), ch10=num(d?.chg10_bp), minMove=3, gap=3;
-const fmtBp=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
-let origin={
-title:'Misto / non determinato',cls:'neu',
-why:'Mancano variazioni comparabili di 2Y e 10Y. Il modello non forza una causa.',
-detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`
-};
-if(ch2!=null && ch10!=null){
-  const a2=Math.abs(ch2), a10=Math.abs(ch10);
-  if(a2<minMove && a10<minMove){
-    origin={title:'Misto / non determinato',cls:'neu',why:'Il movimento settimanale è troppo piccolo per attribuire un driver rates affidabile.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
-  }else if(ch2>0 && ch2>=ch10+gap){
-    origin={title:'Policy / front-end',cls:'up',why:'Il 2Y sale più del 10Y: domina il repricing della banca centrale e della policy attesa.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
-  }else if(ch2<0 && ch2<=ch10-gap){
-    origin={title:'Policy / front-end',cls:'down',why:'Il 2Y scende più del 10Y: domina un repricing più dovish della policy attesa.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
-  }else if(ch10>0 && ch10>=ch2+gap){
-    origin={title:'Long-end · origine da verificare',cls:'warn',why:'Il 10Y sale più del 2Y. Prima di leggerlo come positivo per FX bisogna separare crescita + real yield, breakeven, term premium e fiscal/supply.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`};
-  }else if(ch10<0 && ch10<=ch2-gap){
-    origin={title:'Long-end · origine da verificare',cls:'info',why:'Il 10Y scende più del 2Y. Il movimento nasce soprattutto dalla parte lunga e va separato tra crescita, real yield, inflazione attesa e premio per la duration.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)} · decomposizione dinamica non forzata`};
-  }else{
-    origin={title:'Misto / policy + long-end',cls:'neu',why:'2Y e 10Y si muovono senza una dominanza abbastanza netta. La lettura resta mista finché real yield, breakeven o term premium non danno una conferma dinamica comparabile.',detail:`2Y ${fmtBp(ch2)} · 10Y ${fmtBp(ch10)}`};
-  }
-}
 const cards=[
-v233RateCard('Origine del movimento Rates',origin.title,origin.detail,origin.why,origin.cls),
 v233RateCard('Front-end · 2Y',d['2Y']==null?'—':fmt(d['2Y'],2)+'%',m2.txt,'È il primo filtro del repricing di banca centrale e della policy attesa.',m2.cls),
 v233RateCard('Tratto intermedio · 5Y',ten5?.value==null?'—':fmt(ten5.value,2)+'%','Ponte tra policy e ciclo','Serve a capire quanto il repricing del front-end si trasmette verso la parte centrale della curva.','neu'),
-v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',Math.abs(d.chg10_bp||0)>=3?'warn':'neu'),
+v233RateCard('Long-end · 10Y',d['10Y']==null?'—':fmt(d['10Y'],2)+'%',m10.txt,'Qui entrano crescita, real yield, breakeven, term premium, fiscalità e supply.',m10.cls),
 v233RateCard('Pendenza · 10Y−2Y',d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb',curve.name,curve.why,curve.cls)
 ];
 if(d.real){
@@ -60,7 +35,7 @@ const rows=[];
 const curve=v233CurveInterpretation(d), driver=v233Driver(d), div=v233Divergence(d);
 const m2=v233Move(d.chg2_bp), m10=v233Move(d.chg10_bp);
 if(Math.abs(d.chg2_bp||0)>=3) rows.push({k:'Front-end 2Y',v:m2.txt,why:'Il front-end sta cambiando il pricing della policy attesa.',cls:m2.cls});
-if(Math.abs(d.chg10_bp||0)>=3) rows.push({k:'Long-end 10Y',v:m10.txt,why:'Il tratto lungo sta cambiando e va scomposto prima di attribuirgli una causa.',cls:'warn'});
+if(Math.abs(d.chg10_bp||0)>=3) rows.push({k:'Long-end 10Y',v:m10.txt,why:'Il tratto lungo sta cambiando e va scomposto prima di attribuirgli una causa.',cls:m10.cls});
 if(Math.abs(v233SlopeChange(d)||0)>=3) rows.push({k:'Curva 10Y−2Y',v:curve.name,why:curve.why,cls:curve.cls});
 if(div.name!=='Nessuna divergenza forte') rows.push({k:'Divergenza',v:div.name,why:div.why,cls:'warn'});
 if(!rows.length) return `<div class="v233NoChange">Nessun cambiamento Rates abbastanza ampio da modificare la lettura corrente.</div>`;
@@ -151,25 +126,6 @@ function v478RatesTutor(c,d){
   const m2=v233Move(d?.chg2_bp), m10=v233Move(d?.chg10_bp);
   const driver=v233Driver(d), curve=v233CurveInterpretation(d), div=v233Divergence(d);
 
-  const weeklyBp=series=>{
-    if(!series || !Array.isArray(series.dates) || !Array.isArray(series.values) || series.dates.length<2) return null;
-    const rows=series.dates.map((z,i)=>({t:Date.parse(String(z)),v:Number(series.values[i])}))
-      .filter(x=>Number.isFinite(x.t)&&Number.isFinite(x.v)).sort((a,b)=>a.t-b.t);
-    if(rows.length<2) return null;
-    const last=rows.at(-1), target=last.t-7*86400000;
-    const prior=[...rows].reverse().find(x=>x.t<=target);
-    if(!prior) return null;
-    const days=(last.t-prior.t)/86400000;
-    if(days<5 || days>12) return null;
-    return (last.v-prior.v)*100;
-  };
-  const real1w=weeklyBp(d?.real);
-  const be1w=weeklyBp(d?.breakeven);
-  const tp1w=weeklyBp(d?.term_premium);
-  let growthDir=null;
-  try{ growthDir=Number(blockDynamics?.(c,'Crescita')?.direction); }catch(e){}
-  const fmt1w=v=>v==null?'—':`${v>0?'+':''}${v.toFixed(1)} pb`;
-
   let now={txt:'MISTO / DA INTERPRETARE',cls:'warn'};
   if(driver.name==='Front-end / 2Y'){
     if((d.chg2_bp||0)>2) now={txt:'FAVOREVOLE',cls:'pos'};
@@ -181,14 +137,9 @@ function v478RatesTutor(c,d){
   }
 
   let dir={txt:'STABILE →',cls:'neu'};
-  if(driver.name==='Front-end / 2Y'){
-    if((d.chg2_bp||0)>2) dir={txt:'PIÙ FAVOREVOLE ↗',cls:'pos'};
-    else if((d.chg2_bp||0)<-2) dir={txt:'MENO FAVOREVOLE ↘',cls:'neg'};
-  }else if(driver.name==='Long-end / 10Y'){
-    dir={txt:'CAMBIA, MA DAL LONG-END',cls:'warn'};
-  }else if(driver.name==='Movimento condiviso'){
-    dir={txt:'MOVIMENTO CONDIVISO · DA LEGGERE',cls:'warn'};
-  }
+  if((d.chg2_bp||0)>2) dir={txt:'PIÙ FAVOREVOLE ↗',cls:'pos'};
+  else if((d.chg2_bp||0)<-2) dir={txt:'MENO FAVOREVOLE ↘',cls:'neg'};
+  else if(Math.abs(d.chg10_bp||0)>Math.abs(d.chg2_bp||0)+2) dir={txt:'CAMBIA, MA DAL LONG-END',cls:'warn'};
 
   let title,text;
   if(driver.name==='Front-end / 2Y'){
@@ -212,12 +163,9 @@ function v478RatesTutor(c,d){
 
   const drivers=[
     {label:'Front-end · 2Y',txt:`${d['2Y']==null?'—':fmt(d['2Y'],2)+'%'} · ${m2.txt}`,cls:m2.cls==='pos'?'v478Pos':m2.cls==='neg'?'v478Neg':'v478Neu'},
-    {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:Math.abs(d.chg10_bp||0)>2?'v478Warn':'v478Neu'},
+    {label:'Long-end · 10Y',txt:`${d['10Y']==null?'—':fmt(d['10Y'],2)+'%'} · ${m10.txt}`,cls:m10.cls==='pos'?'v478Pos':m10.cls==='neg'?'v478Neg':'v478Neu'},
     {label:'Curva 10Y−2Y',txt:`${d.curve_bp==null?'—':fmt(d.curve_bp,0)+' pb'} · ${curve.name}`,cls:curve.cls==='pos'?'v478Pos':curve.cls==='neg'?'v478Neg':curve.cls==='warn'?'v478Warn':'v478Neu'}
   ];
-  if(real1w!=null) drivers.push({label:'Real yield · 1W',txt:fmt1w(real1w),cls:Math.abs(real1w)>3?'v478Warn':'v478Neu'});
-  if(be1w!=null) drivers.push({label:'Breakeven · 1W',txt:fmt1w(be1w),cls:Math.abs(be1w)>3?'v478Warn':'v478Neu'});
-  if(tp1w!=null) drivers.push({label:'Term premium · 1W',txt:fmt1w(tp1w),cls:Math.abs(tp1w)>3?'v478Warn':'v478Neu'});
 
   let confirm,reverse;
   if(now.cls==='pos'){
@@ -231,31 +179,8 @@ function v478RatesTutor(c,d){
     reverse=`Se continua a guidare soprattutto il 10Y o 2Y e 10Y divergono, evitiamo di tradurre il movimento in un segnale FX semplice.`;
   }
 
-  let origin={label:'MISTO / NON DETERMINATO',cls:'warn'};
-  if(driver.name==='Front-end / 2Y'){
-    origin={label:'POLICY / FRONT-END',cls:now.cls};
-  }else if(driver.name==='Long-end / 10Y'){
-    const longDir=Math.sign(Number(d?.chg10_bp)||0);
-    const sameDir=v=>v!=null && Math.sign(v)===longDir && Math.sign(v)!==0;
-    const ar=sameDir(real1w)?Math.abs(real1w):null;
-    const ab=sameDir(be1w)?Math.abs(be1w):null;
-    const at=sameDir(tp1w)?Math.abs(tp1w):null;
-    const growthAligned=Number.isFinite(growthDir) && growthDir!==0 && Math.sign(growthDir)===longDir;
-    if(at!=null && at>=5 && (ar==null||at>=ar+2) && (ab==null||at>=ab+2)){
-      origin={label:'TERM PREMIUM / FISCAL / SUPPLY',cls:'warn'};
-    }else if(ab!=null && ab>=5 && (ar==null||ab>=ar+2)){
-      origin={label:'INFLAZIONE / BREAKEVEN',cls:'warn'};
-    }else if(ar!=null && ar>=5 && growthAligned && (ab==null||ar>=ab)){
-      origin={label:'CRESCITA + REAL YIELDS',cls:longDir>0?'pos':'warn'};
-    }else{
-      origin={label:'LONG-END · ORIGINE DA VERIFICARE',cls:'warn'};
-    }
-  }else if(driver.name==='Movimento condiviso'){
-    origin={label:'MISTO / POLICY + LONG-END',cls:'warn'};
-  }
-
   const fx=v233FxRead(c,d);
-  return {now,dir,title,text,drivers,confirm,reverse,fx,div,origin};
+  return {now,dir,title,text,drivers,confirm,reverse,fx,div};
 }
 renderNativeRatesDesk=function(){
 const c=v233RatesCurrency;
@@ -273,22 +198,6 @@ const rDir=document.querySelector('#v478RatesDir');
 if(rDir){rDir.className=`v478Ticker ${tutor.dir.cls}`;const v=rDir.querySelector('.v');if(v)v.textContent=tutor.dir.txt;}
 const rTitle=document.querySelector('#v478StoryTitle');if(rTitle)rTitle.textContent=tutor.title;
 const rText=document.querySelector('#v478StoryText');if(rText)rText.textContent=tutor.text;
-if(rText){
-  let rOrigin=document.querySelector('#v478RatesOrigin');
-  if(!rOrigin){
-    rOrigin=document.createElement('div');
-    rOrigin.id='v478RatesOrigin';
-    rOrigin.style.margin='16px 0 18px';
-    rOrigin.style.padding='12px 14px';
-    rOrigin.style.border='1px solid rgba(126,215,255,.22)';
-    rOrigin.style.borderRadius='12px';
-    rOrigin.style.background='rgba(126,215,255,.06)';
-    rOrigin.innerHTML='<div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:#7ed7ff;margin-bottom:5px">ORIGINE DEL MOVIMENTO RATES</div><div class="v" style="font-size:14px;font-weight:800;line-height:1.35"></div>';
-    rText.insertAdjacentElement('afterend',rOrigin);
-  }
-  const ov=rOrigin.querySelector('.v');
-  if(ov) ov.textContent=tutor.origin?.label||'MISTO / NON DETERMINATO';
-}
 const rDrivers=document.querySelector('#v478Drivers');
 if(rDrivers)rDrivers.innerHTML=tutor.drivers.map(x=>`<div class="v478Driver"><strong>${x.label}</strong><span class="${x.cls}">${x.txt}</span></div>`).join('');
 const rConfirm=document.querySelector('#v478Confirm');if(rConfirm)rConfirm.textContent=tutor.confirm;
@@ -528,8 +437,8 @@ hook.textContent=`${ch} · ${pr}`;
 }
 function executiveNarrative(){
 const xs=CCYS.map(currentLayerSnapshot);
-const improve=xs.filter(x=>x.imp.state==='MIGLIORA').map(x=>x.c);
-const worsen=xs.filter(x=>x.imp.state==='PEGGIORA').map(x=>x.c);
+const improve=xs.filter(x=>x.imp.state==='MIGLIORA'||x.imp.state==='EARLY SHIFT POSITIVO').map(x=>x.c);
+const worsen=xs.filter(x=>x.imp.state==='PEGGIORA'||x.imp.state==='EARLY SHIFT NEGATIVO').map(x=>x.c);
 const rates=xs.map(x=>({c:x.c,v:Number(x.rates.chg2_bp)})).filter(x=>Number.isFinite(x.v)).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
 const r0=rates[0];
 const risk=safe(()=>deriveGlobalRiskState(),{state:'MISTO'})||{state:'MISTO'};
@@ -537,8 +446,6 @@ let main='Il quadro G8 resta misto: non c’è una singola narrativa valida per 
 const parts=[];
 if(improve.length) parts.push(`${improve.join(' e ')} mostrano supporto in aumento`);
 if(worsen.length) parts.push(`${worsen.join(' e ')} mostrano supporto in calo`);
-const transition=xs.filter(x=>String(x.imp.state||'').includes('EARLY SHIFT')||String(x.imp.state||'').includes('TURNING POINT')).map(x=>x.c);
-if(transition.length) parts.push(`${transition.join(' e ')} mostrano una possibile svolta ancora da confermare`);
 if(r0) parts.push(`il movimento 2Y più ampio è ${r0.c} ${r0.v>=0?'+':''}${r0.v.toFixed(1)} bp`);
 if(parts.length) main=parts.join(' · ')+'.';
 const sub=`Giornata operativa ${prettyDate(businessDate())}: Macro + Rates/CB definiscono la struttura; Liquidità e Risk sono overlay; COT modifica il rischio; Price (${prettyDate(priceDate())}) conferma o diverge. Ogni layer mantiene il proprio as-of. Rischio globale: ${risk.state||'misto'}.`;
