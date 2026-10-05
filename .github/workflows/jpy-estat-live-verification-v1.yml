@@ -1,0 +1,87 @@
+name: JPY e-Stat Live Verification V1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-source-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      E_STAT_APP_ID: ${{ secrets.E_STAT_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Require e-Stat API credential
+        shell: bash
+        run: |
+          if [ -z "${E_STAT_APP_ID}" ]; then
+            echo "E_STAT_APP_ID repository secret is not configured."
+            exit 1
+          fi
+
+      - name: Fetch official JPY unemployment and build candidate
+        run: |
+          mkdir -p /tmp/gmfq-jpy-estat-live
+          python validation/sources/jpy_estat_unemployment.py \
+            --output /tmp/gmfq-jpy-estat-live/candidate.json \
+            --audit-output /tmp/gmfq-jpy-estat-live/source-audit.json
+
+      - name: Pass live candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-jpy-estat-live/candidate.json \
+            --output-dir /tmp/gmfq-jpy-estat-live/built
+
+      - name: Assert candidate is JPY labour and source is official
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-jpy-estat-live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gmfq-jpy-estat-live/source-audit.json').read_text())
+          s=json.loads(Path('/tmp/gmfq-jpy-estat-live/built/summary.json').read_text())
+          assert c['currency']=='JPY', c
+          assert c['dimension']=='labour', c
+          assert c['source']=='Statistics Bureau of Japan / e-Stat', c
+          assert a['mode']=='live', a
+          assert a['live_data_written'] is False, a
+          assert s['status']=='PASS', s
+          assert s['live_data_modified'] is False, s
+          assert s['observation_date']==c['observation_date'], (s,c)
+          assert float(s['new_value'])==float(c['value']), (s,c)
+          print(json.dumps({
+              'status':'PASS',
+              'observation_date':c['observation_date'],
+              'value':c['value'],
+              'prior_period':a['prior_period'],
+              'prior_value':a['prior_value'],
+              'delta':a['delta'],
+              'series_action':s['series_action'],
+              'live_data_modified':False
+          }, indent=2))
+          PY
+
+      - name: Confirm repository live data remained untouched
+        run: |
+          git diff --exit-code -- \
+            live_data/sections/MACRO_SERIES.json \
+            live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Upload verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-estat-live-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-jpy-estat-live/candidate.json
+            /tmp/gmfq-jpy-estat-live/source-audit.json
+            /tmp/gmfq-jpy-estat-live/built/summary.json
