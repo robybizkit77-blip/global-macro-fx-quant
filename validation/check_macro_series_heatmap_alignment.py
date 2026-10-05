@@ -33,8 +33,6 @@ def bind_series(rows: list[dict[str, Any]], source_series_id: str) -> tuple[dict
     if len(exact) > 1:
         return None, "EXACT_AMBIGUOUS", len(exact)
 
-    # Historical IDs in MACRO_SERIES wrap the source ID, e.g. EA_UNEMP_history_value.
-    # Only accept a unique containment match; ambiguity is a hard failure.
     contained = [
         r for r in rows
         if isinstance(r, dict)
@@ -44,6 +42,15 @@ def bind_series(rows: list[dict[str, Any]], source_series_id: str) -> tuple[dict
     if len(contained) == 1:
         return contained[0], "UNIQUE_CONTAINMENT", 1
     return None, "CONTAINMENT_AMBIGUOUS" if contained else "NOT_FOUND", len(contained)
+
+
+def values_are_directly_comparable(dimension: str, macro_series_id: str) -> bool:
+    # Labour rows are rates/levels in both stores. Inflation rows can differ:
+    # e.g. raw CPI index in MACRO_SERIES vs YoY transform in the Heatmap.
+    if dimension == "labour":
+        return True
+    sid = macro_series_id.upper()
+    return "YOY" in sid or "Y_O_Y" in sid
 
 
 def main() -> int:
@@ -68,16 +75,26 @@ def main() -> int:
                 "currency": currency,
                 "dimension": dimension,
                 "heatmap_series_id": source_series_id,
+                "heatmap_transformation": hrow.get("transformation"),
             }
             row, binding, matches = bind_series(rows, source_series_id)
             item["binding"] = binding
             if row is None:
-                item.update({"status": "FAIL", "reason": "SERIES_BINDING", "matches": matches})
+                item.update({
+                    "status": "FAIL",
+                    "reason": "SERIES_BINDING",
+                    "matches": matches,
+                    "available_series": [
+                        {"id": r.get("id"), "label": r.get("label")}
+                        for r in rows if isinstance(r, dict)
+                    ],
+                })
                 failures.append(item)
                 checks.append(item)
                 continue
 
-            item["macro_series_id"] = row.get("id")
+            macro_series_id = str(row.get("id"))
+            item["macro_series_id"] = macro_series_id
             dates = row.get("dates")
             values = row.get("values")
             if not isinstance(dates, list) or not isinstance(values, list) or not dates or len(dates) != len(values):
@@ -93,18 +110,18 @@ def main() -> int:
             heat_date = str(hrow.get("as_of"))
             heat_value = hrow.get("latest_value")
             detail_date = str(hccy.get("as_of_detail", {}).get(DETAIL_KEY[dimension]))
+            comparable = values_are_directly_comparable(dimension, macro_series_id)
 
             reasons = []
             if row_last_date != series_date:
                 reasons.append("ROW_LAST_DATE")
             if not same_value(row_last_value, series_value):
                 reasons.append("ROW_LAST_VALUE")
-            # Heatmap dates can be YYYY-MM while MACRO_SERIES can be YYYY-MM-DD.
             if not series_date.startswith(heat_date):
                 reasons.append("HEATMAP_AS_OF")
             if not series_date.startswith(detail_date):
                 reasons.append("AS_OF_DETAIL")
-            if not same_value(series_value, heat_value):
+            if comparable and not same_value(series_value, heat_value):
                 reasons.append("HEATMAP_LATEST_VALUE")
 
             item.update({
@@ -117,6 +134,7 @@ def main() -> int:
                 "heatmap_as_of": heat_date,
                 "heatmap_latest_value": heat_value,
                 "as_of_detail": detail_date,
+                "value_comparison": "DIRECT" if comparable else "SKIPPED_TRANSFORMED",
             })
             if reasons:
                 failures.append(item)
