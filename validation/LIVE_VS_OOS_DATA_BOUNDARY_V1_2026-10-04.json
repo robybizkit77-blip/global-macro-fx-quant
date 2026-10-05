@@ -1,0 +1,46 @@
+{
+  "schema": "GMFQ_LIVE_VS_OOS_DATA_BOUNDARY_V1",
+  "created_at": "2026-10-04",
+  "purpose": "Separate ongoing live-dashboard data updates from the frozen canonical forward-OOS baseline so operational freshness cannot contaminate evaluation.",
+  "canonical_oos": {
+    "t0_file": "validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json",
+    "t0_effective_date": "2026-10-01",
+    "engine_fingerprint": "3356baf0",
+    "checkpoints": ["2026-10-08", "2026-10-29", "2026-12-24"],
+    "rule": "T0 state, pair direction, thresholds, weights, hierarchy and evaluation anchors are immutable during the active OOS cycle."
+  },
+  "live_layer": {
+    "allowed": [
+      "Refresh current macro observations for operational/dashboard display",
+      "Refresh current rates observations",
+      "Refresh current COT after official release",
+      "Refresh current ECB-based price matrix",
+      "Refresh current liquidity observations",
+      "Refresh currently validated OIS/CB-pricing inputs where source identity and methodology are unchanged",
+      "Update freshness timestamps, source dates and stale-data labels",
+      "Add validation-only diagnostics that do not change runtime state or engine rules"
+    ],
+    "constraints": [
+      "Live updates must not overwrite or mutate canonical T0 artifacts",
+      "Live updates must not retroactively alter T0 currency states or pair sides",
+      "Live data quality changes remain observational unless explicitly promoted after the OOS cycle",
+      "WITHHELD remains WITHHELD when source quality is insufficient; no fallback substitution"
+    ]
+  },
+  "requires_oos_restart": [
+    "Any change to engine thresholds or weights",
+    "Any change to Macro/Rates/Policy/COT/Liquidity decision hierarchy",
+    "Any change to pair-direction construction or forced-winner logic",
+    "Any promotion of a previously diagnostic/non-canonical source into the frozen decision layer",
+    "Any runtime change that alters frozen currency or pair state",
+    "Any modification to canonical T0 anchors or checkpoint evaluation methodology"
+  ],
+  "checkpoint_rule": "Checkpoint evaluation always uses frozen T0 signal state plus the first common ECB fixing on/after the checkpoint date; current live dashboard state is never substituted for T0.",
+  "decision": "LIVE_UPDATES_ALLOWED_WITH_FROZEN_OOS_BASELINE",
+  "model_safety": {
+    "changes_model_rules": false,
+    "changes_currency_state": false,
+    "changes_pair_direction": false,
+    "oos_restart_required": false
+  }
+}
