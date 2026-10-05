@@ -63,9 +63,11 @@ jobs:
               if (typeof window.selectCurrency==='function') window.selectCurrency('EUR',true);
               const eurText=document.body?.innerText||'';
               const ois=Object.fromEntries(CCYS.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null]));
+              const ratesBasis=typeof window.ratesCanonicalBasisIntegrity==='function' ? window.ratesCanonicalBasisIntegrity() : null;
               return {
                 title: document.title,
                 finalAudit: audit,
+                ratesBasis,
                 sections,currencyStates,pairFrames,ois,
                 coherenceText:{eur:eurText},
                 bodyTextLength: document.body?.innerText?.length || 0
@@ -73,6 +75,7 @@ jobs:
             },{CCYS,PAIRS});
 
             console.log(JSON.stringify({result,consoleErrors,pageErrors},null,2));
+            if(result.ratesBasis?.ok!==true) console.error('RATES_BASIS_DETAIL '+JSON.stringify(result.ratesBasis));
 
             if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
             if(!result.finalAudit) throw new Error('Final audit missing');
