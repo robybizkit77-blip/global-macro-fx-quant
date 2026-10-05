@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_DERIVED_LIVE_SECTIONS_CONTRACT_V1",
   "created_at": "2026-10-05",
-  "status": "COT_BUILDER_READY__RATES_BUILDER_PENDING",
+  "status": "ALL_DERIVED_BUILDERS_READY__INJECTION_PENDING",
   "sections": [
     {
       "key": "V247_COT_STORIES",
@@ -27,13 +27,22 @@
     {
       "key": "RATES_AUDIT_METADATA",
       "file": "live_data/sections/RATES_AUDIT_METADATA.json",
-      "mode": "DERIVED_BUILDER_REQUIRED",
+      "mode": "DERIVED_BUILDER_READY",
       "direct_update_allowed": false,
-      "reason": "Current runtime consumes this metadata through post-build audit/hydration logic rather than as one exact literal block.",
-      "canonical_inputs": ["validated same-basis rates refresh metadata", "current source/as-of status per currency"],
-      "required_builder_properties": ["deterministic", "no rate-value inference", "preserve current same-basis policy", "settled_after_cad_chain compatible", "output validated by Engine Gate and Browser Gate"]
+      "builder": "validation/build_rates_audit_metadata.py",
+      "builder_status": "ISOLATED_SELFTEST_PASS",
+      "builder_run_id": 37300679681,
+      "canonical_inputs": ["live_data/sections/NATIVE_RATES_DATA.json", "explicit audit_date supplied by validated refresh run"],
+      "rules": {
+        "date_policy": "copy current validated per-currency date; never infer",
+        "rate_values": "not read or inferred by metadata builder",
+        "same_basis_policy": "preserve approved per-currency source/status semantics",
+        "aud_source_cadence": "preserved explicitly"
+      },
+      "validation": "Builder reproduced the current RATES_AUDIT_METADATA object exactly for audit_date 2026-10-04 and passed no-rate-value-inference guard.",
+      "required_before_real_write": ["apply through dedicated derived-runtime injection path", "settled_after_cad_chain compatible", "Engine Gate PASS", "Browser Gate PASS"]
     }
   ],
   "hard_rule": "Neither derived section may be passed through the generic direct-section updater.",
-  "activation_gate": "A dedicated builder must reproduce current runtime semantics and pass an isolated dry-run before real updates are allowed."
+  "activation_gate": "Both builders are validated; next gate is a dedicated deterministic derived-runtime injection path followed by Engine and Browser validation."
 }
