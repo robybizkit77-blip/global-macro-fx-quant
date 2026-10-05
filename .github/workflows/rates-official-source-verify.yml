@@ -1,0 +1,26 @@
+name: Rates Official Source Verify
+
+on:
+  push:
+    branches:
+      - 'staging-rates-source-verify-v1-2026-10-05'
+    paths:
+      - 'validation/verify_rates_official_subset.py'
+      - '.github/workflows/rates-official-source-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify official rates subset
+        run: python3 validation/verify_rates_official_subset.py
+      - name: Governance note
+        run: |
+          echo 'Read-only official-source verification only.'
+          echo 'No live_data writes, no payload rebuild, no main/gh-pages publication.'
