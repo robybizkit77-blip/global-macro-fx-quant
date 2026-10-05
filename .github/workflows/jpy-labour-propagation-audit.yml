@@ -6,6 +6,7 @@ on:
       - staging-macro-jpy-labour-v1-2026-10-05
     paths:
       - 'validation/audit_jpy_labour_paths.py'
+      - 'validation/reverse_audit_jpy_labour.py'
       - '.github/workflows/jpy-labour-propagation-audit.yml'
       - 'live_data/sections/D.json'
       - 'live_data/sections/MACRO_SERIES.json'
@@ -25,8 +26,12 @@ jobs:
           python-version: '3.11'
       - name: Run read-only JPY labour path audit
         run: python validation/audit_jpy_labour_paths.py
+      - name: Reverse-audit JPY labour derivation
+        run: python validation/reverse_audit_jpy_labour.py
       - name: Upload audit evidence
         uses: actions/upload-artifact@v4
         with:
           name: jpy-labour-propagation-audit
-          path: validation/JPN_LABOUR_PROPAGATION_AUDIT_2026-10-05.json
+          path: |
+            validation/JPN_LABOUR_PROPAGATION_AUDIT_2026-10-05.json
+            validation/JPN_LABOUR_REVERSE_AUDIT_2026-10-05.json
