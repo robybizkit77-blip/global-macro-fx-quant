@@ -1,0 +1,29 @@
+name: COT Runtime Builder Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - 'validation/audit_cot_builder_against_runtime.py'
+      - 'validation/build_cot_stories.py'
+      - '.github/workflows/cot-runtime-builder-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare builder with actual runtime assignment
+        run: python3 validation/audit_cot_builder_against_runtime.py | tee /tmp/cot-runtime-builder-audit.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-runtime-builder-audit
+          path: /tmp/cot-runtime-builder-audit.json
