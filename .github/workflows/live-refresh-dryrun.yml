@@ -48,7 +48,11 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           marker='__gmfq_dry_run_marker'
-          allowed={'live_data/sections/OIS_DATA.json','validation/simulate_live_refresh.py'}
+          allowed={
+            'live_data/sections/OIS_DATA.json',
+            'validation/simulate_live_refresh.py',
+            '.github/workflows/live-refresh-dryrun.yml'
+          }
           hits=[]
           for p in Path('.').rglob('*'):
               if not p.is_file() or '.git' in p.parts or p.as_posix() in allowed or p.as_posix().startswith('payload/'):
