@@ -1,0 +1,116 @@
+{
+  "schema_version": "GMFQ_JPN_LABOUR_AUG2026_CANDIDATE_V1",
+  "status": "PASS",
+  "source": "Statistics Bureau of Japan / e-Stat",
+  "release_date": "2026-10-02",
+  "period": "2026-08",
+  "official_unemployment_rate_sa": 2.5,
+  "macro_series": {
+    "old_last_date": "2026-07",
+    "old_last_value": 2.4,
+    "new_last_date": "2026-08",
+    "new_last_value": 2.5,
+    "old_n": 82,
+    "new_n": 83,
+    "append_only": true
+  },
+  "thermometer": {
+    "old_as_of": "2026-07",
+    "new_as_of": "2026-08",
+    "old_value": 2.4,
+    "new_value": 2.5,
+    "old_percentile": 12.1,
+    "new_percentile": 31.7,
+    "old_label": "MOLTO_FREDDO",
+    "new_label": "FREDDO",
+    "old_direction": "SCENDE",
+    "new_direction": "SALE",
+    "old_acceleration": "RALLENTA",
+    "new_acceleration": "ACCELERA",
+    "history_n": 120,
+    "history_tail": [
+      2.5,
+      2.5,
+      2.5,
+      2.4,
+      2.5
+    ],
+    "as_of_detail_unemployment_old": "2026-07",
+    "as_of_detail_unemployment_new": "2026-08",
+    "as_of_detail_inflation_unchanged": "2026-08"
+  },
+  "runtime_updates": [
+    {
+      "status": "PASS",
+      "section": "MACRO_SERIES",
+      "part": 1,
+      "manifest_schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
+      "old_section_sha256": "f588c3bd1970bd9a1460ab8e96422d26342a692527ee857e8e3732fca20e7ff8",
+      "new_section_sha256": "6e12cf178fe89262fefe268ba2160f868886cbc4f301e1dab2ba8ab0def1b160",
+      "old_part_sha256": "d4926eb636c51fa692db8d3a1dcce503ca7d0115465c371351aa5f19f45087bf",
+      "new_part_sha256": "f99c6c57cfde0aea32fcd11a62232c00af34b64f19a95c8493de29c7371b52b5",
+      "byte_delta": 15,
+      "changed_payload_parts": [
+        1
+      ],
+      "derived_builder_used": false,
+      "applied": true,
+      "untouched_payload_parts": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "status": "PASS",
+      "section": "MACRO_THERMOMETER_DATA",
+      "part": 0,
+      "manifest_schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
+      "old_section_sha256": "226efbdc47cf2a975e1e3c696ac3f237fbb80c5d05f67779948130f4e78fda53",
+      "new_section_sha256": "d8a2b6ef29207b91ace00033896ceb39063253e93e3517f8abb35bf4c9c817c3",
+      "old_part_sha256": "a32485e415d5c097ecdfde384fd4c657c9b82d441e7c9970a306e9718918a686",
+      "new_part_sha256": "09b9d01268033317b44584447a0a39f98899f8213720f4e5e80c46617fbc9f30",
+      "byte_delta": -7,
+      "changed_payload_parts": [
+        0
+      ],
+      "derived_builder_used": false,
+      "applied": true,
+      "untouched_payload_parts": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    }
+  ],
+  "manifest_v2_status": "PASS",
+  "D_json_sha256_before": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176",
+  "D_json_sha256_after": "4ab1784ba92e6ea42247b09419610f71d608420cc2e7d38c9313927c30795176",
+  "D_json_byte_identical": true,
+  "engine_score_policy": "D.macro.JPY.labour intentionally unchanged: no canonical raw-to-engine derivation exists in repo",
+  "oos_restart": false
+}
