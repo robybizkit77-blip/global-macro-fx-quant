@@ -1,0 +1,27 @@
+name: COT Open Interest Source Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - design-live-update-pipeline-v1-2026-10-05
+    paths:
+      - '.github/workflows/cot-open-interest-source.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect D cot canonical fields
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('live_data/sections/D.json'))
+          cot=d.get('cot',{})
+          print(json.dumps(cot,indent=2,ensure_ascii=False))
+          PY
