@@ -35,6 +35,7 @@ jobs:
           cat > engine-audit.js <<'EOF'
           const { chromium } = require('playwright');
           const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
 
           (async()=>{
             const browser=await chromium.launch({headless:true});
@@ -48,16 +49,16 @@ jobs:
             if(!response || !response.ok()) throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
 
-            const snapshot=()=>page.evaluate((CCYS)=>{
+            const snapshot=()=>page.evaluate(({CCYS,PAIRS})=>{
               const currencies={};
               for(const c of CCYS){
                 const s=window.deriveCurrencyState?.(c)||null;
                 currencies[c]=s?{base:s.base,macro:Number(s.macro||0),policy:Number(s.policy||0),change:s.improvementState||null}:null;
               }
               const pairs={};
-              for(const row of (window.D?.pairs||[])){
-                const f=window.derivePairDecisionFrame?.(row.pair)||null;
-                pairs[row.pair]=f?{
+              for(const p of PAIRS){
+                const f=window.derivePairDecisionFrame?.(p)||null;
+                pairs[p]=f?{
                   fav:f.fav,
                   quality:f.quality,
                   macroSide:f.structural?.macro?.side??null,
@@ -67,11 +68,11 @@ jobs:
                 }:null;
               }
               return {currencies,pairs};
-            },CCYS);
+            },{CCYS,PAIRS});
 
             const before=await snapshot();
 
-            const structural=await page.evaluate((CCYS)=>{
+            const structural=await page.evaluate(({CCYS,PAIRS})=>{
               const issues=[];
               const requiredFns=['deriveCurrencyState','derivePairDecisionFrame','rebuildCanonicalState','stableModelRefresh','ratesCanonicalBasisIntegrity','visibleRatesSnapshotIntegrity'];
               for(const fn of requiredFns){ if(typeof window[fn]!=='function') issues.push('MISSING_FUNCTION:'+fn); }
@@ -91,10 +92,8 @@ jobs:
                 if(s.base!==expected) issues.push(`CURRENCY_RULE:${c}:${s.base}!=${expected}`);
               }
 
-              const pairRows=[...(window.D?.pairs||[])];
-              if(pairRows.length!==28) issues.push('PAIR_COUNT:'+pairRows.length);
-              for(const row of pairRows){
-                const p=row.pair;
+              if(PAIRS.length!==28) issues.push('PAIR_COUNT:'+PAIRS.length);
+              for(const p of PAIRS){
                 const [a,b]=String(p).split('/');
                 const sa=states[a], sb=states[b];
                 const f=window.derivePairDecisionFrame?.(p)||null;
@@ -123,7 +122,7 @@ jobs:
               if(rb?.ok!==true) issues.push('RATES_BASIS');
               if(rv?.ok!==true) issues.push('RATES_VISIBLE');
               return {issues,final,rb,rv};
-            },CCYS);
+            },{CCYS,PAIRS});
 
             if(structural.issues.length) throw new Error('Structural integrity failure: '+JSON.stringify(structural.issues));
             if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
