@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import html, json, pathlib, re, sys, urllib.request
+import datetime as dt, html, io, json, pathlib, re, sys, urllib.request
+from openpyxl import load_workbook
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 RATES=json.loads((ROOT/'live_data'/'sections'/'NATIVE_RATES_DATA.json').read_text())
@@ -16,15 +17,18 @@ SOURCES={
    'kind':'boc'
  },
  'NZD':{
-   'url':'https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates',
-   'kind':'rbnz'
+   'url':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx',
+   'kind':'rbnz_xlsx'
  }
 }
 
-def fetch(url:str)->str:
+def fetch_bytes(url:str)->bytes:
     req=urllib.request.Request(url,headers={'User-Agent':UA})
     with urllib.request.urlopen(req,timeout=45) as r:
-        return r.read().decode('utf-8','replace')
+        return r.read()
+
+def fetch_text(url:str)->str:
+    return fetch_bytes(url).decode('utf-8','replace')
 
 def textify(raw:str)->str:
     s=re.sub(r'<script[\s\S]*?</script>',' ',raw,flags=re.I)
@@ -33,7 +37,6 @@ def textify(raw:str)->str:
     return re.sub(r'\s+',' ',html.unescape(s)).strip()
 
 def parse_treasury(raw:str):
-    # Table order: date ... 1Y,2Y,3Y,5Y,7Y,10Y,20Y,30Y. Use row HTML so column order is explicit.
     rows=re.findall(r'<tr[^>]*>([\s\S]*?)</tr>',raw,flags=re.I)
     found=[]
     for row in rows:
@@ -43,8 +46,6 @@ def parse_treasury(raw:str):
         for c in cells[1:]:
             try: nums.append(float(c))
             except: nums.append(None)
-        # On current Treasury table, 2Y and 10Y are the 18th and 22nd numeric tenor columns after date.
-        # Prefer tail mapping because optional front columns may exist: final 8 columns are 1Y,2Y,3Y,5Y,7Y,10Y,20Y,30Y.
         tail=nums[-8:]
         if len(tail)==8 and all(v is not None for v in tail):
             mm,dd,yyyy=cells[0].split('/')
@@ -54,44 +55,50 @@ def parse_treasury(raw:str):
 
 def parse_boc(raw:str):
     t=textify(raw)
-    dates=sorted(set(re.findall(r'2026[-‑]\d{2}[-‑]\d{2}',t)))
+    dates=sorted(set(x.replace('‑','-') for x in re.findall(r'2026[-‑]\d{2}[-‑]\d{2}',t)))
     if not dates: raise ValueError('BoC: no dates found')
-    latest=dates[-1].replace('‑','-')
-    # Search benchmark section text near latest date; expected values are used only to disambiguate the table extraction.
+    latest=dates[-1]
     exp2=float(RATES['CAD']['2Y']); exp10=float(RATES['CAD']['10Y'])
-    # Current page publishes a compact recent table. Confirm latest date and both benchmark values appear in the official page.
-    if latest not in t.replace('‑','-'): raise ValueError('BoC latest date normalization failure')
     if not re.search(r'\b'+re.escape(f'{exp2:.2f}')+r'\b',t): raise ValueError('BoC expected 2Y not present')
     if not re.search(r'\b'+re.escape(f'{exp10:.2f}')+r'\b',t): raise ValueError('BoC expected 10Y not present')
     return latest,exp2,exp10
 
-def parse_rbnz(raw:str):
-    t=textify(raw)
-    # Parse recent daily rows: DD Mon 2026 followed by OCR/cash/bills then 1Y,2Y,5Y,10Y,spread.
-    pat=re.compile(r'(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)\s+2026\s+((?:-?\d+(?:\.\d+)?\s+|-\s+){8,14})')
-    months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sept':'09','Oct':'10','Nov':'11','Dec':'12'}
-    found=[]
-    for m in pat.finditer(t):
-        vals=[]
-        for tok in m.group(3).split():
-            if tok=='-': vals.append(None)
-            else:
-                try: vals.append(float(tok))
-                except: pass
-        # RBNZ B2 columns: OCR, ODR, ORRF, overnight, 30d,60d,90d,1Y,2Y,5Y,10Y,2-10s
-        if len(vals)>=11:
-            d=f"2026-{months[m.group(2)]}-{int(m.group(1)):02d}"
-            found.append((d,vals[8],vals[10]))
-    if not found: raise ValueError('RBNZ: no parsable daily rows')
-    return max(found,key=lambda x:x[0])
+def norm_header(v):
+    return re.sub(r'\s+',' ',str(v or '').strip().lower())
+
+def parse_rbnz_xlsx(raw:bytes):
+    wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+    candidates=[]
+    for ws in wb.worksheets:
+        rows=list(ws.iter_rows(values_only=True))
+        header_idx=None; date_col=None; y2_col=None; y10_col=None
+        for i,row in enumerate(rows[:40]):
+            hs=[norm_header(v) for v in row]
+            for j,h in enumerate(hs):
+                if h=='date': date_col=j
+                if h in {'2 year','2-year','2 year bond','2 year government bond'}: y2_col=j
+                if h in {'10 year','10-year','10 year bond','10 year government bond'}: y10_col=j
+            if date_col is not None and y2_col is not None and y10_col is not None:
+                header_idx=i; break
+        if header_idx is None: continue
+        for row in rows[header_idx+1:]:
+            if max(date_col,y2_col,y10_col)>=len(row): continue
+            d=row[date_col]; y2=row[y2_col]; y10=row[y10_col]
+            if isinstance(d,dt.datetime): d=d.date()
+            if isinstance(d,dt.date) and isinstance(y2,(int,float)) and isinstance(y10,(int,float)):
+                candidates.append((d.isoformat(),float(y2),float(y10)))
+    if not candidates: raise ValueError('RBNZ workbook: no parsable Date/2 year/10 year rows')
+    return max(candidates,key=lambda x:x[0])
 
 def main()->int:
-    parsers={'treasury':parse_treasury,'boc':parse_boc,'rbnz':parse_rbnz}
     results={}; failures=[]
     for c,s in SOURCES.items():
         try:
-            raw=fetch(s['url'])
-            date,y2,y10=parsers[s['kind']](raw)
+            raw=fetch_bytes(s['url'])
+            if s['kind']=='treasury': date,y2,y10=parse_treasury(raw.decode('utf-8','replace'))
+            elif s['kind']=='boc': date,y2,y10=parse_boc(raw.decode('utf-8','replace'))
+            elif s['kind']=='rbnz_xlsx': date,y2,y10=parse_rbnz_xlsx(raw)
+            else: raise ValueError('unknown source kind')
             cur=RATES[c]
             row={
               'official_latest':date,'official_2Y':y2,'official_10Y':y10,
