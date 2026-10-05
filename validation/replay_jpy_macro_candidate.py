@@ -57,6 +57,7 @@ def main() -> int:
         raise SystemExit(f"Expected exactly one changed JPY macro series, got {ids}")
     sid = ids[0]
     after_row = next(r for r in after_series["JPY"] if r.get("id") == sid)
+    h_before = before_heat["currencies"]["JPY"]["labour"]
     h_after = after_heat["currencies"]["JPY"]["labour"]
 
     candidate = {
@@ -92,6 +93,17 @@ def main() -> int:
         "heatmap_exact_match": heat_equal,
         "engine_rules_changed": False,
         "live_data_written": False,
+        "jpy_labour_context": {
+            "before_tail": h_before.get("history", [])[-8:],
+            "after_tail": h_after.get("history", [])[-8:],
+            "replay_tail": h_actual.get("history", [])[-8:],
+            "before_direction": h_before.get("direction"),
+            "before_acceleration": h_before.get("acceleration"),
+            "after_direction": h_after.get("direction"),
+            "after_acceleration": h_after.get("acceleration"),
+            "replay_direction": h_actual.get("direction"),
+            "replay_acceleration": h_actual.get("acceleration"),
+        },
     }
 
     if not series_equal:
