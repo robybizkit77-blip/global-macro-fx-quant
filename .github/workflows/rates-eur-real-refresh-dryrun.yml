@@ -1,0 +1,128 @@
+name: EUR Rates Real Refresh Dry Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - staging-rates-source-verify-v1-2026-10-05
+    paths:
+      - 'validation/update_eur_rates_from_ecb.py'
+      - '.github/workflows/rates-eur-real-refresh-dryrun.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build validated EUR replacement from official ECB source
+        run: python3 validation/update_eur_rates_from_ecb.py --output /tmp/NATIVE_RATES_DATA.updated.json | tee /tmp/eur-rates-update.json
+
+      - name: Apply direct Rates refresh in ephemeral workspace
+        run: |
+          python3 validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/NATIVE_RATES_DATA.updated.json \
+            --apply | tee /tmp/rates-direct-injector.json
+
+      - name: Build Rates audit metadata from refreshed direct data
+        run: |
+          python3 validation/build_rates_audit_metadata.py \
+            --audit-date 2026-10-05 \
+            --output /tmp/RATES_AUDIT_METADATA.updated.json | tee /tmp/rates-metadata-builder.json
+
+      - name: Apply derived Rates metadata in ephemeral workspace
+        run: |
+          python3 validation/update_live_derived_sections.py \
+            --rates /tmp/RATES_AUDIT_METADATA.updated.json \
+            --apply | tee /tmp/rates-derived-injector.json
+
+      - name: Rebuild manifest v2 for refreshed runtime
+        run: |
+          python3 validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python3 validation/check_live_update_contract.py | tee /tmp/live-contract-after-rates.json
+
+      - name: Verify EUR refresh scope and economics
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          u=json.load(open('/tmp/eur-rates-update.json'))
+          assert u['status']=='UPDATED',u
+          assert u['currency']=='EUR',u
+          assert u['to_date']=='2026-10-02',u
+          assert abs(u['new_2Y']-2.9918960503)<1e-10,u
+          assert abs(u['new_10Y']-3.4639685465)<1e-10,u
+          assert u['curve_state']=='Bull flattening',u
+          rates=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          eur=rates['EUR']
+          assert eur['date']=='2026-10-02'
+          assert eur['history2']['last_date']=='2026-10-02'
+          assert eur['history10']['last_date']=='2026-10-02'
+          meta=json.load(open('live_data/sections/RATES_AUDIT_METADATA.json'))
+          assert meta['expected_rates']['EUR']=='2026-10-02',meta['expected_rates']
+          assert meta['rates']['EUR']['current_as_of']=='2026-10-02',meta['rates']['EUR']
+          changed=subprocess.check_output(['git','status','--short'],text=True).splitlines()
+          paths=[x[3:] for x in changed]
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          bad=[p for p in paths if p not in allowed]
+          if bad: raise SystemExit('Unexpected changed files: '+', '.join(bad))
+          assert 'live_data/sections/NATIVE_RATES_DATA.json' in paths,paths
+          assert 'live_data/sections/RATES_AUDIT_METADATA.json' in paths,paths
+          print(json.dumps({'status':'PASS','changed_files':paths,'EUR':{'date':eur['date'],'2Y':eur['2Y'],'10Y':eur['10Y'],'curve_bp':eur['curve_bp'],'chg2_bp':eur['chg2_bp'],'chg10_bp':eur['chg10_bp'],'curve_state':eur['curve_state']}},indent=2))
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8768 --bind 127.0.0.1 > /tmp/gmfq-rates-refresh-server.log 2>&1 &
+          echo $! > /tmp/gmfq-rates-refresh-server.pid
+          sleep 2
+
+      - name: Run exact Engine Gate logic on EUR Rates candidate
+        shell: bash
+        run: |
+          awk "/cat > engine-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/engine-logic-audit.yml > engine-audit.js
+          test -s engine-audit.js
+          sed -i 's#http://127.0.0.1:8765/#http://127.0.0.1:8768/#g' engine-audit.js
+          node engine-audit.js
+
+      - name: Run exact Browser Gate logic on EUR Rates candidate
+        shell: bash
+        run: |
+          awk "/cat > browser-audit.js <<'EOF'/{flag=1;next}/^          EOF$/{if(flag){exit}}flag{sub(/^          /,\"\");print}" .github/workflows/staging-browser-audit.yml > browser-audit.js
+          test -s browser-audit.js
+          sed -i 's#http://127.0.0.1:8000/#http://127.0.0.1:8768/#g' browser-audit.js
+          node browser-audit.js
+
+      - name: Confirm staging-only dry run
+        run: |
+          echo 'EUR_RATES_REAL_REFRESH_DRYRUN_PASS_CANDIDATE'
+          echo 'Official ECB source applied only in ephemeral workspace. No main, no gh-pages, no schedule.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-rates-real-refresh-evidence
+          if-no-files-found: warn
+          path: |
+            /tmp/eur-rates-update.json
+            /tmp/rates-direct-injector.json
+            /tmp/rates-metadata-builder.json
+            /tmp/rates-derived-injector.json
+            /tmp/live-contract-after-rates.json
+            /tmp/gmfq-rates-refresh-server.log
+            staging-browser-audit.png
