@@ -9,8 +9,20 @@
    if(!r.ok) throw new Error('Impossibile caricare '+p);
    return r.text();
  }));
- const html=responses.join('\n');
+ let html=responses.join('\n');
  if(!html.includes('GMFQ_RUNTIME_VALIDATION_MANIFEST')) throw new Error('Payload v490 non validato');
+ let refreshCalls=0;
+ html=html.replace(/\bstableModelRefresh\s*\(\s*\)/g,(m,offset,src)=>{
+   const prefix=src.slice(Math.max(0,offset-24),offset);
+   if(/function\s+$/.test(prefix)) return m;
+   refreshCalls++;
+   return '(window.__GMFQ_STABLE_REFRESH_QUEUED=true)';
+ });
+ if(refreshCalls!==26) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
+ const marker='<script id="gmfq-post-gate-final-audit-settlement">';
+ if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
+ const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</script>\n';
+ html=html.replace(marker,finalRefresh+marker);
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
