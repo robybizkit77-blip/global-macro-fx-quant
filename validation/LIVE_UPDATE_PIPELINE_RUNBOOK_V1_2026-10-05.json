@@ -1,0 +1,96 @@
+{
+  "schema": "GMFQ_LIVE_UPDATE_PIPELINE_RUNBOOK_V1",
+  "created_at": "2026-10-05",
+  "status": "DESIGN_READY__MANUAL_ONLY",
+  "source_of_truth": "GitHub",
+  "production_branches": ["main", "gh-pages"],
+  "frozen_model": {
+    "rules_fingerprint": "3356baf0",
+    "engine_freeze_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rule": "Live data refreshes may not change model rules, thresholds, weights, hierarchy or pair-construction logic."
+  },
+  "pipeline": [
+    {
+      "stage": 1,
+      "id": "INGEST_TO_STAGING",
+      "purpose": "Collect only source-approved live updates into a staging branch/worktree. Never write directly to main or gh-pages.",
+      "required_outputs": ["candidate source files or section JSON", "source/as-of metadata", "update log"],
+      "hard_fail": ["unknown source", "missing as-of", "unparseable data", "silent fallback to alternate source"]
+    },
+    {
+      "stage": 2,
+      "id": "NORMALIZE_AND_VALIDATE_DATA",
+      "purpose": "Normalize units/frequency/source metadata and apply WITHHELD when data cannot be validated.",
+      "required_checks": ["schema valid", "units explicit", "frequency explicit", "source explicit", "as-of coherent", "no impossible/null coercions"],
+      "hard_fail": ["metadata regression", "invalid unit conversion", "unexplained stale value", "WITHHELD overridden without evidence"]
+    },
+    {
+      "stage": 3,
+      "id": "UPDATE_LIVE_DATA_LAYER",
+      "purpose": "Write validated changes first to live_data/sections and regenerate live_data/manifest.json.",
+      "contract": "live_data is the canonical editable data layer; payload is a generated runtime representation, not the primary update target.",
+      "required_checks": ["every manifest section exists", "section hashes match files", "manifest section keys unique", "JSON parse succeeds"]
+    },
+    {
+      "stage": 4,
+      "id": "REBUILD_RUNTIME",
+      "purpose": "Rebuild payload from the validated live_data layer using one deterministic path.",
+      "required_checks": ["16 payload parts present", "loader contract preserved", "runtime builds without syntax errors", "no model-rule diff"],
+      "hard_fail": ["manual payload-only patch without live_data origin", "engine fingerprint drift", "missing payload part"]
+    },
+    {
+      "stage": 5,
+      "id": "ENGINE_GATE",
+      "purpose": "Run Engine Logic Audit on the exact staging commit.",
+      "required_result": "PASS",
+      "must_cover": ["8 currencies", "28 pairs", "macro/policy structure", "rates integrity", "refresh idempotence", "settled final audit", "zero JS errors"]
+    },
+    {
+      "stage": 6,
+      "id": "BROWSER_GATE",
+      "purpose": "Run Staging Browser Audit on the same exact staging commit.",
+      "required_result": "PASS",
+      "must_cover": ["settled final audit", "8 currency views", "28 pair frames", "OIS state validity", "CAD hydration", "rates visible/basis integrity", "zero browser errors"]
+    },
+    {
+      "stage": 7,
+      "id": "CLEAN_RELEASE_CANDIDATE",
+      "purpose": "Recompose a minimal clean release candidate from current main with only validated intended changes.",
+      "required_checks": ["ahead only", "behind zero", "expected files only", "same validated runtime blobs where applicable"],
+      "required_gates": ["Engine Logic Audit PASS", "Staging Browser Audit PASS"]
+    },
+    {
+      "stage": 8,
+      "id": "PROMOTE_MAIN",
+      "purpose": "Fast-forward main non-force only after both gates pass on the exact release commit.",
+      "rules": ["no force push", "no merge if behind", "no promotion after partial gate success"]
+    },
+    {
+      "stage": 9,
+      "id": "PUBLISH_GH_PAGES",
+      "purpose": "Publish only public runtime files that actually changed.",
+      "rules": ["workflow-only changes do not touch gh-pages", "runtime/data changes use surgical publication", "verify deployed index/runtime fingerprint"]
+    },
+    {
+      "stage": 10,
+      "id": "POST_PUBLISH_VERIFY",
+      "purpose": "Verify public dashboard after deployment.",
+      "required_checks": ["page opens", "usable startup acceptable", "8 currencies", "28 pairs", "settled final audit PASS", "no console errors"]
+    }
+  ],
+  "scheduling_policy": {
+    "enabled": false,
+    "reason": "Do not schedule until the manual end-to-end pipeline has passed repeatedly with deterministic outputs.",
+    "activation_gate": ["manual dry-run PASS", "manual real refresh PASS", "clean release PASS", "public post-deploy PASS", "rollback path verified"]
+  },
+  "oos_boundary": {
+    "rule": "Live refresh may continue during forward OOS only if it does not alter frozen T0, model rules, thresholds, hierarchy, pair construction or anchor methodology.",
+    "checkpoint_artifacts": "Never overwritten by the live update pipeline."
+  },
+  "rollback": {
+    "main": "Fast-forward/revert only through reviewed Git history; never rewrite validated history casually.",
+    "gh_pages": "Republish last known-good public runtime files.",
+    "data": "Restore previous validated live_data section set and regenerate runtime; do not hand-edit runtime to mimic rollback."
+  },
+  "next_step": "Build and test a read-only/manual preflight workflow for stages 2-6 before wiring any data collectors or schedule."
+}
