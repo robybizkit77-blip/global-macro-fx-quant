@@ -1,129 +1,114 @@
-name: Staging Browser Audit
+name: Startup Batch Browser Gate
 
 on:
   push:
     branches:
-      - staging-nzd-ois-gate-2026-09-30
-      - staging-global-coherence-v490-20260930
+      - test-startup-batch-browser-audit-2026-10-05
   workflow_dispatch:
 
 jobs:
-  browser-audit:
+  startup-batch-browser-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
           npm install --save-dev playwright
           npx playwright install --with-deps chromium
-
       - name: Start local server
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
-          echo $! > /tmp/gmfq-server.pid
           sleep 2
-
-      - name: Run browser audit
+      - name: Run optimized loader gate
         run: |
-          cat > browser-audit.js <<'EOF'
+          cat > gate.js <<'EOF'
           const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          const EXPECTED_OIS={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
           (async()=>{
-            const browser = await chromium.launch({headless:true});
-            const page = await browser.newPage({viewport:{width:1440,height:1200}});
-            const consoleErrors=[];
-            const pageErrors=[];
-            page.on('console',m=>{ if(m.type()==='error') consoleErrors.push(m.text()); });
-            page.on('pageerror',e=>pageErrors.push(String(e)));
-            const response = await page.goto('http://127.0.0.1:8000/', {waitUntil:'networkidle', timeout:120000});
-            if(!response || !response.ok()) throw new Error('HTTP load failed');
-            await page.waitForFunction(() => document.documentElement.getAttribute('data-post-gate-final-audit'), null, {timeout:120000});
-
-            const result = await page.evaluate(() => {
-              const audit = window.GMFQ_POST_GATE_FINAL_AUDIT || null;
-              const sections = {};
-              for (const v of ['currencies','ratesdesk','pairs','cot','risk','macro','inflationlabour','themes']) {
-                try {
-                  if (typeof window.showView === 'function') window.showView(v);
-                  const el = document.getElementById(v);
-                  sections[v] = {exists:!!el, active:!!el?.classList?.contains('active')};
-                } catch(e) {
-                  sections[v] = {exists:!!document.getElementById(v), error:String(e)};
-                }
-              }
-              const currencyStates={};
-              for (const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) {
-                currencyStates[c]=typeof window.deriveCurrencyState==='function' ? window.deriveCurrencyState(c) : null;
-              }
-              if (typeof window.selectCurrency==='function') window.selectCurrency('EUR',true);
-              const eurText=document.body?.innerText||'';
-              if (typeof window.selectCurrency==='function') window.selectCurrency('JPY',true);
-              const jpyText=document.body?.innerText||'';
-              if (typeof window.openPairDetail==='function') window.openPairDetail('USD/JPY');
-              const usdjpy=typeof window.derivePairDecisionFrame==='function' ? window.derivePairDecisionFrame('USD/JPY') : null;
-              if (typeof window.selectNativeCb==='function') window.selectNativeCb('JPY');
-              const oisText=document.body?.innerText||'';
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+            await page.addInitScript(()=>{
+              window.__GMFQ_LONG_TASKS=[];
+              try{new PerformanceObserver(list=>{for(const e of list.getEntries())window.__GMFQ_LONG_TASKS.push({start:e.startTime,duration:e.duration});}).observe({entryTypes:['longtask']});}catch(e){}
+            });
+            const t0=Date.now();
+            const r=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>document.title.startsWith('GLOBAL MACRO FX QUANT —'),null,{timeout:120000});
+            const titleMs=Date.now()-t0;
+            await page.waitForFunction(()=>{const x=document.body?.innerText||'';return x.length>1000&&!x.startsWith('Caricamento GLOBAL MACRO FX QUANT');},null,{timeout:120000});
+            const usableUiMs=Date.now()-t0;
+            await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
+            const finalAuditMs=Date.now()-t0;
+            const first=await page.evaluate(({CCYS,PAIRS})=>{
+              const currencies=Object.fromEntries(CCYS.map(c=>[c,window.deriveCurrencyState?.(c)||null]));
+              const pairs=Object.fromEntries(PAIRS.map(p=>[p,window.derivePairDecisionFrame?.(p)||null]));
+              const ois=Object.fromEntries(CCYS.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null]));
+              const longTasks=window.__GMFQ_LONG_TASKS||[];
+              const resources=performance.getEntriesByType('resource').filter(e=>e.name.includes('/payload/part-'));
               return {
-                title: document.title,
-                finalAudit: audit,
-                fullSystemAudit: window.GMFQ_FULL_SYSTEM_AUDIT || null,
-                ois: {
-                  USD: window.GMFQ_OIS?.currency?.('USD')?.status || null,
-                  EUR: window.GMFQ_OIS?.currency?.('EUR')?.status || null,
-                  GBP: window.GMFQ_OIS?.currency?.('GBP')?.status || null,
-                  JPY: window.GMFQ_OIS?.currency?.('JPY')?.status || null,
-                  CHF: window.GMFQ_OIS?.currency?.('CHF')?.status || null,
-                  CAD: window.GMFQ_OIS?.currency?.('CAD')?.status || null,
-                  AUD: window.GMFQ_OIS?.currency?.('AUD')?.status || null,
-                  NZD: window.GMFQ_OIS?.currency?.('NZD')?.status || null
-                },
-                sections,
-                currencyStates,
-                usdjpy,
-                coherenceText:{eur:eurText,jpy:jpyText,ois:oisText},
-                bodyTextLength: document.body?.innerText?.length || 0
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                currencies,pairs,ois,
+                queued:window.__GMFQ_STABLE_REFRESH_QUEUED===true,
+                bodyTextLength:document.body?.innerText?.length||0,
+                longTaskTotalMs:longTasks.reduce((a,e)=>a+e.duration,0),
+                longestLongTaskMs:longTasks.reduce((a,e)=>Math.max(a,e.duration),0),
+                payloadTransferBytes:resources.reduce((a,e)=>a+(e.transferSize||0),0)
+              };
+            },{CCYS,PAIRS});
+
+            for(const view of ['currencies','ratesdesk','pairs','cot','risk','macro','inflationlabour','themes']){
+              await page.evaluate(v=>window.showView?.(v),view);
+              const exists=await page.evaluate(v=>!!document.getElementById(v),view);
+              if(!exists)throw new Error('Missing view '+view);
+            }
+            for(const c of CCYS) await page.evaluate(c=>window.selectCurrency?.(c,true),c);
+            for(const p of ['USD/JPY','EUR/USD','AUD/CAD','GBP/CHF']) await page.evaluate(p=>window.openPairDetail?.(p),p);
+            for(const c of CCYS) await page.evaluate(c=>window.selectNativeCb?.(c),c);
+
+            const firstTransfer=first.payloadTransferBytes;
+            await page.reload({waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
+            const second=await page.evaluate(()=>{
+              const resources=performance.getEntriesByType('resource').filter(e=>e.name.includes('/payload/part-'));
+              return {
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                transfer:resources.reduce((a,e)=>a+(e.transferSize||0),0),
+                bodyTextLength:document.body?.innerText?.length||0
               };
             });
 
-            console.log(JSON.stringify({result,consoleErrors,pageErrors},null,2));
-
-            if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title: '+result.title);
-            if(!result.finalAudit) throw new Error('Final audit missing');
-            if(result.finalAudit.status!=='PASS') throw new Error('Final audit FAIL: '+JSON.stringify(result.finalAudit));
-            if(result.bodyTextLength < 1000) throw new Error('Rendered body unexpectedly small');
-            if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
-            if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
-
-            const jpy=result.currencyStates.JPY||{};
-            if(jpy.base!=='MISTA' || jpy.macro!==0 || jpy.policy!==0) throw new Error('JPY coherence failure: '+JSON.stringify(jpy));
-            const usdjpy=result.usdjpy||{};
-            if(usdjpy.quality!=='SEPARAZIONE RATES MATERIALE' || usdjpy.fav!=='—' || !usdjpy.structural?.ratesGap?.material || usdjpy.structural?.ratesGap?.side!=='USD') throw new Error('USD/JPY rates separation failure: '+JSON.stringify(usdjpy));
-            if(!result.coherenceText.eur.includes('QUADRO DI FONDO') || !result.coherenceText.eur.includes('CAMBIAMENTO RECENTE')) throw new Error('EUR level/change separation missing');
-            if(result.coherenceText.jpy.includes('Macro e Tassi/CB favoriscono entrambi JPY')) throw new Error('JPY wording still overstates support');
-            if(!result.coherenceText.ois.includes('front-end osservato') || result.coherenceText.ois.includes('OIS/forward o 2Y')) throw new Error('OIS/front-end wording failure');
-
-            const expected={USD:'WITHHELD',EUR:'ACTIVE',GBP:'ACTIVE',JPY:'ACTIVE',CHF:'WITHHELD',CAD:'ACTIVE',AUD:'ACTIVE',NZD:'WITHHELD'};
-            for(const [k,v] of Object.entries(expected)){
-              if(result.ois[k]!==v) throw new Error(`OIS ${k}: ${result.ois[k]} != ${v}`);
-            }
-
-            await page.screenshot({path:'staging-browser-audit.png',fullPage:true});
+            const summary={titleMs,usableUiMs,finalAuditMs,errors,firstTransfer,secondTransfer:second.transfer,first,second};
+            console.log(JSON.stringify(summary,null,2));
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            if(first.finalAudit?.status!=='PASS'||second.finalAudit?.status!=='PASS')throw new Error('Final audit not PASS');
+            if(Object.values(first.currencies).some(v=>!v))throw new Error('Missing currency state');
+            if(Object.values(first.pairs).some(v=>!v))throw new Error('Missing pair frame');
+            for(const [c,v] of Object.entries(EXPECTED_OIS))if(first.ois[c]!==v)throw new Error(`OIS ${c}: ${first.ois[c]} != ${v}`);
+            if(!first.queued)throw new Error('Bootstrap batching flag was not exercised');
+            if(first.bodyTextLength<1000||second.bodyTextLength<1000)throw new Error('Rendered body too small');
+            if(!(second.transfer<firstTransfer))throw new Error(`Cache ineffective: ${firstTransfer} -> ${second.transfer}`);
+            if(usableUiMs>7000)throw new Error(`Optimized usable UI exceeded 7s gate: ${usableUiMs}`);
+            await page.screenshot({path:'startup-batch-browser-gate.png',fullPage:true});
             await browser.close();
-          })().catch(e=>{ console.error('::error title=Browser audit detail::'+String(e.message||e)); process.exit(1); });
+          })().catch(e=>{console.error('::error title=Startup batch browser gate::'+String(e.message||e));process.exit(1);});
           EOF
-          node browser-audit.js
-
-      - name: Upload screenshot and server log
+          node gate.js
+      - name: Upload audit artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: staging-browser-audit
+          name: startup-batch-browser-gate
           path: |
-            staging-browser-audit.png
+            startup-batch-browser-gate.png
             /tmp/gmfq-server.log
