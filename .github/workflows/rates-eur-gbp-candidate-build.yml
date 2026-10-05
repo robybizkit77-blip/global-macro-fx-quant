@@ -1,0 +1,73 @@
+name: Rates EUR GBP Candidate Build
+on:
+  push:
+    branches:
+      - 'staging-rates-eur-gbp-2026-10-05'
+    paths:
+      - '.github/workflows/rates-eur-gbp-candidate-build.yml'
+      - 'validation/fetch_rates_eur_gbp.py'
+      - 'validation/build_eur_gbp_rates_candidate.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependency
+        run: pip install openpyxl
+      - name: Fetch official EUR GBP source audit
+        run: python validation/fetch_rates_eur_gbp.py > /tmp/rates-eur-gbp-audit.json
+      - name: Build EUR GBP rates replacement
+        run: |
+          python validation/build_eur_gbp_rates_candidate.py \
+            --source-audit /tmp/rates-eur-gbp-audit.json \
+            --output /tmp/NATIVE_RATES_DATA.json \
+            | tee /tmp/eur-gbp-candidate-summary.json
+      - name: Apply direct rates section
+        run: |
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/NATIVE_RATES_DATA.json \
+            --apply
+      - name: Build rates audit metadata
+        run: |
+          python validation/build_rates_audit_metadata.py \
+            --audit-date 2026-10-05 \
+            --output /tmp/RATES_AUDIT_METADATA.json
+      - name: Apply derived rates metadata
+        run: |
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/RATES_AUDIT_METADATA.json \
+            --apply
+      - name: Rebuild and validate manifest v2
+        run: |
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Enforce candidate scope
+        run: |
+          python - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','diff','--name-only']).decode().splitlines()
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-15.txt'}
+          bad=[x for x in changed if x not in allowed]
+          if bad: raise SystemExit('Unexpected candidate files: '+repr(bad))
+          missing=sorted(allowed-set(changed))
+          if missing: raise SystemExit('Expected changed files missing: '+repr(missing))
+          print({'status':'PASS','changed':changed})
+          PY
+      - name: Commit candidate to staging branch
+        run: |
+          git config user.name 'robybizkit77-blip'
+          git config user.email 'robybizkit77@gmail.com'
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
+          git commit -m 'Apply official EUR GBP rates refresh for 2026-10-02'
+          git push origin HEAD:staging-rates-eur-gbp-2026-10-05
