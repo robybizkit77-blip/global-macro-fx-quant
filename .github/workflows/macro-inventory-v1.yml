@@ -1,0 +1,32 @@
+name: Macro Inventory V1
+on:
+  push:
+    branches:
+      - validation-macro-inventory-v1-2026-10-05
+    paths:
+      - 'validation/run_macro_inventory.py'
+      - '.github/workflows/macro-inventory-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build read-only macro inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_macro_inventory.py --audit-date 2026-10-05 --output /tmp/macro-inventory.json | tee /tmp/macro-inventory-stdout.json
+      - name: Enforce read-only scope
+        run: git diff --exit-code -- live_data payload
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-inventory-v1
+          path: /tmp/macro-inventory.json
