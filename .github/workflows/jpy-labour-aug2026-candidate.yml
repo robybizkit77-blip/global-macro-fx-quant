@@ -1,0 +1,64 @@
+name: JPY Labour Aug 2026 Candidate
+
+on:
+  push:
+    branches:
+      - staging-macro-jpy-labour-v1-2026-10-05
+    paths:
+      - 'validation/apply_jpy_labour_aug2026_candidate.py'
+      - '.github/workflows/jpy-labour-aug2026-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-macro-jpy-labour-v1-2026-10-05
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build deterministic JPY labour candidate
+        run: python validation/apply_jpy_labour_aug2026_candidate.py
+      - name: Enforce staging diff scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Changed files:'
+          git status --short
+          mapfile -t changed < <(git status --porcelain | sed -E 's/^...//' | sort -u)
+          test ${#changed[@]} -ge 5
+          for f in "${changed[@]}"; do
+            case "$f" in
+              live_data/sections/MACRO_SERIES.json|live_data/sections/MACRO_THERMOMETER_DATA.json|live_data/manifest.v2.json|validation/JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json|payload/part-00.txt|payload/part-01.txt)
+                ;;
+              *) echo "Unexpected changed file: $f" >&2; exit 1;;
+            esac
+          done
+          git diff --exit-code -- live_data/sections/D.json
+          test -f validation/JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json
+          python - <<'PY'
+          import json
+          x=json.load(open('validation/JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json'))
+          assert x['status']=='PASS'
+          assert x['D_json_byte_identical'] is True
+          assert x['period']=='2026-08'
+          assert x['official_unemployment_rate_sa']==2.5
+          assert x['thermometer']['new_direction']=='SALE'
+          assert x['thermometer']['new_acceleration']=='ACCELERA'
+          print('Candidate scope/content guards PASS')
+          PY
+      - name: Commit staging candidate only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json validation/JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json payload/part-00.txt payload/part-01.txt
+          git commit -m 'Stage validated JPY Aug 2026 labour refresh'
+          git push origin HEAD:staging-macro-jpy-labour-v1-2026-10-05
