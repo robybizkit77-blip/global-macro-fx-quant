@@ -53,8 +53,6 @@ def main() -> int:
     keys=[s.get('key') for s in sections]
     if len(keys)!=len(set(keys)):
         failures.append('duplicate section keys')
-    if set(keys & DERIVED) if False else False:
-        pass
     section_results=[]
     direct_count=0; derived_count=0
     for s in sections:
