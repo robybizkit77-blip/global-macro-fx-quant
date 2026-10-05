@@ -1,0 +1,102 @@
+name: Rates Auto Candidate V1
+on:
+  push:
+    branches:
+      - validation-rates-auto-candidate-v1-2026-10-05
+    paths:
+      - '.github/workflows/rates-auto-candidate-v1.yml'
+      - 'validation/build_rates_candidate_from_audit.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Run current unified Rates audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/rates-audit.json
+          python validation/build_rates_candidate_from_audit.py \
+            --audit /tmp/rates-audit.json \
+            --output /tmp/NATIVE_RATES_DATA.json \
+            | tee /tmp/candidate-summary.json
+      - name: Enforce no-write path when there are no updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/candidate-summary.json'))
+          if s['status']=='NO_UPDATES':
+              a=open('/tmp/NATIVE_RATES_DATA.json','rb').read().rstrip(b'\n')
+              b=open('live_data/sections/NATIVE_RATES_DATA.json','rb').read().rstrip(b'\n')
+              assert a==b, 'NO_UPDATES candidate differs from current Rates section'
+              print('NO_UPDATE_PATH_PASS')
+          elif s['status']=='CANDIDATE_READY':
+              print('LIVE_UPDATE_AVAILABLE_PATH_READY',s['changed_currencies'])
+          else:
+              raise SystemExit('unexpected candidate status '+repr(s))
+          PY
+          git diff --exit-code -- live_data payload
+      - name: Full synthetic replay of UPDATE_AVAILABLE path
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a . /tmp/rates-replay
+          cd /tmp/rates-replay
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('live_data/sections/NATIVE_RATES_DATA.json')
+          d=json.loads(p.read_text())
+          j=d['JPY']
+          j['date']='2026-10-01'; j['2Y']=1.939; j['10Y']=3.087; j['curve_bp']=114.8
+          for t in j.get('tenors',[]):
+              if t.get('tenor')=='2Y': t['value']=1.939; t['date']='2026-10-01'
+              if t.get('tenor')=='10Y': t['value']=3.087; t['date']='2026-10-01'
+          pathlib.Path('/tmp/old-rates.json').write_text(json.dumps(d,separators=(',',':'),ensure_ascii=False)+'\n')
+          audit={
+            'status':'PASS',
+            'currencies':{'JPY':{'state':'UPDATE_AVAILABLE','coverage_mode':'LIVE_FETCH','authority':'Japan Ministry of Finance','official':{'date':'2026-10-02','2Y':1.919,'10Y':3.097}}},
+            'summary':{'updates_available':['JPY']}
+          }
+          pathlib.Path('/tmp/replay-audit.json').write_text(json.dumps(audit))
+          PY
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/old-rates.json --apply
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-05 --output /tmp/old-meta.json
+          python validation/update_live_derived_sections.py --rates /tmp/old-meta.json --apply
+          python validation/build_live_manifest_v2.py > /tmp/old-manifest.json
+          mv /tmp/old-manifest.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/replay-audit.json --output /tmp/replay-new-rates.json | tee /tmp/replay-summary.json
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/replay-new-rates.json --apply
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-05 --output /tmp/replay-new-meta.json
+          python validation/update_live_derived_sections.py --rates /tmp/replay-new-meta.json --apply
+          python validation/build_live_manifest_v2.py > /tmp/replay-manifest.json
+          mv /tmp/replay-manifest.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/replay-summary.json'))
+          assert s['status']=='CANDIDATE_READY' and s['changed_currencies']==['JPY'], s
+          d=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          assert d['JPY']['date']=='2026-10-02'
+          assert abs(d['JPY']['2Y']-1.919)<1e-12 and abs(d['JPY']['10Y']-3.097)<1e-12
+          print('UPDATE_AVAILABLE_FULL_PIPELINE_REPLAY_PASS')
+          PY
+      - name: Upload evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-auto-candidate-v1-evidence
+          path: |
+            /tmp/rates-audit.json
+            /tmp/candidate-summary.json
+            /tmp/replay-summary.json
