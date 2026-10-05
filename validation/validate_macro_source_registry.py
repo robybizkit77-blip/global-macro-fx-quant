@@ -12,6 +12,7 @@ DIMENSIONS = ["inflation", "labour"]
 EXPECTED = {(c, d) for c in CURRENCIES for d in DIMENSIONS}
 VALID_STATUS = {
     "PLANNED_UNVALIDATED",
+    "SOURCE_IDENTIFIED_UNVALIDATED",
     "ADAPTER_READY_LIVE_CI_PENDING",
     "ADAPTER_READY_CREDENTIAL_REQUIRED",
     "VALIDATED",
@@ -41,6 +42,7 @@ def main() -> int:
     ready = 0
     validated = 0
     planned = 0
+    identified = 0
 
     for i, row in enumerate(streams):
         if not isinstance(row, dict):
@@ -69,9 +71,14 @@ def main() -> int:
 
         if status == "PLANNED_UNVALIDATED":
             planned += 1
-            # Fail closed: an unvalidated stream may not quietly claim a usable source ID.
             if upstream is not None or adapter is not None:
                 fail(f"{key}: planned-unvalidated stream must not claim upstream ID or adapter")
+        elif status == "SOURCE_IDENTIFIED_UNVALIDATED":
+            identified += 1
+            if not all([upstream, source_url, transformation, unit]):
+                fail(f"{key}: source-identified stream must have source metadata")
+            if adapter is not None:
+                fail(f"{key}: source-identified stream must not claim an adapter yet")
         else:
             ready += 1
             if not all([upstream, adapter, source_url, transformation, unit]):
@@ -100,6 +107,7 @@ def main() -> int:
         "schema_version": data.get("schema_version"),
         "streams": len(streams),
         "adapter_ready_or_validated": ready,
+        "source_identified_unvalidated": identified,
         "validated": validated,
         "planned_unvalidated": planned,
         "coverage": "8 currencies x 2 core dimensions",
