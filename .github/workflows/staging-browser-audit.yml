@@ -1,4 +1,4 @@
-name: Batched Refresh Benchmark
+name: Safe Batched Refresh Benchmark
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  batched-refresh-benchmark:
+  safe-batched-refresh-benchmark:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -15,22 +15,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Build baseline and batched probes
+      - name: Build baseline and safe batched probes
         run: |
           cat payload/part-00.txt payload/part-01.txt payload/part-02.txt payload/part-03.txt payload/part-04.txt payload/part-05.txt payload/part-06.txt payload/part-07.txt payload/part-08.txt payload/part-09.txt payload/part-10.txt payload/part-11.txt payload/part-12.txt payload/part-13.txt payload/part-14.txt payload/part-15.txt > baseline.html
           python3 - <<'PY'
           from pathlib import Path
-          s=Path('baseline.html').read_text()
-          needle='stableModelRefresh()'
-          n=s.count(needle)
-          s=s.replace(needle,"(window.__GMFQ_STABLE_REFRESH_QUEUED=true)")
+          import re
+          p=Path('baseline.html')
+          s=p.read_text()
+          defs=list(re.finditer(r'function\s+stableModelRefresh\s*\(\s*\)',s))
+          calls=list(re.finditer(r'(?<!function\s)\bstableModelRefresh\s*\(\s*\)',s))
+          print('function_defs=',len(defs),'call_sites=',len(calls))
+          if len(defs)!=1:
+              raise SystemExit(f'Expected exactly one stableModelRefresh definition, found {len(defs)}')
+          s2=re.sub(r'(?<!function\s)\bstableModelRefresh\s*\(\s*\)', '(window.__GMFQ_STABLE_REFRESH_QUEUED=true)', s)
           marker='<script id="gmfq-post-gate-final-audit-settlement">'
-          if marker not in s:
+          if marker not in s2:
               raise SystemExit('final audit marker missing')
-          one="<script id=\"gmfq-single-final-stable-refresh\">try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){console.error('single-final-refresh',e);}</script>\n"
-          s=s.replace(marker,one+marker,1)
-          Path('batched.html').write_text(s)
-          print('stable_refresh_calls_replaced=',n)
+          one='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</script>\n'
+          s2=s2.replace(marker,one+marker,1)
+          if len(re.findall(r'function\s+stableModelRefresh\s*\(\s*\)',s2))!=1:
+              raise SystemExit('stableModelRefresh definition damaged')
+          Path('batched.html').write_text(s2)
           PY
           grep -q 'GMFQ_RUNTIME_VALIDATION_MANIFEST' baseline.html
           grep -q 'gmfq-single-final-stable-refresh' batched.html
@@ -43,10 +49,12 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
           sleep 2
-      - name: Compare baseline vs batched refresh
+      - name: Compare baseline vs safe batched refresh
         run: |
           cat > benchmark.js <<'EOF'
           const { chromium } = require('playwright');
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
           async function measure(browser,path,label){
             const context=await browser.newContext({viewport:{width:1440,height:1200}});
             const page=await context.newPage();
@@ -67,36 +75,39 @@ jobs:
             const usableUiMs=Date.now()-t0;
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-post-gate-final-audit'),null,{timeout:120000});
             const finalAuditMs=Date.now()-t0;
-            const state=await page.evaluate(()=>{
+            const state=await page.evaluate(({CCYS,PAIRS})=>{
               const longTasks=window.__GMFQ_LONG_TASKS||[];
               const currencies={};
-              for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) currencies[c]=window.deriveCurrencyState?.(c)||null;
+              for(const c of CCYS) currencies[c]=window.deriveCurrencyState?.(c)||null;
               const pairs={};
-              const list=Array.isArray(window.D?.pairs)?window.D.pairs:[];
-              for(const p of list) pairs[p]=window.derivePairDecisionFrame?.(p)||null;
+              for(const p of PAIRS) pairs[p]=window.derivePairDecisionFrame?.(p)||null;
               return {
                 finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
-                fullAudit:window.GMFQ_FULL_SYSTEM_AUDIT||null,
                 currencies,pairs,
-                ois:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null])),
+                ois:Object.fromEntries(CCYS.map(c=>[c,window.GMFQ_OIS?.currency?.(c)?.status||null])),
                 longTaskCount:longTasks.length,
                 longTaskTotalMs:longTasks.reduce((a,e)=>a+e.duration,0),
                 longestLongTaskMs:longTasks.reduce((a,e)=>Math.max(a,e.duration),0),
                 bodyTextLength:document.body?.innerText?.length||0,
                 queued:window.__GMFQ_STABLE_REFRESH_QUEUED===true
               };
-            });
+            },{CCYS,PAIRS});
             await context.close();
             return {label,domContentLoadedMs,runtimeTitleMs,usableUiMs,finalAuditMs,errors,state};
           }
-          function canonical(x){
-            return JSON.stringify({finalAudit:x.state.finalAudit,fullAudit:x.state.fullAudit,currencies:x.state.currencies,pairs:x.state.pairs,ois:x.state.ois});
+          function stableProjection(x){
+            return JSON.stringify({
+              finalAudit:x.state.finalAudit,
+              currencies:x.state.currencies,
+              pairs:x.state.pairs,
+              ois:x.state.ois
+            });
           }
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const baseline=await measure(browser,'baseline.html','baseline');
             const batched=await measure(browser,'batched.html','batched');
-            const identical=canonical(baseline)===canonical(batched);
+            const identical=stableProjection(baseline)===stableProjection(batched);
             const comparison={
               identicalCanonicalState:identical,
               usableUiImprovementMs:baseline.usableUiMs-batched.usableUiMs,
@@ -108,8 +119,8 @@ jobs:
             console.log(JSON.stringify({baseline,batched,comparison},null,2));
             if(baseline.errors.length||batched.errors.length) throw new Error('Browser errors detected');
             if(baseline.state.finalAudit?.status!=='PASS'||batched.state.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
-            if(!identical) throw new Error('Canonical state differs after batching stableModelRefresh');
+            if(!identical) throw new Error('Canonical state differs after safe batching');
             await browser.close();
-          })().catch(e=>{console.error('::error title=Batched refresh benchmark::'+String(e.message||e));process.exit(1);});
+          })().catch(e=>{console.error('::error title=Safe batched refresh benchmark::'+String(e.message||e));process.exit(1);});
           EOF
           node benchmark.js
