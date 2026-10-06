@@ -2,12 +2,14 @@
   "schema": "GMFQ_EUR_REACTION_FUNCTION_DIAGNOSTIC_V1",
   "status": "PASS",
   "created_at": "2026-10-06",
-  "scope": "Diagnostic only. Compares frozen direct EUR Labour benchmark with policy-relevant mediator signals from PIT services inflation and certified negotiated wages. Not a production rule and not a causal proof of Labour->mediator transmission.",
+  "scope": "Diagnostic only. Compares frozen direct EUR Labour benchmark with policy-relevant mediator signals from PIT services inflation, certified negotiated wages, and same-basis EUR 2Y confirmation. Not a production rule and not a causal proof.",
   "guardrails": [
     "no threshold tuning",
     "no parameter optimization",
     "no revised-history substitution",
     "same-date wage backfill collapsed to latest reference quarter",
+    "fixed 5-market-day 2Y confirmation window predeclared before evaluation",
+    "FX entry strictly after 2Y confirmation window",
     "engine untouched",
     "live_data untouched"
   ],
@@ -213,13 +215,13 @@
     "definition": "sign of change in latest actionable certified negotiated-wage annual growth at each unique availability date; new-sign regime entries only",
     "events": [
       {
-        "checkpoint": "2018-06-28",
+        "checkpoint": "2018-09-27",
         "signal": 1,
         "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
-        "entry_date": "2018-06-29",
-        "signed_5d": 0.0008561717166080947,
-        "signed_20d": -0.0025167588500555663,
-        "signed_60d": 0.005435101888657725
+        "entry_date": "2018-09-28",
+        "signed_5d": 0.0030707002480850954,
+        "signed_20d": -0.005021480491701717,
+        "signed_60d": -0.0037391248724360435
       },
       {
         "checkpoint": "2019-09-26",
@@ -361,20 +363,20 @@
       "5d": {
         "n": 16,
         "hit_rate": 0.5,
-        "mean": -0.0004636482150879415,
+        "mean": -0.00032524018187062893,
         "median": -0.00017326175694036186
       },
       "20d": {
         "n": 16,
         "hit_rate": 0.5,
-        "mean": -0.0018212905183138627,
-        "median": -0.0007954302575337079
+        "mean": -0.001977835620916747,
+        "median": -0.0009585752809918313
       },
       "60d": {
         "n": 16,
-        "hit_rate": 0.625,
-        "mean": 0.003365692874425922,
-        "median": 0.005186076962579621
+        "hit_rate": 0.5625,
+        "mean": 0.0027923037018575615,
+        "median": 0.002794033824617351
       }
     },
     "small_sample_warning": true
@@ -414,7 +416,344 @@
     },
     "small_sample_warning": true
   },
-  "interpretation_policy": "Treat mediator results as diagnostic evidence only. They do not yet validate the full Labour->wages/services->ECB->rates->EUR causal chain because explicit PIT ECB reaction/front-end repricing is not included.",
+  "wages_plus_2y_confirmation": {
+    "definition": "wage impulse must be confirmed by same-sign change in EUR 2Y over fixed 5 market days after certified wage availability; FX measured only after confirmation",
+    "confirmation_window_market_days": 5,
+    "confirmed_count": 16,
+    "rejected_count": 6,
+    "confirmed_events": [
+      {
+        "wage_checkpoint": "2019-09-26",
+        "signal": -1,
+        "rate_start_date": "2019-09-26",
+        "confirmation_date": "2019-10-03",
+        "eur_2y_start_pct": -0.7805072196,
+        "eur_2y_end_pct": -0.808946633,
+        "eur_2y_change_pp": -0.028439413400000002,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2019-10-04",
+        "signed_5d": -0.0037773377333236054,
+        "signed_20d": 0.00019674062752332022,
+        "signed_60d": 0.011528739092700163
+      },
+      {
+        "wage_checkpoint": "2019-12-27",
+        "signal": 1,
+        "rate_start_date": "2019-12-27",
+        "confirmation_date": "2020-01-07",
+        "eur_2y_start_pct": -0.6525141428,
+        "eur_2y_end_pct": -0.6505532481,
+        "eur_2y_change_pp": 0.0019608946999999377,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2020-01-08",
+        "signed_5d": 0.005772867871499286,
+        "signed_20d": 0.0038097650550866953,
+        "signed_60d": 0.04646078100183718
+      },
+      {
+        "wage_checkpoint": "2020-03-26",
+        "signal": -1,
+        "rate_start_date": "2020-03-26",
+        "confirmation_date": "2020-04-02",
+        "eur_2y_start_pct": -0.6317141147,
+        "eur_2y_end_pct": -0.655055545,
+        "eur_2y_change_pp": -0.02334143029999991,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2020-04-03",
+        "signed_5d": 0.012866263023320716,
+        "signed_20d": 0.02021935223366394,
+        "signed_60d": 0.017199649533061377
+      },
+      {
+        "wage_checkpoint": "2020-06-18",
+        "signal": -1,
+        "rate_start_date": "2020-06-18",
+        "confirmation_date": "2020-06-25",
+        "eur_2y_start_pct": -0.6602239853,
+        "eur_2y_end_pct": -0.6889523961,
+        "eur_2y_change_pp": -0.028728410799999993,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2020-06-26",
+        "signed_5d": 0.00442515248536721,
+        "signed_20d": -0.011189254226970313,
+        "signed_60d": -0.011401226352749245
+      },
+      {
+        "wage_checkpoint": "2021-01-07",
+        "signal": -1,
+        "rate_start_date": "2021-01-07",
+        "confirmation_date": "2021-01-14",
+        "eur_2y_start_pct": -0.7427578696,
+        "eur_2y_end_pct": -0.752699803,
+        "eur_2y_change_pp": -0.009941933399999936,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2021-01-15",
+        "signed_5d": -0.002652257153341128,
+        "signed_20d": 0.0006276770847329114,
+        "signed_60d": -0.0007551418585204092
+      },
+      {
+        "wage_checkpoint": "2021-03-25",
+        "signal": 1,
+        "rate_start_date": "2021-03-25",
+        "confirmation_date": "2021-04-01",
+        "eur_2y_start_pct": -0.7475971078,
+        "eur_2y_end_pct": -0.7351040089,
+        "eur_2y_change_pp": 0.012493098899999944,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2021-04-06",
+        "signed_5d": 0.006480240374790574,
+        "signed_20d": 0.004663751804116035,
+        "signed_60d": 0.005003056318495953
+      },
+      {
+        "wage_checkpoint": "2021-06-24",
+        "signal": -1,
+        "rate_start_date": "2021-06-24",
+        "confirmation_date": "2021-07-01",
+        "eur_2y_start_pct": -0.6975785065,
+        "eur_2y_end_pct": -0.7051665738,
+        "eur_2y_change_pp": -0.0075880673000000565,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2021-07-02",
+        "signed_5d": 0.0016651346836396134,
+        "signed_20d": 0.0016624889360430366,
+        "signed_60d": 0.0023090595751588776
+      },
+      {
+        "wage_checkpoint": "2021-09-23",
+        "signal": 1,
+        "rate_start_date": "2021-09-23",
+        "confirmation_date": "2021-09-30",
+        "eur_2y_start_pct": -0.7364293694,
+        "eur_2y_end_pct": -0.7205593344,
+        "eur_2y_change_pp": 0.01587003500000006,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2021-10-01",
+        "signed_5d": -0.0063925776170136615,
+        "signed_20d": -0.01467072193762122,
+        "signed_60d": -0.015418176250184733
+      },
+      {
+        "wage_checkpoint": "2022-09-26",
+        "signal": -1,
+        "rate_start_date": "2022-09-26",
+        "confirmation_date": "2022-10-03",
+        "eur_2y_start_pct": 1.8689777057,
+        "eur_2y_end_pct": 1.6021755568,
+        "eur_2y_change_pp": -0.2668021489000001,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2022-10-04",
+        "signed_5d": 0.0030714986544403814,
+        "signed_20d": 0.0011655318375745672,
+        "signed_60d": -0.009977812764666182
+      },
+      {
+        "wage_checkpoint": "2023-06-29",
+        "signal": 1,
+        "rate_start_date": "2023-06-29",
+        "confirmation_date": "2023-07-06",
+        "eur_2y_start_pct": 3.0941406989,
+        "eur_2y_end_pct": 3.2281563247,
+        "eur_2y_change_pp": 0.13401562580000004,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2023-07-07",
+        "signed_5d": -0.001014663055876974,
+        "signed_20d": 0.006409435099066805,
+        "signed_60d": -0.002247920900914025
+      },
+      {
+        "wage_checkpoint": "2024-01-11",
+        "signal": 1,
+        "rate_start_date": "2024-01-11",
+        "confirmation_date": "2024-01-18",
+        "eur_2y_start_pct": 2.5647437386,
+        "eur_2y_end_pct": 2.6768131019,
+        "eur_2y_change_pp": 0.11206936330000028,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2024-01-19",
+        "signed_5d": -0.0032752053996601576,
+        "signed_20d": -0.00194802144280764,
+        "signed_60d": 0.010567643071921963
+      },
+      {
+        "wage_checkpoint": "2024-08-29",
+        "signal": -1,
+        "rate_start_date": "2024-08-29",
+        "confirmation_date": "2024-09-05",
+        "eur_2y_start_pct": 2.3180484558,
+        "eur_2y_end_pct": 2.2623239828,
+        "eur_2y_change_pp": -0.05572447300000016,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2024-09-06",
+        "signed_5d": -0.0001482747557709573,
+        "signed_20d": 0.0027206273441891192,
+        "signed_60d": 0.008059818561491195
+      },
+      {
+        "wage_checkpoint": "2024-12-18",
+        "signal": 1,
+        "rate_start_date": "2024-12-18",
+        "confirmation_date": "2024-12-27",
+        "eur_2y_start_pct": 1.9759524375,
+        "eur_2y_end_pct": 2.0076965659,
+        "eur_2y_change_pp": 0.03174412839999996,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2024-12-30",
+        "signed_5d": -0.006077137607785744,
+        "signed_20d": -0.0018624018302466731,
+        "signed_60d": 0.012262599854955585
+      },
+      {
+        "wage_checkpoint": "2025-04-03",
+        "signal": -1,
+        "rate_start_date": "2025-04-03",
+        "confirmation_date": "2025-04-10",
+        "eur_2y_start_pct": 1.9439000041,
+        "eur_2y_end_pct": 1.8313708594,
+        "eur_2y_change_pp": -0.11252914470000008,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2025-04-11",
+        "signed_5d": 0.0059242346443792795,
+        "signed_20d": 0.015795014505475508,
+        "signed_60d": -0.010191546771494012
+      },
+      {
+        "wage_checkpoint": "2025-12-19",
+        "signal": -1,
+        "rate_start_date": "2025-12-19",
+        "confirmation_date": "2025-12-30",
+        "eur_2y_start_pct": 2.1198446236,
+        "eur_2y_end_pct": 2.1004409369,
+        "eur_2y_change_pp": -0.019403686700000033,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2025-12-31",
+        "signed_5d": 0.0027759741224785695,
+        "signed_20d": 0.015135220265713229,
+        "signed_60d": 0.017696251024163067
+      },
+      {
+        "wage_checkpoint": "2026-04-16",
+        "signal": 1,
+        "rate_start_date": "2026-04-16",
+        "confirmation_date": "2026-04-23",
+        "eur_2y_start_pct": 2.4885726292,
+        "eur_2y_end_pct": 2.5376409998,
+        "eur_2y_change_pp": 0.04906837059999969,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION",
+        "entry_date": "2026-04-24",
+        "signed_5d": -0.006494340235105224,
+        "signed_20d": -0.006322622623889905,
+        "signed_60d": -0.008419483398818577
+      }
+    ],
+    "rejected_diagnostics": [
+      {
+        "wage_checkpoint": "2018-09-27",
+        "signal": 1,
+        "rate_start_date": "2018-09-27",
+        "confirmation_date": "2018-10-04",
+        "eur_2y_start_pct": -0.5171137324,
+        "eur_2y_end_pct": -0.5297809212,
+        "eur_2y_change_pp": -0.012667188799999951,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      },
+      {
+        "wage_checkpoint": "2022-03-24",
+        "signal": -1,
+        "rate_start_date": "2022-03-24",
+        "confirmation_date": "2022-03-31",
+        "eur_2y_start_pct": -0.2676303768,
+        "eur_2y_end_pct": -0.0860211317,
+        "eur_2y_change_pp": 0.1816092451,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      },
+      {
+        "wage_checkpoint": "2022-06-23",
+        "signal": 1,
+        "rate_start_date": "2022-06-23",
+        "confirmation_date": "2022-06-30",
+        "eur_2y_start_pct": 0.7828912478,
+        "eur_2y_end_pct": 0.6429685731,
+        "eur_2y_change_pp": -0.13992267469999997,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      },
+      {
+        "wage_checkpoint": "2022-11-28",
+        "signal": 1,
+        "rate_start_date": "2022-11-28",
+        "confirmation_date": "2022-12-05",
+        "eur_2y_start_pct": 2.0784705927,
+        "eur_2y_end_pct": 1.990850016,
+        "eur_2y_change_pp": -0.08762057670000001,
+        "rate_signal": -1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      },
+      {
+        "wage_checkpoint": "2025-07-03",
+        "signal": -1,
+        "rate_start_date": "2025-07-03",
+        "confirmation_date": "2025-07-10",
+        "eur_2y_start_pct": 1.8348212146,
+        "eur_2y_end_pct": 1.8672876318,
+        "eur_2y_change_pp": 0.032466417199999986,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      },
+      {
+        "wage_checkpoint": "2026-07-09",
+        "signal": -1,
+        "rate_start_date": "2026-07-09",
+        "confirmation_date": "2026-07-16",
+        "eur_2y_start_pct": 2.6146246593,
+        "eur_2y_end_pct": 2.6989120043,
+        "eur_2y_change_pp": 0.0842873449999999,
+        "rate_signal": 1,
+        "source": "NEGOTIATED_WAGES_PLUS_EUR2Y_5D_CONFIRMATION"
+      }
+    ],
+    "stats": {
+      "5d": {
+        "n": 16,
+        "hit_rate": 0.5,
+        "mean": 0.0008218482688773862,
+        "median": 0.0007584299639343281
+      },
+      "20d": {
+        "n": 16,
+        "hit_rate": 0.6875,
+        "mean": 0.0022757864207280883,
+        "median": 0.0014140103868088018
+      },
+      "60d": {
+        "n": 16,
+        "hit_rate": 0.5625,
+        "mean": 0.004542268108527386,
+        "median": 0.0036560579468274154
+      }
+    },
+    "small_sample_warning": true
+  },
+  "interpretation_policy": "Treat all mediator and 2Y-confirmation results as diagnostic evidence only. No thresholds or model rules are changed from these results.",
   "changes_engine_rules": false,
   "changes_live_data": false,
   "threshold_tuning": false
