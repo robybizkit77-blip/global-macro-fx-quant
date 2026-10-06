@@ -83,6 +83,20 @@ def cross(a: str, b: str, rates: dict[str, float]) -> float:
     return rates[b] / rates[a]
 
 
+def sample_for(d: date, rates: dict[str, float]):
+    return {
+        "date": d.isoformat(),
+        "eur_base_rates": {c: rates[c] for c in G8},
+        "sample_crosses": {
+            "EURUSD": cross("EUR", "USD", rates),
+            "USDJPY": cross("USD", "JPY", rates),
+            "GBPUSD": cross("GBP", "USD", rates),
+            "AUDNZD": cross("AUD", "NZD", rates),
+            "CADCHF": cross("CAD", "CHF", rates),
+        },
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", required=True)
@@ -99,7 +113,6 @@ def main():
 
     finite_cross_rows = 0
     reciprocal_max_abs_error = 0.0
-    latest_sample = None
     for d, rates in complete_rows:
         vals = []
         for a, b in itertools.combinations(G8, 2):
@@ -109,23 +122,12 @@ def main():
             vals.append(ab)
         if len(vals) == 28 and all(math.isfinite(v) and v > 0 for v in vals):
             finite_cross_rows += 1
-        latest_sample = {
-            "date": d.isoformat(),
-            "eur_base_rates": {c: rates[c] for c in G8},
-            "sample_crosses": {
-                "EURUSD": cross("EUR", "USD", rates),
-                "USDJPY": cross("USD", "JPY", rates),
-                "GBPUSD": cross("GBP", "USD", rates),
-                "AUDNZD": cross("AUD", "NZD", rates),
-                "CADCHF": cross("CAD", "CHF", rates),
-            },
-        }
 
-    first_date = rows[0][0] if rows else None
-    last_date = rows[-1][0] if rows else None
-    # ECB CSV is normally newest-first, so use min/max rather than file order.
+    # ECB CSV is normally newest-first, so never infer chronology from row order.
     all_dates = [d for d, _, _ in rows]
     min_date, max_date = min(all_dates), max(all_dates)
+    latest_date, latest_rates = max(complete_rows, key=lambda x: x[0])
+    latest_sample = sample_for(latest_date, latest_rates)
 
     checks = {
         "source_download_nonempty": len(raw) > 100_000,
@@ -135,6 +137,7 @@ def main():
         "all_complete_rows_generate_28_positive_crosses": finite_cross_rows == len(complete_rows),
         "reciprocal_identity_tolerance": reciprocal_max_abs_error < 1e-12,
         "latest_observation_recent": (date.today() - max_date).days <= 10,
+        "latest_sample_matches_latest_observation": latest_date == max_date,
     }
     passed = all(checks.values())
 
