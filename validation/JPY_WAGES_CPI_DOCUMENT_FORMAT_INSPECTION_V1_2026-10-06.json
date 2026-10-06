@@ -1,0 +1,289 @@
+{
+  "schema": "GMFQ_JPY_WAGES_CPI_DOCUMENT_FORMAT_INSPECTION_V1",
+  "created_at": "2026-10-06",
+  "samples": {
+    "wages_2018_01": {
+      "requested_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/3001p.html",
+      "resolved_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/3001p.html",
+      "status": 200,
+      "content_type": "text/html",
+      "encoding_detected": "SHIFT_JIS",
+      "title": "毎月勤労統計調査　平成30年1月分結果速報｜厚生労働省",
+      "candidate_links": [
+        {
+          "label": "第1表　月間現金給与額",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001c01p.xls"
+        },
+        {
+          "label": "第2表　月間実労働時間及び出勤日数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001c02p.xls"
+        },
+        {
+          "label": "第3表　常用雇用及び労働異動率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001c03p.xls"
+        },
+        {
+          "label": "時系列第1表　賃金指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t01p.xls"
+        },
+        {
+          "label": "時系列第2表　労働時間指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t02p.xls"
+        },
+        {
+          "label": "時系列第3表　常用雇用指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t03p.xls"
+        },
+        {
+          "label": "時系列第4表　パートタイム労働者比率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t04p.xls"
+        },
+        {
+          "label": "時系列第5表　労働異動率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t05p.xls"
+        },
+        {
+          "label": "時系列第6表　実質賃金指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t06p.xls"
+        },
+        {
+          "label": "時系列第7表　時間当たり給与（パートタイム労働者）",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t07p.xls"
+        },
+        {
+          "label": "時系列第8表　季節調整済指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001t08p.xls"
+        },
+        {
+          "label": "付表",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/fu3001p.xls"
+        },
+        {
+          "label": "エクセルデータ一括ダウンロード",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001p.xls"
+        },
+        {
+          "label": "用語の解説",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf"
+        },
+        {
+          "label": "概況",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/dl/pdf3001p.pdf"
+        },
+        {
+          "label": "報道発表資料",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/dl/houdou3001p.pdf"
+        },
+        {
+          "label": "最新月の結果表へ（政府統計の総合窓口（e-stat））",
+          "url": "http://www.e-stat.go.jp/SG1/estat/GL08020101.do?_toGL08020101_&tstatCode=000001011791"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "[39KB] 時系列第7表　時間当たり給与（パートタイム労働者） [36KB] 時系列第8表　季節調整済指数 [39KB] 付表 [48KB] エクセルデータ一括ダウンロード [127KB] 用語の解説 用語の解説 [239KB] 印刷用のPDFファイルダウンロードはこちらから 概況 [447KB] 報道発表資料 [126KB] 最新月の結果表へ（政府統計の総合窓口（e-stat）） 問い合わせ先 政策統括官付参事官付雇用・賃金福祉統計室 参事官 石原　典明 室長補佐 手計　高志 （担当・内線） 企画調整係（7609, 7610） （電話代表） 03（5253）1111 （ダイヤルイン） 03（3595）3145 PDFファイルを見るためには、Adobe Readerというソフトが必要です。Adobe Readerは無料で配布されていますので、左記のアイコンをクリックしてダウンロードしてください。 統計情報・白書 各種統計調査 統計調査実施のお知らせ 最近公表の統計資料 厚生労働統計一覧 統計要覧一覧 統計情報をご利用の方へ 白書、年次報告書 ホーム > 統計情報・白書 > 各種統計調査 > 厚生労働統計一覧 > 毎月勤労統計調査（全国調査・地方調査） > 結果の概要 > \r\n毎月勤労統計調査　平成30"
+        }
+      ],
+      "html_bytes": 11955
+    },
+    "wages_2023_07": {
+      "requested_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/2307p.html",
+      "resolved_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/2307p.html",
+      "status": 200,
+      "content_type": "text/html",
+      "encoding_detected": "SHIFT_JIS",
+      "title": "毎月勤労統計調査　令和5年7月分結果速報｜厚生労働省",
+      "candidate_links": [
+        {
+          "label": "第1表　月間現金給与額",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307c01p.xlsx"
+        },
+        {
+          "label": "第2表　月間実労働時間及び出勤日数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307c02p.xlsx"
+        },
+        {
+          "label": "第3表　常用雇用及び労働異動率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307c03p.xlsx"
+        },
+        {
+          "label": "時系列第1表　賃金指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t01p.xlsx"
+        },
+        {
+          "label": "時系列第2表　労働時間指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t02p.xlsx"
+        },
+        {
+          "label": "時系列第3表　常用雇用指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t03p.xlsx"
+        },
+        {
+          "label": "時系列第4表　パートタイム労働者比率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t04p.xlsx"
+        },
+        {
+          "label": "時系列第5表　労働異動率",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t05p.xlsx"
+        },
+        {
+          "label": "時系列第6表　実質賃金指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t06p.xlsx"
+        },
+        {
+          "label": "時系列第7表　時間当たり給与（パートタイム労働者）",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t07p.xlsx"
+        },
+        {
+          "label": "時系列第8表　季節調整済指数",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307t08p.xlsx"
+        },
+        {
+          "label": "付表",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/fu2307p.xlsx"
+        },
+        {
+          "label": "エクセルデータ一括ダウンロード",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307p.xlsx"
+        },
+        {
+          "label": "【参考資料】共通事業所による前年同月比",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/kyo2307p.xlsx"
+        },
+        {
+          "label": "概況",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/dl/pdf2307p.pdf"
+        },
+        {
+          "label": "報道発表資料",
+          "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/dl/houdou2307p.pdf"
+        },
+        {
+          "label": "最新月の結果表へ（政府統計の総合窓口（e-stat））",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&toukei=00450071&tstat=000001011791"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "表　時間当たり給与（パートタイム労働者） [12KB] 時系列第8表　季節調整済指数 [15KB] 付表 [19KB] エクセルデータ一括ダウンロード [75KB] 【参考資料】共通事業所による前年同月比 [25KB] 用語の解説 印刷用のPDFファイルダウンロードはこちらから 概況 [982KB] 報道発表資料 [238KB] 最新月の結果表へ（政府統計の総合窓口（e-stat）） 問い合わせ先 政策統括官付参事官付雇用・賃金福祉統計室 統計管理官 角井　伸一 室長補佐 前原　庸司 （担当・内線） 毎勤調整係・企画調整係（7609, 7610） （電話代表） 03（5253）1111 （ダイヤルイン） 03（3595）3145 PDFファイルを見るためには、Adobe Readerというソフトが必要です。Adobe Readerは無料で配布されていますので、左記のアイコンをクリックしてダウンロードしてください。 統計情報・白書 各種統計調査 統計調査実施のお知らせ 最近公表の統計資料 厚生労働統計一覧 統計要覧一覧 統計情報をご利用の方へ 白書、年次報告書 ホーム > 統計情報・白書 > 各種統計調査 > 厚生労働統計一覧 > 毎月勤労統計調査（全国調査・地方調査） > 結果の概要 > \r\n毎月勤労統"
+        },
+        {
+          "key": "前年同月比",
+          "text": "用指数 [13KB] 時系列第4表　パートタイム労働者比率 [12KB] 時系列第5表　労働異動率 [12KB] 時系列第6表　実質賃金指数 [14KB] 時系列第7表　時間当たり給与（パートタイム労働者） [12KB] 時系列第8表　季節調整済指数 [15KB] 付表 [19KB] エクセルデータ一括ダウンロード [75KB] 【参考資料】共通事業所による前年同月比 [25KB] 用語の解説 印刷用のPDFファイルダウンロードはこちらから 概況 [982KB] 報道発表資料 [238KB] 最新月の結果表へ（政府統計の総合窓口（e-stat）） 問い合わせ先 政策統括官付参事官付雇用・賃金福祉統計室 統計管理官 角井　伸一 室長補佐 前原　庸司 （担当・内線） 毎勤調整係・企画調整係（7609, 7610） （電話代表） 03（5253）1111 （ダイヤルイン） 03（3595）3145 PDFファイルを見るためには、Adobe Readerというソフトが必要です。Adobe Readerは無料で配布されていますので、左記のアイコンをクリックしてダウンロードしてください。 統計情報・白書 各種統計調査 統計調査実施のお知らせ 最近公表の統計資料 厚生労働統計一覧 統計要覧一覧 統計情報をご利用の方へ"
+        }
+      ],
+      "html_bytes": 12015
+    },
+    "cpi_2018_01": {
+      "requested_url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=11010301&page=1&result_back=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20180",
+      "resolved_url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=11010301&page=1&result_back=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20180",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "encoding_detected": "utf-8",
+      "title": "消費者物価指数 2015年基準消費者物価指数 月報 月次 2018年1月 | ファイル | 統計データを探す | 政府統計の総合窓口",
+      "candidate_links": [
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673567"
+        },
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673571"
+        },
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673575"
+        },
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673579"
+        },
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673583"
+        },
+        {
+          "label": "総合 ～ 冷凍調理ハンバーグ（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&month=11010301&toukei=00200573&tstat=000001084976&tclass1=000001085955&result_back=1&tclass2val=0&stat_infid=000031673587"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "消費者物価指数 2015年基準消費者物価指数 月報 月次 2018年1月 | ファイル | 統計データを探す | 政府統計の総合窓口 メインコンテンツに移動 English Japanese お問い合わせ ヘルプ 統計で見る日本 e-Statは、日本の統計が閲覧できる政府統計ポータルサイトです ログイン 新規登録 統計データを探す すべて 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギ"
+        },
+        {
+          "key": "総合",
+          "text": "中分類指数（都市階級・地方・大都市圏・都道府県庁所在市別） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 3 中分類指数（都市階級・地方・大都市圏・都道府県庁所在市別） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 総合 ～ 冷凍調理ハンバーグ（含類総連番001～216） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 調理カレー ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 婦人用Ｔシャツ（長袖） ～ 講習料（ダンス）（含類総連番433～648） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 講習料（水泳） ～ 情報通信関係費（含類総連番649～747） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国"
+        },
+        {
+          "key": "総合",
+          "text": "ダンス）（含類総連番433～648） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 講習料（水泳） ～ 情報通信関係費（含類総連番649～747） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年平均 総合 ～ 冷凍調理ハンバーグ（含類総連番001～216） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年平均 調理カレー ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年平均 婦人用Ｔシャツ（長袖） ～ 講習料（ダンス）（含類総連番433～648） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年平均 講習料（水泳） ～ 情報通信関係費（含類総連番649～747） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数"
+        },
+        {
+          "key": "総合",
+          "text": "ス）（含類総連番433～648） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年平均 講習料（水泳） ～ 情報通信関係費（含類総連番649～747） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年度平均 総合 ～ 冷凍調理ハンバーグ（含類総連番001～216） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年度平均 調理カレー ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年度平均 婦人用Ｔシャツ（長袖） ～ 講習料（ダンス）（含類総連番433～648） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 年度平均 講習料（水泳） ～ 情報通信関係費（含類総連番649～747） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-2 品目別価"
+        }
+      ],
+      "html_bytes": 406944
+    },
+    "cpi_2023_07": {
+      "requested_url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=23070907&page=1&result_back=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20230",
+      "resolved_url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=23070907&page=1&result_back=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20230",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "encoding_detected": "utf-8",
+      "title": "消費者物価指数 2020年基準消費者物価指数 月報 月次 2023年7月 | ファイル | 統計データを探す | 政府統計の総合窓口",
+      "candidate_links": [
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087900"
+        },
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087904"
+        },
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087908"
+        },
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087912"
+        },
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087916"
+        },
+        {
+          "label": "総合 ～ 煮豆（含類総連番001～216）",
+          "url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&month=23070907&toukei=00200573&tstat=000001150147&tclass1=000001150149&result_back=1&tclass2val=0&stat_infid=000040087920"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "消費者物価指数 2020年基準消費者物価指数 月報 月次 2023年7月 | ファイル | 統計データを探す | 政府統計の総合窓口 メインコンテンツに移動 English Japanese お問い合わせ ヘルプ 統計で見る日本 e-Statは、日本の統計が閲覧できる政府統計ポータルサイトです ログイン 新規登録 統計データを探す すべて 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギ"
+        },
+        {
+          "key": "総合",
+          "text": "・地方・都道府県庁所在市別） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 3 中分類指数（都市階級・地方・都道府県庁所在市別） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 総合 ～ 煮豆（含類総連番001～216） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 焼き魚 ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 婦人用Ｔシャツ（長袖） ～ 放送受信料（NHK・ケーブル以外）（含類総連番433～648） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 入場・観覧・ゲーム代 ～ 情報通信関係費（含類総連番649～744） 調査年月 2023年7月 公開（更新）日 2023-"
+        },
+        {
+          "key": "総合",
+          "text": " 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 入場・観覧・ゲーム代 ～ 情報通信関係費（含類総連番649～744） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年平均 総合 ～ 煮豆（含類総連番001～216） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年平均 焼き魚 ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年平均 婦人用Ｔシャツ（長袖） ～ 放送受信料（NHK・ケーブル以外）（含類総連番433～648） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年平均 入場・観覧・ゲーム代 ～ 情報通信関係費（含類総連番649～744） 調査年月 2023年7月 公開（更新）日 20"
+        },
+        {
+          "key": "総合",
+          "text": "023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年平均 入場・観覧・ゲーム代 ～ 情報通信関係費（含類総連番649～744） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年度平均 総合 ～ 煮豆（含類総連番001～216） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年度平均 焼き魚 ～ ブラウス（半袖）（含類総連番217～432） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年度平均 婦人用Ｔシャツ（長袖） ～ 放送受信料（NHK・ケーブル以外）（含類総連番433～648） 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 年度平均 入場・観覧・ゲーム代 ～ 情報通信関係費（含類総連番649～744） 調査年月 2023年7月 公開（更新）日"
+        }
+      ],
+      "html_bytes": 435128
+    }
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
