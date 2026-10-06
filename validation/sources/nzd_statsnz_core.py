@@ -42,9 +42,8 @@ def parse_value(dim,t):
   ]
  else:
   patterns=[
-   r'New Zealand.?s seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
-   r'Unemployment rate at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
-   r'Unemployment rate\s+([0-9]+(?:\.[0-9]+)?)%',
+   r'unemployment rate[^0-9]{0,120}([0-9]+(?:\.[0-9]+)?)\s+percent',
+   r'unemployment rate[^0-9]{0,120}([0-9]+(?:\.[0-9]+)?)%',
   ]
  for p in patterns:
   m=re.search(p,t,re.I|re.S)
