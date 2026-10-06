@@ -1,0 +1,56 @@
+{
+  "schema":"GMFQ_REACTION_FUNCTION_VNEXT_SPEC_V1",
+  "status":"METHODOLOGY_SPEC_ONLY",
+  "created_at":"2026-10-06",
+  "frozen_engine_reference":{"commit":"ff52198a75cc67f7dae96fc2bbf65623f170791c","rules_fingerprint":"3356baf0"},
+  "principle":"Macro data must not map directly to FX. Separate data importance, central-bank interpretation, and market repricing. Rates are an independent observed layer, not a binary confirmation gate.",
+  "layers":{
+    "L1_DATA_IMPORTANCE":{
+      "question":"How policy-relevant is this macro variable for this central bank in the current mandate/regime?",
+      "outputs":["PRIMARY","SECONDARY","MEDIATED","CONTEXTUAL","WITHHELD"],
+      "examples":{"FED_LABOUR":"PRIMARY","ECB_HEADLINE_LABOUR":"MEDIATED","SNB_LABOUR":"CONTEXTUAL"}
+    },
+    "L2_CB_INTERPRETATION":{
+      "question":"Given the bank-specific reaction function, what does the data imply for policy pressure?",
+      "outputs":["HAWKISH_PRESSURE","DOVISH_PRESSURE","MIXED","NO_MATERIAL_SIGNAL","WITHHELD"],
+      "rule":"Interpret economic state through mandate and transmission channels; do not assume identical polarity/weight across banks."
+    },
+    "L3_MARKET_REPRICING":{
+      "question":"What did the front-end market actually price after the information set changed?",
+      "outputs":["HAWKISH_REPRICE","DOVISH_REPRICE","NO_REPRICE","DIVERGENT_REPRICE","WITHHELD"],
+      "rule":"Observed rates/OIS are descriptive evidence. No binary same-direction filter is required and divergence is informative, not automatically invalidating."
+    },
+    "L4_FX_INTERPRETATION":{
+      "question":"How do L1-L3 combine with price and broader context?",
+      "outputs":["SUPPORTIVE","NEGATIVE","MIXED","DIVERGENCE","WITHHELD"],
+      "rule":"No automatic trade rule. Preserve separate layer states for dashboard explanation and later predeclared testing."
+    }
+  },
+  "g8_map":{
+    "USD":{"cb":"FED","class":"DIRECT_DUAL_MANDATE","labour":"PRIMARY","inflation":"PRIMARY","key_mediators":["wages","participation/slack"],"front_end":"US 2Y/OIS","current_pit_testability":"USD labour WITHHELD"},
+    "EUR":{"cb":"ECB","class":"PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED","labour":"MEDIATED","inflation":"PRIMARY","key_mediators":["negotiated wages","services/domestic inflation"],"front_end":"EUR 2Y/OIS","current_pit_testability":"PARTIAL; wages/services/rates diagnostics available"},
+    "GBP":{"cb":"BOE","class":"PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED","labour":"MEDIATED","inflation":"PRIMARY","key_mediators":["AWE regular pay","CPI services"],"front_end":"GBP 2Y OIS","current_pit_testability":"GOOD; direct Labour and wages/services/OIS available"},
+    "CAD":{"cb":"BOC","class":"INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE","labour":"DIRECT_BUT_CONDITIONED","inflation":"PRIMARY","key_mediators":["slack","wage pressure"],"front_end":"CAD 2Y","current_pit_testability":"GOOD; Labour + 2Y available"},
+    "AUD":{"cb":"RBA","class":"DIRECT_DUAL_MANDATE","labour":"PRIMARY","inflation":"PRIMARY","key_mediators":["wages","capacity/slack"],"front_end":"AUD 2Y/OIS","current_pit_testability":"HISTORICAL PIT WITHHELD"},
+    "NZD":{"cb":"RBNZ","class":"PRICE_STABILITY_PRIMARY","labour":"SECONDARY_MEDIATED","inflation":"PRIMARY","key_mediators":["slack","non-tradables inflation"],"front_end":"NZD 2Y/OIS","current_pit_testability":"HISTORICAL PIT WITHHELD"},
+    "CHF":{"cb":"SNB","class":"PRICE_STABILITY_PRIMARY_WITH_FX_CHANNEL","labour":"CONTEXTUAL","inflation":"PRIMARY","key_mediators":["exchange rate","domestic inflation"],"front_end":"CHF 2Y/OIS","current_pit_testability":"HISTORICAL PIT WITHHELD"},
+    "JPY":{"cb":"BOJ","class":"PRICE_STABILITY_PRIMARY_WAGE_PRICE_CYCLE","labour":"MEDIATED","inflation":"PRIMARY","key_mediators":["wages","services prices","wage-price cycle"],"front_end":"JPY 2Y/OIS","current_pit_testability":"WITHHELD pending event-time + wage mediator"}
+  },
+  "evidence_learned":{
+    "EUR":"Wages plus 5d 2Y confirmation improved 20d OOS descriptively but not statistically locked.",
+    "GBP":"Simple wages plus 5d 2Y confirmation failed OOS; direct frozen Labour showed slower 60d descriptive persistence.",
+    "CAD":"Simple Labour plus 5d 2Y same-direction confirmation failed; rejected events outperformed, so rates cannot be a universal binary gate."
+  },
+  "testing_policy":[
+    "Do not change frozen v9.3 engine from this specification.",
+    "No retrospective reweighting from observed diagnostics.",
+    "No optimized confirmation windows or thresholds.",
+    "Every vNext rule must be declared before OOS/walk-forward testing.",
+    "Use WITHHELD where PIT inputs are unavailable.",
+    "Treat rates divergence as a state to explain, not as automatic signal rejection.",
+    "Compare bank-specific architectures against frozen baseline on identical event universes and timing."
+  ],
+  "changes_engine_rules":false,
+  "changes_live_data":false,
+  "changes_oos_baseline":false
+}
