@@ -7,7 +7,7 @@ from pypdf import PdfReader
 START=(2018,1); END=(2023,7)
 OUT=Path('history/pit_v1/JPY_GROWTH_IIP_ITA_FIRST_RELEASE_2018_2023.csv')
 EVID=Path('validation/JPY_GROWTH_PIT_ACTIVATION_V1_2026-10-06.json')
-UA='GMFQ-PIT-validation/1.0'
+UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36'
 MONTH_NAMES={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
 IIP='https://www.meti.go.jp/english/statistics/tyo/iip/b2015_{yyyymm}se.html'
 ITA='https://www.meti.go.jp/statistics/tyo/sanzi/result/pdf/ITA_press_{yyyymm}j.pdf'
@@ -20,14 +20,14 @@ def months():
     return out
 
 def req(url,accept='*/*',referer=None):
-    h={'User-Agent':UA,'Accept':accept,'Accept-Language':'ja,en-US;q=0.9,en;q=0.8'}
+    h={'User-Agent':UA,'Accept':accept,'Accept-Language':'ja,en-US;q=0.9,en;q=0.8','Cache-Control':'no-cache'}
     if referer:h['Referer']=referer
     with urllib.request.urlopen(urllib.request.Request(url,headers=h),timeout=40) as r:
         return r.read(),getattr(r,'status',200)
 
 def parse_iip(month):
     y,m=map(int,month.split('-'));u=IIP.format(yyyymm=month.replace('-',''))
-    raw,status=req(u,'text/html,*/*','https://www.meti.go.jp/english/statistics/tyo/iip/')
+    raw,status=req(u,'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','https://www.meti.go.jp/english/statistics/tyo/iip/')
     text=raw.decode('utf-8','replace');text=re.sub(r'<[^>]+>',' ',text);text=re.sub(r'&nbsp;|&#160;',' ',text);text=re.sub(r'\s+',' ',text)
     mn=MONTH_NAMES[m]
     rel=re.search(rf'Preliminary\s+report\s+for\s+{mn}\s+{y}\s*\(released\s+at\s+(\d{{1,2}}:\d{{2}}),\s+([A-Za-z]+)\s+(\d{{1,2}}),\s+(\d{{4}})\)',text,re.I)
@@ -49,7 +49,7 @@ def parse_ita_index(text):
     return None
 
 def parse_ita(month):
-    u=ITA.format(yyyymm=month.replace('-',''));raw,status=req(u,'application/pdf,*/*','https://www.meti.go.jp/statistics/tyo/sanzi/')
+    u=ITA.format(yyyymm=month.replace('-',''));raw,status=req(u,'application/pdf,*/*;q=0.8','https://www.meti.go.jp/statistics/tyo/sanzi/')
     text='\n'.join((p.extract_text() or '') for p in PdfReader(io.BytesIO(raw)).pages[:4]);rd=parse_jp_date(text);idx=parse_ita_index(text)
     if rd is None or idx is None: raise ValueError(f'ITA parse failure date={rd} idx={idx}')
     return {'release_date':rd,'release_time_jst':'13:30','ita_sa_index':idx,'ita_source_url':u,'ita_http_status':status}
