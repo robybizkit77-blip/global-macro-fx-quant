@@ -23,6 +23,7 @@ CONFIG: dict[str, dict[str, Any]] = {
         "expected_heatmap_series_id": "D7G7",
         "expected_transformation": "reported_yoy_rate",
         "unit": "% YoY",
+        "canonical_macro_series_id": "UK_CPI_HEADLINE_YOY_history_value",
     },
     "labour": {
         "series_id": "MGSX",
@@ -104,6 +105,13 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
     series = load_json(SERIES_PATH)
     rows = series["GBP"]
     by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
+
+    explicit = CONFIG[dimension].get("canonical_macro_series_id")
+    if explicit is not None:
+        if explicit not in by_id:
+            raise ValueError(f"configured GBP {dimension} canonical ID does not exist: {explicit}")
+        return str(explicit)
+
     candidates = [heat_series_id, f"UK_{heat_series_id}_history_value", f"GB_{heat_series_id}_history_value",
                   f"GBP_{heat_series_id}_history_value", f"UK_{heat_series_id}_history_{heat_series_id}"]
     hits = [cid for cid in dict.fromkeys(candidates) if cid in by_id]
@@ -119,10 +127,7 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
         elif dimension == "labour" and ("mgsx" in text or "unemp" in text or "disoccup" in text):
             semantic.append(row)
     if len(semantic) != 1:
-        details = [
-            {"id": r.get("id"), "label": r.get("label"), "source_file": r.get("source_file")}
-            for r in semantic
-        ]
+        details = [{"id": r.get("id"), "label": r.get("label"), "source_file": r.get("source_file")} for r in semantic]
         raise ValueError(
             f"cannot resolve unique GBP {dimension} MACRO_SERIES row; "
             f"heatmap series_id={heat_series_id!r}; semantic_candidates={details}"
