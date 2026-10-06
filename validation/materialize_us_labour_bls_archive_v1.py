@@ -119,8 +119,10 @@ def main():
         by_month[r["reference_month"]]=r
     missing=sorted(set(published_expected)-set(by_month)); extra=sorted(set(by_month)-set(published_expected))
     if errors or dup or missing or extra:
+        payload={"status":"FAIL","candidate_urls":len(urls),"rows_parsed":len(rows),"structural_withheld":STRUCTURAL_WITHHELD,"missing_published_months":missing,"duplicates":sorted(set(dup)),"extra":extra,"errors":errors}
         EVID.parent.mkdir(parents=True,exist_ok=True)
-        EVID.write_text(json.dumps({"status":"FAIL","candidate_urls":len(urls),"rows_parsed":len(rows),"structural_withheld":STRUCTURAL_WITHHELD,"missing_published_months":missing,"duplicates":sorted(set(dup)),"extra":extra,"errors":errors},indent=2),encoding="utf-8")
+        EVID.write_text(json.dumps(payload,indent=2),encoding="utf-8")
+        print(json.dumps(payload,indent=2))
         raise SystemExit(f"strict PIT gate failed: errors={len(errors)} missing_published={len(missing)} dup={len(set(dup))} extra={len(extra)}")
     rows=[by_month[m] for m in published_expected]
     for r in rows:
