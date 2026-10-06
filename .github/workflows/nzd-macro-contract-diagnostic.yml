@@ -23,3 +23,30 @@ jobs:
           python-version: '3.12'
       - name: Print frozen NZD contract
         run: python validation/diagnose_nzd_macro_contract.py
+      - name: Probe official Stats NZ June 2026 labour download assets
+        run: |
+          python - <<'PY'
+          import urllib.request, urllib.error
+          base='https://www.stats.govt.nz/assets/Uploads/Labour-market-statistics/Labour-market-statistics-June-2026-quarter/Download-data/'
+          names=[
+            'labour-market-statistics-june-2026-quarter.csv',
+            'labour-market-statistics-june-2026-quarter.zip',
+            'labour-market-statistics-june-2026-quarter-csv.zip',
+            'labour-market-statistics-june-2026-quarter-CSV.zip',
+            'labour-market-statistics-june-2026-quarter-data.csv',
+            'labour-market-statistics-june-2026-quarter-data.zip',
+            'labour-market-statistics-june-2026-quarter-infoshare.csv',
+            'labour-market-statistics-june-2026-quarter-infoshare-data.csv',
+          ]
+          for name in names:
+              url=base+name
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Range':'bytes=0-63'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      chunk=r.read(64)
+                      print('HIT',r.status,r.headers.get('Content-Type'),r.headers.get('Content-Length'),name,repr(chunk[:32]))
+              except urllib.error.HTTPError as e:
+                  print('MISS',e.code,name)
+              except Exception as e:
+                  print('ERR',type(e).__name__,name,str(e))
+          PY
