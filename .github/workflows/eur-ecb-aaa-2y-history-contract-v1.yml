@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   contract:
@@ -43,8 +43,26 @@ jobs:
           assert s['rules_fingerprint_expected_unchanged']=='3356baf0',s
           print(json.dumps(s,indent=2))
           PY
-      - name: Confirm repository untouched
+      - name: Confirm builder itself did not touch repository
         run: git diff --exit-code
+      - name: Freeze canonical EUR AAA 2Y history on validation branch
+        shell: bash
+        run: |
+          mkdir -p history validation
+          cp /tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json \
+            history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json
+          cp /tmp/gmfq-eur-2y/summary.json \
+            validation/EUR_ECB_AAA_2Y_HISTORY_VALIDATION_V1_2026-10-06.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json \
+                  validation/EUR_ECB_AAA_2Y_HISTORY_VALIDATION_V1_2026-10-06.json
+          if git diff --cached --quiet; then
+            echo "Canonical EUR 2Y snapshot already frozen; no commit needed."
+          else
+            git commit -m "Freeze canonical ECB EUR AAA 2Y history 2016-2026 [skip ci]"
+            git push origin HEAD:validation-rates-eur-2y-history-v1-2026-10-06
+          fi
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
