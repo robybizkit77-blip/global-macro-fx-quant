@@ -1,0 +1,50 @@
+name: GBP ONS Labour First Release Contract V1
+
+on:
+  push:
+    branches:
+      - validation-pit-gbp-ons-archive-v1-2026-10-06
+    paths:
+      - 'validation/extract_gbp_ons_labour_first_release.py'
+      - '.github/workflows/gbp-ons-labour-first-release-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract 12 dated ONS labour first releases
+        run: python validation/extract_gbp_ons_labour_first_release.py
+      - name: Assert PIT first-release contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-gbp-ons-pit/labour_first_release.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['release_count_parsed']==12,x
+          assert x['unique_release_dates']==12,x
+          assert x['guardrails']['uses_revised_timeseries_api_for_values'] is False,x
+          assert x['guardrails']['live_data_modified'] is False,x
+          assert x['guardrails']['model_rules_modified'] is False,x
+          assert x['guardrails']['rules_fingerprint_expected_unchanged']=='3356baf0',x
+          assert all(r['employment_rate'] is not None and r['unemployment_rate'] is not None for r in x['rows']),x
+          print(json.dumps({'status':x['status'],'release_count':x['release_count_parsed'],'first':x['rows'][0],'last':x['rows'][-1]},indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-labour-first-release-contract-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-gbp-ons-pit/labour_first_release.json
