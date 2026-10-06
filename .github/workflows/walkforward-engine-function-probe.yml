@@ -15,36 +15,32 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Locate excess historical WITHHELD coverage
+        with:
+          fetch-depth: 0
+      - name: Recover historical JPY 2Y source from validated commit
         shell: bash
         run: |
+          git fetch origin 1cb2a7e61dc42d4cd22b6e49c6369018703743e6 --depth=1
+          git show 1cb2a7e61dc42d4cd22b6e49c6369018703743e6:data/sections/series_JPY.json > /tmp/series_JPY_old.json
           python - <<'PY'
-          import json,re
-          from datetime import date
+          import json
           from pathlib import Path
-          Stext=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js').read_text(errors='ignore').strip()
-          S=json.loads(Stext[Stext.find('=')+1:Stext.rfind(';')].strip())
-          RID={'USD':'US_DGS2_history_DGS2','GBP':'GBP_RATES_2016_2026_2Y','JPY':'JPY_RATES_2016_2026_2Y','CHF':'CH_CONFED_SPOT_2Y_history_value_pct','CAD':'CAD_RATES_2016_2026_2Y','AUD':'AU_FCMYGBAG2D_history_FCMYGBAG2D','NZD':'NZD_RATES_2016_2026_RBNZ_B2_2Y'}
-          def dk(x):
-            s=str(x)
-            try:return date(int(s[:4]),int(s[5:7]),1) if re.fullmatch(r'\d{4}-\d{2}',s) else date.fromisoformat(s[:10])
-            except:return None
-          for c in ['USD','GBP','JPY','CHF','CAD','AUD','NZD']:
-            rid=RID[c]; rs=next(s for s in S[c] if s.get('id')==rid)
-            pairs=[(dk(d),v) for d,v in zip(rs.get('dates',[]),rs.get('values',[])) if dk(d)]
-            pairs.sort(key=lambda x:x[0])
-            print('\n',c,'RATE',rid,'N',len(pairs),'FIRST5',pairs[:5],'LAST',pairs[-1] if pairs else None)
-            # first date with at least 10 numeric observations
-            valid=[]; first10=None
-            for d,v in pairs:
-              if isinstance(v,(int,float)):
-                valid.append((d,v))
-                if len(valid)==10 and first10 is None:first10=d
-            print(c,'RATE_FIRST10',first10)
-            for cat in ['Crescita','Lavoro']:
-              print(c,cat)
-              for s in [x for x in S[c] if x.get('category')==cat]:
-                ds=[dk(d) for d,v in zip(s.get('dates',[]),s.get('values',[])) if dk(d) and isinstance(v,(int,float))]
-                ds.sort()
-                print(' ',s.get('id'),'label=',s.get('label'),'n=',len(ds),'first=',ds[0] if ds else None,'eighth=',ds[7] if len(ds)>=8 else None)
+          a=json.loads(Path('/tmp/series_JPY_old.json').read_text())
+          hits=[x for x in a if x.get('id')=='JPY_RATES_2016_2026_2Y' or ('2Y' in str(x.get('id','')) and x.get('category') in ('Rates','Tassi'))]
+          print('MATCHES',len(hits))
+          for x in hits:
+            print(json.dumps({
+              'id':x.get('id'),'label':x.get('label'),'category':x.get('category'),
+              'n_dates':len(x.get('dates',[])),'n_values':len(x.get('values',[])),
+              'first_date':x.get('dates',[None])[0] if x.get('dates') else None,
+              'last_date':x.get('dates',[None])[-1] if x.get('dates') else None,
+              'first_values':x.get('values',[])[:5],
+              'last_values':x.get('values',[])[-5:],
+              'unit':x.get('unit'),'frequency':x.get('frequency'),'source_file':x.get('source_file')
+            },indent=2))
+          if not hits:
+            print('RATE_LIKE_IDS')
+            for x in a:
+              if 'rate' in str(x.get('id','')).lower() or 'yield' in str(x.get('label','')).lower() or '2y' in str(x.get('id','')).lower():
+                print(x.get('id'),x.get('label'),x.get('category'),len(x.get('values',[])))
           PY
