@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import csv,json,re,urllib.request
-from datetime import datetime
 from pathlib import Path
 from bs4 import BeautifulSoup
 
@@ -12,7 +11,7 @@ BASE='https://www.esri.cao.go.jp'
 MONTH_NAMES={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
 
 def get(url):
-    req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,*/*','Accept-Language':'en-US,en;q=0.9,ja;q=0.8'})
+    req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,*/*','Accept-Language':'ja,en-US;q=0.9,en;q=0.8'})
     with urllib.request.urlopen(req,timeout=40) as r:return r.read().decode('utf-8','replace')
 
 def months():
@@ -22,74 +21,63 @@ def months():
         if m==13:y+=1;m=1
     return out
 
-def result_urls(y,m):
+def en_urls(y,m):
     stem=f'{str(y)[2:]}{m:02d}juchu-e.html'
     if y<=2019:return [f'{BASE}/en/stat/juchu/{stem}']
     return [f'{BASE}/en/stat/juchu/{y}/{stem}',f'{BASE}/en/stat/juchu/{stem}']
 
-def parse_value(y,m):
-    raw=None;used=None;err=None
-    for u in result_urls(y,m):
-        try:raw=get(u);used=u;break
-        except Exception as e:err=e
-    if raw is None:raise RuntimeError(str(err))
-    text=' '.join(BeautifulSoup(raw,'html.parser').stripped_strings)
-    mn=MONTH_NAMES[m]
-    p=rf'Private-sector machinery orders, excluding volatile ones for ships and those from electric power companies,\s*(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}'
-    mm=re.search(p,text,re.I)
-    if not mm:
-        p=rf'Private-sector machinery orders[^.]*?(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}'
-        mm=re.search(p,text,re.I)
-    if not mm:raise ValueError('monthly private-sector ex-volatile value not found')
-    v=float(mm.group(2))*(1 if mm.group(1).lower()=='increased' else -1)
-    return v,used
+def jp_urls(y,m):
+    stem=f'{str(y)[2:]}{m:02d}juchu.html'
+    if y<=2019:return [f'{BASE}/jp/stat/juchu/{stem}']
+    return [f'{BASE}/jp/stat/juchu/{y}/{stem}',f'{BASE}/jp/stat/juchu/{stem}']
 
-def news_release_map(year):
-    u=f'{BASE}/en/news/{year}/index.html'
-    text='\n'.join(BeautifulSoup(get(u),'html.parser').stripped_strings)
-    # Each news item is rendered as a date line followed by its title. Capture Machinery Orders month/year.
-    out={}
-    lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
-    current_date=None
-    for line in lines:
-        md=re.fullmatch(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*(\d{1,2}),\s*(20\d{2})',line)
-        if md:
-            mon=datetime.strptime(md.group(1),'%b').month
-            current_date=f'{int(md.group(3)):04d}-{mon:02d}-{int(md.group(2)):02d}'
-            continue
-        mm=re.search(r'Machinery Orders in\s+([A-Za-z]+),\s*(20\d{2})',line,re.I)
-        if mm and current_date:
-            try:refm=datetime.strptime(mm.group(1).rstrip('.'),'%B').month
-            except:
-                try:refm=datetime.strptime(mm.group(1).rstrip('.'),'%b').month
-                except:continue
-            out[(int(mm.group(2)),refm)]=current_date
-    return out,u
+def first_html(urls):
+    last=None
+    for u in urls:
+        try:return get(u),u
+        except Exception as e:last=e
+    raise RuntimeError(str(last))
+
+def parse_value(y,m):
+    raw,used=first_html(en_urls(y,m)); text=' '.join(BeautifulSoup(raw,'html.parser').stripped_strings); mn=MONTH_NAMES[m]
+    pats=[
+      rf'Private-sector machinery orders, excluding volatile ones for ships and those from electric power companies,\s*(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
+      rf'Private-sector machinery orders[^.]*?(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
+      rf'Private-sector machinery orders[^.]*?{mn}[^.]*?(increased|decreased)[^.]*?([0-9]+(?:\.[0-9]+)?)%'
+    ]
+    for p in pats:
+        mm=re.search(p,text,re.I)
+        if mm:
+            v=float(mm.group(2))*(1 if mm.group(1).lower()=='increased' else -1)
+            return v,used
+    raise ValueError('monthly private-sector ex-volatile value not found')
+
+def era_to_year(era,yr):
+    n=1 if yr=='元' else int(yr)
+    if era=='平成': return 1988+n
+    if era=='令和': return 2018+n
+    raise ValueError('unknown era')
+
+def parse_release_date(y,m):
+    raw,used=first_html(jp_urls(y,m)); text=' '.join(BeautifulSoup(raw,'html.parser').stripped_strings)
+    mm=re.search(r'(平成|令和)\s*(元|\d+)\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日',text)
+    if mm:
+        yy=era_to_year(mm.group(1),mm.group(2)); return f'{yy:04d}-{int(mm.group(3)):02d}-{int(mm.group(4)):02d}',used
+    mm=re.search(r'(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日',text)
+    if mm:return f'{int(mm.group(1)):04d}-{int(mm.group(2)):02d}-{int(mm.group(3)):02d}',used
+    raise ValueError('release date not found on contemporaneous Japanese result page')
 
 def main():
-    release_maps={}; release_sources={}
-    for y in range(2018,2024):
-        try:release_maps[y],release_sources[y]=news_release_map(y)
-        except Exception as e:release_maps[y]={};release_sources[y]=str(e)
     rows=[];errors=[]
     for y,m in months():
-        key=(y,m)
         try:
-            v,u=parse_value(y,m)
-            # Release normally occurs 1-2 months after reference month; search current and following calendar year news indexes.
-            rd=None;news_u=None
-            for ny in (y,y+1):
-                if ny not in release_maps:
-                    try:release_maps[ny],release_sources[ny]=news_release_map(ny)
-                    except Exception as e:release_maps[ny]={};release_sources[ny]=str(e)
-                if key in release_maps[ny]: rd=release_maps[ny][key];news_u=f'{BASE}/en/news/{ny}/index.html';break
-            if not rd:raise ValueError('release date not found in ESRI What’s New archive')
-            rows.append({'reference_month':f'{y:04d}-{m:02d}','release_date':rd,'release_time_jst':'08:50','availability_timestamp_jst':rd+'T08:50:00+09:00','private_core_orders_sa_mom_pct':v,'source_result_url':u,'source_release_index':news_u,'pit_status':'READY_FIRST_RELEASE'})
+            v,en_u=parse_value(y,m); rd,jp_u=parse_release_date(y,m)
+            rows.append({'reference_month':f'{y:04d}-{m:02d}','release_date':rd,'release_time_jst':'08:50','availability_timestamp_jst':rd+'T08:50:00+09:00','private_core_orders_sa_mom_pct':v,'source_result_url_en':en_u,'source_result_url_jp':jp_u,'pit_status':'READY_FIRST_RELEASE'})
         except Exception as e:errors.append({'reference_month':f'{y:04d}-{m:02d}','error':str(e)})
     exp=[f'{y:04d}-{m:02d}' for y,m in months()];got=[r['reference_month'] for r in rows]
     missing=sorted(set(exp)-set(got));dup=sorted({x for x in got if got.count(x)>1})
     status='PASS' if not errors and not missing and not dup and len(rows)==len(exp) else 'FAIL'
-    ev={'schema':'GMFQ_JPY_MACHINERY_ORDERS_PIT_ACTIVATION_V1','status':status,'coverage':{'start':exp[0],'end':exp[-1],'expected_months':len(exp),'materialized_months':len(rows)},'series':'Private-sector machinery orders excluding ships and electric power, SA m/m','source_policy':'Contemporaneous ESRI English monthly result page for first-published value + annual ESRI What’s New archive for release date','event_time_policy':'08:50 JST official Machinery Orders publication time','errors':errors,'missing':missing,'duplicates':dup,'revised_history_fallback_used':False,'pit_active_machinery_orders':status=='PASS','changes_engine_rules':False,'changes_live_data':False}
+    ev={'schema':'GMFQ_JPY_MACHINERY_ORDERS_PIT_ACTIVATION_V1','status':status,'coverage':{'start':exp[0],'end':exp[-1],'expected_months':len(exp),'materialized_months':len(rows)},'series':'Private-sector machinery orders excluding ships and electric power, SA m/m','source_policy':'Contemporaneous ESRI English monthly result page for first-published value + matching contemporaneous Japanese result page for release date (Heisei/Reiwa aware)','event_time_policy':'08:50 JST official Machinery Orders publication time','errors':errors,'missing':missing,'duplicates':dup,'revised_history_fallback_used':False,'pit_active_machinery_orders':status=='PASS','changes_engine_rules':False,'changes_live_data':False}
     EVID.write_text(json.dumps(ev,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
     if status!='PASS':print(json.dumps(ev,indent=2,ensure_ascii=False));raise SystemExit(1)
     OUT.parent.mkdir(parents=True,exist_ok=True)
