@@ -32,12 +32,12 @@ def main() -> int:
             "currency": "JPY",
             "dimension": "labour",
             "observation_date": "2026-08",
-            "value": 2.5,
+            "value": 2.6,
         }
         for k, v in expected.items():
             if c.get(k) != v:
                 raise SystemExit(f"candidate mismatch {k}: got={c.get(k)!r} expected={v!r}")
-        if a.get("prior_period") != "2026-07" or a.get("prior_value") != 2.3:
+        if a.get("prior_period") != "2026-07" or a.get("prior_value") != 2.4:
             raise SystemExit(f"prior observation mismatch: {a}")
         if abs(float(a.get("delta")) - 0.2) > 1e-12:
             raise SystemExit(f"delta mismatch: {a.get('delta')}")
@@ -55,15 +55,15 @@ def main() -> int:
         summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
         if summary.get("status") != "PASS" or summary.get("live_data_modified") is not False:
             raise SystemExit(f"builder contract failed: {summary}")
-        if summary.get("observation_date") != "2026-08" or float(summary.get("new_value")) != 2.5:
+        if summary.get("observation_date") != "2026-08" or float(summary.get("new_value")) != 2.6:
             raise SystemExit(f"builder propagated wrong observation: {summary}")
 
         print(json.dumps({
             "status": "PASS",
             "source": "Statistics Bureau of Japan / e-Stat",
             "fixture_latest": "2026-08",
-            "fixture_value": 2.5,
-            "fixture_prior": 2.3,
+            "fixture_value": 2.6,
+            "fixture_prior": 2.4,
             "builder_status": summary.get("status"),
             "series_action": summary.get("series_action"),
             "live_data_modified": False,
