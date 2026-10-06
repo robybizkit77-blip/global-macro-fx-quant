@@ -8,14 +8,11 @@ ROOT=Path(__file__).resolve().parents[2]
 SERIES_PATH=ROOT/'live_data/sections/MACRO_SERIES.json'
 HEATMAP_PATH=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Statistics Canada'
-WDS='https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV'
-HTTP_HEADERS={
- 'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)',
- 'Accept':'application/json,text/plain,*/*',
-}
+STATIC_CSV='https://www150.statcan.gc.ca/n1/en/tbl/csv'
+HTTP_HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)','Accept':'application/zip,application/octet-stream,*/*'}
 CONFIG={
- 'inflation':{'pid':'1810000402','series_hint':'cpi','unit':'% YoY','transformation':'reported_yoy_rate'},
- 'labour':{'pid':'14100287','series_hint':'unemp','unit':'%','transformation':'level'},
+ 'inflation':{'pid':'1810000402','download_pid':'18100004','unit':'% YoY','transformation':'reported_yoy_rate'},
+ 'labour':{'pid':'14100287','download_pid':'14100287','unit':'%','transformation':'level'},
 }
 
 def load_json(p:Path)->Any:return json.loads(p.read_text(encoding='utf-8'))
@@ -23,21 +20,19 @@ def norm(s:Any)->str:return str(s or '').strip().lower()
 
 def heat_contract(dim:str):
  h=load_json(HEATMAP_PATH)['currencies']['CAD'][dim]
- if h.get('frequency')!='M': raise ValueError(f'CAD {dim} frequency changed: {h.get("frequency")!r}')
+ if h.get('frequency')!='M':raise ValueError(f'CAD {dim} frequency changed: {h.get("frequency")!r}')
  exp=CONFIG[dim]['transformation']
- if h.get('transformation')!=exp: raise ValueError(f'CAD {dim} transformation changed: {h.get("transformation")!r}; expected {exp!r}')
+ if h.get('transformation')!=exp:raise ValueError(f'CAD {dim} transformation changed: {h.get("transformation")!r}; expected {exp!r}')
  return str(h.get('series_id')),str(h.get('frequency')),str(h.get('transformation'))
 
 def resolve_macro_series_id(dim:str,heat_id:str)->str:
- rows=load_json(SERIES_PATH)['CAD']
- by={str(r.get('id')):r for r in rows if isinstance(r,dict) and r.get('id') is not None}
+ rows=load_json(SERIES_PATH)['CAD'];by={str(r.get('id')):r for r in rows if isinstance(r,dict) and r.get('id') is not None}
  explicit={'CA_CPI_HEADLINE_YOY':'CA_CPI_HEADLINE_YOY_history_value'}
  if heat_id in explicit:
   target=explicit[heat_id]
-  if target not in by: raise ValueError(f'CAD canonical target missing for {heat_id}: {target}')
+  if target not in by:raise ValueError(f'CAD canonical target missing for {heat_id}: {target}')
   return target
- direct=[heat_id,f'CA_{heat_id}_history_value',f'CAD_{heat_id}_history_value',f'CA_{heat_id}_history_{heat_id}']
- hits=[x for x in dict.fromkeys(direct) if x in by]
+ direct=[heat_id,f'CA_{heat_id}_history_value',f'CAD_{heat_id}_history_value',f'CA_{heat_id}_history_{heat_id}'];hits=[x for x in dict.fromkeys(direct) if x in by]
  if len(hits)==1:return hits[0]
  if len(hits)>1:raise ValueError(f'ambiguous CAD {dim} canonical IDs: {hits}')
  sem=[]
@@ -50,19 +45,13 @@ def resolve_macro_series_id(dim:str,heat_id:str)->str:
   raise ValueError(f'cannot resolve unique CAD {dim} MACRO_SERIES row; heatmap series_id={heat_id!r}; semantic_candidates={diag}')
  return str(sem[0]['id'])
 
-def http_get(url:str,accept:str|None=None):
- headers=dict(HTTP_HEADERS)
- if accept:headers['Accept']=accept
- req=urllib.request.Request(url,headers=headers)
- return urllib.request.urlopen(req,timeout=90)
-
-def download_csv(pid:str)->str:
- with http_get(f'{WDS}/{pid}/en','application/json') as r: meta=json.load(r)
- if meta.get('status')!='SUCCESS' or not meta.get('object'): raise ValueError(f'StatCan WDS table URL failed: {meta}')
- with http_get(meta['object'],'application/zip,application/octet-stream,*/*') as r: data=r.read()
+def download_csv(download_pid:str)->str:
+ url=f'{STATIC_CSV}/{download_pid}-eng.zip'
+ req=urllib.request.Request(url,headers=HTTP_HEADERS)
+ with urllib.request.urlopen(req,timeout=90) as r:data=r.read()
  with zipfile.ZipFile(io.BytesIO(data)) as z:
   names=[n for n in z.namelist() if n.lower().endswith('.csv') and 'meta' not in n.lower()]
-  if not names: raise ValueError('StatCan ZIP contains no data CSV')
+  if not names:raise ValueError('StatCan ZIP contains no data CSV')
   return z.read(names[0]).decode('utf-8-sig')
 
 def rows_from_text(text:str):return list(csv.DictReader(io.StringIO(text)))
@@ -86,10 +75,7 @@ def extract_labour(rows):
  out={}
  for r in rows:
   if norm(r.get('GEO') or r.get('Geography'))!='canada':continue
-  char=norm(r.get('Labour force characteristics'))
-  sex=norm(r.get('Gender') or r.get('Sex'))
-  age=norm(r.get('Age group'))
-  stat=norm(r.get('Statistics'))
+  char=norm(r.get('Labour force characteristics'));sex=norm(r.get('Gender') or r.get('Sex'));age=norm(r.get('Age group'));stat=norm(r.get('Statistics'))
   if 'unemployment rate' not in char:continue
   if sex and 'both sexes' not in sex and 'total' not in sex:continue
   if age and '15 years and over' not in age:continue
@@ -103,16 +89,15 @@ def extract_labour(rows):
  return [(d,out[d]) for d in dates]
 
 def build_candidate(dim:str,text:str):
- rows=rows_from_text(text); obs=extract_inflation(rows) if dim=='inflation' else extract_labour(rows)
- latest,lv=obs[-1];prior,pv=obs[-2]
- hid,freq,tr=heat_contract(dim);mid=resolve_macro_series_id(dim,hid)
- c={'currency':'CAD','dimension':dim,'macro_series_id':mid,'observation_date':latest,'value':lv,'source':SOURCE,'source_url':f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={CONFIG[dim]["pid"]}','series_id':hid,'frequency':freq,'transformation':tr,'unit':CONFIG[dim]['unit']}
- a={'product_id':CONFIG[dim]['pid'],'latest_period':latest,'latest_value':lv,'prior_period':prior,'prior_value':pv,'delta':lv-pv,'candidate_only':True,'live_data_written':False}
+ rows=rows_from_text(text);obs=extract_inflation(rows) if dim=='inflation' else extract_labour(rows);latest,lv=obs[-1];prior,pv=obs[-2]
+ hid,freq,tr=heat_contract(dim);mid=resolve_macro_series_id(dim,hid);cfg=CONFIG[dim]
+ c={'currency':'CAD','dimension':dim,'macro_series_id':mid,'observation_date':latest,'value':lv,'source':SOURCE,'source_url':f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}','series_id':hid,'frequency':freq,'transformation':tr,'unit':cfg['unit']}
+ a={'product_id':cfg['pid'],'download_pid':cfg['download_pid'],'latest_period':latest,'latest_value':lv,'prior_period':prior,'prior_value':pv,'delta':lv-pv,'candidate_only':True,'live_data_written':False}
  return c,a
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);args=ap.parse_args()
- text=args.fixture.read_text(encoding='utf-8') if args.fixture else download_csv(CONFIG[args.dimension]['pid'])
+ ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);args=ap.parse_args();cfg=CONFIG[args.dimension]
+ text=args.fixture.read_text(encoding='utf-8') if args.fixture else download_csv(cfg['download_pid'])
  c,a=build_candidate(args.dimension,text);a['mode']='fixture' if args.fixture else 'live';args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(c,indent=2)+'\n')
  if args.audit_output:args.audit_output.write_text(json.dumps(a,indent=2)+'\n')
  print(json.dumps({'status':'PASS','candidate':c,'audit':a},indent=2));return 0
