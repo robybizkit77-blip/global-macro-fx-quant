@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_GBP_BOE_REACTION_FUNCTION_SOURCE_CONTRACT_V1",
+  "created_at": "2026-10-06",
+  "status": "FROZEN_FOR_MATERIALIZATION",
+  "purpose": "Predeclare the exact source families and causal ordering for the GBP BoE reaction-function diagnostic before data extraction, to avoid post-hoc source or threshold selection.",
+  "causal_chain": [
+    "Labour tightness",
+    "Average Weekly Earnings",
+    "CPI Services",
+    "Sterling OIS front-end repricing",
+    "GBP vs equal-weight G8 basket"
+  ],
+  "sources": {
+    "labour": {
+      "provider": "ONS",
+      "dataset": "A01 labour market vintages",
+      "status": "ALREADY_PIT_CERTIFIED",
+      "series": ["UK_UNEMP_RATE_history_value", "UK_EMPLOYMENT_RATE_history_value"]
+    },
+    "wages": {
+      "provider": "ONS",
+      "dataset": "Average weekly earnings time series / EARN01",
+      "vintage_policy": "Use superseded previous-version files and their release/superseded timestamps; current revised history may not backfill prior checkpoints.",
+      "status": "TO_MATERIALIZE"
+    },
+    "services_inflation": {
+      "provider": "ONS",
+      "series_id": "D7NN",
+      "series_name": "CPI ANNUAL RATE: Services 2015=100",
+      "vintage_policy": "Use historical previous versions with explicit release dates; preserve first-known value available at each checkpoint.",
+      "status": "TO_MATERIALIZE"
+    },
+    "front_end": {
+      "provider": "Bank of England",
+      "dataset": "Daily sterling overnight index swap curve archive",
+      "basis_policy": "Single OIS family only; do not mix gilt and OIS tenors inside the confirmation series.",
+      "publication_policy": "Treat curve data as available no earlier than the BoE publication schedule; FX evaluation begins after the fixed confirmation window.",
+      "status": "TO_MATERIALIZE"
+    }
+  },
+  "diagnostic_rules": {
+    "direct_labour_benchmark": true,
+    "mediated_wages_services": true,
+    "front_end_confirmation": true,
+    "front_end_confirmation_window_market_days": 5,
+    "fx_entry_after_confirmation_only": true,
+    "threshold_tuning": false,
+    "parameter_optimization": false,
+    "revised_history_substitution": false
+  },
+  "evaluation": {
+    "fx_target": "GBP versus equal-weight G8 basket",
+    "horizons_market_days": [5, 20, 60],
+    "robustness_required": ["bootstrap", "Wilson hit-rate interval", "chronological walk-forward", "first-half vs second-half stability"]
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
