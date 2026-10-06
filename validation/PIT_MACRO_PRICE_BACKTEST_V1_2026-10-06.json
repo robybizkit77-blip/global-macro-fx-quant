@@ -1,0 +1,100 @@
+{
+  "schema": "GMFQ_PIT_MACRO_PRICE_BACKTEST_V1",
+  "created_at": "2026-10-06",
+  "status": "PASS",
+  "scope": "Frozen v9.3 PIT Macro block only; EUR vs CAD because both have full PIT Growth+Labour macro votes. This is not a full 28-pair all-layer engine backtest.",
+  "engine": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "threshold_tuning": false
+  },
+  "dataset_manifest_sha256": "c077f752f28e8656d9721e198f5144c2c96f7627919b8446307ffacb6ad485fd",
+  "price_pair": "EURCAD",
+  "entry_policy": "First ECB daily reference observation strictly after macro checkpoint date.",
+  "signal_rule": "Long EURCAD when EUR macro polarity=+1 and CAD=-1; short when EUR=-1 and CAD=+1; no trade otherwise.",
+  "checkpoint_count_common": 16,
+  "signal_checkpoint_count": 1,
+  "regime_entry_count": 1,
+  "stats_all_signal_checkpoints": {
+    "5d": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "mean_signed_return": 0.007686448306904126,
+      "median_signed_return": 0.007686448306904126
+    },
+    "20d": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "mean_signed_return": 0.00865591025552237,
+      "median_signed_return": 0.00865591025552237
+    },
+    "60d": {
+      "n": 1,
+      "hit_rate": 0.0,
+      "mean_signed_return": -0.009002146665743282,
+      "median_signed_return": -0.009002146665743282
+    }
+  },
+  "stats_regime_entries_only": {
+    "5d": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "mean_signed_return": 0.007686448306904126,
+      "median_signed_return": 0.007686448306904126
+    },
+    "20d": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "mean_signed_return": 0.00865591025552237,
+      "median_signed_return": 0.00865591025552237
+    },
+    "60d": {
+      "n": 1,
+      "hit_rate": 0.0,
+      "mean_signed_return": -0.009002146665743282,
+      "median_signed_return": -0.009002146665743282
+    }
+  },
+  "samples": [
+    {
+      "checkpoint": "2023-06-30",
+      "entry_date": "2023-07-03",
+      "direction": 1,
+      "eur_polarity": 1,
+      "cad_polarity": -1,
+      "entry_price": 1.4441,
+      "return_5d": 0.007686448306904126,
+      "signed_return_5d": 0.007686448306904126,
+      "return_20d": 0.00865591025552237,
+      "signed_return_20d": 0.00865591025552237,
+      "return_60d": -0.009002146665743282,
+      "signed_return_60d": -0.009002146665743282
+    }
+  ],
+  "regime_entries": [
+    {
+      "checkpoint": "2023-06-30",
+      "entry_date": "2023-07-03",
+      "direction": 1,
+      "eur_polarity": 1,
+      "cad_polarity": -1,
+      "entry_price": 1.4441,
+      "return_5d": 0.007686448306904126,
+      "signed_return_5d": 0.007686448306904126,
+      "return_20d": 0.00865591025552237,
+      "signed_return_20d": 0.00865591025552237,
+      "return_60d": -0.009002146665743282,
+      "signed_return_60d": -0.009002146665743282
+    }
+  ],
+  "guardrails": [
+    "PIT replay artifact only",
+    "No revised-history fallback",
+    "No threshold tuning",
+    "Withheld currencies excluded",
+    "Conservative next-reference-price entry"
+  ],
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_oos_baseline": false
+}
