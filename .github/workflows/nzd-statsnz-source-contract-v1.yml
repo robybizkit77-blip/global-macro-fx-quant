@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install PDF parser for official Stats NZ labour summary
+        run: python -m pip install --disable-pip-version-check 'pypdf>=6,<7'
       - name: Run deterministic NZD Stats NZ parser-builder contract
         run: python validation/test_nzd_statsnz_source.py
       - name: Fetch official live Stats NZ inflation candidate
@@ -48,9 +50,11 @@ jobs:
               r=Path('/tmp/gmfq-nzd')/dim
               c=json.loads((r/'candidate.json').read_text());a=json.loads((r/'source-audit.json').read_text());s=json.loads((r/'built/summary.json').read_text())
               assert c['currency']=='NZD' and c['source']=='Stats NZ';assert a['mode']=='live' and a['live_data_written'] is False;assert s['status']=='PASS' and s['live_data_modified'] is False
-              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+              assert a['source_url'].startswith('https://www.stats.govt.nz/') and a['retrieval_url'].startswith('https://www.stats.govt.nz/')
+              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'retrieval_url':a['retrieval_url']}
           assert out['inflation']['series_id']=='NZ_CPI_HEADLINE_YOY' and out['inflation']['date']=='2026-06-01' and abs(float(out['inflation']['value'])-4.1)<1e-12,out
           assert out['labour']['series_id']=='NZ_UNEMP_RATE' and out['labour']['date']=='2026-06-01' and abs(float(out['labour']['value'])-5.6)<1e-12,out
+          assert out['labour']['retrieval_url'].endswith('.pdf'),out
           print(json.dumps({'status':'PASS','source':'Stats NZ','results':out,'live_data_modified':False},indent=2))
           PY
       - name: Confirm repository live data remained untouched
