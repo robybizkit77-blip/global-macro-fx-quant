@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse, json, math, re, statistics
 from bisect import bisect_left
-from calendar import monthrange
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -81,6 +80,9 @@ def dt_key(x):
     try:
         if re.fullmatch(r'\d{4}-\d{2}',s):
             return date(int(s[:4]),int(s[5:7]),1)
+        if re.fullmatch(r'\d{4}/\d{1,2}/\d{1,2}',s):
+            y,m,d=(int(v) for v in s.split('/'))
+            return date(y,m,d)
         return date.fromisoformat(s[:10])
     except:
         return None
@@ -115,15 +117,35 @@ def stats(xs):
     if not xs:return {'n':0,'hit':None,'mean':None,'median':None}
     return {'n':len(xs),'hit':sum(x>0 for x in xs)/len(xs),'mean':sum(xs)/len(xs),'median':statistics.median(xs)}
 
+def load_series_override(path,series_id):
+    raw=json.loads(Path(path).read_text())
+    if isinstance(raw,list):
+        hit=next((x for x in raw if x.get('id')==series_id),None)
+    elif isinstance(raw,dict) and raw.get('id')==series_id:
+        hit=raw
+    else:
+        hit=None
+    if not hit: raise ValueError(f'override series {series_id} not found in {path}')
+    return hit
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('--macro',default='history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js')
     ap.add_argument('--price',default='history/ECB_FX_G8_2018_2026_CANONICAL_V1.json')
     ap.add_argument('--golden',default='validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json')
+    ap.add_argument('--jpy-series-override')
     ap.add_argument('--output',required=True)
     args=ap.parse_args()
     arc=load_archive(args.macro)
     S=arc.get('series',arc.get('currencies',arc)) if isinstance(arc,dict) else arc
+    override_meta=None
+    if args.jpy_series_override:
+        old=load_series_override(args.jpy_series_override,RATE_IDS['JPY'])
+        cur=list(S.get('JPY',[]))
+        cur=[x for x in cur if x.get('id')!=RATE_IDS['JPY']]
+        cur.append(old)
+        S['JPY']=cur
+        override_meta={'id':old.get('id'),'n':len(old.get('values',[])),'first':old.get('dates',[None])[0] if old.get('dates') else None,'last':old.get('dates',[None])[-1] if old.get('dates') else None,'source_file':old.get('source_file')}
     price=json.loads(Path(args.price).read_text())
     rows=price['rows']; pdates=[date.fromisoformat(r['Date']) for r in rows]
     golden=json.loads(Path(args.golden).read_text())
@@ -174,6 +196,7 @@ def main():
     result={
       'schema':'GMFQ_HISTORICAL_WALKFORWARD_FROZEN_PRICE_REPLAY_V1',
       'status':'PASS', 'rules_fingerprint':'3356baf0','checkpoint_count':len(cps),'pair_count':len(PAIRS),
+      'jpy_series_override':override_meta,
       'quality_counts':counts,'golden_quality_counts':golden.get('quality_counts_4w',{}),
       'quality_counts_match':counts==golden.get('quality_counts_4w',{}),
       'results':{str(h):{'strong':stats(outcomes[h]['CONTRASTO STRUTTURALE FORTE']),'partial':stats(outcomes[h]['VANTAGGIO RELATIVO PARZIALE'])} for h in horizons},
