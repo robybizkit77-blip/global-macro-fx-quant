@@ -24,8 +24,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install PDF parser for official Stats NZ labour summary
-        run: python -m pip install --disable-pip-version-check 'pypdf>=6,<7'
       - name: Run deterministic NZD Stats NZ parser-builder contract
         run: python validation/test_nzd_statsnz_source.py
       - name: Fetch official live Stats NZ inflation candidate
@@ -34,7 +32,7 @@ jobs:
           python validation/sources/nzd_statsnz_core.py --dimension inflation --output /tmp/gmfq-nzd/inflation/candidate.json --audit-output /tmp/gmfq-nzd/inflation/source-audit.json
       - name: Pass live NZD inflation candidate through canonical macro builder
         run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-nzd/inflation/candidate.json --output-dir /tmp/gmfq-nzd/inflation/built
-      - name: Fetch official live Stats NZ labour candidate
+      - name: Fetch official live Stats NZ labour CSV candidate
         run: |
           mkdir -p /tmp/gmfq-nzd/labour
           python validation/sources/nzd_statsnz_core.py --dimension labour --output /tmp/gmfq-nzd/labour/candidate.json --audit-output /tmp/gmfq-nzd/labour/source-audit.json
@@ -51,10 +49,11 @@ jobs:
               c=json.loads((r/'candidate.json').read_text());a=json.loads((r/'source-audit.json').read_text());s=json.loads((r/'built/summary.json').read_text())
               assert c['currency']=='NZD' and c['source']=='Stats NZ';assert a['mode']=='live' and a['live_data_written'] is False;assert s['status']=='PASS' and s['live_data_modified'] is False
               assert a['source_url'].startswith('https://www.stats.govt.nz/') and a['retrieval_url'].startswith('https://www.stats.govt.nz/')
-              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'retrieval_url':a['retrieval_url']}
+              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'retrieval_url':a['retrieval_url'],'upstream_series_id':a.get('upstream_series_id')}
           assert out['inflation']['series_id']=='NZ_CPI_HEADLINE_YOY' and out['inflation']['date']=='2026-06-01' and abs(float(out['inflation']['value'])-4.1)<1e-12,out
           assert out['labour']['series_id']=='NZ_UNEMP_RATE' and out['labour']['date']=='2026-06-01' and abs(float(out['labour']['value'])-5.6)<1e-12,out
-          assert out['labour']['retrieval_url'].endswith('.pdf'),out
+          assert out['labour']['upstream_series_id']=='HLFQ.S1F3S',out
+          assert out['labour']['retrieval_url'].endswith('labour-market-statistics-june-2026-quarter.zip'),out
           print(json.dumps({'status':'PASS','source':'Stats NZ','results':out,'live_data_modified':False},indent=2))
           PY
       - name: Confirm repository live data remained untouched
