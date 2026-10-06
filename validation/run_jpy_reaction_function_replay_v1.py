@@ -37,7 +37,10 @@ EXPECTED=months()
 
 def inspect(path,kind):
  try:
-  with path.open(newline='',encoding='utf-8-sig') as f: rows=list(csv.DictReader(f)); headers=f.fieldnames or []
+  with path.open(newline='',encoding='utf-8-sig') as f:
+   reader=csv.DictReader(f)
+   rows=list(reader)
+   headers=reader.fieldnames or []
  except Exception as e:return {'path':str(path),'ok':False,'reason':f'read_error:{e}'}
  cols={k:pick(headers,ALIASES[k]) for k in ('month','date','status','url')}
  if kind=='wages': cols['value']=pick(headers,ALIASES['wage'])
@@ -146,6 +149,6 @@ def main():
    basket=sum(rel)/len(rel); z[f'basket_log_return_{h}d']=basket; z[f'signed_{h}d']=e['jpy_polarity']*basket
   samples.append(z)
  baseline=json.loads(BASELINE.read_text()) if BASELINE.exists() else None
- payload={'schema':'GMFQ_JPY_REACTION_FUNCTION_REPLAY_V1','status':'PASS_DIAGNOSTIC_NOT_PROMOTED','created_at':'2026-10-06','spec_file':str(SPEC),'engine':{'frozen_commit':'ff52198a75cc67f7dae96fc2bbf65623f170791c','rules_fingerprint':'3356baf0','threshold_direction':TH,'minimum_observations':MINOBS,'threshold_tuning':False},'inputs':{'wages':w['path'],'cpi':c['path']},'event_universe':{'all_checkpoint_count':len(evidence),'directional_checkpoint_count':len(samples)},'full_sample':summarize(samples),'walkforward':walk(samples),'rates_layer':{'status':'WITHHELD','reason':'No certified historical JPY front-end/yield-differential series attached to this replay; rates do not gate events.'},'baseline_growth_labour':{'file':str(BASELINE),'pooled_oos':baseline.get('walkforward',{}).get('pooled_oos') if baseline else None},'state_evidence':evidence,'directional_samples':samples,'guardrails':spec['guardrails'],'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
+ payload={'schema':'GMFQ_JPY_REACTION_FUNCTION_REPLAY_V1','status':'PASS_DIAGNOSTIC_NOT_PROMOTED','created_at':'2026-10-06','spec_file':str(SPEC),'engine':{'frozen_commit':'ff52198a75cc67f7dae96fc2bbf65623f170791c','rules_fingerprint':'3356baf0','threshold_direction':TH,'minimum_observations':MINOBS,'threshold_tuning':False},'inputs':{'wages':w['path'],'cpi':c['path']},'event_universe':{'all_checkpoint_count':len(evidence),'directional_checkpoint_count':len(samples)},'full_sample':summarize(samples),'walkforward':walk(samples),'rates_layer':{'status':'WITHHELD','reason':'No certified historical JPY front-end/yield-differential series attached to this replay; rates do not gate events.'},'baseline_growth_labour':{'file':str(BASELINE),'pooled_oos':baseline.get('walkforward',{}).get('pooled_oos') if baseline else None},'state_evidence':evidence,'directional_samples':samples,'guardrails':spec['guardrails'],'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False,'adapter_fix':'csv.DictReader.fieldnames used for semantic header inspection; no frozen model logic changed'}
  OUT.write_text(json.dumps(payload,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'); print(json.dumps({'status':payload['status'],'events':payload['event_universe'],'full_sample':payload['full_sample'],'pooled_oos':payload['walkforward']['pooled_oos']},indent=2))
 if __name__=='__main__':main()
