@@ -61,6 +61,12 @@ def extract_reference_period(text: str):
     if not m: raise ValueError(f"unknown month in title: {p.group(1)}")
     return y,m,p.start()
 
+def amount_to_persons(number: str, unit: str | None) -> int:
+    x=float(number.replace(",",""))
+    if unit and unit.lower().startswith("million"): x*=1_000_000
+    elif unit and unit.lower().startswith("thousand"): x*=1_000
+    return int(round(x))
+
 def parse_release(text: str, url: str):
     ref_y,ref_m,title_pos=extract_reference_period(text)
     ts=re.search(r"8:30\s*a\.m\.\s*\((?:ET|EST|EDT)\)\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})", text, re.I)
@@ -69,25 +75,24 @@ def parse_release(text: str, url: str):
     release_date=datetime.strptime(ts.group(1), "%B %d, %Y").date().isoformat()
     body=text[title_pos:title_pos+5000]
 
-    # BLS wording varies across vintages. Keep the search constrained to the opening summary
-    # and require the explicit nonfarm-payroll phrase before accepting a number.
     payroll_phrase=r"(?:Total\s+)?nonfarm payroll employment"
     nfp=None
-    p=re.search(payroll_phrase+r".{0,300}?\(([+-]\s*[\d,]+)\)", body, re.I)
-    if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
+    # Primary form: "rose/increased/fell/declined by 151,000 / 20.5 million".
+    p=re.search(payroll_phrase+r"\s+(rose|increased|grew|declined|decreased|fell|dropped)\s+by\s+([\d,.]+)\s*(million|thousand)?", body, re.I)
+    if p:
+        val=amount_to_persons(p.group(2),p.group(3)); verb=p.group(1).lower()
+        nfp=-val if verb in {"declined","decreased","fell","dropped"} else val
+    # Secondary form used in releases such as Jan-2021: "changed little (+49,000)".
     if nfp is None:
-        p=re.search(payroll_phrase+r".{0,220}?\b(rose|increased|edged up|grew|declined|decreased|fell|dropped)\b.{0,100}?\bby\s+([\d,]+)", body, re.I)
-        if p:
-            val=int(p.group(2).replace(",","")); verb=p.group(1).lower()
-            nfp=-val if verb in {"declined","decreased","fell","dropped"} else val
-    if nfp is None:
-        p=re.search(payroll_phrase+r".{0,360}?([+-]\s*[\d,]+)", body, re.I)
+        p=re.search(payroll_phrase+r"\s+(?:changed little|was little changed|was essentially unchanged)\s*\(([+-]\s*[\d,]+)\)", body, re.I)
         if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
-    if nfp is None: raise ValueError("first-published NFP not found")
+    # A few releases use "edged up" in the headline.
+    if nfp is None:
+        p=re.search(payroll_phrase+r"\s+edged\s+(up|down)\s+by\s+([\d,.]+)\s*(million|thousand)?", body, re.I)
+        if p:
+            val=amount_to_persons(p.group(2),p.group(3)); nfp=val if p.group(1).lower()=="up" else -val
+    if nfp is None: raise ValueError("first-published NFP headline not found")
 
-    # Historical BLS wording includes variants such as:
-    # "edged down to 3.8 percent" and "declined by 0.3 percentage point to 4.7 percent".
-    # Match the first level introduced by at/to/was after the opening 'unemployment rate' phrase.
     ur=None
     p=re.search(r"unemployment rate.{0,180}?\b(?:at|to|was)\s+(\d+(?:\.\d+)?)\s+percent", body, re.I)
     if p: ur=float(p.group(1))
@@ -124,9 +129,7 @@ def main():
     missing=sorted(set(published_expected)-set(by_month)); extra=sorted(set(by_month)-set(published_expected))
     if errors or dup or missing or extra:
         payload={"status":"FAIL","candidate_urls":len(urls),"rows_parsed":len(rows),"structural_withheld":STRUCTURAL_WITHHELD,"missing_published_months":missing,"duplicates":sorted(set(dup)),"extra":extra,"errors":errors}
-        EVID.parent.mkdir(parents=True,exist_ok=True)
-        EVID.write_text(json.dumps(payload,indent=2),encoding="utf-8")
-        print(json.dumps(payload,indent=2))
+        EVID.parent.mkdir(parents=True,exist_ok=True); EVID.write_text(json.dumps(payload,indent=2),encoding="utf-8"); print(json.dumps(payload,indent=2))
         raise SystemExit(f"strict PIT gate failed: errors={len(errors)} missing_published={len(missing)} dup={len(set(dup))} extra={len(extra)}")
     rows=[by_month[m] for m in published_expected]
     for r in rows:
@@ -136,7 +139,7 @@ def main():
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open("w",newline="",encoding="utf-8") as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
-    evidence={"schema":"GMFQ_USD_LABOUR_BLS_ARCHIVE_PIT_V1","status":"PASS","source":"Official BLS Employment Situation archived news releases","archive_index":ARCHIVE,"coverage":{"start":all_expected[0],"end":all_expected[-1],"calendar_months":len(all_expected),"published_complete_releases":len(rows),"structural_withheld_months":len(STRUCTURAL_WITHHELD)},"structural_withheld":STRUCTURAL_WITHHELD,"candidate_archive_urls":len(urls),"fields":["NFP first-published monthly change (persons)","unemployment rate first-published","release date","08:30 ET release time"],"method":"Extract reference month and opening-summary values from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.","strict_zero_parse_errors_on_published_releases":True,"output":str(OUT),"notes":["October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.","NFP values are stored in persons, matching the explicit magnitudes printed in BLS releases.","No consensus-surprise series is introduced here.","This certifies Labour PIT inputs only; engine rules and live data remain untouched."]}
+    evidence={"schema":"GMFQ_USD_LABOUR_BLS_ARCHIVE_PIT_V1","status":"PASS","source":"Official BLS Employment Situation archived news releases","archive_index":ARCHIVE,"coverage":{"start":all_expected[0],"end":all_expected[-1],"calendar_months":len(all_expected),"published_complete_releases":len(rows),"structural_withheld_months":len(STRUCTURAL_WITHHELD)},"structural_withheld":STRUCTURAL_WITHHELD,"candidate_archive_urls":len(urls),"fields":["NFP first-published monthly change (persons)","unemployment rate first-published","release date","08:30 ET release time"],"method":"Extract only the opening headline payroll sentence and first unemployment-rate level from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.","strict_zero_parse_errors_on_published_releases":True,"output":str(OUT),"notes":["October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.","NFP values are stored in persons. Million-unit COVID-era headlines are converted mechanically to persons.","No consensus-surprise series is introduced here.","This certifies Labour PIT inputs only; engine rules and live data remain untouched."]}
     EVID.write_text(json.dumps(evidence,indent=2),encoding="utf-8"); print(json.dumps(evidence,indent=2))
 
 if __name__=="__main__": main()
