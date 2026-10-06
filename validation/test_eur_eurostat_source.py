@@ -54,17 +54,17 @@ def check_dimension(dimension: str, root: Path) -> dict:
     if dimension == "inflation":
         assert c["series_id"] == "EA_HICP_HEADLINE_YOY", c
         assert c["transformation"] == "reported_yoy_rate", c
-        assert c["observation_date"] == "2026-10", c
+        assert c["observation_date"] == "2026-10-01", c
         assert abs(float(c["value"]) - 3.9) < 1e-12, c
         assert a["dataset"] == "prc_hicp_minr", a
-        assert a["prior_period"] == "2026-09" and abs(float(a["prior_value"]) - 3.8) < 1e-12, a
+        assert a["prior_period"] == "2026-09-01" and abs(float(a["prior_value"]) - 3.8) < 1e-12, a
     else:
         assert c["series_id"] == "EA_UNEMP", c
         assert c["transformation"] == "level", c
-        assert c["observation_date"] == "2026-09", c
+        assert c["observation_date"] == "2026-09-01", c
         assert abs(float(c["value"]) - 6.5) < 1e-12, c
         assert a["dataset"] == "une_rt_m", a
-        assert a["prior_period"] == "2026-08" and abs(float(a["prior_value"]) - 6.4) < 1e-12, a
+        assert a["prior_period"] == "2026-08-01" and abs(float(a["prior_value"]) - 6.4) < 1e-12, a
 
     run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built))
     summary = json.loads((built / "summary.json").read_text())
