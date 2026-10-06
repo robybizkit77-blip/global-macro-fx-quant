@@ -119,7 +119,7 @@ def extract_series(payload: dict[str, Any], expected_filters: dict[str, str]) ->
         if raw is None:
             continue
         value = float(raw)
-        out.append((period, value))
+        out.append((f"{period}-01", value))
     if len(out) < 2:
         raise ValueError(f"need at least two monthly Eurostat observations; got {len(out)}")
     return out
