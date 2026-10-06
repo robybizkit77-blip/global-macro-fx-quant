@@ -26,7 +26,8 @@ def parse_month(year: str, period: str) -> str:
     month = int(period[1:])
     if month < 1 or month > 12:
         raise ValueError(f"BLS period outside M01..M12: {period!r}")
-    return f"{int(year):04d}-{month:02d}"
+    # Canonical MACRO_SERIES uses month-start ISO dates.
+    return f"{int(year):04d}-{month:02d}-01"
 
 
 def extract_observations(payload: dict[str, Any], expected_series_id: str = DEFAULT_BLS_SERIES_ID) -> list[tuple[str, float, list[dict[str, Any]]]]:
@@ -44,7 +45,6 @@ def extract_observations(payload: dict[str, Any], expected_series_id: str = DEFA
     obs: dict[str, tuple[float, list[dict[str, Any]]]] = {}
     for row in data:
         period = str(row.get("period", ""))
-        # BLS may include annual-average M13 in some series; never treat it as monthly.
         if not (period.startswith("M") and len(period) == 3 and period[1:].isdigit()):
             continue
         month = int(period[1:])
@@ -72,8 +72,6 @@ def resolve_ids() -> tuple[str, str, str, str]:
     rows = series["USD"]
     by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
 
-    # Prefer exact canonical IDs, then only accepted history-ID conventions that
-    # actually exist in MACRO_SERIES. Never invent or select an absent target.
     candidate_ids = (
         heat_series_id,
         f"US_{heat_series_id}_history_value",
@@ -87,7 +85,6 @@ def resolve_ids() -> tuple[str, str, str, str]:
     elif len(convention_hits) > 1:
         raise ValueError(f"ambiguous USD unemployment canonical IDs: {convention_hits}")
     else:
-        # Final fallback: explicit unemployment naming only, and still require uniqueness.
         hits = []
         for r in rows:
             text = " ".join(str(r.get(k, "")) for k in ("id", "name", "title", "indicator", "label")).lower()
@@ -126,7 +123,6 @@ def build_candidate(payload: dict[str, Any], upstream_series_id: str = DEFAULT_B
         "value": latest[1],
         "source": SOURCE,
         "source_url": SOURCE_URL,
-        # Canonical dashboard ID remains UNRATE; upstream provenance is kept in audit.
         "series_id": heat_series_id,
         "frequency": frequency,
         "transformation": transformation,
