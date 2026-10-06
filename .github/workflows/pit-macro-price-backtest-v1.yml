@@ -1,0 +1,43 @@
+name: PIT Macro Price Backtest V1
+
+on:
+  push:
+    branches:
+      - audit-minimum-robust-pit-dataset-2026-10-06
+    paths:
+      - 'validation/run_minimum_robust_pit_macro_backtest_v1.py'
+      - 'history/pit_v1/**'
+      - '.github/workflows/pit-macro-price-backtest-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run frozen PIT Macro EURCAD price backtest
+        run: python validation/run_minimum_robust_pit_macro_backtest_v1.py
+      - name: Confirm runtime and engine untouched
+        run: git diff --exit-code -- live_data engine || true
+      - name: Assert only audit evidence is uncommitted
+        run: |
+          python - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','status','--porcelain'],text=True).splitlines()
+          bad=[x for x in changed if 'validation/PIT_MACRO_PRICE_BACKTEST_V1_2026-10-06.json' not in x]
+          assert not bad,bad
+          PY
+      - name: Commit backtest evidence only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/PIT_MACRO_PRICE_BACKTEST_V1_2026-10-06.json
+          git commit -m 'Record frozen PIT Macro price backtest V1'
+          git push
