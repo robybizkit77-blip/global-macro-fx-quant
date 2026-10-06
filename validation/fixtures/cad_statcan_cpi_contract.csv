@@ -1,15 +1,3 @@
-REF_DATE,GEO,Products and product groups,VALUE
-2025-07,Canada,All-items,161.0
-2025-08,Canada,All-items,161.8
-2025-09,Canada,All-items,162.0
-2025-10,Canada,All-items,162.2
-2025-11,Canada,All-items,162.4
-2025-12,Canada,All-items,162.7
-2026-01,Canada,All-items,163.0
-2026-02,Canada,All-items,163.5
-2026-03,Canada,All-items,164.0
-2026-04,Canada,All-items,164.4
-2026-05,Canada,All-items,164.8
-2026-06,Canada,All-items,165.3
-2026-07,Canada,All-items,166.0
-2026-08,Canada,All-items,166.5
+REF_DATE,GEO,Products and product groups,Statistics,VALUE
+2026-07,Canada,All-items,12-month percentage change,3.1
+2026-08,Canada,All-items,12-month percentage change,2.9
