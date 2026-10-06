@@ -17,7 +17,7 @@ UA = 'global-macro-fx-quant/1.0 (+read-only PIT first-release validation)'
 MONTHS = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
 SLUG_RE = re.compile(rf'/({MONTHS}\d{{4}})(?:/|$|\?)', re.I)
 RELEASE_DATE_RE = re.compile(r'Release date:\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})', re.I)
-EMP_RE = re.compile(r'The UK employment rate[^.]{0,220}?was estimated at\s*([0-9]+(?:\.[0-9]+)?)%\s*for\s*([^.]+?)\.', re.I)
+EMP_RE = re.compile(r'The UK employment rate[^.]{0,220}?was estimated at\s*([0-9]+(?:\.[0-9]+)?)%\s*(?:in|for)\s*([^.]+?)\.', re.I)
 UNEMP_RE = re.compile(r'The UK unemployment rate[^.]{0,220}?was estimated at\s*([0-9]+(?:\.[0-9]+)?)%\s*(?:in|for)\s*([^.]+?)\.', re.I)
 
 class Links(HTMLParser):
