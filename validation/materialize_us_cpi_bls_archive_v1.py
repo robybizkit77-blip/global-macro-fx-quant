@@ -40,9 +40,10 @@ def urls():
             out.add(u)
     return sorted(out)
 def ref_period(text):
-    # Older BLS pages often decode the title separator as the replacement char '�'.
-    # Require a real month/year immediately after the CPI title, independent of separator encoding.
-    p=re.search(rf'CONSUMER PRICE INDEX.{{0,15}}?\b({MONTH_ALT})\s+(\d{{4}})\b',text,re.I)
+    # Older BLS archive titles vary in separator encoding and occasionally include a
+    # leading "THE". Keep the match anchored to the official CPI title and require
+    # an explicit month/year immediately after it.
+    p=re.search(rf'(?:THE\s+)?CONSUMER PRICE INDEX.{{0,30}}?\b({MONTH_ALT})\s+(\d{{4}})\b',text,re.I)
     if not p: raise ValueError('reference title not found')
     m=MONTHS.get(p.group(1).lower()); y=int(p.group(2))
     if not m: raise ValueError('unknown month')
@@ -72,6 +73,7 @@ def parse(text,u):
     for pat in [
       core_phrase+r'.{0,260}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the (?:last|past) 12 months',
       core_phrase+r'.{0,260}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the year',
+      core_phrase+r'.{0,260}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent for the 12 months ending\s+(?:'+MONTH_ALT+r')',
       core_phrase+r'.{0,260}?12-month.{0,120}?(\d+(?:\.\d+)?)\s+percent']:
         q=re.search(pat,body,re.I)
         if q: c=float(q.group(1)); break
