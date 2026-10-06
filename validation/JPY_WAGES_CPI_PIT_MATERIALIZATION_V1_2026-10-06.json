@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_JPY_WAGES_CPI_PIT_MATERIALIZATION_V1",
-  "materializer_revision": "1.3",
+  "materializer_revision": "2.2",
   "created_at": "2026-10-06",
   "status": "PASS_67_67_GREEN",
   "release_date_policy": {
@@ -8,7 +8,7 @@
     "cpi": "e-Stat month-specific dataset metadata",
     "sanity": "strictly after reference month"
   },
-  "cpi_extraction_policy": "Prefer explicit current-month comparison prose (prev X -> current Y); direct YoY prose only if no widening/narrowing/points language intervenes. No broad table-neighborhood matching.",
+  "cpi_extraction_policy": "Authoritative primary = official first-page numbered overview items (1=headline, 2=ex-fresh-food core). Official unchanged/same-level wording maps mechanically to 0.0% YoY. Scoped narrative is used only component-by-component when the corresponding numbered item is absent or unparseable; later prose cannot veto a successfully parsed numbered overview item. No cross-component regex traversal.",
   "wages": {
     "rows": 67,
     "errors": {},
@@ -67,7 +67,8 @@
     "errors": {},
     "output": "history/pit_v1/JPY_CPI_HEADLINE_CORE_FIRST_RELEASE_2018_2023_07.csv",
     "extraction_methods": {
-      "EXPLICIT_CURRENT_MONTH_COMPARISON|EXPLICIT_CURRENT_MONTH_COMPARISON": 67
+      "OVERVIEW_NUMBERED_ITEM|OVERVIEW_NUMBERED_ITEM": 66,
+      "SCOPED_NARRATIVE_SENTENCE|SCOPED_NARRATIVE_SENTENCE": 1
     },
     "first": [
       {
@@ -77,13 +78,13 @@
         "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673550&fileKind=2",
         "document_sha256": "0a9c93729376eb105b4486f900b1c9f8ecc5763d4cdd2bf14a67f6f8e5cdd4a2",
         "headline_cpi_yoy_pct": 1.4,
-        "core_cpi_yoy_pct": 1.4,
+        "core_cpi_yoy_pct": 0.9,
         "cpi_base": "2015",
         "source_agency": "Statistics Bureau of Japan / e-Stat",
         "source_document_type": "National CPI first-release result overview",
         "release_date_source": "e-Stat month-specific dataset metadata",
-        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
-        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+        "headline_extraction_method": "OVERVIEW_NUMBERED_ITEM",
+        "core_extraction_method": "OVERVIEW_NUMBERED_ITEM"
       },
       {
         "reference_month": "2018-02",
@@ -92,13 +93,13 @@
         "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031681970&fileKind=2",
         "document_sha256": "272866e5f374155566d66129da82ceb7852da53b277d0dde201ae831fc4e0349",
         "headline_cpi_yoy_pct": 1.5,
-        "core_cpi_yoy_pct": 1.5,
+        "core_cpi_yoy_pct": 1.0,
         "cpi_base": "2015",
         "source_agency": "Statistics Bureau of Japan / e-Stat",
         "source_document_type": "National CPI first-release result overview",
         "release_date_source": "e-Stat month-specific dataset metadata",
-        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
-        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+        "headline_extraction_method": "OVERVIEW_NUMBERED_ITEM",
+        "core_extraction_method": "OVERVIEW_NUMBERED_ITEM"
       }
     ],
     "last": [
@@ -114,8 +115,8 @@
         "source_agency": "Statistics Bureau of Japan / e-Stat",
         "source_document_type": "National CPI first-release result overview",
         "release_date_source": "e-Stat month-specific dataset metadata",
-        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
-        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+        "headline_extraction_method": "OVERVIEW_NUMBERED_ITEM",
+        "core_extraction_method": "OVERVIEW_NUMBERED_ITEM"
       },
       {
         "reference_month": "2023-07",
@@ -124,13 +125,13 @@
         "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087883&fileKind=2",
         "document_sha256": "0d49201cf5aa661615308bc6ef77c54f6c3ac2117de46c213bb04117808619ff",
         "headline_cpi_yoy_pct": 3.3,
-        "core_cpi_yoy_pct": 3.3,
+        "core_cpi_yoy_pct": 3.1,
         "cpi_base": "2020",
         "source_agency": "Statistics Bureau of Japan / e-Stat",
         "source_document_type": "National CPI first-release result overview",
         "release_date_source": "e-Stat month-specific dataset metadata",
-        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
-        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+        "headline_extraction_method": "OVERVIEW_NUMBERED_ITEM",
+        "core_extraction_method": "OVERVIEW_NUMBERED_ITEM"
       }
     ]
   },
@@ -144,5 +145,6 @@
   ],
   "changes_engine_rules": false,
   "changes_live_data": false,
-  "changes_oos_baseline": false
+  "changes_oos_baseline": false,
+  "semantic_crosscheck": "NUMBERED_OVERVIEW_AUTHORITATIVE_NARRATIVE_FALLBACK_ONLY"
 }
