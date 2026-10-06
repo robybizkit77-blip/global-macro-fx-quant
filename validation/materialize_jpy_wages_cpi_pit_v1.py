@@ -10,11 +10,11 @@ from pypdf import PdfReader
 
 SRC=Path('validation/JPY_WAGES_CPI_SOURCE_PROBE_V1_2026-10-06.json'); ROOT=Path('history/pit_v1')
 WOUT=ROOT/'JPY_WAGES_SCHEDULED_CASH_EARNINGS_FIRST_RELEASE_2018_2023_07.csv'; COUT=ROOT/'JPY_CPI_HEADLINE_CORE_FIRST_RELEASE_2018_2023_07.csv'
-EVID=Path('validation/JPY_WAGES_CPI_PIT_MATERIALIZATION_V1_2026-10-06.json'); UA={'User-Agent':'GMFQ-PIT-materializer/1.2'}
+EVID=Path('validation/JPY_WAGES_CPI_PIT_MATERIALIZATION_V1_2026-10-06.json'); UA={'User-Agent':'GMFQ-PIT-materializer/1.3'}
 
 def norm(s):return re.sub(r'\s+',' ',unicodedata.normalize('NFKC',s or '')).strip()
 def get(url):
- r=requests.get(url,headers=UA,timeout=30);r.raise_for_status();
+ r=requests.get(url,headers=UA,timeout=30);r.raise_for_status()
  if 'html' in r.headers.get('content-type','') or 'text' in r.headers.get('content-type',''):r.encoding=r.apparent_encoding or r.encoding
  return r
 def download(url):r=get(url);return r.content,r.headers.get('content-type','')
@@ -53,18 +53,14 @@ def resolve_md_after_month(ym,mo,day):
 def announced_wage_date_from_prior(ym,all_months):
  prev=previous_month(ym);z=all_months.get(prev)
  if not z:return None
- # Prefer detailed preliminary PDF because it contains the official future-publication schedule table.
  docs=z.get('document_candidates',[]);urls=[]
- for key in ('pdf','houdou'):
-  urls += [d['url'] for d in docs if key in d['url'].lower() and d['url'].lower().endswith('.pdf')]
+ for key in ('pdf','houdou'):urls += [d['url'] for d in docs if key in d['url'].lower() and d['url'].lower().endswith('.pdf')]
  target_m=int(ym.split('-')[1])
  for u in dict.fromkeys(urls):
   try:
    txt=norm(ptext(download(u)[0])).replace(' ','');p=txt.find(f'{target_m}月分')
    if p<0:continue
-   seg=txt[p:p+220]
-   # First month/day following target row is the 速報 date (table column order: 速報, 備考, 確報...).
-   m=re.search(r'(\d{1,2})月(\d{1,2})日',seg)
+   seg=txt[p:p+220];m=re.search(r'(\d{1,2})月(\d{1,2})日',seg)
    if m:
     ds=resolve_md_after_month(ym,m.group(1),m.group(2))
     if ds:return ds
@@ -92,19 +88,36 @@ def parse_wage(txt):
   if m:return signed(m.group(1),m.group(2))
  if re.search(r'(?:きまって|決まって)支給する給与[^。]{0,100}?前年同月と同水準',t):return 0.0
  return None
-def yoy_after(seg,label):
- m=re.search(label+r'.{0,260}?前年同月比は?([0-9]+(?:\.[0-9]+)?)%の?(上昇|下落)',seg)
- if m:return signed(m.group(1),m.group(2))
- m=re.search(label+r'.{0,260}?前年同月比[^0-9-]{0,24}(-?[0-9]+(?:\.[0-9]+)?)%',seg)
- if m:return float(m.group(1))
- if re.search(label+r'.{0,260}?前年同月(?:と同水準|比は0(?:\.0)?%)',seg):return 0.0
- return None
-def parse_cpi(txt):
- seg=norm(txt[:10000]).replace(' ','')
- headline=yoy_after(seg,r'(?:\(1\))?総合(?:指数)?')
- # Some 2015-base releases phrase this as 生鮮食品を除く総合 without the trailing 指数.
- core=yoy_after(seg,r'(?:\(2\))?生鮮食品を除く総合(?:指数)?')
- return headline,core
+
+def semantic_cpi_value(seg,label,current_month):
+ # Highest-confidence form used in the official narrative: previous month X% -> current month Y%.
+ arrow_patterns=[
+  label+r'.{0,220}?前年同月比.{0,180}?\([^)]*?→'+str(current_month)+r'月(-?[0-9]+(?:\.[0-9]+)?)%\)',
+  label+r'.{0,260}?前年同月比.{0,220}?'+str(current_month)+r'月(-?[0-9]+(?:\.[0-9]+)?)%'
+ ]
+ for p in arrow_patterns:
+  m=re.search(p,seg)
+  if m:return float(m.group(1)),'EXPLICIT_CURRENT_MONTH_COMPARISON'
+ # Direct prose form only when the value immediately follows 前年同月比, avoiding phrases about widening/narrowing.
+ for p in [
+  label+r'.{0,90}?前年同月比(?:は|が|、)?(-?[0-9]+(?:\.[0-9]+)?)%(上昇|下落)?',
+  label+r'.{0,90}?前年同月比(?:は|が|、)?(-?[0-9]+(?:\.[0-9]+)?)%'
+ ]:
+  m=re.search(p,seg)
+  if m:
+   between=m.group(0)
+   if '上昇幅' in between or '下落幅' in between or 'ポイント' in between:continue
+   val=float(m.group(1)); direction=m.group(2) if m.lastindex and m.lastindex>=2 else None
+   if direction=='下落':val=-abs(val)
+   return val,'DIRECT_YOY_PROSE'
+ return None,None
+
+def parse_cpi(txt,ym):
+ seg=norm(txt[:18000]).replace(' ','');cm=int(ym.split('-')[1])
+ headline,hm=semantic_cpi_value(seg,r'(?:\(1\))?総合(?:指数)?',cm)
+ core,cmeth=semantic_cpi_value(seg,r'(?:\(2\))?生鮮食品を除く総合(?:指数)?',cm)
+ return headline,core,hm,cmeth
+
 def wage_candidates(z):
  ds=z.get('document_candidates',[]);ordered=[]
  for key in ('houdou','pdf'):ordered += [d['url'] for d in ds if key in d['url'].lower() and d['url'].lower().endswith('.pdf')]
@@ -130,9 +143,9 @@ def one_cpi(ym,z):
  except Exception as e:rd=None;errs.append({'url':z.get('e_stat_month_url'),'error':f'estat_date:{e}'})
  for u in cpi_candidates(z):
   try:
-   b,_=download(u);h,c=parse_cpi(ptext(b))
-   if h is None or c is None or not sane_date(ym,rd,60):errs.append({'url':u,'error':'parse_values_or_estat_date','headline':h,'core':c,'estat_date':rd});continue
-   return {'reference_month':ym,'release_date':rd,'pit_status':'GREEN_FIRST_RELEASE','document_url':u,'document_sha256':hashlib.sha256(b).hexdigest(),'headline_cpi_yoy_pct':h,'core_cpi_yoy_pct':c,'cpi_base':z.get('base'),'source_agency':'Statistics Bureau of Japan / e-Stat','source_document_type':'National CPI first-release result overview','release_date_source':'e-Stat month-specific dataset metadata'},None
+   b,_=download(u);h,c,hm,cm=parse_cpi(ptext(b),ym)
+   if h is None or c is None or not sane_date(ym,rd,60):errs.append({'url':u,'error':'parse_values_or_estat_date','headline':h,'core':c,'headline_method':hm,'core_method':cm,'estat_date':rd});continue
+   return {'reference_month':ym,'release_date':rd,'pit_status':'GREEN_FIRST_RELEASE','document_url':u,'document_sha256':hashlib.sha256(b).hexdigest(),'headline_cpi_yoy_pct':h,'core_cpi_yoy_pct':c,'cpi_base':z.get('base'),'source_agency':'Statistics Bureau of Japan / e-Stat','source_document_type':'National CPI first-release result overview','release_date_source':'e-Stat month-specific dataset metadata','headline_extraction_method':hm,'core_extraction_method':cm},None
   except Exception as e:errs.append({'url':u,'error':str(e)})
  return None,errs
 def write_csv(path,rows,fields):
@@ -150,10 +163,13 @@ def main():
  green=len(wrows)==67 and len(crows)==67 and not werr and not cerr and sane
  if green:
   write_csv(WOUT,wrows,['reference_month','release_date','pit_status','document_url','document_sha256','scheduled_cash_earnings_yoy_pct','source_agency','source_document_type','release_date_source'])
-  write_csv(COUT,crows,['reference_month','release_date','pit_status','document_url','document_sha256','headline_cpi_yoy_pct','core_cpi_yoy_pct','cpi_base','source_agency','source_document_type','release_date_source'])
+  write_csv(COUT,crows,['reference_month','release_date','pit_status','document_url','document_sha256','headline_cpi_yoy_pct','core_cpi_yoy_pct','cpi_base','source_agency','source_document_type','release_date_source','headline_extraction_method','core_extraction_method'])
  else:
   for p in (WOUT,COUT):
    if p.exists():p.unlink()
- ev={'schema':'GMFQ_JPY_WAGES_CPI_PIT_MATERIALIZATION_V1','materializer_revision':'1.2','created_at':'2026-10-06','status':'PASS_67_67_GREEN' if green else 'WITHHELD_INCOMPLETE_PARSE','release_date_policy':{'wages':'month page; official prior-month future-publication schedule as deterministic fallback','cpi':'e-Stat month-specific dataset metadata','sanity':'strictly after reference month'},'wages':{'rows':len(wrows),'errors':werr,'output':str(WOUT) if green else None,'first':wrows[:2],'last':wrows[-2:]},'cpi':{'rows':len(crows),'errors':cerr,'output':str(COUT) if green else None,'first':crows[:2],'last':crows[-2:]},'date_sanity_pass':sane,'guardrails':['first-release documents only','document SHA256 per observation','no revised-history fallback','no manual value imputation','no engine/live/OOS changes'],'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
- EVID.write_text(json.dumps(ev,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print(json.dumps({'status':ev['status'],'wages_rows':len(wrows),'cpi_rows':len(crows),'wage_errors':len(werr),'cpi_errors':len(cerr),'date_sanity':sane},ensure_ascii=False))
+ methods={}
+ for r in crows:
+  k=f"{r['headline_extraction_method']}|{r['core_extraction_method']}";methods[k]=methods.get(k,0)+1
+ ev={'schema':'GMFQ_JPY_WAGES_CPI_PIT_MATERIALIZATION_V1','materializer_revision':'1.3','created_at':'2026-10-06','status':'PASS_67_67_GREEN' if green else 'WITHHELD_INCOMPLETE_PARSE','release_date_policy':{'wages':'month page; official prior-month future-publication schedule as deterministic fallback','cpi':'e-Stat month-specific dataset metadata','sanity':'strictly after reference month'},'cpi_extraction_policy':'Prefer explicit current-month comparison prose (prev X -> current Y); direct YoY prose only if no widening/narrowing/points language intervenes. No broad table-neighborhood matching.','wages':{'rows':len(wrows),'errors':werr,'output':str(WOUT) if green else None,'first':wrows[:2],'last':wrows[-2:]},'cpi':{'rows':len(crows),'errors':cerr,'output':str(COUT) if green else None,'extraction_methods':methods,'first':crows[:2],'last':crows[-2:]},'date_sanity_pass':sane,'guardrails':['first-release documents only','document SHA256 per observation','no revised-history fallback','no manual value imputation','no engine/live/OOS changes'],'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
+ EVID.write_text(json.dumps(ev,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print(json.dumps({'status':ev['status'],'wages_rows':len(wrows),'cpi_rows':len(crows),'wage_errors':len(werr),'cpi_errors':len(cerr),'date_sanity':sane,'methods':methods},ensure_ascii=False))
 if __name__=='__main__':main()
