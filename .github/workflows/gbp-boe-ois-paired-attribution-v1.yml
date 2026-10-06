@@ -1,0 +1,35 @@
+name: GBP BoE OIS Paired Attribution V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/run_gbp_boe_ois_paired_attribution_v1.py'
+      - 'history/pit_v1/GBP_AWE_K54L_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_BOE_OIS_SPOT_2Y_DAILY_2018_2026.csv'
+      - '.github/workflows/gbp-boe-ois-paired-attribution-v1.yml'
+permissions:
+  contents: write
+jobs:
+  attribution:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired OIS attribution
+        run: python validation/run_gbp_boe_ois_paired_attribution_v1.py
+      - name: Confirm engine and live data untouched
+        run: git diff --exit-code -- engine live_data
+      - name: Commit evidence only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/GBP_BOE_OIS_PAIRED_ATTRIBUTION_V1_2026-10-06.json
+          git diff --cached --quiet || git commit -m "Add paired GBP BoE OIS attribution evidence"
+          git fetch origin audit-minimum-robust-pit-dataset-2026-10-06
+          git rebase origin/audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
