@@ -1,0 +1,62 @@
+{
+  "schema": "GMFQ_JPY_LABOUR_PIT_FEASIBILITY_V2",
+  "created_at": "2026-10-06",
+  "status": "JPY_LABOUR_PIT_RECONSTRUCTION_FEASIBLE",
+  "engine_rules_fingerprint": "3356baf0",
+  "source": "Statistics Bureau of Japan archived Labour Force Survey monthly preliminary PDFs",
+  "source_url_template": "https://www.stat.go.jp/data/roudou/rireki/tsuki/pdf/{yyyymm}.pdf",
+  "labour_inputs": [
+    {
+      "name": "Seasonally adjusted unemployment rate",
+      "polarity": "negative"
+    },
+    {
+      "name": "Seasonally adjusted employed persons",
+      "polarity": "positive"
+    }
+  ],
+  "validated_anchors": [
+    {
+      "reference_month": "2018-01",
+      "release_date": "2018-03-02",
+      "unemployment_rate_sa_pct": 2.4,
+      "employed_sa_10k": 6595
+    },
+    {
+      "reference_month": "2019-01",
+      "release_date": "2019-03-01",
+      "unemployment_rate_sa_pct": 2.5,
+      "employed_sa_10k": 6665
+    },
+    {
+      "reference_month": "2023-01",
+      "release_date": "2023-03-03",
+      "unemployment_rate_sa_pct": 2.4,
+      "employed_sa_10k": 6744
+    }
+  ],
+  "evidence": {
+    "workflow_run_id": 37462659167,
+    "workflow_job_id": 112265827321,
+    "artifact_id": 11413205554,
+    "artifact_sha256": "6f08215124d7a6793c18064e21d523d3dcfa131aa20e4e3d07b538b1cf9fa4c5",
+    "revised_history_fallback_used": false,
+    "repository_live_data_modified": false,
+    "engine_rules_modified": false
+  },
+  "activation_gate": {
+    "pit_active": false,
+    "remaining_before_activation": [
+      "Run broader archive coverage/parser robustness sweep",
+      "Confirm official release time from year-specific release schedules rather than inferring it from the PDF",
+      "Build immutable monthly first-release dataset with market-availability timestamps"
+    ]
+  },
+  "macro_block_implication": {
+    "labour_minimum_series_required": 2,
+    "labour_series_feasible": 2,
+    "labour_requirement_structurally_satisfied": true,
+    "jpy_macro_pit_ready": false,
+    "reason": "JPY Growth still requires at least two independently validated PIT first-release series."
+  }
+}
