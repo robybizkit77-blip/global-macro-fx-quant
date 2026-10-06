@@ -1,0 +1,84 @@
+{
+  "schema": "GMFQ_CENTRAL_BANK_REACTION_FUNCTION_MAP_V1",
+  "created_at": "2026-10-06",
+  "status": "METHODOLOGY_LAYER_ONLY",
+  "purpose": "Map macro blocks to each central bank's actual mandate/reaction function before translating them into rates and FX implications. This file does not change engine weights, thresholds, live data, or prior backtest results.",
+  "principles": [
+    "Do not assume a universal macro-to-FX mapping across currencies.",
+    "Distinguish direct policy variables from indirect transmission variables.",
+    "Labour may enter policy directly, or mainly through wages/services inflation depending on mandate and reaction function.",
+    "Rates/front-end repricing remains the market confirmation layer between macro and FX.",
+    "No production weighting changes until PIT evidence supports them out of sample."
+  ],
+  "banks": {
+    "FED": {
+      "currency": "USD",
+      "mandate_type": "DUAL_MANDATE",
+      "primary_objectives": ["maximum employment", "price stability"],
+      "labour_role": "DIRECT_AND_PRIMARY",
+      "inflation_role": "DIRECT_AND_PRIMARY",
+      "core_transmission": [
+        "Labour -> Fed reaction -> front-end rates -> USD",
+        "Inflation -> Fed reaction -> front-end rates -> USD"
+      ],
+      "interpretation_rule": "Labour deterioration can directly alter policy expectations even without first passing through wages or inflation, subject to the balance of risks on both sides of the mandate.",
+      "official_basis": [
+        "Federal Reserve dual mandate of maximum employment and price stability",
+        "FOMC explicitly monitors risks to both sides of the dual mandate"
+      ]
+    },
+    "ECB": {
+      "currency": "EUR",
+      "mandate_type": "PRICE_STABILITY_PRIMARY",
+      "primary_objectives": ["price stability"],
+      "secondary_objectives": ["support general EU economic policies including employment, without prejudice to price stability"],
+      "labour_role": "MOSTLY_INDIRECT_WITH_SECONDARY_DIRECT_RELEVANCE",
+      "inflation_role": "PRIMARY",
+      "core_transmission": [
+        "Labour -> wages -> services/domestic inflation -> ECB reaction -> front-end rates -> EUR",
+        "Inflation -> ECB reaction -> front-end rates -> EUR"
+      ],
+      "interpretation_rule": "Headline employment/unemployment should not automatically map one-for-one into EUR direction. Labour information is more policy-relevant when it changes wage pressure, services inflation, domestic inflation persistence or the medium-term inflation outlook.",
+      "testing_implication": "EUR Labour standalone should be treated as a diagnostic sub-block until PIT wage/services-inflation mediation can be tested. Do not reweight retrospectively.",
+      "official_basis": [
+        "ECB primary objective is price stability",
+        "Employment is considered without prejudice to price stability",
+        "Medium-term orientation allows employment considerations where shocks create an inflation-employment trade-off"
+      ]
+    },
+    "BOE": {
+      "currency": "GBP",
+      "mandate_type": "FLEXIBLE_INFLATION_TARGETING_PRICE_STABILITY_PRIMARY",
+      "primary_objectives": ["price stability"],
+      "secondary_objectives": ["support government economic policy including growth and employment, subject to price stability"],
+      "labour_role": "IMPORTANT_MAINLY_THROUGH_WAGES_AND_DOMESTIC_INFLATION",
+      "inflation_role": "PRIMARY",
+      "core_transmission": [
+        "Labour tightness -> wages -> services/domestic inflation -> BoE reaction -> front-end rates -> GBP",
+        "Inflation persistence -> BoE reaction -> front-end rates -> GBP"
+      ],
+      "interpretation_rule": "Employment and unemployment matter, but wage growth, labour tightness and services inflation are usually the more direct monetary-policy bridge.",
+      "official_basis": [
+        "BoE mandate prioritises price stability",
+        "Growth and employment are secondary to price stability",
+        "MPC operates a flexible inflation-targeting framework"
+      ]
+    }
+  },
+  "next_extension": [
+    "BOC",
+    "RBA",
+    "RBNZ",
+    "SNB",
+    "BOJ"
+  ],
+  "backtest_policy": {
+    "weights_changed": false,
+    "thresholds_changed": false,
+    "historical_results_rewritten": false,
+    "required_next_test": "Compare direct-labour vs mediated labour->wages/services inflation channels where PIT data permit, then test reaction-function-aware mappings out of sample."
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_oos_baseline": false
+}
