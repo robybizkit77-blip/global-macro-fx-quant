@@ -1,0 +1,18 @@
+{
+  "schema": "GMFQ_JPY_REACTION_FUNCTION_REPLAY_V1",
+  "status": "WITHHELD_NO_REPLAY_VOTE",
+  "created_at": "2026-10-06",
+  "reason": "unique_green_panels_required:wages=0,cpi=0",
+  "spec_file": "validation/JPY_REACTION_FUNCTION_V1_SPEC_2026-10-06.json",
+  "engine": {
+    "frozen_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0"
+  },
+  "input_discovery": {
+    "wages": [],
+    "cpi": []
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
