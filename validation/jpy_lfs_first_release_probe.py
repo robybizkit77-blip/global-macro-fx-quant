@@ -11,9 +11,9 @@ from pypdf import PdfReader
 URL_TEMPLATE = "https://www.stat.go.jp/data/roudou/rireki/tsuki/pdf/{yyyymm}.pdf"
 
 EXPECTED_ANCHORS = {
-    "2018-01": 2.4,
-    "2019-01": 2.5,
-    "2023-01": 2.4,
+    "2018-01": {"unemployment_rate_sa_pct": 2.4, "employed_sa_10k": 6595},
+    "2019-01": {"unemployment_rate_sa_pct": 2.5, "employed_sa_10k": 6665},
+    "2023-01": {"unemployment_rate_sa_pct": 2.4, "employed_sa_10k": 6744},
 }
 
 
@@ -35,15 +35,37 @@ def extract_release_date(text: str):
     return era_to_iso(m.group(1), m.group(2), m.group(3), m.group(4))
 
 
+def sa_section(text: str) -> str:
+    for marker in ("季節調整値でみた結果の概要", "季節調整値でみた結果"):
+        i = text.find(marker)
+        if i >= 0:
+            return text[i:]
+    return text
+
+
 def extract_unemployment_rate(text: str):
+    section = sa_section(text)
     patterns = [
         r"完全失業率(?:（季節調整値）)?\s*(?:は|：|:)\s*([0-9]+(?:\.[0-9]+)?)\s*[％%]",
         r"完全失業率[^\n]{0,80}?([0-9]+(?:\.[0-9]+)?)\s*[％%]",
     ]
     for p in patterns:
-        m = re.search(p, text)
+        m = re.search(p, section)
         if m:
             return float(m.group(1))
+    return None
+
+
+def extract_employed_sa_10k(text: str):
+    section = sa_section(text)
+    patterns = [
+        r"就業者数\s*(?:は|：|:)\s*([0-9]{4})\s*万人",
+        r"就業者\s+([0-9]{4})\s+(?:[-−+]?\d+)",
+    ]
+    for p in patterns:
+        m = re.search(p, section)
+        if m:
+            return int(m.group(1))
     return None
 
 
@@ -63,6 +85,7 @@ def fetch_month(month: str):
         "pdf_bytes": len(raw),
         "release_date": extract_release_date(text),
         "unemployment_rate_sa_pct": extract_unemployment_rate(text),
+        "employed_sa_10k": extract_employed_sa_10k(text),
         "text_chars_examined": len(text),
     }
 
@@ -77,29 +100,40 @@ def main():
     for month in args.months:
         row = fetch_month(month)
         exp = EXPECTED_ANCHORS.get(month)
-        row["expected_anchor_pct"] = exp
-        row["anchor_match"] = (exp is None or row["unemployment_rate_sa_pct"] == exp)
+        row["expected_anchor"] = exp
+        row["anchor_match"] = (
+            exp is None
+            or (
+                row["unemployment_rate_sa_pct"] == exp["unemployment_rate_sa_pct"]
+                and row["employed_sa_10k"] == exp["employed_sa_10k"]
+            )
+        )
         rows.append(row)
 
     passed = all(
         r["http_status"] == 200
         and r["release_date"] is not None
         and r["unemployment_rate_sa_pct"] is not None
+        and r["employed_sa_10k"] is not None
         and r["anchor_match"]
         for r in rows
     )
     out = {
-        "schema": "GMFQ_JPY_LFS_FIRST_RELEASE_FEASIBILITY_V1",
+        "schema": "GMFQ_JPY_LFS_FIRST_RELEASE_FEASIBILITY_V2",
         "status": "PASS" if passed else "FAIL",
         "source": "Statistics Bureau of Japan archived Labour Force Survey monthly preliminary PDFs",
         "url_template": URL_TEMPLATE,
-        "series": "seasonally adjusted unemployment rate",
-        "purpose": "Prove that publication-time monthly unemployment values and release dates can be reconstructed from archived official PDFs without revised-history fallback.",
+        "series": [
+            "seasonally adjusted unemployment rate",
+            "seasonally adjusted employed persons"
+        ],
+        "purpose": "Prove that two publication-time JPY Labour inputs plus release dates can be reconstructed from archived official PDFs without revised-history fallback.",
         "release_time_policy": {
             "status": "SEPARATE_YEAR_SCHEDULE_CONFIRMATION_REQUIRED",
             "note": "Do not infer intraday time from the PDF itself; pair each release date with the official annual release schedule before PIT activation."
         },
         "rows": rows,
+        "labour_block_series_count": 2,
         "revised_history_fallback_used": False,
         "pit_activation": False,
     }
