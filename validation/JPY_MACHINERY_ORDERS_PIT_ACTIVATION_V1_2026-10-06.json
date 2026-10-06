@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_JPY_MACHINERY_ORDERS_PIT_ACTIVATION_V1",
+  "status": "PASS",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2023-07",
+    "expected_months": 67,
+    "materialized_months": 67
+  },
+  "series": "Private-sector machinery orders excluding ships and electric power, SA m/m",
+  "source_policy": "Contemporaneous ESRI English monthly result page for first-published value + matching contemporaneous Japanese result page for release date (Heisei/Reiwa aware)",
+  "event_time_policy": "08:50 JST official Machinery Orders publication time",
+  "errors": [],
+  "missing": [],
+  "duplicates": [],
+  "revised_history_fallback_used": false,
+  "pit_active_machinery_orders": true,
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
