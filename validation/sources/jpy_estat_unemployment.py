@@ -129,10 +129,11 @@ def extract_observations(payload: dict[str, Any]) -> list[tuple[str, float, str]
     if not selected:
         raise ValueError("no e-Stat values matched official Japan unemployment-rate dimensions")
 
+    missing_tokens = {"", "***", "-", "…", "...", "..", "－", "—"}
     obs: dict[str, tuple[float, str]] = {}
     for v, label in selected:
         raw = v.get("$")
-        if raw in (None, "", "***", "-"):
+        if raw is None or str(raw).strip() in missing_tokens:
             continue
         time_code = str(v.get("@time", ""))
         time_label = maps.get("time", {}).get(time_code, time_code)
