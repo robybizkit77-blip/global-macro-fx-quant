@@ -1,0 +1,31 @@
+{
+  "schema": "GMFQ_JPY_LABOUR_EVENT_TIME_POLICY_V1",
+  "created_at": "2026-10-06",
+  "status": "FROZEN_FOR_PIT_ACTIVATION",
+  "source": "Statistics Bureau of Japan Labour Force Survey Basic Tabulation release schedule and official survey handbook",
+  "policy": {
+    "release_date": "Use the date printed in the archived monthly preliminary Labour Force Survey PDF for each reference month.",
+    "release_time_local": "08:30",
+    "timezone": "Asia/Tokyo",
+    "availability_timestamp_rule": "release_date + 08:30 JST",
+    "exception_policy": "If an official year-specific schedule documents a different release time for a specific release, override only that release explicitly; never infer an alternate intraday time.",
+    "market_entry_rule": "For daily FX/rates replay, use the first market observation strictly after the release timestamp; never use a same-day close if its information-set ordering is ambiguous."
+  },
+  "official_evidence": [
+    "Statistics Bureau publication schedule: Labour Force Survey Basic Tabulation is released at 08:30 JST as the standard release time.",
+    "Official Labour Force Survey handbook states monthly Basic Tabulation release time is 08:30.",
+    "Archived monthly preliminary PDFs preserve publication-time values and release dates; current historical tables may be retrospectively revised and are not substituted."
+  ],
+  "guardrails": [
+    "no revised-history fallback",
+    "no inferred intraday timestamp beyond official 08:30 JST policy",
+    "single-release official exceptions only",
+    "engine/live_data untouched"
+  ],
+  "scope": "JPY Labour PIT activation only; does not imply JPY Growth PIT or full JPY Macro readiness.",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  }
+}
