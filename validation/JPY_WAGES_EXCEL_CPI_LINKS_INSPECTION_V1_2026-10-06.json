@@ -1,0 +1,1198 @@
+{
+  "schema": "GMFQ_JPY_WAGES_EXCEL_CPI_LINKS_INSPECTION_V1",
+  "created_at": "2026-10-06",
+  "wages": {
+    "2018-01": {
+      "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/xls/3001c01p.xls",
+      "status": 200,
+      "bytes": 43008,
+      "sha256": "f33c3b0e06d9ffa3b81f4c9de2eef4d0e588b945113f8ca3458f382104216faa",
+      "sheets": [
+        "給与額"
+      ],
+      "matches": []
+    },
+    "2023-07": {
+      "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/xls/2307c01p.xlsx",
+      "status": 200,
+      "bytes": 17021,
+      "sha256": "37e61c4956049ec344e1fcd6faa1be370e0f0f046e81afbf29a20d49b6064d62",
+      "sheets": [
+        "給与額"
+      ],
+      "matches": []
+    }
+  },
+  "cpi": {
+    "2018-01": {
+      "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=11010301&page=1&result_back=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20180",
+      "status": 200,
+      "links": [
+        {
+          "label": "PDF",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673550&fileKind=2",
+          "context": "PDF"
+        },
+        {
+          "label": "PDF",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673551&fileKind=2",
+          "context": "PDF"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673552&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673553&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673554&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673555&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673556&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673557&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673558&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673559&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673560&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673561&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673562&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673563&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673564&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673565&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673566&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673567&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673568&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673569&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673570&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673571&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673572&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673573&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673574&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673575&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673576&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673577&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673578&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673579&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673580&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673581&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673582&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673583&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673584&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673585&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673586&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673587&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673588&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673589&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673590&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673591&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673592&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673593&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673594&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673595&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673596&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673597&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673598&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673599&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673600&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673601&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673602&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673603&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673604&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673605&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673606&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673607&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673608&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673609&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673610&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673611&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673612&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673613&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673614&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673615&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673616&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673617&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673618&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673619&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673620&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673621&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673622&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673623&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673624&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673625&fileKind=0",
+          "context": "EXCEL DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673626&fileKind=0",
+          "context": "EXCEL"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673627&fileKind=0",
+          "context": "EXCEL"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "消費者物価指数 2015年基準消費者物価指数 月報 月次 2018年1月 | ファイル | 統計データを探す | 政府統計の総合窓口 メインコンテンツに移動 English Japanese お問い合わせ ヘルプ 統計で見る日本 e-Statは、日本の統計が閲覧できる政府統計ポータルサイトです ログイン 新規登録 統計データを探す すべて 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギー庁 特許庁 中小企業庁 国土交通省 観光庁 海上保安庁 環境省 防衛省 主要な統計から探す ５０音から探す あ い う え お か き く け こ さ し す せ そ た ち つ て と な に ぬ ね の は ひ ふ へ ほ ま み む め も や ゆ よ ら り る れ ろ わ すべて見る 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギ"
+        },
+        {
+          "key": "表番号 1",
+          "text": "プション 検索のしかた 提供分類、表題を検索 データベース、ファイル内を検索 対象項目は必須選択です。 データセット一覧 調査年月を選択へ戻る URLをコピー コピーしました 一覧形式で表示 政府統計名 消費者物価指数 詳細 提供統計名 2015年基準消費者物価指数 提供分類1 月報 提供周期 月次 調査年月 2018年1月 表番号 統計表 調査年月 公開（更新）日 表示・ダウンロード 結果の概要（全国） 調査年月 2018年1月 公開（更新）日 2018-02-23 PDF 結果の概要（東京都区部 中旬速報値） 調査年月 2018年1月 公開（更新）日 2018-03-02 PDF 統計表 表番号 1-1 中分類指数（全国） 月次 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-1 中分類指数（全国） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-1 中分類指数（全国） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 月次 調査年月 2018年1月 公開（更新）日 2018-03-02 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 月次 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 月次 調査年月 2018年1月 公開（更新）日 2018-03-02 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL"
+        },
+        {
+          "key": "表番号 2",
+          "text": "月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-1 中分類指数（全国） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 月次 調査年月 2018年1月 公開（更新）日 2018-03-02 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 1-2 中分類指数（東京都区部） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 月次 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-1 財・サービス分類指数（全国） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 月次 調査年月 2018年1月 公開（更新）日 2018-03-02 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 2-2 財・サービス分類指数（東京都区部） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 3 中分類指数（都市階級・地方・大都市圏・都道府県庁所在市別） 月次 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 3 中分類指数（都市階級・地方・大都市圏・都道府県庁所在市別） 年平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 3 中分類指数（都市階級・地方・大都市圏・都道府県庁所在市別） 年度平均 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 総合 ～ 冷凍調理ハンバーグ（含類総連番001～216） 調査年月 2018年1月 公開（更新）日 2018-02-23 EXCEL DB 表番号 4-1 品目別価格指数（全国） 月次 調理カレー ～ ブラウス（半袖）（含類総連番21"
+        }
+      ],
+      "html_bytes": 406944
+    },
+    "2023-07": {
+      "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&month=23070907&page=1&result_back=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20230",
+      "status": 200,
+      "links": [
+        {
+          "label": "PDF",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087883&fileKind=2",
+          "context": "PDF"
+        },
+        {
+          "label": "PDF",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087884&fileKind=2",
+          "context": "PDF"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087885&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087885&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087886&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087886&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087887&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087887&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087888&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087888&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087889&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087889&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087890&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087890&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087891&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087891&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087892&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087892&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087893&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087893&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087894&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087894&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087895&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087895&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087896&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087896&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087897&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087897&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087898&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087898&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087899&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087899&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087900&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087900&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087901&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087901&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087902&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087902&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087903&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087903&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087904&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087904&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087905&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087905&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087906&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087906&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087907&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087907&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087908&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087908&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087909&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087909&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087910&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087910&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087911&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087911&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087912&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087912&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087913&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087913&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087914&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087914&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087915&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087915&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087916&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087916&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087917&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087917&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087918&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087918&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087919&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087919&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087920&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087920&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087921&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087921&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087922&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087922&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087923&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087923&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087924&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087924&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087925&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087925&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087926&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087926&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087927&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087927&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087928&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087928&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087929&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087929&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087930&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087930&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087931&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087931&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087932&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087932&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087933&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087933&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087934&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087934&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087935&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087935&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087936&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087936&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087937&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087937&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087938&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087938&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087939&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087939&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087940&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087940&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087941&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087941&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087942&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087942&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087943&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087943&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087944&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087944&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087945&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087945&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087946&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087946&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087947&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087947&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087948&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087948&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087949&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087949&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087950&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087950&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087951&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087951&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087952&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087952&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087953&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087953&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087954&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087954&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087955&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087955&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用 DB"
+        },
+        {
+          "label": "EXCEL",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087956&fileKind=0",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087956&fileKind=4",
+          "context": "EXCEL EXCEL 閲覧用"
+        },
+        {
+          "label": "EXCEL 閲覧用",
+          "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087957&fileKind=4",
+          "context": "EXCEL 閲覧用"
+        }
+      ],
+      "snippets": [
+        {
+          "key": "総合",
+          "text": "消費者物価指数 2020年基準消費者物価指数 月報 月次 2023年7月 | ファイル | 統計データを探す | 政府統計の総合窓口 メインコンテンツに移動 English Japanese お問い合わせ ヘルプ 統計で見る日本 e-Statは、日本の統計が閲覧できる政府統計ポータルサイトです ログイン 新規登録 統計データを探す すべて 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギー庁 特許庁 中小企業庁 国土交通省 観光庁 海上保安庁 環境省 防衛省 主要な統計から探す ５０音から探す あ い う え お か き く け こ さ し す せ そ た ち つ て と な に ぬ ね の は ひ ふ へ ほ ま み む め も や ゆ よ ら り る れ ろ わ すべて見る 分野から探す 国土・気象 人口・世帯 労働・賃金 農林水産業 鉱工業 商業・サービス業 企業・家計・経済 住宅・土地・建設 エネルギー・水 運輸・観光 情報通信・科学技術 教育・文化・スポーツ・生活 行財政 司法・安全・環境 社会保障・衛生 国際 その他 組織から探す 内閣官房 人事院 内閣府 公正取引委員会 警察庁 消費者庁 こども家庭庁 個人情報保護委員会 総務省 公害等調整委員会 消防庁 法務省 外務省 財務省 国税庁 文部科学省 文化庁 スポーツ庁 厚生労働省 中央労働委員会 農林水産省 林野庁 水産庁 経済産業省 資源エネルギ"
+        },
+        {
+          "key": "表番号 1",
+          "text": "プション 検索のしかた 提供分類、表題を検索 データベース、ファイル内を検索 対象項目は必須選択です。 データセット一覧 調査年月を選択へ戻る URLをコピー コピーしました 一覧形式で表示 政府統計名 消費者物価指数 詳細 提供統計名 2020年基準消費者物価指数 提供分類1 月報 提供周期 月次 調査年月 2023年7月 表番号 統計表 調査年月 公開（更新）日 表示・ダウンロード 結果の概要（全国） 調査年月 2023年7月 公開（更新）日 2023-08-18 PDF 結果の概要（東京都区部 中旬速報値） 調査年月 2023年7月 公開（更新）日 2023-08-25 PDF 統計表 表番号 1-1 中分類指数（全国） 月次 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-1 中分類指数（全国） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-1 中分類指数（全国） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 月次 調査年月 2023年7月 公開（更新）日 2023-08-25 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 月次 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-2 財・サービス分類指数（東京都区部） 月次 調査年月 2023年7月 公開（更新）日 2023-08-25 EXCEL EXCEL 閲覧用 DB 表番号 2-2 財・サービス分類指数（東京都区部） 年平均 調査年月 2023"
+        },
+        {
+          "key": "表番号 2",
+          "text": "号 1-1 中分類指数（全国） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 月次 調査年月 2023年7月 公開（更新）日 2023-08-25 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 1-2 中分類指数（東京都区部） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 月次 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-1 財・サービス分類指数（全国） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-2 財・サービス分類指数（東京都区部） 月次 調査年月 2023年7月 公開（更新）日 2023-08-25 EXCEL EXCEL 閲覧用 DB 表番号 2-2 財・サービス分類指数（東京都区部） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 2-2 財・サービス分類指数（東京都区部） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 3 中分類指数（都市階級・地方・都道府県庁所在市別） 月次 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 3 中分類指数（都市階級・地方・都道府県庁所在市別） 年平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 3 中分類指数（都市階級・地方・都道府県庁所在市別） 年度平均 調査年月 2023年7月 公開（更新）日 2023-08-18 EXCEL EXCEL 閲覧用 DB 表番号 4-1 品目別価格指数（全国） 月次 総合 ～ 煮豆（含類総連番001～216） 調査年月 2023年7月 公開（更新）日"
+        }
+      ],
+      "html_bytes": 435128
+    }
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
