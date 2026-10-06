@@ -1,0 +1,1505 @@
+{
+  "schema": "GMFQ_GBP_FROZEN_LABOUR_REPLAY_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "GBP ONS A01 certified PIT Labour using frozen v9.3 blockDynamics-equivalent formula, tested versus equal-weight G8 FX basket.",
+  "engine": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "threshold_direction": 0.2,
+    "threshold_acceleration": 0.2
+  },
+  "construction": {
+    "series": [
+      "LF24 employment rate",
+      "MGSX unemployment rate"
+    ],
+    "polarity": {
+      "employment_rate": 1,
+      "unemployment_rate": -1
+    },
+    "scale": "median absolute first differences, last 80 observations",
+    "aggregation": "median of eligible normalized series impulses",
+    "event": "new non-zero Labour direction regime only",
+    "entry": "next ECB FX reference day after ONS publication date"
+  },
+  "counts": {
+    "vintages": 101,
+    "usable_block_checkpoints": 94,
+    "regime_entries": 38
+  },
+  "full_sample": {
+    "5d": {
+      "n": 38,
+      "hit_rate": 0.5263157894736842,
+      "mean": 0.000148898698227891,
+      "median": 0.0013180558124212228
+    },
+    "20d": {
+      "n": 38,
+      "hit_rate": 0.42105263157894735,
+      "mean": -0.0030061294742233023,
+      "median": -0.0011989434369274795
+    },
+    "60d": {
+      "n": 37,
+      "hit_rate": 0.6486486486486487,
+      "mean": 0.002840877905614908,
+      "median": 0.005792648463999957
+    }
+  },
+  "walkforward": {
+    "initial_train_n": 15,
+    "folds": [
+      {
+        "fold": 1,
+        "test_n": 8,
+        "test_start": "2022-06-14",
+        "test_end": "2023-06-13",
+        "stats": {
+          "5d": {
+            "n": 8,
+            "hit_rate": 0.375,
+            "mean": -0.003687985413324514,
+            "median": -0.008127497121680457
+          },
+          "20d": {
+            "n": 8,
+            "hit_rate": 0.5,
+            "mean": -0.0028978502178666978,
+            "median": -0.0017144999288552084
+          },
+          "60d": {
+            "n": 8,
+            "hit_rate": 0.625,
+            "mean": 0.0020406992153609396,
+            "median": 0.007238365183148666
+          }
+        }
+      },
+      {
+        "fold": 2,
+        "test_n": 8,
+        "test_start": "2023-07-11",
+        "test_end": "2025-07-17",
+        "stats": {
+          "5d": {
+            "n": 8,
+            "hit_rate": 0.5,
+            "mean": 0.0004833018465420138,
+            "median": 0.0012235112558372618
+          },
+          "20d": {
+            "n": 8,
+            "hit_rate": 0.5,
+            "mean": -0.002017072479518752,
+            "median": 0.00034392724271730573
+          },
+          "60d": {
+            "n": 8,
+            "hit_rate": 0.875,
+            "mean": 0.008291665215322073,
+            "median": 0.009083114946853097
+          }
+        }
+      },
+      {
+        "fold": 3,
+        "test_n": 7,
+        "test_start": "2025-09-16",
+        "test_end": "2026-08-18",
+        "stats": {
+          "5d": {
+            "n": 7,
+            "hit_rate": 0.7142857142857143,
+            "mean": 0.002093682673329035,
+            "median": 0.002912168569639282
+          },
+          "20d": {
+            "n": 7,
+            "hit_rate": 0.5714285714285714,
+            "mean": 0.0012385805861887596,
+            "median": 0.001174440593588099
+          },
+          "60d": {
+            "n": 6,
+            "hit_rate": 0.6666666666666666,
+            "mean": 0.00019617951672887932,
+            "median": 0.0025159004998454096
+          }
+        }
+      }
+    ],
+    "pooled_oos": {
+      "5d": {
+        "n": 23,
+        "hit_rate": 0.5217391304347826,
+        "mean": -0.00047746477482420695,
+        "median": 0.000679226119616274
+      },
+      "20d": {
+        "n": 23,
+        "hit_rate": 0.5217391304347826,
+        "mean": -0.0013325790206853167,
+        "median": 0.001174440593588099
+      },
+      "60d": {
+        "n": 22,
+        "hit_rate": 0.7272727272727273,
+        "mean": 0.003810726933901699,
+        "median": 0.005859011501810801
+      }
+    },
+    "pooled_oos_n": 23
+  },
+  "rows": [
+    {
+      "checkpoint": "2018-08-14",
+      "reference_period": "Apr-Jun 2018",
+      "current": 0.660263804651358,
+      "previous": 0.27616350557187547,
+      "direction": 1,
+      "acceleration": 0.38410029907948257,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2018-09-11",
+      "reference_period": "May-Jul 2018",
+      "current": -0.35223947637673275,
+      "previous": 0.9188697674517794,
+      "direction": -1,
+      "acceleration": -1.271109243828512,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2018-10-16",
+      "reference_period": "Jun-Aug 2018",
+      "current": 0.07572034166975947,
+      "previous": -0.464285623261252,
+      "direction": 0,
+      "acceleration": 0.5400059649310115,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2018-11-13",
+      "reference_period": "Jul-Sep 2018",
+      "current": -0.7492732612699169,
+      "previous": 0.11539186921889853,
+      "direction": -1,
+      "acceleration": -0.8646651304888154,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2018-12-11",
+      "reference_period": "Aug-Oct 2018",
+      "current": 1.6588345262706712,
+      "previous": -0.9145987394279492,
+      "direction": 1,
+      "acceleration": 2.5734332656986205,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-01-22",
+      "reference_period": "Sep-Nov 2018",
+      "current": 0.9927502650515291,
+      "previous": 1.6705757057177721,
+      "direction": 1,
+      "acceleration": -0.6778254406662431,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-02-19",
+      "reference_period": "Oct-Dec 2018",
+      "current": 1.1255293711216652,
+      "previous": 0.9856049861814609,
+      "direction": 1,
+      "acceleration": 0.13992438494020432,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-03-19",
+      "reference_period": "Nov-Jan 2019",
+      "current": 3.2822138803888796,
+      "previous": 1.0568524283899716,
+      "direction": 1,
+      "acceleration": 2.225361451998908,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-04-16",
+      "reference_period": "Dec-Feb 2019",
+      "current": -0.0034922938928696468,
+      "previous": 3.522130564318903,
+      "direction": 0,
+      "acceleration": -3.5256228582117726,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-05-14",
+      "reference_period": "Jan-Mar 2019",
+      "current": 1.4236685656918677,
+      "previous": -0.012324550933315609,
+      "direction": 1,
+      "acceleration": 1.4359931166251834,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-06-11",
+      "reference_period": "Feb-Apr 2019",
+      "current": 0.253659877731583,
+      "previous": 1.4102423181984165,
+      "direction": 1,
+      "acceleration": -1.1565824404668335,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-07-16",
+      "reference_period": "Mar-May 2019",
+      "current": 0.04101570717411507,
+      "previous": 0.2498226133629887,
+      "direction": 0,
+      "acceleration": -0.20880690618887363,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-08-13",
+      "reference_period": "Apr-Jun 2019",
+      "current": -1.0933279821952524,
+      "previous": 0.02803363101198164,
+      "direction": -1,
+      "acceleration": -1.1213616132072342,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-09-10",
+      "reference_period": "May-Jul 2019",
+      "current": 1.6320577857051815,
+      "previous": -1.0296091732493535,
+      "direction": 1,
+      "acceleration": 2.6616669589545348,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-10-15",
+      "reference_period": "Jun-Aug 2019",
+      "current": -2.976084840873072,
+      "previous": 1.5754677767894598,
+      "direction": -1,
+      "acceleration": -4.551552617662532,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-11-12",
+      "reference_period": "Jul-Sep 2019",
+      "current": 1.8111882693017036,
+      "previous": -2.986739841911902,
+      "direction": 1,
+      "acceleration": 4.797928111213606,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2019-12-17",
+      "reference_period": "Aug-Oct 2019",
+      "current": 1.9305882249274842,
+      "previous": 1.7760411548520618,
+      "direction": 1,
+      "acceleration": 0.15454707007542234,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-01-21",
+      "reference_period": "Sep-Nov 2019",
+      "current": 0.6745266997158543,
+      "previous": 1.7028032053111548,
+      "direction": 1,
+      "acceleration": -1.0282765055953005,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-02-18",
+      "reference_period": "Oct-Dec 2019",
+      "current": 1.4254430553201825,
+      "previous": 0.7148830364816184,
+      "direction": 1,
+      "acceleration": 0.710560018838564,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-03-17",
+      "reference_period": "Nov-Jan 2020",
+      "current": -1.567969502022913,
+      "previous": 1.4645081102865833,
+      "direction": -1,
+      "acceleration": -3.0324776123094965,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-04-21",
+      "reference_period": "Dec-Feb 2020",
+      "current": 0.2500382987759025,
+      "previous": -1.5805655693562566,
+      "direction": 1,
+      "acceleration": 1.830603868132159,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-05-19",
+      "reference_period": "Jan-Mar 2020",
+      "current": 1.0617714600586643,
+      "previous": 0.23918512603372377,
+      "direction": 1,
+      "acceleration": 0.8225863340249405,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-06-16",
+      "reference_period": "Feb-Apr 2020",
+      "current": -1.6390115344176424,
+      "previous": 1.0571873444816422,
+      "direction": -1,
+      "acceleration": -2.696198878899285,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-07-16",
+      "reference_period": "Mar-May 2020",
+      "current": -0.33123804391581474,
+      "previous": -1.6788285779075027,
+      "direction": -1,
+      "acceleration": 1.347590533991688,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-08-11",
+      "reference_period": "Apr-Jun 2020",
+      "current": 0.7433633370032422,
+      "previous": -0.3319500074886059,
+      "direction": 1,
+      "acceleration": 1.0753133444918481,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-09-15",
+      "reference_period": "May-Jul 2020",
+      "current": -1.153985085301953,
+      "previous": 0.7387553922490746,
+      "direction": -1,
+      "acceleration": -1.8927404775510277,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-10-13",
+      "reference_period": "Jun-Aug 2020",
+      "current": -10.766775055961975,
+      "previous": -1.1488865503880668,
+      "direction": -1,
+      "acceleration": -9.617888505573909,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-11-10",
+      "reference_period": "Jul-Sep 2020",
+      "current": -5.090533044787027,
+      "previous": -10.611987705775666,
+      "direction": -1,
+      "acceleration": 5.521454660988639,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2020-12-15",
+      "reference_period": "Aug-Oct 2020",
+      "current": -1.999669413976269,
+      "previous": -5.089206692340093,
+      "direction": -1,
+      "acceleration": 3.0895372783638235,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-01-26",
+      "reference_period": "Sep-Nov 2020",
+      "current": -1.1869571980158502,
+      "previous": -1.9216599243465267,
+      "direction": -1,
+      "acceleration": 0.7347027263306765,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-02-23",
+      "reference_period": "Dec-Feb 2020",
+      "current": 19.456007666012397,
+      "previous": -1.1486789644141187,
+      "direction": 1,
+      "acceleration": 20.604686630426514,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-03-23",
+      "reference_period": "Dec-Feb 2020",
+      "current": 0.0,
+      "previous": 19.936943653421537,
+      "direction": 0,
+      "acceleration": -19.936943653421537,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-04-20",
+      "reference_period": "Dec-Feb 2020",
+      "current": 0.0,
+      "previous": 0.0,
+      "direction": 0,
+      "acceleration": 0.0,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-05-18",
+      "reference_period": "Dec-Feb 2020",
+      "current": 0.0,
+      "previous": 0.0,
+      "direction": 0,
+      "acceleration": 0.0,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-06-15",
+      "reference_period": "Dec-Feb 2020",
+      "current": 0.0,
+      "previous": 0.0,
+      "direction": 0,
+      "acceleration": 0.0,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-07-15",
+      "reference_period": "Mar-May 2021",
+      "current": -21.388219583965064,
+      "previous": 0.0,
+      "direction": -1,
+      "acceleration": -21.388219583965064,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-08-17",
+      "reference_period": "Apr-Jun 2021",
+      "current": 3.0506664930969727,
+      "previous": -21.232797375369373,
+      "direction": 1,
+      "acceleration": 24.283463868466345,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-09-14",
+      "reference_period": "May-Jul 2021",
+      "current": 2.4980778993255264,
+      "previous": 2.9892910981035907,
+      "direction": 1,
+      "acceleration": -0.49121319877806435,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-10-12",
+      "reference_period": "Jun-Aug 2021",
+      "current": 1.693840236276077,
+      "previous": 2.432491006031732,
+      "direction": 1,
+      "acceleration": -0.7386507697556552,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-11-16",
+      "reference_period": "Jul-Sep 2021",
+      "current": 2.4673630405401914,
+      "previous": 1.6176880547763033,
+      "direction": 1,
+      "acceleration": 0.8496749857638881,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2021-12-14",
+      "reference_period": "Aug-Oct 2021",
+      "current": 0.7972122989244643,
+      "previous": 2.3886559151010154,
+      "direction": 1,
+      "acceleration": -1.591443616176551,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-01-18",
+      "reference_period": "Sep-Nov 2021",
+      "current": 0.9292460362557307,
+      "previous": 0.7980897082809415,
+      "direction": 1,
+      "acceleration": 0.13115632797478916,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-02-15",
+      "reference_period": "Oct-Dec 2021",
+      "current": 0.5630965056172742,
+      "previous": 0.9306299088764642,
+      "direction": 1,
+      "acceleration": -0.36753340325919004,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-03-15",
+      "reference_period": "Nov-Jan 2022",
+      "current": 1.1477212111578496,
+      "previous": 0.5643112486164492,
+      "direction": 1,
+      "acceleration": 0.5834099625414004,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-04-12",
+      "reference_period": "Dec-Feb 2022",
+      "current": 0.42986979508040535,
+      "previous": 1.1474654364429382,
+      "direction": 1,
+      "acceleration": -0.7175956413625328,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-05-17",
+      "reference_period": "Jan-Mar 2022",
+      "current": 2.1914131015317952,
+      "previous": 0.40292254835751634,
+      "direction": 1,
+      "acceleration": 1.788490553174279,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-06-14",
+      "reference_period": "Feb-Apr 2022",
+      "current": -0.8745576336278934,
+      "previous": 2.166518634572572,
+      "direction": -1,
+      "acceleration": -3.0410762682004657,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-07-19",
+      "reference_period": "Mar-May 2022",
+      "current": 2.000416825854862,
+      "previous": -0.9001950756267681,
+      "direction": 1,
+      "acceleration": 2.90061190148163,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-08-16",
+      "reference_period": "Apr-Jun 2022",
+      "current": -2.7232999490569885,
+      "previous": 2.0092130666624084,
+      "direction": -1,
+      "acceleration": -4.732513015719396,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-09-13",
+      "reference_period": "May-Jul 2022",
+      "current": 0.848943331715433,
+      "previous": -2.698532088331053,
+      "direction": 1,
+      "acceleration": 3.547475420046486,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-10-11",
+      "reference_period": "Jun-Aug 2022",
+      "current": 1.6382938034449797,
+      "previous": 0.8063232785682747,
+      "direction": 1,
+      "acceleration": 0.831970524876705,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-11-15",
+      "reference_period": "Jul-Sep 2022",
+      "current": -1.2762774654087121,
+      "previous": 1.6315057472129522,
+      "direction": -1,
+      "acceleration": -2.9077832126216645,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2022-12-13",
+      "reference_period": "Aug-Oct 2022",
+      "current": 0.33690738620681093,
+      "previous": -1.2858205778847767,
+      "direction": 1,
+      "acceleration": 1.6227279640915877,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-01-17",
+      "reference_period": "Sep-Nov 2022",
+      "current": -0.07909010327678767,
+      "previous": 0.327478315011866,
+      "direction": 0,
+      "acceleration": -0.40656841828865364,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-02-14",
+      "reference_period": "Oct-Dec 2022",
+      "current": -0.09445995505434657,
+      "previous": -0.08228649695399942,
+      "direction": 0,
+      "acceleration": -0.012173458100347145,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-03-14",
+      "reference_period": "Nov-Jan 2023",
+      "current": 1.1052243060696691,
+      "previous": -0.11429632211567786,
+      "direction": 1,
+      "acceleration": 1.219520628185347,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-04-18",
+      "reference_period": "Dec-Feb 2023",
+      "current": -0.21878650875515415,
+      "previous": 1.0878645543525634,
+      "direction": -1,
+      "acceleration": -1.3066510631077175,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-05-16",
+      "reference_period": "Jan-Mar 2023",
+      "current": -0.25180689478116863,
+      "previous": -0.20264976711096805,
+      "direction": -1,
+      "acceleration": -0.049157127670200584,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-06-13",
+      "reference_period": "Feb-Apr 2023",
+      "current": 1.2498387775499085,
+      "previous": -0.24351378820678365,
+      "direction": 1,
+      "acceleration": 1.4933525657566922,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-07-11",
+      "reference_period": "Mar-May 2023",
+      "current": -1.35118604653745,
+      "previous": 1.2484454878704276,
+      "direction": -1,
+      "acceleration": -2.5996315344078775,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-08-15",
+      "reference_period": "Apr-Jun 2023",
+      "current": -3.195966117616413,
+      "previous": -1.3376803557630095,
+      "direction": -1,
+      "acceleration": -1.8582857618534034,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2023-09-12",
+      "reference_period": "May-Jul 2023",
+      "current": -2.2228053929364577,
+      "previous": -3.0986001927628197,
+      "direction": -1,
+      "acceleration": 0.875794799826362,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-02-13",
+      "reference_period": "Oct-Dec 2023",
+      "current": -0.3488177083299058,
+      "previous": -2.172627165496997,
+      "direction": -1,
+      "acceleration": 1.823809457167091,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-03-12",
+      "reference_period": "Nov-Jan 2024",
+      "current": -0.774030474522472,
+      "previous": -0.41205402571474625,
+      "direction": -1,
+      "acceleration": -0.3619764488077257,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-04-16",
+      "reference_period": "Dec-Feb 2024",
+      "current": -5.088490316968015,
+      "previous": -0.7699680108022434,
+      "direction": -1,
+      "acceleration": -4.318522306165772,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-05-14",
+      "reference_period": "Jan-Mar 2024",
+      "current": -1.0630668034443476,
+      "previous": -5.118070406465014,
+      "direction": -1,
+      "acceleration": 4.055003603020666,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-06-11",
+      "reference_period": "Feb-Apr 2024",
+      "current": -1.4986349757552133,
+      "previous": -1.0719205001937548,
+      "direction": -1,
+      "acceleration": -0.4267144755614585,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-07-18",
+      "reference_period": "Mar-May 2024",
+      "current": 0.14697277164555278,
+      "previous": -1.5170384719271817,
+      "direction": 0,
+      "acceleration": 1.6640112435727343,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-08-13",
+      "reference_period": "Apr-Jun 2024",
+      "current": 2.8060794776213713,
+      "previous": 0.14140980967832062,
+      "direction": 1,
+      "acceleration": 2.6646696679430506,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-09-10",
+      "reference_period": "May-Jul 2024",
+      "current": 1.869548617453481,
+      "previous": 2.795225138350741,
+      "direction": 1,
+      "acceleration": -0.9256765208972599,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-10-15",
+      "reference_period": "Jun-Aug 2024",
+      "current": 2.4553654189599565,
+      "previous": 1.8387956724661325,
+      "direction": 1,
+      "acceleration": 0.616569746493824,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-11-12",
+      "reference_period": "Jul-Sep 2024",
+      "current": -3.051224457037563,
+      "previous": 2.4111364358491905,
+      "direction": -1,
+      "acceleration": -5.462360892886753,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2024-12-17",
+      "reference_period": "Aug-Oct 2024",
+      "current": 0.463211384661277,
+      "previous": -3.0763327607478637,
+      "direction": 1,
+      "acceleration": 3.5395441454091405,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-01-21",
+      "reference_period": "Sep-Nov 2024",
+      "current": -1.3576426008382187,
+      "previous": 0.47463753546435794,
+      "direction": -1,
+      "acceleration": -1.8322801363025767,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-02-18",
+      "reference_period": "Oct-Dec 2024",
+      "current": 0.889353555429166,
+      "previous": -1.3576426008382187,
+      "direction": 1,
+      "acceleration": 2.246996156267385,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-03-20",
+      "reference_period": "Nov-Jan 2025",
+      "current": 0.6981877948092827,
+      "previous": 0.8915319425995625,
+      "direction": 1,
+      "acceleration": -0.19334414779027975,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-04-15",
+      "reference_period": "Dec-Feb 2025",
+      "current": -0.044736822431400425,
+      "previous": 0.713827616160875,
+      "direction": 0,
+      "acceleration": -0.7585644385922754,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-05-13",
+      "reference_period": "Jan-Mar 2025",
+      "current": -1.157417978787676,
+      "previous": -0.0408843105150406,
+      "direction": -1,
+      "acceleration": -1.1165336682726354,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-06-10",
+      "reference_period": "Feb-Apr 2025",
+      "current": -0.031082543184293487,
+      "previous": -1.157417978787676,
+      "direction": 0,
+      "acceleration": 1.1263354356033823,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-07-17",
+      "reference_period": "Mar-May 2025",
+      "current": 0.7672647866535878,
+      "previous": -0.034747381234171426,
+      "direction": 1,
+      "acceleration": 0.8020121678877592,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-08-12",
+      "reference_period": "Apr-Jun 2025",
+      "current": 0.26558628468902956,
+      "previous": 0.7672647866535878,
+      "direction": 1,
+      "acceleration": -0.5016785019645582,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-09-16",
+      "reference_period": "May-Jul 2025",
+      "current": -0.6228473022265778,
+      "previous": 0.2593022504683151,
+      "direction": -1,
+      "acceleration": -0.8821495526948929,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-10-14",
+      "reference_period": "Jun-Aug 2025",
+      "current": -1.8091436455985754,
+      "previous": -0.6089992334443959,
+      "direction": -1,
+      "acceleration": -1.2001444121541796,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-11-11",
+      "reference_period": "Jul-Sep 2025",
+      "current": -1.0436764483367544,
+      "previous": -1.791671882572258,
+      "direction": -1,
+      "acceleration": 0.7479954342355035,
+      "accelDir": 1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2025-12-16",
+      "reference_period": "Aug-Oct 2025",
+      "current": -1.4564698683952,
+      "previous": -0.9987620987134056,
+      "direction": -1,
+      "acceleration": -0.4577077696817944,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-01-20",
+      "reference_period": "Sep-Nov 2025",
+      "current": 1.0540570929112187,
+      "previous": -1.4429161293761368,
+      "direction": 1,
+      "acceleration": 2.4969732222873553,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-02-17",
+      "reference_period": "Oct-Dec 2025",
+      "current": -1.4844141159520023,
+      "previous": 1.0612186941779027,
+      "direction": -1,
+      "acceleration": -2.545632810129905,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-03-19",
+      "reference_period": "Nov-Jan 2026",
+      "current": 1.0450408269358926,
+      "previous": -1.446771419284921,
+      "direction": 1,
+      "acceleration": 2.491812246220814,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-04-21",
+      "reference_period": "Dec-Feb 2026",
+      "current": 0.9413530605774956,
+      "previous": 1.0450408269358926,
+      "direction": 1,
+      "acceleration": -0.10368776635839705,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-05-19",
+      "reference_period": "Jan-Mar 2026",
+      "current": -0.491955251279542,
+      "previous": 0.9413530605774956,
+      "direction": -1,
+      "acceleration": -1.4333083118570376,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-06-18",
+      "reference_period": "Feb-Apr 2026",
+      "current": 0.7931183751604514,
+      "previous": -0.48611209312779824,
+      "direction": 1,
+      "acceleration": 1.2792304682882496,
+      "accelDir": 1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-07-21",
+      "reference_period": "Mar-May 2026",
+      "current": 0.5653639262156147,
+      "previous": 0.8043039949705916,
+      "direction": 1,
+      "acceleration": -0.23894006875497686,
+      "accelDir": -1,
+      "turning": false,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-08-18",
+      "reference_period": "Apr-Jun 2026",
+      "current": -0.2665243999470081,
+      "previous": 0.5853014093226727,
+      "direction": -1,
+      "acceleration": -0.8518258092696809,
+      "accelDir": -1,
+      "turning": true,
+      "n": 2
+    },
+    {
+      "checkpoint": "2026-09-15",
+      "reference_period": "May-Jul 2026",
+      "current": -0.31671076574578716,
+      "previous": -0.26891943353831377,
+      "direction": -1,
+      "acceleration": -0.04779133220747339,
+      "accelDir": 0,
+      "turning": false,
+      "n": 2
+    }
+  ],
+  "entries": [
+    {
+      "checkpoint": "2018-08-14",
+      "entry_date": "2018-08-15",
+      "direction": 1,
+      "signed_5d": 0.0031631333998023018,
+      "signed_20d": 0.020542029289471585,
+      "signed_60d": 0.028358740114900076
+    },
+    {
+      "checkpoint": "2018-09-11",
+      "entry_date": "2018-09-12",
+      "direction": -1,
+      "signed_5d": -0.003633932977792291,
+      "signed_20d": -0.01719425874713327,
+      "signed_60d": 0.01988107937909977
+    },
+    {
+      "checkpoint": "2018-12-11",
+      "entry_date": "2018-12-12",
+      "direction": 1,
+      "signed_5d": 0.0019568855052261715,
+      "signed_20d": 0.010081034044652748,
+      "signed_60d": 0.03984749779513049
+    },
+    {
+      "checkpoint": "2019-08-13",
+      "entry_date": "2019-08-14",
+      "direction": -1,
+      "signed_5d": -0.007122885645135662,
+      "signed_20d": -0.026627777405762887,
+      "signed_60d": -0.0706629890976515
+    },
+    {
+      "checkpoint": "2019-09-10",
+      "entry_date": "2019-09-11",
+      "direction": 1,
+      "signed_5d": 0.012571020173367845,
+      "signed_20d": -0.003503658683682818,
+      "signed_60d": 0.05824926719541477
+    },
+    {
+      "checkpoint": "2019-10-15",
+      "entry_date": "2019-10-16",
+      "direction": -1,
+      "signed_5d": -0.0003052134530365999,
+      "signed_20d": -0.0020202666086658857,
+      "signed_60d": -0.0006688352680526636
+    },
+    {
+      "checkpoint": "2019-11-12",
+      "entry_date": "2019-11-13",
+      "direction": 1,
+      "signed_5d": 0.0044916467079262196,
+      "signed_20d": 0.0185004501184557,
+      "signed_60d": 0.011515864259318808
+    },
+    {
+      "checkpoint": "2020-03-17",
+      "entry_date": "2020-03-18",
+      "direction": -1,
+      "signed_5d": -0.0019785876540726714,
+      "signed_20d": -0.0341849678668486,
+      "signed_60d": -0.006777155210327196
+    },
+    {
+      "checkpoint": "2020-04-21",
+      "entry_date": "2020-04-22",
+      "direction": 1,
+      "signed_5d": -0.005147808306061616,
+      "signed_20d": -0.024591137730930412,
+      "signed_60d": -0.0289803622444444
+    },
+    {
+      "checkpoint": "2020-06-16",
+      "entry_date": "2020-06-17",
+      "direction": -1,
+      "signed_5d": 0.0067183948566776576,
+      "signed_20d": 0.0030343220707239956,
+      "signed_60d": 0.00019553655117465012
+    },
+    {
+      "checkpoint": "2020-08-11",
+      "entry_date": "2020-08-12",
+      "direction": 1,
+      "signed_5d": 0.0033610310773037693,
+      "signed_20d": -0.013599266227264975,
+      "signed_60d": -0.007325750619379498
+    },
+    {
+      "checkpoint": "2020-09-15",
+      "entry_date": "2020-09-16",
+      "direction": -1,
+      "signed_5d": 0.005625248388752419,
+      "signed_20d": -0.008864913637755205,
+      "signed_60d": -0.014894172614513507
+    },
+    {
+      "checkpoint": "2021-02-23",
+      "entry_date": "2021-02-24",
+      "direction": 1,
+      "signed_5d": -0.0024693649010838277,
+      "signed_20d": -0.0035060344979137457,
+      "signed_60d": 0.007231156069738726
+    },
+    {
+      "checkpoint": "2021-07-15",
+      "entry_date": "2021-07-16",
+      "direction": -1,
+      "signed_5d": 0.0036408357912384136,
+      "signed_20d": -0.0003136032688888417,
+      "signed_60d": 0.005794471165669357
+    },
+    {
+      "checkpoint": "2021-08-17",
+      "entry_date": "2021-08-18",
+      "direction": 1,
+      "signed_5d": -0.0042305626094955116,
+      "signed_20d": -0.001335553393180595,
+      "signed_60d": -0.020487857514163658
+    },
+    {
+      "checkpoint": "2022-06-14",
+      "entry_date": "2022-06-15",
+      "direction": -1,
+      "signed_5d": -0.009815064837306212,
+      "signed_20d": 0.0032554745556899333,
+      "signed_60d": 0.026754377079187652
+    },
+    {
+      "checkpoint": "2022-07-19",
+      "entry_date": "2022-07-20",
+      "direction": 1,
+      "signed_5d": 0.005339791452704616,
+      "signed_20d": 0.0017336129581869118,
+      "signed_60d": -0.02079552342963
+    },
+    {
+      "checkpoint": "2022-08-16",
+      "entry_date": "2022-08-17",
+      "direction": -1,
+      "signed_5d": 0.013284418388397107,
+      "signed_20d": 0.0173665235719196,
+      "signed_60d": 0.010943330879417387
+    },
+    {
+      "checkpoint": "2022-09-13",
+      "entry_date": "2022-09-14",
+      "direction": 1,
+      "signed_5d": -0.010048010400194375,
+      "signed_20d": -0.0051626128158973284,
+      "signed_60d": 0.03367469192783302
+    },
+    {
+      "checkpoint": "2022-11-15",
+      "entry_date": "2022-11-16",
+      "direction": -1,
+      "signed_5d": -0.012242571540607367,
+      "signed_20d": -0.02253200703733569,
+      "signed_60d": 0.0035333994868799435
+    },
+    {
+      "checkpoint": "2022-12-13",
+      "entry_date": "2022-12-14",
+      "direction": 1,
+      "signed_5d": -0.015206436933073608,
+      "signed_20d": -0.023937268528338412,
+      "signed_60d": -0.01973019460805888
+    },
+    {
+      "checkpoint": "2023-04-18",
+      "entry_date": "2023-04-19",
+      "direction": -1,
+      "signed_5d": -0.006439929406054702,
+      "signed_20d": -0.008533044693898635,
+      "signed_60d": -0.03655878457927965
+    },
+    {
+      "checkpoint": "2023-06-13",
+      "entry_date": "2023-06-14",
+      "direction": 1,
+      "signed_5d": 0.005623919969538429,
+      "signed_20d": 0.014626520246740037,
+      "signed_60d": 0.018504296966538047
+    },
+    {
+      "checkpoint": "2023-07-11",
+      "entry_date": "2023-07-12",
+      "direction": -1,
+      "signed_5d": 0.009348718056878027,
+      "signed_20d": 0.001194877781472711,
+      "signed_60d": 0.02017838780536882
+    },
+    {
+      "checkpoint": "2024-08-13",
+      "entry_date": "2024-08-14",
+      "direction": 1,
+      "signed_5d": 0.003986498289459606,
+      "signed_20d": 0.005005715756614361,
+      "signed_60d": 0.01883921759852216
+    },
+    {
+      "checkpoint": "2024-11-12",
+      "entry_date": "2024-11-13",
+      "direction": -1,
+      "signed_5d": 0.002630851945372204,
+      "signed_20d": -0.00899955285557372,
+      "signed_60d": 0.005928240222325572
+    },
+    {
+      "checkpoint": "2024-12-17",
+      "entry_date": "2024-12-18",
+      "direction": 1,
+      "signed_5d": -0.0019589455112396597,
+      "signed_20d": -0.02656122718107865,
+      "signed_60d": 0.005792648463999957
+    },
+    {
+      "checkpoint": "2025-01-21",
+      "entry_date": "2025-01-22",
+      "direction": -1,
+      "signed_5d": -0.008420333620928469,
+      "signed_20d": -0.01119942454008432,
+      "signed_60d": -0.018981147810255745
+    },
+    {
+      "checkpoint": "2025-02-18",
+      "entry_date": "2025-02-19",
+      "direction": 1,
+      "signed_5d": 0.003443620581719791,
+      "signed_20d": 0.01643187356240399,
+      "signed_60d": 0.02167059138980104
+    },
+    {
+      "checkpoint": "2025-05-13",
+      "entry_date": "2025-05-14",
+      "direction": -1,
+      "signed_5d": -0.0001838294336976807,
+      "signed_20d": -0.0005070232960380995,
+      "signed_60d": 0.012237989671380624
+    },
+    {
+      "checkpoint": "2025-07-17",
+      "entry_date": "2025-07-18",
+      "direction": 1,
+      "signed_5d": -0.004980165535227709,
+      "signed_20d": 0.00849818093613371,
+      "signed_60d": 0.0006673943814341502
+    },
+    {
+      "checkpoint": "2025-09-16",
+      "entry_date": "2025-09-17",
+      "direction": -1,
+      "signed_5d": 0.002912168569639282,
+      "signed_20d": -0.0010623334806743642,
+      "signed_60d": 0.00302403176102777
+    },
+    {
+      "checkpoint": "2026-01-20",
+      "entry_date": "2026-01-21",
+      "direction": 1,
+      "signed_5d": 0.0038071559796416447,
+      "signed_20d": -0.008470957993048346,
+      "signed_60d": -0.0029398568294519483
+    },
+    {
+      "checkpoint": "2026-02-17",
+      "entry_date": "2026-02-18",
+      "direction": -1,
+      "signed_5d": -0.001197070670469634,
+      "signed_20d": 0.001174440593588099,
+      "signed_60d": 0.0020077692386630494
+    },
+    {
+      "checkpoint": "2026-03-19",
+      "entry_date": "2026-03-20",
+      "direction": 1,
+      "signed_5d": 0.004630768059458951,
+      "signed_20d": 0.0036726539044897376,
+      "signed_60d": 0.009220206167592058
+    },
+    {
+      "checkpoint": "2026-05-19",
+      "entry_date": "2026-05-20",
+      "direction": -1,
+      "signed_5d": -0.001546108588613287,
+      "signed_20d": -0.007006396085773734,
+      "signed_60d": -0.0160604477770793
+    },
+    {
+      "checkpoint": "2026-06-18",
+      "entry_date": "2026-06-19",
+      "direction": 1,
+      "signed_5d": 0.005369639244030011,
+      "signed_20d": 0.014100960564371268,
+      "signed_60d": 0.005925374539621646
+    },
+    {
+      "checkpoint": "2026-08-18",
+      "entry_date": "2026-08-19",
+      "direction": -1,
+      "signed_5d": 0.000679226119616274,
+      "signed_20d": 0.0062616966003686565
+    }
+  ],
+  "guardrails": [
+    "No threshold tuning",
+    "No parameter fitting",
+    "No revised-history fallback",
+    "Chronological PIT order",
+    "engine/live_data untouched"
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
