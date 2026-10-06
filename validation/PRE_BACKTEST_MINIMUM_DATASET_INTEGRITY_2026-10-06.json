@@ -1,0 +1,24 @@
+{
+  "schema": "GMFQ_PRE_BACKTEST_MINIMUM_DATASET_INTEGRITY_V1",
+  "status": "PASS",
+  "market_bundle_sha256": "9bbf498da7b03d0dd5fb755ff3590c970fad06e540059b6259b9021084601674",
+  "macro_mask_sha256": "39395fdd5d0ec531177ee274c9438945fe7ad20282fcd21cea2c89e973d36d60",
+  "dataset_manifest_sha256": "c077f752f28e8656d9721e198f5144c2c96f7627919b8446307ffacb6ad485fd",
+  "fx_rows": 2754,
+  "eur_rates_rows": 2746,
+  "eligible_macro_currencies": [
+    "CAD",
+    "EUR",
+    "USD",
+    "GBP"
+  ],
+  "withheld_macro_currencies": [
+    "JPY",
+    "AUD",
+    "NZD",
+    "CHF"
+  ],
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "backtest_started": false
+}
