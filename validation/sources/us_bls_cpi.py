@@ -26,7 +26,7 @@ def parse_month(year: str, period: str) -> str:
     month = int(period[1:])
     if not 1 <= month <= 12:
         raise ValueError(f"BLS period outside M01..M12: {period!r}")
-    return f"{int(year):04d}-{month:02d}"
+    return f"{int(year):04d}-{month:02d}-01"
 
 
 def extract_index(payload: dict[str, Any], expected_series_id: str = DEFAULT_BLS_SERIES_ID) -> list[tuple[str, float]]:
@@ -69,8 +69,9 @@ def to_yoy(index_obs: list[tuple[str, float]]) -> list[tuple[str, float, float, 
     by_date = dict(index_obs)
     out: list[tuple[str, float, float, float]] = []
     for date, latest_index in index_obs:
-        year, month = map(int, date.split("-"))
-        prior_date = f"{year - 1:04d}-{month:02d}"
+        year = int(date[:4])
+        month = int(date[5:7])
+        prior_date = f"{year - 1:04d}-{month:02d}-01"
         prior_index = by_date.get(prior_date)
         if prior_index is None:
             continue
