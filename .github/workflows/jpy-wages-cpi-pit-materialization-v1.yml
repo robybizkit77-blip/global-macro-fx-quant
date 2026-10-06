@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install requests pypdf
+        run: pip install requests pypdf beautifulsoup4
       - name: Materialize JPY wages and CPI PIT panels
         run: python validation/materialize_jpy_wages_cpi_pit_v1.py
       - name: Require complete GREEN panels before CSV commit
