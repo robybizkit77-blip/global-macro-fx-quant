@@ -1,0 +1,31 @@
+name: EUR Wages 2Y Robustness Walkforward V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/run_eur_wages_2y_robustness_walkforward_v1.py'
+      - 'validation/EUR_REACTION_FUNCTION_DIAGNOSTIC_V1_2026-10-06.json'
+      - '.github/workflows/eur-wages-2y-robustness-walkforward-v1.yml'
+permissions:
+  contents: write
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run robustness and walk-forward
+        run: python validation/run_eur_wages_2y_robustness_walkforward_v1.py
+      - name: Confirm engine and live data untouched
+        run: git diff --exit-code -- engine live_data
+      - name: Commit evidence only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/EUR_WAGES_2Y_ROBUSTNESS_WALKFORWARD_V1_2026-10-06.json
+          git diff --cached --quiet || git commit -m "Add EUR wages 2Y robustness walkforward evidence"
+          git push
