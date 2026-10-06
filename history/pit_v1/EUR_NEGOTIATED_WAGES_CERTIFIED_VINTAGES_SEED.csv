@@ -1,0 +1,6 @@
+reference_quarter,annual_growth_pct,certified_available_date,source_type,source_note,status
+2024-Q1,4.7,2024-05-23,ECB_BLOG,"ECB blog states latest release negotiated wage growth Q1 2024 = 4.7%; latest observation Q1 2024",CERTIFIED_CONSERVATIVE
+2024-Q2,3.5,2024-08-29,ECB_SPEECH,"ECB speech/chart latest observation Q2 2024; negotiated wages about 3.5%",CERTIFIED_CONSERVATIVE
+2024-Q3,5.4,2024-12-18,ECB_BLOG_OR_BULLETIN,"ECB December material states negotiated wage growth rose to 5.4% in Q3 2024 from 3.5% in Q2",CERTIFIED_CONSERVATIVE
+2024-Q4,4.1,2025-04-03,ECB_GOVERNING_COUNCIL_ACCOUNT,"Account of 5-6 March 2025 meeting states negotiated wage growth decreased to 4.1% in Q4 2024",CERTIFIED_CONSERVATIVE
+2025-Q1,2.4,2025-07-03,ECB_GOVERNING_COUNCIL_ACCOUNT,"Account of 3-5 June 2025 meeting states negotiated wage growth fell to 2.4% in Q1 2025 from 4.1% in Q4 2024",CERTIFIED_CONSERVATIVE
