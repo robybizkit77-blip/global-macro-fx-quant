@@ -1,0 +1,38 @@
+name: JPY Wages CPI PDF Inspection V1
+on:
+  push:
+    branches:
+      - audit-jpy-reaction-source-probe-v1-2026-10-06
+    paths:
+      - validation/inspect_jpy_wages_cpi_pdf_text_v1.py
+      - .github/workflows/jpy-wages-cpi-pdf-inspection-v1.yml
+      - validation/JPY_WAGES_CPI_SOURCE_PROBE_V1_2026-10-06.json
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install requests pypdf
+      - name: Inspect representative first-release PDFs
+        run: python validation/inspect_jpy_wages_cpi_pdf_text_v1.py
+      - name: Strict engine live OOS guard
+        run: |
+          if git diff --name-only HEAD^ | grep -E '^(engine/|live_data/|validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json$)'; then
+            echo 'Protected runtime/OOS files changed'; exit 1
+          fi
+      - name: Commit inspection evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/JPY_WAGES_CPI_PDF_TEXT_INSPECTION_V1_2026-10-06.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Record JPY wages CPI PDF parser inspection'
+          git push
