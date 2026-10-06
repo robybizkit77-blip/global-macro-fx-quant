@@ -12,96 +12,39 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Diagnose golden availability semantics
+      - name: Locate excess historical WITHHELD coverage
         shell: bash
         run: |
           python - <<'PY'
-          import json,math,re,statistics
+          import json,re
           from datetime import date
           from pathlib import Path
-          TARGET={'CONTRASTO STRUTTURALE FORTE':316,'VANTAGGIO RELATIVO PARZIALE':961,'PILASTRI DIVISI':340,'NESSUN CONTRASTO':397,'WITHHELD':926}
-          CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
-          PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY']
+          Stext=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js').read_text(errors='ignore').strip()
+          S=json.loads(Stext[Stext.find('=')+1:Stext.rfind(';')].strip())
           RID={'USD':'US_DGS2_history_DGS2','GBP':'GBP_RATES_2016_2026_2Y','JPY':'JPY_RATES_2016_2026_2Y','CHF':'CH_CONFED_SPOT_2Y_history_value_pct','CAD':'CAD_RATES_2016_2026_2Y','AUD':'AU_FCMYGBAG2D_history_FCMYGBAG2D','NZD':'NZD_RATES_2016_2026_RBNZ_B2_2Y'}
-          t=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js').read_text(errors='ignore').strip(); S=json.loads(t[t.find('=')+1:t.rfind(';')].strip())
-          def med(x):
-            x=sorted(v for v in x if math.isfinite(v)); n=len(x)
-            return None if not n else x[n//2] if n%2 else (x[n//2-1]+x[n//2])/2
           def dk(x):
             s=str(x)
             try:return date(int(s[:4]),int(s[5:7]),1) if re.fullmatch(r'\d{4}-\d{2}',s) else date.fromisoformat(s[:10])
             except:return None
-          def trunc(s,cp):
-            z=dict(s); a=[]
-            for d,v in zip(s.get('dates',[]),s.get('values',[])):
-              dd=dk(d)
-              if dd and dd<=cp and isinstance(v,(int,float)) and math.isfinite(float(v)):a.append((d,float(v)))
-            z['dates']=[x[0] for x in a];z['values']=[x[1] for x in a];return z
-          def pol(cat,label):
-            l=(label or '').lower()
-            if cat=='Lavoro':
-              if 'disoccup' in l or 'claims' in l:return -1
-              if 'costo unitario' in l:return 0
-              return 1
-            if cat=='Crescita':return 0 if 'tasso di risparmio' in l else 1
-            return 0
-          def block(ss,cat):
-            q=[]
-            for s in ss:
-              if s.get('category')!=cat:continue
-              v=[float(x) for x in s.get('values',[]) if isinstance(x,(int,float)) and math.isfinite(float(x))]
-              if len(v)<8:continue
-              p=pol(cat,s.get('label',''))
-              if not p:continue
-              ds=[abs(v[i]-v[i-1]) for i in range(max(1,len(v)-80+1),len(v))]
-              sc=med(ds)
-              if not sc:continue
-              q.append(((v[-1]-v[-2])*p/sc,(v[-2]-v[-3])*p/sc))
-            if not q:return None
-            cur=med([x[0] for x in q]); prev=med([x[1] for x in q]); d=0 if abs(cur)<.2 else (1 if cur>0 else -1)
-            return {'direction':d,'n':len(q)}
-          def rate(v):
-            v=[float(x) for x in v if isinstance(x,(int,float)) and math.isfinite(float(x))]
-            if len(v)<10:return None
-            n=len(v);f=min(5,n//3)
-            rec=(v[-1]-v[-f])/(f-1); pri=(v[n-f]-v[n-2*f+1])/(f-1)
-            ds=[abs(v[i]-v[i-1]) for i in range(max(1,n-52),n)];typ=med(ds) or 0
-            return 0 if abs(rec)<typ*.15 else (1 if rec>0 else -1)
-          cps=[];y=2018;m=1
-          while (y,m)<=(2026,9):
-            cps.append(date(y,m,1));m+=1
-            if m==13:y+=1;m=1
-          def run(mode,missing_rate):
-            co={k:0 for k in TARGET}
-            for cp in cps:
-              st={}
-              for c in CCYS:
-                ss=[trunc(s,cp) for s in S.get(c,[])]
-                g=block(ss,'Crescita');l=block(ss,'Lavoro')
-                if mode=='both': macro=None if g is None or l is None else (1 if g['direction']+l['direction']>0 else -1 if g['direction']+l['direction']<0 else 0)
-                elif mode=='available':
-                  ds=[x['direction'] for x in (g,l) if x is not None]; macro=None if not ds else (1 if sum(ds)>0 else -1 if sum(ds)<0 else 0)
-                elif mode=='available_n2':
-                  ds=[x['direction'] for x in (g,l) if x is not None and x['n']>=2]; macro=None if not ds else (1 if sum(ds)>0 else -1 if sum(ds)<0 else 0)
-                rid=RID.get(c);rs=next((s for s in ss if s.get('id')==rid),None) if rid else None
-                r=rate(rs.get('values',[])) if rs else (0 if missing_rate=='neutral' else None)
-                st[c]=(macro,r)
-              for pair in PAIRS:
-                a,b=pair.split('/');ma,ra=st[a];mb,rb=st[b]
-                if None in (ma,mb,ra,rb):q='WITHHELD'
-                else:
-                  ms='A' if ma>mb else 'B' if mb>ma else 'T';ps='A' if ra>rb else 'B' if rb>ra else 'T'
-                  if ms!='T' and ms==ps:q='CONTRASTO STRUTTURALE FORTE'
-                  elif (ms!='T' and ps=='T') or (ps!='T' and ms=='T'):q='VANTAGGIO RELATIVO PARZIALE'
-                  elif ms!='T' and ps!='T' and ms!=ps:q='PILASTRI DIVISI'
-                  else:q='NESSUN CONTRASTO'
-                co[q]+=1
-            score=sum(abs(co[k]-TARGET[k]) for k in TARGET)
-            print(mode,missing_rate,'score',score,co)
-          for mode in ['both','available','available_n2']:
-            for mr in ['withheld','neutral']:run(mode,mr)
-          print('TARGET',TARGET)
+          for c in ['USD','GBP','JPY','CHF','CAD','AUD','NZD']:
+            rid=RID[c]; rs=next(s for s in S[c] if s.get('id')==rid)
+            pairs=[(dk(d),v) for d,v in zip(rs.get('dates',[]),rs.get('values',[])) if dk(d)]
+            pairs.sort(key=lambda x:x[0])
+            print('\n',c,'RATE',rid,'N',len(pairs),'FIRST5',pairs[:5],'LAST',pairs[-1] if pairs else None)
+            # first date with at least 10 numeric observations
+            valid=[]; first10=None
+            for d,v in pairs:
+              if isinstance(v,(int,float)):
+                valid.append((d,v))
+                if len(valid)==10 and first10 is None:first10=d
+            print(c,'RATE_FIRST10',first10)
+            for cat in ['Crescita','Lavoro']:
+              print(c,cat)
+              for s in [x for x in S[c] if x.get('category')==cat]:
+                ds=[dk(d) for d,v in zip(s.get('dates',[]),s.get('values',[])) if dk(d) and isinstance(v,(int,float))]
+                ds.sort()
+                print(' ',s.get('id'),'label=',s.get('label'),'n=',len(ds),'first=',ds[0] if ds else None,'eighth=',ds[7] if len(ds)>=8 else None)
           PY
