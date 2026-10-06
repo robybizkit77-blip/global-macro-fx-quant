@@ -1,459 +1,2286 @@
 {
   "schema": "GMFQ_JPY_WAGES_CPI_SOURCE_PROBE_V1",
+  "probe_revision": "1.2",
   "created_at": "2026-10-06",
   "target_coverage": "2018-01 through 2023-07",
   "required_months": 67,
   "wages_mhlw_preliminary": {
-    "index_url": "https://www.mhlw.go.jp/toukei/list/30-1a.html",
-    "index_status": 200,
+    "coverage_count": 67,
+    "missing_months": [],
     "months_found": {
-      "2023-01": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2301p/2301p.html",
-          "anchor": "1¬ñ"
-        }
-      ],
-      "2023-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/2302p.html",
-          "anchor": "2¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/2302p.html",
-          "anchor": "ÎJv²¸|ßa5N2ªÊ¬ñyÑßa4NNÜ^ÌÊ"
-        }
-      ],
-      "2023-03": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2303p/2303p.html",
-          "anchor": "3¬ñ"
-        }
-      ],
-      "2023-04": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2304p/2304p.html",
-          "anchor": "4¬ñ"
-        }
-      ],
-      "2023-05": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2305p/2305p.html",
-          "anchor": "5¬ñ"
-        }
-      ],
-      "2023-06": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/2306p.html",
-          "anchor": "6¬ñ"
-        }
-      ],
-      "2023-07": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/2307p.html",
-          "anchor": "7¬ñ"
-        }
-      ],
-      "2022-01": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2201p/2201p.html",
-          "anchor": "1¬ñ"
-        }
-      ],
-      "2022-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/2202p.html",
-          "anchor": "2¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/2202p.html",
-          "anchor": "ÎJv²¸|ßa4N2ªÊ¬ñyÑßa3NNÜ^ÌÊ"
-        }
-      ],
-      "2022-03": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2203p/2203p.html",
-          "anchor": "3¬ñ"
-        }
-      ],
-      "2022-04": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2204p/2204p.html",
-          "anchor": "4¬ñ"
-        }
-      ],
-      "2022-05": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2205p/2205p.html",
-          "anchor": "5¬ñ"
-        }
-      ],
-      "2022-06": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2206p/2206p.html",
-          "anchor": "6¬ñ"
-        }
-      ],
-      "2022-07": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2207p/2207p.html",
-          "anchor": "7¬ñ"
-        }
-      ],
-      "2022-08": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2208p/2208p.html",
-          "anchor": "8¬ñ"
-        }
-      ],
-      "2022-09": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/2209p.html",
-          "anchor": "9¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/2209p.html",
-          "anchor": "ÎJv²¸|ßa4N9ªÊ¬ñyÑßa4NÄGÜ^ÌÊ"
-        }
-      ],
-      "2022-10": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2210p/2210p.html",
-          "anchor": "10¬ñ"
-        }
-      ],
-      "2022-11": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2211p/2211p.html",
-          "anchor": "11¬ñ"
-        }
-      ],
-      "2022-12": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2212p/2212p.html",
-          "anchor": "12¬ñ"
-        }
-      ],
-      "2021-01": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/0301p/0301p.html",
-          "anchor": "1¬ñ"
-        }
-      ],
-      "2021-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/2102p.html",
-          "anchor": "2¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/2102p.html",
-          "anchor": "ÎJv²¸|ßa3N2ªÊ¬ñyÑßa2NNÜ^ÌÊ"
-        }
-      ],
-      "2021-03": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2103p/2103p.html",
-          "anchor": "3¬ñ"
-        }
-      ],
-      "2021-04": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2104p/2104p.html",
-          "anchor": "4¬ñ"
-        }
-      ],
-      "2021-05": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2105p/2105p.html",
-          "anchor": "5¬ñ"
-        }
-      ],
-      "2021-06": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2106p/2106p.html",
-          "anchor": "6¬ñ"
-        }
-      ],
-      "2021-07": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2107p/2107p.html",
-          "anchor": "7¬ñ"
-        }
-      ],
-      "2021-08": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2108p/2108p.html",
-          "anchor": "8¬ñ"
-        }
-      ],
-      "2021-09": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/2109p.html",
-          "anchor": "9¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/2109p.html",
-          "anchor": "ÎJv²¸|ßa3N9ªÊ¬ñyÑßa3NÄGÜ^ÌÊ"
-        }
-      ],
-      "2021-10": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2110p/2110p.html",
-          "anchor": "10¬ñ"
-        }
-      ],
-      "2021-11": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2111p/2111p.html",
-          "anchor": "11¬ñ"
-        }
-      ],
-      "2021-12": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2112p/2112p.html",
-          "anchor": "12¬ñ"
-        }
-      ],
-      "2020-01": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0201p/0201p.html",
-          "anchor": "1¬ñ"
-        }
-      ],
-      "2020-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/0202p.html",
-          "anchor": "2¬ñ"
-        },
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/0202p.html",
-          "anchor": "ÎJv²¸|ßa2N2ªÊ¬ñyÑßa³NNÜ^ÌÊ"
-        }
-      ],
-      "2020-03": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0203p/0203p.html",
-          "anchor": "3¬ñ"
-        }
-      ],
-      "2020-04": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0204p/0204p.html",
-          "anchor": "4¬ñ"
-        }
-      ],
-      "2020-05": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0205p/0205p.html",
-          "anchor": "5¬ñ"
-        }
-      ],
-      "2020-06": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0206p/0206p.html",
-          "anchor": "6¬ñ"
-        }
-      ],
-      "2020-07": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0207p/0207p.html",
-          "anchor": "7¬ñ"
-        }
-      ],
-      "2020-08": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0208p/0208p.html",
-          "anchor": "8¬ñ"
-        }
-      ],
-      "2020-09": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0209p/0209p.html",
-          "anchor": "9¬ñ"
-        }
-      ],
-      "2020-10": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0210p/0210p.html",
-          "anchor": "10¬ñ"
-        }
-      ],
-      "2020-11": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0211p/0211p.html",
-          "anchor": "11¬ñ"
-        }
-      ],
-      "2020-12": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0212p/0212p.html",
-          "anchor": "12¬ñ"
-        }
-      ],
-      "2019-09": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0109p/0109p.html",
-          "anchor": "ÎJv²¸|ßa³N9ªÊ¬ñyÑßa³NÄGÜ^ÌÊ"
-        }
-      ],
-      "2018-09": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3009p/3009p.html",
-          "anchor": "ÎJv²¸|½¬30N9ªÊ¬ñyÑ½¬30NÄGÜ^ÌÊ"
-        }
-      ],
-      "2019-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3102p/3102p.html",
-          "anchor": "ÎJv²¸|½¬31N2ªÊ¬ñyÑ½¬30NNÜ^ÌÊ"
-        }
-      ],
-      "2018-02": [
-        {
-          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/3002p.html",
-          "anchor": "ÎJv²¸|½¬30N2ªÊ¬ñyÑ½¬29NNÜ^ÌÊ"
-        }
-      ]
+      "2018-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/3001p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/dl/pdf3001p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/dl/houdou3001p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/3002p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/dl/pdf3002p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/dl/houdou3002p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3003p/3003p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3003p/dl/pdf3003p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3003p/dl/houdou3003p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3004p/3004p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3004p/dl/pdf3004p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3004p/dl/houdou3004p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3005p/3005p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3005p/dl/pdf3005p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3005p/dl/houdou3005p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3006p/3006p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3006p/dl/pdf3006p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3006p/dl/houdou3006p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3007p/3007p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3007p/dl/pdf3007p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3007p/dl/houdou3007p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-08": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3008p/3008p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3008p/dl/pdf3008p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3008p/dl/houdou3008p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-09": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3009p/3009p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3009p/dl/pdf3009p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3009p/dl/houdou3009p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-10": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3010p/3010p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3010p/dl/pdf3010p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3010p/dl/houdou3010p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-11": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3011p/3011p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3011p/dl/pdf3011p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3011p/dl/houdou3011p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2018-12": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3012p/3012p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3012p/dl/pdf3012p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3012p/dl/houdou3012p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3101p/3101p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3101p/dl/pdf3101p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3101p/dl/houdou3101p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3102p/3102p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3102p/dl/pdf3102p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3102p/dl/houdou3102p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3103p/3103p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3103p/dl/pdf3103p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3103p/dl/houdou3103p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3104p/3104p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3104p/dl/pdf3104p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3104p/dl/houdou3104p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0105p/0105p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0105p/dl/pdf0105p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0105p/dl/houdou0105p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0106p/0106p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0106p/dl/pdf0106p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0106p/dl/houdou0106p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0107p/0107p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0107p/dl/pdf0107p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0107p/dl/houdou0107p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-08": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0108p/0108p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0108p/dl/pdf0108p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0108p/dl/houdou0108p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-09": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0109p/0109p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0109p/dl/pdf0109p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0109p/dl/houdou0109p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-10": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0110p/0110p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0110p/dl/pdf0110p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0110p/dl/houdou0110p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-11": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0111p/0111p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0111p/dl/pdf0111p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0111p/dl/houdou0111p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2019-12": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0112p/0112p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0112p/dl/pdf0112p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0112p/dl/houdou0112p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0201p/0201p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0201p/dl/pdf2001p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0201p/dl/houdou2001p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/0202p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/dl/pdf2002p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/dl/houdou2002p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0203p/0203p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0203p/dl/pdf2003p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0203p/dl/houdou2003p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0204p/0204p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0204p/dl/pdf2004p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0204p/dl/houdou2004p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0205p/0205p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0205p/dl/pdf2005p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0205p/dl/houdou2005p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0206p/0206p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/dl/maikin-setumei.pdf",
+            "anchor": "用語の解説"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0206p/dl/pdf2006p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0206p/dl/houdou2006p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0207p/0207p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0207p/dl/pdf2007p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0207p/dl/houdou2007p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-08": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0208p/0208p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0208p/dl/pdf2008p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0208p/dl/houdou2008p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-09": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0209p/0209p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0209p/dl/pdf2009p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0209p/dl/houdou2009p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-10": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0210p/0210p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0210p/dl/pdf2010p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0210p/dl/houdou2010p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-11": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0211p/0211p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0211p/dl/pdf2011p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0211p/dl/houdou2011p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2020-12": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0212p/0212p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0212p/dl/pdf2012p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0212p/dl/houdou2012p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/0301p/0301p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/0301p/dl/pdf2101p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/0301p/dl/houdou2101p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/2102p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/dl/pdf2102p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/dl/houdou2102p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2103p/2103p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2103p/dl/pdf2103p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2103p/dl/houdou2103p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2104p/2104p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2104p/dl/pdf2104p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2104p/dl/houdou2104p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2105p/2105p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2105p/dl/pdf2105p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2105p/dl/houdou2105p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2106p/2106p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2106p/dl/pdf2106p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2106p/dl/houdou2106p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2107p/2107p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2107p/dl/pdf2107p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2107p/dl/houdou2107p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-08": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2108p/2108p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2108p/dl/pdf2108p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2108p/dl/houdou2108p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-09": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/2109p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/dl/pdf2109p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/dl/houdou2109p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-10": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2110p/2110p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2110p/dl/pdf2110p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2110p/dl/houdou2110p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-11": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2111p/2111p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2111p/dl/pdf2111p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2111p/dl/houdou2111p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2021-12": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2112p/2112p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2112p/dl/pdf2112p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2112p/dl/houdou2112p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2201p/2201p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-20180927-01.pdf",
+            "anchor": "平成30年１月調査分以降の賃金データの見方"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2201p/dl/pdf2201p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2201p/dl/houdou2201p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/2202p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/dl/pdf2202p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/dl/houdou2202p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2203p/2203p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2203p/dl/pdf2203p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2203p/dl/houdou2203p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2204p/2204p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2204p/dl/pdf2204p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2204p/dl/houdou2204p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2205p/2205p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2205p/dl/pdf2205p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2205p/dl/houdou2205p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2206p/2206p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2206p/dl/pdf2206p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2206p/dl/houdou2206p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2207p/2207p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2207p/dl/pdf2207p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2207p/dl/houdou2207p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-08": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2208p/2208p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2208p/dl/pdf2208p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2208p/dl/houdou2208p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-09": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/2209p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/dl/pdf2209p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/dl/houdou2209p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-10": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2210p/2210p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2210p/dl/pdf2210p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2210p/dl/houdou2210p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-11": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2211p/2211p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2211p/dl/pdf2211p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2211p/dl/houdou2211p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2022-12": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2212p/2212p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2212p/dl/pdf2212p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2212p/dl/houdou2212p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-01": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2301p/2301p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/list/dl/maikin-kaisetsu-20220405.pdf",
+            "anchor": "毎月勤労統計調査におけるベンチマーク更新等（令和４年１月分調査）の対応及び影響について"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2301p/dl/pdf2301p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2301p/dl/houdou2301p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-02": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/2302p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/dl/pdf2302p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/dl/houdou2302p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-03": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2303p/2303p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2303p/dl/pdf2303p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2303p/dl/houdou2303p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-04": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2304p/2304p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2304p/dl/pdf2304p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2304p/dl/houdou2304p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-05": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2305p/2305p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2305p/dl/pdf2305p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2305p/dl/houdou2305p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-06": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/2306p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/dl/pdf2306p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/dl/houdou2306p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      },
+      "2023-07": {
+        "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/2307p.html",
+        "page_status": 200,
+        "preliminary_marker_seen": true,
+        "document_candidates": [
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/dl/pdf2307p.pdf",
+            "anchor": "概況"
+          },
+          {
+            "url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/dl/houdou2307p.pdf",
+            "anchor": "報道発表資料"
+          }
+        ]
+      }
     },
-    "coverage_count": 47,
-    "missing_months": [
-      "2018-01",
-      "2018-03",
-      "2018-04",
-      "2018-05",
-      "2018-06",
-      "2018-07",
-      "2018-08",
-      "2018-10",
-      "2018-11",
-      "2018-12",
-      "2019-01",
-      "2019-03",
-      "2019-04",
-      "2019-05",
-      "2019-06",
-      "2019-07",
-      "2019-08",
-      "2019-10",
-      "2019-11",
-      "2019-12"
-    ]
+    "attempts_for_missing": {}
   },
   "cpi_statistics_bureau_first_release": {
-    "index_url": "https://www.stat.go.jp/english/data/cpi/1588.htm",
-    "index_status": 200,
-    "archive_links_count": 8,
-    "archive_links_sample": [
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/index.html",
-        "anchor": "Consumer Price Index"
+    "coverage_count": 67,
+    "missing_months": [],
+    "months_found": {
+      "2018-01": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673550&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/report/2015np/index.html",
-        "anchor": "2015"
+      "2018-02": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031681970&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/report/2014np/index.html",
-        "anchor": "2014"
+      "2018-03": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031692702&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/report/2013np/index.html",
-        "anchor": "2013"
+      "2018-04": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031700376&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/report/2012np/index.html",
-        "anchor": "2012"
+      "2018-05": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031706011&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/report/2011np/index.html",
-        "anchor": "2011"
+      "2018-06": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031737243&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/index.html",
-        "anchor": ""
+      "2018-07": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031741340&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       },
-      {
-        "url": "https://www.stat.go.jp/english/data/cpi/1588.htm#header",
-        "anchor": "Top of this page"
+      "2018-08": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031753015&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2018-09": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031759756&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2018-10": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031766056&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2018-11": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031775776&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2018-12": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031785196&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-01": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031798517&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-02": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031807196&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-03": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031819496&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-04": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031826956&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-05": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031834426&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-06": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031843735&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-07": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031852818&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-08": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031861888&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-09": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031871404&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-10": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031878724&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-11": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031887994&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2019-12": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031904210&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-01": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031911463&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-02": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031919410&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-03": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031932757&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-04": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031946830&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-05": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031954960&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-06": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031962450&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-07": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031972510&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-08": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031978676&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-09": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032009436&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-10": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032021310&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-11": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032032680&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2020-12": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032042130&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-01": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032051170&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-02": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032063210&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-03": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032076961&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-04": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032087467&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-05": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032093341&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-06": {
+        "base": "2015",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032102676&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-07": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032111520&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-08": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032117579&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-09": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032126654&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-10": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032136874&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-11": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032147774&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2021-12": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032160821&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-01": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032166985&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-02": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032177056&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-03": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032190725&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-04": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032197257&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-05": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032206234&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-06": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032213934&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-07": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032225474&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-08": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032232694&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-09": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032246534&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-10": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032253054&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-11": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032261374&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2022-12": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040002026&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-01": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040015002&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-02": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040028220&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-03": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040046674&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-04": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040054020&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-05": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040066020&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-06": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040076884&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
+      },
+      "2023-07": {
+        "base": "2020",
+        "e_stat_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "month_page_status": 200,
+        "resolved_month_url": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+        "pdf_candidates": [
+          {
+            "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087883&fileKind=2",
+            "anchor": "PDF"
+          }
+        ]
       }
-    ],
-    "coverage_count": 0,
-    "missing_months": [
-      "2018-01",
-      "2018-02",
-      "2018-03",
-      "2018-04",
-      "2018-05",
-      "2018-06",
-      "2018-07",
-      "2018-08",
-      "2018-09",
-      "2018-10",
-      "2018-11",
-      "2018-12",
-      "2019-01",
-      "2019-02",
-      "2019-03",
-      "2019-04",
-      "2019-05",
-      "2019-06",
-      "2019-07",
-      "2019-08",
-      "2019-09",
-      "2019-10",
-      "2019-11",
-      "2019-12",
-      "2020-01",
-      "2020-02",
-      "2020-03",
-      "2020-04",
-      "2020-05",
-      "2020-06",
-      "2020-07",
-      "2020-08",
-      "2020-09",
-      "2020-10",
-      "2020-11",
-      "2020-12",
-      "2021-01",
-      "2021-02",
-      "2021-03",
-      "2021-04",
-      "2021-05",
-      "2021-06",
-      "2021-07",
-      "2021-08",
-      "2021-09",
-      "2021-10",
-      "2021-11",
-      "2021-12",
-      "2022-01",
-      "2022-02",
-      "2022-03",
-      "2022-04",
-      "2022-05",
-      "2022-06",
-      "2022-07",
-      "2022-08",
-      "2022-09",
-      "2022-10",
-      "2022-11",
-      "2022-12",
-      "2023-01",
-      "2023-02",
-      "2023-03",
-      "2023-04",
-      "2023-05",
-      "2023-06",
-      "2023-07"
-    ],
-    "note": "Static latest zenkoku.pdf is explicitly NOT accepted as vintage evidence. Month-level GREEN requires an immutable/month-specific official URL or archived first-release document."
+    },
+    "year_pages": {
+      "2015:2018": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20180",
+        "status": 200,
+        "month_links": {
+          "2018-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+          "2018-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+          "2018-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+          "2018-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+          "2018-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+          "2018-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+          "2018-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+          "2018-08": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+          "2018-09": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+          "2018-10": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+          "2018-11": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+          "2018-12": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20180&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1"
+        }
+      },
+      "2015:2019": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20190",
+        "status": 200,
+        "month_links": {
+          "2019-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+          "2019-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+          "2019-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+          "2019-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+          "2019-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+          "2019-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+          "2019-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+          "2019-08": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+          "2019-09": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+          "2019-10": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+          "2019-11": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+          "2019-12": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20190&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1"
+        }
+      },
+      "2015:2020": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20200",
+        "status": 200,
+        "month_links": {
+          "2020-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+          "2020-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+          "2020-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+          "2020-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+          "2020-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+          "2020-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1",
+          "2020-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070907&result_back=1",
+          "2020-08": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070908&result_back=1",
+          "2020-09": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=23070909&result_back=1",
+          "2020-10": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101210&result_back=1",
+          "2020-11": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101211&result_back=1",
+          "2020-12": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20200&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=24101212&result_back=1"
+        }
+      },
+      "2015:2021": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001085955&tclass2val=0&toukei=00200573&tstat=000001084976&year=20210",
+        "status": 200,
+        "month_links": {
+          "2021-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010301&result_back=1",
+          "2021-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010302&result_back=1",
+          "2021-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=11010303&result_back=1",
+          "2021-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040604&result_back=1",
+          "2021-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040605&result_back=1",
+          "2021-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001084976&tclass1=000001085955&tclass2val=0&month=12040606&result_back=1"
+        }
+      },
+      "2020:2021": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20210",
+        "status": 200,
+        "month_links": {
+          "2021-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+          "2021-08": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+          "2021-09": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+          "2021-10": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+          "2021-11": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+          "2021-12": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20210&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1"
+        }
+      },
+      "2020:2022": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20220",
+        "status": 200,
+        "month_links": {
+          "2022-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+          "2022-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+          "2022-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+          "2022-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+          "2022-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+          "2022-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+          "2022-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1",
+          "2022-08": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070908&result_back=1",
+          "2022-09": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070909&result_back=1",
+          "2022-10": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101210&result_back=1",
+          "2022-11": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101211&result_back=1",
+          "2022-12": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20220&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=24101212&result_back=1"
+        }
+      },
+      "2020:2023": {
+        "url": "https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1&tclass1=000001150149&tclass2val=0&toukei=00200573&tstat=000001150147&year=20230",
+        "status": 200,
+        "month_links": {
+          "2023-01": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010301&result_back=1",
+          "2023-02": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010302&result_back=1",
+          "2023-03": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=11010303&result_back=1",
+          "2023-04": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040604&result_back=1",
+          "2023-05": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040605&result_back=1",
+          "2023-06": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=12040606&result_back=1",
+          "2023-07": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&cycle=1&year=20230&toukei=00200573&tstat=000001150147&tclass1=000001150149&tclass2val=0&month=23070907&result_back=1"
+        }
+      }
+    },
+    "months_with_pdf_candidates": 67,
+    "note": "Coverage requires an official month-specific e-Stat dataset page; PDF candidates are recorded separately for semantic certification."
   },
   "status": "SOURCE_PROBE_COMPLETE",
-  "green_for_materialization": false,
+  "green_for_materialization": true,
   "guardrails": [
     "No revised-history substitution",
     "No current/latest static document used as historical vintage",
-    "No value extraction until immutable month-specific official source coverage is certified",
+    "Month-specific official source required before value extraction",
     "No engine/live/OOS changes"
   ],
   "changes_engine_rules": false,
