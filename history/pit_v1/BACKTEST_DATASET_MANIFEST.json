@@ -1,0 +1,18 @@
+{
+  "schema": "GMFQ_MINIMUM_ROBUST_BACKTEST_DATASET_V1",
+  "as_of": "2026-10-06",
+  "market_history_bundle_sha256": "9bbf498da7b03d0dd5fb755ff3590c970fad06e540059b6259b9021084601674",
+  "macro_eligibility_mask_sha256": "39395fdd5d0ec531177ee274c9438945fe7ad20282fcd21cea2c89e973d36d60",
+  "event_time_policy": {
+    "fx": "Use ECB reference price only after publication date; no intraday claims.",
+    "macro": "Vote only after verified publication timestamp/date. If intraday availability is unresolved, withhold the observation/block.",
+    "rates": "Use same-date ECB EUR curve observations only after their daily publication availability."
+  },
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "threshold_tuning_allowed": false,
+  "historical_ois_policy": "WITHHELD_WHERE_NO_HOMOGENEOUS_PIT_SOURCE",
+  "backtest_ready_status": "READY_AFTER_PRE_BACKTEST_INTEGRITY_GATE",
+  "backtest_started": false,
+  "dataset_manifest_sha256": "c077f752f28e8656d9721e198f5144c2c96f7627919b8446307ffacb6ad485fd"
+}
