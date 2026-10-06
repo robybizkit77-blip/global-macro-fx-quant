@@ -1,0 +1,80 @@
+{
+  "schema": "GMFQ_PIT_READINESS_REASSESSMENT_V1",
+  "created_at": "2026-10-06",
+  "base_release_sha": "b9f56d4fcab4a6b8a1476a5fdc4e70be102fd28d",
+  "purpose": "Reassess G8 PIT historical readiness after certification of the JPY e-Stat unemployment live source layer, without changing frozen engine rules or treating current/revised history as release-vintage PIT data.",
+  "frozen_engine": {
+    "commit_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "status": "UNCHANGED"
+  },
+  "observed_state": {
+    "previous_pit_freeze": {
+      "planned_series": 49,
+      "pit_ready_series": 10,
+      "withheld_series": 39,
+      "currencies_with_any_pit_vote": 3,
+      "currencies_full_growth_labour": 1
+    },
+    "cad": {
+      "status": "CORE_PIT_READY",
+      "growth": ["CA_REAL_GDP_M_history_value", "CA_RETAIL_VOLUME_history_value"],
+      "labour": ["CA_EMPLOYMENT_history_value", "CA_UNEMP_RATE_history_value"],
+      "action": "DO_NOT_REOPEN_RETAIL_OR_GDP_PIPELINES_WITHOUT_NEW_EVIDENCE"
+    },
+    "jpy_live_source": {
+      "status": "CERTIFIED_FOR_LIVE_REFRESH",
+      "source": "Japan e-Stat unemployment",
+      "latest_certified_observation": "2026-08",
+      "latest_certified_value_pct": 2.6,
+      "release_source_layer_sha": "b9f56d4fcab4a6b8a1476a5fdc4e70be102fd28d"
+    },
+    "jpy_pit_history": {
+      "status": "STILL_WITHHELD",
+      "reason": "Certification of a current official source/parser proves reproducible live ingestion but does not provide historical first-release vintages with verified market-availability timestamps.",
+      "revised_history_fallback_allowed": false
+    }
+  },
+  "historical_constraints": {
+    "macro": "Current-revised observation histories are not valid substitutes for release-date vintage PIT histories.",
+    "rates": "EUR historical same-basis rates remain withheld in the prior completeness audit.",
+    "cb_ois": "Homogeneous G8 historical PIT CB/OIS snapshots remain unavailable.",
+    "liquidity": "NZD historical liquidity replay remains withheld.",
+    "price": "The prior PIT freeze lacks a complete canonical historical FX price matrix for price-forward validation."
+  },
+  "priority_decision": {
+    "do_not_do": [
+      "Do not restart CAD Retail Volume crawling: CAD Growth+Labour is already PIT-ready in the frozen manifest.",
+      "Do not mark JPY PIT-ready from the newly certified live e-Stat source alone.",
+      "Do not fill missing PIT observations with revised historical series.",
+      "Do not tune model thresholds from partial PIT coverage."
+    ],
+    "next_high_value_work": [
+      {
+        "rank": 1,
+        "item": "Historical FX price matrix locator/reconstruction feasibility audit",
+        "why": "Without reusable canonical price history, even currencies with PIT macro coverage cannot produce clean forward-return validation from the frozen PIT sample.",
+        "mode": "READ_ONLY_AUDIT_FIRST"
+      },
+      {
+        "rank": 2,
+        "item": "JPY first-release labour vintage feasibility",
+        "why": "The official e-Stat source path is now known; only pursue historical PIT activation if authoritative vintage/release-timestamp records are reproducibly obtainable.",
+        "mode": "FEASIBILITY_ONLY_UNTIL_PROVEN"
+      },
+      {
+        "rank": 3,
+        "item": "EUR historical rates same-basis certification",
+        "why": "Removes the known 7/8 rates-history gap without changing engine rules.",
+        "mode": "SOURCE_BASIS_AUDIT"
+      }
+    ],
+    "selected_next_step": "Historical FX price matrix locator/reconstruction feasibility audit"
+  },
+  "safety": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_oos_baseline": false,
+    "restarts_oos": false
+  }
+}
