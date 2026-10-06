@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_EUR_NEGOTIATED_WAGES_PIT_VINTAGE_AUDIT_V1",
+  "status": "PARTIAL_CERTIFIED_CONSERVATIVE",
+  "created_at": "2026-10-06",
+  "scope": "Certified conservative availability dates for ECB euro-area negotiated wage growth quarterly observations; intended for PIT research only.",
+  "coverage": {
+    "first_reference_quarter": "2024-Q1",
+    "last_reference_quarter": "2026-Q1",
+    "certified_quarters": 9
+  },
+  "pit_policy": [
+    "Use first value certified as available by an official ECB-dated source.",
+    "Do not replace prior vintage values with later revisions in historical checkpoints.",
+    "Certified availability dates are conservative and may be later than the true first release; this avoids look-ahead at the cost of delayed activation.",
+    "Uncertified quarters remain WITHHELD."
+  ],
+  "revision_evidence": {
+    "reference_quarter": "2025-Q4",
+    "earlier_certified_vintage": 3.0,
+    "later_reported_value": 2.9,
+    "interpretation": "Revision detected. Historical checkpoints must retain 3.0 until the later 2.9 vintage becomes available; current revised history must not be backfilled retrospectively."
+  },
+  "current_use": {
+    "eligible_for_full_robust_backtest": false,
+    "eligible_for_diagnostic_mediation_test": true,
+    "reason": "Nine certified quarterly observations are enough for a narrow diagnostic but not enough to claim a statistically robust standalone wage-mediated EUR edge."
+  },
+  "next_test": "Combine PIT EUR labour, PIT HICP Services and certified negotiated-wage vintages in a reaction-function-aware diagnostic; report direct labour vs labour->services vs labour->wages->services without tuning.",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "threshold_tuning": false
+}
