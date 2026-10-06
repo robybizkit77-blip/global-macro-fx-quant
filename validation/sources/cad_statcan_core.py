@@ -68,7 +68,15 @@ def extract_inflation(rows):
   try:out[str(d)[:7]+'-01']=float(v)
   except:pass
  dates=sorted(out)
- if len(dates)<2:raise ValueError(f'need >=2 monthly reported CPI YoY observations; got {len(dates)}')
+ if len(dates)<2:
+  keys=list(rows[0].keys()) if rows else []
+  samples=[]
+  for r in rows:
+   joined=' | '.join(norm(v) for v in r.values())
+   if ('all-items' in joined or 'all items' in joined) and norm(r.get('GEO') or r.get('Geography'))=='canada':
+    samples.append({k:r.get(k) for k in keys if r.get(k) not in (None,'')})
+    if len(samples)>=3:break
+  raise ValueError(f'need >=2 monthly reported CPI YoY observations; got {len(dates)}; columns={keys}; all_items_samples={samples}')
  return [(d,out[d]) for d in dates]
 
 def extract_labour(rows):
