@@ -7,6 +7,7 @@
     "no threshold tuning",
     "no parameter optimization",
     "no revised-history substitution",
+    "same-date wage backfill collapsed to latest reference quarter",
     "engine untouched",
     "live_data untouched"
   ],
@@ -209,7 +210,7 @@
     }
   },
   "wages_mediator": {
-    "definition": "sign of change in certified first-known negotiated-wage annual growth; new-sign regime entries only",
+    "definition": "sign of change in latest actionable certified negotiated-wage annual growth at each unique availability date; new-sign regime entries only",
     "events": [
       {
         "checkpoint": "2024-08-29",
@@ -239,24 +240,6 @@
         "signed_60d": -0.009991228172496399
       },
       {
-        "checkpoint": "2025-12-19",
-        "signal": 1,
-        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
-        "entry_date": "2025-12-22",
-        "signed_5d": -0.0018004641488560912,
-        "signed_20d": -0.0075314166016118254,
-        "signed_60d": -0.028145006722756244
-      },
-      {
-        "checkpoint": "2025-12-19",
-        "signal": -1,
-        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
-        "entry_date": "2025-12-22",
-        "signed_5d": 0.0018004641488560912,
-        "signed_20d": 0.0075314166016118254,
-        "signed_60d": 0.028145006722756244
-      },
-      {
         "checkpoint": "2026-04-16",
         "signal": 1,
         "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
@@ -277,28 +260,28 @@
     ],
     "stats": {
       "5d": {
-        "n": 7,
-        "hit_rate": 0.42857142857142855,
-        "mean": 0.0003232536686371463,
+        "n": 5,
+        "hit_rate": 0.4,
+        "mean": 0.00045255513609200485,
         "median": -0.0010119470947639526
       },
       "20d": {
-        "n": 7,
-        "hit_rate": 0.7142857142857143,
-        "mean": 0.001393252217992041,
+        "n": 5,
+        "hit_rate": 0.8,
+        "mean": 0.0019505531051888577,
         "median": 0.0038577252079194263
       },
       "60d": {
-        "n": 7,
-        "hit_rate": 0.5714285714285714,
-        "mean": 0.0040301324661880245,
+        "n": 5,
+        "hit_rate": 0.6,
+        "mean": 0.005642185452663234,
         "median": 0.00977021635724557
       }
     },
     "small_sample_warning": true
   },
   "joint_wages_services": {
-    "definition": "wage and latest services changes must have same sign at certified wage availability date",
+    "definition": "wage and latest services changes must have same sign at unique certified wage availability date",
     "events": [
       {
         "checkpoint": "2024-08-29",
@@ -308,44 +291,26 @@
         "signed_5d": -0.0010119470947639526,
         "signed_20d": 0.0038577252079194263,
         "signed_60d": 0.010887460167352361
-      },
-      {
-        "checkpoint": "2025-12-19",
-        "signal": 1,
-        "source": "WAGES_AND_SERVICES_CONCORDANT",
-        "entry_date": "2025-12-22",
-        "signed_5d": -0.0018004641488560912,
-        "signed_20d": -0.0075314166016118254,
-        "signed_60d": -0.028145006722756244
-      },
-      {
-        "checkpoint": "2026-07-09",
-        "signal": -1,
-        "source": "WAGES_AND_SERVICES_CONCORDANT",
-        "entry_date": "2026-07-10",
-        "signed_5d": 0.003144989521328265,
-        "signed_20d": 0.0009258983349881505,
-        "signed_60d": 0.00977021635724557
       }
     ],
     "stats": {
       "5d": {
-        "n": 3,
-        "hit_rate": 0.3333333333333333,
-        "mean": 0.00011085942590274035,
+        "n": 1,
+        "hit_rate": 0.0,
+        "mean": -0.0010119470947639526,
         "median": -0.0010119470947639526
       },
       "20d": {
-        "n": 3,
-        "hit_rate": 0.6666666666666666,
-        "mean": -0.0009159310195680829,
-        "median": 0.0009258983349881505
+        "n": 1,
+        "hit_rate": 1.0,
+        "mean": 0.0038577252079194263,
+        "median": 0.0038577252079194263
       },
       "60d": {
-        "n": 3,
-        "hit_rate": 0.6666666666666666,
-        "mean": -0.0024957767327194375,
-        "median": 0.00977021635724557
+        "n": 1,
+        "hit_rate": 1.0,
+        "mean": 0.010887460167352361,
+        "median": 0.010887460167352361
       }
     },
     "small_sample_warning": true
