@@ -38,11 +38,11 @@ def main() -> int:
         a = json.loads(audit.read_text())
         assert c["currency"] == "USD", c
         assert c["dimension"] == "labour", c
-        assert c["observation_date"] == "2026-09", c
+        assert c["observation_date"] == "2026-09-01", c
         assert c["value"] == 4.2, c
         assert c["series_id"] == "UNRATE", c
         assert a["upstream_series_id"] == "LNS14000000", a
-        assert a["prior_period"] == "2026-08", a
+        assert a["prior_period"] == "2026-08-01", a
         assert a["prior_value"] == 4.1, a
         assert a["mode"] == "fixture", a
         assert a["live_data_written"] is False, a
@@ -51,9 +51,10 @@ def main() -> int:
         assert summary["status"] == "PASS", summary
         assert summary["live_data_modified"] is False, summary
         assert summary["currency"] == "USD" and summary["dimension"] == "labour", summary
+        assert summary["observation_date"] == "2026-09-01", summary
     after = {str(p): digest(p) for p in LIVE_FILES}
     assert before == after, (before, after)
-    print(json.dumps({"status":"PASS","source":"BLS","series":"LNS14000000","live_data_modified":False}, indent=2))
+    print(json.dumps({"status":"PASS","source":"BLS","series":"LNS14000000","observation_date":"2026-09-01","live_data_modified":False}, indent=2))
     return 0
 
 
