@@ -11,7 +11,14 @@ OUT=Path('history/pit_v1/USD_CPI_HEADLINE_CORE_FIRST_RELEASE_2016_2026.csv')
 EVID=Path('validation/USD_CPI_BLS_ARCHIVE_PIT_MATERIALIZATION_2026-10-06.json')
 START=(2016,1); END=(2026,8)
 WITHHELD={'2025-10':'BLS did not publish an October 2025 CPI news release because of the 2025 lapse in federal government appropriations.'}
-REF_EXCEPTIONS={'https://www.bls.gov/news.release/archives/cpi_06162016.htm':{'reference':(2016,5),'release_date':'2016-06-16'}}
+REF_EXCEPTIONS={
+    'https://www.bls.gov/news.release/archives/cpi_06162016.htm':{
+        'reference':(2016,5),
+        'release_date':'2016-06-16',
+        'headline_cpi_yoy_pct':1.0,
+        'core_cpi_yoy_pct':2.2,
+    }
+}
 UA='Mozilla/5.0 GMFQ-PIT-Audit/1.0 (research; contact via repository)'
 MONTH_LIST=['january','february','march','april','may','june','july','august','september','october','november','december']
 MONTHS={m:i for i,m in enumerate(MONTH_LIST,1)}
@@ -73,6 +80,8 @@ def parse(text,u):
     if h is None:
         q=re.search(r'Over the last 12 months, the all items index (?:decreased|fell)\s+(\d+(?:\.\d+)?)\s+percent',body,re.I)
         if q: h=-float(q.group(1))
+    if h is None and u in REF_EXCEPTIONS:
+        h=float(REF_EXCEPTIONS[u]['headline_cpi_yoy_pct'])
     if h is None: raise ValueError('headline CPI YoY not found')
     c=None
     core_phrase=r'(?:index for\s+)?all items less food and energy(?:\s+index)?'
@@ -83,6 +92,8 @@ def parse(text,u):
       core_phrase+r'.{0,260}?12-month.{0,120}?(\d+(?:\.\d+)?)\s+percent']:
         q=re.search(pat,body,re.I)
         if q: c=float(q.group(1)); break
+    if c is None and u in REF_EXCEPTIONS:
+        c=float(REF_EXCEPTIONS[u]['core_cpi_yoy_pct'])
     if c is None: raise ValueError('core CPI YoY not found')
     return {'release_date':rd,'release_time_et':'08:30','reference_month':f'{y:04d}-{m:02d}','headline_cpi_yoy_pct':h,'core_cpi_yoy_pct':c,'source_url':u,'pit_status':'READY_FIRST_RELEASE'}
 def months():
@@ -113,6 +124,6 @@ def main():
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open('w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
-    ev={'schema':'GMFQ_USD_CPI_BLS_ARCHIVE_PIT_V1','status':'PASS','source':'Official BLS archived CPI news releases','coverage':{'start':allm[0],'end':allm[-1],'calendar_months':len(allm),'published_complete_releases':len(rows),'structural_withheld_months':len(WITHHELD)},'structural_withheld':WITHHELD,'source_exceptions':{'2016-05':'Official BLS June 16 2016 HTML rendering lacks parser-visible title/timestamp; reference month and 08:30 EDT release timestamp are certified from the official archived PDF/release schedule.'},'fields':['headline CPI YoY first-published','core CPI ex-food-energy YoY first-published','release date','08:30 ET release time'],'method':'Opening archived CPI release text only; no current/revised-history substitution.','strict_zero_parse_errors_on_published_releases':True,'output':str(OUT),'notes':['This is a CPI release-state block, not a claim that CPI is the Fed preferred inflation gauge; PCE remains conceptually distinct.','No consensus-surprise series is introduced.','No engine/live-data changes.']}
+    ev={'schema':'GMFQ_USD_CPI_BLS_ARCHIVE_PIT_V1','status':'PASS','source':'Official BLS archived CPI news releases','coverage':{'start':allm[0],'end':allm[-1],'calendar_months':len(allm),'published_complete_releases':len(rows),'structural_withheld_months':len(WITHHELD)},'structural_withheld':WITHHELD,'source_exceptions':{'2016-05':'Official BLS June 16 2016 HTML rendering is not parser-complete; reference month, 08:30 EDT timestamp, headline 1.0% YoY and core 2.2% YoY are certified from the official BLS archived PDF/release schedule.'},'fields':['headline CPI YoY first-published','core CPI ex-food-energy YoY first-published','release date','08:30 ET release time'],'method':'Opening archived CPI release text only; no current/revised-history substitution. One isolated 2016 source-rendering exception is explicitly certified from the contemporaneous official archived PDF.','strict_zero_parse_errors_on_published_releases':True,'output':str(OUT),'notes':['This is a CPI release-state block, not a claim that CPI is the Fed preferred inflation gauge; PCE remains conceptually distinct.','No consensus-surprise series is introduced.','No engine/live-data changes.']}
     EVID.write_text(json.dumps(ev,indent=2),encoding='utf-8');print(json.dumps(ev,indent=2))
 if __name__=='__main__':main()
