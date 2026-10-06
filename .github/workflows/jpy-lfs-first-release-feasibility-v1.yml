@@ -1,4 +1,4 @@
-name: JPY LFS First Release Feasibility V1
+name: JPY Macro First Release Feasibility V1
 
 on:
   push:
@@ -20,36 +20,42 @@ jobs:
           python-version: '3.12'
       - name: Install PDF parser
         run: python -m pip install --disable-pip-version-check pypdf==6.1.1
-      - name: Probe archived official first-release PDFs
+      - name: Probe archived official Labour first-release PDFs
         run: |
-          mkdir -p /tmp/gmfq-jpy-lfs
+          mkdir -p /tmp/gmfq-jpy-pit
           python validation/jpy_lfs_first_release_probe.py \
             --months 2018-01 2019-01 2023-01 \
-            --output /tmp/gmfq-jpy-lfs/feasibility.json
-      - name: Assert no revised-history fallback and exact anchors
+            --output /tmp/gmfq-jpy-pit/labour.json
+      - name: Probe archived METI industrial-production first releases
+        run: |
+          python validation/jpy_iip_first_release_probe.py \
+            --output /tmp/gmfq-jpy-pit/iip.json
+      - name: Assert feasibility boundaries
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          x=json.loads(Path('/tmp/gmfq-jpy-lfs/feasibility.json').read_text())
-          assert x['status']=='PASS',x
-          assert x['revised_history_fallback_used'] is False,x
-          assert x['pit_activation'] is False,x
-          assert len(x['rows'])==3,x
-          expected={'2018-01':2.4,'2019-01':2.5,'2023-01':2.4}
-          for r in x['rows']:
-              assert r['http_status']==200,r
-              assert r['release_date'],r
-              assert r['unemployment_rate_sa_pct']==expected[r['reference_month']],r
-              assert r['anchor_match'] is True,r
-          print(json.dumps(x,indent=2,ensure_ascii=False))
+          l=json.loads(Path('/tmp/gmfq-jpy-pit/labour.json').read_text())
+          g=json.loads(Path('/tmp/gmfq-jpy-pit/iip.json').read_text())
+          assert l['status']=='PASS',l
+          assert l['labour_block_series_count']==2,l
+          assert l['revised_history_fallback_used'] is False,l
+          assert l['pit_activation'] is False,l
+          assert g['status']=='PASS',g
+          assert g['growth_series_count']==1,g
+          assert g['publication_timestamp_in_source'] is True,g
+          assert g['revised_history_fallback_used'] is False,g
+          assert g['pit_activation'] is False,g
+          print(json.dumps({'labour':l,'industrial_production':g},indent=2,ensure_ascii=False))
           PY
       - name: Confirm repository untouched
         run: git diff --exit-code
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
-          name: jpy-lfs-first-release-feasibility-v1
+          name: jpy-macro-first-release-feasibility-v1
           if-no-files-found: error
           retention-days: 14
-          path: /tmp/gmfq-jpy-lfs/feasibility.json
+          path: |
+            /tmp/gmfq-jpy-pit/labour.json
+            /tmp/gmfq-jpy-pit/iip.json
