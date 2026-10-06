@@ -1,9 +1,6 @@
 name: Replay Original Walkforward With Frozen Price
 
 on:
-  push:
-    branches:
-      - validation-walkforward-original-s-frozen-price-2026-10-06
   workflow_dispatch:
 
 permissions:
