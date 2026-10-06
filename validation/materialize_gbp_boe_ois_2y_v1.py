@@ -13,7 +13,12 @@ def main():
         if not n.lower().endswith('.xlsx'):continue
         if not any(k in n for k in ['2016 to 2024','2025 to present']):continue
         book=pd.ExcelFile(io.BytesIO(z.read(n)))
-        df=pd.read_excel(book,sheet_name='2. spot curve',header=None)
+        # Prefer the full spot curve rather than the short-end-only sheet.
+        spot=[s for s in book.sheet_names if 'spot curve' in s.lower()]
+        if not spot: spot=[s for s in book.sheet_names if 'spot' in s.lower() and 'short end' not in s.lower()]
+        if not spot: raise ValueError(f'full spot sheet missing {n}: {book.sheet_names}')
+        sheet=spot[0]
+        df=pd.read_excel(book,sheet_name=sheet,header=None)
         years_row=None
         for i in range(min(10,len(df))):
             if str(df.iloc[i,0]).strip().lower().startswith('years'):
@@ -38,12 +43,12 @@ def main():
             except:continue
             rows.append({'date':dt.strftime('%Y-%m-%d'),'gbp_ois_spot_2y_pct':x,'source_file':n})
             count+=1
-        source_files.append({'file':n,'tenor_years':tenor,'rows_2018_plus':count})
+        source_files.append({'file':n,'sheet':sheet,'tenor_years':tenor,'rows_2018_plus':count})
     ded={r['date']:r for r in rows}; rows=[ded[k] for k in sorted(ded)]
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open('w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
-    audit={'schema':'GMFQ_GBP_BOE_OIS_2Y_MATERIALIZATION_V1','status':'PASS' if len(rows)>1500 else 'PARTIAL','created_at':'2026-10-06','source_url':URL,'curve':'sterling OIS spot','tenor_years':2.0,'rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'source_files':source_files,'guardrails':['single OIS spot curve only','exact 2Y tenor','no gilt substitution','daily official BoE archive','no engine/live_data changes']}
+    audit={'schema':'GMFQ_GBP_BOE_OIS_2Y_MATERIALIZATION_V1','status':'PASS' if len(rows)>1500 else 'PARTIAL','created_at':'2026-10-06','source_url':URL,'curve':'sterling OIS spot','tenor_years':2.0,'rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'source_files':source_files,'guardrails':['single full OIS spot curve only','exact 2Y tenor','no gilt substitution','daily official BoE archive','no engine/live_data changes']}
     AUDIT.write_text(json.dumps(audit,indent=2),encoding='utf-8');print(json.dumps(audit,indent=2))
     if audit['status']!='PASS':raise SystemExit(2)
 if __name__=='__main__':main()
