@@ -1,0 +1,138 @@
+{
+  "schema": "GMFQ_JPY_REACTION_FUNCTION_V1_SPEC",
+  "created_at": "2026-10-06",
+  "status": "FROZEN_SPEC_READY_FOR_DATA_ATTACH",
+  "scope": "Ex-ante BoJ reaction-function replay specification for JPY. This file freezes the rules before observing replay outcomes.",
+  "engine": {
+    "frozen_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "threshold_direction": 0.2,
+    "threshold_acceleration": 0.2,
+    "scale": "median absolute first differences, last 80 observations",
+    "minimum_observations": 8,
+    "threshold_tuning_allowed": false
+  },
+  "input_contract": {
+    "wages": {
+      "required_rows": 67,
+      "coverage": "2018-01 through 2023-07",
+      "metric": "scheduled cash earnings YoY from MHLW preliminary releases",
+      "polarity": 1,
+      "pit_requirement": "contemporaneous preliminary release only; document URL and checksum required"
+    },
+    "inflation": {
+      "required_rows": 67,
+      "coverage": "2018-01 through 2023-07",
+      "components": [
+        {"name": "headline CPI YoY", "polarity": 1},
+        {"name": "core CPI YoY", "polarity": 1}
+      ],
+      "block_aggregation": "median of available component impulses at each checkpoint",
+      "pit_requirement": "contemporaneous first-release national CPI report only; no current/rebased historical fallback; document URL and checksum required",
+      "base_change_policy": "preserve contemporaneous published base; do not retroactively rebase first-release observations"
+    },
+    "fx": {
+      "source": "history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv",
+      "benchmark": "JPY versus equal-weight basket of the other seven G8 currencies",
+      "entry_policy": "first ECB daily reference observation strictly after reaction-state checkpoint"
+    },
+    "rates_optional": {
+      "status": "OBSERVED_LAYER_ONLY",
+      "allowed_states": ["ALIGNED", "CONFLICT", "FLAT", "WITHHELD"],
+      "rule": "Rates/front-end/yield differential may classify transmission state only. It must not filter, include, exclude, or reweight reaction-function events."
+    }
+  },
+  "state_construction": {
+    "series_impulse": "same frozen-style normalized impulse used elsewhere in PIT research: latest first difference divided by median absolute first differences over the latest 80 eligible observations; minimum 8 observations",
+    "direction_classification": {
+      "hawkish": "impulse >= +0.2",
+      "neutral": "-0.2 < impulse < +0.2",
+      "dovish": "impulse <= -0.2"
+    },
+    "wages_state": "direction of scheduled-cash-earnings normalized impulse",
+    "inflation_state": "direction of median normalized impulse across headline and core CPI",
+    "joint_boj_state": [
+      {
+        "wages": "HAWKISH",
+        "inflation": "HAWKISH",
+        "state": "SUSTAINABLE_INFLATION_PRESSURE",
+        "jpy_polarity": 1
+      },
+      {
+        "wages": "DOVISH",
+        "inflation": "DOVISH",
+        "state": "DISINFLATION_NORMALIZATION_DELAY",
+        "jpy_polarity": -1
+      },
+      {
+        "wages": "HAWKISH",
+        "inflation": "DOVISH",
+        "state": "MIXED_WAGES_UP_INFLATION_DOWN",
+        "jpy_polarity": 0
+      },
+      {
+        "wages": "DOVISH",
+        "inflation": "HAWKISH",
+        "state": "MIXED_WAGES_DOWN_INFLATION_UP",
+        "jpy_polarity": 0
+      },
+      {
+        "wages": "NEUTRAL_OR_PARTIAL",
+        "inflation": "ANY",
+        "state": "PARTIAL_NEUTRAL",
+        "jpy_polarity": 0
+      },
+      {
+        "wages": "ANY",
+        "inflation": "NEUTRAL_OR_PARTIAL",
+        "state": "PARTIAL_NEUTRAL",
+        "jpy_polarity": 0
+      }
+    ],
+    "event_universe": "All chronological checkpoints where either wages or CPI state updates and both blocks have at least the frozen minimum history. No post-hoc event deletion.",
+    "directional_test_universe": "Only checkpoints with predeclared jpy_polarity +1 or -1; mixed/neutral states remain in evidence but cast no directional vote."
+  },
+  "evaluation": {
+    "horizons_market_days": [5, 20, 60],
+    "full_sample": true,
+    "walk_forward": {
+      "initial_train_fraction": 0.4,
+      "test_folds": [0.2, 0.2, 0.2],
+      "chronological": true,
+      "refit": false
+    },
+    "required_statistics": [
+      "event_count",
+      "hit_rate",
+      "mean_signed_log_return",
+      "median_signed_log_return"
+    ],
+    "rates_attribution": "If an eligible official front-end/yield-differential history exists, compare ALIGNED vs CONFLICT vs FLAT within identical macro-state cohorts and identical FX timing. No binary confirmation rule."
+  },
+  "comparison_baseline": {
+    "file": "validation/JPY_FROZEN_MACRO_REPLAY_V1_2026-10-06.json",
+    "purpose": "Compare BoJ reaction-function replay against the already-failed direct Growth+Labour JPY replay without changing the frozen baseline."
+  },
+  "guardrails": [
+    "PIT/first-release inputs only",
+    "No current or revised-history substitution",
+    "No tuning of thresholds, weights, horizons, event windows, or state definitions after viewing results",
+    "No production promotion from full-sample results alone",
+    "Walk-forward must use exact chronological event cohorts",
+    "Rates are explanatory transmission state, never a mandatory confirmation filter",
+    "No engine-rule changes",
+    "No live-data changes",
+    "No OOS-baseline changes"
+  ],
+  "activation_gate": {
+    "required_before_execution": [
+      "wages panel 67/67 GREEN",
+      "CPI panel 67/67 GREEN",
+      "document URL and checksum present for every certified observation",
+      "exact local file paths identified on the execution branch",
+      "strict engine/live/OOS integrity guard available"
+    ],
+    "if_any_requirement_missing": "WITHHELD_NO_REPLAY_VOTE"
+  }
+}
