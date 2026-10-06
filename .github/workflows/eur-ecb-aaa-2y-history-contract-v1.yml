@@ -1,0 +1,56 @@
+name: EUR ECB AAA 2Y History Contract V1
+
+on:
+  push:
+    branches:
+      - validation-rates-eur-2y-history-v1-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official same-basis EUR AAA 2Y history
+        run: |
+          mkdir -p /tmp/gmfq-eur-2y
+          python validation/fetch_ecb_eur_aaa_2y_history.py \
+            --start 2016-01-01 \
+            --end 2026-09-30 \
+            --output /tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json \
+            --summary /tmp/gmfq-eur-2y/summary.json
+      - name: Assert historical contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('/tmp/gmfq-eur-2y/summary.json').read_text())
+          assert s['status']=='PASS',s
+          assert s['series_key']=='YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y',s
+          assert s['observation_count']>2000,s
+          assert s['same_basis_current_snapshot_match'] is True,s
+          assert s['anchor_error']<=1e-8,s
+          assert s['history_spliced'] is False,s
+          assert s['live_data_modified'] is False,s
+          assert s['model_rules_modified'] is False,s
+          assert s['rules_fingerprint_expected_unchanged']=='3356baf0',s
+          print(json.dumps(s,indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-ecb-aaa-2y-history-contract-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json
+            /tmp/gmfq-eur-2y/summary.json
