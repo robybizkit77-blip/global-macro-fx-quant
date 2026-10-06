@@ -1,0 +1,462 @@
+{
+  "schema": "GMFQ_JPY_WAGES_CPI_SOURCE_PROBE_V1",
+  "created_at": "2026-10-06",
+  "target_coverage": "2018-01 through 2023-07",
+  "required_months": 67,
+  "wages_mhlw_preliminary": {
+    "index_url": "https://www.mhlw.go.jp/toukei/list/30-1a.html",
+    "index_status": 200,
+    "months_found": {
+      "2023-01": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2301p/2301p.html",
+          "anchor": "1¬ñ"
+        }
+      ],
+      "2023-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/2302p.html",
+          "anchor": "2¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2302p/2302p.html",
+          "anchor": "ÎJv²¸|ßa5N2ªÊ¬ñyÑßa4NNÜ^ÌÊ"
+        }
+      ],
+      "2023-03": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2303p/2303p.html",
+          "anchor": "3¬ñ"
+        }
+      ],
+      "2023-04": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2304p/2304p.html",
+          "anchor": "4¬ñ"
+        }
+      ],
+      "2023-05": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2305p/2305p.html",
+          "anchor": "5¬ñ"
+        }
+      ],
+      "2023-06": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/2306p.html",
+          "anchor": "6¬ñ"
+        }
+      ],
+      "2023-07": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/2307p.html",
+          "anchor": "7¬ñ"
+        }
+      ],
+      "2022-01": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2201p/2201p.html",
+          "anchor": "1¬ñ"
+        }
+      ],
+      "2022-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/2202p.html",
+          "anchor": "2¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2202p/2202p.html",
+          "anchor": "ÎJv²¸|ßa4N2ªÊ¬ñyÑßa3NNÜ^ÌÊ"
+        }
+      ],
+      "2022-03": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2203p/2203p.html",
+          "anchor": "3¬ñ"
+        }
+      ],
+      "2022-04": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2204p/2204p.html",
+          "anchor": "4¬ñ"
+        }
+      ],
+      "2022-05": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2205p/2205p.html",
+          "anchor": "5¬ñ"
+        }
+      ],
+      "2022-06": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2206p/2206p.html",
+          "anchor": "6¬ñ"
+        }
+      ],
+      "2022-07": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2207p/2207p.html",
+          "anchor": "7¬ñ"
+        }
+      ],
+      "2022-08": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2208p/2208p.html",
+          "anchor": "8¬ñ"
+        }
+      ],
+      "2022-09": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/2209p.html",
+          "anchor": "9¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2209p/2209p.html",
+          "anchor": "ÎJv²¸|ßa4N9ªÊ¬ñyÑßa4NÄGÜ^ÌÊ"
+        }
+      ],
+      "2022-10": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2210p/2210p.html",
+          "anchor": "10¬ñ"
+        }
+      ],
+      "2022-11": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2211p/2211p.html",
+          "anchor": "11¬ñ"
+        }
+      ],
+      "2022-12": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r04/2212p/2212p.html",
+          "anchor": "12¬ñ"
+        }
+      ],
+      "2021-01": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/0301p/0301p.html",
+          "anchor": "1¬ñ"
+        }
+      ],
+      "2021-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/2102p.html",
+          "anchor": "2¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2102p/2102p.html",
+          "anchor": "ÎJv²¸|ßa3N2ªÊ¬ñyÑßa2NNÜ^ÌÊ"
+        }
+      ],
+      "2021-03": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2103p/2103p.html",
+          "anchor": "3¬ñ"
+        }
+      ],
+      "2021-04": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2104p/2104p.html",
+          "anchor": "4¬ñ"
+        }
+      ],
+      "2021-05": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2105p/2105p.html",
+          "anchor": "5¬ñ"
+        }
+      ],
+      "2021-06": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2106p/2106p.html",
+          "anchor": "6¬ñ"
+        }
+      ],
+      "2021-07": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2107p/2107p.html",
+          "anchor": "7¬ñ"
+        }
+      ],
+      "2021-08": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2108p/2108p.html",
+          "anchor": "8¬ñ"
+        }
+      ],
+      "2021-09": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/2109p.html",
+          "anchor": "9¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2109p/2109p.html",
+          "anchor": "ÎJv²¸|ßa3N9ªÊ¬ñyÑßa3NÄGÜ^ÌÊ"
+        }
+      ],
+      "2021-10": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2110p/2110p.html",
+          "anchor": "10¬ñ"
+        }
+      ],
+      "2021-11": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2111p/2111p.html",
+          "anchor": "11¬ñ"
+        }
+      ],
+      "2021-12": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r03/2112p/2112p.html",
+          "anchor": "12¬ñ"
+        }
+      ],
+      "2020-01": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0201p/0201p.html",
+          "anchor": "1¬ñ"
+        }
+      ],
+      "2020-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/0202p.html",
+          "anchor": "2¬ñ"
+        },
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0202p/0202p.html",
+          "anchor": "ÎJv²¸|ßa2N2ªÊ¬ñyÑßa³NNÜ^ÌÊ"
+        }
+      ],
+      "2020-03": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0203p/0203p.html",
+          "anchor": "3¬ñ"
+        }
+      ],
+      "2020-04": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0204p/0204p.html",
+          "anchor": "4¬ñ"
+        }
+      ],
+      "2020-05": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0205p/0205p.html",
+          "anchor": "5¬ñ"
+        }
+      ],
+      "2020-06": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0206p/0206p.html",
+          "anchor": "6¬ñ"
+        }
+      ],
+      "2020-07": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0207p/0207p.html",
+          "anchor": "7¬ñ"
+        }
+      ],
+      "2020-08": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0208p/0208p.html",
+          "anchor": "8¬ñ"
+        }
+      ],
+      "2020-09": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0209p/0209p.html",
+          "anchor": "9¬ñ"
+        }
+      ],
+      "2020-10": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0210p/0210p.html",
+          "anchor": "10¬ñ"
+        }
+      ],
+      "2020-11": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0211p/0211p.html",
+          "anchor": "11¬ñ"
+        }
+      ],
+      "2020-12": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r02/0212p/0212p.html",
+          "anchor": "12¬ñ"
+        }
+      ],
+      "2019-09": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r01/0109p/0109p.html",
+          "anchor": "ÎJv²¸|ßa³N9ªÊ¬ñyÑßa³NÄGÜ^ÌÊ"
+        }
+      ],
+      "2018-09": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3009p/3009p.html",
+          "anchor": "ÎJv²¸|½¬30N9ªÊ¬ñyÑ½¬30NÄGÜ^ÌÊ"
+        }
+      ],
+      "2019-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/31/3102p/3102p.html",
+          "anchor": "ÎJv²¸|½¬31N2ªÊ¬ñyÑ½¬30NNÜ^ÌÊ"
+        }
+      ],
+      "2018-02": [
+        {
+          "page_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/3002p.html",
+          "anchor": "ÎJv²¸|½¬30N2ªÊ¬ñyÑ½¬29NNÜ^ÌÊ"
+        }
+      ]
+    },
+    "coverage_count": 47,
+    "missing_months": [
+      "2018-01",
+      "2018-03",
+      "2018-04",
+      "2018-05",
+      "2018-06",
+      "2018-07",
+      "2018-08",
+      "2018-10",
+      "2018-11",
+      "2018-12",
+      "2019-01",
+      "2019-03",
+      "2019-04",
+      "2019-05",
+      "2019-06",
+      "2019-07",
+      "2019-08",
+      "2019-10",
+      "2019-11",
+      "2019-12"
+    ]
+  },
+  "cpi_statistics_bureau_first_release": {
+    "index_url": "https://www.stat.go.jp/english/data/cpi/1588.htm",
+    "index_status": 200,
+    "archive_links_count": 8,
+    "archive_links_sample": [
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/index.html",
+        "anchor": "Consumer Price Index"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/report/2015np/index.html",
+        "anchor": "2015"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/report/2014np/index.html",
+        "anchor": "2014"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/report/2013np/index.html",
+        "anchor": "2013"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/report/2012np/index.html",
+        "anchor": "2012"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/report/2011np/index.html",
+        "anchor": "2011"
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/index.html",
+        "anchor": ""
+      },
+      {
+        "url": "https://www.stat.go.jp/english/data/cpi/1588.htm#header",
+        "anchor": "Top of this page"
+      }
+    ],
+    "coverage_count": 0,
+    "missing_months": [
+      "2018-01",
+      "2018-02",
+      "2018-03",
+      "2018-04",
+      "2018-05",
+      "2018-06",
+      "2018-07",
+      "2018-08",
+      "2018-09",
+      "2018-10",
+      "2018-11",
+      "2018-12",
+      "2019-01",
+      "2019-02",
+      "2019-03",
+      "2019-04",
+      "2019-05",
+      "2019-06",
+      "2019-07",
+      "2019-08",
+      "2019-09",
+      "2019-10",
+      "2019-11",
+      "2019-12",
+      "2020-01",
+      "2020-02",
+      "2020-03",
+      "2020-04",
+      "2020-05",
+      "2020-06",
+      "2020-07",
+      "2020-08",
+      "2020-09",
+      "2020-10",
+      "2020-11",
+      "2020-12",
+      "2021-01",
+      "2021-02",
+      "2021-03",
+      "2021-04",
+      "2021-05",
+      "2021-06",
+      "2021-07",
+      "2021-08",
+      "2021-09",
+      "2021-10",
+      "2021-11",
+      "2021-12",
+      "2022-01",
+      "2022-02",
+      "2022-03",
+      "2022-04",
+      "2022-05",
+      "2022-06",
+      "2022-07",
+      "2022-08",
+      "2022-09",
+      "2022-10",
+      "2022-11",
+      "2022-12",
+      "2023-01",
+      "2023-02",
+      "2023-03",
+      "2023-04",
+      "2023-05",
+      "2023-06",
+      "2023-07"
+    ],
+    "note": "Static latest zenkoku.pdf is explicitly NOT accepted as vintage evidence. Month-level GREEN requires an immutable/month-specific official URL or archived first-release document."
+  },
+  "status": "SOURCE_PROBE_COMPLETE",
+  "green_for_materialization": false,
+  "guardrails": [
+    "No revised-history substitution",
+    "No current/latest static document used as historical vintage",
+    "No value extraction until immutable month-specific official source coverage is certified",
+    "No engine/live/OOS changes"
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
