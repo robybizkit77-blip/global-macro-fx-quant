@@ -15,28 +15,27 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Extract historical walk-forward engine functions
+      - name: Extract pair hierarchy logic
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          names=['normalizedSeriesImpulse','blockDynamics','seriesDynamics']
-          files=[p for p in Path('payload').glob('part-*.txt')]
-          for name in names:
-            print(f'===== {name} =====')
+          needles=['CONTRASTO STRUTTURALE FORTE','VANTAGGIO RELATIVO PARZIALE','PILASTRI DIVISI','macro_side','policy_side','macroSide','rateSide','ratesSide']
+          files=list(Path('payload').glob('part-*.txt'))
+          seen=set()
+          for needle in needles:
+            print(f'===== {needle} =====')
             found=False
             for p in files:
               text=p.read_text(errors='ignore')
-              for pat in [rf'function\s+{name}\s*\(',rf'const\s+{name}\s*=\s*\(',rf'let\s+{name}\s*=\s*\(',rf'var\s+{name}\s*=\s*\(']:
-                m=re.search(pat,text)
-                if m:
-                  start=max(0,m.start()-500)
-                  end=min(len(text),m.start()+5000)
+              pos=text.find(needle)
+              if pos>=0:
+                key=(str(p),pos)
+                if key not in seen:
+                  seen.add(key)
                   print(f'FILE={p}')
-                  print(text[start:end])
-                  found=True
-                  break
-              if found: break
+                  print(text[max(0,pos-3500):min(len(text),pos+5500)])
+                found=True
+                break
             if not found: print('NOT_FOUND')
           PY
