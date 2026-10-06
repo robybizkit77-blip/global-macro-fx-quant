@@ -17,7 +17,7 @@ SOURCE = "Eurostat"
 CONFIG: dict[str, dict[str, Any]] = {
     "inflation": {
         "dataset": "prc_hicp_minr",
-        "filters": {"freq": "M", "unit": "RCH_A", "coicop": "CP00", "geo": "EA21"},
+        "filters": {"freq": "M", "unit": "RCH_A", "coicop18": "TOTAL", "geo": "EA"},
         "source_url": "https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en",
         "expected_heatmap_series_id": "EA_HICP_HEADLINE_YOY",
         "expected_transformation": "reported_yoy_rate",
@@ -178,7 +178,7 @@ def resolve_heatmap_contract(dimension: str) -> tuple[str, str, str]:
 
 def build_api_url(dimension: str) -> str:
     cfg = CONFIG[dimension]
-    query = {"lang": "en", **cfg["filters"]}
+    query = {"lang": "EN", **cfg["filters"]}
     return f"{API_BASE}/{cfg['dataset']}?{urllib.parse.urlencode(query)}"
 
 
