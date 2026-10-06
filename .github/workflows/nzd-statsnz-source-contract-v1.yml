@@ -1,0 +1,70 @@
+name: NZD Stats NZ Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-nzd-statsnz-v1-2026-10-06
+    paths:
+      - 'validation/sources/nzd_statsnz_core.py'
+      - 'validation/fixtures/nzd_statsnz_cpi_contract.json'
+      - 'validation/fixtures/nzd_statsnz_unemployment_contract.json'
+      - 'validation/test_nzd_statsnz_source.py'
+      - '.github/workflows/nzd-statsnz-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic NZD Stats NZ parser-builder contract
+        run: python validation/test_nzd_statsnz_source.py
+      - name: Fetch official live Stats NZ inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-nzd/inflation
+          python validation/sources/nzd_statsnz_core.py --dimension inflation --output /tmp/gmfq-nzd/inflation/candidate.json --audit-output /tmp/gmfq-nzd/inflation/source-audit.json
+      - name: Pass live NZD inflation candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-nzd/inflation/candidate.json --output-dir /tmp/gmfq-nzd/inflation/built
+      - name: Fetch official live Stats NZ labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-nzd/labour
+          python validation/sources/nzd_statsnz_core.py --dimension labour --output /tmp/gmfq-nzd/labour/candidate.json --audit-output /tmp/gmfq-nzd/labour/source-audit.json
+      - name: Pass live NZD labour candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-nzd/labour/candidate.json --output-dir /tmp/gmfq-nzd/labour/built
+      - name: Verify Stats NZ provenance and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out={}
+          for dim in ('inflation','labour'):
+              r=Path('/tmp/gmfq-nzd')/dim
+              c=json.loads((r/'candidate.json').read_text());a=json.loads((r/'source-audit.json').read_text());s=json.loads((r/'built/summary.json').read_text())
+              assert c['currency']=='NZD' and c['source']=='Stats NZ';assert a['mode']=='live' and a['live_data_written'] is False;assert s['status']=='PASS' and s['live_data_modified'] is False
+              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+          assert out['inflation']['series_id']=='NZ_CPI_HEADLINE_YOY' and out['inflation']['date']=='2026-06-01' and abs(float(out['inflation']['value'])-4.1)<1e-12,out
+          assert out['labour']['series_id']=='NZ_UNEMP_RATE' and out['labour']['date']=='2026-06-01' and abs(float(out['labour']['value'])-5.6)<1e-12,out
+          print(json.dumps({'status':'PASS','source':'Stats NZ','results':out,'live_data_modified':False},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload Stats NZ verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: nzd-statsnz-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-nzd/inflation/candidate.json
+            /tmp/gmfq-nzd/inflation/source-audit.json
+            /tmp/gmfq-nzd/inflation/built/summary.json
+            /tmp/gmfq-nzd/labour/candidate.json
+            /tmp/gmfq-nzd/labour/source-audit.json
+            /tmp/gmfq-nzd/labour/built/summary.json
