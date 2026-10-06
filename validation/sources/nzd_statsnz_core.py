@@ -9,8 +9,8 @@ HEAT=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Stats NZ'
 HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
 URLS={
- 'inflation':'https://www.stats.govt.nz/information-releases/consumers-price-index-june-2026-quarter/',
- 'labour':'https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/',
+ 'inflation':'https://www.stats.govt.nz/news/annual-inflation-at-4-1-percent-in-june-2026/',
+ 'labour':'https://www.stats.govt.nz/news/economic-snapshot-households-and-businesses-experience-higher-fuel-prices-in-the-june-2026-quarter/',
 }
 CONFIG={
  'inflation':{'series_id':'NZ_CPI_HEADLINE_YOY','macro_series_id':'NZ_CPI_HEADLINE_YOY_history_value','frequency':'Q','transformation':'reported_yoy_rate','unit':'% YoY'},
@@ -29,35 +29,26 @@ def fetch(url):
  with urllib.request.urlopen(req,timeout=45) as r:return r.read().decode('utf-8',errors='replace')
 def period(t):
  m=re.search(r'(March|June|September|December)\s+(20\d{2})\s+quarter',t,re.I)
+ if not m:
+  m=re.search(r'(March|June|September|December)\s+(20\d{2})',t,re.I)
  if not m: raise ValueError('cannot parse Stats NZ quarter')
  return int(m.group(2)),MONTHS[m.group(1).lower()]
-def snippets(t,needles):
- out=[]
- low=t.lower()
- for needle in needles:
-  n=needle.lower();start=0
-  while len(out)<8:
-   i=low.find(n,start)
-   if i<0:break
-   out.append(t[max(0,i-140):min(len(t),i+220)])
-   start=i+len(n)
- return out
 def parse_value(dim,t):
  if dim=='inflation':
   patterns=[
-   (r'([0-9]+(?:\.[0-9]+)?)\s*percent increase in the CPI in the 12 months',1),
-   (r'CPI all groups\s+([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)',2),
-   (r'(?:CPI|consumers price index).*?(?:increased|rose)\s+([0-9]+(?:\.[0-9]+)?)\s*percent\s+in the 12 months',1),
-  ];needles=['4.1','CPI all groups','12 months','annual percentage change']
+   r'Annual inflation at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
+   r'CPI\)?\s+increased\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the 12 months',
+   r'([0-9]+(?:\.[0-9]+)?)\s+percent increase follows',
+  ]
  else:
   patterns=[
-   (r'(?:seasonally adjusted )?unemployment rate (?:was|at|increased to|rose to)\s+([0-9]+(?:\.[0-9]+)?)\s*percent',1),
-   (r'Unemployment rate.*?([0-9]+(?:\.[0-9]+)?)\s*%',1),
-  ];needles=['5.6','unemployment rate','seasonally adjusted']
- for p,g in patterns:
+   r'seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
+   r'Unemployment rate at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
+  ]
+ for p in patterns:
   m=re.search(p,t,re.I|re.S)
-  if m:return float(m.group(g))
- raise ValueError(f'cannot parse Stats NZ {dim} value; snippets={json.dumps(snippets(t,needles),ensure_ascii=False)}')
+  if m:return float(m.group(1))
+ raise ValueError(f'cannot parse Stats NZ {dim} value')
 def contract(dim):
  h=load(HEAT)['currencies']['NZD'][dim];c=CONFIG[dim]
  got=(h.get('series_id'),h.get('frequency'),h.get('transformation'));exp=(c['series_id'],c['frequency'],c['transformation'])
