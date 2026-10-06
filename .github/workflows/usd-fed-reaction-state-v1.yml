@@ -1,0 +1,33 @@
+name: USD Fed Reaction State V1
+on:
+  push:
+    paths:
+      - 'validation/run_usd_fed_reaction_state_v1.py'
+      - '.github/workflows/usd-fed-reaction-state-v1.yml'
+      - 'history/pit_v1/USD_LABOUR_BLS_EMPLOYMENT_SITUATION_FIRST_RELEASE_2016_2026.csv'
+      - 'history/pit_v1/USD_CPI_HEADLINE_CORE_FIRST_RELEASE_2016_2026.csv'
+      - 'history/pit_v1/USD_TREASURY_PAR_2Y_DAILY_2016_2026.csv'
+permissions:
+  contents: write
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run USD Fed reaction-state v1
+        run: python validation/run_usd_fed_reaction_state_v1.py
+      - name: Strict engine/live-data guard
+        run: git diff --exit-code -- engine live_data
+      - name: Commit evidence
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/USD_FED_REACTION_STATE_V1_2026-10-06.json
+          git diff --cached --quiet || git commit -m 'Add USD Fed reaction-state v1 evidence'
+          git pull --rebase origin audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
