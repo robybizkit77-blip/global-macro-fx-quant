@@ -1,0 +1,55 @@
+name: JPY LFS First Release Feasibility V1
+
+on:
+  push:
+    branches:
+      - validation-jpy-lfs-pit-feasibility-v1-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  feasibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF parser
+        run: python -m pip install --disable-pip-version-check pypdf==6.1.1
+      - name: Probe archived official first-release PDFs
+        run: |
+          mkdir -p /tmp/gmfq-jpy-lfs
+          python validation/jpy_lfs_first_release_probe.py \
+            --months 2018-01 2019-01 2023-01 \
+            --output /tmp/gmfq-jpy-lfs/feasibility.json
+      - name: Assert no revised-history fallback and exact anchors
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-jpy-lfs/feasibility.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['revised_history_fallback_used'] is False,x
+          assert x['pit_activation'] is False,x
+          assert len(x['rows'])==3,x
+          expected={'2018-01':2.4,'2019-01':2.5,'2023-01':2.4}
+          for r in x['rows']:
+              assert r['http_status']==200,r
+              assert r['release_date'],r
+              assert r['unemployment_rate_sa_pct']==expected[r['reference_month']],r
+              assert r['anchor_match'] is True,r
+          print(json.dumps(x,indent=2,ensure_ascii=False))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-lfs-first-release-feasibility-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-jpy-lfs/feasibility.json
