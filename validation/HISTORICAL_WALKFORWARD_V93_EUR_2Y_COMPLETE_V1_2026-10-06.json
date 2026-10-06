@@ -1,0 +1,349 @@
+{
+  "project": "GLOBAL MACRO FX QUANT",
+  "test": "HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "status": "PSEUDO_OOS_DATA_COMPLETENESS_EXTENSION_EUR_2Y",
+  "methodology": {
+    "checkpoints": "monthly, 2018 onward",
+    "horizons_calendar_days": [
+      7,
+      28,
+      84
+    ],
+    "macro": "Growth + Labour historical directional proxy using the current normalizedSeriesImpulse/blockDynamics logic on data truncated at each checkpoint. Current-revised observation history; release-date vintages unavailable.",
+    "rates": "Validated same-basis 2Y historical series for all 8 G8 currencies, 2016-2026; EUR added from official ECB AAA Svensson 2Y spot history without splicing.",
+    "pair_hierarchy": "Exact current v9.3 hierarchy: aligned Macro+Rates => CONTRASTO STRUTTURALE FORTE; one pillar only => VANTAGGIO RELATIVO PARZIALE; opposing pillars => PILASTRI DIVISI.",
+    "price": "Canonical 28-pair reconstruction from ECB-based price matrix; first observation on/after checkpoint and horizon.",
+    "no_tuning": true,
+    "historical_2y_ids": {
+      "EUR": "EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY",
+      "USD": "US_DGS2_history_DGS2",
+      "GBP": "GBP_RATES_2016_2026_2Y",
+      "JPY": "JPY_RATES_2016_2026_2Y",
+      "CHF": "CH_CONFED_SPOT_2Y_history_value_pct",
+      "CAD": "CAD_RATES_2016_2026_2Y",
+      "AUD": "AU_FCMYGBAG2D_history_FCMYGBAG2D",
+      "NZD": "NZD_RATES_2016_2026_RBNZ_B2_2Y"
+    },
+    "exclusions": [
+      "Historical CB/OIS PIT not reconstructed",
+      "COT and Liquidity excluded from structural direction exactly as current architecture requires"
+    ]
+  },
+  "caveat": "This is not a full historical replay of deriveCurrencyState/policyFamilyPolarity because historical CB/OIS PIT and macro release vintages are unavailable. It tests the reconstructible Macro+Rates pair hierarchy without look-ahead in the series truncation.",
+  "sample": {
+    "checkpoint_count": 105,
+    "first": "2018-01-01",
+    "last": "2026-09-01",
+    "price_last": "2026-09-30",
+    "pair_count": 28
+  },
+  "quality_counts_4w": {
+    "CONTRASTO STRUTTURALE FORTE": 395,
+    "VANTAGGIO RELATIVO PARZIALE": 1334,
+    "PILASTRI DIVISI": 436,
+    "NESSUN CONTRASTO": 551,
+    "WITHHELD": 224
+  },
+  "results": {
+    "7": {
+      "strong": {
+        "n": 395,
+        "hit": 0.4759493670886076,
+        "mean": -0.053224820615387115,
+        "median": -0.05454927827106548
+      },
+      "strong_recent_2023_2026": {
+        "n": 214,
+        "hit": 0.46261682242990654,
+        "mean": -0.14140347726497238,
+        "median": -0.09058815735183967
+      },
+      "strong_dev_2018_2022": {
+        "n": 181,
+        "hit": 0.49171270718232046,
+        "mean": 0.051030607688542555,
+        "median": -0.01924172982751271
+      },
+      "partial": {
+        "n": 1334,
+        "hit": 0.4760119940029985,
+        "mean": -0.059363670295543056,
+        "median": -0.08463935428784097
+      },
+      "partial_recent_2023_2026": {
+        "n": 620,
+        "hit": 0.44516129032258067,
+        "mean": -0.210621705980865,
+        "median": -0.15958933852815438
+      },
+      "partial_dev_2018_2022": {
+        "n": 714,
+        "hit": 0.5028011204481793,
+        "mean": 0.07198084248442839,
+        "median": 0.0084364306161544
+      },
+      "favored_all": {
+        "n": 1729,
+        "hit": 0.4759976865240023,
+        "mean": -0.0579612147584339,
+        "median": -0.07245061781108175
+      },
+      "recent_2023_2026": {
+        "n": 834,
+        "hit": 0.44964028776978415,
+        "mean": -0.19286067367247045,
+        "median": -0.1282519340263577
+      },
+      "dev_2018_2022": {
+        "n": 895,
+        "hit": 0.5005586592178771,
+        "mean": 0.0677439793581096,
+        "median": 0.0006248569103251
+      },
+      "strong_basket": {
+        "n_checkpoints": 85,
+        "hit": 0.47058823529411764,
+        "mean": 0.005636150406097922,
+        "median": -0.03217078823138236
+      },
+      "partial_basket": {
+        "n_checkpoints": 104,
+        "hit": 0.41346153846153844,
+        "mean": -0.06415412744841452,
+        "median": -0.06579545716469416
+      }
+    },
+    "28": {
+      "strong": {
+        "n": 395,
+        "hit": 0.49873417721518987,
+        "mean": -0.054423623733688975,
+        "median": -0.020299416391789116
+      },
+      "strong_recent_2023_2026": {
+        "n": 214,
+        "hit": 0.4953271028037383,
+        "mean": -0.06271694701629206,
+        "median": -0.03155610870965164
+      },
+      "strong_dev_2018_2022": {
+        "n": 181,
+        "hit": 0.5027624309392266,
+        "mean": -0.04461825808464463,
+        "median": 0.04399452529906256
+      },
+      "partial": {
+        "n": 1334,
+        "hit": 0.4962518740629685,
+        "mean": 0.0002660537950653631,
+        "median": -0.015144807160394347
+      },
+      "partial_recent_2023_2026": {
+        "n": 620,
+        "hit": 0.4532258064516129,
+        "mean": -0.17360330444491723,
+        "median": -0.17701438296393035
+      },
+      "partial_dev_2018_2022": {
+        "n": 714,
+        "hit": 0.5336134453781513,
+        "mean": 0.1512450483451905,
+        "median": 0.16521040125805908
+      },
+      "favored_all": {
+        "n": 1729,
+        "hit": 0.496818970503181,
+        "mean": -0.012228117762978483,
+        "median": -0.016743537775554262
+      },
+      "recent_2023_2026": {
+        "n": 834,
+        "hit": 0.46402877697841727,
+        "mean": -0.14515045014068956,
+        "median": -0.14816514279509252
+      },
+      "dev_2018_2022": {
+        "n": 895,
+        "hit": 0.5273743016759777,
+        "mean": 0.11163470369289985,
+        "median": 0.12742735282033069
+      },
+      "strong_basket": {
+        "n_checkpoints": 85,
+        "hit": 0.4588235294117647,
+        "mean": -0.07667066938830347,
+        "median": -0.10773008720547095
+      },
+      "partial_basket": {
+        "n_checkpoints": 104,
+        "hit": 0.5,
+        "mean": 0.02819286352577457,
+        "median": 0.0034812272990355922
+      }
+    },
+    "84": {
+      "strong": {
+        "n": 392,
+        "hit": 0.5612244897959183,
+        "mean": 0.27390201252592067,
+        "median": 0.468774932125926
+      },
+      "strong_recent_2023_2026": {
+        "n": 211,
+        "hit": 0.5639810426540285,
+        "mean": 0.26527153783736596,
+        "median": 0.4516308893225518
+      },
+      "strong_dev_2018_2022": {
+        "n": 181,
+        "hit": 0.5580110497237569,
+        "mean": 0.28396295263246774,
+        "median": 0.6842416138402196
+      },
+      "partial": {
+        "n": 1301,
+        "hit": 0.5049961568024597,
+        "mean": -0.05840256224353859,
+        "median": 0.016952753906829265
+      },
+      "partial_recent_2023_2026": {
+        "n": 587,
+        "hit": 0.5110732538330494,
+        "mean": -0.08737132111423311,
+        "median": 0.029847776340685694
+      },
+      "partial_dev_2018_2022": {
+        "n": 714,
+        "hit": 0.5,
+        "mean": -0.0345865097826176,
+        "median": 0.0012637882694011005
+      },
+      "favored_all": {
+        "n": 1693,
+        "hit": 0.5180153573538098,
+        "mean": 0.018539784661144115,
+        "median": 0.10698130979863718
+      },
+      "recent_2023_2026": {
+        "n": 798,
+        "hit": 0.525062656641604,
+        "mean": 0.0058713395860018084,
+        "median": 0.10661677324371177
+      },
+      "dev_2018_2022": {
+        "n": 895,
+        "hit": 0.511731843575419,
+        "mean": 0.029835225074511192,
+        "median": 0.14125039480441526
+      },
+      "strong_basket": {
+        "n_checkpoints": 84,
+        "hit": 0.5952380952380952,
+        "mean": 0.3702107047171249,
+        "median": 0.7281276009710063
+      },
+      "partial_basket": {
+        "n_checkpoints": 102,
+        "hit": 0.5,
+        "mean": 0.007788262706254353,
+        "median": 0.04209655547107579
+      }
+    }
+  },
+  "stability_4w_by_year": {
+    "2018": {
+      "n": 125,
+      "hit": 0.536,
+      "mean": 0.09664283662758298,
+      "median": 0.17027692567790353
+    },
+    "2019": {
+      "n": 170,
+      "hit": 0.5352941176470588,
+      "mean": 0.22715827558545118,
+      "median": 0.1743315864596473
+    },
+    "2020": {
+      "n": 179,
+      "hit": 0.4972067039106145,
+      "mean": -0.1503266812388275,
+      "median": -0.04976224704190679
+    },
+    "2021": {
+      "n": 224,
+      "hit": 0.5267857142857143,
+      "mean": 0.1464896647030783,
+      "median": 0.11711122067331048
+    },
+    "2022": {
+      "n": 197,
+      "hit": 0.5431472081218274,
+      "mean": 0.21985070774330678,
+      "median": 0.16844469399212025
+    },
+    "2023": {
+      "n": 220,
+      "hit": 0.4818181818181818,
+      "mean": -0.1620122960327925,
+      "median": -0.08057521201909057
+    },
+    "2024": {
+      "n": 224,
+      "hit": 0.42857142857142855,
+      "mean": -0.22410076846067103,
+      "median": -0.34076806925450454
+    },
+    "2025": {
+      "n": 222,
+      "hit": 0.45495495495495497,
+      "mean": -0.25345367028249677,
+      "median": -0.17445384520944907
+    },
+    "2026": {
+      "n": 168,
+      "hit": 0.5,
+      "mean": 0.1253125990939509,
+      "median": 0.004419239669217756
+    }
+  },
+  "robustness": {
+    "strong_12w_nonoverlap_quarterly": {
+      "n": 145,
+      "hit": 0.5517241379310345,
+      "mean": 0.0032922289823492986,
+      "median": 0.35896273494848696
+    },
+    "strong_12w_nonoverlap_quarterly_basket": {
+      "n_checkpoints": 29,
+      "hit": 0.5862068965517241,
+      "mean": 0.09079765852737949,
+      "median": 0.6307824082391056
+    },
+    "partial_12w_nonoverlap_quarterly": {
+      "n": 427,
+      "hit": 0.46604215456674475,
+      "mean": -0.343108108906795,
+      "median": -0.27200522250026005
+    },
+    "partial_12w_nonoverlap_quarterly_basket": {
+      "n_checkpoints": 35,
+      "hit": 0.4857142857142857,
+      "mean": 0.00044741805117538873,
+      "median": -0.019643551136812758
+    }
+  },
+  "javascript_errors": [],
+  "data_completeness_extension": {
+    "type": "DATA_COMPLETENESS_EXTENSION",
+    "added": "EUR official ECB AAA Svensson 2Y same-basis history",
+    "source_series_key": "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y",
+    "source_commit": "1fcb585e56d71308a4827372faac01008dbb29df",
+    "legacy_withheld": 926,
+    "extended_withheld": 224,
+    "withheld_reduction": 702,
+    "model_rules_changed": false,
+    "rules_fingerprint_unchanged": "3356baf0"
+  }
+}
