@@ -62,8 +62,15 @@ def labelled_value(v: dict[str, Any], maps: dict[str, dict[str, str]]) -> str:
 
 
 def score_semantics(label: str) -> int:
-    # Require the target concept; optional total-series labels improve ranking.
-    if "unemployment rate" not in label and "unemployed rate" not in label:
+    # Fallback semantic matcher. Live e-Stat table 0002060004 identifies the
+    # target mechanically as Rate + Unemployed person rather than using the
+    # literal phrase "unemployment rate".
+    target = (
+        "unemployment rate" in label
+        or "unemployed rate" in label
+        or ("rate" in label and "unemployed person" in label)
+    )
+    if not target:
         return -10_000
     score = 100
     positives = (
@@ -101,18 +108,40 @@ def parse_period(label: str, code: str) -> str:
     raise ValueError(f"cannot parse monthly period from time label/code: {label!r} / {code!r}")
 
 
+def is_official_unemployment_rate_row(v: dict[str, Any], maps: dict[str, dict[str, str]]) -> bool:
+    """Match the headline Japan unemployment-rate slice in e-Stat table 0002060004.
+
+    The official table encodes the concept through dimensions, not the literal
+    text 'unemployment rate': tab=Rate, cat03=Unemployed person, both sexes,
+    age 15+, All Japan. Using the published dimension codes is more robust than
+    relying on translated labels.
+    """
+    required_codes = {
+        "@tab": "02",      # Rate
+        "@cat01": "000",  # All industries
+        "@cat02": "0",    # Both sexes
+        "@cat03": "08",   # Unemployed person
+        "@cat04": "00",   # 15 years old or more
+        "@area": "00000", # All Japan
+    }
+    if all(str(v.get(k, "")) == code for k, code in required_codes.items()):
+        return str(v.get("@unit", "%")) == "%"
+
+    # Defensive fallback for future code revisions: only accept the same
+    # economic semantics when the translated labels are still unambiguous.
+    label = labelled_value(v, maps)
+    return score_semantics(label) > 0
+
+
 def extract_observations(payload: dict[str, Any]) -> list[tuple[str, float, str]]:
     maps = class_maps(payload)
-    ranked: list[tuple[int, dict[str, Any], str]] = []
+    selected: list[tuple[dict[str, Any], str]] = []
     for v in values(payload):
-        label = labelled_value(v, maps)
-        score = score_semantics(label)
-        if score > 0:
-            ranked.append((score, v, label))
-    if not ranked:
-        raise ValueError("no e-Stat values matched unemployment-rate semantics")
-    best = max(x[0] for x in ranked)
-    selected = [(v, label) for score, v, label in ranked if score == best]
+        if is_official_unemployment_rate_row(v, maps):
+            selected.append((v, labelled_value(v, maps)))
+    if not selected:
+        raise ValueError("no e-Stat values matched official Japan unemployment-rate dimensions")
+
     obs: dict[str, tuple[float, str]] = {}
     for v, label in selected:
         raw = v.get("$")
@@ -138,7 +167,6 @@ def resolve_ids() -> tuple[str, str, str, str]:
     rows = series["JPY"]
     exact = [r for r in rows if str(r.get("id")) == heat_series_id]
     if len(exact) != 1:
-        # Fallback only to explicit unemployment naming; never guess among multiple rows.
         hits = []
         for r in rows:
             text = " ".join(str(r.get(k, "")) for k in ("id", "name", "title", "indicator", "label")).lower()
