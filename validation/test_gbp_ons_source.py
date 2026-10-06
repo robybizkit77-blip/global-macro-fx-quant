@@ -33,16 +33,10 @@ def check_dimension(dimension: str, root: Path) -> dict:
     candidate = root / f"{dimension}-candidate.json"
     audit = root / f"{dimension}-audit.json"
     built = root / f"{dimension}-built"
-    run(
-        str(ADAPTER),
-        "--dimension", dimension,
-        "--fixture", str(FIXTURES[dimension]),
-        "--output", str(candidate),
-        "--audit-output", str(audit),
-    )
+    run(str(ADAPTER), "--dimension", dimension, "--fixture", str(FIXTURES[dimension]),
+        "--output", str(candidate), "--audit-output", str(audit))
     c = json.loads(candidate.read_text())
     a = json.loads(audit.read_text())
-
     assert c["currency"] == "GBP", c
     assert c["dimension"] == dimension, c
     assert c["source"] == "Office for National Statistics", c
@@ -50,38 +44,27 @@ def check_dimension(dimension: str, root: Path) -> dict:
     assert isinstance(c["macro_series_id"], str) and c["macro_series_id"], c
     assert a["candidate_only"] is True and a["live_data_written"] is False, a
     assert a["mode"] == "fixture", a
-
     if dimension == "inflation":
         assert c["series_id"] == "D7G7", c
         assert c["transformation"] == "reported_yoy_rate", c
-        assert c["observation_date"] == "2026-09", c
+        assert c["observation_date"] == "2026-09-01", c
         assert abs(float(c["value"]) - 3.2) < 1e-12, c
-        assert a["upstream_series_id"] == "D7G7", a
-        assert a["dataset"] == "MM23", a
-        assert a["prior_period"] == "2026-08" and abs(float(a["prior_value"]) - 3.1) < 1e-12, a
+        assert a["upstream_series_id"] == "D7G7" and a["dataset"] == "MM23", a
+        assert a["prior_period"] == "2026-08-01" and abs(float(a["prior_value"]) - 3.1) < 1e-12, a
     else:
         assert c["series_id"] == "MGSX", c
         assert c["transformation"] == "level", c
-        assert c["observation_date"] == "2026-07", c
+        assert c["observation_date"] == "2026-07-01", c
         assert abs(float(c["value"]) - 5.0) < 1e-12, c
-        assert a["upstream_series_id"] == "MGSX", a
-        assert a["dataset"] == "LMS", a
-        assert a["prior_period"] == "2026-06" and abs(float(a["prior_value"]) - 4.9) < 1e-12, a
-
+        assert a["upstream_series_id"] == "MGSX" and a["dataset"] == "LMS", a
+        assert a["prior_period"] == "2026-06-01" and abs(float(a["prior_value"]) - 4.9) < 1e-12, a
     run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built))
     summary = json.loads((built / "summary.json").read_text())
-    assert summary["status"] == "PASS", summary
-    assert summary["live_data_modified"] is False, summary
+    assert summary["status"] == "PASS" and summary["live_data_modified"] is False, summary
     assert summary["currency"] == "GBP" and summary["dimension"] == dimension, summary
     assert summary["observation_date"] == c["observation_date"], (summary, c)
     assert abs(float(summary["new_value"]) - float(c["value"])) < 1e-12, (summary, c)
-    return {
-        "dimension": dimension,
-        "series": a["upstream_series_id"],
-        "observation_date": c["observation_date"],
-        "value": c["value"],
-        "live_data_modified": False,
-    }
+    return {"dimension": dimension, "series": a["upstream_series_id"], "observation_date": c["observation_date"], "value": c["value"], "live_data_modified": False}
 
 
 def main() -> int:
