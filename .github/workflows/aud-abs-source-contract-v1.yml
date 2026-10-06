@@ -69,9 +69,10 @@ jobs:
               assert s['status']=='PASS' and s['live_data_modified'] is False,s
               assert s['observation_date']==c['observation_date'],(s,c)
               out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
-          assert out['inflation']['series_id']=='AU_CPI_HEADLINE_Q_YOY' and out['inflation']['observation_date']=='2026-06',out
+          assert out['inflation']['series_id']=='AU_CPI_HEADLINE_Q_YOY' and out['inflation']['observation_date']=='2026-06-01',out
           assert abs(float(out['inflation']['value'])-3.8)<1e-12,out
-          assert out['labour']['series_id']=='AU_UNEMP_RATE',out
+          assert out['labour']['series_id']=='AU_UNEMP_RATE' and out['labour']['observation_date']=='2026-08-01',out
+          assert abs(float(out['labour']['value'])-4.6)<1e-12,out
           print(json.dumps({'status':'PASS','source':'Australian Bureau of Statistics','results':out,'live_data_modified':False},indent=2))
           PY
       - name: Confirm repository live data remained untouched
