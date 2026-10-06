@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import csv, io, json, re, time, urllib.request
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from pypdf import PdfReader
 
-START=(2018,1); END=(2026,8)
+START=(2018,1); ARCHIVE_END=(2023,7); REQUESTED_END=(2026,8)
 URL='https://www.stat.go.jp/data/roudou/rireki/tsuki/pdf/{yyyymm}.pdf'
-OUT=Path('history/pit_v1/JPY_LABOUR_LFS_FIRST_RELEASE_2018_2026.csv')
+OUT=Path('history/pit_v1/JPY_LABOUR_LFS_FIRST_RELEASE_2018_2023_07.csv')
 EVID=Path('validation/JPY_LABOUR_PIT_ACTIVATION_V1_2026-10-06.json')
 UA='GMFQ-PIT-validation/1.0'
 
@@ -38,25 +38,39 @@ def fetch(month):
     if ur is None or emp is None: raise ValueError(f'labour fields missing ur={ur} emp={emp}')
     return {'release_date':rd,'release_time_jst':'08:30','release_timezone':'Asia/Tokyo','availability_timestamp_jst':rd+'T08:30:00+09:00','reference_month':month,'unemployment_rate_sa_pct':ur,'employed_sa_10k':emp,'source_url':u,'pit_status':'READY_FIRST_RELEASE'}
 
-def months():
-    out=[]; y,m=START
-    while (y,m)<=END:
+def months(a,b):
+    out=[]; y,m=a
+    while (y,m)<=b:
         out.append(f'{y:04d}-{m:02d}'); m+=1
         if m==13:y+=1;m=1
     return out
 
 def main():
+    archived=months(START,ARCHIVE_END); withheld=months((2023,8),REQUESTED_END)
     rows=[]; errors=[]
-    for m in months():
+    for m in archived:
         try: rows.append(fetch(m))
         except Exception as e: errors.append({'reference_month':m,'error':str(e)})
         time.sleep(.08)
-    expected=months(); got=[r['reference_month'] for r in rows]
-    missing=sorted(set(expected)-set(got)); dup=sorted({x for x in got if got.count(x)>1})
-    status='PASS' if not errors and not missing and not dup and len(rows)==len(expected) else 'FAIL'
-    ev={'schema':'GMFQ_JPY_LABOUR_PIT_ACTIVATION_V1','status':status,'coverage':{'start':expected[0],'end':expected[-1],'expected_months':len(expected),'materialized_months':len(rows)},'errors':errors,'missing':missing,'duplicates':dup,'event_time_policy':'Official standard Basic Tabulation release time 08:30 JST; release date from each archived preliminary PDF.','revised_history_fallback_used':False,'pit_active_labour':status=='PASS','full_jpy_macro_ready':False,'reason_full_macro_not_ready':'JPY Growth still requires two independently validated PIT first-release series.','changes_engine_rules':False,'changes_live_data':False}
+    got=[r['reference_month'] for r in rows]
+    missing=sorted(set(archived)-set(got)); dup=sorted({x for x in got if got.count(x)>1})
+    status='PASS_PARTIAL' if not errors and not missing and not dup and len(rows)==len(archived) else 'FAIL'
+    ev={
+      'schema':'GMFQ_JPY_LABOUR_PIT_ACTIVATION_V1',
+      'status':status,
+      'coverage':{'pit_ready_start':archived[0],'pit_ready_end':archived[-1],'pit_ready_months':len(rows),'requested_end':'2026-08','withheld_months':len(withheld)},
+      'withheld_after_archive_change':{'start':'2023-08','end':'2026-08','status':'WITHHELD_PENDING_NEW_OFFICIAL_ARCHIVE_ROUTE','reason':'The Statistics Bureau legacy historical monthly overview page stopped updating in September 2023; the old immutable PDF URL route no longer exists for later months. Current/revised tables are not substituted.'},
+      'errors':errors,'missing':missing,'duplicates':dup,
+      'event_time_policy':'Official Basic Tabulation release time 08:30 JST; release date from each archived preliminary PDF.',
+      'revised_history_fallback_used':False,
+      'pit_active_labour_partial':status=='PASS_PARTIAL',
+      'full_jpy_labour_2018_2026_ready':False,
+      'full_jpy_macro_ready':False,
+      'reason_full_macro_not_ready':'JPY Growth still requires two independently validated PIT first-release series; JPY Labour post-2023-07 also needs a new immutable official archive route.',
+      'changes_engine_rules':False,'changes_live_data':False
+    }
     EVID.write_text(json.dumps(ev,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
-    if status!='PASS': print(json.dumps(ev,indent=2,ensure_ascii=False)); raise SystemExit(1)
+    if status=='FAIL': print(json.dumps(ev,indent=2,ensure_ascii=False)); raise SystemExit(1)
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open('w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
