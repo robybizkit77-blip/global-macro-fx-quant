@@ -1,0 +1,48 @@
+{
+  "schema": "GMFQ_MACRO_ELIGIBILITY_MASK_V1",
+  "as_of": "2026-10-06",
+  "rule": "Only PIT-eligible first-release/vintage observations available at checkpoint may vote. WITHHELD contributes no vote. Revised-history substitution forbidden.",
+  "currencies": {
+    "CAD": {
+      "growth": ["CA_REAL_GDP_M_history_value", "CA_RETAIL_VOLUME_history_value"],
+      "labour": ["CA_EMPLOYMENT_history_value", "CA_UNEMP_RATE_history_value"],
+      "status": "ELIGIBLE_CORE"
+    },
+    "EUR": {
+      "growth": ["EA_IP_history_value"],
+      "labour": ["EA_UNEMP_history_value", "EA_EMPLOYMENT_history_value"],
+      "withheld": ["EA_RETAIL_VOL_history_value", "EA_NEGOTIATED_WAGES_YOY_history_value"],
+      "status": "ELIGIBLE_PARTIAL"
+    },
+    "USD": {
+      "growth": ["US_INDPRO_history_value", "US_PI_history_PI", "US_NEWORDER_history_NEWORDER"],
+      "labour": [],
+      "status": "ELIGIBLE_GROWTH_ONLY_LABOUR_WITHHELD"
+    },
+    "GBP": {
+      "growth": [],
+      "labour": ["UK_UNEMP_RATE_history_value", "UK_EMPLOYMENT_RATE_history_value"],
+      "status": "ELIGIBLE_LABOUR_ONLY_FROM_ONS_A01_VINTAGES",
+      "evidence_branch": "validation-pit-gbp-ons-archive-v1-2026-10-06",
+      "evidence_sha": "70ff67a73dd5cdec9929d815da6c1bdef467cd09",
+      "workflow_run_id": 37457755401
+    },
+    "JPY": {
+      "growth": [],
+      "labour": [],
+      "status": "WITHHELD_PENDING_EVENT_TIME_POLICY",
+      "feasibility_branch": "validation-jpy-lfs-pit-feasibility-v1-2026-10-06",
+      "feasibility_sha": "9ec25da9784dae820803a41efad8ee5141a95268"
+    },
+    "AUD": {"growth": [], "labour": [], "status": "WITHHELD_HISTORICAL_PIT"},
+    "NZD": {"growth": [], "labour": [], "status": "WITHHELD_HISTORICAL_PIT"},
+    "CHF": {"growth": [], "labour": [], "status": "WITHHELD_HISTORICAL_PIT"}
+  },
+  "historical_layers": {
+    "cb_ois": "WITHHELD_WHERE_UNSUPPORTED",
+    "liquidity_nzd": "WITHHELD"
+  },
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "mask_sha256": "39395fdd5d0ec531177ee274c9438945fe7ad20282fcd21cea2c89e973d36d60"
+}
