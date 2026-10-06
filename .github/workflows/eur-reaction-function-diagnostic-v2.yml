@@ -1,0 +1,30 @@
+name: EUR Reaction Function Diagnostic V2
+on:
+  push:
+    paths:
+      - 'validation/run_eur_reaction_function_diagnostic_v2.py'
+      - '.github/workflows/eur-reaction-function-diagnostic-v2.yml'
+permissions:
+  contents: write
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run EUR reaction diagnostic v2
+        run: python validation/run_eur_reaction_function_diagnostic_v2.py
+      - name: Strict engine/live-data guard
+        run: git diff --exit-code -- engine live_data
+      - name: Commit evidence
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/EUR_REACTION_FUNCTION_DIAGNOSTIC_V2_2026-10-06.json
+          git diff --cached --quiet || git commit -m 'Add EUR reaction-function diagnostic v2 evidence'
+          git pull --rebase origin audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
