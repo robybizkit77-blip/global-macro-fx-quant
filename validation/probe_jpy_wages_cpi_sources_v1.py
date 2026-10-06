@@ -1,117 +1,156 @@
 from __future__ import annotations
 import json, re
-from datetime import date
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 
 import requests
 from bs4 import BeautifulSoup
 
 OUT = Path('validation/JPY_WAGES_CPI_SOURCE_PROBE_V1_2026-10-06.json')
-START = (2018,1)
-END = (2023,7)
+START=(2018,1); END=(2023,7)
+S=requests.Session(); S.headers.update({'User-Agent':'GMFQ-PIT-source-audit/1.1'})
 
 
-def months(start=START, end=END):
-    y,m=start
-    out=[]
-    while (y,m) <= end:
-        out.append(f'{y:04d}-{m:02d}')
-        m += 1
-        if m == 13:
-            y += 1; m = 1
+def months():
+    y,m=START; out=[]
+    while (y,m)<=END:
+        out.append(f'{y:04d}-{m:02d}'); m+=1
+        if m==13: y+=1; m=1
     return out
-
-TARGET = months()
-S = requests.Session()
-S.headers.update({'User-Agent':'GMFQ-PIT-source-audit/1.0'})
+TARGET=months()
 
 
-def get(url):
-    r=S.get(url, timeout=30)
-    return {'url':url,'status':r.status_code,'text':r.text if r.ok else ''}
+def req(url):
+    try:
+        r=S.get(url,timeout=30,allow_redirects=True)
+        if r.ok:
+            r.encoding=r.apparent_encoding or r.encoding
+        return r
+    except Exception:
+        return None
 
 
-def parse_mhlw():
-    index='https://www.mhlw.go.jp/toukei/list/30-1a.html'
-    res=get(index)
-    found={}
-    if res['status']==200:
-        soup=BeautifulSoup(res['text'],'html.parser')
-        for a in soup.find_all('a', href=True):
-            txt=' '.join(a.stripped_strings)
-            href=urljoin(index,a['href'])
-            # Prefer official preliminary-result links. Infer month primarily from URL patterns.
-            mo=re.search(r'/monthly/(?:30|31|r0[1-5])/(\d{4})p/', href)
-            if mo and ('速報' in txt or href.endswith('p.html')):
-                yy=int(mo.group(1)[:2]); mm=int(mo.group(1)[2:])
-                if '/30/' in href: year=2018
-                elif '/31/' in href: year=2019
-                else:
-                    era=re.search(r'/r0([1-5])/',href)
-                    year=2018+int(era.group(1)) if era else None
-                if year and 1 <= mm <= 12:
-                    k=f'{year:04d}-{mm:02d}'
-                    if k in TARGET:
-                        found.setdefault(k,[]).append({'page_url':href,'anchor':txt})
-    return {'index_url':index,'index_status':res['status'],'months_found':found,
-            'coverage_count':sum(1 for m in TARGET if m in found),
-            'missing_months':[m for m in TARGET if m not in found]}
+def mhlw_candidates(y,m):
+    yy=y%100
+    era=y-2018  # Reiwa 1 == 2019; 2018 is Heisei 30
+    ids=[]
+    if y==2018:
+        ids += [('30',f'30{m:02d}')]
+    elif y==2019:
+        ids += [('31',f'31{m:02d}'),('r01',f'{yy:02d}{m:02d}'),('r01',f'01{m:02d}')]
+    else:
+        ids += [(f'r{era:02d}',f'{yy:02d}{m:02d}'),(f'r{era:02d}',f'{era:02d}{m:02d}')]
+    seen=[]
+    for folder,stem in ids:
+        u=f'https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/{folder}/{stem}p/{stem}p.html'
+        if u not in seen: seen.append(u)
+    return seen
 
 
-def parse_cpi():
-    # Official Statistics Bureau monthly report archive, containing links by CPI base/year.
-    index='https://www.stat.go.jp/english/data/cpi/1588.htm'
-    res=get(index)
-    links=[]
-    if res['status']==200:
-        soup=BeautifulSoup(res['text'],'html.parser')
-        for a in soup.find_all('a', href=True):
-            href=urljoin(index,a['href'])
-            txt=' '.join(a.stripped_strings)
-            if 'cpi' in href.lower(): links.append({'url':href,'anchor':txt})
-
-    # Also certify predictable historical monthly-report endpoints by requesting candidate PDF paths.
-    # We do not extract values here; we only establish retrievability and source URLs.
-    found={}
-    candidates=[]
+def probe_mhlw():
+    found={}; attempts={}
     for ym in TARGET:
-        y,m=map(int,ym.split('-'))
-        # Current archive pages have used zenkoku.pdf for the national monthly report.
-        # Historic documents may be reachable via date-stamped or archived paths; probe search-friendly URLs first.
-        urls=[
-            f'https://www.stat.go.jp/data/cpi/sokuhou/tsuki/pdf/zenkoku.pdf',
-        ]
-        # A static current URL cannot prove vintage identity; retain it only as archive-index evidence, not a GREEN month.
-        candidates.append({'month':ym,'candidate_urls':urls})
+        y,m=map(int,ym.split('-')); tries=[]
+        for u in mhlw_candidates(y,m):
+            r=req(u); code=r.status_code if r else None
+            tries.append({'url':u,'status':code})
+            if not r or not r.ok: continue
+            txt=BeautifulSoup(r.text,'html.parser').get_text(' ',strip=True)
+            # immutable month page plus preliminary marker/path suffix p.
+            if ('速報' in txt or 'p.html' in r.url) and ('毎月勤労統計' in txt or 'monthly' in r.url):
+                soup=BeautifulSoup(r.text,'html.parser')
+                docs=[]
+                for a in soup.find_all('a',href=True):
+                    href=urljoin(r.url,a['href']); at=' '.join(a.stripped_strings)
+                    if href.lower().endswith('.pdf') or '/dl/' in href:
+                        docs.append({'url':href,'anchor':at})
+                found[ym]={'page_url':r.url,'page_status':code,'document_candidates':docs[:30]}
+                break
+        attempts[ym]=tries
+    return {'coverage_count':len(found),'missing_months':[x for x in TARGET if x not in found],
+            'months_found':found,'attempts_for_missing':{k:attempts[k] for k in TARGET if k not in found}}
 
-    return {'index_url':index,'index_status':res['status'],'archive_links_count':len(links),
-            'archive_links_sample':links[:50],
-            'coverage_count':0,
-            'missing_months':TARGET,
-            'note':'Static latest zenkoku.pdf is explicitly NOT accepted as vintage evidence. Month-level GREEN requires an immutable/month-specific official URL or archived first-release document.'}
+CPI_CONFIG={
+ '2015': {'tclass1':'000001085955','tstat':'000001084976'},
+ '2020': {'tclass1':'000001150149','tstat':'000001150147'}
+}
 
+def cpi_base(ym):
+    return '2015' if ym <= '2021-06' else '2020'
+
+def cpi_year_url(y,base):
+    c=CPI_CONFIG[base]
+    return ('https://www.e-stat.go.jp/stat-search/files?cycle=1&layout=datalist&page=1'
+            f'&tclass1={c["tclass1"]}&tclass2val=0&toukei=00200573&tstat={c["tstat"]}&year={y}0')
+
+def month_from_anchor(a,y):
+    txt=' '.join(a.stripped_strings)
+    mo=re.fullmatch(r'(1[0-2]|[1-9])月',txt)
+    if not mo: return None
+    href=urljoin('https://www.e-stat.go.jp',a.get('href',''))
+    return f'{y:04d}-{int(mo.group(1)):02d}',href
+
+def extract_national_summary_pdf(month_url):
+    r=req(month_url)
+    if not r or not r.ok: return {'month_page_status':r.status_code if r else None,'pdf_candidates':[]}
+    soup=BeautifulSoup(r.text,'html.parser')
+    pdf=[]
+    # e-Stat renders each file row; keep links near rows mentioning national result overview.
+    for textnode in soup.find_all(string=lambda s: s and '結果の概要（全国）' in s):
+        node=textnode.parent
+        for par in [node]+list(node.parents)[:5]:
+            for a in par.find_all('a',href=True):
+                h=urljoin(r.url,a['href']); at=' '.join(a.stripped_strings)
+                if 'download' in h.lower() or 'PDF' in at.upper() or h.lower().endswith('.pdf'):
+                    pdf.append({'url':h,'anchor':at})
+            if pdf: break
+    # Fallback: record file-download links on month page for later semantic classification.
+    if not pdf:
+        for a in soup.find_all('a',href=True):
+            h=urljoin(r.url,a['href']); at=' '.join(a.stripped_strings)
+            if 'file-download' in h or h.lower().endswith('.pdf'):
+                pdf.append({'url':h,'anchor':at})
+    uniq=[]; seen=set()
+    for x in pdf:
+        if x['url'] not in seen: seen.add(x['url']); uniq.append(x)
+    return {'month_page_status':r.status_code,'resolved_month_url':r.url,'pdf_candidates':uniq[:20]}
+
+def probe_cpi():
+    found={}; year_pages={}
+    # Each official e-Stat year page exposes immutable month-specific dataset links.
+    for base in ('2015','2020'):
+        years=range(2018,2022) if base=='2015' else range(2021,2024)
+        for y in years:
+            u=cpi_year_url(y,base); r=req(u)
+            yp={'url':u,'status':r.status_code if r else None,'month_links':{}}
+            if r and r.ok:
+                soup=BeautifulSoup(r.text,'html.parser')
+                for a in soup.find_all('a',href=True):
+                    z=month_from_anchor(a,y)
+                    if not z: continue
+                    ym,href=z
+                    if ym in TARGET and cpi_base(ym)==base:
+                        yp['month_links'].setdefault(ym,href)
+            year_pages[f'{base}:{y}']=yp
+    for yp in year_pages.values():
+        for ym,u in yp['month_links'].items():
+            if ym in found: continue
+            detail=extract_national_summary_pdf(u)
+            found[ym]={'base':cpi_base(ym),'e_stat_month_url':u,**detail}
+    return {'coverage_count':len(found),'missing_months':[x for x in TARGET if x not in found],
+            'months_found':found,'year_pages':year_pages,
+            'note':'Coverage means an official month-specific e-Stat dataset page was resolved. PDF candidates are separately recorded and must be semantically certified before value extraction.'}
 
 def main():
-    wages=parse_mhlw(); cpi=parse_cpi()
-    obj={
-      'schema':'GMFQ_JPY_WAGES_CPI_SOURCE_PROBE_V1',
-      'created_at':'2026-10-06',
-      'target_coverage':'2018-01 through 2023-07',
-      'required_months':67,
-      'wages_mhlw_preliminary':wages,
-      'cpi_statistics_bureau_first_release':cpi,
-      'status': 'SOURCE_PROBE_COMPLETE',
-      'green_for_materialization': wages['coverage_count']==67 and cpi['coverage_count']==67,
-      'guardrails':[
-        'No revised-history substitution',
-        'No current/latest static document used as historical vintage',
-        'No value extraction until immutable month-specific official source coverage is certified',
-        'No engine/live/OOS changes'
-      ],
-      'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False
-    }
+    w=probe_mhlw(); c=probe_cpi()
+    obj={'schema':'GMFQ_JPY_WAGES_CPI_SOURCE_PROBE_V1','probe_revision':'1.1','created_at':'2026-10-06',
+         'target_coverage':'2018-01 through 2023-07','required_months':67,
+         'wages_mhlw_preliminary':w,'cpi_statistics_bureau_first_release':c,
+         'status':'SOURCE_PROBE_COMPLETE',
+         'green_for_materialization':w['coverage_count']==67 and c['coverage_count']==67,
+         'guardrails':['No revised-history substitution','No current/latest static document used as historical vintage',
+                       'Month-specific official source required before value extraction','No engine/live/OOS changes'],
+         'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
     OUT.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'wages':wages['coverage_count'],'cpi':cpi['coverage_count'],'green':obj['green_for_materialization']}))
-
+    print(json.dumps({'wages':w['coverage_count'],'cpi':c['coverage_count'],'green':obj['green_for_materialization']}))
 if __name__=='__main__': main()
