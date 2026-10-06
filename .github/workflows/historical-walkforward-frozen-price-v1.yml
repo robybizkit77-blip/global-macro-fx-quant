@@ -15,13 +15,21 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Recover validated historical JPY 2Y series
+        shell: bash
+        run: |
+          git fetch origin 1cb2a7e61dc42d4cd22b6e49c6369018703743e6 --depth=1
+          git show 1cb2a7e61dc42d4cd22b6e49c6369018703743e6:data/sections/series_JPY.json > /tmp/series_JPY_validated_20260927.json
       - name: Replay historical walk-forward using frozen ECB price only
         run: |
           mkdir -p /tmp/gmfq-walkforward
           python validation/replay_historical_walkforward_frozen_price_v1.py \
+            --jpy-series-override /tmp/series_JPY_validated_20260927.json \
             --output /tmp/gmfq-walkforward/replay.json
       - name: Assert frozen inputs and safety
         run: |
@@ -33,8 +41,10 @@ jobs:
           assert x['rules_fingerprint']=='3356baf0', x
           assert x['checkpoint_count']==105, x
           assert x['pair_count']==28, x
+          assert x['jpy_series_override']['n']==2619, x
           assert x['model_rules_modified'] is False, x
           assert x['live_data_modified'] is False, x
+          print('QUALITY_COUNTS=',json.dumps(x['quality_counts'],ensure_ascii=False))
           print('QUALITY_COUNTS_MATCH=',x['quality_counts_match'])
           PY
       - name: Confirm repository untouched
