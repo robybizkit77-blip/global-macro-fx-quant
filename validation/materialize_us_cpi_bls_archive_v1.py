@@ -11,6 +11,7 @@ OUT=Path('history/pit_v1/USD_CPI_HEADLINE_CORE_FIRST_RELEASE_2016_2026.csv')
 EVID=Path('validation/USD_CPI_BLS_ARCHIVE_PIT_MATERIALIZATION_2026-10-06.json')
 START=(2016,1); END=(2026,8)
 WITHHELD={'2025-10':'BLS did not publish an October 2025 CPI news release because of the 2025 lapse in federal government appropriations.'}
+REF_EXCEPTIONS={'https://www.bls.gov/news.release/archives/cpi_06162016.htm':(2016,5)}
 UA='Mozilla/5.0 GMFQ-PIT-Audit/1.0 (research; contact via repository)'
 MONTH_LIST=['january','february','march','april','may','june','july','august','september','october','november','december']
 MONTHS={m:i for i,m in enumerate(MONTH_LIST,1)}
@@ -39,18 +40,22 @@ def urls():
             if u.lower().endswith('.pdf'): u=u[:-4]+'.htm'
             out.add(u)
     return sorted(out)
-def ref_period(text):
-    # Older BLS archive titles vary in separator encoding and occasionally include a
-    # leading "THE". Keep the match anchored to the official CPI title and require
-    # an explicit month/year immediately after it.
+def ref_period(text,u):
     p=re.search(rf'(?:THE\s+)?CONSUMER PRICE INDEX.{{0,30}}?\b({MONTH_ALT})\s+(\d{{4}})\b',text,re.I)
-    if not p: raise ValueError('reference title not found')
-    m=MONTHS.get(p.group(1).lower()); y=int(p.group(2))
-    if not m: raise ValueError('unknown month')
-    return y,m,p.start()
+    if p:
+        m=MONTHS.get(p.group(1).lower()); y=int(p.group(2))
+        if not m: raise ValueError('unknown month')
+        return y,m,p.start()
+    # One archived 2016 HTML rendering does not expose the title text to the parser,
+    # while the official BLS PDF and 2016 release schedule identify it as May 2016.
+    # Keep this as a single explicit source exception rather than infer months globally.
+    if u in REF_EXCEPTIONS:
+        y,m=REF_EXCEPTIONS[u]
+        anchor=re.search(r'The Consumer Price Index for All Urban Consumers',text,re.I)
+        return y,m,(anchor.start() if anchor else 0)
+    raise ValueError('reference title not found')
 def parse(text,u):
-    y,m,pos=ref_period(text)
-    # BLS archive headers vary: some have weekday, others simply "(ET) May 11, 2022".
+    y,m,pos=ref_period(text,u)
     ts=re.search(r'8:30\s*a\.m\.\s*\((?:ET|EST|EDT)\)\s*(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*)?([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
     if not ts:
         ts=re.search(r'8:30\s*a\.m\.\s*(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*)?([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
@@ -107,6 +112,6 @@ def main():
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open('w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
-    ev={'schema':'GMFQ_USD_CPI_BLS_ARCHIVE_PIT_V1','status':'PASS','source':'Official BLS archived CPI news releases','coverage':{'start':allm[0],'end':allm[-1],'calendar_months':len(allm),'published_complete_releases':len(rows),'structural_withheld_months':len(WITHHELD)},'structural_withheld':WITHHELD,'fields':['headline CPI YoY first-published','core CPI ex-food-energy YoY first-published','release date','08:30 ET release time'],'method':'Opening archived CPI release text only; no current/revised-history substitution.','strict_zero_parse_errors_on_published_releases':True,'output':str(OUT),'notes':['This is a CPI release-state block, not a claim that CPI is the Fed preferred inflation gauge; PCE remains conceptually distinct.','No consensus-surprise series is introduced.','No engine/live-data changes.']}
+    ev={'schema':'GMFQ_USD_CPI_BLS_ARCHIVE_PIT_V1','status':'PASS','source':'Official BLS archived CPI news releases','coverage':{'start':allm[0],'end':allm[-1],'calendar_months':len(allm),'published_complete_releases':len(rows),'structural_withheld_months':len(WITHHELD)},'structural_withheld':WITHHELD,'source_exceptions':{'2016-05':'Official BLS June 16 2016 HTML rendering lacks parser-visible title; reference month is certified from the official BLS archived PDF/release schedule.'},'fields':['headline CPI YoY first-published','core CPI ex-food-energy YoY first-published','release date','08:30 ET release time'],'method':'Opening archived CPI release text only; no current/revised-history substitution.','strict_zero_parse_errors_on_published_releases':True,'output':str(OUT),'notes':['This is a CPI release-state block, not a claim that CPI is the Fed preferred inflation gauge; PCE remains conceptually distinct.','No consensus-surprise series is introduced.','No engine/live-data changes.']}
     EVID.write_text(json.dumps(ev,indent=2),encoding='utf-8');print(json.dumps(ev,indent=2))
 if __name__=='__main__':main()
