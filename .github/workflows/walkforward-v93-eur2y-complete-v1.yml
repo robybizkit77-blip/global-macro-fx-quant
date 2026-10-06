@@ -32,6 +32,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('.github/workflows/historical-walkforward-v93.yml')
           text=p.read_text()
           start=text.index("cat > walkforward.js <<'EOF'")+len("cat > walkforward.js <<'EOF'")
@@ -41,22 +42,19 @@ jobs:
 
           anchor="await page.waitForTimeout(2500);"
           inject="""await page.waitForTimeout(2500);\n            const frozenPrice=JSON.parse(fs.readFileSync('history/ECB_FX_G8_2018_2026_CANONICAL_V1.json','utf8'));\n            const eurHist=JSON.parse(fs.readFileSync('/tmp/eur2y.json','utf8'));\n            await page.evaluate(({priceRows,eurHist})=>{\n              window.__GMFQ_FROZEN_PRICE_ROWS=priceRows;\n              const obs=eurHist.observations||[];\n              const series={\n                id:'EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY',\n                label:'EUR AAA Svensson spot 2Y',\n                category:'Rates',\n                dates:obs.map(x=>x.date),\n                values:obs.map(x=>Number(x.value)),\n                frequency:'Daily - businessweek',\n                unit:'Percent per annum',\n                source_file:'ECB Data Portal YC · YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'\n              };\n              S.EUR=(S.EUR||[]).filter(x=>x.id!==series.id);\n              S.EUR.push(series);\n            },{priceRows:frozenPrice.rows,eurHist});"""
-          assert anchor in js
+          if anchor not in js: raise SystemExit('page anchor not found')
           js=js.replace(anchor,inject,1)
 
           old_price="const prices=(D?.prices||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
           new_price="const prices=(window.__GMFQ_FROZEN_PRICE_ROWS||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
-          assert old_price in js
+          if old_price not in js: raise SystemExit('price source not found')
           js=js.replace(old_price,new_price,1)
 
-          old_ids="const HIST_2Y_IDS={\n                USD:'US_DGS2_history_DGS2',"
-          new_ids="const HIST_2Y_IDS={\n                EUR:'EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY',\n                USD:'US_DGS2_history_DGS2',"
-          assert old_ids in js
-          js=js.replace(old_ids,new_ids,1)
+          js,n=re.subn(r"(const\s+HIST_2Y_IDS\s*=\s*\{\s*)",r"\1EUR:'EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY',\n                ",js,count=1)
+          if n!=1: raise SystemExit('HIST_2Y_IDS insertion failed')
 
-          old_eur="if(c==='EUR') return null;"
-          assert old_eur in js
-          js=js.replace(old_eur,"",1)
+          js,n=re.subn(r"\s*if\s*\(c\s*===\s*'EUR'\)\s*return\s+null\s*;",'',js,count=1)
+          if n!=1: raise SystemExit('EUR WITHHELD removal failed')
 
           js=js.replace("test:'HISTORICAL_WALKFORWARD_V93_2026-10-01'","test:'HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06'",1)
           js=js.replace("status:'PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY'","status:'PSEUDO_OOS_DATA_COMPLETENESS_EXTENSION_EUR_2Y'",1)
