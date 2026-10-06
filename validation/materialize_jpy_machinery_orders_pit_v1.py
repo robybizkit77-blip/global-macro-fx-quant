@@ -41,14 +41,15 @@ def first_html(urls):
 def parse_value(y,m):
     raw,used=first_html(en_urls(y,m)); text=' '.join(BeautifulSoup(raw,'html.parser').stripped_strings); mn=MONTH_NAMES[m]
     pats=[
-      rf'Private-sector machinery orders, excluding volatile ones for ships and those from electric power companies,\s*(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
-      rf'Private-sector machinery orders[^.]*?(increased|decreased)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
-      rf'Private-sector machinery orders[^.]*?{mn}[^.]*?(increased|decreased)[^.]*?([0-9]+(?:\.[0-9]+)?)%'
+      rf'Private-sector machinery orders, excluding volatile ones for ships and those from electric power companies,\s*(increased|decreased|rose|fell)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
+      rf'Private-sector machinery orders[^.]*?(increased|decreased|rose|fell)\s+(?:a\s+)?seasonally adjusted by\s*([0-9]+(?:\.[0-9]+)?)%\s+in\s+{mn}',
+      rf'Private-sector machinery orders[^.]*?{mn}[^.]*?(increased|decreased|rose|fell)[^.]*?([0-9]+(?:\.[0-9]+)?)%'
     ]
     for p in pats:
         mm=re.search(p,text,re.I)
         if mm:
-            v=float(mm.group(2))*(1 if mm.group(1).lower()=='increased' else -1)
+            direction=mm.group(1).lower()
+            v=float(mm.group(2))*(1 if direction in ('increased','rose') else -1)
             return v,used
     raise ValueError('monthly private-sector ex-volatile value not found')
 
