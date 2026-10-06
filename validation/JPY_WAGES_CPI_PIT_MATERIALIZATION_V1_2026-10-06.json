@@ -1,0 +1,148 @@
+{
+  "schema": "GMFQ_JPY_WAGES_CPI_PIT_MATERIALIZATION_V1",
+  "materializer_revision": "1.3",
+  "created_at": "2026-10-06",
+  "status": "PASS_67_67_GREEN",
+  "release_date_policy": {
+    "wages": "month page; official prior-month future-publication schedule as deterministic fallback",
+    "cpi": "e-Stat month-specific dataset metadata",
+    "sanity": "strictly after reference month"
+  },
+  "cpi_extraction_policy": "Prefer explicit current-month comparison prose (prev X -> current Y); direct YoY prose only if no widening/narrowing/points language intervenes. No broad table-neighborhood matching.",
+  "wages": {
+    "rows": 67,
+    "errors": {},
+    "output": "history/pit_v1/JPY_WAGES_SCHEDULED_CASH_EARNINGS_FIRST_RELEASE_2018_2023_07.csv",
+    "first": [
+      {
+        "reference_month": "2018-01",
+        "release_date": "2018-03-09",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3001p/dl/houdou3001p.pdf",
+        "document_sha256": "95c4835ba499054eee331b2a3edfa9abd62fffc71f0535b0683caf07fd16c400",
+        "scheduled_cash_earnings_yoy_pct": 0.3,
+        "source_agency": "MHLW",
+        "source_document_type": "Monthly Labour Survey preliminary press release",
+        "release_date_source": "MHLW month-specific preliminary page"
+      },
+      {
+        "reference_month": "2018-02",
+        "release_date": "2018-04-06",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/30/3002p/dl/houdou3002p.pdf",
+        "document_sha256": "50af548650ea588b84522e462735d1ff295eaaebb86c676ac0d55edab0a56b65",
+        "scheduled_cash_earnings_yoy_pct": 0.9,
+        "source_agency": "MHLW",
+        "source_document_type": "Monthly Labour Survey preliminary press release",
+        "release_date_source": "MHLW month-specific preliminary page"
+      }
+    ],
+    "last": [
+      {
+        "reference_month": "2023-06",
+        "release_date": "2023-08-08",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2306p/dl/houdou2306p.pdf",
+        "document_sha256": "67da7cc28f8a50c1c83ab35fb535596be4d19b03fd1c3172fcccf8b62cb0752e",
+        "scheduled_cash_earnings_yoy_pct": 1.5,
+        "source_agency": "MHLW",
+        "source_document_type": "Monthly Labour Survey preliminary press release",
+        "release_date_source": "MHLW month-specific preliminary page"
+      },
+      {
+        "reference_month": "2023-07",
+        "release_date": "2023-09-08",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r05/2307p/dl/houdou2307p.pdf",
+        "document_sha256": "abfc4d798829f8c07d8246cb4149fdcb009a97796cb5b684703977c43912ad0e",
+        "scheduled_cash_earnings_yoy_pct": 1.5,
+        "source_agency": "MHLW",
+        "source_document_type": "Monthly Labour Survey preliminary press release",
+        "release_date_source": "MHLW month-specific preliminary page"
+      }
+    ]
+  },
+  "cpi": {
+    "rows": 67,
+    "errors": {},
+    "output": "history/pit_v1/JPY_CPI_HEADLINE_CORE_FIRST_RELEASE_2018_2023_07.csv",
+    "extraction_methods": {
+      "EXPLICIT_CURRENT_MONTH_COMPARISON|EXPLICIT_CURRENT_MONTH_COMPARISON": 67
+    },
+    "first": [
+      {
+        "reference_month": "2018-01",
+        "release_date": "2018-02-23",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031673550&fileKind=2",
+        "document_sha256": "0a9c93729376eb105b4486f900b1c9f8ecc5763d4cdd2bf14a67f6f8e5cdd4a2",
+        "headline_cpi_yoy_pct": 1.4,
+        "core_cpi_yoy_pct": 1.4,
+        "cpi_base": "2015",
+        "source_agency": "Statistics Bureau of Japan / e-Stat",
+        "source_document_type": "National CPI first-release result overview",
+        "release_date_source": "e-Stat month-specific dataset metadata",
+        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
+        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+      },
+      {
+        "reference_month": "2018-02",
+        "release_date": "2018-03-23",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000031681970&fileKind=2",
+        "document_sha256": "272866e5f374155566d66129da82ceb7852da53b277d0dde201ae831fc4e0349",
+        "headline_cpi_yoy_pct": 1.5,
+        "core_cpi_yoy_pct": 1.5,
+        "cpi_base": "2015",
+        "source_agency": "Statistics Bureau of Japan / e-Stat",
+        "source_document_type": "National CPI first-release result overview",
+        "release_date_source": "e-Stat month-specific dataset metadata",
+        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
+        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+      }
+    ],
+    "last": [
+      {
+        "reference_month": "2023-06",
+        "release_date": "2023-07-21",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040076884&fileKind=2",
+        "document_sha256": "b228c9cb5caa4a34513d10b9c321654ab72b18af886bedbac843640c9f4bd870",
+        "headline_cpi_yoy_pct": 3.3,
+        "core_cpi_yoy_pct": 3.3,
+        "cpi_base": "2020",
+        "source_agency": "Statistics Bureau of Japan / e-Stat",
+        "source_document_type": "National CPI first-release result overview",
+        "release_date_source": "e-Stat month-specific dataset metadata",
+        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
+        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+      },
+      {
+        "reference_month": "2023-07",
+        "release_date": "2023-08-18",
+        "pit_status": "GREEN_FIRST_RELEASE",
+        "document_url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040087883&fileKind=2",
+        "document_sha256": "0d49201cf5aa661615308bc6ef77c54f6c3ac2117de46c213bb04117808619ff",
+        "headline_cpi_yoy_pct": 3.3,
+        "core_cpi_yoy_pct": 3.3,
+        "cpi_base": "2020",
+        "source_agency": "Statistics Bureau of Japan / e-Stat",
+        "source_document_type": "National CPI first-release result overview",
+        "release_date_source": "e-Stat month-specific dataset metadata",
+        "headline_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON",
+        "core_extraction_method": "EXPLICIT_CURRENT_MONTH_COMPARISON"
+      }
+    ]
+  },
+  "date_sanity_pass": true,
+  "guardrails": [
+    "first-release documents only",
+    "document SHA256 per observation",
+    "no revised-history fallback",
+    "no manual value imputation",
+    "no engine/live/OOS changes"
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
