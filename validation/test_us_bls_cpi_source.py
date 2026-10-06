@@ -45,7 +45,7 @@ def main() -> int:
 
         assert c["currency"] == "USD", c
         assert c["dimension"] == "inflation", c
-        assert c["observation_date"] == "2026-09", c
+        assert c["observation_date"] == "2026-09-01", c
         assert abs(float(c["value"]) - 3.8) < 1e-10, c
         assert c["series_id"] == "CPIAUCSL", c
         assert c["frequency"] == "M", c
@@ -54,9 +54,9 @@ def main() -> int:
         assert isinstance(c["macro_series_id"], str) and c["macro_series_id"], c
 
         assert a["upstream_series_id"] == "CUSR0000SA0", a
-        assert a["latest_period"] == "2026-09", a
+        assert a["latest_period"] == "2026-09-01", a
         assert abs(float(a["latest_yoy"]) - 3.8) < 1e-10, a
-        assert a["prior_yoy_period"] == "2026-08", a
+        assert a["prior_yoy_period"] == "2026-08-01", a
         assert abs(float(a["prior_yoy"]) - 3.5) < 1e-10, a
         assert a["mode"] == "fixture", a
         assert a["candidate_only"] is True, a
@@ -77,7 +77,7 @@ def main() -> int:
         "source": "BLS",
         "series": "CUSR0000SA0",
         "target_series": "CPIAUCSL",
-        "observation_date": "2026-09",
+        "observation_date": "2026-09-01",
         "yoy": 3.8,
         "live_data_modified": False,
     }, indent=2))
