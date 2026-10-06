@@ -1,0 +1,357 @@
+{
+  "schema": "GMFQ_EUR_REACTION_FUNCTION_DIAGNOSTIC_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Diagnostic only. Compares frozen direct EUR Labour benchmark with policy-relevant mediator signals from PIT services inflation and certified negotiated wages. Not a production rule and not a causal proof of Labour->mediator transmission.",
+  "guardrails": [
+    "no threshold tuning",
+    "no parameter optimization",
+    "no revised-history substitution",
+    "engine untouched",
+    "live_data untouched"
+  ],
+  "direct_labour_frozen_oos": {
+    "5d": {
+      "n": 8,
+      "hit_rate": 0.375,
+      "mean": -0.001001594913163281,
+      "median": -0.001692092246404978
+    },
+    "20d": {
+      "n": 8,
+      "hit_rate": 0.125,
+      "mean": -0.0012252619117873473,
+      "median": -0.0035048443651130076
+    },
+    "60d": {
+      "n": 7,
+      "hit_rate": 0.2857142857142857,
+      "mean": -0.002092645897033782,
+      "median": -0.0030434414321103497
+    }
+  },
+  "services_mediator": {
+    "definition": "sign of change in first-published annual HICP services rate; new-sign regime entries only",
+    "events": [
+      {
+        "checkpoint": "2024-05-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2024-05-02",
+        "signed_5d": -0.0007365006987949757,
+        "signed_20d": -0.0018952728708773502,
+        "signed_60d": -0.003253041981679233
+      },
+      {
+        "checkpoint": "2024-06-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2024-06-03",
+        "signed_5d": -0.004689735870578132,
+        "signed_20d": -0.0016652332079953784,
+        "signed_60d": -0.006623274901693946
+      },
+      {
+        "checkpoint": "2024-08-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2024-08-02",
+        "signed_5d": 0.000537827596774751,
+        "signed_20d": 0.011108166624040704,
+        "signed_60d": 0.006305989946307425
+      },
+      {
+        "checkpoint": "2024-09-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2024-09-02",
+        "signed_5d": 0.0009218877753681865,
+        "signed_20d": -0.004544653854111814,
+        "signed_60d": -0.00794571087806838
+      },
+      {
+        "checkpoint": "2024-10-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2024-10-02",
+        "signed_5d": -0.010834376651285142,
+        "signed_20d": -0.016444623558067896,
+        "signed_60d": -0.020700519836042104
+      },
+      {
+        "checkpoint": "2025-01-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-01-02",
+        "signed_5d": 0.0020240066239675023,
+        "signed_20d": 0.002768828800522748,
+        "signed_60d": 0.017708926524440446
+      },
+      {
+        "checkpoint": "2025-02-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-02-03",
+        "signed_5d": 0.00829816011479827,
+        "signed_20d": -0.0030144432423548227,
+        "signed_60d": -0.03320341254255028
+      },
+      {
+        "checkpoint": "2025-05-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-05-02",
+        "signed_5d": -0.001986686963648711,
+        "signed_20d": -0.0038857944298232895,
+        "signed_60d": 0.022175592175470427
+      },
+      {
+        "checkpoint": "2025-06-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-06-02",
+        "signed_5d": -0.0002871509971275845,
+        "signed_20d": -0.019181687394168832,
+        "signed_60d": -0.03204799617898646
+      },
+      {
+        "checkpoint": "2025-07-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-07-02",
+        "signed_5d": 0.003334254546451278,
+        "signed_20d": -0.0017615098112218567,
+        "signed_60d": 0.01498544764721619
+      },
+      {
+        "checkpoint": "2025-08-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-08-04",
+        "signed_5d": -0.0034388332486300654,
+        "signed_20d": -0.006692886555612623,
+        "signed_60d": -0.014049237487971461
+      },
+      {
+        "checkpoint": "2025-10-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2025-10-02",
+        "signed_5d": -0.0010529221638677204,
+        "signed_20d": 0.0026430841333086644,
+        "signed_60d": 0.0060682593007062415
+      },
+      {
+        "checkpoint": "2026-01-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2026-01-02",
+        "signed_5d": 0.0006400628213065518,
+        "signed_20d": 0.014059816259126771,
+        "signed_60d": 0.014137661299032052
+      },
+      {
+        "checkpoint": "2026-03-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2026-03-02",
+        "signed_5d": -0.01025918085794182,
+        "signed_20d": 0.0037579976104228792,
+        "signed_60d": -0.0010702774863945053
+      },
+      {
+        "checkpoint": "2026-04-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2026-04-02",
+        "signed_5d": -0.001680995737619393,
+        "signed_20d": 0.010814544830143285,
+        "signed_60d": 0.0015995911760858308
+      },
+      {
+        "checkpoint": "2026-06-01",
+        "signal": 1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2026-06-02",
+        "signed_5d": 0.003408044548723213,
+        "signed_20d": 0.00857034096271375,
+        "signed_60d": 0.0023856002815381247
+      },
+      {
+        "checkpoint": "2026-07-01",
+        "signal": -1,
+        "source": "HICP_SERVICES_FIRST_PUBLISHED_CHANGE",
+        "entry_date": "2026-07-02",
+        "signed_5d": 0.000959142169376803,
+        "signed_20d": 0.0009203830287311548,
+        "signed_60d": 0.004744109361804445
+      }
+    ],
+    "stats": {
+      "5d": {
+        "n": 17,
+        "hit_rate": 0.47058823529411764,
+        "mean": -0.0008731174701604111,
+        "median": -0.0002871509971275845
+      },
+      "20d": {
+        "n": 17,
+        "hit_rate": 0.47058823529411764,
+        "mean": -0.00026134956913081807,
+        "median": -0.0016652332079953784
+      },
+      "60d": {
+        "n": 17,
+        "hit_rate": 0.5294117647058824,
+        "mean": -0.0016930760929873639,
+        "median": 0.0015995911760858308
+      }
+    }
+  },
+  "wages_mediator": {
+    "definition": "sign of change in certified first-known negotiated-wage annual growth; new-sign regime entries only",
+    "events": [
+      {
+        "checkpoint": "2024-08-29",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2024-08-30",
+        "signed_5d": -0.0010119470947639526,
+        "signed_20d": 0.0038577252079194263,
+        "signed_60d": 0.010887460167352361
+      },
+      {
+        "checkpoint": "2024-12-18",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2024-12-19",
+        "signed_5d": 0.007772334126707679,
+        "signed_20d": 0.0048882908933699,
+        "signed_60d": 0.024760999366262828
+      },
+      {
+        "checkpoint": "2025-04-03",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2025-04-04",
+        "signed_5d": -0.0031339359474536563,
+        "signed_20d": 0.009023489884018262,
+        "signed_60d": -0.009991228172496399
+      },
+      {
+        "checkpoint": "2025-12-19",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2025-12-22",
+        "signed_5d": -0.0018004641488560912,
+        "signed_20d": -0.0075314166016118254,
+        "signed_60d": -0.028145006722756244
+      },
+      {
+        "checkpoint": "2025-12-19",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2025-12-22",
+        "signed_5d": 0.0018004641488560912,
+        "signed_20d": 0.0075314166016118254,
+        "signed_60d": 0.028145006722756244
+      },
+      {
+        "checkpoint": "2026-04-16",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2026-04-17",
+        "signed_5d": -0.004508664925358311,
+        "signed_20d": -0.00894263879435145,
+        "signed_60d": -0.007216520455048191
+      },
+      {
+        "checkpoint": "2026-07-09",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2026-07-10",
+        "signed_5d": 0.003144989521328265,
+        "signed_20d": 0.0009258983349881505,
+        "signed_60d": 0.00977021635724557
+      }
+    ],
+    "stats": {
+      "5d": {
+        "n": 7,
+        "hit_rate": 0.42857142857142855,
+        "mean": 0.0003232536686371463,
+        "median": -0.0010119470947639526
+      },
+      "20d": {
+        "n": 7,
+        "hit_rate": 0.7142857142857143,
+        "mean": 0.001393252217992041,
+        "median": 0.0038577252079194263
+      },
+      "60d": {
+        "n": 7,
+        "hit_rate": 0.5714285714285714,
+        "mean": 0.0040301324661880245,
+        "median": 0.00977021635724557
+      }
+    },
+    "small_sample_warning": true
+  },
+  "joint_wages_services": {
+    "definition": "wage and latest services changes must have same sign at certified wage availability date",
+    "events": [
+      {
+        "checkpoint": "2024-08-29",
+        "signal": -1,
+        "source": "WAGES_AND_SERVICES_CONCORDANT",
+        "entry_date": "2024-08-30",
+        "signed_5d": -0.0010119470947639526,
+        "signed_20d": 0.0038577252079194263,
+        "signed_60d": 0.010887460167352361
+      },
+      {
+        "checkpoint": "2025-12-19",
+        "signal": 1,
+        "source": "WAGES_AND_SERVICES_CONCORDANT",
+        "entry_date": "2025-12-22",
+        "signed_5d": -0.0018004641488560912,
+        "signed_20d": -0.0075314166016118254,
+        "signed_60d": -0.028145006722756244
+      },
+      {
+        "checkpoint": "2026-07-09",
+        "signal": -1,
+        "source": "WAGES_AND_SERVICES_CONCORDANT",
+        "entry_date": "2026-07-10",
+        "signed_5d": 0.003144989521328265,
+        "signed_20d": 0.0009258983349881505,
+        "signed_60d": 0.00977021635724557
+      }
+    ],
+    "stats": {
+      "5d": {
+        "n": 3,
+        "hit_rate": 0.3333333333333333,
+        "mean": 0.00011085942590274035,
+        "median": -0.0010119470947639526
+      },
+      "20d": {
+        "n": 3,
+        "hit_rate": 0.6666666666666666,
+        "mean": -0.0009159310195680829,
+        "median": 0.0009258983349881505
+      },
+      "60d": {
+        "n": 3,
+        "hit_rate": 0.6666666666666666,
+        "mean": -0.0024957767327194375,
+        "median": 0.00977021635724557
+      }
+    },
+    "small_sample_warning": true
+  },
+  "interpretation_policy": "Treat mediator results as diagnostic evidence only. They do not yet validate the full Labour->wages/services->ECB->rates->EUR causal chain because explicit PIT ECB reaction/front-end repricing is not included.",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "threshold_tuning": false
+}
