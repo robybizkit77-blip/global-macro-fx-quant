@@ -1,0 +1,634 @@
+{
+  "schema": "GMFQ_JPY_REACTION_ROBUSTNESS_ATTRIBUTION_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "source_replay": "validation/JPY_REACTION_FUNCTION_REPLAY_V1_2026-10-06.json",
+  "engine_frozen_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "method": {
+    "threshold_direction": 0.2,
+    "minimum_observations": 8,
+    "rolling_scale_window": 80,
+    "walkforward": "40/20/20/20 chronological expanding cohorts per variant",
+    "robustness": "OOS only; 10k bootstrap mean CI; 20k random-sign permutation; exact binomial sign test; leave-one-event-out; top-3 concentration"
+  },
+  "event_structure": {
+    "all_checkpoints": 134,
+    "agreement_directional": 47,
+    "conflicting_directional": 49
+  },
+  "variants": {
+    "wages_only": {
+      "full_sample": {
+        "5d": {
+          "n": 104,
+          "hit_rate": 0.40384615384615385,
+          "mean_signed_log_return": -0.0019232436911280231,
+          "median_signed_log_return": -0.0023758497800779937
+        },
+        "20d": {
+          "n": 104,
+          "hit_rate": 0.5384615384615384,
+          "mean_signed_log_return": 0.001753679551320789,
+          "median_signed_log_return": 0.0018397779491766556
+        },
+        "60d": {
+          "n": 104,
+          "hit_rate": 0.5,
+          "mean_signed_log_return": -0.0030039162281439683,
+          "median_signed_log_return": -0.0002616523997511035
+        }
+      },
+      "walkforward": {
+        "initial_train_fraction": 0.4,
+        "folds": [
+          {
+            "fold": 1,
+            "train_event_count": 41,
+            "test_event_count": 21,
+            "test_start": "2020-08-21",
+            "test_end": "2021-08-20",
+            "stats": {
+              "5d": {
+                "n": 21,
+                "hit_rate": 0.47619047619047616,
+                "mean_signed_log_return": -0.0017393036244115739,
+                "median_signed_log_return": -0.0008760906587780039
+              },
+              "20d": {
+                "n": 21,
+                "hit_rate": 0.7142857142857143,
+                "mean_signed_log_return": 0.0060753254967270305,
+                "median_signed_log_return": 0.006214507104716179
+              },
+              "60d": {
+                "n": 21,
+                "hit_rate": 0.5714285714285714,
+                "mean_signed_log_return": 0.004514997034992421,
+                "median_signed_log_return": 0.006930574422690526
+              }
+            }
+          },
+          {
+            "fold": 2,
+            "train_event_count": 62,
+            "test_event_count": 21,
+            "test_start": "2021-09-07",
+            "test_end": "2022-09-06",
+            "stats": {
+              "5d": {
+                "n": 21,
+                "hit_rate": 0.47619047619047616,
+                "mean_signed_log_return": -0.0009696384554504686,
+                "median_signed_log_return": -0.00028220668412864925
+              },
+              "20d": {
+                "n": 21,
+                "hit_rate": 0.38095238095238093,
+                "mean_signed_log_return": -0.0038831886425333565,
+                "median_signed_log_return": -0.006917945554209259
+              },
+              "60d": {
+                "n": 21,
+                "hit_rate": 0.42857142857142855,
+                "mean_signed_log_return": -0.01954706912779481,
+                "median_signed_log_return": -0.010055692997104381
+              }
+            }
+          },
+          {
+            "fold": 3,
+            "train_event_count": 83,
+            "test_event_count": 21,
+            "test_start": "2022-09-20",
+            "test_end": "2023-08-18",
+            "stats": {
+              "5d": {
+                "n": 21,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.005361749286453445,
+                "median_signed_log_return": -0.006358731078232524
+              },
+              "20d": {
+                "n": 21,
+                "hit_rate": 0.5714285714285714,
+                "mean_signed_log_return": -0.002022540120460517,
+                "median_signed_log_return": 0.001773109167500074
+              },
+              "60d": {
+                "n": 21,
+                "hit_rate": 0.47619047619047616,
+                "mean_signed_log_return": -0.0007091078573861994,
+                "median_signed_log_return": -0.006606921534202933
+              }
+            }
+          }
+        ],
+        "pooled_oos_event_count": 63,
+        "pooled_oos": {
+          "5d": {
+            "n": 63,
+            "hit_rate": 0.42857142857142855,
+            "mean_signed_log_return": -0.002690230455438496,
+            "median_signed_log_return": -0.0012836940054092832
+          },
+          "20d": {
+            "n": 63,
+            "hit_rate": 0.5555555555555556,
+            "mean_signed_log_return": 5.653224457771914e-05,
+            "median_signed_log_return": 0.002935569664262751
+          },
+          "60d": {
+            "n": 63,
+            "hit_rate": 0.49206349206349204,
+            "mean_signed_log_return": -0.005247059983396196,
+            "median_signed_log_return": -0.0007344655942468815
+          }
+        }
+      },
+      "robustness_20d_oos": {
+        "n": 63,
+        "positive": 35,
+        "sign_test_p_two_sided": 0.4499625362902225,
+        "bootstrap_mean_95pct_ci": [
+          -0.005678058107084867,
+          0.005367293862037844
+        ],
+        "random_sign_permutation_p_two_sided": 0.9865006749662517,
+        "leave_one_out_mean_range": [
+          -0.0006340739079523681,
+          0.0012722422554675235
+        ],
+        "leave_one_out_hit_rate_range": [
+          0.5483870967741935,
+          0.5645161290322581
+        ],
+        "top3_absolute_contribution_share": 0.16849366083407027
+      },
+      "oos_event_dates": [
+        "2020-08-21",
+        "2020-09-08",
+        "2020-09-18",
+        "2020-10-09",
+        "2020-10-23",
+        "2020-11-06",
+        "2020-11-20",
+        "2021-02-09",
+        "2021-02-19",
+        "2021-03-09",
+        "2021-03-19",
+        "2021-04-06",
+        "2021-04-23",
+        "2021-05-07",
+        "2021-05-21",
+        "2021-06-08",
+        "2021-06-18",
+        "2021-07-06",
+        "2021-07-20",
+        "2021-08-06",
+        "2021-08-20",
+        "2021-09-07",
+        "2021-09-24",
+        "2021-10-08",
+        "2021-10-22",
+        "2021-11-09",
+        "2021-11-19",
+        "2021-12-07",
+        "2021-12-24",
+        "2022-01-07",
+        "2022-01-21",
+        "2022-03-08",
+        "2022-03-18",
+        "2022-04-05",
+        "2022-04-22",
+        "2022-05-09",
+        "2022-05-20",
+        "2022-06-07",
+        "2022-06-24",
+        "2022-08-05",
+        "2022-08-19",
+        "2022-09-06",
+        "2022-09-20",
+        "2022-10-07",
+        "2022-10-21",
+        "2022-11-08",
+        "2022-11-18",
+        "2022-12-06",
+        "2022-12-23",
+        "2023-02-07",
+        "2023-02-24",
+        "2023-03-07",
+        "2023-03-24",
+        "2023-04-07",
+        "2023-04-21",
+        "2023-05-09",
+        "2023-05-19",
+        "2023-06-06",
+        "2023-06-23",
+        "2023-07-07",
+        "2023-07-21",
+        "2023-08-08",
+        "2023-08-18"
+      ]
+    },
+    "inflation_only": {
+      "full_sample": {
+        "5d": {
+          "n": 110,
+          "hit_rate": 0.4727272727272727,
+          "mean_signed_log_return": -0.0004820846836499568,
+          "median_signed_log_return": -0.0006752205618740864
+        },
+        "20d": {
+          "n": 110,
+          "hit_rate": 0.5272727272727272,
+          "mean_signed_log_return": 0.0007941327240871622,
+          "median_signed_log_return": 0.001767411340123723
+        },
+        "60d": {
+          "n": 110,
+          "hit_rate": 0.5727272727272728,
+          "mean_signed_log_return": 0.007333628237045192,
+          "median_signed_log_return": 0.010043317569005884
+        }
+      },
+      "walkforward": {
+        "initial_train_fraction": 0.4,
+        "folds": [
+          {
+            "fold": 1,
+            "train_event_count": 44,
+            "test_event_count": 22,
+            "test_start": "2020-08-21",
+            "test_end": "2021-07-06",
+            "stats": {
+              "5d": {
+                "n": 22,
+                "hit_rate": 0.5909090909090909,
+                "mean_signed_log_return": 2.2789924459185484e-05,
+                "median_signed_log_return": 0.0018519710636201662
+              },
+              "20d": {
+                "n": 22,
+                "hit_rate": 0.5909090909090909,
+                "mean_signed_log_return": 0.0012315761784432448,
+                "median_signed_log_return": 0.006012027109165988
+              },
+              "60d": {
+                "n": 22,
+                "hit_rate": 0.5454545454545454,
+                "mean_signed_log_return": 0.006557983526614211,
+                "median_signed_log_return": 0.008231501757059069
+              }
+            }
+          },
+          {
+            "fold": 2,
+            "train_event_count": 66,
+            "test_event_count": 22,
+            "test_start": "2021-07-20",
+            "test_end": "2022-09-06",
+            "stats": {
+              "5d": {
+                "n": 22,
+                "hit_rate": 0.4090909090909091,
+                "mean_signed_log_return": -0.0020715242758714745,
+                "median_signed_log_return": -0.001133082573546181
+              },
+              "20d": {
+                "n": 22,
+                "hit_rate": 0.5,
+                "mean_signed_log_return": -0.0009577823804676609,
+                "median_signed_log_return": 1.389275699947368e-05
+              },
+              "60d": {
+                "n": 22,
+                "hit_rate": 0.36363636363636365,
+                "mean_signed_log_return": -0.01377156181585406,
+                "median_signed_log_return": -0.014045017647010995
+              }
+            }
+          },
+          {
+            "fold": 3,
+            "train_event_count": 88,
+            "test_event_count": 22,
+            "test_start": "2022-09-20",
+            "test_end": "2023-09-08",
+            "stats": {
+              "5d": {
+                "n": 22,
+                "hit_rate": 0.5,
+                "mean_signed_log_return": 0.004377657958836315,
+                "median_signed_log_return": 0.0016684873628099468
+              },
+              "20d": {
+                "n": 22,
+                "hit_rate": 0.5454545454545454,
+                "mean_signed_log_return": 0.0004115984217539748,
+                "median_signed_log_return": 0.0019465113616484717
+              },
+              "60d": {
+                "n": 22,
+                "hit_rate": 0.5909090909090909,
+                "mean_signed_log_return": 0.011303349044834866,
+                "median_signed_log_return": 0.006944447706493648
+              }
+            }
+          }
+        ],
+        "pooled_oos_event_count": 66,
+        "pooled_oos": {
+          "5d": {
+            "n": 66,
+            "hit_rate": 0.5,
+            "mean_signed_log_return": 0.000776307869141342,
+            "median_signed_log_return": -5.900897807243355e-05
+          },
+          "20d": {
+            "n": 66,
+            "hit_rate": 0.5454545454545454,
+            "mean_signed_log_return": 0.00022846407324318628,
+            "median_signed_log_return": 0.0028674633014948584
+          },
+          "60d": {
+            "n": 66,
+            "hit_rate": 0.5,
+            "mean_signed_log_return": 0.0013632569185316726,
+            "median_signed_log_return": 0.0025611535315025412
+          }
+        }
+      },
+      "robustness_20d_oos": {
+        "n": 66,
+        "positive": 36,
+        "sign_test_p_two_sided": 0.5385827752459464,
+        "bootstrap_mean_95pct_ci": [
+          -0.005104108448639387,
+          0.0055352756570372355
+        ],
+        "random_sign_permutation_p_two_sided": 0.9379531023448827,
+        "leave_one_out_mean_range": [
+          -0.0009267516861006131,
+          0.001197948033563937
+        ],
+        "leave_one_out_hit_rate_range": [
+          0.5384615384615384,
+          0.5538461538461539
+        ],
+        "top3_absolute_contribution_share": 0.16566902787633955
+      },
+      "oos_event_dates": [
+        "2020-08-21",
+        "2020-09-08",
+        "2020-09-18",
+        "2020-10-09",
+        "2020-10-23",
+        "2020-11-06",
+        "2020-11-20",
+        "2020-12-08",
+        "2020-12-18",
+        "2021-01-07",
+        "2021-01-22",
+        "2021-02-09",
+        "2021-02-19",
+        "2021-03-09",
+        "2021-03-19",
+        "2021-04-06",
+        "2021-04-23",
+        "2021-05-07",
+        "2021-05-21",
+        "2021-06-08",
+        "2021-06-18",
+        "2021-07-06",
+        "2021-07-20",
+        "2021-08-06",
+        "2021-08-20",
+        "2021-09-07",
+        "2021-09-24",
+        "2021-10-08",
+        "2021-10-22",
+        "2021-11-09",
+        "2021-12-24",
+        "2022-01-07",
+        "2022-01-21",
+        "2022-02-08",
+        "2022-02-18",
+        "2022-03-08",
+        "2022-03-18",
+        "2022-04-05",
+        "2022-04-22",
+        "2022-05-09",
+        "2022-05-20",
+        "2022-06-07",
+        "2022-08-19",
+        "2022-09-06",
+        "2022-09-20",
+        "2022-10-07",
+        "2022-10-21",
+        "2022-11-08",
+        "2022-11-18",
+        "2022-12-06",
+        "2022-12-23",
+        "2023-01-06",
+        "2023-01-20",
+        "2023-02-07",
+        "2023-02-24",
+        "2023-03-07",
+        "2023-03-24",
+        "2023-04-07",
+        "2023-05-19",
+        "2023-06-06",
+        "2023-06-23",
+        "2023-07-07",
+        "2023-07-21",
+        "2023-08-08",
+        "2023-08-18",
+        "2023-09-08"
+      ]
+    },
+    "wages_cpi_agreement": {
+      "full_sample": {
+        "5d": {
+          "n": 47,
+          "hit_rate": 0.3829787234042553,
+          "mean_signed_log_return": -0.0021630762599178337,
+          "median_signed_log_return": -0.004021556446424169
+        },
+        "20d": {
+          "n": 47,
+          "hit_rate": 0.5531914893617021,
+          "mean_signed_log_return": 0.002684782365478469,
+          "median_signed_log_return": 0.002435876173289229
+        },
+        "60d": {
+          "n": 47,
+          "hit_rate": 0.574468085106383,
+          "mean_signed_log_return": 0.004534629270887272,
+          "median_signed_log_return": 0.007042163737114674
+        }
+      },
+      "walkforward": {
+        "initial_train_fraction": 0.4,
+        "folds": [
+          {
+            "fold": 1,
+            "train_event_count": 18,
+            "test_event_count": 10,
+            "test_start": "2020-08-21",
+            "test_end": "2021-07-20",
+            "stats": {
+              "5d": {
+                "n": 10,
+                "hit_rate": 0.6,
+                "mean_signed_log_return": -0.0018978361463727381,
+                "median_signed_log_return": 0.0018519710636201662
+              },
+              "20d": {
+                "n": 10,
+                "hit_rate": 0.8,
+                "mean_signed_log_return": 0.007662116588487958,
+                "median_signed_log_return": 0.006376780788840863
+              },
+              "60d": {
+                "n": 10,
+                "hit_rate": 0.5,
+                "mean_signed_log_return": 0.0010675053922199267,
+                "median_signed_log_return": 0.0025796387244668476
+              }
+            }
+          },
+          {
+            "fold": 2,
+            "train_event_count": 28,
+            "test_event_count": 9,
+            "test_start": "2021-08-20",
+            "test_end": "2022-08-19",
+            "stats": {
+              "5d": {
+                "n": 9,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.003519562321654445,
+                "median_signed_log_return": -0.0030758820952354747
+              },
+              "20d": {
+                "n": 9,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.007624773751912315,
+                "median_signed_log_return": -0.00569213993074884
+              },
+              "60d": {
+                "n": 9,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.030095168448809204,
+                "median_signed_log_return": -0.027126477363722375
+              }
+            }
+          },
+          {
+            "fold": 3,
+            "train_event_count": 37,
+            "test_event_count": 10,
+            "test_start": "2022-10-07",
+            "test_end": "2023-08-18",
+            "stats": {
+              "5d": {
+                "n": 10,
+                "hit_rate": 0.3,
+                "mean_signed_log_return": -0.0013879363365188165,
+                "median_signed_log_return": -0.0031921023548031877
+              },
+              "20d": {
+                "n": 10,
+                "hit_rate": 0.6,
+                "mean_signed_log_return": -0.001100730576492617,
+                "median_signed_log_return": 0.002630618055835825
+              },
+              "60d": {
+                "n": 10,
+                "hit_rate": 0.6,
+                "mean_signed_log_return": 0.012227203556099586,
+                "median_signed_log_return": 0.006944447706493648
+              }
+            }
+          }
+        ],
+        "pooled_oos_event_count": 29,
+        "pooled_oos": {
+          "5d": {
+            "n": 29,
+            "hit_rate": 0.41379310344827586,
+            "mean_signed_log_return": -0.002225302955993295,
+            "median_signed_log_return": -0.0012836940054092832
+          },
+          "20d": {
+            "n": 29,
+            "hit_rate": 0.5862068965517241,
+            "mean_signed_log_return": -0.00010376219473301438,
+            "median_signed_log_return": 0.004162289604713433
+          },
+          "60d": {
+            "n": 29,
+            "hit_rate": 0.4827586206896552,
+            "mean_signed_log_return": -0.004755497467451301,
+            "median_signed_log_return": -0.0007344655942468815
+          }
+        }
+      },
+      "robustness_20d_oos": {
+        "n": 29,
+        "positive": 17,
+        "sign_test_p_two_sided": 0.45825831964612007,
+        "bootstrap_mean_95pct_ci": [
+          -0.007858543223757593,
+          0.007129783934938754
+        ],
+        "random_sign_permutation_p_two_sided": 0.9787010649467527,
+        "leave_one_out_mean_range": [
+          -0.0010936688222129478,
+          0.0021349603464410065
+        ],
+        "leave_one_out_hit_rate_range": [
+          0.5714285714285714,
+          0.6071428571428571
+        ],
+        "top3_absolute_contribution_share": 0.30203660292887285
+      },
+      "oos_event_dates": [
+        "2020-08-21",
+        "2020-09-08",
+        "2020-10-09",
+        "2020-11-06",
+        "2021-02-19",
+        "2021-03-19",
+        "2021-05-07",
+        "2021-06-18",
+        "2021-07-06",
+        "2021-07-20",
+        "2021-08-20",
+        "2021-09-07",
+        "2022-01-07",
+        "2022-01-21",
+        "2022-03-18",
+        "2022-04-05",
+        "2022-04-22",
+        "2022-06-07",
+        "2022-08-19",
+        "2022-10-07",
+        "2022-10-21",
+        "2022-12-06",
+        "2022-12-23",
+        "2023-02-07",
+        "2023-02-24",
+        "2023-03-24",
+        "2023-06-06",
+        "2023-07-21",
+        "2023-08-18"
+      ]
+    }
+  },
+  "interpretation_guardrail": "Attribution variants are diagnostics, not new candidate rules. No threshold/weight/horizon tuning and no production promotion.",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
