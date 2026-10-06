@@ -10,7 +10,7 @@ SOURCE='Stats NZ'
 HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
 URLS={
  'inflation':'https://www.stats.govt.nz/news/annual-inflation-at-4-1-percent-in-june-2026/',
- 'labour':'https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/',
+ 'labour':'https://www.stats.govt.nz/indicators/unemployment-rate/',
 }
 CONFIG={
  'inflation':{'series_id':'NZ_CPI_HEADLINE_YOY','macro_series_id':'NZ_CPI_HEADLINE_YOY_history_value','frequency':'Q','transformation':'reported_yoy_rate','unit':'% YoY'},
@@ -42,10 +42,10 @@ def parse_value(dim,t):
   ]
  else:
   patterns=[
+   r'Unemployment rate\s+([0-9]+(?:\.[0-9]+)?)%',
    r'The unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
    r'seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
    r'Unemployment rate at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
-   r'Unemployment rate\s+([0-9]+(?:\.[0-9]+)?)%',
   ]
  for p in patterns:
   m=re.search(p,t,re.I|re.S)
