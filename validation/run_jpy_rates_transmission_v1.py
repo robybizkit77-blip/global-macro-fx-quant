@@ -21,16 +21,15 @@ def fetch_mof():
         except UnicodeDecodeError: pass
     if text is None: raise RuntimeError('cannot decode MOF csv')
     rows=list(csv.reader(io.StringIO(text)))
-    # locate header row and semantic columns robustly
     header_i=None
     for i,r in enumerate(rows[:20]):
         joined='|'.join(x.strip().lower() for x in r)
-        if ('date' in joined or '年月日' in joined) and ('2' in joined): header_i=i; break
+        if ('date' in joined or '年月日' in joined) and ('2y' in joined.lower() or '2年' in joined): header_i=i; break
     if header_i is None: raise RuntimeError('MOF header not found')
     hdr=[x.strip() for x in rows[header_i]]
-    def norm(s): return s.lower().replace(' ','').replace('-','').replace('_','').replace('year','y').replace('years','y')
-    date_candidates=[i for i,h in enumerate(hdr) if norm(h) in ('date','年月日') or 'date' in norm(h)]
-    y2_candidates=[i for i,h in enumerate(hdr) if norm(h) in ('2y','2年','2') or ('2' in norm(h) and ('y' in norm(h) or '年' in norm(h)))]
+    def norm(s): return s.lower().replace(' ','').replace('-','').replace('_','').replace('years','y').replace('year','y')
+    date_candidates=[i for i,h in enumerate(hdr) if norm(h) in ('date','年月日')]
+    y2_candidates=[i for i,h in enumerate(hdr) if norm(h) in ('2y','2年','2')]
     if len(date_candidates)!=1 or len(y2_candidates)!=1: raise RuntimeError(f'ambiguous columns header={hdr}')
     di,yi=date_candidates[0],y2_candidates[0]
     out=[]
@@ -55,7 +54,7 @@ def load_usd():
     out=[]
     with USD.open(newline='',encoding='utf-8') as f:
         for r in csv.DictReader(f):
-            d=r['date'];
+            d=r['date']
             if '2018-01-01'<=d<='2023-12-31': out.append((d,float(r['usd_treasury_par_2y_pct'])))
     return out
 
