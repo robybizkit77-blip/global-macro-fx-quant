@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_USD_CPI_BLS_ARCHIVE_PIT_V1",
+  "status": "PASS",
+  "source": "Official BLS archived CPI news releases",
+  "coverage": {
+    "start": "2016-01",
+    "end": "2026-08",
+    "calendar_months": 128,
+    "published_complete_releases": 127,
+    "structural_withheld_months": 1
+  },
+  "structural_withheld": {
+    "2025-10": "BLS did not publish an October 2025 CPI news release because of the 2025 lapse in federal government appropriations."
+  },
+  "source_exceptions": {
+    "2016-05": "Official BLS June 16 2016 HTML rendering is not parser-complete; reference month, 08:30 EDT timestamp, headline 1.0% YoY and core 2.2% YoY are certified from the official BLS archived PDF/release schedule."
+  },
+  "fields": [
+    "headline CPI YoY first-published",
+    "core CPI ex-food-energy YoY first-published",
+    "release date",
+    "08:30 ET release time"
+  ],
+  "method": "Opening archived CPI release text only; no current/revised-history substitution. One isolated 2016 source-rendering exception is explicitly certified from the contemporaneous official archived PDF.",
+  "strict_zero_parse_errors_on_published_releases": true,
+  "output": "history/pit_v1/USD_CPI_HEADLINE_CORE_FIRST_RELEASE_2016_2026.csv",
+  "notes": [
+    "This is a CPI release-state block, not a claim that CPI is the Fed preferred inflation gauge; PCE remains conceptually distinct.",
+    "No consensus-surprise series is introduced.",
+    "No engine/live-data changes."
+  ]
+}
