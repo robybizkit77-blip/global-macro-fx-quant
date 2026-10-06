@@ -3,7 +3,7 @@ name: USD CPI BLS Source Contract V1
 on:
   push:
     branches:
-      - build-macro-source-registry-2026-10-05
+      - validation-us-cpi-bls-v1-2026-10-06
     paths:
       - 'validation/sources/us_bls_cpi.py'
       - 'validation/fixtures/us_bls_cpi_contract.json'
