@@ -1,4 +1,28 @@
 reference_quarter,annual_growth_pct,certified_available_date,source_type,source_note,status
+2018-Q1,1.9,,ECB_ECONOMIC_BULLETIN_2018_4,"First-published ECB Economic Bulletin 4/2018 reported negotiated wage growth at 1.9% for Q1 2018; later Bulletin 6/2018 reported 1.7%, confirming revision risk. Value certified, exact first-availability date still pending.",VALUE_CERTIFIED_DATE_PENDING
+2018-Q2,2.2,,ECB_ECONOMIC_BULLETIN_2018_6,"ECB Economic Bulletin 6/2018 reported negotiated wage growth 2.2% in Q2 2018.",VALUE_CERTIFIED_DATE_PENDING
+2018-Q3,2.1,,ECB_ECONOMIC_BULLETIN_2019_2,"ECB Economic Bulletin 2/2019 reported Q3 2018 negotiated wage growth 2.1% and Q4 2018 2.2%.",VALUE_CERTIFIED_DATE_PENDING
+2018-Q4,2.2,,ECB_ECONOMIC_BULLETIN_2019_2,"ECB Economic Bulletin 2/2019 reported negotiated wage growth 2.2% in Q4 2018.",VALUE_CERTIFIED_DATE_PENDING
+2019-Q1,2.2,,ECB_ECONOMIC_BULLETIN_2019_4,"ECB Economic Bulletin 4/2019 reported negotiated wage growth 2.2% in Q1 2019; later Bulletin 6/2019 reported 2.3%, so first-vintage timing requires exact release-date certification.",VALUE_CERTIFIED_DATE_PENDING
+2019-Q2,2.0,,ECB_ECONOMIC_BULLETIN_2019_6,"ECB Economic Bulletin 6/2019 reported negotiated wage growth 2.0% in Q2 2019.",VALUE_CERTIFIED_DATE_PENDING
+2019-Q3,2.6,,ECB_ECONOMIC_BULLETIN_2019_8,"ECB Economic Bulletin 8/2019 reported negotiated wage growth 2.6% in Q3 2019.",VALUE_CERTIFIED_DATE_PENDING
+2019-Q4,2.0,,ECB_ECONOMIC_BULLETIN_2020_2,"ECB Economic Bulletin 2/2020 reported negotiated wage growth 2.0% in Q4 2019.",VALUE_CERTIFIED_DATE_PENDING
+2020-Q1,1.9,,ECB_ECONOMIC_BULLETIN_2020_4,"ECB Economic Bulletin 4/2020 reported negotiated wages 1.9% in Q1 2020.",VALUE_CERTIFIED_DATE_PENDING
+2020-Q2,1.7,,ECB_ECONOMIC_BULLETIN_2020_7,"ECB Economic Bulletin 7/2020 reported negotiated wages 1.7% in Q2 2020.",VALUE_CERTIFIED_DATE_PENDING
+2020-Q3,1.6,,ECB_ECONOMIC_BULLETIN_2020_8,"ECB Economic Bulletin 8/2020 reported negotiated wages 1.6% in Q3 2020.",VALUE_CERTIFIED_DATE_PENDING
+2020-Q4,1.9,,ECB_ECONOMIC_BULLETIN_2021_2,"ECB Economic Bulletin 2/2021 reported negotiated wage growth 1.9% in Q4 2020 including one-offs; later Bulletin 4/2021 referenced 2.0%, so exact vintage sequencing needs date certification.",VALUE_CERTIFIED_DATE_PENDING
+2021-Q1,1.4,,ECB_ECONOMIC_BULLETIN_2021_4,"ECB Economic Bulletin 4/2021 reported negotiated wage growth 1.4% in Q1 2021.",VALUE_CERTIFIED_DATE_PENDING
+2021-Q2,1.7,,ECB_ECONOMIC_BULLETIN_2021_6,"ECB Economic Bulletin 6/2021 reported negotiated wage growth 1.7% in Q2 2021.",VALUE_CERTIFIED_DATE_PENDING
+2021-Q3,1.4,,ECB_ECONOMIC_BULLETIN_2022_2,"ECB Economic Bulletin 2/2022 reported Q4 2021 1.5%, up from 1.4% in Q3.",VALUE_CERTIFIED_DATE_PENDING
+2021-Q4,1.5,,ECB_ECONOMIC_BULLETIN_2022_2,"ECB Economic Bulletin 2/2022 reported negotiated wage growth 1.5% in Q4 2021.",VALUE_CERTIFIED_DATE_PENDING
+2022-Q1,3.0,,ECB_ECONOMIC_BULLETIN_2022_6,"ECB Economic Bulletin 6/2022 reported Q2 2022 at 2.4%, down from 3.0% in Q1.",VALUE_CERTIFIED_DATE_PENDING
+2022-Q2,2.4,2022-09-26,ECB_INTRODUCTORY_CHARTS,"ECB introductory charts dated 26 Sep 2022 state negotiated wages including one-offs were 2.4% in Q2 2022.",CERTIFIED_CONSERVATIVE
+2022-Q3,2.9,2022-11-28,ECB_INTRODUCTORY_CHARTS,"ECB introductory charts dated 28 Nov 2022 state negotiated wages including one-offs were 2.9% in Q3 2022, up from 2.5%/2.4% in Q2 depending vintage.",CERTIFIED_CONSERVATIVE
+2022-Q4,2.9,,ECB_ANNUAL_REPORT_2022,"ECB Annual Report 2022 reported negotiated wage growth 2.9% in Q4 2022; exact first-availability date still pending.",VALUE_CERTIFIED_DATE_PENDING
+2023-Q1,4.4,,ECB_ECONOMIC_BULLETIN_2023_6,"ECB Economic Bulletin 6/2023 reported Q2 2023 at 4.3% after 4.4% in Q1.",VALUE_CERTIFIED_DATE_PENDING
+2023-Q2,4.3,,ECB_ECONOMIC_BULLETIN_2023_6,"ECB Economic Bulletin 6/2023 reported negotiated wage growth 4.3% in Q2 2023.",VALUE_CERTIFIED_DATE_PENDING
+2023-Q3,4.7,,ECB_ECONOMIC_BULLETIN_2023_8,"ECB Economic Bulletin 8/2023 reported negotiated wage growth 4.7% in Q3 2023.",VALUE_CERTIFIED_DATE_PENDING
+2023-Q4,4.5,2024-05-23,ECB_BLOG,"ECB blog dated 23 May 2024 states Q4 2023 negotiated wage growth 4.5% and Q1 2024 4.7%.",CERTIFIED_CONSERVATIVE
 2024-Q1,4.7,2024-05-23,ECB_BLOG,"ECB blog states latest release negotiated wage growth Q1 2024 = 4.7%; latest observation Q1 2024",CERTIFIED_CONSERVATIVE
 2024-Q2,3.5,2024-08-29,ECB_SPEECH,"ECB speech/chart latest observation Q2 2024; negotiated wages about 3.5%",CERTIFIED_CONSERVATIVE
 2024-Q3,5.4,2024-12-18,ECB_BLOG_OR_BULLETIN,"ECB December material states negotiated wage growth rose to 5.4% in Q3 2024 from 3.5% in Q2",CERTIFIED_CONSERVATIVE
