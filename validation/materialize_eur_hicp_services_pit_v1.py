@@ -22,12 +22,25 @@ def dim_lookup(dim):
     return sorted(((code, label.get(code, code)) for code, pos in idx.items()), key=lambda x: idx[x[0]])
 
 
-def pick_code(dim, predicates):
-    for code, label in dim_lookup(dim):
-        s = (code + " " + label).lower()
-        if all(p in s for p in predicates):
+def pick_services_aggregate(dim):
+    vals = dim_lookup(dim)
+    exact_phrases = [
+        "services (overall index excluding goods)",
+        "services, overall index excluding goods",
+        "hicp - services"
+    ]
+    for code, label in vals:
+        ll = label.lower().strip()
+        if any(p in ll for p in exact_phrases):
             return code, label
-    return None
+    # Known Eurostat special-aggregate style codes can vary by classification.
+    # Only accept a label that is exactly the aggregate concept, never a leaf item
+    # merely containing the word 'services'.
+    for code, label in vals:
+        ll = label.lower().strip()
+        if ll == "services" or (ll.startswith("services (") and "excluding goods" in ll):
+            return code, label
+    raise SystemExit("Could not resolve the HICP Services special aggregate exactly")
 
 
 def extract_rows(data, geo_code, service_code):
@@ -53,14 +66,10 @@ def extract_rows(data, geo_code, service_code):
 
 
 def main():
-    # Use EA only for compact dimension discovery. Values may be stored under
-    # composition-specific euro-area codes (EA20 through 2025, EA21 from 2026).
     meta, meta_url = fetch({"lang":"en","geo":"EA","unit":"RCH_A","sinceTimePeriod":"2024-01"})
     dims = meta["dimension"]
     coid = "coicop18" if "coicop18" in dims else "coicop"
-    service = pick_code(dims[coid], ["services"])
-    if not service:
-        raise SystemExit(f"Could not resolve services aggregate in {coid}")
+    service = pick_services_aggregate(dims[coid])
 
     geo_candidates = ["EA20", "EA21", "EA", "U2"]
     queried=[]
@@ -70,25 +79,23 @@ def main():
         try:
             data, url = fetch(params)
         except Exception as exc:
-            queried.append({"geo":geo_code,"url":API,"error":repr(exc),"rows":0})
+            queried.append({"geo":geo_code,"error":repr(exc),"rows":0})
             continue
         rows=extract_rows(data, geo_code, service[0])
         queried.append({"geo":geo_code,"url":url,"rows":len(rows)})
         raw_rows.extend(rows)
 
-    # Canonical changing-composition euro area: EA20 for reference months <= 2025-12,
-    # EA21 from 2026-01. Fallback to EA/U2 only if composition-specific code absent.
     by_month={}
-    priority={"EA20":0,"EA21":0,"EA":1,"U2":2}
+    fallback_priority={"EA":1,"U2":2,"EA20":3,"EA21":3}
     for r in raw_rows:
         m=r["reference_month"]
         expected="EA21" if m >= "2026-01" else "EA20"
-        score=0 if r["geo_code"] == expected else 10 + priority.get(r["geo_code"],9)
+        score=0 if r["geo_code"] == expected else 10 + fallback_priority.get(r["geo_code"],9)
         if m not in by_month or score < by_month[m][0]:
             by_month[m]=(score,r)
     rows=[by_month[m][1] for m in sorted(by_month)]
     if not rows:
-        raise SystemExit(f"No first-published EUR services observations returned; service={service}; queries={queried}")
+        raise SystemExit(f"No first-published HICP Services observations returned; aggregate={service}; queries={queried}")
 
     os.makedirs(os.path.dirname(OUT_CSV), exist_ok=True)
     with open(OUT_CSV,"w",newline="",encoding="utf-8") as f:
@@ -107,6 +114,7 @@ def main():
       "first_reference_month":rows[0]["reference_month"],
       "last_reference_month":rows[-1]["reference_month"],
       "pit_policy":"Uses Eurostat first-published HICP dataset only; no revised-history substitution.",
+      "validation_rule":"Services aggregate label must explicitly identify the overall services aggregate; leaf-item matches are forbidden.",
       "metadata_url":meta_url,
       "changes_engine_rules":False,
       "changes_live_data":False,
