@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_GBP_BOE_REACTION_FUNCTION_PIT_FEASIBILITY_V1",
+  "created_at": "2026-10-06",
+  "status": "STRUCTURALLY_FEASIBLE_NOT_YET_MATERIALIZED",
+  "purpose": "Assess whether a BoE-specific mediated labour channel can be reconstructed point-in-time without revised-history substitution.",
+  "reaction_function": "Labour tightness -> wages -> services/domestic inflation -> BoE reaction -> front-end rates -> GBP",
+  "already_available": {
+    "labour": {
+      "status": "PIT_ELIGIBLE",
+      "source": "ONS A01 vintage archive already certified in project",
+      "series": ["UK_UNEMP_RATE_history_value", "UK_EMPLOYMENT_RATE_history_value"]
+    }
+  },
+  "candidate_bridges": {
+    "average_weekly_earnings": {
+      "status": "PIT_ARCHIVE_AVAILABLE",
+      "provider": "ONS",
+      "dataset": "Average weekly earnings time series",
+      "evidence": "ONS dataset page explicitly exposes previous dataset versions and explains scheduled revisions; archived files are timestamped by superseded/release dates.",
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/averageweeklyearnings/current",
+      "pit_implication": "Strong candidate for vintage reconstruction using archived monthly dataset files rather than current revised history."
+    },
+    "cpi_services": {
+      "status": "PIT_VERSION_HISTORY_AVAILABLE",
+      "provider": "ONS",
+      "series_id": "D7NN",
+      "series_name": "CPI ANNUAL RATE: Services 2015=100",
+      "evidence": "ONS time-series page exposes View previous versions; current series is monthly and has explicit release dates.",
+      "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7nn/mm23",
+      "pit_implication": "Candidate for first-known monthly services-inflation vintages."
+    },
+    "front_end": {
+      "status": "OFFICIAL_ARCHIVE_AVAILABLE",
+      "provider": "Bank of England",
+      "preferred_curve": "Sterling OIS daily archive for policy-expectations confirmation; nominal government curve may be retained as secondary same-basis rates layer.",
+      "evidence": "BoE publishes daily archive yield curves including sterling overnight index swap curves; nominal government curves are available daily from 1979.",
+      "source_url": "https://www.bankofengland.co.uk/statistics/yield-curves",
+      "pit_implication": "A same-basis front-end confirmation layer is structurally feasible."
+    }
+  },
+  "materialization_plan": [
+    "1. Reconstruct monthly AWE vintage table from ONS previous-version files, preserving first-known values and release timestamps.",
+    "2. Reconstruct CPI services D7NN first-known monthly vintages from ONS previous versions.",
+    "3. Materialize a fixed front-end tenor from BoE sterling OIS archive on a single consistent basis.",
+    "4. Run diagnostic only: direct labour vs wages/services mediated vs mediated+front-end confirmation, no threshold tuning.",
+    "5. Apply chronological walk-forward and robustness before any engine proposal."
+  ],
+  "guardrails": [
+    "No current-series retrofill where vintage files exist.",
+    "No mixing gilt and OIS rates inside one confirmation series.",
+    "No engine/rule changes before OOS evidence.",
+    "No inference that BoE equals ECB; only the mediated labour structure is shared, with bank-specific data and rates."
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "threshold_tuning": false
+}
