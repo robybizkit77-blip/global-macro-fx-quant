@@ -30,23 +30,37 @@ jobs:
         run: |
           python validation/jpy_iip_first_release_probe.py \
             --output /tmp/gmfq-jpy-pit/iip.json
+      - name: Probe archived METI tertiary-activity first releases
+        run: |
+          python validation/jpy_ita_first_release_probe.py \
+            --output /tmp/gmfq-jpy-pit/ita.json
       - name: Assert feasibility boundaries
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           l=json.loads(Path('/tmp/gmfq-jpy-pit/labour.json').read_text())
-          g=json.loads(Path('/tmp/gmfq-jpy-pit/iip.json').read_text())
+          iip=json.loads(Path('/tmp/gmfq-jpy-pit/iip.json').read_text())
+          ita=json.loads(Path('/tmp/gmfq-jpy-pit/ita.json').read_text())
           assert l['status']=='PASS',l
           assert l['labour_block_series_count']==2,l
           assert l['revised_history_fallback_used'] is False,l
-          assert l['pit_activation'] is False,l
-          assert g['status']=='PASS',g
-          assert g['growth_series_count']==1,g
-          assert g['publication_timestamp_in_source'] is True,g
-          assert g['revised_history_fallback_used'] is False,g
-          assert g['pit_activation'] is False,g
-          print(json.dumps({'labour':l,'industrial_production':g},indent=2,ensure_ascii=False))
+          assert iip['status']=='PASS',iip
+          assert iip['growth_series_count']==1,iip
+          assert iip['publication_timestamp_in_source'] is True,iip
+          assert ita['status']=='PASS',ita
+          assert ita['growth_series_count']==1,ita
+          assert ita['publication_date_in_source'] is True,ita
+          assert iip['revised_history_fallback_used'] is False,iip
+          assert ita['revised_history_fallback_used'] is False,ita
+          assert l['pit_activation'] is False and iip['pit_activation'] is False and ita['pit_activation'] is False
+          print(json.dumps({
+            'status':'JPY_MACRO_PIT_RECONSTRUCTION_STRUCTURALLY_FEASIBLE',
+            'labour_series_count':l['labour_block_series_count'],
+            'growth_series_count':iip['growth_series_count']+ita['growth_series_count'],
+            'pit_activation':False,
+            'labour':l,'industrial_production':iip,'tertiary_activity':ita
+          },indent=2,ensure_ascii=False))
           PY
       - name: Confirm repository untouched
         run: git diff --exit-code
@@ -59,3 +73,4 @@ jobs:
           path: |
             /tmp/gmfq-jpy-pit/labour.json
             /tmp/gmfq-jpy-pit/iip.json
+            /tmp/gmfq-jpy-pit/ita.json
