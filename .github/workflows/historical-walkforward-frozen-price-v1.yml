@@ -1,0 +1,48 @@
+name: Historical Walkforward Frozen Price V1
+
+on:
+  push:
+    branches:
+      - validation-price-ecb-history-v1-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Replay historical walk-forward using frozen ECB price only
+        run: |
+          mkdir -p /tmp/gmfq-walkforward
+          python validation/replay_historical_walkforward_frozen_price_v1.py \
+            --output /tmp/gmfq-walkforward/replay.json
+      - name: Assert frozen inputs and safety
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-walkforward/replay.json').read_text())
+          assert x['status']=='PASS', x
+          assert x['rules_fingerprint']=='3356baf0', x
+          assert x['checkpoint_count']==105, x
+          assert x['pair_count']==28, x
+          assert x['model_rules_modified'] is False, x
+          assert x['live_data_modified'] is False, x
+          print('QUALITY_COUNTS_MATCH=',x['quality_counts_match'])
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-walkforward-frozen-price-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-walkforward/replay.json
