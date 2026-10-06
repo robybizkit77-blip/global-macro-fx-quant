@@ -44,12 +44,12 @@ def check_dimension(dimension: str, root: Path) -> dict:
         assert c["macro_series_id"] == "AU_CPI_HEADLINE_Q_YOY_history_value", c
         assert c["series_id"] == "AU_CPI_HEADLINE_Q_YOY", c
         assert c["frequency"] == "Q" and c["transformation"] == "reported_yoy_rate", c
-        assert c["observation_date"] == "2026-06" and abs(float(c["value"]) - 3.8) < 1e-12, c
+        assert c["observation_date"] == "2026-06-01" and abs(float(c["value"]) - 3.8) < 1e-12, c
     else:
         assert c["macro_series_id"] == "AU_UNEMP_RATE_history_value", c
         assert c["series_id"] == "AU_UNEMP_RATE", c
         assert c["frequency"] == "M" and c["transformation"] == "level", c
-        assert c["observation_date"] == "2026-08" and abs(float(c["value"]) - 4.6) < 1e-12, c
+        assert c["observation_date"] == "2026-08-01" and abs(float(c["value"]) - 4.6) < 1e-12, c
 
     run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built))
     summary = json.loads((built / "summary.json").read_text())
