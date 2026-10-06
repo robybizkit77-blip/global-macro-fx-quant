@@ -14,5 +14,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install pypdf
+      - run: pip install pypdf cryptography
       - run: python validation/probe_jpy_machinery_orders_pit_v1.py
