@@ -15,22 +15,27 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Audit historical macro and 2Y input availability
+      - name: Extract exact currency and pair hierarchy functions
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json,re
-          p=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js')
-          t=p.read_text(errors='ignore').strip(); x=json.loads(t[t.find('=')+1:t.rfind(';')].strip())
-          ids={
-            'USD':'US_DGS2_history_DGS2','GBP':'GBP_RATES_2016_2026_2Y','JPY':'JPY_RATES_2016_2026_2Y',
-            'CHF':'CH_CONFED_SPOT_2Y_history_value_pct','CAD':'CAD_RATES_2016_2026_2Y','AUD':'AU_FCMYGBAG2D_history_FCMYGBAG2D','NZD':'NZD_RATES_2016_2026_RBNZ_B2_2Y'}
-          for c,series in x.items():
-            cats={cat:sum(1 for s in series if s.get('category')==cat) for cat in ['Crescita','Lavoro']}
-            rid=ids.get(c)
-            rs=next((s for s in series if s.get('id')==rid),None) if rid else None
-            print(c,'TOTAL',len(series),'CATS',cats,'RATE_ID',rid,'RATE_FOUND',bool(rs),'RATE_N',len(rs.get('values',[])) if rs else None)
-            print(' LABOUR_IDS',[s.get('id') for s in series if s.get('category')=='Lavoro'])
-            print(' GROWTH_IDS',[s.get('id') for s in series if s.get('category')=='Crescita'])
+          import re
+          names=['deriveCurrencyState','derivePairDecisionFrame','derivePairSetupState','derivePairRelativeDynamics','macroPolarity','policyFamilyPolarity']
+          files=list(Path('payload').glob('part-*.txt'))
+          for name in names:
+            print('\n===== '+name+' =====')
+            found=False
+            for p in files:
+              text=p.read_text(errors='ignore')
+              for pat in [rf'function\s+{name}\s*\(',rf'const\s+{name}\s*=\s*\(',rf'let\s+{name}\s*=\s*\(',rf'var\s+{name}\s*=\s*\(']:
+                m=re.search(pat,text)
+                if not m: continue
+                start=max(0,m.start()-1800); end=min(len(text),m.start()+9000)
+                print('FILE='+str(p))
+                print(text[start:end])
+                found=True
+                break
+              if found: break
+            if not found: print('NOT_FOUND')
           PY
