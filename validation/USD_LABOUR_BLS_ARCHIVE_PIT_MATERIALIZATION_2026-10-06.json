@@ -20,12 +20,12 @@
     "release date",
     "08:30 ET release time"
   ],
-  "method": "Extract reference month and opening-summary values from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.",
+  "method": "Extract only the opening headline payroll sentence and first unemployment-rate level from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.",
   "strict_zero_parse_errors_on_published_releases": true,
   "output": "history/pit_v1/USD_LABOUR_BLS_EMPLOYMENT_SITUATION_FIRST_RELEASE_2016_2026.csv",
   "notes": [
     "October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.",
-    "NFP values are stored in persons, matching the explicit magnitudes printed in BLS releases.",
+    "NFP values are stored in persons. Million-unit COVID-era headlines are converted mechanically to persons.",
     "No consensus-surprise series is introduced here.",
     "This certifies Labour PIT inputs only; engine rules and live data remain untouched."
   ]
