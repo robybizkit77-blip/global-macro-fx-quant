@@ -1,0 +1,18 @@
+{
+  "schema": "GMFQ_EUR_AAA_2Y_HISTORY_VALIDATION_V1",
+  "status": "PASS",
+  "series_key": "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2016-01-01&endPeriod=2026-09-30&format=csvdata",
+  "observation_count": 2743,
+  "first_observation": "2016-01-04",
+  "last_observation": "2026-09-30",
+  "anchor_date": "2026-09-29",
+  "anchor_expected": 3.2105877756,
+  "anchor_actual": 3.2105877756,
+  "anchor_error": 0.0,
+  "same_basis_current_snapshot_match": true,
+  "history_spliced": false,
+  "live_data_modified": false,
+  "model_rules_modified": false,
+  "rules_fingerprint_expected_unchanged": "3356baf0"
+}
