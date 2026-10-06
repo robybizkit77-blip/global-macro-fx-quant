@@ -2,6 +2,7 @@
 from __future__ import annotations
 import csv, io, json, math, statistics, urllib.request
 from bisect import bisect_right
+from datetime import datetime
 from pathlib import Path
 
 MOF_URL='https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv'
@@ -11,6 +12,10 @@ REPLAY=Path('validation/JPY_REACTION_FUNCTION_REPLAY_V1_2026-10-06.json')
 USD=Path('history/pit_v1/USD_TREASURY_PAR_2Y_DAILY_2016_2026.csv')
 ENGINE='ff52198a75cc67f7dae96fc2bbf65623f170791c'
 FP='3356baf0'
+
+def iso_date(s):
+    s=s.strip().replace('/','-')
+    return datetime.strptime(s,'%Y-%m-%d').date().isoformat()
 
 def fetch_mof():
     req=urllib.request.Request(MOF_URL,headers={'User-Agent':'Mozilla/5.0'})
@@ -35,15 +40,15 @@ def fetch_mof():
     out=[]
     for r in rows[header_i+1:]:
         if max(di,yi)>=len(r): continue
-        d=r[di].strip(); v=r[yi].strip()
-        if not d or not v or v in ('-','NA','N/A'): continue
-        d=d.replace('/','-')
-        if len(d)>=10: d=d[:10]
-        try: fv=float(v)
+        raw_d=r[di].strip(); v=r[yi].strip()
+        if not raw_d or not v or v in ('-','NA','N/A'): continue
+        try:
+            d=iso_date(raw_d); fv=float(v)
         except: continue
         if '2018-01-01'<=d<='2023-12-31': out.append((d,fv))
     out=sorted(dict(out).items())
     if len(out)<1000: raise RuntimeError(f'insufficient MOF rows: {len(out)}')
+    if out[0][0]<'2018-01-01' or out[-1][0]>'2023-12-31': raise RuntimeError('date normalization range failure')
     OUT_CSV.parent.mkdir(parents=True,exist_ok=True)
     with OUT_CSV.open('w',newline='',encoding='utf-8') as f:
         w=csv.writer(f); w.writerow(['date','jpy_mof_jgb_2y_pct','source_url','source_basis'])
@@ -54,11 +59,12 @@ def load_usd():
     out=[]
     with USD.open(newline='',encoding='utf-8') as f:
         for r in csv.DictReader(f):
-            d=r['date']
+            d=iso_date(r['date'])
             if '2018-01-01'<=d<='2023-12-31': out.append((d,float(r['usd_treasury_par_2y_pct'])))
-    return out
+    return sorted(out)
 
 def previous_value(series,date):
+    date=iso_date(date)
     dates=[d for d,_ in series]; i=bisect_right(dates,date)-1
     return (dates[i],series[i][1],i) if i>=0 else (None,None,None)
 
@@ -78,7 +84,7 @@ def main():
     samples=replay['directional_samples']
     rows=[]
     for s in samples:
-        cp=s['checkpoint']; pol=int(s['jpy_polarity'])
+        cp=iso_date(s['checkpoint']); pol=int(s['jpy_polarity'])
         jd,jv,_=previous_value(jpy,cp); ud,uv,_=previous_value(usd,cp)
         if jv is None or uv is None: continue
         spread=jv-uv
