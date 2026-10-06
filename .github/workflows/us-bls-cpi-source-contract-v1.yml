@@ -1,0 +1,90 @@
+name: USD CPI BLS Source Contract V1
+
+on:
+  push:
+    branches:
+      - build-macro-source-registry-2026-10-05
+    paths:
+      - 'validation/sources/us_bls_cpi.py'
+      - 'validation/fixtures/us_bls_cpi_contract.json'
+      - 'validation/test_us_bls_cpi_source.py'
+      - '.github/workflows/us-bls-cpi-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run deterministic BLS CPI parser-builder contract
+        run: python validation/test_us_bls_cpi_source.py
+
+      - name: Fetch official live BLS CPI candidate
+        run: |
+          mkdir -p /tmp/gmfq-us-bls-cpi-live
+          python validation/sources/us_bls_cpi.py \
+            --output /tmp/gmfq-us-bls-cpi-live/candidate.json \
+            --audit-output /tmp/gmfq-us-bls-cpi-live/source-audit.json
+
+      - name: Pass live BLS CPI candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-us-bls-cpi-live/candidate.json \
+            --output-dir /tmp/gmfq-us-bls-cpi-live/built
+
+      - name: Verify official CPI source provenance and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-us-bls-cpi-live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gmfq-us-bls-cpi-live/source-audit.json').read_text())
+          s=json.loads(Path('/tmp/gmfq-us-bls-cpi-live/built/summary.json').read_text())
+          assert c['currency']=='USD' and c['dimension']=='inflation', c
+          assert c['source']=='U.S. Bureau of Labor Statistics', c
+          assert c['series_id']=='CPIAUCSL', c
+          assert c['transformation']=='yoy_pct_from_index', c
+          assert a['upstream_series_id']=='CUSR0000SA0', a
+          assert a['mode']=='live', a
+          assert a['live_data_written'] is False, a
+          assert s['status']=='PASS', s
+          assert s['live_data_modified'] is False, s
+          assert s['observation_date']==c['observation_date'], (s,c)
+          assert abs(float(s['new_value'])-float(c['value'])) < 1e-10, (s,c)
+          print(json.dumps({
+              'status':'PASS',
+              'observation_date':c['observation_date'],
+              'value':c['value'],
+              'prior_period':a['prior_yoy_period'],
+              'prior_value':a['prior_yoy'],
+              'delta':a['delta_yoy'],
+              'series_action':s['series_action'],
+              'live_data_modified':False
+          }, indent=2))
+          PY
+
+      - name: Confirm repository live data remained untouched
+        run: |
+          git diff --exit-code -- \
+            live_data/sections/MACRO_SERIES.json \
+            live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Upload BLS CPI verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-bls-cpi-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-us-bls-cpi-live/candidate.json
+            /tmp/gmfq-us-bls-cpi-live/source-audit.json
+            /tmp/gmfq-us-bls-cpi-live/built/summary.json
