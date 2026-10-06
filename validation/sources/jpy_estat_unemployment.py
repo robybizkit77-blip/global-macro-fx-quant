@@ -114,10 +114,31 @@ def is_official_unemployment_rate_row(v: dict[str, Any], maps: dict[str, dict[st
         "@cat04": "00",
         "@area": "00000",
     }
-    if all(str(v.get(k, "")) == code for k, code in required_codes.items()):
-        return str(v.get("@unit", "%")) == "%"
+
+    # The current official table exposes all of these coded dimensions. When
+    # they are present, accept only the exact headline slice; do not fall back
+    # to textual matching for other sex/age subcategories in the same table.
+    if all(k in v for k in required_codes):
+        return (
+            all(str(v.get(k, "")) == code for k, code in required_codes.items())
+            and str(v.get("@unit", "%")) == "%"
+        )
+
+    # Defensive fallback only for a future response shape lacking one or more
+    # coded dimensions. Require the complete headline semantics, not merely a
+    # positive score, to avoid admitting male/female or age sub-series.
     label = labelled_value(v, maps)
-    return score_semantics(label) > 0
+    age_ok = "15 years old or more" in label or "15 years and over" in label
+    return (
+        score_semantics(label) > 0
+        and "rate" in label
+        and "unemployed person" in label
+        and "both sexes" in label
+        and "all japan" in label
+        and age_ok
+        and "male" not in label
+        and "female" not in label
+    )
 
 
 def extract_observations(payload: dict[str, Any]) -> list[tuple[str, float, str]]:
