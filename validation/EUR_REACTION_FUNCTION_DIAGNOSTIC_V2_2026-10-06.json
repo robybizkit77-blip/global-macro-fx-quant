@@ -1,0 +1,532 @@
+{
+  "schema": "GMFQ_EUR_REACTION_FUNCTION_DIAGNOSTIC_V2",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Exact same V1 negotiated-wage new-sign regime-entry cohort for ALL / EUR2Y aligned / EUR2Y conflict. Fixed 5-market-day 2Y observation window. FX entry for every group strictly after the identical confirmation checkpoint. Diagnostic only.",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "guardrails": [
+    "exact same base cohort across rate states",
+    "fixed 5-market-day 2Y window",
+    "same FX timing for all groups",
+    "no threshold tuning",
+    "no fitted weights",
+    "no post-hoc filtering",
+    "conservative certified wage availability dates retained",
+    "engine/live_data untouched"
+  ],
+  "counts": {
+    "base_regime_entries": 16,
+    "paired": 16,
+    "aligned": 11,
+    "conflict": 5,
+    "flat": 0
+  },
+  "all_same_timing": {
+    "stats": {
+      "5d": {
+        "n": 16,
+        "hit_rate": 0.4375,
+        "mean": -0.00038873240901123024,
+        "median": -0.00014632064411400684
+      },
+      "20d": {
+        "n": 16,
+        "hit_rate": 0.5,
+        "mean": -0.0019048134456002388,
+        "median": -0.0007895193994286785
+      },
+      "60d": {
+        "n": 15,
+        "hit_rate": 0.5333333333333333,
+        "mean": 0.0017498673709327164,
+        "median": 0.0023090595751588776
+      }
+    },
+    "bootstrap_mean_95": {
+      "5d": [
+        -0.0044937264281939065,
+        0.0032102196965930786
+      ],
+      "20d": [
+        -0.008158313807355402,
+        0.003715954438832792
+      ],
+      "60d": [
+        -0.006758951219122337,
+        0.011268160894462408
+      ]
+    }
+  },
+  "aligned": {
+    "stats": {
+      "5d": {
+        "n": 11,
+        "hit_rate": 0.5454545454545454,
+        "mean": 0.0011718701184609689,
+        "median": 0.0016651346836396134
+      },
+      "20d": {
+        "n": 11,
+        "hit_rate": 0.7272727272727273,
+        "mean": 0.0024888659956285837,
+        "median": 0.0016624889360430366
+      },
+      "60d": {
+        "n": 11,
+        "hit_rate": 0.6363636363636364,
+        "mean": 0.005346971341139712,
+        "median": 0.005003056318495953
+      }
+    },
+    "bootstrap_mean_95": {
+      "5d": [
+        -0.002316457623854388,
+        0.00481402917626755
+      ],
+      "20d": [
+        -0.002596213366729425,
+        0.00793940007906418
+      ],
+      "60d": [
+        -0.003772037025348336,
+        0.015998891790556132
+      ]
+    }
+  },
+  "conflict": {
+    "stats": {
+      "5d": {
+        "n": 5,
+        "hit_rate": 0.2,
+        "mean": -0.003822057969450068,
+        "median": -0.0008966565388803968
+      },
+      "20d": {
+        "n": 5,
+        "hit_rate": 0.0,
+        "mean": -0.01157090821630365,
+        "median": -0.006251796908077777
+      },
+      "60d": {
+        "n": 4,
+        "hit_rate": 0.25,
+        "mean": -0.008142168547136522,
+        "median": -0.012559420013890226
+      }
+    },
+    "bootstrap_mean_95": {
+      "5d": [
+        -0.014255322970424112,
+        0.003708192503762362
+      ],
+      "20d": [
+        -0.023991168738160068,
+        -0.0026972898856093535
+      ],
+      "60d": [
+        -0.021066525556762097,
+        0.008316101322612877
+      ]
+    }
+  },
+  "flat": {
+    "stats": {
+      "5d": {
+        "n": 0,
+        "hit_rate": null,
+        "mean": null,
+        "median": null
+      },
+      "20d": {
+        "n": 0,
+        "hit_rate": null,
+        "mean": null,
+        "median": null
+      },
+      "60d": {
+        "n": 0,
+        "hit_rate": null,
+        "mean": null,
+        "median": null
+      }
+    }
+  },
+  "incremental_aligned_vs_conflict": {
+    "5d": {
+      "mean": 0.004993928087911037,
+      "hit_rate_pp": 34.54545454545454
+    },
+    "20d": {
+      "mean": 0.014059774211932233,
+      "hit_rate_pp": 72.72727272727273
+    },
+    "60d": {
+      "mean": 0.013489139888276235,
+      "hit_rate_pp": 38.63636363636363
+    }
+  },
+  "walk_forward": {
+    "folds": [
+      {
+        "fold": 1,
+        "train_end": "2021-06-24",
+        "test_start": "2021-09-23",
+        "test_end": "2022-03-24",
+        "test_n": 2,
+        "stats": {
+          "5d": {
+            "n": 2,
+            "hit_rate": 0.5,
+            "mean": 0.0003274666681625177,
+            "median": 0.0003274666681625177
+          },
+          "20d": {
+            "n": 2,
+            "hit_rate": 0.0,
+            "mean": -0.010461259422849499,
+            "median": -0.010461259422849499
+          },
+          "60d": {
+            "n": 2,
+            "hit_rate": 0.0,
+            "mean": -0.019927457985876442,
+            "median": -0.019927457985876442
+          }
+        }
+      },
+      {
+        "fold": 2,
+        "train_end": "2022-03-24",
+        "test_start": "2022-06-23",
+        "test_end": "2022-11-28",
+        "test_n": 3,
+        "stats": {
+          "5d": {
+            "n": 3,
+            "hit_rate": 0.3333333333333333,
+            "mean": -0.007079007270455906,
+            "median": -0.0008966565388803968
+          },
+          "20d": {
+            "n": 3,
+            "hit_rate": 0.3333333333333333,
+            "mean": -0.011902523588095985,
+            "median": -0.0017757794263806772
+          },
+          "60d": {
+            "n": 3,
+            "hit_rate": 0.3333333333333333,
+            "mean": -0.0035624061986065697,
+            "median": -0.009977812764666182
+          }
+        }
+      },
+      {
+        "fold": 3,
+        "train_end": "2022-11-28",
+        "test_start": "2024-08-29",
+        "test_end": "2024-12-18",
+        "test_n": 2,
+        "stats": {
+          "5d": {
+            "n": 2,
+            "hit_rate": 0.0,
+            "mean": -0.003112706181778351,
+            "median": -0.003112706181778351
+          },
+          "20d": {
+            "n": 2,
+            "hit_rate": 0.5,
+            "mean": 0.00042911275697122306,
+            "median": 0.00042911275697122306
+          },
+          "60d": {
+            "n": 2,
+            "hit_rate": 1.0,
+            "mean": 0.01016120920822339,
+            "median": 0.01016120920822339
+          }
+        }
+      },
+      {
+        "fold": 4,
+        "train_end": "2024-12-18",
+        "test_start": "2025-04-03",
+        "test_end": "2026-07-09",
+        "test_n": 3,
+        "stats": {
+          "5d": {
+            "n": 3,
+            "hit_rate": 0.3333333333333333,
+            "mean": -0.0007583397976832761,
+            "median": -0.001704913802323884
+          },
+          "20d": {
+            "n": 3,
+            "hit_rate": 0.3333333333333333,
+            "mean": 0.0025436150159939283,
+            "median": -0.001841546833603818
+          },
+          "60d": {
+            "n": 2,
+            "hit_rate": 0.0,
+            "mean": -0.009305515085156296,
+            "median": -0.009305515085156296
+          }
+        }
+      }
+    ],
+    "pooled_oos": {
+      "5d": {
+        "n": 10,
+        "hit_rate": 0.3,
+        "mean": -0.002908252023164921,
+        "median": -0.0013007851706021403
+      },
+      "20d": {
+        "n": 10,
+        "hit_rate": 0.3,
+        "mean": -0.004814101904806272,
+        "median": -0.0018519743319252457
+      },
+      "60d": {
+        "n": 9,
+        "hit_rate": 0.3333333333333333,
+        "mean": -0.0054256384801598225,
+        "median": -0.009977812764666182
+      }
+    }
+  },
+  "rows": [
+    {
+      "wage_checkpoint": "2018-09-27",
+      "signal": 1,
+      "reference_quarter": "2018-Q2",
+      "rate_start_date": "2018-09-27",
+      "confirmation_date": "2018-10-04",
+      "eur_2y_change_pp": -0.012667188799999951,
+      "rate_signal": -1,
+      "rate_state": "CONFLICT",
+      "fx_entry_date": "2018-10-05",
+      "signed_5d": -0.0001443665324570564,
+      "signed_20d": -0.012888094737974127,
+      "signed_60d": -0.007422528635824405
+    },
+    {
+      "wage_checkpoint": "2019-09-26",
+      "signal": -1,
+      "reference_quarter": "2019-Q2",
+      "rate_start_date": "2019-09-26",
+      "confirmation_date": "2019-10-03",
+      "eur_2y_change_pp": -0.028439413400000002,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2019-10-04",
+      "signed_5d": -0.0037773377333236054,
+      "signed_20d": 0.00019674062752332022,
+      "signed_60d": 0.011528739092700163
+    },
+    {
+      "wage_checkpoint": "2019-12-27",
+      "signal": 1,
+      "reference_quarter": "2019-Q3",
+      "rate_start_date": "2019-12-27",
+      "confirmation_date": "2020-01-07",
+      "eur_2y_change_pp": 0.0019608946999999377,
+      "rate_signal": 1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2020-01-08",
+      "signed_5d": 0.005772867871499286,
+      "signed_20d": 0.0038097650550866953,
+      "signed_60d": 0.04646078100183718
+    },
+    {
+      "wage_checkpoint": "2020-03-26",
+      "signal": -1,
+      "reference_quarter": "2019-Q4",
+      "rate_start_date": "2020-03-26",
+      "confirmation_date": "2020-04-02",
+      "eur_2y_change_pp": -0.02334143029999991,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2020-04-03",
+      "signed_5d": 0.012866263023320716,
+      "signed_20d": 0.02021935223366394,
+      "signed_60d": 0.017199649533061377
+    },
+    {
+      "wage_checkpoint": "2021-03-25",
+      "signal": 1,
+      "reference_quarter": "2020-Q4",
+      "rate_start_date": "2021-03-25",
+      "confirmation_date": "2021-04-01",
+      "eur_2y_change_pp": 0.012493098899999944,
+      "rate_signal": 1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2021-04-06",
+      "signed_5d": 0.006480240374790574,
+      "signed_20d": 0.004663751804116035,
+      "signed_60d": 0.005003056318495953
+    },
+    {
+      "wage_checkpoint": "2021-06-24",
+      "signal": -1,
+      "reference_quarter": "2021-Q1",
+      "rate_start_date": "2021-06-24",
+      "confirmation_date": "2021-07-01",
+      "eur_2y_change_pp": -0.0075880673000000565,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2021-07-02",
+      "signed_5d": 0.0016651346836396134,
+      "signed_20d": 0.0016624889360430366,
+      "signed_60d": 0.0023090595751588776
+    },
+    {
+      "wage_checkpoint": "2021-09-23",
+      "signal": 1,
+      "reference_quarter": "2021-Q2",
+      "rate_start_date": "2021-09-23",
+      "confirmation_date": "2021-09-30",
+      "eur_2y_change_pp": 0.01587003500000006,
+      "rate_signal": 1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2021-10-01",
+      "signed_5d": -0.0063925776170136615,
+      "signed_20d": -0.01467072193762122,
+      "signed_60d": -0.015418176250184733
+    },
+    {
+      "wage_checkpoint": "2022-03-24",
+      "signal": -1,
+      "reference_quarter": "2021-Q4",
+      "rate_start_date": "2022-03-24",
+      "confirmation_date": "2022-03-31",
+      "eur_2y_change_pp": 0.1816092451,
+      "rate_signal": 1,
+      "rate_state": "CONFLICT",
+      "fx_entry_date": "2022-04-01",
+      "signed_5d": 0.007047510953338697,
+      "signed_20d": -0.006251796908077777,
+      "signed_60d": -0.02443673972156815
+    },
+    {
+      "wage_checkpoint": "2022-06-23",
+      "signal": 1,
+      "reference_quarter": "2022-Q1",
+      "rate_start_date": "2022-06-23",
+      "confirmation_date": "2022-06-30",
+      "eur_2y_change_pp": -0.13992267469999997,
+      "rate_signal": -1,
+      "rate_state": "CONFLICT",
+      "fx_entry_date": "2022-07-01",
+      "signed_5d": -0.023411863926927703,
+      "signed_20d": -0.035097323175481844,
+      "signed_60d": -0.017696311391956047
+    },
+    {
+      "wage_checkpoint": "2022-09-26",
+      "signal": -1,
+      "reference_quarter": "2022-Q2",
+      "rate_start_date": "2022-09-26",
+      "confirmation_date": "2022-10-03",
+      "eur_2y_change_pp": -0.2668021489000001,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2022-10-04",
+      "signed_5d": 0.0030714986544403814,
+      "signed_20d": 0.0011655318375745672,
+      "signed_60d": -0.009977812764666182
+    },
+    {
+      "wage_checkpoint": "2022-11-28",
+      "signal": 1,
+      "reference_quarter": "2022-Q3",
+      "rate_start_date": "2022-11-28",
+      "confirmation_date": "2022-12-05",
+      "eur_2y_change_pp": -0.08762057670000001,
+      "rate_signal": -1,
+      "rate_state": "CONFLICT",
+      "fx_entry_date": "2022-12-06",
+      "signed_5d": -0.0008966565388803968,
+      "signed_20d": -0.0017757794263806772,
+      "signed_60d": 0.01698690556080252
+    },
+    {
+      "wage_checkpoint": "2024-08-29",
+      "signal": -1,
+      "reference_quarter": "2024-Q2",
+      "rate_start_date": "2024-08-29",
+      "confirmation_date": "2024-09-05",
+      "eur_2y_change_pp": -0.05572447300000016,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2024-09-06",
+      "signed_5d": -0.0001482747557709573,
+      "signed_20d": 0.0027206273441891192,
+      "signed_60d": 0.008059818561491195
+    },
+    {
+      "wage_checkpoint": "2024-12-18",
+      "signal": 1,
+      "reference_quarter": "2024-Q3",
+      "rate_start_date": "2024-12-18",
+      "confirmation_date": "2024-12-27",
+      "eur_2y_change_pp": 0.03174412839999996,
+      "rate_signal": 1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2024-12-30",
+      "signed_5d": -0.006077137607785744,
+      "signed_20d": -0.0018624018302466731,
+      "signed_60d": 0.012262599854955585
+    },
+    {
+      "wage_checkpoint": "2025-04-03",
+      "signal": -1,
+      "reference_quarter": "2024-Q4",
+      "rate_start_date": "2025-04-03",
+      "confirmation_date": "2025-04-10",
+      "eur_2y_change_pp": -0.11252914470000008,
+      "rate_signal": -1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2025-04-11",
+      "signed_5d": 0.0059242346443792795,
+      "signed_20d": 0.015795014505475508,
+      "signed_60d": -0.010191546771494012
+    },
+    {
+      "wage_checkpoint": "2026-04-16",
+      "signal": 1,
+      "reference_quarter": "2025-Q4",
+      "rate_start_date": "2026-04-16",
+      "confirmation_date": "2026-04-23",
+      "eur_2y_change_pp": 0.04906837059999969,
+      "rate_signal": 1,
+      "rate_state": "ALIGNED",
+      "fx_entry_date": "2026-04-24",
+      "signed_5d": -0.006494340235105224,
+      "signed_20d": -0.006322622623889905,
+      "signed_60d": -0.008419483398818577
+    },
+    {
+      "wage_checkpoint": "2026-07-09",
+      "signal": -1,
+      "reference_quarter": "2026-Q1",
+      "rate_start_date": "2026-07-09",
+      "confirmation_date": "2026-07-16",
+      "eur_2y_change_pp": 0.0842873449999999,
+      "rate_signal": 1,
+      "rate_state": "CONFLICT",
+      "fx_entry_date": "2026-07-17",
+      "signed_5d": -0.001704913802323884,
+      "signed_20d": -0.001841546833603818,
+      "signed_60d": null
+    }
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
