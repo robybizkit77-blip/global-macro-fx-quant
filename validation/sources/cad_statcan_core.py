@@ -9,6 +9,10 @@ SERIES_PATH=ROOT/'live_data/sections/MACRO_SERIES.json'
 HEATMAP_PATH=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Statistics Canada'
 WDS='https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV'
+HTTP_HEADERS={
+ 'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)',
+ 'Accept':'application/json,text/plain,*/*',
+}
 CONFIG={
  'inflation':{'pid':'1810000402','series_hint':'cpi','unit':'% YoY','transformation':'reported_yoy_rate'},
  'labour':{'pid':'14100287','series_hint':'unemp','unit':'%','transformation':'level'},
@@ -46,10 +50,16 @@ def resolve_macro_series_id(dim:str,heat_id:str)->str:
   raise ValueError(f'cannot resolve unique CAD {dim} MACRO_SERIES row; heatmap series_id={heat_id!r}; semantic_candidates={diag}')
  return str(sem[0]['id'])
 
+def http_get(url:str,accept:str|None=None):
+ headers=dict(HTTP_HEADERS)
+ if accept:headers['Accept']=accept
+ req=urllib.request.Request(url,headers=headers)
+ return urllib.request.urlopen(req,timeout=90)
+
 def download_csv(pid:str)->str:
- with urllib.request.urlopen(f'{WDS}/{pid}/en',timeout=30) as r: meta=json.load(r)
+ with http_get(f'{WDS}/{pid}/en','application/json') as r: meta=json.load(r)
  if meta.get('status')!='SUCCESS' or not meta.get('object'): raise ValueError(f'StatCan WDS table URL failed: {meta}')
- with urllib.request.urlopen(meta['object'],timeout=90) as r: data=r.read()
+ with http_get(meta['object'],'application/zip,application/octet-stream,*/*') as r: data=r.read()
  with zipfile.ZipFile(io.BytesIO(data)) as z:
   names=[n for n in z.namelist() if n.lower().endswith('.csv') and 'meta' not in n.lower()]
   if not names: raise ValueError('StatCan ZIP contains no data CSV')
