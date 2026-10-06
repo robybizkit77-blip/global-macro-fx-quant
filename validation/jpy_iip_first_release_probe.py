@@ -32,7 +32,14 @@ MONTH_NAMES = {
 
 
 def fetch(url):
-    req=urllib.request.Request(url,headers={"User-Agent":"GMFQ-PIT-validation/1.0"})
+    headers={
+        "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language":"en-US,en;q=0.9,ja;q=0.7",
+        "Referer":"https://www.meti.go.jp/english/statistics/tyo/iip/",
+        "Cache-Control":"no-cache",
+    }
+    req=urllib.request.Request(url,headers=headers)
     with urllib.request.urlopen(req,timeout=30) as r:
         raw=r.read().decode("utf-8","replace")
         status=getattr(r,"status",200)
@@ -51,12 +58,6 @@ def parse(month,url):
         text,re.I
     )
     prod=re.search(r"Production\s+([0-9]+(?:\.[0-9]+)?)\s+[-+0-9.]",text,re.I)
-    if not rel:
-        # Some pages use 'Preliminary Report' capitalization.
-        rel=re.search(
-            rf"Preliminary\s+Report\s+for\s+{month_name}\s+{y}\s*\(released\s+at\s+(\d{{1,2}}:\d{{2}}),\s+([A-Za-z]+)\s+(\d{{1,2}}),\s+(\d{{4}})\)",
-            text,re.I
-        )
     release_date=None
     release_time=None
     if rel:
