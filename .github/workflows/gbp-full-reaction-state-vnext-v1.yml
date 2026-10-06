@@ -1,0 +1,37 @@
+name: GBP Full Reaction State vNext V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/run_gbp_full_reaction_state_vnext_v1.py'
+      - 'history/pit_v1/GBP_LABOUR_A01_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_AWE_K54L_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_CPI_SERVICES_D7NN_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_BOE_OIS_SPOT_2Y_DAILY_2018_2026.csv'
+      - 'history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv'
+      - '.github/workflows/gbp-full-reaction-state-vnext-v1.yml'
+permissions:
+  contents: write
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run GBP full reaction-state replay
+        run: python validation/run_gbp_full_reaction_state_vnext_v1.py
+      - name: Strict engine/live-data guard
+        run: git diff --exit-code HEAD~1 -- engine live_data
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/GBP_FULL_REACTION_STATE_VNEXT_V1_2026-10-06.json validation/GBP_FULL_REACTION_STATE_VNEXT_V1_ROBUSTNESS_2026-10-06.json
+          git diff --cached --quiet || git commit -m 'Add GBP full reaction-state vNext evidence'
+          git pull --rebase origin audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
