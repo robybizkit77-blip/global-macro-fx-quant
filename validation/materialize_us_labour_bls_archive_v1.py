@@ -17,22 +17,8 @@ EVID = Path("validation/USD_LABOUR_BLS_ARCHIVE_PIT_MATERIALIZATION_2026-10-06.js
 START = (2016, 1)
 END = (2026, 9)
 UA = "Mozilla/5.0 GMFQ-PIT-Audit/1.0 (research; contact via repository)"
-MONTHS = {m: i for i, m in enumerate([
-    "january","february","march","april","may","june","july","august","september","october","november","december"
-], 1)}
-
-class LinkParser(HTMLParser):
-    def __init__(self):
-        super().__init__(); self.links=[]; self._href=None; self._text=[]
-    def handle_starttag(self, tag, attrs):
-        if tag.lower()=="a":
-            self._href=dict(attrs).get("href"); self._text=[]
-    def handle_data(self, data):
-        if self._href is not None: self._text.append(data)
-    def handle_endtag(self, tag):
-        if tag.lower()=="a" and self._href is not None:
-            self.links.append((self._href, " ".join(self._text).strip()))
-            self._href=None; self._text=[]
+MONTH_LIST = ["january","february","march","april","may","june","july","august","september","october","november","december"]
+MONTHS = {m: i for i, m in enumerate(MONTH_LIST, 1)}
 
 class TextParser(HTMLParser):
     def __init__(self):
@@ -55,39 +41,38 @@ def ym_between(y,m):
     return START <= (y,m) <= END
 
 def archive_links():
-    p=LinkParser(); p.feed(get(ARCHIVE)); out=[]
-    for href,label in p.links:
-        if "Employment Situation" not in label or "PDF" not in label: continue
-        mm=re.match(r"\s*([A-Za-z]+)\s+(\d{4})\s+Employment Situation", label)
-        if not mm: continue
-        month=MONTHS.get(mm.group(1).lower()); year=int(mm.group(2))
+    raw=get(ARCHIVE)
+    # BLS markup is typically: "September 2026 Employment Situation (<a ...>PDF</a>)".
+    # The reference-month label is outside the anchor, so parse the surrounding markup directly.
+    pat=re.compile(
+        r"([A-Za-z]+)\s+(\d{4})\s+Employment\s+Situation\s*\(\s*<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>\s*PDF\s*</a>",
+        re.I|re.S,
+    )
+    out=[]
+    for month_name, year_s, href in pat.findall(raw):
+        month=MONTHS.get(month_name.lower()); year=int(year_s)
         if not month or not ym_between(year,month): continue
-        # Archive labels identify reference month. Prefer HTML twin of the PDF.
         url=urljoin(ARCHIVE, href)
         if url.lower().endswith(".pdf"): url=url[:-4]+".htm"
-        out.append(((year,month),url,label))
-    # one release per reference month
+        out.append(((year,month),url,f"{month_name} {year} Employment Situation"))
     uniq={k:(u,l) for k,u,l in out}
     return [(k[0],k[1],uniq[k][0],uniq[k][1]) for k in sorted(uniq)]
 
 def parse_release(text: str, ref_y: int, ref_m: int, url: str):
-    # Timestamp: all Employment Situation releases are embargoed until 8:30 a.m. ET/EST/EDT.
     ts=re.search(r"8:30\s*a\.m\.\s*\((?:ET|EST|EDT)\)\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})", text, re.I)
     if not ts:
         ts=re.search(r"8:30\s*a\.m\.\s*(?:\((?:ET|EST|EDT)\))?\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})", text, re.I)
     if not ts: raise ValueError("release timestamp not found")
     release_date=datetime.strptime(ts.group(1), "%B %d, %Y").date().isoformat()
 
-    title_pat=rf"THE EMPLOYMENT SITUATION\s*--\s*{list(MONTHS.keys())[ref_m-1]}\s+{ref_y}"
+    month_name=MONTH_LIST[ref_m-1]
+    title_pat=rf"THE EMPLOYMENT SITUATION\s*--\s*{month_name}\s+{ref_y}"
     mt=re.search(title_pat, text, re.I)
     if not mt:
-        # tolerate punctuation/spacing but still insist on correct reference period
-        month_name=list(MONTHS.keys())[ref_m-1]
         mt=re.search(rf"EMPLOYMENT SITUATION[^A-Za-z0-9]+{month_name}\s+{ref_y}", text, re.I)
     if not mt: raise ValueError("reference-month title not found")
     body=text[mt.start():mt.start()+5000]
 
-    # NFP: first summary paragraph only. Handle explicit (+73,000), rose by X, declined by X, fell by X.
     nfp=None
     p=re.search(r"Total nonfarm payroll employment.{0,260}?\(([+-]\s*[\d,]+)\)", body, re.I)
     if p:
@@ -98,12 +83,10 @@ def parse_release(text: str, ref_y: int, ref_m: int, url: str):
             val=int(p.group(2).replace(",","")); verb=p.group(1).lower()
             nfp=-val if verb in {"declined","decreased","fell","dropped"} else val
     if nfp is None:
-        # Some releases say "changed little ... by X" or "was little changed ... (+X)"; require explicit signed figure.
         p=re.search(r"Total nonfarm payroll employment.{0,300}?([+-]\s*[\d,]+)", body, re.I)
         if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
     if nfp is None: raise ValueError("first-published NFP not found")
 
-    # Unemployment: keep search close to opening summary, before revision discussion.
     ur=None
     patterns=[
         r"unemployment rate.{0,80}?\bat\s+(\d+(?:\.\d+)?)\s+percent",
@@ -138,7 +121,7 @@ def main():
         raise SystemExit(f"archive link coverage incomplete: {len(links)}/{len(expected)}; missing={missing}")
 
     rows=[]; errors=[]
-    for i,(y,m,url,label) in enumerate(links,1):
+    for y,m,url,label in links:
         try:
             hp=TextParser(); hp.feed(get(url)); text=hp.text()
             rows.append(parse_release(text,y,m,url))
@@ -155,7 +138,6 @@ def main():
         raise SystemExit("reference-month sequence mismatch")
     if len({r["source_url"] for r in rows}) != len(rows):
         raise SystemExit("duplicate source URLs")
-    # sanity only, not economic filtering
     for r in rows:
         if not (-25000 <= r["nfp_change_thousands"] <= 10000): raise SystemExit(f"implausible NFP parse {r}")
         if not (2.0 <= r["unemployment_rate_pct"] <= 20.0): raise SystemExit(f"implausible unemployment parse {r}")
