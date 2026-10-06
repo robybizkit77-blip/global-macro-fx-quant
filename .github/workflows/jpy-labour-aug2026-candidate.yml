@@ -48,7 +48,10 @@ jobs:
           assert x['status']=='PASS'
           assert x['D_json_byte_identical'] is True
           assert x['period']=='2026-08'
-          assert x['official_unemployment_rate_sa']==2.5
+          assert x['official_unemployment_rate_sa']==2.6
+          assert x['macro_series']['replace_existing'] is True
+          assert x['thermometer']['new_percentile']==55.0
+          assert x['thermometer']['new_label']=='NORMALE'
           assert x['thermometer']['new_direction']=='SALE'
           assert x['thermometer']['new_acceleration']=='ACCELERA'
           print('Candidate scope/content guards PASS')
@@ -60,5 +63,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json validation/JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json payload/part-00.txt payload/part-01.txt
-          git commit -m 'Stage validated JPY Aug 2026 labour refresh'
+          git commit -m 'Correct validated JPY Aug 2026 labour refresh to 2.6'
           git push origin HEAD:staging-macro-jpy-labour-v1-2026-10-05
