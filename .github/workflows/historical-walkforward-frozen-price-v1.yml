@@ -25,13 +25,26 @@ jobs:
         run: |
           git fetch origin 1cb2a7e61dc42d4cd22b6e49c6369018703743e6 --depth=1
           git show 1cb2a7e61dc42d4cd22b6e49c6369018703743e6:data/sections/series_JPY.json > /tmp/series_JPY_validated_20260927.json
+      - name: Apply exact original V93 macro eligibility gate
+        shell: bash
+        run: |
+          cp validation/replay_historical_walkforward_frozen_price_v1.py /tmp/replay_exact_v93.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/replay_exact_v93.py')
+          s=p.read_text()
+          old="if g is not None and l is not None:\n                sm=g['direction']+l['direction']; macro=1 if sm>0 else -1 if sm<0 else 0"
+          new="if g is not None and l is not None and g['n']>=2 and l['n']>=2:\n                sm=g['direction']+l['direction']; macro=1 if sm>0 else -1 if sm<0 else 0"
+          assert old in s, 'macro eligibility target not found'
+          p.write_text(s.replace(old,new,1))
+          PY
       - name: Replay historical walk-forward using frozen ECB price only
         run: |
           mkdir -p /tmp/gmfq-walkforward
-          python validation/replay_historical_walkforward_frozen_price_v1.py \
+          python /tmp/replay_exact_v93.py \
             --jpy-series-override /tmp/series_JPY_validated_20260927.json \
             --output /tmp/gmfq-walkforward/replay.json
-      - name: Assert frozen inputs and safety
+      - name: Assert exact original sample and safety
         run: |
           python - <<'PY'
           import json
@@ -44,8 +57,11 @@ jobs:
           assert x['jpy_series_override']['n']==2619, x
           assert x['model_rules_modified'] is False, x
           assert x['live_data_modified'] is False, x
-          print('QUALITY_COUNTS=',json.dumps(x['quality_counts'],ensure_ascii=False))
-          print('QUALITY_COUNTS_MATCH=',x['quality_counts_match'])
+          assert x['quality_counts_match'] is True, (x['quality_counts'],x['golden_quality_counts'])
+          print('EXACT_GOLDEN_SAMPLE_PASS')
+          print(json.dumps(x['quality_counts'],ensure_ascii=False,indent=2))
+          print('RESULTS=',json.dumps(x['results'],ensure_ascii=False,indent=2))
+          print('GOLDEN=',json.dumps(x['golden_results'],ensure_ascii=False,indent=2))
           PY
       - name: Confirm repository untouched
         run: git diff --exit-code
