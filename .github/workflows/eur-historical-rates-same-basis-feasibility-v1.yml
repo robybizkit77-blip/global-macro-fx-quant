@@ -1,0 +1,34 @@
+name: EUR Historical Rates Same Basis Feasibility V1
+
+on:
+  push:
+    branches:
+      - audit-eur-historical-rates-same-basis-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  feasibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe ECB historical EUR 2Y and 10Y same-basis curve
+        run: |
+          mkdir -p /tmp/gmfq-eur-rates
+          python validation/eur_historical_rates_same_basis_feasibility.py \
+            --output /tmp/gmfq-eur-rates/eur_historical_rates_same_basis_feasibility.json
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-historical-rates-same-basis-feasibility-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-eur-rates/eur_historical_rates_same_basis_feasibility.json
