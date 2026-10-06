@@ -15,24 +15,29 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Extract derivePairDecisionFrame implementation
+      - name: Inspect frozen macro archive structure
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          names=['derivePairDecisionFrame','deriveCurrencyState','pairPillarSide','currencyMacroPolarity','macroPolarity','policyFamilyPolarity']
-          files=list(Path('payload').glob('part-*.txt'))
-          for name in names:
-            print(f'===== {name} =====')
-            found=False
-            for p in files:
-              text=p.read_text(errors='ignore')
-              m=re.search(rf'function\s+{name}\s*\(',text)
-              if m:
-                print(f'FILE={p}')
-                print(text[max(0,m.start()-2500):min(len(text),m.start()+9000)])
-                found=True
-                break
-            if not found: print('NOT_FOUND')
+          import json
+          p=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js')
+          t=p.read_text(errors='ignore').strip()
+          eq=t.find('='); end=t.rfind(';')
+          x=json.loads(t[eq+1:end if end>eq else None].strip())
+          print('ROOT_TYPE',type(x).__name__)
+          if isinstance(x,dict):
+            print('ROOT_KEYS',list(x.keys())[:50])
+            for k,v in x.items():
+              print('KEY',k,'TYPE',type(v).__name__)
+              if isinstance(v,dict): print(' SUBKEYS',list(v.keys())[:30])
+              elif isinstance(v,list): print(' LEN',len(v),'FIRST_TYPE',type(v[0]).__name__ if v else None,'FIRST',str(v[0])[:1500] if v else '')
+          for c in ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']:
+            def walk(o,path='root',depth=0):
+              if depth>3:return
+              if isinstance(o,dict):
+                if c in o:
+                  v=o[c]; print('FOUND',c,'AT',path,'TYPE',type(v).__name__,'SAMPLE',str(v)[:3000])
+                for kk,vv in list(o.items())[:50]: walk(vv,path+'.'+str(kk),depth+1)
+            walk(x)
           PY
