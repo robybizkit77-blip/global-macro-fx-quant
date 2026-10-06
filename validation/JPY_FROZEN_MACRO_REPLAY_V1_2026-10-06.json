@@ -1,0 +1,4271 @@
+{
+  "schema": "GMFQ_JPY_FROZEN_MACRO_REPLAY_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Frozen v9.3 PIT Macro directional replay for JPY versus equal-weight G8 counterpart basket; Inflation historical PIT remains WITHHELD and casts no vote.",
+  "engine": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "model_rules_version": "9.3-pair-attention-hierarchy",
+    "threshold_direction": 0.2,
+    "threshold_acceleration": 0.2,
+    "scale": "median absolute first differences, last 80 observations",
+    "minimum_observations": 8,
+    "threshold_tuning": false
+  },
+  "aggregation_rule": "Exact frozen PIT replay rule: macro_polarity = sign(Growth.direction + Labour.direction); opposing +1/-1 tie => 0. No weights.",
+  "series": {
+    "Growth": [
+      {
+        "name": "ESRI Real GDP SA q/q first preliminary",
+        "polarity": 1,
+        "rows": 22
+      },
+      {
+        "name": "ESRI private-sector machinery orders ex ships/electric power SA m/m first release",
+        "polarity": 1,
+        "rows": 67
+      }
+    ],
+    "Labour": [
+      {
+        "name": "LFS employment SA",
+        "polarity": 1,
+        "rows": 67
+      },
+      {
+        "name": "LFS unemployment rate SA",
+        "polarity": -1,
+        "rows": 67
+      }
+    ],
+    "Inflation": {
+      "status": "WITHHELD_HISTORICAL_PIT",
+      "vote": null
+    }
+  },
+  "timing_policy": "Asynchronous release timeline. Each series updates only at its contemporaneous release; latest eligible series state is carried forward. FX entry is first ECB daily reference observation strictly after Macro checkpoint.",
+  "coverage": {
+    "first_checkpoint": "2018-03-02",
+    "last_checkpoint": "2023-09-14",
+    "checkpoints": 156,
+    "directional_macro_checkpoints": 95,
+    "macro_regime_entries": 23
+  },
+  "full_sample": {
+    "5d": {
+      "n": 23,
+      "hit_rate": 0.30434782608695654,
+      "mean_signed_log_return": -0.001564616264873778,
+      "median_signed_log_return": -0.001920836402399989
+    },
+    "20d": {
+      "n": 23,
+      "hit_rate": 0.43478260869565216,
+      "mean_signed_log_return": -0.006792637923643692,
+      "median_signed_log_return": -0.005629585485910922
+    },
+    "60d": {
+      "n": 23,
+      "hit_rate": 0.391304347826087,
+      "mean_signed_log_return": -0.010060073680231303,
+      "median_signed_log_return": -0.017842676353221742
+    }
+  },
+  "walkforward": {
+    "initial_train_fraction": 0.4,
+    "folds": [
+      {
+        "fold": 1,
+        "train_event_count": 9,
+        "test_event_count": 4,
+        "test_start": "2020-02-28",
+        "test_end": "2021-07-30",
+        "stats": {
+          "5d": {
+            "n": 4,
+            "hit_rate": 0.0,
+            "mean_signed_log_return": -0.012526386595878855,
+            "median_signed_log_return": -0.004849495903684596
+          },
+          "20d": {
+            "n": 4,
+            "hit_rate": 0.25,
+            "mean_signed_log_return": -0.01200036073660184,
+            "median_signed_log_return": -0.012635611489661566
+          },
+          "60d": {
+            "n": 4,
+            "hit_rate": 0.0,
+            "mean_signed_log_return": -0.03069983903137106,
+            "median_signed_log_return": -0.03628343086351647
+          }
+        }
+      },
+      {
+        "fold": 2,
+        "train_event_count": 13,
+        "test_event_count": 5,
+        "test_start": "2021-10-13",
+        "test_end": "2022-10-28",
+        "stats": {
+          "5d": {
+            "n": 5,
+            "hit_rate": 0.4,
+            "mean_signed_log_return": 0.0024033561012287985,
+            "median_signed_log_return": -0.002968170431256814
+          },
+          "20d": {
+            "n": 5,
+            "hit_rate": 0.2,
+            "mean_signed_log_return": -0.014210506132634276,
+            "median_signed_log_return": -0.008138600766392895
+          },
+          "60d": {
+            "n": 5,
+            "hit_rate": 0.4,
+            "mean_signed_log_return": -0.034282440188404074,
+            "median_signed_log_return": -0.035281508500722876
+          }
+        }
+      },
+      {
+        "fold": 3,
+        "train_event_count": 18,
+        "test_event_count": 5,
+        "test_start": "2023-02-16",
+        "test_end": "2023-08-15",
+        "stats": {
+          "5d": {
+            "n": 5,
+            "hit_rate": 0.6,
+            "mean_signed_log_return": 0.00039732981634027004,
+            "median_signed_log_return": 0.004091430803064074
+          },
+          "20d": {
+            "n": 5,
+            "hit_rate": 0.6,
+            "mean_signed_log_return": -0.001797796597688728,
+            "median_signed_log_return": 0.0074302507014215565
+          },
+          "60d": {
+            "n": 5,
+            "hit_rate": 0.4,
+            "mean_signed_log_return": -0.001432395786074004,
+            "median_signed_log_return": -0.017842676353221742
+          }
+        }
+      }
+    ],
+    "pooled_oos_event_count": 14,
+    "pooled_oos": {
+      "5d": {
+        "n": 14,
+        "hit_rate": 0.35714285714285715,
+        "mean_signed_log_return": -0.0025787226282621483,
+        "median_signed_log_return": -0.003173947265384532
+      },
+      "20d": {
+        "n": 14,
+        "hit_rate": 0.35714285714285715,
+        "mean_signed_log_return": -0.009145925471287312,
+        "median_signed_log_return": -0.006884093126151908
+      },
+      "60d": {
+        "n": 14,
+        "hit_rate": 0.2857142857142857,
+        "mean_signed_log_return": -0.021526681142705333,
+        "median_signed_log_return": -0.03140751879199305
+      }
+    }
+  },
+  "subblock_attribution": {
+    "Growth": {
+      "event_count": 27,
+      "full_sample": {
+        "5d": {
+          "n": 27,
+          "hit_rate": 0.4444444444444444,
+          "mean_signed_log_return": 0.003805129802241731,
+          "median_signed_log_return": -0.0009778705672671703
+        },
+        "20d": {
+          "n": 27,
+          "hit_rate": 0.4444444444444444,
+          "mean_signed_log_return": -0.00213498013458471,
+          "median_signed_log_return": -0.00045852555420865406
+        },
+        "60d": {
+          "n": 27,
+          "hit_rate": 0.4074074074074074,
+          "mean_signed_log_return": -0.005138894420133668,
+          "median_signed_log_return": -0.01528925262678348
+        }
+      },
+      "walkforward": {
+        "initial_train_fraction": 0.4,
+        "folds": [
+          {
+            "fold": 1,
+            "train_event_count": 10,
+            "test_event_count": 6,
+            "test_start": "2020-11-16",
+            "test_end": "2022-04-13",
+            "stats": {
+              "5d": {
+                "n": 6,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.001533013968460164,
+                "median_signed_log_return": -0.0013546657162642863
+              },
+              "20d": {
+                "n": 6,
+                "hit_rate": 0.16666666666666666,
+                "mean_signed_log_return": -0.013166765491222579,
+                "median_signed_log_return": -0.015537830303160808
+              },
+              "60d": {
+                "n": 6,
+                "hit_rate": 0.16666666666666666,
+                "mean_signed_log_return": -0.019376626010095318,
+                "median_signed_log_return": -0.026342858068294086
+              }
+            }
+          },
+          {
+            "fold": 2,
+            "train_event_count": 16,
+            "test_event_count": 5,
+            "test_start": "2022-05-19",
+            "test_end": "2022-12-14",
+            "stats": {
+              "5d": {
+                "n": 5,
+                "hit_rate": 0.6,
+                "mean_signed_log_return": 0.01573086827384137,
+                "median_signed_log_return": 0.020343655033657548
+              },
+              "20d": {
+                "n": 5,
+                "hit_rate": 0.6,
+                "mean_signed_log_return": -0.0004895349297519183,
+                "median_signed_log_return": 0.008546877275107943
+              },
+              "60d": {
+                "n": 5,
+                "hit_rate": 0.4,
+                "mean_signed_log_return": -0.013849780726319991,
+                "median_signed_log_return": -0.03397965998514504
+              }
+            }
+          },
+          {
+            "fold": 3,
+            "train_event_count": 21,
+            "test_event_count": 6,
+            "test_start": "2023-01-18",
+            "test_end": "2023-08-15",
+            "stats": {
+              "5d": {
+                "n": 6,
+                "hit_rate": 0.6666666666666666,
+                "mean_signed_log_return": 0.0044641966583022375,
+                "median_signed_log_return": 0.00427631009798015
+              },
+              "20d": {
+                "n": 6,
+                "hit_rate": 0.8333333333333334,
+                "mean_signed_log_return": 0.013136585649614833,
+                "median_signed_log_return": 0.011348141153593143
+              },
+              "60d": {
+                "n": 6,
+                "hit_rate": 0.5,
+                "mean_signed_log_return": 0.011449560655683503,
+                "median_signed_log_return": 0.0018657067431689005
+              }
+            }
+          }
+        ],
+        "pooled_oos_event_count": 17,
+        "pooled_oos": {
+          "5d": {
+            "n": 17,
+            "hit_rate": 0.5294117647058824,
+            "mean_signed_log_return": 0.005661261029897605,
+            "median_signed_log_return": 0.0012491849160868999
+          },
+          "20d": {
+            "n": 17,
+            "hit_rate": 0.5294117647058824,
+            "mean_signed_log_return": -0.0001546325704944746,
+            "median_signed_log_return": 0.0020603730260653694
+          },
+          "60d": {
+            "n": 17,
+            "hit_rate": 0.35294117647058826,
+            "mean_signed_log_return": -0.006871252691651226,
+            "median_signed_log_return": -0.01528925262678348
+          }
+        }
+      }
+    },
+    "Labour": {
+      "event_count": 26,
+      "full_sample": {
+        "5d": {
+          "n": 26,
+          "hit_rate": 0.3076923076923077,
+          "mean_signed_log_return": -0.00193339705801157,
+          "median_signed_log_return": -0.001256884343819932
+        },
+        "20d": {
+          "n": 26,
+          "hit_rate": 0.4230769230769231,
+          "mean_signed_log_return": -0.0041425400521315735,
+          "median_signed_log_return": -0.008186260752177186
+        },
+        "60d": {
+          "n": 26,
+          "hit_rate": 0.5,
+          "mean_signed_log_return": -0.004805624133274381,
+          "median_signed_log_return": -0.000967868818162619
+        }
+      },
+      "walkforward": {
+        "initial_train_fraction": 0.4,
+        "folds": [
+          {
+            "fold": 1,
+            "train_event_count": 10,
+            "test_event_count": 5,
+            "test_start": "2020-12-25",
+            "test_end": "2021-07-30",
+            "stats": {
+              "5d": {
+                "n": 5,
+                "hit_rate": 0.2,
+                "mean_signed_log_return": -0.0013420623718125193,
+                "median_signed_log_return": -0.001651225070165625
+              },
+              "20d": {
+                "n": 5,
+                "hit_rate": 0.4,
+                "mean_signed_log_return": -0.0012490116300138154,
+                "median_signed_log_return": -0.008233920737961479
+              },
+              "60d": {
+                "n": 5,
+                "hit_rate": 0.4,
+                "mean_signed_log_return": -0.011816551859381946,
+                "median_signed_log_return": -0.03554922000202335
+              }
+            }
+          },
+          {
+            "fold": 2,
+            "train_event_count": 15,
+            "test_event_count": 5,
+            "test_start": "2021-10-01",
+            "test_end": "2022-11-29",
+            "stats": {
+              "5d": {
+                "n": 5,
+                "hit_rate": 0.2,
+                "mean_signed_log_return": -0.003339887955694736,
+                "median_signed_log_return": -0.007350280887462409
+              },
+              "20d": {
+                "n": 5,
+                "hit_rate": 0.2,
+                "mean_signed_log_return": -0.007827327703013367,
+                "median_signed_log_return": -0.01737098882422608
+              },
+              "60d": {
+                "n": 5,
+                "hit_rate": 0.4,
+                "mean_signed_log_return": -0.030302957264997227,
+                "median_signed_log_return": -0.021266825473514325
+              }
+            }
+          },
+          {
+            "fold": 3,
+            "train_event_count": 20,
+            "test_event_count": 6,
+            "test_start": "2023-01-31",
+            "test_end": "2023-08-29",
+            "stats": {
+              "5d": {
+                "n": 6,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.0036451084097211214,
+                "median_signed_log_return": -0.001141532693711972
+              },
+              "20d": {
+                "n": 6,
+                "hit_rate": 0.3333333333333333,
+                "mean_signed_log_return": -0.012365161360828167,
+                "median_signed_log_return": -0.00976811308693024
+              },
+              "60d": {
+                "n": 6,
+                "hit_rate": 0.5,
+                "mean_signed_log_return": 0.00149952644226071,
+                "median_signed_log_return": -0.005476910393477091
+              }
+            }
+          }
+        ],
+        "pooled_oos_event_count": 16,
+        "pooled_oos": {
+          "5d": {
+            "n": 16,
+            "hit_rate": 0.25,
+            "mean_signed_log_return": -0.002830025130991438,
+            "median_signed_log_return": -0.0020414347437816304
+          },
+          "20d": {
+            "n": 16,
+            "hit_rate": 0.3125,
+            "mean_signed_log_return": -0.007473291551881557,
+            "median_signed_log_return": -0.008542608183049746
+          },
+          "60d": {
+            "n": 16,
+            "hit_rate": 0.4375,
+            "mean_signed_log_return": -0.012600024185520725,
+            "median_signed_log_return": -0.01850022746828705
+          }
+        }
+      }
+    }
+  },
+  "replay": [
+    {
+      "checkpoint": "2018-03-02",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-03-14",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-03-30",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-04-11",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-04-27",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-05-16",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-05-17",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-05-29",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-06-11",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-06-29",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-07-11",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-07-31",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-08-09",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-08-10",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-08-31",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-09-13",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": null,
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-09-28",
+      "blocks": {
+        "Crescita": null,
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": 1.4230769230769231,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": null,
+      "macro_turning": null
+    },
+    {
+      "checkpoint": "2018-10-10",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": -0.45733969263381113,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": 1.4230769230769231,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2018-10-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": -0.45733969263381113,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.5652173913043478,
+          "acceleration": -0.4999999999999999,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2018-11-08",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 2.523013209063941,
+          "acceleration": -3.400834468434134,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.5652173913043478,
+          "acceleration": -0.4999999999999999,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2018-11-14",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 2.523013209063941,
+          "acceleration": -3.400834468434134,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.5652173913043478,
+          "acceleration": -0.4999999999999999,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2018-11-30",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 2.523013209063941,
+          "acceleration": -3.400834468434134,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.0,
+          "acceleration": -0.5652173913043478,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2018-12-12",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.9752096470588241,
+          "acceleration": 3.849386117647059,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.0,
+          "acceleration": -0.5652173913043478,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2018-12-28",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.9752096470588241,
+          "acceleration": 3.849386117647059,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.02083333333333337,
+          "acceleration": 0.041666666666666685,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-01-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.0,
+          "acceleration": -0.9874492548281698,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.02083333333333337,
+          "acceleration": 0.041666666666666685,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-02-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.0,
+          "acceleration": -0.9874492548281698,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4,
+          "acceleration": -0.4,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-02-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.0,
+          "acceleration": -0.9874492548281698,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4,
+          "acceleration": -0.4,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-02-18",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.014157894736842971,
+          "acceleration": -0.014157894736842971,
+          "accelDir": 0,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4,
+          "acceleration": -0.4,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-03-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.014157894736842971,
+          "acceleration": -0.014157894736842971,
+          "accelDir": 0,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.5625,
+          "acceleration": -0.125,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-03-13",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8660600246948259,
+          "acceleration": -0.8500058218865569,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.5625,
+          "acceleration": -0.125,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-03-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8660600246948259,
+          "acceleration": -0.8500058218865569,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.98,
+          "acceleration": 2.54,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-04-10",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.3153333333333339,
+          "acceleration": 1.315333333333334,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.98,
+          "acceleration": 2.54,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-04-26",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.3153333333333339,
+          "acceleration": 1.315333333333334,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.625,
+          "acceleration": -2.645833333333333,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-05-20",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.3153333333333339,
+          "acceleration": 1.315333333333334,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.625,
+          "acceleration": -2.645833333333333,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-05-22",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.7747803124291854,
+          "acceleration": 0.4142683275329656,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.625,
+          "acceleration": -2.645833333333333,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-05-31",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.7747803124291854,
+          "acceleration": 0.4142683275329656,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.09999999999999998,
+          "acceleration": 0.54,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-06-12",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": 0.2959834000296425,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.09999999999999998,
+          "acceleration": 0.54,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-06-28",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.0,
+          "acceleration": 0.2959834000296425,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.16666666666666666,
+          "acceleration": -0.04166666666666666,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-07-08",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.5479290634813232,
+          "acceleration": -2.528872703203329,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.16666666666666666,
+          "acceleration": -0.04166666666666666,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-07-30",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.5479290634813232,
+          "acceleration": -2.528872703203329,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.6521739130434783,
+          "acceleration": 0.8260869565217391,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-08-09",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.5479290634813232,
+          "acceleration": -2.528872703203329,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.6521739130434783,
+          "acceleration": 0.8260869565217391,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-08-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.495766604688695,
+          "acceleration": 4.014749385051358,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.6521739130434783,
+          "acceleration": 0.8260869565217391,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-08-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.495766604688695,
+          "acceleration": 4.014749385051358,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.8488372093023233,
+          "acceleration": 0.18604651162790464,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-09-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.1689739187646015,
+          "acceleration": -3.3304576060538147,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.8488372093023233,
+          "acceleration": 0.18604651162790464,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-10-01",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.1689739187646015,
+          "acceleration": -3.3304576060538147,
+          "accelDir": -1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.475,
+          "acceleration": -0.3999999999999978,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-10-10",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.4584278683164709,
+          "acceleration": 0.8913329859343804,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.475,
+          "acceleration": -0.3999999999999978,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2019-11-01",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.4584278683164709,
+          "acceleration": 0.8913329859343804,
+          "accelDir": 1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.128205128205126,
+          "acceleration": -1.6153846153846132,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-11-11",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5509418826685427,
+          "acceleration": -0.08377804773196029,
+          "accelDir": 0,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.128205128205126,
+          "acceleration": -1.6153846153846132,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-11-14",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5509418826685427,
+          "acceleration": -0.08377804773196029,
+          "accelDir": 0,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.128205128205126,
+          "acceleration": -1.6153846153846132,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-11-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5509418826685427,
+          "acceleration": -0.08377804773196029,
+          "accelDir": 0,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.7,
+          "acceleration": 1.8249999999999977,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-12-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.0861256427301138,
+          "acceleration": -0.5454863766955559,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.7,
+          "acceleration": 1.8249999999999977,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2019-12-27",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.0861256427301138,
+          "acceleration": -0.5454863766955559,
+          "accelDir": -1,
+          "turning": false,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.2820512820512797,
+          "acceleration": 0.5641025641025618,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-01-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.936423626422169,
+          "acceleration": 3.9777086003307396,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.2820512820512797,
+          "acceleration": 0.5641025641025618,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-01-31",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.936423626422169,
+          "acceleration": 3.9777086003307396,
+          "accelDir": 1,
+          "turning": true,
+          "n": 1
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.34210526315789475,
+          "acceleration": -0.9473684210526294,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-02-17",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5417961867888992,
+          "acceleration": -0.14665369983459703,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.34210526315789475,
+          "acceleration": -0.9473684210526294,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-02-19",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 3.1654246666666506,
+          "acceleration": -4.7009246666666336,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.34210526315789475,
+          "acceleration": -0.9473684210526294,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-02-28",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 3.1654246666666506,
+          "acceleration": -4.7009246666666336,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 2.076923076923075,
+          "acceleration": -2.4102564102564084,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-03-16",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.7657750432384682,
+          "acceleration": -0.6881570296349233,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 2.076923076923075,
+          "acceleration": -2.4102564102564084,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-03-31",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.7657750432384682,
+          "acceleration": -0.6881570296349233,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.07894736842105263,
+          "acceleration": 2.184210526315787,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-04-08",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.802105387887723,
+          "acceleration": -2.1823557048377022,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.07894736842105263,
+          "acceleration": 2.184210526315787,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-04-28",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.802105387887723,
+          "acceleration": -2.1823557048377022,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.7972972972972974,
+          "acceleration": -0.8783783783783785,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-05-18",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.7864996995456692,
+          "acceleration": 0.7553214589477499,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.7972972972972974,
+          "acceleration": -0.8783783783783785,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-05-20",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.0320957659558105,
+          "acceleration": 0.5526112302961967,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.7972972972972974,
+          "acceleration": -0.8783783783783785,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-05-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.0320957659558105,
+          "acceleration": 0.5526112302961967,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 3.3157894736842106,
+          "acceleration": -2.526315789473684,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-06-10",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 2.099621275320955,
+          "acceleration": -0.26606121340956634,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 3.3157894736842106,
+          "acceleration": -2.526315789473684,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-06-30",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 2.099621275320955,
+          "acceleration": -0.26606121340956634,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.3918918918918897,
+          "acceleration": 2.0000000000000027,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-07-09",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.853992686660155,
+          "acceleration": 2.0688592032039193,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.3918918918918897,
+          "acceleration": 2.0000000000000027,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-07-31",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.853992686660155,
+          "acceleration": 2.0688592032039193,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.7222222222222222,
+          "acceleration": 2.111111111111109,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-08-17",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 7.580338075151349,
+          "acceleration": -5.555111642705099,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.7222222222222222,
+          "acceleration": 2.111111111111109,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-08-19",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 8.347194650505035,
+          "acceleration": -7.5860325966161,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.7222222222222222,
+          "acceleration": 2.111111111111109,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-09-01",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 8.347194650505035,
+          "acceleration": -7.5860325966161,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.16666666666666669,
+          "acceleration": -0.9090909090909092,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-09-10",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 7.231778581507548,
+          "acceleration": -5.694447814345013,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.16666666666666669,
+          "acceleration": -0.9090909090909092,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-10-02",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 7.231778581507548,
+          "acceleration": -5.694447814345013,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.13333333333333336,
+          "acceleration": 0.0,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-10-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 7.703926379603956,
+          "acceleration": -7.303448468043837,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.13333333333333336,
+          "acceleration": 0.0,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-10-30",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 7.703926379603956,
+          "acceleration": -7.303448468043837,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.14285714285714285,
+          "acceleration": -0.0357142857142857,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-11-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 8.09212580195984,
+          "acceleration": -7.210026912486722,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.14285714285714285,
+          "acceleration": -0.0357142857142857,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2020-11-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 4.180422840032318,
+          "acceleration": 11.8651044200212,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.14285714285714285,
+          "acceleration": -0.0357142857142857,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-12-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 4.180422840032318,
+          "acceleration": 11.8651044200212,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.3846153846153846,
+          "acceleration": -0.23076923076923073,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-12-09",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 5.929491922761432,
+          "acceleration": 14.001829821400475,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.3846153846153846,
+          "acceleration": -0.23076923076923073,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2020-12-25",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 5.929491922761432,
+          "acceleration": 14.001829821400475,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.5357142857142856,
+          "acceleration": 2.9285714285714284,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-01-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 4.693533511809848,
+          "acceleration": 11.015257525541916,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.5357142857142856,
+          "acceleration": 2.9285714285714284,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-01-29",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 4.693533511809848,
+          "acceleration": 11.015257525541916,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.23076923076923078,
+          "acceleration": -2.8846153846153846,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-02-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 3.0022465842119197,
+          "acceleration": -2.9180565459070507,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.23076923076923078,
+          "acceleration": -2.8846153846153846,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-02-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 3.3599900017217204,
+          "acceleration": -1.3224587900136768,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.23076923076923078,
+          "acceleration": -2.8846153846153846,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-03-02",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 3.3599900017217204,
+          "acceleration": -1.3224587900136768,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.041666666666666664,
+          "acceleration": 0.20833333333333334,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-03-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.405560358078966,
+          "acceleration": -2.6346759336024803,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.041666666666666664,
+          "acceleration": 0.20833333333333334,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-03-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.405560358078966,
+          "acceleration": -2.6346759336024803,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.13636363636363635,
+          "acceleration": 0.18181818181818182,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-04-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.0402582185883427,
+          "acceleration": -2.0455249619685913,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.13636363636363635,
+          "acceleration": 0.18181818181818182,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-04-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 2.0402582185883427,
+          "acceleration": -2.0455249619685913,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.9583333333333311,
+          "acceleration": 0.8333333333333311,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-05-18",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.7358237481958152,
+          "acceleration": -3.332418319893525,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.9583333333333311,
+          "acceleration": 0.8333333333333311,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-05-20",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5886936079128986,
+          "acceleration": -1.8193175890458824,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.9583333333333311,
+          "acceleration": 0.8333333333333311,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-05-28",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.5886936079128986,
+          "acceleration": -1.8193175890458824,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.9999999999999978,
+          "acceleration": -2.9999999999999956,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-06-16",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.86057122190636,
+          "acceleration": -3.238926858933741,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.9999999999999978,
+          "acceleration": -2.9999999999999956,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-06-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.86057122190636,
+          "acceleration": -3.238926858933741,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.5,
+          "acceleration": 0.4999999999999978,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-07-12",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.1966978014885733,
+          "acceleration": -2.3029755244867056,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.5,
+          "acceleration": 0.4999999999999978,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-07-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.1966978014885733,
+          "acceleration": -2.3029755244867056,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.3076923076923077,
+          "acceleration": 2.8076923076923075,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-08-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.009672866252637,
+          "acceleration": 2.231447724729692,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.3076923076923077,
+          "acceleration": 2.8076923076923075,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-08-18",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.14169722901272225,
+          "acceleration": 0.6991927408231007,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.3076923076923077,
+          "acceleration": 2.8076923076923075,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-08-31",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.14169722901272225,
+          "acceleration": 0.6991927408231007,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.1153846153846154,
+          "acceleration": 0.8076923076923077,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-09-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.3830577947587062,
+          "acceleration": 1.8159005151921455,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.1153846153846154,
+          "acceleration": 0.8076923076923077,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-10-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.3830577947587062,
+          "acceleration": 1.8159005151921455,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.2307692307692308,
+          "acceleration": -3.3461538461538463,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-10-13",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.03035767423396135,
+          "acceleration": 1.210304700454851,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.2307692307692308,
+          "acceleration": -3.3461538461538463,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-10-29",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.03035767423396135,
+          "acceleration": 1.210304700454851,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.0,
+          "acceleration": 0.1428571428571428,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-11-15",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8691475990433661,
+          "acceleration": -1.1935240449740043,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.0,
+          "acceleration": 0.1428571428571428,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2021-11-17",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.608702558075169,
+          "acceleration": -0.5560296091397541,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.0,
+          "acceleration": 0.1428571428571428,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-11-30",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.608702558075169,
+          "acceleration": -0.5560296091397541,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.30000000000000226,
+          "acceleration": 0.6333333333333311,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-12-13",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.13996665784188111,
+          "acceleration": -0.3675473749686806,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.30000000000000226,
+          "acceleration": 0.6333333333333311,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2021-12-28",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.13996665784188111,
+          "acceleration": -0.3675473749686806,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4999999999999978,
+          "acceleration": -0.14285714285713846,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-01-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.17254437858913613,
+          "acceleration": -0.8697502464716103,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4999999999999978,
+          "acceleration": -0.14285714285713846,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-02-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.17254437858913613,
+          "acceleration": -0.8697502464716103,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.133333333333331,
+          "acceleration": 2.633333333333329,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-02-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.2421581794860286,
+          "acceleration": 1.272533028730354,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.133333333333331,
+          "acceleration": 2.633333333333329,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-02-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.2844238672520256,
+          "acceleration": 1.3474366684939922,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 2.133333333333331,
+          "acceleration": 2.633333333333329,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-03-04",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.2844238672520256,
+          "acceleration": 1.3474366684939922,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.1060606060606083,
+          "acceleration": -1.8787878787878745,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-03-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.5245682770794939,
+          "acceleration": 0.5355942411172315,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.1060606060606083,
+          "acceleration": -1.8787878787878745,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-03-29",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.5245682770794939,
+          "acceleration": 0.5355942411172315,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.4999999999999978,
+          "acceleration": 0.33333333333332893,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-04-13",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.51627638962436,
+          "acceleration": 0.2590831250829191,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.4999999999999978,
+          "acceleration": 0.33333333333332893,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-04-26",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.51627638962436,
+          "acceleration": 0.2590831250829191,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.0454545454545454,
+          "acceleration": 0.5454545454545476,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-05-18",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.4751970810742279,
+          "acceleration": -2.181066089984116,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.0454545454545454,
+          "acceleration": 0.5454545454545476,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-05-19",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.7095341421141973,
+          "acceleration": 1.048073484729796,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.0454545454545454,
+          "acceleration": 0.5454545454545476,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-05-31",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.7095341421141973,
+          "acceleration": 1.048073484729796,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.25,
+          "acceleration": 0.25,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-06-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.249467053053241,
+          "acceleration": -0.5925832178036208,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.25,
+          "acceleration": 0.25,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-07-01",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.249467053053241,
+          "acceleration": -0.5925832178036208,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.9242424242424243,
+          "acceleration": -2.2424242424242427,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-07-11",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8973396028275695,
+          "acceleration": -3.1742946998845136,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.9242424242424243,
+          "acceleration": -2.2424242424242427,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-07-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8973396028275695,
+          "acceleration": -3.1742946998845136,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.4,
+          "acceleration": 1.3666666666666667,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-08-15",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.25689064734072997,
+          "acceleration": -1.3572151109460537,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.4,
+          "acceleration": 1.3666666666666667,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-08-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.6097641195485084,
+          "acceleration": 1.610863958743417,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.4,
+          "acceleration": 1.3666666666666667,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-08-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.6097641195485084,
+          "acceleration": 1.610863958743417,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.06896551724137931,
+          "acceleration": -0.48275862068965514,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-09-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.1585991546943832,
+          "acceleration": 1.2410622811169645,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.06896551724137931,
+          "acceleration": -0.48275862068965514,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-09-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.1585991546943832,
+          "acceleration": 1.2410622811169645,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.35714285714285715,
+          "acceleration": 0.4285714285714286,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-10-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.23111554072707374,
+          "acceleration": -0.659352322278384,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.35714285714285715,
+          "acceleration": 0.4285714285714286,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-10-28",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.23111554072707374,
+          "acceleration": -0.659352322278384,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.018518518518518545,
+          "acceleration": -0.3703703703703704,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-11-15",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.013355141140513,
+          "acceleration": -2.1257358838968763,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.018518518518518545,
+          "acceleration": -0.3703703703703704,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-11-16",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8125053471855807,
+          "acceleration": -0.6081785050518802,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 0,
+          "speed": 0.018518518518518545,
+          "acceleration": -0.3703703703703704,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-11-29",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.8125053471855807,
+          "acceleration": -0.6081785050518802,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.2692307692307692,
+          "acceleration": -0.2692307692307692,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2022-12-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.2652451853626585,
+          "acceleration": 0.27650333399205845,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.2692307692307692,
+          "acceleration": -0.2692307692307692,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2022-12-27",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.2652451853626585,
+          "acceleration": 0.27650333399205845,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.35185185185185186,
+          "acceleration": -0.09259259259259262,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-01-18",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.191574090138805,
+          "acceleration": -2.233922268561439,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.35185185185185186,
+          "acceleration": -0.09259259259259262,
+          "accelDir": 0,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-01-31",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 1.191574090138805,
+          "acceleration": -2.233922268561439,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.23076923076923078,
+          "acceleration": 0.6153846153846154,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-02-14",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.7004891260691719,
+          "acceleration": -0.9586486712358115,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.23076923076923078,
+          "acceleration": 0.6153846153846154,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-02-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.35673157064968286,
+          "acceleration": 1.5593286568829026,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 0.23076923076923078,
+          "acceleration": 0.6153846153846154,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-03-03",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.35673157064968286,
+          "acceleration": 1.5593286568829026,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.425925925925926,
+          "acceleration": 1.2037037037037037,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-03-16",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.1527625671474964,
+          "acceleration": 1.2896699475485418,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.425925925925926,
+          "acceleration": 1.2037037037037037,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-03-31",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.1527625671474964,
+          "acceleration": 1.2896699475485418,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 2.071428571428571,
+          "acceleration": -3.464285714285714,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-04-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.30362637230683887,
+          "acceleration": -0.972157266727886,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 2.071428571428571,
+          "acceleration": -3.464285714285714,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-04-28",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.30362637230683887,
+          "acceleration": -0.972157266727886,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4137931034482737,
+          "acceleration": 1.620689655172416,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-05-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.1024767108410225,
+          "acceleration": -1.2648193018974525,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4137931034482737,
+          "acceleration": 1.620689655172416,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2023-05-22",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.017034632817847173,
+          "acceleration": 0.28547591192893285,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.4137931034482737,
+          "acceleration": 1.620689655172416,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": false
+    },
+    {
+      "checkpoint": "2023-05-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 0,
+          "speed": 0.017034632817847173,
+          "acceleration": 0.28547591192893285,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.4642857142857122,
+          "acceleration": 1.8571428571428528,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-06-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.9583735669367541,
+          "acceleration": 1.1738419855200983,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.4642857142857122,
+          "acceleration": 1.8571428571428528,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-06-30",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.9583735669367541,
+          "acceleration": 1.1738419855200983,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.2962962962962963,
+          "acceleration": -1.7777777777777755,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-07-12",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.4122536645792598,
+          "acceleration": -1.166090423375183,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 0.2962962962962963,
+          "acceleration": -1.7777777777777755,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": -1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-08-01",
+      "blocks": {
+        "Crescita": {
+          "direction": -1,
+          "speed": 0.4122536645792598,
+          "acceleration": -1.166090423375183,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.1785714285714286,
+          "acceleration": 1.4642857142857144,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-08-15",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 0.6718738496243164,
+          "acceleration": -0.2771307443187139,
+          "accelDir": -1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.1785714285714286,
+          "acceleration": 1.4642857142857144,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-08-17",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.7500445820925523,
+          "acceleration": 2.1741295644176777,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": 1,
+          "speed": 1.1785714285714286,
+          "acceleration": 1.4642857142857144,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 1,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-08-29",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.7500445820925523,
+          "acceleration": 2.1741295644176777,
+          "accelDir": 1,
+          "turning": true,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.3703703703703702,
+          "acceleration": -2.574074074074074,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    },
+    {
+      "checkpoint": "2023-09-14",
+      "blocks": {
+        "Crescita": {
+          "direction": 1,
+          "speed": 1.3691562336348069,
+          "acceleration": 0.7067597692427872,
+          "accelDir": 1,
+          "turning": false,
+          "n": 2
+        },
+        "Lavoro": {
+          "direction": -1,
+          "speed": 1.3703703703703702,
+          "acceleration": -2.574074074074074,
+          "accelDir": -1,
+          "turning": true,
+          "n": 2
+        },
+        "Inflazione": null
+      },
+      "macro_polarity": 0,
+      "macro_turning": true
+    }
+  ],
+  "regime_samples": [
+    {
+      "checkpoint": "2018-10-10",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2018-10-11",
+      "basket_log_return_5d": -0.0009778705672671703,
+      "signed_5d": -0.0009778705672671703,
+      "basket_log_return_20d": -0.01667755299304686,
+      "signed_20d": -0.01667755299304686,
+      "basket_log_return_60d": 0.03481438219626209,
+      "signed_60d": 0.03481438219626209
+    },
+    {
+      "checkpoint": "2018-11-30",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": 0,
+      "entry_date": "2018-12-03",
+      "basket_log_return_5d": 0.010825783142295927,
+      "signed_5d": -0.010825783142295927,
+      "basket_log_return_20d": 0.07130283909962375,
+      "signed_20d": -0.07130283909962375,
+      "basket_log_return_60d": 0.02301814288252133,
+      "signed_60d": -0.02301814288252133
+    },
+    {
+      "checkpoint": "2018-12-12",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 0,
+      "entry_date": "2018-12-13",
+      "basket_log_return_5d": 0.018820945591376956,
+      "signed_5d": 0.018820945591376956,
+      "basket_log_return_20d": 0.04160686397883332,
+      "signed_20d": 0.04160686397883332,
+      "basket_log_return_60d": 0.023513194527001024,
+      "signed_60d": 0.023513194527001024
+    },
+    {
+      "checkpoint": "2019-02-01",
+      "polarity": -1,
+      "growth_direction": 0,
+      "labour_direction": -1,
+      "entry_date": "2019-02-04",
+      "basket_log_return_5d": 0.008681624019915785,
+      "signed_5d": -0.008681624019915785,
+      "basket_log_return_20d": -0.012148083094716473,
+      "signed_20d": 0.012148083094716473,
+      "basket_log_return_60d": 0.0041854630841502375,
+      "signed_60d": -0.0041854630841502375
+    },
+    {
+      "checkpoint": "2019-04-10",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2019-04-11",
+      "basket_log_return_5d": -0.0025617713202617048,
+      "signed_5d": -0.0025617713202617048,
+      "basket_log_return_20d": 0.02604094066093444,
+      "signed_20d": 0.02604094066093444,
+      "basket_log_return_60d": 0.0326852027047354,
+      "signed_60d": 0.0326852027047354
+    },
+    {
+      "checkpoint": "2019-07-08",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": 0,
+      "entry_date": "2019-07-09",
+      "basket_log_return_5d": 0.001920836402399989,
+      "signed_5d": -0.001920836402399989,
+      "basket_log_return_20d": 0.027906213757113697,
+      "signed_20d": -0.027906213757113697,
+      "basket_log_return_60d": 0.027688893823372255,
+      "signed_60d": -0.027688893823372255
+    },
+    {
+      "checkpoint": "2019-08-14",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2019-08-15",
+      "basket_log_return_5d": -0.0005147829779225184,
+      "signed_5d": -0.0005147829779225184,
+      "basket_log_return_20d": -0.015102252148625107,
+      "signed_20d": -0.015102252148625107,
+      "basket_log_return_60d": -0.034271502138842794,
+      "signed_60d": -0.034271502138842794
+    },
+    {
+      "checkpoint": "2019-11-01",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2019-11-04",
+      "basket_log_return_5d": 0.000862543617474239,
+      "signed_5d": -0.000862543617474239,
+      "basket_log_return_20d": -0.004829926684280708,
+      "signed_20d": 0.004829926684280708,
+      "basket_log_return_60d": -0.00418982482520446,
+      "signed_60d": 0.00418982482520446
+    },
+    {
+      "checkpoint": "2020-01-16",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2020-01-17",
+      "basket_log_return_5d": 0.00764020915973356,
+      "signed_5d": 0.00764020915973356,
+      "basket_log_return_20d": 0.018175327933861927,
+      "signed_20d": 0.018175327933861927,
+      "basket_log_return_60d": 0.06395323902823831,
+      "signed_60d": 0.06395323902823831
+    },
+    {
+      "checkpoint": "2020-02-28",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2020-03-02",
+      "basket_log_return_5d": 0.0387553295059806,
+      "signed_5d": -0.0387553295059806,
+      "basket_log_return_20d": 0.02548086722525163,
+      "signed_20d": -0.02548086722525163,
+      "basket_log_return_60d": 0.012756382329108003,
+      "signed_60d": -0.012756382329108003
+    },
+    {
+      "checkpoint": "2020-11-16",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 0,
+      "entry_date": "2020-11-17",
+      "basket_log_return_5d": -0.006069745649847963,
+      "signed_5d": -0.006069745649847963,
+      "basket_log_return_20d": -0.016419927351185117,
+      "signed_20d": -0.016419927351185117,
+      "basket_log_return_60d": -0.037476112069343294,
+      "signed_60d": -0.037476112069343294
+    },
+    {
+      "checkpoint": "2021-05-28",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2021-05-31",
+      "basket_log_return_5d": 0.0036292461575212274,
+      "signed_5d": -0.0036292461575212274,
+      "basket_log_return_20d": 0.008851295628138014,
+      "signed_20d": -0.008851295628138014,
+      "basket_log_return_60d": 0.03554922000202335,
+      "signed_60d": -0.03554922000202335
+    },
+    {
+      "checkpoint": "2021-07-30",
+      "polarity": 1,
+      "growth_direction": 0,
+      "labour_direction": 1,
+      "entry_date": "2021-08-02",
+      "basket_log_return_5d": -0.001651225070165625,
+      "signed_5d": -0.001651225070165625,
+      "basket_log_return_20d": 0.002750647258167404,
+      "signed_20d": 0.002750647258167404,
+      "basket_log_return_60d": -0.03701764172500959,
+      "signed_60d": -0.03701764172500959
+    },
+    {
+      "checkpoint": "2021-10-13",
+      "polarity": -1,
+      "growth_direction": 0,
+      "labour_direction": -1,
+      "entry_date": "2021-10-14",
+      "basket_log_return_5d": -0.0127778027982331,
+      "signed_5d": 0.0127778027982331,
+      "basket_log_return_20d": 0.005629585485910922,
+      "signed_20d": -0.005629585485910922,
+      "basket_log_return_60d": -0.0004712963441809587,
+      "signed_60d": 0.0004712963441809587
+    },
+    {
+      "checkpoint": "2022-02-01",
+      "polarity": 1,
+      "growth_direction": 0,
+      "labour_direction": 1,
+      "entry_date": "2022-02-02",
+      "basket_log_return_5d": -0.011849953833489801,
+      "signed_5d": -0.011849953833489801,
+      "basket_log_return_20d": -0.008138600766392895,
+      "signed_20d": -0.008138600766392895,
+      "basket_log_return_60d": -0.09665948750582506,
+      "signed_60d": -0.09665948750582506
+    },
+    {
+      "checkpoint": "2022-07-11",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2022-07-12",
+      "basket_log_return_5d": -0.020343655033657548,
+      "signed_5d": 0.020343655033657548,
+      "basket_log_return_20d": -0.008546877275107943,
+      "signed_20d": 0.008546877275107943,
+      "basket_log_return_60d": -0.025899934898641865,
+      "signed_60d": 0.025899934898641865
+    },
+    {
+      "checkpoint": "2022-08-17",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2022-08-18",
+      "basket_log_return_5d": -0.002968170431256814,
+      "signed_5d": -0.002968170431256814,
+      "basket_log_return_20d": -0.0370576258688131,
+      "signed_20d": -0.0370576258688131,
+      "basket_log_return_60d": -0.035281508500722876,
+      "signed_60d": -0.035281508500722876
+    },
+    {
+      "checkpoint": "2022-10-28",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": 0,
+      "entry_date": "2022-10-31",
+      "basket_log_return_5d": 0.0062865530610000395,
+      "signed_5d": -0.0062865530610000395,
+      "basket_log_return_20d": 0.0287735958171624,
+      "signed_20d": -0.0287735958171624,
+      "basket_log_return_60d": 0.06584243617829526,
+      "signed_60d": -0.06584243617829526
+    },
+    {
+      "checkpoint": "2023-02-16",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2023-02-17",
+      "basket_log_return_5d": -0.00337972409951225,
+      "signed_5d": -0.00337972409951225,
+      "basket_log_return_20d": 0.01964594065139601,
+      "signed_20d": 0.01964594065139601,
+      "basket_log_return_60d": -0.02753352908326322,
+      "signed_60d": -0.02753352908326322
+    },
+    {
+      "checkpoint": "2023-04-12",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2023-04-13",
+      "basket_log_return_5d": -0.004461189392896228,
+      "signed_5d": 0.004461189392896228,
+      "basket_log_return_20d": -0.0074302507014215565,
+      "signed_20d": 0.0074302507014215565,
+      "basket_log_return_60d": -0.06888723429329482,
+      "signed_60d": 0.06888723429329482
+    },
+    {
+      "checkpoint": "2023-05-30",
+      "polarity": 1,
+      "growth_direction": 0,
+      "labour_direction": 1,
+      "entry_date": "2023-05-31",
+      "basket_log_return_5d": -0.01035310230223804,
+      "signed_5d": -0.01035310230223804,
+      "basket_log_return_20d": -0.05087268039281728,
+      "signed_20d": -0.05087268039281728,
+      "basket_log_return_60d": -0.04861541851456425,
+      "signed_60d": -0.04861541851456425
+    },
+    {
+      "checkpoint": "2023-07-12",
+      "polarity": -1,
+      "growth_direction": -1,
+      "labour_direction": -1,
+      "entry_date": "2023-07-13",
+      "basket_log_return_5d": -0.004091430803064074,
+      "signed_5d": 0.004091430803064074,
+      "basket_log_return_20d": -0.015266031605764728,
+      "signed_20d": 0.015266031605764728,
+      "basket_log_return_60d": -0.01794241072738437,
+      "signed_60d": 0.01794241072738437
+    },
+    {
+      "checkpoint": "2023-08-15",
+      "polarity": 1,
+      "growth_direction": 1,
+      "labour_direction": 1,
+      "entry_date": "2023-08-16",
+      "basket_log_return_5d": 0.007166855287491339,
+      "signed_5d": 0.007166855287491339,
+      "basket_log_return_20d": -0.00045852555420865406,
+      "signed_20d": -0.00045852555420865406,
+      "basket_log_return_60d": -0.017842676353221742,
+      "signed_60d": -0.017842676353221742
+    }
+  ],
+  "guardrails": [
+    "PIT/first-release inputs only",
+    "No revised-history fallback",
+    "No parameter fitting or threshold tuning",
+    "Inflation WITHHELD casts no vote",
+    "Same v9.3 block and macro aggregation rules",
+    "Conservative next-reference-price FX entry"
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
