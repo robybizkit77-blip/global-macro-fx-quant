@@ -1,0 +1,253 @@
+{
+  "schema": "GMFQ_REACTION_FUNCTION_EVIDENCE_MATRIX_G8_V1",
+  "created_at": "2026-10-06",
+  "status": "ACTIVE_RESEARCH_ROADMAP",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "principles": [
+    "Reaction functions are bank-specific; no universal macro-to-rates-to-FX rule is assumed.",
+    "Rates are an observed repricing layer, not a binary confirmation gate.",
+    "Convergence and divergence are preserved as information states, not automatically promoted to trading rules.",
+    "Only PIT-safe or explicitly conservative historical inputs may enter historical diagnostics.",
+    "Unsupported historical blocks remain WITHHELD and contribute no vote.",
+    "No threshold tuning, ex-post weighting, window selection, or engine changes are allowed from these diagnostics.",
+    "Any vNext candidate must beat the frozen baseline through chronological OOS evidence before promotion."
+  ],
+  "banks": {
+    "FED_USD": {
+      "reaction_class": "DUAL_MANDATE",
+      "primary_policy_inputs": ["inflation", "labour"],
+      "secondary_inputs": ["growth", "financial_conditions"],
+      "pit_status": {
+        "growth": "READY_PARTIAL",
+        "labour": "WITHHELD_HISTORICAL_PIT",
+        "inflation": "NOT_YET_CERTIFIED_FOR_REACTION_REPLAY",
+        "front_end_rates": "NOT_YET_CERTIFIED_SAME_BASIS_FOR_REACTION_REPLAY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [],
+      "evidence_summary": "A proper Fed-vs-ECB reaction-function comparison is not yet admissible because USD Labour PIT is withheld. No revised fallback should be used.",
+      "promotion_status": "NOT_TESTABLE_YET",
+      "next_priority": [
+        "Unlock USD Labour first-release PIT from a genuinely archival source.",
+        "Certify a coherent US 2Y/front-end historical series for observed repricing.",
+        "Then run Fed-specific state replay using labour + inflation as co-primary inputs."
+      ]
+    },
+    "ECB_EUR": {
+      "reaction_class": "PRICE_STABILITY_PRIMARY",
+      "primary_policy_inputs": ["inflation", "services_inflation", "wage_pressure"],
+      "secondary_inputs": ["labour_via_wages", "growth"],
+      "pit_status": {
+        "growth": "READY_PARTIAL",
+        "labour": "READY_PARTIAL",
+        "negotiated_wages": "CERTIFIED_CONSERVATIVE",
+        "services_inflation": "READY_2024_2026_FIRST_PUBLISHED",
+        "front_end_rates": "READY_EUR_2Y_SAME_BASIS",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [
+        "EUR_REACTION_FUNCTION_DIAGNOSTIC_V1",
+        "EUR wages plus 5-market-day EUR2Y alignment diagnostic",
+        "robustness and chronological walk-forward"
+      ],
+      "key_evidence": {
+        "wages_standalone_latest": {
+          "5d": {"n": 16, "hit_rate": 0.50, "mean_return": -0.00032524},
+          "20d": {"n": 16, "hit_rate": 0.50, "mean_return": -0.001977836},
+          "60d": {"n": 16, "hit_rate": 0.5625, "mean_return": 0.002792304}
+        },
+        "wages_plus_2y_alignment_initial": {
+          "5d": {"n": 16, "hit_rate": 0.50, "mean_return": 0.000821848},
+          "20d": {"n": 16, "hit_rate": 0.6875, "mean_return": 0.002275786},
+          "60d": {"n": 16, "hit_rate": 0.5625, "mean_return": 0.004542268}
+        },
+        "walkforward_interpretation": "20d signal remained positive but weakened OOS; not statistically locked. Historical wage availability dates are conservative checkpoints, so the test measures post-checkpoint alignment, not clean release causality."
+      },
+      "evidence_summary": "ECB shows the most encouraging evidence that policy-relevant wage pressure and front-end repricing jointly improve interpretation, especially around 20d, but sample size and timestamp quality are insufficient for engine promotion.",
+      "promotion_status": "DESCRIPTIVE_PROMISING_NOT_LOCKED",
+      "next_priority": [
+        "Improve exact historical wage release timestamps where possible.",
+        "Extend services-inflation PIT before 2024 if official first-published vintages can be certified.",
+        "Re-run on the exact same base event cohort before any future comparison or model promotion."
+      ]
+    },
+    "BOE_GBP": {
+      "reaction_class": "PRICE_STABILITY_PRIMARY_DOMESTIC_PRESSURE",
+      "primary_policy_inputs": ["wage_pressure", "services_inflation"],
+      "secondary_inputs": ["labour_context", "growth_tradeoff"],
+      "pit_status": {
+        "labour": "READY_101_ONS_A01_VINTAGES",
+        "wages": "READY_AWE_K54L_VINTAGES",
+        "services_inflation": "READY_CPI_SERVICES_D7NN_VINTAGES",
+        "front_end_rates": "READY_BOE_OIS_SPOT_2Y_DAILY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [
+        "GBP frozen Labour replay",
+        "AWE standalone diagnostic",
+        "AWE plus 2Y OIS confirmation diagnostic",
+        "paired same-universe AWE/OIS diagnostic",
+        "GBP_FULL_REACTION_STATE_VNEXT_V1",
+        "GBP_FULL_REACTION_STATE_VNEXT_V1_ROBUSTNESS"
+      ],
+      "key_evidence": {
+        "full_state_domestic_labour_aligned": {
+          "full_sample_20d": {"n": 40, "hit_rate": 0.375, "mean_return": -0.002201246625445348},
+          "full_sample_60d": {"n": 40, "hit_rate": 0.425, "mean_return": -0.001478764388735824},
+          "pooled_oos_20d": {"n": 33, "hit_rate": 0.36363636363636365, "mean_return": -0.001692309577738856},
+          "pooled_oos_60d": {"n": 33, "hit_rate": 0.42424242424242425, "mean_return": -0.0013725211052599477}
+        },
+        "ois_filter_result": "Simple 5-day same-direction 2Y OIS confirmation did not add robust value OOS and should not be used as a mechanical GBP filter.",
+        "labour_replay_note": "Frozen Labour showed possible slower 60d persistence in a separate descriptive replay, but not enough evidence for promotion."
+      },
+      "evidence_summary": "BoE evidence rejects a mechanical 'labour + wages + services + 2Y confirmation = GBP' rule. Policy-relevant domestic pressure matters conceptually, but expected policy path, inflation level vs target, growth trade-off, MPC regime and surprise-vs-consensus likely matter materially.",
+      "promotion_status": "MECHANICAL_RULE_REJECTED",
+      "next_priority": [
+        "Do not add more ad-hoc GBP combinations.",
+        "Future BoE research should add predeclared policy-regime context or consensus-surprise data only if PIT-safe.",
+        "Keep wages/services/labour/OIS as separate dashboard evidence layers, not one score."
+      ]
+    },
+    "BOC_CAD": {
+      "reaction_class": "FLEXIBLE_INFLATION_TARGET_WITH_EMPLOYMENT_CONSIDERATION",
+      "primary_policy_inputs": ["core_inflation", "growth", "labour"],
+      "secondary_inputs": ["headline_inflation", "financial_conditions"],
+      "pit_status": {
+        "growth": "READY_FIRST_RELEASE",
+        "labour": "READY_FIRST_RELEASE",
+        "core_inflation": "READY_CPI_COMMON_MEDIAN_TRIM_FIRST_RELEASE_2017_2026",
+        "headline_inflation": "READY_NONREVISABLE_HEADLINE_WITH_CERTIFIED_AVAILABILITY_2017_2026",
+        "front_end_rates": "READY_CAD_2Y_HISTORY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [
+        "CAD Labour frozen attribution",
+        "CAD Labour plus 2Y confirmation diagnostic",
+        "CAD Reaction Function State Replay Labour-only",
+        "CAD partial Growth+Labour state replay",
+        "CAD full core-inflation reaction-state replay",
+        "CAD_FULL_REACTION_STATE_VNEXT_V2",
+        "CAD_FULL_REACTION_STATE_VNEXT_V2_ROBUSTNESS"
+      ],
+      "key_evidence": {
+        "core_headline_both_aligned_full_sample_20d": {
+          "n": 49,
+          "hit_rate": 0.6530612244897959,
+          "mean_return": 0.003409674962319459,
+          "bootstrap_mean_95": [0.0005624321841138655, 0.006236826194686355]
+        },
+        "core_headline_both_aligned_pooled_oos_interpretation": "Pooled OOS weakened materially to roughly 57% hit with near-flat positive mean, so the state is descriptive but not a locked edge.",
+        "rates_filter_result": "Simple 5-day 2Y same-direction confirmation failed; divergent states can carry information and must not be discarded mechanically.",
+        "mixed_neutral_result": "Mixed/neutral inflation-macro states were generally weaker, especially around 20d, supporting state classification as an explanatory layer."
+      },
+      "evidence_summary": "CAD is the strongest current proof-of-concept for the vNext architecture: combining Growth, Labour and persistent inflation state improves descriptive coherence, while headline and rates add context. However, OOS weakening prevents promotion to a mechanical engine rule.",
+      "promotion_status": "BEST_PROOF_OF_CONCEPT_NOT_LOCKED",
+      "next_priority": [
+        "Stop searching new CAD combinations to avoid overfitting.",
+        "Use CAD as the reference implementation for dashboard Reaction State presentation.",
+        "Revisit only with genuinely new OOS data or a predeclared additional PIT-safe layer."
+      ]
+    },
+    "RBA_AUD": {
+      "reaction_class": "DUAL_MANDATE",
+      "primary_policy_inputs": ["inflation", "labour"],
+      "secondary_inputs": ["growth", "household_demand"],
+      "pit_status": {
+        "live_macro": "CERTIFIED",
+        "historical_reaction_inputs": "WITHHELD",
+        "front_end_rates": "NOT_CERTIFIED_FOR_PIT_REACTION_REPLAY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [],
+      "evidence_summary": "Live data are certified, but historical PIT blocks required for a reaction-function replay are not yet available.",
+      "promotion_status": "NOT_TESTABLE_YET",
+      "next_priority": [
+        "Certify historical first-release labour and inflation archives.",
+        "Certify a coherent AUD front-end/OIS history.",
+        "Then test a dual-mandate state replay with predeclared architecture."
+      ]
+    },
+    "RBNZ_NZD": {
+      "reaction_class": "PRICE_STABILITY_PRIMARY_POST_2023_REMIT",
+      "primary_policy_inputs": ["inflation"],
+      "secondary_inputs": ["labour", "growth"],
+      "pit_status": {
+        "live_macro": "CERTIFIED",
+        "historical_reaction_inputs": "WITHHELD",
+        "front_end_rates": "NOT_CERTIFIED_FOR_PIT_REACTION_REPLAY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [],
+      "evidence_summary": "NZD cannot yet support a professional historical reaction-function replay without fabricating missing PIT layers.",
+      "promotion_status": "NOT_TESTABLE_YET",
+      "next_priority": [
+        "Build historical first-release inflation PIT first.",
+        "Then add labour/growth only as secondary layers according to remit regime.",
+        "Do not use synthetic OIS or revised-history fallback."
+      ]
+    },
+    "SNB_CHF": {
+      "reaction_class": "PRICE_STABILITY_WITH_FX_MONETARY_CONDITIONS",
+      "primary_policy_inputs": ["inflation", "fx_conditions"],
+      "secondary_inputs": ["growth", "labour"],
+      "pit_status": {
+        "live_macro": "CERTIFIED",
+        "historical_reaction_inputs": "WITHHELD",
+        "front_end_rates": "NOT_CERTIFIED_FOR_PIT_REACTION_REPLAY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": [],
+      "evidence_summary": "A CHF reaction function must explicitly preserve FX conditions as a policy variable; labour should not be treated as a direct Fed-style input. Historical PIT remains incomplete.",
+      "promotion_status": "NOT_TESTABLE_YET",
+      "next_priority": [
+        "Certify historical inflation PIT.",
+        "Design a predeclared FX-monetary-conditions layer before testing.",
+        "Add front-end rates only as observed repricing, not as a confirmation gate."
+      ]
+    },
+    "BOJ_JPY": {
+      "reaction_class": "PRICE_STABILITY_WITH_WAGE_PRICE_CYCLE",
+      "primary_policy_inputs": ["inflation", "wages"],
+      "secondary_inputs": ["labour", "growth"],
+      "pit_status": {
+        "labour": "STRUCTURALLY_FEASIBLE_NOT_ACTIVATED",
+        "wages": "NOT_YET_CERTIFIED",
+        "inflation": "NOT_YET_CERTIFIED_FOR_REACTION_REPLAY",
+        "front_end_rates": "NOT_CERTIFIED_FOR_PIT_REACTION_REPLAY",
+        "fx": "READY_CANONICAL"
+      },
+      "tests_completed": ["JPY labour PIT feasibility audit"],
+      "evidence_summary": "Historical JPY Labour reconstruction is structurally feasible, but activation is false because archived releases do not yet provide a certified intraday/event-time policy. BoJ should be modelled through wage-price-cycle persistence, not labour alone.",
+      "promotion_status": "STRUCTURALLY_FEASIBLE_PENDING_ACTIVATION",
+      "next_priority": [
+        "Resolve official release-calendar/event-time policy for Labour PIT activation.",
+        "Certify historical wages and inflation PIT.",
+        "Only then build a BoJ wage-price-cycle reaction replay."
+      ]
+    }
+  },
+  "cross_country_conclusions": [
+    "No universal rates-confirmation filter survived the current tests.",
+    "CAD supports the explanatory value of bank-specific macro state decomposition but not a locked trading rule.",
+    "GBP demonstrates that even economically sensible policy inputs do not map mechanically into FX returns.",
+    "EUR remains promising but constrained by conservative wage timestamps and limited services-history length.",
+    "The dashboard should expose separate layers: data importance -> central-bank interpretation -> market repricing -> FX price response.",
+    "The next research priority should be determined by data readiness, not by searching for the best historical return pattern."
+  ],
+  "research_priority_order": [
+    "USD/Fed: unlock Labour PIT and coherent US front-end history",
+    "EUR/ECB: improve timestamp quality and extend services PIT",
+    "JPY/BoJ: activate labour event-time and add wages/inflation PIT",
+    "AUD/RBA: historical dual-mandate PIT blocks",
+    "CHF/SNB: inflation plus FX-conditions PIT architecture",
+    "NZD/RBNZ: historical inflation-first PIT architecture",
+    "CAD/BoC: hold architecture fixed; wait for new OOS evidence",
+    "GBP/BoE: hold current evidence; no further ad-hoc combinations"
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
