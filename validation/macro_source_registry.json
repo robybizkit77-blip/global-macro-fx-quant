@@ -15,146 +15,21 @@
     "point_in_time_release_metadata_required_before_oos_freeze": true
   },
   "streams": [
-    {
-      "currency": "USD", "dimension": "inflation", "role": "core",
-      "official_authority": "U.S. Bureau of Labor Statistics",
-      "upstream_series_id": "CUSR0000SA0",
-      "source_url": "https://data.bls.gov/timeseries/CUSR0000SA0",
-      "frequency": "M", "transformation": "yoy_pct_from_index", "unit": "% YoY",
-      "adapter_path": "validation/sources/us_bls_cpi.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "USD", "dimension": "labour", "role": "core",
-      "official_authority": "U.S. Bureau of Labor Statistics",
-      "upstream_series_id": "LNS14000000",
-      "source_url": "https://data.bls.gov/timeseries/LNS14000000",
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/us_bls_unemployment.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "EUR", "dimension": "inflation", "role": "core",
-      "official_authority": "Eurostat",
-      "upstream_series_id": "prc_hicp_minr",
-      "source_url": "https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en",
-      "source_filters": {"freq": "M", "unit": "RCH_A", "coicop18": "TOTAL", "geo": "EA"},
-      "frequency": "M", "transformation": "reported_yoy_rate", "unit": "% YoY",
-      "adapter_path": "validation/sources/eur_eurostat_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "EUR", "dimension": "labour", "role": "core",
-      "official_authority": "Eurostat",
-      "upstream_series_id": "une_rt_m",
-      "source_url": "https://ec.europa.eu/eurostat/databrowser/view/une_rt_m/default/table?lang=en",
-      "source_filters": {"freq": "M", "s_adj": "SA", "age": "TOTAL", "unit": "PC_ACT", "sex": "T", "geo": "EA21"},
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/eur_eurostat_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "GBP", "dimension": "inflation", "role": "core",
-      "official_authority": "Office for National Statistics",
-      "upstream_series_id": "D7G7",
-      "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23",
-      "frequency": "M", "transformation": "reported_yoy_rate", "unit": "% YoY",
-      "adapter_path": "validation/sources/gbp_ons_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "GBP", "dimension": "labour", "role": "core",
-      "official_authority": "Office for National Statistics",
-      "upstream_series_id": "MGSX",
-      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/gbp_ons_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "JPY", "dimension": "inflation", "role": "core",
-      "official_authority": "Statistics Bureau of Japan / e-Stat",
-      "upstream_series_id": null, "source_url": null,
-      "frequency": "M", "transformation": null, "unit": null,
-      "adapter_path": null, "requires_credential": null,
-      "status": "PLANNED_UNVALIDATED"
-    },
-    {
-      "currency": "JPY", "dimension": "labour", "role": "core",
-      "official_authority": "Statistics Bureau of Japan / e-Stat",
-      "upstream_series_id": "0002060004",
-      "source_url": "https://www.stat.go.jp/english/data/roudou/results/month/index.html",
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/jpy_estat_unemployment.py", "requires_credential": true,
-      "credential_env": "E_STAT_APP_ID", "status": "ADAPTER_READY_CREDENTIAL_REQUIRED"
-    },
-    {
-      "currency": "CHF", "dimension": "inflation", "role": "core",
-      "official_authority": "Swiss Federal Statistical Office",
-      "upstream_series_id": null, "source_url": null,
-      "frequency": "M", "transformation": null, "unit": null,
-      "adapter_path": null, "requires_credential": null,
-      "status": "PLANNED_UNVALIDATED"
-    },
-    {
-      "currency": "CHF", "dimension": "labour", "role": "core",
-      "official_authority": "Swiss Federal Statistical Office / SECO",
-      "upstream_series_id": null, "source_url": null,
-      "frequency": "M", "transformation": null, "unit": null,
-      "adapter_path": null, "requires_credential": null,
-      "status": "PLANNED_UNVALIDATED"
-    },
-    {
-      "currency": "CAD", "dimension": "inflation", "role": "core",
-      "official_authority": "Statistics Canada",
-      "upstream_series_id": "18-10-0004-01 / published 12-month headline change",
-      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000402",
-      "frequency": "M", "transformation": "reported_yoy_rate", "unit": "% YoY",
-      "adapter_path": "validation/sources/cad_statcan_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "CAD", "dimension": "labour", "role": "core",
-      "official_authority": "Statistics Canada",
-      "upstream_series_id": "14-10-0287-03",
-      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=14100287",
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/cad_statcan_core.py", "requires_credential": false,
-      "status": "VALIDATED"
-    },
-    {
-      "currency": "AUD", "dimension": "inflation", "role": "core",
-      "official_authority": "Australian Bureau of Statistics",
-      "upstream_series_id": "CPI Australia / quarterly All groups headline",
-      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release",
-      "frequency": "Q", "transformation": "reported_yoy_rate", "unit": "% YoY",
-      "adapter_path": "validation/sources/aud_abs_core.py", "requires_credential": false,
-      "status": "ADAPTER_READY_LIVE_CI_PENDING"
-    },
-    {
-      "currency": "AUD", "dimension": "labour", "role": "core",
-      "official_authority": "Australian Bureau of Statistics",
-      "upstream_series_id": "Labour Force Australia / unemployment rate seasonally adjusted",
-      "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/latest-release",
-      "frequency": "M", "transformation": "level", "unit": "%",
-      "adapter_path": "validation/sources/aud_abs_core.py", "requires_credential": false,
-      "status": "ADAPTER_READY_LIVE_CI_PENDING"
-    },
-    {
-      "currency": "NZD", "dimension": "inflation", "role": "core",
-      "official_authority": "Stats NZ",
-      "upstream_series_id": null, "source_url": null,
-      "frequency": "M", "transformation": null, "unit": null,
-      "adapter_path": null, "requires_credential": null,
-      "status": "PLANNED_UNVALIDATED"
-    },
-    {
-      "currency": "NZD", "dimension": "labour", "role": "core",
-      "official_authority": "Stats NZ",
-      "upstream_series_id": null, "source_url": null,
-      "frequency": "M", "transformation": null, "unit": null,
-      "adapter_path": null, "requires_credential": null,
-      "status": "PLANNED_UNVALIDATED"
-    }
+    {"currency":"USD","dimension":"inflation","role":"core","official_authority":"U.S. Bureau of Labor Statistics","upstream_series_id":"CUSR0000SA0","source_url":"https://data.bls.gov/timeseries/CUSR0000SA0","frequency":"M","transformation":"yoy_pct_from_index","unit":"% YoY","adapter_path":"validation/sources/us_bls_cpi.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"USD","dimension":"labour","role":"core","official_authority":"U.S. Bureau of Labor Statistics","upstream_series_id":"LNS14000000","source_url":"https://data.bls.gov/timeseries/LNS14000000","frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/us_bls_unemployment.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"EUR","dimension":"inflation","role":"core","official_authority":"Eurostat","upstream_series_id":"prc_hicp_minr","source_url":"https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en","source_filters":{"freq":"M","unit":"RCH_A","coicop18":"TOTAL","geo":"EA"},"frequency":"M","transformation":"reported_yoy_rate","unit":"% YoY","adapter_path":"validation/sources/eur_eurostat_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"EUR","dimension":"labour","role":"core","official_authority":"Eurostat","upstream_series_id":"une_rt_m","source_url":"https://ec.europa.eu/eurostat/databrowser/view/une_rt_m/default/table?lang=en","source_filters":{"freq":"M","s_adj":"SA","age":"TOTAL","unit":"PC_ACT","sex":"T","geo":"EA21"},"frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/eur_eurostat_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"GBP","dimension":"inflation","role":"core","official_authority":"Office for National Statistics","upstream_series_id":"D7G7","source_url":"https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23","frequency":"M","transformation":"reported_yoy_rate","unit":"% YoY","adapter_path":"validation/sources/gbp_ons_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"GBP","dimension":"labour","role":"core","official_authority":"Office for National Statistics","upstream_series_id":"MGSX","source_url":"https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms","frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/gbp_ons_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"JPY","dimension":"inflation","role":"core","official_authority":"Statistics Bureau of Japan / e-Stat","upstream_series_id":null,"source_url":null,"frequency":"M","transformation":null,"unit":null,"adapter_path":null,"requires_credential":null,"status":"PLANNED_UNVALIDATED"},
+    {"currency":"JPY","dimension":"labour","role":"core","official_authority":"Statistics Bureau of Japan / e-Stat","upstream_series_id":"0002060004","source_url":"https://www.stat.go.jp/english/data/roudou/results/month/index.html","frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/jpy_estat_unemployment.py","requires_credential":true,"credential_env":"E_STAT_APP_ID","status":"ADAPTER_READY_CREDENTIAL_REQUIRED"},
+    {"currency":"CHF","dimension":"inflation","role":"core","official_authority":"Swiss Federal Statistical Office","upstream_series_id":null,"source_url":null,"frequency":"M","transformation":null,"unit":null,"adapter_path":null,"requires_credential":null,"status":"PLANNED_UNVALIDATED"},
+    {"currency":"CHF","dimension":"labour","role":"core","official_authority":"Swiss Federal Statistical Office / SECO","upstream_series_id":null,"source_url":null,"frequency":"M","transformation":null,"unit":null,"adapter_path":null,"requires_credential":null,"status":"PLANNED_UNVALIDATED"},
+    {"currency":"CAD","dimension":"inflation","role":"core","official_authority":"Statistics Canada","upstream_series_id":"18-10-0004-01 / published 12-month headline change","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000402","frequency":"M","transformation":"reported_yoy_rate","unit":"% YoY","adapter_path":"validation/sources/cad_statcan_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"CAD","dimension":"labour","role":"core","official_authority":"Statistics Canada","upstream_series_id":"14-10-0287-03","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=14100287","frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/cad_statcan_core.py","requires_credential":false,"status":"VALIDATED"},
+    {"currency":"AUD","dimension":"inflation","role":"core","official_authority":"Australian Bureau of Statistics","upstream_series_id":"CPI Australia / quarterly All groups headline","source_url":"https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release","frequency":"Q","transformation":"reported_yoy_rate","unit":"% YoY","adapter_path":"validation/sources/aud_abs_core.py","requires_credential":false,"status":"ADAPTER_READY_LIVE_CI_PENDING"},
+    {"currency":"AUD","dimension":"labour","role":"core","official_authority":"Australian Bureau of Statistics","upstream_series_id":"Labour Force Australia / unemployment rate seasonally adjusted","source_url":"https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/latest-release","frequency":"M","transformation":"level","unit":"%","adapter_path":"validation/sources/aud_abs_core.py","requires_credential":false,"status":"ADAPTER_READY_LIVE_CI_PENDING"},
+    {"currency":"NZD","dimension":"inflation","role":"core","official_authority":"Stats NZ","upstream_series_id":null,"source_url":null,"frequency":"Q","transformation":null,"unit":null,"adapter_path":null,"requires_credential":null,"status":"PLANNED_UNVALIDATED"},
+    {"currency":"NZD","dimension":"labour","role":"core","official_authority":"Stats NZ","upstream_series_id":null,"source_url":null,"frequency":"M","transformation":null,"unit":null,"adapter_path":null,"requires_credential":null,"status":"PLANNED_UNVALIDATED"}
   ]
 }
