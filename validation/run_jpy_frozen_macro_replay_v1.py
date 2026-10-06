@@ -11,7 +11,6 @@ OUT=Path('validation/JPY_FROZEN_MACRO_REPLAY_V1_2026-10-06.json')
 CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']; H=(5,20,60)
 TH=0.20; MINOBS=8; WIN=80
 
-
 def med(xs):
     xs=[x for x in xs if x is not None and math.isfinite(float(x))]
     return statistics.median(xs) if xs else None
@@ -93,8 +92,8 @@ def main():
 
     gdp_lvl=synth(gdp,'reference_quarter','real_gdp_sa_qoq_pct')
     mach_lvl=synth(mach,'reference_month','private_core_orders_sa_mom_pct')
-    emp=[{'release_date':r['release_date'],'value':float(r['employment_10k_sa'])} for r in lab]
-    un=[{'release_date':r['release_date'],'value':float(r['unemployment_rate_sa'])} for r in lab]
+    emp=[{'release_date':r['release_date'],'value':float(r['employed_sa_10k'])} for r in lab]
+    un=[{'release_date':r['release_date'],'value':float(r['unemployment_rate_sa_pct'])} for r in lab]
 
     cps=sorted(set([r['release_date'] for r in gdp_lvl+mach_lvl+emp+un]))
     replay=[]
@@ -114,7 +113,6 @@ def main():
             last=x['macro_polarity']
     samples=eval_events(regime,fxrows,dates)
 
-    # Attribution uses the same asynchronous replay and next-reference-price timing, but each block's own non-zero regime entries.
     attrib={}
     for bn,key in [('Growth','Crescita'),('Labour','Lavoro')]:
         ev=[];last=None
