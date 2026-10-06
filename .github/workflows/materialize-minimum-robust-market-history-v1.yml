@@ -1,0 +1,40 @@
+name: Materialize Minimum Robust Market History V1
+
+on:
+  push:
+    branches:
+      - audit-minimum-robust-pit-dataset-2026-10-06
+    paths:
+      - 'validation/materialize_minimum_robust_market_history.py'
+      - '.github/workflows/materialize-minimum-robust-market-history-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize canonical FX and EUR rates history
+        run: python validation/materialize_minimum_robust_market_history.py
+      - name: Assert safety boundaries
+        run: |
+          git diff --exit-code -- live_data
+          git diff --exit-code -- validation/engine || true
+          test -f history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv
+          test -f history/pit_v1/EUR_RATES_2Y_10Y_ECB_SAME_BASIS_2016_2026.csv
+          test -f history/pit_v1/MARKET_HISTORY_MANIFEST.json
+      - name: Commit only canonical history outputs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv history/pit_v1/EUR_RATES_2Y_10Y_ECB_SAME_BASIS_2016_2026.csv history/pit_v1/MARKET_HISTORY_MANIFEST.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Materialize canonical PIT market history v1'
+          git push
