@@ -6,15 +6,23 @@
         "CLASS_OBJ": [
           {
             "@id": "tab",
-            "CLASS": [{"@code": "01", "@name": "Unemployment rate (Seasonally adjusted)"}]
+            "CLASS": [{"@code": "02", "@name": "Rate"}]
           },
           {
             "@id": "cat01",
-            "CLASS": [{"@code": "00", "@name": "Both sexes"}]
+            "CLASS": [{"@code": "000", "@name": "All industries"}]
           },
           {
             "@id": "cat02",
-            "CLASS": [{"@code": "15", "@name": "15 years old or more"}]
+            "CLASS": [{"@code": "0", "@name": "Both sexes"}]
+          },
+          {
+            "@id": "cat03",
+            "CLASS": [{"@code": "08", "@name": "Unemployed person"}]
+          },
+          {
+            "@id": "cat04",
+            "CLASS": [{"@code": "00", "@name": "15 years old or more"}]
           },
           {
             "@id": "area",
@@ -23,18 +31,18 @@
           {
             "@id": "time",
             "CLASS": [
-              {"@code": "202606", "@name": "2026 06"},
-              {"@code": "202607", "@name": "2026 07"},
-              {"@code": "202608", "@name": "2026 08"}
+              {"@code": "2026000606", "@name": "Jun. 2026"},
+              {"@code": "2026000707", "@name": "Jul. 2026"},
+              {"@code": "2026000808", "@name": "Aug. 2026"}
             ]
           }
         ]
       },
       "DATA_INF": {
         "VALUE": [
-          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202606", "@unit": "%", "$": "2.5"},
-          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202607", "@unit": "%", "$": "2.3"},
-          {"@tab": "01", "@cat01": "00", "@cat02": "15", "@area": "00000", "@time": "202608", "@unit": "%", "$": "2.5"}
+          {"@tab": "02", "@cat01": "000", "@cat02": "0", "@cat03": "08", "@cat04": "00", "@area": "00000", "@time": "2026000606", "@unit": "%", "$": "2.5"},
+          {"@tab": "02", "@cat01": "000", "@cat02": "0", "@cat03": "08", "@cat04": "00", "@area": "00000", "@time": "2026000707", "@unit": "%", "$": "2.4"},
+          {"@tab": "02", "@cat01": "000", "@cat02": "0", "@cat03": "08", "@cat04": "00", "@area": "00000", "@time": "2026000808", "@unit": "%", "$": "2.6"}
         ]
       }
     }
