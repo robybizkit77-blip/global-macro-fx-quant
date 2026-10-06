@@ -17,8 +17,8 @@ def check(dim,root):
  assert cj['frequency']=='M' and cj['macro_series_id'],cj
  assert aj['candidate_only'] is True and aj['live_data_written'] is False and aj['mode']=='fixture',aj
  if dim=='inflation':
-  assert cj['transformation']=='yoy_pct_from_index',cj
-  assert cj['observation_date']=='2026-08-01',cj
+  assert cj['transformation']=='reported_yoy_rate',cj
+  assert cj['observation_date']=='2026-08-01' and abs(float(cj['value'])-2.9)<1e-12,cj
  else:
   assert cj['transformation']=='level',cj
   assert cj['observation_date']=='2026-08-01' and abs(float(cj['value'])-7.0)<1e-12,cj
