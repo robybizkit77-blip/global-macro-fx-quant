@@ -1,0 +1,6 @@
+{
+  "observation_date": "2026-06-01",
+  "value": 5.6,
+  "source_url": "https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/",
+  "note": "Deterministic fixture matching official Stats NZ June 2026 seasonally adjusted unemployment rate."
+}
