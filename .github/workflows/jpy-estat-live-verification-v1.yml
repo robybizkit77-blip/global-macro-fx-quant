@@ -30,19 +30,25 @@ jobs:
             exit 1
           fi
 
-      - name: Probe live e-Stat labels
+      - name: Probe latest unemployed-person rate observations
         run: |
           python - <<'PY'
-          from validation.sources.jpy_estat_unemployment import fetch_payload, class_maps, values, labelled_value, DEFAULT_STATS_DATA_ID
+          from validation.sources.jpy_estat_unemployment import fetch_payload, class_maps, values, DEFAULT_STATS_DATA_ID
           import os, json
           p=fetch_payload(os.environ['E_STAT_APP_ID'], DEFAULT_STATS_DATA_ID)
           maps=class_maps(p)
-          print('DIMENSIONS')
-          for dim, mp in maps.items():
-              print(dim, json.dumps(list(mp.items())[:40], ensure_ascii=False))
-          print('SAMPLE_VALUES')
-          for v in values(p)[:80]:
-              print(json.dumps({'attrs':{k:v[k] for k in v if k.startswith('@')}, 'value':v.get('$'), 'label':labelled_value(v,maps)}, ensure_ascii=False))
+          rows=[]
+          for v in values(p):
+              if (str(v.get('@tab'))=='02' and str(v.get('@cat01'))=='000' and str(v.get('@cat02'))=='0' and
+                  str(v.get('@cat03'))=='08' and str(v.get('@cat04'))=='00' and str(v.get('@area'))=='00000'):
+                  tc=str(v.get('@time',''))
+                  rows.append((tc, maps.get('time',{}).get(tc,tc), v.get('$'), v.get('@unit')))
+          print('TARGET_CLASS', json.dumps({
+              'tab':maps.get('tab',{}).get('02'), 'cat01':maps.get('cat01',{}).get('000'),
+              'cat02':maps.get('cat02',{}).get('0'), 'cat03':maps.get('cat03',{}).get('08'),
+              'cat04':maps.get('cat04',{}).get('00'), 'area':maps.get('area',{}).get('00000')
+          }, ensure_ascii=False))
+          print('LATEST_TARGET_ROWS', json.dumps(rows[-24:], ensure_ascii=False))
           PY
 
       - name: Fetch official JPY unemployment and build candidate
