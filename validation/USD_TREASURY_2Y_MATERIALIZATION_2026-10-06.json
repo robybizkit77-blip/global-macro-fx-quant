@@ -1,0 +1,76 @@
+{
+  "schema": "GMFQ_USD_TREASURY_2Y_HISTORY_V1",
+  "status": "PASS",
+  "source": "U.S. Department of the Treasury Daily Treasury Par Yield Curve Rates",
+  "instrument": "2-year Treasury par yield",
+  "role": "observed front-end repricing proxy; NOT OIS/Fed funds expectation",
+  "coverage": {
+    "start": "2016-01-04",
+    "end": "2026-10-05",
+    "daily_observations": 2690
+  },
+  "annual_source_audit": [
+    {
+      "year": 2016,
+      "rows": 250,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2016/all?type=daily_treasury_yield_curve&field_tdr_date_value=2016&page=&_format=csv"
+    },
+    {
+      "year": 2017,
+      "rows": 250,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2017/all?type=daily_treasury_yield_curve&field_tdr_date_value=2017&page=&_format=csv"
+    },
+    {
+      "year": 2018,
+      "rows": 249,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2018/all?type=daily_treasury_yield_curve&field_tdr_date_value=2018&page=&_format=csv"
+    },
+    {
+      "year": 2019,
+      "rows": 250,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2019/all?type=daily_treasury_yield_curve&field_tdr_date_value=2019&page=&_format=csv"
+    },
+    {
+      "year": 2020,
+      "rows": 251,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2020/all?type=daily_treasury_yield_curve&field_tdr_date_value=2020&page=&_format=csv"
+    },
+    {
+      "year": 2021,
+      "rows": 251,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2021/all?type=daily_treasury_yield_curve&field_tdr_date_value=2021&page=&_format=csv"
+    },
+    {
+      "year": 2022,
+      "rows": 249,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2022/all?type=daily_treasury_yield_curve&field_tdr_date_value=2022&page=&_format=csv"
+    },
+    {
+      "year": 2023,
+      "rows": 250,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2023/all?type=daily_treasury_yield_curve&field_tdr_date_value=2023&page=&_format=csv"
+    },
+    {
+      "year": 2024,
+      "rows": 250,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2024/all?type=daily_treasury_yield_curve&field_tdr_date_value=2024&page=&_format=csv"
+    },
+    {
+      "year": 2025,
+      "rows": 249,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2025/all?type=daily_treasury_yield_curve&field_tdr_date_value=2025&page=&_format=csv"
+    },
+    {
+      "year": 2026,
+      "rows": 191,
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page=&_format=csv"
+    }
+  ],
+  "output": "history/pit_v1/USD_TREASURY_PAR_2Y_DAILY_2016_2026.csv",
+  "guardrails": [
+    "single official instrument family across all years",
+    "no interpolation",
+    "no synthetic OIS",
+    "no engine/live-data changes"
+  ]
+}
