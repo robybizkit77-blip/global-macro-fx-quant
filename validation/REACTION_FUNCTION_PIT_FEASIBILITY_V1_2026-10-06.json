@@ -1,0 +1,111 @@
+{
+  "schema": "GMFQ_REACTION_FUNCTION_PIT_FEASIBILITY_V1",
+  "created_at": "2026-10-06",
+  "status": "PARTIAL_TESTABILITY_WITH_WITHHELD_MEDIATION_CHANNELS",
+  "scope": "Audit of whether each G8 central-bank reaction-function labour channel can be tested honestly with the currently frozen PIT dataset. No revised-history substitution, no synthetic proxies, no parameter fitting.",
+  "engine": {
+    "commit": "ff52198a75cc67e7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "threshold_tuning": false
+  },
+  "dataset_rule": "Only first-release/vintage PIT observations available at checkpoint may vote. Missing mediation variables are WITHHELD, not backfilled from revised history.",
+  "banks": {
+    "FED": {
+      "currency": "USD",
+      "reaction_class": "DIRECT_DUAL_MANDATE",
+      "required_labour_channel": "direct labour -> Fed reaction",
+      "current_pit_status": "WITHHELD",
+      "reason": "USD labour block is not PIT-eligible in the frozen minimum dataset.",
+      "next_required_data": ["PIT first-release/vintage employment/unemployment labour series"]
+    },
+    "ECB": {
+      "currency": "EUR",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_labour_channel": "labour -> wages -> services/domestic inflation -> ECB reaction",
+      "current_pit_status": "MEDIATED_TEST_WITHHELD",
+      "available_now": ["EA_UNEMP_history_value", "EA_EMPLOYMENT_history_value"],
+      "missing_or_withheld": ["EA_NEGOTIATED_WAGES_YOY_history_value", "PIT services/domestic inflation mediation series"],
+      "reason": "Headline labour can be tested only as a diagnostic standalone block; the reaction-function-aware mediated path cannot yet be tested without PIT wages/services inflation.",
+      "existing_direct_labour_oos": {
+        "5d_hit_rate": 0.375,
+        "20d_hit_rate": 0.125,
+        "60d_hit_rate": 0.2857142857142857
+      },
+      "interpretation": "Do not conclude that Euro-area labour is economically useless. The available standalone labour test is structurally incomplete relative to the ECB reaction function.",
+      "next_required_data": ["Euro-area negotiated wages PIT/vintage history", "Euro-area services/domestic inflation PIT release history"]
+    },
+    "BOE": {
+      "currency": "GBP",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_labour_channel": "labour tightness -> wages -> services inflation -> BoE reaction",
+      "current_pit_status": "MEDIATED_TEST_WITHHELD",
+      "available_now": ["UK_UNEMP_RATE_history_value", "UK_EMPLOYMENT_RATE_history_value"],
+      "missing_or_withheld": ["PIT wage-growth series", "PIT services-inflation series"],
+      "reason": "ONS labour vintages are available, but the wage/services bridge required by the BoE reaction function is not yet in the frozen PIT dataset.",
+      "next_required_data": ["UK wage growth first-release/vintage history", "UK services CPI first-release history"]
+    },
+    "BOC": {
+      "currency": "CAD",
+      "reaction_class": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "required_labour_channel": "labour/slack -> BoC reaction",
+      "current_pit_status": "DIRECT_LABOUR_TESTABLE",
+      "available_now": ["CA_EMPLOYMENT_history_value", "CA_UNEMP_RATE_history_value"],
+      "existing_labour_oos": {
+        "5d_hit_rate": 0.4117647058823529,
+        "20d_hit_rate": 0.6470588235294118,
+        "60d_hit_rate": 0.625,
+        "20d_mean_signed_log_return": 0.003587720227942742,
+        "60d_mean_signed_log_return": 0.0022551295253373394
+      },
+      "interpretation": "CAD is currently the cleanest available example of a labour block whose direct policy relevance is compatible with the central-bank reaction function."
+    },
+    "RBA": {
+      "currency": "AUD",
+      "reaction_class": "DIRECT_DUAL_MANDATE",
+      "required_labour_channel": "labour/full-employment gap -> RBA reaction",
+      "current_pit_status": "WITHHELD",
+      "reason": "Historical AUD PIT macro is withheld in the frozen minimum dataset despite live-source certification.",
+      "next_required_data": ["AUD historical PIT labour archive"]
+    },
+    "RBNZ": {
+      "currency": "NZD",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_labour_channel": "labour/slack -> inflation outlook -> RBNZ reaction",
+      "current_pit_status": "WITHHELD",
+      "reason": "Historical NZD PIT macro is withheld; no honest mediated-channel test is currently possible.",
+      "next_required_data": ["NZD historical PIT labour/slack data", "NZD PIT inflation mediation data"]
+    },
+    "SNB": {
+      "currency": "CHF",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_labour_channel": "labour/economic activity -> inflation forecast -> SNB reaction",
+      "current_pit_status": "WITHHELD",
+      "reason": "Historical CHF PIT macro is withheld; live-source certification is not historical PIT evidence.",
+      "next_required_data": ["CHF historical PIT labour/activity data", "CHF PIT inflation/forecast bridge"]
+    },
+    "BOJ": {
+      "currency": "JPY",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_labour_channel": "labour tightness -> wages -> sustainable inflation -> BoJ reaction",
+      "current_pit_status": "WITHHELD_PENDING_EVENT_TIME_POLICY",
+      "reason": "JPY historical feasibility exists, but labour event-time policy remains unresolved and wages mediation is not yet frozen PIT.",
+      "next_required_data": ["verified JPY labour event-time policy", "JPY wage first-release history", "JPY sustainable-inflation mediation series"]
+    }
+  },
+  "key_conclusion": "The ECB hypothesis cannot yet be accepted or rejected from the current PIT backtest. The weak EUR standalone Labour result is a valid diagnostic, but it is not a valid test of the ECB's labour-through-wages-and-services-inflation reaction channel.",
+  "priority_next_build": [
+    "EUR negotiated-wages PIT/vintage archive",
+    "EUR services/domestic-inflation first-release PIT archive",
+    "then rerun direct-labour versus mediated-labour OOS without changing frozen thresholds"
+  ],
+  "guardrails": [
+    "No revised-history fallback",
+    "No synthetic mediation proxy",
+    "No threshold tuning",
+    "No retrospective reweighting",
+    "No changes to live data or engine rules"
+  ],
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_oos_baseline": false
+}
