@@ -1,0 +1,31 @@
+name: CAD Headline CPI PIT V1
+on:
+  push:
+    paths:
+      - 'validation/materialize_cad_headline_cpi_pit_v1.py'
+      - '.github/workflows/cad-headline-cpi-pit-v1.yml'
+      - 'history/pit_v1/CAD_CORE_INFLATION_FIRST_RELEASE_2017_2026.csv'
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize CAD headline CPI PIT
+        run: python validation/materialize_cad_headline_cpi_pit_v1.py
+      - name: Strict engine/live-data guard
+        run: git diff --exit-code -- engine live_data
+      - name: Commit evidence
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add history/pit_v1/CAD_HEADLINE_CPI_FIRST_RELEASE_2017_2026.csv validation/CAD_HEADLINE_CPI_PIT_MATERIALIZATION_2026-10-06.json
+          git diff --cached --quiet || git commit -m 'Materialize CAD headline CPI PIT'
+          git pull --rebase origin audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
