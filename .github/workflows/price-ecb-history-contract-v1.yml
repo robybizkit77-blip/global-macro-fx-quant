@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   ecb-history-contract:
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Build frozen ECB G8 history and validate OOS anchors
+      - name: Rebuild ECB G8 history and validate frozen snapshot
         run: |
           mkdir -p /tmp/gmfq-ecb-fx-history
           python validation/build_ecb_fx_history.py \
@@ -29,7 +29,7 @@ jobs:
             --output /tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json \
             --summary /tmp/gmfq-ecb-fx-history/summary.json
 
-      - name: Assert historical price contract
+      - name: Assert historical price contract and frozen file parity
         run: |
           python - <<'PY'
           import json
@@ -47,30 +47,16 @@ jobs:
           assert s['live_data_modified'] is False, s
           assert s['model_rules_modified'] is False, s
           assert s['rules_fingerprint_expected_unchanged']=='3356baf0', s
+          generated=Path('/tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json').read_bytes()
+          frozen=Path('history/ECB_FX_G8_2018_2026_CANONICAL_V1.json').read_bytes()
+          assert generated==frozen, 'Frozen ECB history differs from deterministic rebuild'
+          frozen_summary=json.loads(Path('validation/ECB_FX_HISTORY_VALIDATION_V1_2026-10-06.json').read_text())
+          assert frozen_summary==s, (frozen_summary,s)
           print(json.dumps(s, indent=2))
           PY
 
-      - name: Confirm builder itself did not touch repository
+      - name: Confirm repository remained untouched
         run: git diff --exit-code
-
-      - name: Freeze canonical historical evidence on validation branch
-        shell: bash
-        run: |
-          mkdir -p history validation
-          cp /tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json \
-            history/ECB_FX_G8_2018_2026_CANONICAL_V1.json
-          cp /tmp/gmfq-ecb-fx-history/summary.json \
-            validation/ECB_FX_HISTORY_VALIDATION_V1_2026-10-06.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history/ECB_FX_G8_2018_2026_CANONICAL_V1.json \
-                  validation/ECB_FX_HISTORY_VALIDATION_V1_2026-10-06.json
-          if git diff --cached --quiet; then
-            echo "Canonical ECB snapshot already frozen; no commit needed."
-          else
-            git commit -m "Freeze canonical ECB G8 FX history 2018-2026 [skip ci]"
-            git push origin HEAD:validation-price-ecb-history-v1-2026-10-06
-          fi
 
       - name: Upload reproducibility evidence
         uses: actions/upload-artifact@v4
