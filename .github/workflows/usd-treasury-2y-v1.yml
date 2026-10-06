@@ -1,0 +1,32 @@
+name: USD Treasury 2Y History V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/materialize_us_treasury_2y_v1.py'
+      - '.github/workflows/usd-treasury-2y-v1.yml'
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize official US Treasury 2Y history
+        run: python validation/materialize_us_treasury_2y_v1.py
+      - name: Strict engine/live-data guard
+        run: git diff --exit-code HEAD~1 -- engine live_data
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add history/pit_v1/USD_TREASURY_PAR_2Y_DAILY_2016_2026.csv validation/USD_TREASURY_2Y_MATERIALIZATION_2026-10-06.json
+          git diff --cached --quiet || git commit -m 'Add official US Treasury 2Y history'
+          git pull --rebase origin audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
