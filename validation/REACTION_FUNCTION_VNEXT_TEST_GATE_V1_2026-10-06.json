@@ -1,0 +1,44 @@
+{
+  "schema":"GMFQ_REACTION_FUNCTION_VNEXT_TEST_GATE_V1",
+  "status":"PREDECLARED_TEST_GATE",
+  "created_at":"2026-10-06",
+  "baseline":{"engine_commit":"ff52198a75cc67f7dae96fc2bbf65623f170791c","rules_fingerprint":"3356baf0"},
+  "purpose":"Prevent data-mined promotion of bank-specific reaction-function logic.",
+  "required_comparisons":[
+    "Frozen direct Macro baseline on identical eligible events",
+    "Reaction-aware interpretation state without rates gating",
+    "Reaction-aware interpretation plus separately observed front-end repricing state",
+    "Divergence subset reported separately rather than discarded"
+  ],
+  "fixed_evaluation":{
+    "fx_horizons_market_days":[5,20,60],
+    "walkforward":"first 40 percent descriptive history, then three chronological OOS folds where sample permits",
+    "uncertainty":["bootstrap mean CI","Wilson hit-rate interval","median","year/half stability where sample permits"],
+    "benchmark":"equal-weight G8 basket unless a pre-existing canonical benchmark applies",
+    "entry_timing":"strictly after all information used by the tested state is observable"
+  },
+  "promotion_requirements":[
+    "No look-ahead or revised-history fallback",
+    "No threshold tuning using the evaluation sample",
+    "No post-hoc weight changes from subblock results",
+    "No bank-specific rule promoted solely from full-sample statistics",
+    "OOS result must improve interpretability and not materially degrade robustness versus frozen baseline",
+    "Statistical uncertainty must be reported even if point estimates improve",
+    "Small-n findings remain DESCRIPTIVE_SIGNAL_NOT_STATISTICALLY_LOCKED",
+    "Failed bank-specific rules remain documented and are not replaced by another window until a new predeclared hypothesis exists"
+  ],
+  "known_bank_status":{
+    "ECB":"candidate architecture; partial PIT evidence",
+    "BOE":"simple 5d OIS confirmation rejected",
+    "BOC":"simple 5d 2Y confirmation rejected",
+    "FED":"comparison withheld until USD Labour PIT exists",
+    "RBA":"withheld historical PIT",
+    "RBNZ":"withheld historical PIT",
+    "SNB":"withheld historical PIT",
+    "BOJ":"withheld pending event-time/wage mediation"
+  },
+  "promotion_target":"separate vNext branch/model version only; never silently mutate frozen v9.3",
+  "changes_engine_rules":false,
+  "changes_live_data":false,
+  "changes_oos_baseline":false
+}
