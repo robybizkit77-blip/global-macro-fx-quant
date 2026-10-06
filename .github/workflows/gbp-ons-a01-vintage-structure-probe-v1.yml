@@ -1,0 +1,50 @@
+name: GBP ONS A01 Vintage Structure Probe V1
+
+on:
+  push:
+    branches:
+      - validation-pit-gbp-ons-archive-v1-2026-10-06
+    paths:
+      - 'validation/probe_gbp_a01_vintage_structure.py'
+      - '.github/workflows/gbp-ons-a01-vintage-structure-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook readers
+        run: pip install --disable-pip-version-check -q pandas openpyxl xlrd beautifulsoup4 requests
+      - name: Probe archived A01 vintages
+        run: python validation/probe_gbp_a01_vintage_structure.py
+      - name: Assert vintage contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-gbp-ons-pit/a01_vintage_structure_probe.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['versions_discovered']>=70,x
+          assert len(x['targets'])==3,x
+          assert all(t['status']=='PASS' and t['candidate_rows'] for t in x['targets']),x
+          assert x['guardrails']['uses_current_revised_timeseries_for_values'] is False,x
+          assert x['guardrails']['rules_fingerprint_expected_unchanged']=='3356baf0',x
+          print(json.dumps({'versions':x['versions_discovered'],'targets':[{'release':t['target_release'],'snapshot':t['selected_snapshot']['superseded_at'],'sheets':t['sheet_names'],'hits':len(t['candidate_rows'])} for t in x['targets']]},indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-a01-vintage-structure-probe-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-gbp-ons-pit/a01_vintage_structure_probe.json
