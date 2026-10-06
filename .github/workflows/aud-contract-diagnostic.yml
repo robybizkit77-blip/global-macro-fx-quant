@@ -1,0 +1,47 @@
+name: AUD Macro Contract Diagnostic
+
+on:
+  push:
+    branches:
+      - validation-aud-abs-v1-2026-10-06
+    paths:
+      - '.github/workflows/aud-contract-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Print AUD canonical macro contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          print('HEATMAP_AUD=', json.dumps(heat['currencies']['AUD'], indent=2, ensure_ascii=False))
+          rows=[]
+          for r in series['AUD']:
+              if not isinstance(r,dict):
+                  continue
+              obs=r.get('observations') or r.get('data') or r.get('history') or []
+              first=obs[0] if isinstance(obs,list) and obs else None
+              last=obs[-1] if isinstance(obs,list) and obs else None
+              rows.append({
+                  'id':r.get('id'),
+                  'label':r.get('label'),
+                  'name':r.get('name'),
+                  'frequency':r.get('frequency'),
+                  'source_file':r.get('source_file'),
+                  'first':first,
+                  'last':last,
+              })
+          print('SERIES_AUD=', json.dumps(rows, indent=2, ensure_ascii=False))
+          PY
