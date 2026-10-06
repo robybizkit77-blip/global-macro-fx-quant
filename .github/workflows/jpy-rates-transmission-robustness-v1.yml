@@ -1,0 +1,47 @@
+name: JPY Rates Transmission Robustness V1
+on:
+  push:
+    branches:
+      - research-jpy-rates-transmission-v1-2026-10-07
+    paths:
+      - validation/run_jpy_rates_transmission_robustness_v1.py
+      - .github/workflows/jpy-rates-transmission-robustness-v1.yml
+permissions:
+  contents: write
+jobs:
+  robustness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run OOS robustness
+        run: python validation/run_jpy_rates_transmission_robustness_v1.py
+      - name: Require diagnostic pass
+        run: |
+          python - <<'PY'
+          import json
+          p='validation/JPY_RATES_TRANSMISSION_ROBUSTNESS_V1_2026-10-07.json'
+          x=json.load(open(p,encoding='utf-8'))
+          assert x['status']=='PASS_DIAGNOSTIC_NOT_PROMOTED'
+          assert x['oos_events']==29
+          assert x['changes_engine_rules'] is False
+          assert x['changes_live_data'] is False
+          assert x['changes_oos_baseline'] is False
+          PY
+      - name: Protected-file guard
+        run: |
+          if git diff --name-only HEAD^ | grep -E '^(engine/|live_data/|validation/CANONICAL_ENGINE_OOS_T0_V3_2026-10-01.json$)'; then
+            echo 'Protected runtime/OOS files changed'; exit 1
+          fi
+      - name: Commit robustness evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/JPY_RATES_TRANSMISSION_ROBUSTNESS_V1_2026-10-07.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Record JPY rates transmission robustness evidence'
+          git push
