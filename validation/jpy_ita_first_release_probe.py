@@ -42,25 +42,44 @@ def fetch_pdf(url):
     return status,raw,text
 
 
+def normalize_digits(text):
+    trans=str.maketrans("０１２３４５６７８９．","0123456789.")
+    return text.translate(trans)
+
+
 def parse_japanese_date(text):
-    # Gregorian publication dates appear in the archived press PDFs as ２０１９年３月１３日 etc.
-    trans=str.maketrans("０１２３４５６７８９","0123456789")
-    z=text.translate(trans)
-    m=re.search(r"(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日",z)
-    if not m:return None
-    return date(int(m.group(1)),int(m.group(2)),int(m.group(3))).isoformat()
+    # METI press PDFs may extract dates with spaces between every digit,
+    # e.g. "２ ０ ２ ３ 年 ３ 月 １ ７ 日". Normalize digits and allow
+    # arbitrary whitespace inside each numeric component.
+    z=normalize_digits(text)
+    m=re.search(
+        r"(2\s*0\s*\d\s*\d)\s*年\s*(\d(?:\s*\d)?)\s*月\s*(\d(?:\s*\d)?)\s*日",
+        z,
+    )
+    if not m:
+        return None
+    year=int(re.sub(r"\s+","",m.group(1)))
+    month=int(re.sub(r"\s+","",m.group(2)))
+    day=int(re.sub(r"\s+","",m.group(3)))
+    return date(year,month,day).isoformat()
 
 
 def parse_index(text):
-    trans=str.maketrans("０１２３４５６７８９．","0123456789.")
-    z=text.translate(trans)
+    z=normalize_digits(text)
+    # Prefer the narrative first-release sentence, which identifies the
+    # seasonally adjusted headline index unambiguously and avoids chart-axis
+    # numbers or concatenated table cells in PDF text extraction.
     patterns=[
+        r"第3次産業活動指数は[、,\s]*([0-9]{2,3}(?:\.[0-9]+)?)",
+        r"第３次産業活動指数は[、,\s]*([0-9]{2,3}(?:\.[0-9]+)?)",
+        r"Tertiary\s*Industry[^\n]{0,80}?([0-9]{2,3}(?:\.[0-9]+)?)",
+        r"第3次産業活動指数[^\n]{0,80}?([0-9]{2,3}(?:\.[0-9]+)?)",
         r"第３次産業活動指数[^\n]{0,80}?([0-9]{2,3}(?:\.[0-9]+)?)",
-        r"Indices of Tertiary Industry Activity[^\n]{0,120}?([0-9]{2,3}(?:\.[0-9]+)?)",
     ]
     for p in patterns:
         m=re.search(p,z,re.I)
-        if m:return float(m.group(1))
+        if m:
+            return float(m.group(1))
     return None
 
 
