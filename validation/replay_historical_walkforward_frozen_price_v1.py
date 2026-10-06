@@ -77,9 +77,13 @@ def load_archive(path):
     return json.loads(raw)
 
 def dt_key(x):
-    s=str(x)[:10]
-    try:return date.fromisoformat(s)
-    except:return None
+    s=str(x).strip()
+    try:
+        if re.fullmatch(r'\d{4}-\d{2}',s):
+            return date(int(s[:4]),int(s[5:7]),1)
+        return date.fromisoformat(s[:10])
+    except:
+        return None
 
 def truncate_series(s,checkpoint):
     dates=s.get('dates') or [] ; vals=s.get('values') or []
@@ -119,7 +123,6 @@ def main():
     ap.add_argument('--output',required=True)
     args=ap.parse_args()
     arc=load_archive(args.macro)
-    # Archive may be directly currency map or wrapped.
     S=arc.get('series',arc.get('currencies',arc)) if isinstance(arc,dict) else arc
     price=json.loads(Path(args.price).read_text())
     rows=price['rows']; pdates=[date.fromisoformat(r['Date']) for r in rows]
