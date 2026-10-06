@@ -14,6 +14,7 @@ WITHHELD={'2025-10':'BLS did not publish an October 2025 CPI news release becaus
 UA='Mozilla/5.0 GMFQ-PIT-Audit/1.0 (research; contact via repository)'
 MONTH_LIST=['january','february','march','april','may','june','july','august','september','october','november','december']
 MONTHS={m:i for i,m in enumerate(MONTH_LIST,1)}
+MONTH_ALT='|'.join(m.title() for m in MONTH_LIST)
 class TP(HTMLParser):
     def __init__(self): super().__init__(); self.parts=[]
     def handle_data(self,d): self.parts.append(d)
@@ -39,37 +40,39 @@ def urls():
             out.add(u)
     return sorted(out)
 def ref_period(text):
-    p=re.search(r'CONSUMER PRICE INDEX\s*[-–—]+\s*([A-Za-z]+)\s+(\d{4})',text,re.I)
+    # Older BLS pages often decode the title separator as the replacement char '�'.
+    # Require a real month/year immediately after the CPI title, independent of separator encoding.
+    p=re.search(rf'CONSUMER PRICE INDEX.{{0,15}}?\b({MONTH_ALT})\s+(\d{{4}})\b',text,re.I)
     if not p: raise ValueError('reference title not found')
     m=MONTHS.get(p.group(1).lower()); y=int(p.group(2))
     if not m: raise ValueError('unknown month')
     return y,m,p.start()
 def parse(text,u):
     y,m,pos=ref_period(text)
-    ts=re.search(r'8:30\s*a\.m\.\s*\((?:ET|EST|EDT)\)\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
-    if not ts: ts=re.search(r'8:30\s*a\.m\.\s*(?:\((?:ET|EST|EDT)\))?\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
+    # BLS archive headers vary: some have weekday, others simply "(ET) May 11, 2022".
+    ts=re.search(r'8:30\s*a\.m\.\s*\((?:ET|EST|EDT)\)\s*(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*)?([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
+    if not ts:
+        ts=re.search(r'8:30\s*a\.m\.\s*(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s*)?([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
     if not ts: raise ValueError('release timestamp not found')
     rd=datetime.strptime(ts.group(1),'%B %d, %Y').date().isoformat()
-    body=text[pos:pos+7000]
-    # First-published YoY all-items level.
+    body=text[pos:pos+15000]
     h=None
     for pat in [
       r'Over the last 12 months, the all items index (?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent',
-      r'all items index (?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent (?:over|for) the (?:12 months|year)',
-      r'all items index.{0,120}?12-month.{0,80}?(\d+(?:\.\d+)?)\s+percent']:
+      r'all items index (?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent (?:over|for) the (?:last )?(?:12 months|year)',
+      r'all items index.{0,140}?12-month.{0,100}?(\d+(?:\.\d+)?)\s+percent']:
         q=re.search(pat,body,re.I)
         if q: h=float(q.group(1)); break
     if h is None:
         q=re.search(r'Over the last 12 months, the all items index (?:decreased|fell)\s+(\d+(?:\.\d+)?)\s+percent',body,re.I)
         if q: h=-float(q.group(1))
     if h is None: raise ValueError('headline CPI YoY not found')
-    # First-published core YoY level.
     c=None
-    core_phrase=r'(?:index for )?all items less food and energy'
+    core_phrase=r'(?:index for\s+)?all items less food and energy(?:\s+index)?'
     for pat in [
-      core_phrase+r'.{0,220}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the last 12 months',
-      core_phrase+r'.{0,220}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the year',
-      core_phrase+r'.{0,220}?12-month.{0,100}?(\d+(?:\.\d+)?)\s+percent']:
+      core_phrase+r'.{0,260}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the (?:last|past) 12 months',
+      core_phrase+r'.{0,260}?(?:increased|rose)\s+(\d+(?:\.\d+)?)\s+percent over the year',
+      core_phrase+r'.{0,260}?12-month.{0,120}?(\d+(?:\.\d+)?)\s+percent']:
         q=re.search(pat,body,re.I)
         if q: c=float(q.group(1)); break
     if c is None: raise ValueError('core CPI YoY not found')
