@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_EUR_HICP_SERVICES_PIT_MATERIALIZATION_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "source": "Eurostat HICP first published data",
+  "dataset": "prc_hicp_fpd",
+  "resolved_dimensions": {
+    "unit": [
+      "RCH_A",
+      "Annual rate of change"
+    ],
+    "classification_dimension": "coicop18",
+    "services": [
+      "CP013",
+      "Services for processing primary goods for food and non-alcoholic beverages"
+    ]
+  },
+  "geo_policy": "EA20 through 2025-12; EA21 from 2026-01; EA/U2 only fallback if needed",
+  "queries": [
+    {
+      "geo": "EA20",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_fpd?lang=en&geo=EA20&unit=RCH_A&coicop18=CP013&sinceTimePeriod=2024-01",
+      "rows": 0
+    },
+    {
+      "geo": "EA21",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_fpd?lang=en&geo=EA21&unit=RCH_A&coicop18=CP013&sinceTimePeriod=2024-01",
+      "rows": 12
+    },
+    {
+      "geo": "EA",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_fpd?lang=en&geo=EA&unit=RCH_A&coicop18=CP013&sinceTimePeriod=2024-01",
+      "rows": 0
+    },
+    {
+      "geo": "U2",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_fpd?lang=en&geo=U2&unit=RCH_A&coicop18=CP013&sinceTimePeriod=2024-01",
+      "rows": 0
+    }
+  ],
+  "rows": 12,
+  "first_reference_month": "2024-01",
+  "last_reference_month": "2024-12",
+  "pit_policy": "Uses Eurostat first-published HICP dataset only; no revised-history substitution.",
+  "metadata_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_fpd?lang=en&geo=EA&unit=RCH_A&sinceTimePeriod=2024-01",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "threshold_tuning": false
+}
