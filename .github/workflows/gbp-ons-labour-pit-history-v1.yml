@@ -1,0 +1,56 @@
+name: GBP ONS Labour PIT History V1
+
+on:
+  push:
+    branches:
+      - validation-pit-gbp-ons-archive-v1-2026-10-06
+    paths:
+      - 'validation/build_gbp_ons_labour_pit_history.py'
+      - '.github/workflows/gbp-ons-labour-pit-history-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build GBP labour first-release PIT history
+        run: |
+          mkdir -p /tmp/gmfq-gbp-ons-pit
+          python validation/build_gbp_ons_labour_pit_history.py \
+            --start september2026 \
+            --end august2020 \
+            --output /tmp/gmfq-gbp-ons-pit/GBP_ONS_LABOUR_PIT_HISTORY_V1_2020_2026.json
+      - name: Assert PIT history contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-gbp-ons-pit/GBP_ONS_LABOUR_PIT_HISTORY_V1_2020_2026.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['release_count']>=70,x
+          assert x['valid_release_count']==x['release_count'],x
+          assert x['guardrails']['uses_revised_timeseries_api_for_values'] is False,x
+          assert x['guardrails']['live_data_modified'] is False,x
+          assert x['guardrails']['model_rules_modified'] is False,x
+          assert x['guardrails']['rules_fingerprint_expected_unchanged']=='3356baf0',x
+          assert x['rows'][0]['slug_period']=='september2026',x['rows'][0]
+          assert x['rows'][-1]['slug_period']=='august2020',x['rows'][-1]
+          print(json.dumps({'release_count':x['release_count'],'first':x['rows'][0],'last':x['rows'][-1]},indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-labour-pit-history-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-gbp-ons-pit/GBP_ONS_LABOUR_PIT_HISTORY_V1_2020_2026.json
