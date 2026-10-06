@@ -1,0 +1,28 @@
+{
+  "schema": "GMFQ_JPY_LABOUR_PIT_ACTIVATION_V1",
+  "status": "PASS_PARTIAL",
+  "coverage": {
+    "pit_ready_start": "2018-01",
+    "pit_ready_end": "2023-07",
+    "pit_ready_months": 67,
+    "requested_end": "2026-08",
+    "withheld_months": 37
+  },
+  "withheld_after_archive_change": {
+    "start": "2023-08",
+    "end": "2026-08",
+    "status": "WITHHELD_PENDING_NEW_OFFICIAL_ARCHIVE_ROUTE",
+    "reason": "The Statistics Bureau legacy historical monthly overview page stopped updating in September 2023; the old immutable PDF URL route no longer exists for later months. Current/revised tables are not substituted."
+  },
+  "errors": [],
+  "missing": [],
+  "duplicates": [],
+  "event_time_policy": "Official Basic Tabulation release time 08:30 JST; release date from each archived preliminary PDF.",
+  "revised_history_fallback_used": false,
+  "pit_active_labour_partial": true,
+  "full_jpy_labour_2018_2026_ready": false,
+  "full_jpy_macro_ready": false,
+  "reason_full_macro_not_ready": "JPY Growth still requires two independently validated PIT first-release series; JPY Labour post-2023-07 also needs a new immutable official archive route.",
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
