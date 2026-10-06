@@ -1,0 +1,1091 @@
+{
+  "schema": "GMFQ_CAD_REACTION_FUNCTION_STATE_REPLAY_VNEXT_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Diagnostic vNext state replay for CAD: frozen first-release Labour -> BoC interpretation -> observed 5-market-day 2Y repricing -> FX outcomes. Rates are state, never a filter.",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "input_provenance": {
+    "labour": "https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/engine-freeze-v1-2026-10-02/validation/PIT_SIGNAL_SENSITIVITY_CA_LABOUR_FULL_2020_2026_V1_2026-10-02.json",
+    "rates": "https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/engine-freeze-v1-2026-10-02/validation/cad_rates_pit/CA_BOC_BENCHMARK_RATES_DAILY_2020_2026_V1.csv",
+    "fx": "history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv"
+  },
+  "method": {
+    "labour_signal": "unchanged frozen PIT Labour direction",
+    "cb_interpretation": "direct employment relevance under BoC reaction-function map",
+    "rates_window_market_days": 5,
+    "rates_role": "observed repricing state, not confirmation gate",
+    "fx_entry": "first ECB FX reference day after rates window",
+    "horizons_days": [
+      5,
+      20,
+      60
+    ],
+    "threshold_tuning": false,
+    "parameter_fitting": false
+  },
+  "counts": {
+    "events": 54,
+    "CONVERGENT": 21,
+    "DIVERGENT": 31,
+    "RATES_FLAT": 2
+  },
+  "all": {
+    "5d": {
+      "n": 54,
+      "hit_rate": 0.5925925925925926,
+      "mean": 0.0007809207625223531,
+      "median": 0.0008720827905600915
+    },
+    "20d": {
+      "n": 53,
+      "hit_rate": 0.5471698113207547,
+      "mean": 0.001114119253036024,
+      "median": 0.002142218593564701
+    },
+    "60d": {
+      "n": 51,
+      "hit_rate": 0.6470588235294118,
+      "mean": 0.001154718538383893,
+      "median": 0.0031080695117140385
+    }
+  },
+  "by_state": {
+    "CONVERGENT": {
+      "5d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": 0.0005656544919712536,
+        "median": -0.00018164266318855836
+      },
+      "20d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": 0.002438909408834048,
+        "median": -0.001147824750645986
+      },
+      "60d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": -0.0003643106091944682,
+        "median": -0.0023140277902542242
+      }
+    },
+    "DIVERGENT": {
+      "5d": {
+        "n": 31,
+        "hit_rate": 0.6774193548387096,
+        "mean": 0.0010734204812339661,
+        "median": 0.001154296532363867
+      },
+      "20d": {
+        "n": 30,
+        "hit_rate": 0.5666666666666667,
+        "mean": -0.00010883760251795881,
+        "median": 0.002672516572282538
+      },
+      "60d": {
+        "n": 28,
+        "hit_rate": 0.75,
+        "mean": 0.0016020197191838124,
+        "median": 0.004314608864775092
+      }
+    },
+    "RATES_FLAT": {
+      "5d": {
+        "n": 2,
+        "hit_rate": 0.5,
+        "mean": -0.0014925290367211034,
+        "median": -0.0014925290367211034
+      },
+      "20d": {
+        "n": 2,
+        "hit_rate": 1.0,
+        "mean": 0.00554817545046651,
+        "median": 0.00554817545046651
+      },
+      "60d": {
+        "n": 2,
+        "hit_rate": 1.0,
+        "mean": 0.010842308056757814,
+        "median": 0.010842308056757814
+      }
+    }
+  },
+  "rows": [
+    {
+      "checkpoint": "2021-01-08",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-01-11",
+        "end_date": "2021-01-18",
+        "start_2y": 0.19,
+        "end_2y": 0.15,
+        "delta_2y": -0.04000000000000001,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2021-01-19",
+      "signed_5d": 0.0029461185459950406,
+      "signed_20d": -0.001582467230546435,
+      "signed_60d": -0.029022216195920915
+    },
+    {
+      "checkpoint": "2021-02-05",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-02-08",
+        "end_date": "2021-02-16",
+        "start_2y": 0.2,
+        "end_2y": 0.21,
+        "delta_2y": 0.009999999999999981,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-02-17",
+      "signed_5d": -0.0007500423386400318,
+      "signed_20d": -0.02868961682122065,
+      "signed_60d": -0.04690326551838337
+    },
+    {
+      "checkpoint": "2021-03-12",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-03-15",
+        "end_date": "2021-03-22",
+        "start_2y": 0.31,
+        "end_2y": 0.26,
+        "delta_2y": -0.04999999999999999,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-03-23",
+      "signed_5d": 0.00396168209685867,
+      "signed_20d": -0.004790761313824772,
+      "signed_60d": 0.019313026110859798
+    },
+    {
+      "checkpoint": "2021-04-09",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-04-12",
+        "end_date": "2021-04-19",
+        "start_2y": 0.25,
+        "end_2y": 0.31,
+        "delta_2y": 0.06,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2021-04-20",
+      "signed_5d": 0.009006450366935533,
+      "signed_20d": 0.0321120972462621,
+      "signed_60d": 0.01970278599095557
+    },
+    {
+      "checkpoint": "2021-05-07",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-05-10",
+        "end_date": "2021-05-17",
+        "start_2y": 0.29,
+        "end_2y": 0.33,
+        "delta_2y": 0.040000000000000036,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-05-18",
+      "signed_5d": 0.00033081518407772185,
+      "signed_20d": 0.003911232281506434,
+      "signed_60d": 0.01441379628369008
+    },
+    {
+      "checkpoint": "2021-06-04",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-06-07",
+        "end_date": "2021-06-14",
+        "start_2y": 0.32,
+        "end_2y": 0.32,
+        "delta_2y": 0.0,
+        "direction": 0
+      },
+      "state": "RATES_FLAT",
+      "fx_entry_date": "2021-06-15",
+      "signed_5d": 0.001814002387371193,
+      "signed_20d": 0.008498078973800073,
+      "signed_60d": 0.018610263010118335
+    },
+    {
+      "checkpoint": "2021-07-09",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-07-12",
+        "end_date": "2021-07-19",
+        "start_2y": 0.48,
+        "end_2y": 0.47,
+        "delta_2y": -0.010000000000000009,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-07-20",
+      "signed_5d": 0.010389625596349109,
+      "signed_20d": 0.008037381489917884,
+      "signed_60d": 0.03011856420029837
+    },
+    {
+      "checkpoint": "2021-08-06",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-08-09",
+        "end_date": "2021-08-16",
+        "start_2y": 0.48,
+        "end_2y": 0.43,
+        "delta_2y": -0.04999999999999999,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-08-17",
+      "signed_5d": 0.001154296532363867,
+      "signed_20d": -0.00640934559570766,
+      "signed_60d": 0.01761128053912432
+    },
+    {
+      "checkpoint": "2021-09-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-09-13",
+        "end_date": "2021-09-20",
+        "start_2y": 0.41,
+        "end_2y": 0.44,
+        "delta_2y": 0.030000000000000027,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2021-09-21",
+      "signed_5d": 0.015975014225377022,
+      "signed_20d": 0.03214192613391649,
+      "signed_60d": 0.01944046108402217
+    },
+    {
+      "checkpoint": "2021-10-08",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-10-12",
+        "end_date": "2021-10-19",
+        "start_2y": 0.74,
+        "end_2y": 0.83,
+        "delta_2y": 0.08999999999999997,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2021-10-20",
+      "signed_5d": -0.007026280946850609,
+      "signed_20d": -0.001147824750645986,
+      "signed_60d": 0.0028496456871690275
+    },
+    {
+      "checkpoint": "2021-11-05",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-11-08",
+        "end_date": "2021-11-16",
+        "start_2y": 0.95,
+        "end_2y": 1.05,
+        "delta_2y": 0.10000000000000009,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2021-11-17",
+      "signed_5d": -0.003461649391875657,
+      "signed_20d": -0.015842784962359698,
+      "signed_60d": -0.00500923301065324
+    },
+    {
+      "checkpoint": "2021-12-03",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2021-12-06",
+        "end_date": "2021-12-13",
+        "start_2y": 1.06,
+        "end_2y": 0.92,
+        "delta_2y": -0.14,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2021-12-14",
+      "signed_5d": -0.007821481116657699,
+      "signed_20d": 0.012300671843634576,
+      "signed_60d": 0.005162737236095208
+    },
+    {
+      "checkpoint": "2022-01-07",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-01-10",
+        "end_date": "2022-01-17",
+        "start_2y": 1.08,
+        "end_2y": 1.22,
+        "delta_2y": 0.1399999999999999,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2022-01-18",
+      "signed_5d": -0.004514159069698444,
+      "signed_20d": -0.009219146709481532,
+      "signed_60d": 0.011899808691781767
+    },
+    {
+      "checkpoint": "2022-02-04",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-02-07",
+        "end_date": "2022-02-14",
+        "start_2y": 1.34,
+        "end_2y": 1.51,
+        "delta_2y": 0.16999999999999993,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2022-02-15",
+      "signed_5d": 0.006086563448840389,
+      "signed_20d": -0.001563529315116766,
+      "signed_60d": -0.042943014383125706
+    },
+    {
+      "checkpoint": "2022-03-11",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-03-14",
+        "end_date": "2022-03-21",
+        "start_2y": 1.77,
+        "end_2y": 2.03,
+        "delta_2y": 0.2599999999999998,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2022-03-22",
+      "signed_5d": 0.009432195436434114,
+      "signed_20d": 0.026247574929851157,
+      "signed_60d": 0.03803881280241216
+    },
+    {
+      "checkpoint": "2022-04-08",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-04-11",
+        "end_date": "2022-04-19",
+        "start_2y": 2.43,
+        "end_2y": 2.52,
+        "delta_2y": 0.08999999999999986,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2022-04-20",
+      "signed_5d": -0.00018164266318855836,
+      "signed_20d": 0.014947473521938454,
+      "signed_60d": 0.02905268693412661
+    },
+    {
+      "checkpoint": "2022-06-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-06-13",
+        "end_date": "2022-06-20",
+        "start_2y": 3.39,
+        "end_2y": 3.3,
+        "delta_2y": -0.0900000000000003,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2022-06-21",
+      "signed_5d": 0.007586724441773988,
+      "signed_20d": 0.012280257517158439,
+      "signed_60d": 0.018044967690284987
+    },
+    {
+      "checkpoint": "2022-09-09",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-09-12",
+        "end_date": "2022-09-19",
+        "start_2y": 3.61,
+        "end_2y": 3.8,
+        "delta_2y": 0.18999999999999995,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2022-09-20",
+      "signed_5d": 0.0029219577828420323,
+      "signed_20d": 0.005368809470623045,
+      "signed_60d": 0.06551114623534651
+    },
+    {
+      "checkpoint": "2022-10-07",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-10-11",
+        "end_date": "2022-10-18",
+        "start_2y": 4.1,
+        "end_2y": 4.02,
+        "delta_2y": -0.08000000000000007,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2022-10-19",
+      "signed_5d": -0.0022477052938185333,
+      "signed_20d": -0.019697796780186055,
+      "signed_60d": -0.057090682349116455
+    },
+    {
+      "checkpoint": "2022-11-04",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2022-11-07",
+        "end_date": "2022-11-15",
+        "start_2y": 4.18,
+        "end_2y": 3.86,
+        "delta_2y": -0.31999999999999984,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2022-11-16",
+      "signed_5d": -0.006949396638390543,
+      "signed_20d": -0.04724670129934494,
+      "signed_60d": -0.04051118336299082
+    },
+    {
+      "checkpoint": "2023-01-06",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-01-09",
+        "end_date": "2023-01-16",
+        "start_2y": 3.93,
+        "end_2y": 3.57,
+        "delta_2y": -0.3600000000000003,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2023-01-17",
+      "signed_5d": 0.001571899218205479,
+      "signed_20d": 0.012056697981288495,
+      "signed_60d": 0.0034664804934549757
+    },
+    {
+      "checkpoint": "2023-02-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-02-13",
+        "end_date": "2023-02-21",
+        "start_2y": 4.07,
+        "end_2y": 4.23,
+        "delta_2y": 0.16000000000000014,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2023-02-22",
+      "signed_5d": -0.0018812376490688744,
+      "signed_20d": -0.015125072772626974,
+      "signed_60d": -0.0023140277902542242
+    },
+    {
+      "checkpoint": "2023-05-05",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-05-08",
+        "end_date": "2023-05-15",
+        "start_2y": 3.76,
+        "end_2y": 3.8,
+        "delta_2y": 0.040000000000000036,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2023-05-16",
+      "signed_5d": 0.003623777335395336,
+      "signed_20d": 0.015252741397119698,
+      "signed_60d": 0.008726103841286387
+    },
+    {
+      "checkpoint": "2023-06-09",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-06-12",
+        "end_date": "2023-06-19",
+        "start_2y": 4.45,
+        "end_2y": 4.62,
+        "delta_2y": 0.16999999999999993,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2023-06-20",
+      "signed_5d": -0.009735951093097115,
+      "signed_20d": 0.01861499519629688,
+      "signed_60d": 0.00045283137192157237
+    },
+    {
+      "checkpoint": "2023-08-04",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-08-08",
+        "end_date": "2023-08-15",
+        "start_2y": 4.53,
+        "end_2y": 4.78,
+        "delta_2y": 0.25,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2023-08-16",
+      "signed_5d": 0.0011784405176581115,
+      "signed_20d": -0.007121610221295492,
+      "signed_60d": 0.0031080695117140385
+    },
+    {
+      "checkpoint": "2023-09-08",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-09-11",
+        "end_date": "2023-09-18",
+        "start_2y": 4.67,
+        "end_2y": 4.77,
+        "delta_2y": 0.09999999999999964,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2023-09-19",
+      "signed_5d": 0.0023742602364407875,
+      "signed_20d": -0.005230808015685209,
+      "signed_60d": -0.027420855924967683
+    },
+    {
+      "checkpoint": "2023-10-06",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-10-10",
+        "end_date": "2023-10-17",
+        "start_2y": 4.72,
+        "end_2y": 4.89,
+        "delta_2y": 0.16999999999999993,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2023-10-18",
+      "signed_5d": -0.004494586621048077,
+      "signed_20d": -0.01634650976904633,
+      "signed_60d": -0.018219228909427124
+    },
+    {
+      "checkpoint": "2023-11-03",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2023-11-06",
+        "end_date": "2023-11-14",
+        "start_2y": 4.45,
+        "end_2y": 4.39,
+        "delta_2y": -0.0600000000000005,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2023-11-15",
+      "signed_5d": 0.0073627988182254,
+      "signed_20d": 0.0010318406914083757,
+      "signed_60d": -0.00934469175233682
+    },
+    {
+      "checkpoint": "2024-02-09",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-02-12",
+        "end_date": "2024-02-20",
+        "start_2y": 4.24,
+        "end_2y": 4.16,
+        "delta_2y": -0.08000000000000007,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2024-02-21",
+      "signed_5d": -0.0008270768855841478,
+      "signed_20d": 0.0017159779864299393,
+      "signed_60d": 0.0003321487026843079
+    },
+    {
+      "checkpoint": "2024-04-05",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-04-08",
+        "end_date": "2024-04-15",
+        "start_2y": 4.23,
+        "end_2y": 4.23,
+        "delta_2y": 0.0,
+        "direction": 0
+      },
+      "state": "RATES_FLAT",
+      "fx_entry_date": "2024-04-16",
+      "signed_5d": -0.0047990604608133995,
+      "signed_20d": 0.002598271927132947,
+      "signed_60d": 0.0030743531033972926
+    },
+    {
+      "checkpoint": "2024-05-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-05-13",
+        "end_date": "2024-05-21",
+        "start_2y": 4.29,
+        "end_2y": 4.16,
+        "delta_2y": -0.1299999999999999,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2024-05-22",
+      "signed_5d": 9.747719825345898e-05,
+      "signed_20d": -0.006024249060231653,
+      "signed_60d": -0.021299544379353545
+    },
+    {
+      "checkpoint": "2024-07-05",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-07-08",
+        "end_date": "2024-07-15",
+        "start_2y": 3.93,
+        "end_2y": 3.8,
+        "delta_2y": -0.13000000000000034,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2024-07-16",
+      "signed_5d": 0.0024661937586305505,
+      "signed_20d": 0.013607772233328135,
+      "signed_60d": 0.017135232972696708
+    },
+    {
+      "checkpoint": "2024-09-06",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-09-09",
+        "end_date": "2024-09-16",
+        "start_2y": 3.02,
+        "end_2y": 2.88,
+        "delta_2y": -0.14000000000000012,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2024-09-17",
+      "signed_5d": -0.004303703747141194,
+      "signed_20d": -0.0029362444365284455,
+      "signed_60d": -0.005408101132981373
+    },
+    {
+      "checkpoint": "2024-10-11",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-10-15",
+        "end_date": "2024-10-22",
+        "start_2y": 3.01,
+        "end_2y": 3.02,
+        "delta_2y": 0.010000000000000231,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2024-10-23",
+      "signed_5d": -0.005058487424906706,
+      "signed_20d": 0.006600937502153597,
+      "signed_60d": 0.0004657431575322053
+    },
+    {
+      "checkpoint": "2024-12-06",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2024-12-09",
+        "end_date": "2024-12-16",
+        "start_2y": 2.91,
+        "end_2y": 3.01,
+        "delta_2y": 0.09999999999999964,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2024-12-17",
+      "signed_5d": -0.002641706173205441,
+      "signed_20d": -0.010052795302631068,
+      "signed_60d": 0.02222283996340021
+    },
+    {
+      "checkpoint": "2025-01-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-01-13",
+        "end_date": "2025-01-20",
+        "start_2y": 3.14,
+        "end_2y": 2.92,
+        "delta_2y": -0.2200000000000002,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-01-21",
+      "signed_5d": -0.002513486050742287,
+      "signed_20d": 0.002142218593564701,
+      "signed_60d": -0.021725848231807808
+    },
+    {
+      "checkpoint": "2025-02-07",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-02-10",
+        "end_date": "2025-02-18",
+        "start_2y": 2.66,
+        "end_2y": 2.8,
+        "delta_2y": 0.13999999999999968,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2025-02-19",
+      "signed_5d": -0.013969585776835176,
+      "signed_20d": -0.02557077285299204,
+      "signed_60d": -0.026183263291753682
+    },
+    {
+      "checkpoint": "2025-04-04",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-04-07",
+        "end_date": "2025-04-14",
+        "start_2y": 2.46,
+        "end_2y": 2.58,
+        "delta_2y": 0.1200000000000001,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-04-15",
+      "signed_5d": 0.0009257743827963668,
+      "signed_20d": -0.0002798226874803533,
+      "signed_60d": 0.0005624132767964422
+    },
+    {
+      "checkpoint": "2025-05-09",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-05-12",
+        "end_date": "2025-05-20",
+        "start_2y": 2.59,
+        "end_2y": 2.63,
+        "delta_2y": 0.040000000000000036,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-05-21",
+      "signed_5d": -0.0038866724327630804,
+      "signed_20d": -0.010038339550680644,
+      "signed_60d": 0.0014558518516035461
+    },
+    {
+      "checkpoint": "2025-06-06",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-06-09",
+        "end_date": "2025-06-16",
+        "start_2y": 2.7,
+        "end_2y": 2.72,
+        "delta_2y": 0.020000000000000018,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-06-17",
+      "signed_5d": 0.010700884557262749,
+      "signed_20d": 0.007530761855425912,
+      "signed_60d": 0.020034009220893347
+    },
+    {
+      "checkpoint": "2025-07-11",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-07-14",
+        "end_date": "2025-07-21",
+        "start_2y": 2.76,
+        "end_2y": 2.79,
+        "delta_2y": 0.03000000000000025,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2025-07-22",
+      "signed_5d": 0.00016377623886416824,
+      "signed_20d": -0.006813410658801665,
+      "signed_60d": -0.010048610016891817
+    },
+    {
+      "checkpoint": "2025-08-08",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-08-11",
+        "end_date": "2025-08-18",
+        "start_2y": 2.68,
+        "end_2y": 2.74,
+        "delta_2y": 0.06000000000000005,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-08-19",
+      "signed_5d": 0.000713321635038487,
+      "signed_20d": 0.006817592579533828,
+      "signed_60d": -0.0012315162140427616
+    },
+    {
+      "checkpoint": "2025-09-05",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-09-08",
+        "end_date": "2025-09-15",
+        "start_2y": 2.5,
+        "end_2y": 2.49,
+        "delta_2y": -0.009999999999999787,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2025-09-16",
+      "signed_5d": -0.0010108319185905008,
+      "signed_20d": -0.003582393221443602,
+      "signed_60d": -0.015268066137028932
+    },
+    {
+      "checkpoint": "2025-10-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-10-14",
+        "end_date": "2025-10-21",
+        "start_2y": 2.43,
+        "end_2y": 2.39,
+        "delta_2y": -0.040000000000000036,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-10-22",
+      "signed_5d": 0.00478499988887466,
+      "signed_20d": 0.01120733395858851,
+      "signed_60d": 0.008880287803775951
+    },
+    {
+      "checkpoint": "2025-11-07",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-11-10",
+        "end_date": "2025-11-18",
+        "start_2y": 2.45,
+        "end_2y": 2.49,
+        "delta_2y": 0.040000000000000036,
+        "direction": 1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2025-11-19",
+      "signed_5d": -0.006298702282972068,
+      "signed_20d": 0.00374474457943846,
+      "signed_60d": -0.012061324681533116
+    },
+    {
+      "checkpoint": "2025-12-05",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2025-12-08",
+        "end_date": "2025-12-15",
+        "start_2y": 2.64,
+        "end_2y": 2.58,
+        "delta_2y": -0.06000000000000005,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2025-12-16",
+      "signed_5d": 0.0014172399484150818,
+      "signed_20d": -0.0028018995138478432,
+      "signed_60d": 0.00339227066494437
+    },
+    {
+      "checkpoint": "2026-01-09",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-01-12",
+        "end_date": "2026-01-19",
+        "start_2y": 2.56,
+        "end_2y": 2.54,
+        "delta_2y": -0.020000000000000018,
+        "direction": -1
+      },
+      "state": "CONVERGENT",
+      "fx_entry_date": "2026-01-20",
+      "signed_5d": 0.01072902686127424,
+      "signed_20d": 0.008927424730256458,
+      "signed_60d": 0.005337814888682485
+    },
+    {
+      "checkpoint": "2026-02-06",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-02-09",
+        "end_date": "2026-02-17",
+        "start_2y": 2.54,
+        "end_2y": 2.45,
+        "delta_2y": -0.08999999999999986,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-02-18",
+      "signed_5d": 0.0020802282568560078,
+      "signed_20d": 0.015588125025056286,
+      "signed_60d": 0.0063327235961695575
+    },
+    {
+      "checkpoint": "2026-03-13",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-03-16",
+        "end_date": "2026-03-23",
+        "start_2y": 2.71,
+        "end_2y": 2.95,
+        "delta_2y": 0.2400000000000002,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-03-24",
+      "signed_5d": 0.005552959315500996,
+      "signed_20d": 0.0035995343842597184,
+      "signed_60d": 0.02067223195096803
+    },
+    {
+      "checkpoint": "2026-05-08",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-05-11",
+        "end_date": "2026-05-19",
+        "start_2y": 2.93,
+        "end_2y": 3.04,
+        "delta_2y": 0.10999999999999988,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-05-20",
+      "signed_5d": 0.007604324220175864,
+      "signed_20d": 0.014227259960270246,
+      "signed_60d": 0.008273974224667692
+    },
+    {
+      "checkpoint": "2026-06-05",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-06-08",
+        "end_date": "2026-06-15",
+        "start_2y": 2.87,
+        "end_2y": 2.76,
+        "delta_2y": -0.11000000000000032,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-06-16",
+      "signed_5d": 0.00212134284554388,
+      "signed_20d": 0.003202814551000375,
+      "signed_60d": 0.0071999556472738925
+    },
+    {
+      "checkpoint": "2026-07-10",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-07-13",
+        "end_date": "2026-07-20",
+        "start_2y": 2.88,
+        "end_2y": 2.84,
+        "delta_2y": -0.040000000000000036,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-07-21",
+      "signed_5d": 0.0047811819224721315,
+      "signed_20d": 0.0057077883038553195
+    },
+    {
+      "checkpoint": "2026-08-07",
+      "labour_direction": 1,
+      "cb_interpretation": "HAWKISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-08-10",
+        "end_date": "2026-08-17",
+        "start_2y": 3.02,
+        "end_2y": 2.97,
+        "delta_2y": -0.04999999999999982,
+        "direction": -1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-08-18",
+      "signed_5d": -0.006130577247331038,
+      "signed_20d": -0.0028581135923814575
+    },
+    {
+      "checkpoint": "2026-09-04",
+      "labour_direction": -1,
+      "cb_interpretation": "DOVISH_PRESSURE",
+      "market_repricing": {
+        "start_date": "2026-09-08",
+        "end_date": "2026-09-15",
+        "start_2y": 3.13,
+        "end_2y": 3.35,
+        "delta_2y": 0.2200000000000002,
+        "direction": 1
+      },
+      "state": "DIVERGENT",
+      "fx_entry_date": "2026-09-16",
+      "signed_5d": 0.0008183911983238163
+    }
+  ],
+  "interpretation_rule": "Convergence/divergence is explanatory state only. No state is promoted, discarded, or reweighted from these results.",
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
