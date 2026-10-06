@@ -1,0 +1,17 @@
+name: JPY GDP ESRI Probe V1
+on:
+  push:
+    paths:
+      - 'validation/probe_jpy_gdp_esri_v1.py'
+      - '.github/workflows/jpy-gdp-esri-probe-v1.yml'
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python validation/probe_jpy_gdp_esri_v1.py
