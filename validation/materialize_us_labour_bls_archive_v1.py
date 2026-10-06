@@ -69,30 +69,34 @@ def parse_release(text: str, url: str):
     release_date=datetime.strptime(ts.group(1), "%B %d, %Y").date().isoformat()
     body=text[title_pos:title_pos+5000]
 
+    # BLS wording varies across vintages. Keep the search constrained to the opening summary
+    # and require the explicit nonfarm-payroll phrase before accepting a number.
+    payroll_phrase=r"(?:Total\s+)?nonfarm payroll employment"
     nfp=None
-    p=re.search(r"Total nonfarm payroll employment.{0,260}?\(([+-]\s*[\d,]+)\)", body, re.I)
+    p=re.search(payroll_phrase+r".{0,300}?\(([+-]\s*[\d,]+)\)", body, re.I)
     if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
     if nfp is None:
-        p=re.search(r"Total nonfarm payroll employment.{0,180}?\b(rose|increased|edged up|grew|declined|decreased|fell|dropped)\b.{0,80}?\bby\s+([\d,]+)", body, re.I)
+        p=re.search(payroll_phrase+r".{0,220}?\b(rose|increased|edged up|grew|declined|decreased|fell|dropped)\b.{0,100}?\bby\s+([\d,]+)", body, re.I)
         if p:
             val=int(p.group(2).replace(",","")); verb=p.group(1).lower()
             nfp=-val if verb in {"declined","decreased","fell","dropped"} else val
     if nfp is None:
-        p=re.search(r"Total nonfarm payroll employment.{0,300}?([+-]\s*[\d,]+)", body, re.I)
+        p=re.search(payroll_phrase+r".{0,360}?([+-]\s*[\d,]+)", body, re.I)
         if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
     if nfp is None: raise ValueError("first-published NFP not found")
 
+    # Historical BLS wording includes variants such as:
+    # "edged down to 3.8 percent" and "declined by 0.3 percentage point to 4.7 percent".
+    # Match the first level introduced by at/to/was after the opening 'unemployment rate' phrase.
     ur=None
-    for pat in [
-        r"unemployment rate.{0,80}?\bat\s+(\d+(?:\.\d+)?)\s+percent",
-        r"unemployment rate.{0,80}?\b(?:rose|increased|edged up|declined|decreased|fell|dropped)\s+to\s+(\d+(?:\.\d+)?)\s+percent",
-        r"unemployment rate.{0,80}?\bwas\s+(\d+(?:\.\d+)?)\s+percent",
-    ]:
-        p=re.search(pat, body, re.I)
-        if p: ur=float(p.group(1)); break
+    p=re.search(r"unemployment rate.{0,180}?\b(?:at|to|was)\s+(\d+(?:\.\d+)?)\s+percent", body, re.I)
+    if p: ur=float(p.group(1))
+    if ur is None:
+        p=re.search(r"unemployment rate.{0,180}?\b(?:remained|held)\s+(?:unchanged\s+)?(?:at\s+)?(\d+(?:\.\d+)?)\s+percent", body, re.I)
+        if p: ur=float(p.group(1))
     if ur is None: raise ValueError("first-published unemployment rate not found")
 
-    return {"release_date":release_date,"release_time_et":"08:30","reference_month":f"{ref_y:04d}-{ref_m:02d}","nfp_change_thousands":nfp,"unemployment_rate_pct":ur,"source_url":url,"pit_status":"READY_FIRST_RELEASE"}
+    return {"release_date":release_date,"release_time_et":"08:30","reference_month":f"{ref_y:04d}-{ref_m:02d}","nfp_change_persons":nfp,"unemployment_rate_pct":ur,"source_url":url,"pit_status":"READY_FIRST_RELEASE"}
 
 def all_months():
     out=[]; y,m=START
@@ -126,13 +130,13 @@ def main():
         raise SystemExit(f"strict PIT gate failed: errors={len(errors)} missing_published={len(missing)} dup={len(set(dup))} extra={len(extra)}")
     rows=[by_month[m] for m in published_expected]
     for r in rows:
-        if not (-25000 <= r["nfp_change_thousands"] <= 10000): raise SystemExit(f"implausible NFP parse {r}")
+        if not (-25_000_000 <= r["nfp_change_persons"] <= 10_000_000): raise SystemExit(f"implausible NFP parse {r}")
         if not (2.0 <= r["unemployment_rate_pct"] <= 20.0): raise SystemExit(f"implausible unemployment parse {r}")
 
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open("w",newline="",encoding="utf-8") as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
-    evidence={"schema":"GMFQ_USD_LABOUR_BLS_ARCHIVE_PIT_V1","status":"PASS","source":"Official BLS Employment Situation archived news releases","archive_index":ARCHIVE,"coverage":{"start":all_expected[0],"end":all_expected[-1],"calendar_months":len(all_expected),"published_complete_releases":len(rows),"structural_withheld_months":len(STRUCTURAL_WITHHELD)},"structural_withheld":STRUCTURAL_WITHHELD,"candidate_archive_urls":len(urls),"fields":["NFP first-published monthly change","unemployment rate first-published","release date","08:30 ET release time"],"method":"Extract reference month and opening-summary values from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.","strict_zero_parse_errors_on_published_releases":True,"output":str(OUT),"notes":["October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.","No consensus-surprise series is introduced here.","This certifies Labour PIT inputs only; engine rules and live data remain untouched."]}
+    evidence={"schema":"GMFQ_USD_LABOUR_BLS_ARCHIVE_PIT_V1","status":"PASS","source":"Official BLS Employment Situation archived news releases","archive_index":ARCHIVE,"coverage":{"start":all_expected[0],"end":all_expected[-1],"calendar_months":len(all_expected),"published_complete_releases":len(rows),"structural_withheld_months":len(STRUCTURAL_WITHHELD)},"structural_withheld":STRUCTURAL_WITHHELD,"candidate_archive_urls":len(urls),"fields":["NFP first-published monthly change (persons)","unemployment rate first-published","release date","08:30 ET release time"],"method":"Extract reference month and opening-summary values from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.","strict_zero_parse_errors_on_published_releases":True,"output":str(OUT),"notes":["October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.","NFP values are stored in persons, matching the explicit magnitudes printed in BLS releases.","No consensus-surprise series is introduced here.","This certifies Labour PIT inputs only; engine rules and live data remain untouched."]}
     EVID.write_text(json.dumps(evidence,indent=2),encoding="utf-8"); print(json.dumps(evidence,indent=2))
 
 if __name__=="__main__": main()
