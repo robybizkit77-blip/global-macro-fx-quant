@@ -1,0 +1,25 @@
+name: NZD Macro Contract Diagnostic
+
+on:
+  push:
+    branches:
+      - validation-nzd-statsnz-v1-2026-10-06
+    paths:
+      - 'validation/diagnose_nzd_macro_contract.py'
+      - '.github/workflows/nzd-macro-contract-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Print frozen NZD contract
+        run: python validation/diagnose_nzd_macro_contract.py
