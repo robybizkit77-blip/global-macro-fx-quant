@@ -10,7 +10,7 @@ HEATMAP_PATH=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Statistics Canada'
 WDS='https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV'
 CONFIG={
- 'inflation':{'pid':'18100004','series_hint':'cpi','unit':'% YoY','transformation':'yoy_pct_from_index'},
+ 'inflation':{'pid':'1810000402','series_hint':'cpi','unit':'% YoY','transformation':'reported_yoy_rate'},
  'labour':{'pid':'14100287','series_hint':'unemp','unit':'%','transformation':'level'},
 }
 
@@ -51,30 +51,21 @@ def download_csv(pid:str)->str:
   return z.read(names[0]).decode('utf-8-sig')
 
 def rows_from_text(text:str):return list(csv.DictReader(io.StringIO(text)))
-def findcol(row:dict[str,str],*needles:str)->str|None:
- for k in row:
-  nk=norm(k)
-  if all(n in nk for n in needles):return k
- return None
 
 def extract_inflation(rows):
  out={}
  for r in rows:
-  geo=r.get('GEO') or r.get('Geography') or ''
-  if norm(geo)!='canada':continue
-  prod=r.get('Products and product groups') or r.get('Product') or ''
-  if norm(prod) not in ('all-items','all items'):continue
+  if norm(r.get('GEO') or r.get('Geography'))!='canada':continue
+  joined=' | '.join(norm(v) for v in r.values())
+  if 'all-items' not in joined and 'all items' not in joined:continue
+  if not any(token in joined for token in ('12-month','12 month','year-over-year','year over year')):continue
   d=r.get('REF_DATE') or r.get('Reference period');v=r.get('VALUE') or r.get('Value')
   if not d or v in (None,''):continue
   try:out[str(d)[:7]+'-01']=float(v)
   except:pass
  dates=sorted(out)
- if len(dates)<14:raise ValueError(f'need >=14 monthly CPI index observations; got {len(dates)}')
- yoy=[]
- for i in range(12,len(dates)):
-  a,b=out[dates[i]],out[dates[i-12]]
-  yoy.append((dates[i],(a/b-1)*100.0))
- return yoy
+ if len(dates)<2:raise ValueError(f'need >=2 monthly reported CPI YoY observations; got {len(dates)}')
+ return [(d,out[d]) for d in dates]
 
 def extract_labour(rows):
  out={}
@@ -100,7 +91,7 @@ def build_candidate(dim:str,text:str):
  rows=rows_from_text(text); obs=extract_inflation(rows) if dim=='inflation' else extract_labour(rows)
  latest,lv=obs[-1];prior,pv=obs[-2]
  hid,freq,tr=heat_contract(dim);mid=resolve_macro_series_id(dim,hid)
- c={'currency':'CAD','dimension':dim,'macro_series_id':mid,'observation_date':latest,'value':lv,'source':SOURCE,'source_url':f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={CONFIG[dim]["pid"]}01','series_id':hid,'frequency':freq,'transformation':tr,'unit':CONFIG[dim]['unit']}
+ c={'currency':'CAD','dimension':dim,'macro_series_id':mid,'observation_date':latest,'value':lv,'source':SOURCE,'source_url':f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={CONFIG[dim]["pid"]}','series_id':hid,'frequency':freq,'transformation':tr,'unit':CONFIG[dim]['unit']}
  a={'product_id':CONFIG[dim]['pid'],'latest_period':latest,'latest_value':lv,'prior_period':prior,'prior_value':pv,'delta':lv-pv,'candidate_only':True,'live_data_written':False}
  return c,a
 
