@@ -8,9 +8,13 @@ SERIES=ROOT/'live_data/sections/MACRO_SERIES.json'
 HEAT=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Stats NZ'
 HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
-URLS={
+SOURCE_URLS={
  'inflation':'https://www.stats.govt.nz/news/annual-inflation-at-4-1-percent-in-june-2026/',
- 'labour':'https://www.stats.govt.nz/indicators/unemployment-rate/',
+ 'labour':'https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/',
+}
+RETRIEVAL_URLS={
+ 'inflation':SOURCE_URLS['inflation'],
+ 'labour':'https://www.stats.govt.nz/search/?Search=Labour+market+statistics%3A+June+2026+quarter',
 }
 CONFIG={
  'inflation':{'series_id':'NZ_CPI_HEADLINE_YOY','macro_series_id':'NZ_CPI_HEADLINE_YOY_history_value','frequency':'Q','transformation':'reported_yoy_rate','unit':'% YoY'},
@@ -42,15 +46,18 @@ def parse_value(dim,t):
   ]
  else:
   patterns=[
-   r'Unemployment rate\s+([0-9]+(?:\.[0-9]+)?)%',
    r'The unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
    r'seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
    r'Unemployment rate at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',
+   r'Unemployment rate\s+([0-9]+(?:\.[0-9]+)?)%',
   ]
+ hits=[]
  for p in patterns:
-  m=re.search(p,t,re.I|re.S)
-  if m:return float(m.group(1))
- raise ValueError(f'cannot parse Stats NZ {dim} value')
+  hits.extend(float(m.group(1)) for m in re.finditer(p,t,re.I|re.S))
+ uniq=sorted(set(hits))
+ if len(uniq)==1:return uniq[0]
+ if not uniq:raise ValueError(f'cannot parse Stats NZ {dim} value')
+ raise ValueError(f'ambiguous Stats NZ {dim} values: {uniq}')
 def contract(dim):
  h=load(HEAT)['currencies']['NZD'][dim];c=CONFIG[dim]
  got=(h.get('series_id'),h.get('frequency'),h.get('transformation'));exp=(c['series_id'],c['frequency'],c['transformation'])
@@ -61,11 +68,11 @@ def contract(dim):
 def build(dim,fixture=None):
  c=CONFIG[dim];target=contract(dim)
  if fixture:
-  f=load(fixture);date=f['observation_date'];value=float(f['value']);url=f.get('source_url') or URLS[dim];mode='fixture'
+  f=load(fixture);date=f['observation_date'];value=float(f['value']);source_url=f.get('source_url') or SOURCE_URLS[dim];retrieval_url=source_url;mode='fixture'
  else:
-  url=URLS[dim];t=text(fetch(url));y,m=period(t);date=f'{y:04d}-{m:02d}-01';value=parse_value(dim,t);mode='live'
- cand={'currency':'NZD','dimension':dim,'macro_series_id':target,'observation_date':date,'value':value,'source':SOURCE,'source_url':url,'series_id':c['series_id'],'frequency':c['frequency'],'transformation':c['transformation'],'unit':c['unit']}
- audit={'candidate_only':True,'live_data_written':False,'mode':mode,'source_url':url,'observation_date':date,'value':value}
+  source_url=SOURCE_URLS[dim];retrieval_url=RETRIEVAL_URLS[dim];t=text(fetch(retrieval_url));y,m=period(t);date=f'{y:04d}-{m:02d}-01';value=parse_value(dim,t);mode='live'
+ cand={'currency':'NZD','dimension':dim,'macro_series_id':target,'observation_date':date,'value':value,'source':SOURCE,'source_url':source_url,'series_id':c['series_id'],'frequency':c['frequency'],'transformation':c['transformation'],'unit':c['unit']}
+ audit={'candidate_only':True,'live_data_written':False,'mode':mode,'source_url':source_url,'retrieval_url':retrieval_url,'observation_date':date,'value':value}
  return cand,audit
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);a=ap.parse_args();c,u=build(a.dimension,a.fixture);a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(c,indent=2)+'\n')
