@@ -1,13 +1,10 @@
 name: EUR ECB AAA 2Y History Contract V1
 
 on:
-  push:
-    branches:
-      - validation-rates-eur-2y-history-v1-2026-10-06
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   contract:
@@ -26,7 +23,7 @@ jobs:
             --end 2026-09-30 \
             --output /tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json \
             --summary /tmp/gmfq-eur-2y/summary.json
-      - name: Assert historical contract
+      - name: Assert historical contract and frozen parity
         run: |
           python - <<'PY'
           import json
@@ -34,35 +31,22 @@ jobs:
           s=json.loads(Path('/tmp/gmfq-eur-2y/summary.json').read_text())
           assert s['status']=='PASS',s
           assert s['series_key']=='YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y',s
-          assert s['observation_count']>2000,s
+          assert s['observation_count']==2743,s
           assert s['same_basis_current_snapshot_match'] is True,s
-          assert s['anchor_error']<=1e-8,s
+          assert s['anchor_error']==0.0,s
           assert s['history_spliced'] is False,s
           assert s['live_data_modified'] is False,s
           assert s['model_rules_modified'] is False,s
           assert s['rules_fingerprint_expected_unchanged']=='3356baf0',s
+          frozen=Path('history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json')
+          frozen_summary=Path('validation/EUR_ECB_AAA_2Y_HISTORY_VALIDATION_V1_2026-10-06.json')
+          assert frozen.exists() and frozen_summary.exists()
+          assert frozen.read_text()==Path('/tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json').read_text()
+          assert frozen_summary.read_text()==Path('/tmp/gmfq-eur-2y/summary.json').read_text()
           print(json.dumps(s,indent=2))
           PY
-      - name: Confirm builder itself did not touch repository
+      - name: Confirm repository untouched
         run: git diff --exit-code
-      - name: Freeze canonical EUR AAA 2Y history on validation branch
-        shell: bash
-        run: |
-          mkdir -p history validation
-          cp /tmp/gmfq-eur-2y/eur_aaa_2y_2016_2026.json \
-            history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json
-          cp /tmp/gmfq-eur-2y/summary.json \
-            validation/EUR_ECB_AAA_2Y_HISTORY_VALIDATION_V1_2026-10-06.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json \
-                  validation/EUR_ECB_AAA_2Y_HISTORY_VALIDATION_V1_2026-10-06.json
-          if git diff --cached --quiet; then
-            echo "Canonical EUR 2Y snapshot already frozen; no commit needed."
-          else
-            git commit -m "Freeze canonical ECB EUR AAA 2Y history 2016-2026 [skip ci]"
-            git push origin HEAD:validation-rates-eur-2y-history-v1-2026-10-06
-          fi
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
