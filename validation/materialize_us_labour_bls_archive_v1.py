@@ -77,16 +77,16 @@ def parse_release(text: str, url: str):
 
     payroll_phrase=r"(?:Total\s+)?nonfarm payroll employment"
     nfp=None
-    # Primary form: "rose/increased/fell/declined by 151,000 / 20.5 million".
     p=re.search(payroll_phrase+r"\s+(rose|increased|grew|declined|decreased|fell|dropped)\s+by\s+([\d,.]+)\s*(million|thousand)?", body, re.I)
     if p:
         val=amount_to_persons(p.group(2),p.group(3)); verb=p.group(1).lower()
         nfp=-val if verb in {"declined","decreased","fell","dropped"} else val
-    # Secondary form used in releases such as Jan-2021: "changed little (+49,000)".
     if nfp is None:
-        p=re.search(payroll_phrase+r"\s+(?:changed little|was little changed|was essentially unchanged)\s*\(([+-]\s*[\d,]+)\)", body, re.I)
+        # Strict signed-parenthetical headline forms only, e.g.:
+        # "changed little in February (+20,000)", "edged up in May (+75,000)",
+        # "was essentially unchanged in October (+12,000)".
+        p=re.search(payroll_phrase+r"\s+(?:changed little|was little changed|was essentially unchanged|edged up|edged down)\b.{0,80}?\(([+-]\s*[\d,]+)\)", body, re.I)
         if p: nfp=int(p.group(1).replace(" ","").replace(",",""))
-    # A few releases use "edged up" in the headline.
     if nfp is None:
         p=re.search(payroll_phrase+r"\s+edged\s+(up|down)\s+by\s+([\d,.]+)\s*(million|thousand)?", body, re.I)
         if p:
