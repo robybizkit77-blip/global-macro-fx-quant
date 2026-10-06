@@ -1,0 +1,42 @@
+name: Walkforward Engine Function Probe
+
+on:
+  push:
+    branches:
+      - validation-price-ecb-history-v1-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract historical walk-forward engine functions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          names=['normalizedSeriesImpulse','blockDynamics','seriesDynamics']
+          files=[p for p in Path('payload').glob('part-*.txt')]
+          for name in names:
+            print(f'===== {name} =====')
+            found=False
+            for p in files:
+              text=p.read_text(errors='ignore')
+              for pat in [rf'function\s+{name}\s*\(',rf'const\s+{name}\s*=\s*\(',rf'let\s+{name}\s*=\s*\(',rf'var\s+{name}\s*=\s*\(']:
+                m=re.search(pat,text)
+                if m:
+                  start=max(0,m.start()-500)
+                  end=min(len(text),m.start()+5000)
+                  print(f'FILE={p}')
+                  print(text[start:end])
+                  found=True
+                  break
+              if found: break
+            if not found: print('NOT_FOUND')
+          PY
