@@ -1,31 +1,42 @@
 {
-  "schema_version": "GMFQ_JPN_LABOUR_AUG2026_CANDIDATE_V1",
+  "schema_version": "GMFQ_JPN_LABOUR_AUG2026_CORRECTION_V2",
   "status": "PASS",
   "source": "Statistics Bureau of Japan / e-Stat",
   "release_date": "2026-10-02",
   "period": "2026-08",
-  "official_unemployment_rate_sa": 2.5,
+  "official_unemployment_rate_sa": 2.6,
   "macro_series": {
-    "old_last_date": "2026-07",
-    "old_last_value": 2.4,
+    "old_last_date": "2026-08",
+    "old_last_value": 2.5,
     "new_last_date": "2026-08",
-    "new_last_value": 2.5,
-    "old_n": 82,
+    "new_last_value": 2.6,
+    "old_n": 83,
     "new_n": 83,
-    "append_only": true
+    "replace_existing": true,
+    "dates_unchanged": true,
+    "history_before_tail": [
+      2.5,
+      2.4,
+      2.5
+    ],
+    "history_after_tail": [
+      2.5,
+      2.4,
+      2.6
+    ]
   },
   "thermometer": {
-    "old_as_of": "2026-07",
+    "old_as_of": "2026-08",
     "new_as_of": "2026-08",
-    "old_value": 2.4,
-    "new_value": 2.5,
-    "old_percentile": 12.1,
-    "new_percentile": 31.7,
-    "old_label": "MOLTO_FREDDO",
-    "new_label": "FREDDO",
-    "old_direction": "SCENDE",
+    "old_value": 2.5,
+    "new_value": 2.6,
+    "old_percentile": 31.7,
+    "new_percentile": 55.0,
+    "old_label": "FREDDO",
+    "new_label": "NORMALE",
+    "old_direction": "SALE",
     "new_direction": "SALE",
-    "old_acceleration": "RALLENTA",
+    "old_acceleration": "ACCELERA",
     "new_acceleration": "ACCELERA",
     "history_n": 120,
     "history_tail": [
@@ -33,9 +44,9 @@
       2.5,
       2.5,
       2.4,
-      2.5
+      2.6
     ],
-    "as_of_detail_unemployment_old": "2026-07",
+    "as_of_detail_unemployment_old": "2026-08",
     "as_of_detail_unemployment_new": "2026-08",
     "as_of_detail_inflation_unchanged": "2026-08"
   },
@@ -45,11 +56,11 @@
       "section": "MACRO_SERIES",
       "part": 1,
       "manifest_schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
-      "old_section_sha256": "f588c3bd1970bd9a1460ab8e96422d26342a692527ee857e8e3732fca20e7ff8",
-      "new_section_sha256": "6e12cf178fe89262fefe268ba2160f868886cbc4f301e1dab2ba8ab0def1b160",
-      "old_part_sha256": "d4926eb636c51fa692db8d3a1dcce503ca7d0115465c371351aa5f19f45087bf",
-      "new_part_sha256": "f99c6c57cfde0aea32fcd11a62232c00af34b64f19a95c8493de29c7371b52b5",
-      "byte_delta": 15,
+      "old_section_sha256": "6e12cf178fe89262fefe268ba2160f868886cbc4f301e1dab2ba8ab0def1b160",
+      "new_section_sha256": "25514cb017b3f1d23b696cdcc0d2d212d787069d53d02bb1fbbe1292b3c1a13f",
+      "old_part_sha256": "f99c6c57cfde0aea32fcd11a62232c00af34b64f19a95c8493de29c7371b52b5",
+      "new_part_sha256": "b155aec08e68faa189d8d191fb5344062d331e29a618596bc90e198e6e472bc3",
+      "byte_delta": 0,
       "changed_payload_parts": [
         1
       ],
@@ -78,11 +89,11 @@
       "section": "MACRO_THERMOMETER_DATA",
       "part": 0,
       "manifest_schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
-      "old_section_sha256": "226efbdc47cf2a975e1e3c696ac3f237fbb80c5d05f67779948130f4e78fda53",
-      "new_section_sha256": "d8a2b6ef29207b91ace00033896ceb39063253e93e3517f8abb35bf4c9c817c3",
-      "old_part_sha256": "a32485e415d5c097ecdfde384fd4c657c9b82d441e7c9970a306e9718918a686",
-      "new_part_sha256": "09b9d01268033317b44584447a0a39f98899f8213720f4e5e80c46617fbc9f30",
-      "byte_delta": -7,
+      "old_section_sha256": "d8a2b6ef29207b91ace00033896ceb39063253e93e3517f8abb35bf4c9c817c3",
+      "new_section_sha256": "de17275b62eb14a48606b99ca8d291ab6c312d489a8b6c3d7b10b968dc7b8967",
+      "old_part_sha256": "09b9d01268033317b44584447a0a39f98899f8213720f4e5e80c46617fbc9f30",
+      "new_part_sha256": "365a6178baa8a0d09052734d7b6dc71f70f336a489c305ce38b11c9100b6b598",
+      "byte_delta": 1,
       "changed_payload_parts": [
         0
       ],
