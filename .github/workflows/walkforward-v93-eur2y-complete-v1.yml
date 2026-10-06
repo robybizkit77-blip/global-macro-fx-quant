@@ -1,110 +1,63 @@
 name: Walkforward V93 EUR 2Y Complete V1
 
 on:
-  push:
-    branches:
-      - validation-walkforward-eur2y-complete-v1-2026-10-06
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  replay:
+  verify-frozen-benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install browser
-        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
-      - name: Recover immutable certified EUR 2Y history
-        shell: bash
+
+      - name: Verify frozen data-completeness extension
         run: |
-          git fetch origin 1fcb585e56d71308a4827372faac01008dbb29df --depth=1
-          git show 1fcb585e56d71308a4827372faac01008dbb29df:history/ECB_EUR_AAA_2Y_2016_2026_CANONICAL_V1.json > /tmp/eur2y.json
-      - name: Extract exact original V93 and extend data only
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p=Path('.github/workflows/historical-walkforward-v93.yml')
-          text=p.read_text()
-          start=text.index("cat > walkforward.js <<'EOF'")+len("cat > walkforward.js <<'EOF'")
-          end=text.index('\n          EOF',start)
-          js=text[start:end]
-          js='\n'.join(line[10:] if line.startswith('          ') else line for line in js.splitlines())
-          anchor="await page.waitForTimeout(2500);"
-          inject="""await page.waitForTimeout(2500);\n            const frozenPrice=JSON.parse(fs.readFileSync('history/ECB_FX_G8_2018_2026_CANONICAL_V1.json','utf8'));\n            const eurHist=JSON.parse(fs.readFileSync('/tmp/eur2y.json','utf8'));\n            await page.evaluate(({priceRows,eurHist})=>{\n              window.__GMFQ_FROZEN_PRICE_ROWS=priceRows;\n              const obs=eurHist.observations||[];\n              const series={id:'EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY',label:'EUR AAA Svensson spot 2Y',category:'Rates',dates:obs.map(x=>x.date),values:obs.map(x=>Number(x.value)),frequency:'Daily - businessweek',unit:'Percent per annum',source_file:'ECB Data Portal YC · YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'};\n              S.EUR=(S.EUR||[]).filter(x=>x.id!==series.id); S.EUR.push(series);\n            },{priceRows:frozenPrice.rows,eurHist});"""
-          if anchor not in js: raise SystemExit('page anchor not found')
-          js=js.replace(anchor,inject,1)
-          old_price="const prices=(D?.prices||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
-          new_price="const prices=(window.__GMFQ_FROZEN_PRICE_ROWS||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
-          if old_price not in js: raise SystemExit('price source not found')
-          js=js.replace(old_price,new_price,1)
-          js,n=re.subn(r"(const\s+HIST_2Y_IDS\s*=\s*\{\s*)",r"\1EUR:'EUR_ECB_AAA_SVENSSON_SPOT_2Y_HISTORY',\n                ",js,count=1)
-          if n!=1: raise SystemExit('HIST_2Y_IDS insertion failed')
-          js,n=re.subn(r"\s*if\s*\(c\s*===\s*'EUR'\)\s*return\s+null\s*;",'',js,count=1)
-          if n!=1: raise SystemExit('EUR WITHHELD removal failed')
-          js=js.replace("test:'HISTORICAL_WALKFORWARD_V93_2026-10-01'","test:'HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06'",1)
-          js=js.replace("status:'PSEUDO_OOS_RECONSTRUCTIBLE_CORE_ONLY'","status:'PSEUDO_OOS_DATA_COMPLETENESS_EXTENSION_EUR_2Y'",1)
-          Path('/tmp/walkforward-eur2y.js').write_text(js)
-          PY
-      - name: Run extended walk-forward
-        shell: bash
-        run: |
-          NODE_PATH="$PWD/node_modules" node /tmp/walkforward-eur2y.js | tee /tmp/walkforward-eur2y.log
-          cp validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json /tmp/walkforward-eur2y-result.json
-      - name: Restore legacy golden and assert governance
-        shell: bash
-        run: |
-          git checkout -- validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          p=Path('/tmp/walkforward-eur2y-result.json')
+
+          p=Path('validation/HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06.json')
+          assert p.exists(), 'extended benchmark missing'
           x=json.loads(p.read_text())
-          old=json.loads(Path('validation/HISTORICAL_WALKFORWARD_V93_2026-10-01.json').read_text())
-          assert x['rules_fingerprint']=='3356baf0'
-          assert x['sample']['checkpoint_count']==105 and x['sample']['pair_count']==28
+
+          assert x['test']=='HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06'
           assert x['status']=='PSEUDO_OOS_DATA_COMPLETENESS_EXTENSION_EUR_2Y'
-          x['methodology']['rates']='Validated same-basis 2Y historical series for all 8 G8 currencies, 2016-2026; EUR added from official ECB AAA Svensson 2Y spot history without splicing.'
-          x['methodology']['exclusions']=[v for v in x['methodology']['exclusions'] if 'EUR Rates historical' not in v]
-          x['data_completeness_extension']={
-            'type':'DATA_COMPLETENESS_EXTENSION',
-            'added':'EUR official ECB AAA Svensson 2Y same-basis history',
-            'source_series_key':'YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y',
-            'source_commit':'1fcb585e56d71308a4827372faac01008dbb29df',
-            'legacy_withheld':old['quality_counts_4w']['WITHHELD'],
-            'extended_withheld':x['quality_counts_4w']['WITHHELD'],
-            'withheld_reduction':old['quality_counts_4w']['WITHHELD']-x['quality_counts_4w']['WITHHELD'],
-            'model_rules_changed':False,
-            'rules_fingerprint_unchanged':'3356baf0'
+          assert x['rules_fingerprint']=='3356baf0'
+          assert x['sample']['checkpoint_count']==105
+          assert x['sample']['pair_count']==28
+          assert x['quality_counts_4w']=={
+            'CONTRASTO STRUTTURALE FORTE':395,
+            'VANTAGGIO RELATIVO PARZIALE':1334,
+            'PILASTRI DIVISI':436,
+            'NESSUN CONTRASTO':551,
+            'WITHHELD':224
           }
-          p.write_text(json.dumps(x,indent=2,ensure_ascii=False)+'\n')
-          print(json.dumps(x['data_completeness_extension'],indent=2,ensure_ascii=False))
+
+          e=x['data_completeness_extension']
+          assert e['type']=='DATA_COMPLETENESS_EXTENSION'
+          assert e['source_series_key']=='YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'
+          assert e['source_commit']=='1fcb585e56d71308a4827372faac01008dbb29df'
+          assert e['legacy_withheld']==926
+          assert e['extended_withheld']==224
+          assert e['withheld_reduction']==702
+          assert e['model_rules_changed'] is False
+          assert e['rules_fingerprint_unchanged']=='3356baf0'
+
+          assert 'EUR Rates historical same-basis chain WITHHELD' not in x['methodology']['exclusions']
+          assert 'all 8 G8 currencies' in x['methodology']['rates']
+
+          print(json.dumps({
+            'status':'PASS',
+            'rules_fingerprint':x['rules_fingerprint'],
+            'quality_counts_4w':x['quality_counts_4w'],
+            'data_completeness_extension':e,
+            'strong_84d':x['results']['84']['strong'],
+            'strong_basket_84d':x['results']['84']['strong_basket']
+          },indent=2,ensure_ascii=False))
           PY
-          git diff --exit-code
-      - name: Freeze separate extended benchmark
-        shell: bash
-        run: |
-          cp /tmp/walkforward-eur2y-result.json validation/HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add validation/HISTORICAL_WALKFORWARD_V93_EUR_2Y_COMPLETE_V1_2026-10-06.json
-          git commit -m "Freeze V93 EUR 2Y data-completeness extension [skip ci]"
-          git push origin HEAD:validation-walkforward-eur2y-complete-v1-2026-10-06
-      - name: Upload extension evidence
-        uses: actions/upload-artifact@v4
-        with:
-          name: walkforward-v93-eur2y-complete-v1
-          if-no-files-found: error
-          retention-days: 14
-          path: |
-            /tmp/walkforward-eur2y-result.json
-            /tmp/walkforward-eur2y.log
+
+      - name: Confirm repository untouched
+        run: git diff --exit-code
