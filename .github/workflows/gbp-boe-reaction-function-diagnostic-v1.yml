@@ -1,0 +1,36 @@
+name: GBP BoE Reaction Function Diagnostic V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/run_gbp_boe_reaction_function_diagnostic_v1.py'
+      - 'history/pit_v1/GBP_AWE_K54L_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_CPI_SERVICES_D7NN_CERTIFIED_VINTAGES_2018_2026.csv'
+      - 'history/pit_v1/GBP_BOE_OIS_SPOT_2Y_DAILY_2018_2026.csv'
+      - '.github/workflows/gbp-boe-reaction-function-diagnostic-v1.yml'
+permissions:
+  contents: write
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run GBP BoE reaction function diagnostic
+        run: python validation/run_gbp_boe_reaction_function_diagnostic_v1.py
+      - name: Confirm engine and live data untouched
+        run: git diff --exit-code -- engine live_data
+      - name: Commit diagnostic evidence only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/GBP_BOE_REACTION_FUNCTION_DIAGNOSTIC_V1_2026-10-06.json
+          git diff --cached --quiet || git commit -m "Add GBP BoE reaction function diagnostic evidence"
+          git fetch origin audit-minimum-robust-pit-dataset-2026-10-06
+          git rebase origin/audit-minimum-robust-pit-dataset-2026-10-06
+          git push origin HEAD:audit-minimum-robust-pit-dataset-2026-10-06
