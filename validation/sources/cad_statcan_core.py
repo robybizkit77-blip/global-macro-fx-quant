@@ -27,6 +27,11 @@ def heat_contract(dim:str):
 def resolve_macro_series_id(dim:str,heat_id:str)->str:
  rows=load_json(SERIES_PATH)['CAD']
  by={str(r.get('id')):r for r in rows if isinstance(r,dict) and r.get('id') is not None}
+ explicit={'CA_CPI_HEADLINE_YOY':'CA_CPI_HEADLINE_YOY_history_value'}
+ if heat_id in explicit:
+  target=explicit[heat_id]
+  if target not in by: raise ValueError(f'CAD canonical target missing for {heat_id}: {target}')
+  return target
  direct=[heat_id,f'CA_{heat_id}_history_value',f'CAD_{heat_id}_history_value',f'CA_{heat_id}_history_{heat_id}']
  hits=[x for x in dict.fromkeys(direct) if x in by]
  if len(hits)==1:return hits[0]
