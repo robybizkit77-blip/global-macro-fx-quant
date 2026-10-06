@@ -1,0 +1,96 @@
+{
+  "schema": "GMFQ_REACTION_FUNCTION_G8_PIT_TEST_READINESS_V1",
+  "created_at": "2026-10-06",
+  "status": "PASS_METHOD_READINESS_ONLY",
+  "purpose": "Determine which central-bank-specific reaction-function hypotheses can be tested with currently certified point-in-time data without revised-history substitution or proxy leakage.",
+  "principles": [
+    "Do not compare banks using different data-quality standards.",
+    "Do not infer a direct labour channel for a price-stability-primary bank when the wage/inflation bridge is missing.",
+    "Do not infer a dual-mandate labour channel when historical PIT labour is unavailable.",
+    "Rates/front-end confirmation may be tested only where a same-basis historical rate series exists.",
+    "WITHHELD means no vote and no synthetic fallback."
+  ],
+  "banks": {
+    "FED": {
+      "currency": "USD",
+      "reaction_class": "DIRECT_DUAL_MANDATE",
+      "required_test": "Labour direct + inflation direct -> Fed expectations/front-end -> USD",
+      "macro_pit_labour": "WITHHELD",
+      "front_end_same_basis_history": "NOT_CERTIFIED_IN_CURRENT_MINIMUM_BUNDLE",
+      "test_status": "BLOCKED",
+      "blocker": "Historical PIT labour is unavailable; a Fed-vs-ECB labour comparison would be methodologically invalid today."
+    },
+    "ECB": {
+      "currency": "EUR",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_test": "Labour -> wages/services/domestic inflation -> ECB expectations/front-end -> EUR",
+      "macro_pit_labour": "ELIGIBLE_PARTIAL",
+      "wages_pit": "PARTIALLY_CERTIFIED_2018_2026",
+      "services_pit": "CERTIFIED_2024_2026_FIRST_PUBLISHED",
+      "front_end_same_basis_history": "EUR_2Y_CERTIFIED_2016_2026",
+      "test_status": "DIAGNOSTIC_TESTED",
+      "latest_assessment": "WAGES_PLUS_2Y_20D_OOS_POSITIVE_BUT_NOT_STATISTICALLY_LOCKED"
+    },
+    "BOE": {
+      "currency": "GBP",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_test": "Labour tightness -> wages/services inflation -> BoE/front-end -> GBP",
+      "macro_pit_labour": "ELIGIBLE_FROM_ONS_A01_VINTAGES",
+      "wages_services_pit": "NOT_CERTIFIED_IN_CURRENT_MINIMUM_BUNDLE",
+      "front_end_same_basis_history": "NOT_CERTIFIED_IN_CURRENT_MINIMUM_BUNDLE",
+      "test_status": "BLOCKED_MEDIATION_LAYER"
+    },
+    "BOC": {
+      "currency": "CAD",
+      "reaction_class": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "required_test": "Labour/slack direct -> BoC/front-end -> CAD, conditioned by inflation anchor",
+      "macro_pit_labour": "ELIGIBLE_CORE",
+      "direct_labour_test": "AVAILABLE_AND_ALREADY_OOS_TESTED",
+      "front_end_same_basis_history": "NOT_CERTIFIED_IN_CURRENT_MINIMUM_BUNDLE",
+      "test_status": "DIRECT_CHANNEL_TESTABLE_NOW",
+      "latest_assessment": "CAD labour shows materially stronger medium-horizon OOS behaviour than EUR direct labour, but is not yet a full BoC reaction-function test without rates/inflation conditioning."
+    },
+    "RBA": {
+      "currency": "AUD",
+      "reaction_class": "DIRECT_DUAL_MANDATE",
+      "required_test": "Labour/full-employment gap direct + inflation direct -> RBA/front-end -> AUD",
+      "macro_pit_labour": "WITHHELD_HISTORICAL_PIT",
+      "test_status": "BLOCKED"
+    },
+    "RBNZ": {
+      "currency": "NZD",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_test": "Labour/slack -> inflation outlook -> RBNZ/front-end -> NZD",
+      "macro_pit_labour": "WITHHELD_HISTORICAL_PIT",
+      "test_status": "BLOCKED"
+    },
+    "SNB": {
+      "currency": "CHF",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_test": "Activity/labour -> inflation forecast -> SNB rates/FX channel -> CHF",
+      "macro_pit_labour": "WITHHELD_HISTORICAL_PIT",
+      "test_status": "BLOCKED"
+    },
+    "BOJ": {
+      "currency": "JPY",
+      "reaction_class": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "required_test": "Labour tightness -> wages -> sustainable inflation -> BoJ/rates -> JPY",
+      "macro_pit_labour": "WITHHELD_PENDING_EVENT_TIME_POLICY",
+      "test_status": "BLOCKED_PENDING_EVENT_TIME_POLICY"
+    }
+  },
+  "valid_cross_class_comparison_now": {
+    "direct_employment_role_control": "CAD",
+    "mediated_price_stability_case": "EUR",
+    "interpretation": "Use CAD versus EUR only as a diagnostic class contrast, not as a substitute for Fed versus ECB."
+  },
+  "priority_order": [
+    "1. Build USD historical PIT labour and US 2Y same-basis front-end history to unlock true Fed-vs-ECB comparison.",
+    "2. Build GBP wages/services PIT plus UK front-end history to test BoE mediated labour channel.",
+    "3. Add CAD front-end and inflation-conditioning layer to convert current CAD labour attribution into a true BoC reaction-function test.",
+    "4. Keep AUD/NZD/CHF/JPY WITHHELD until historical PIT/event-time requirements are met."
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "threshold_tuning": false
+}
