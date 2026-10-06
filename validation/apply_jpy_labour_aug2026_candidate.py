@@ -11,7 +11,7 @@ MANIFEST=ROOT/'live_data'/'manifest.v2.json'
 OUT=ROOT/'validation'/'JPN_LABOUR_AUG2026_CANDIDATE_AUDIT.json'
 
 PERIOD='2026-08'
-VALUE=2.5
+VALUE=2.6
 SOURCE='Statistics Bureau of Japan / e-Stat'
 RELEASE_DATE='2026-10-02'
 
@@ -61,48 +61,45 @@ def main():
     if len(matches)!=1:
         raise SystemExit(f'Expected exactly one JPY monthly Disoccupazione series, found {len(matches)}')
     s=matches[0]
-    if s.get('last_date')!='2026-07' or float(s.get('last_value'))!=2.4:
-        raise SystemExit(f'Unexpected old JPY unemployment state: {s.get("last_date")} {s.get("last_value")}')
-    if s.get('dates',[])[-3:]!=['2026-05','2026-06','2026-07']:
+    if s.get('last_date')!=PERIOD or float(s.get('last_value'))!=2.5:
+        raise SystemExit(f'Unexpected staged JPY unemployment state: {s.get("last_date")} {s.get("last_value")}')
+    if s.get('dates',[])[-3:]!=['2026-06','2026-07','2026-08']:
         raise SystemExit('Unexpected JPY unemployment date tail')
-    if [float(x) for x in s.get('values',[])[-3:]]!=[2.5,2.5,2.4]:
-        raise SystemExit('Unexpected JPY unemployment value tail')
-    if PERIOD in s.get('dates',[]):
-        raise SystemExit('2026-08 already exists in JPY unemployment series')
+    if [float(x) for x in s.get('values',[])[-3:]]!=[2.5,2.4,2.5]:
+        raise SystemExit('Unexpected staged JPY unemployment value tail')
     if len(s['dates'])!=len(s['values']):
         raise SystemExit('JPY unemployment dates/values length mismatch')
     old_dates=list(s['dates']); old_values=list(s['values']); old_series_n=len(old_dates)
-    s['dates'].append(PERIOD)
-    s['values'].append(VALUE)
-    s['last_date']=PERIOD
+    s['values'][-1]=VALUE
     s['last_value']=VALUE
-    if s['dates'][:-1]!=old_dates or s['values'][:-1]!=old_values:
-        raise SystemExit('JPY unemployment update is not append-only')
+    if s['dates']!=old_dates or s['values'][:-1]!=old_values[:-1]:
+        raise SystemExit('JPY unemployment correction changed anything except the existing Aug value')
 
     jpy=thermo['currencies']['JPY']
     labour=jpy['labour']
     expected={
         'series_id':'JP_UNEMP_RATE','source':SOURCE,'frequency':'M','transformation':'level',
-        'latest_value':2.4,'as_of':'2026-07','percentile':12.1,'temperature_score':12.1,
-        'temperature_label':'MOLTO_FREDDO','direction':'SCENDE','acceleration':'RALLENTA'
+        'latest_value':2.5,'as_of':PERIOD,'percentile':31.7,'temperature_score':31.7,
+        'temperature_label':'FREDDO','direction':'SALE','acceleration':'ACCELERA'
     }
     for k,v in expected.items():
         if labour.get(k)!=v:
-            raise SystemExit(f'Unexpected old thermometer {k}: {labour.get(k)!r} != {v!r}')
+            raise SystemExit(f'Unexpected staged thermometer {k}: {labour.get(k)!r} != {v!r}')
     hist=[float(x) for x in labour['history']]
-    if len(hist)!=120 or hist[-5:]!=[2.7,2.5,2.5,2.5,2.4]:
-        raise SystemExit('Unexpected JPY labour 120m history geometry/tail')
+    if len(hist)!=120 or hist[-5:]!=[2.5,2.5,2.5,2.4,2.5]:
+        raise SystemExit('Unexpected staged JPY labour 120m history geometry/tail')
     detail=jpy.get('as_of_detail')
     if not isinstance(detail,dict):
         raise SystemExit('Missing JPY currency-level as_of_detail')
-    if detail.get('unemployment')!='2026-07':
+    if detail.get('unemployment')!=PERIOD:
         raise SystemExit(f'Unexpected JPY as_of_detail.unemployment: {detail.get("unemployment")!r}')
     old_inflation_asof=detail.get('inflation')
 
-    new_hist=hist[1:]+[VALUE]
+    new_hist=list(hist)
+    new_hist[-1]=VALUE
     pct=midrank(new_hist,VALUE)
-    new_dir=direction(hist[-1],VALUE)
-    new_acc=acceleration(hist[-2],hist[-1],VALUE)
+    new_dir=direction(hist[-2],VALUE)
+    new_acc=acceleration(hist[-3],hist[-2],VALUE)
     labour['latest_value']=VALUE
     labour['as_of']=PERIOD
     labour['percentile']=pct
@@ -120,7 +117,7 @@ def main():
         if ccy!='JPY' and ta[ccy]!=tb[ccy]:
             raise SystemExit(f'Unexpected thermometer mutation outside JPY: {ccy}')
     before_jpy=copy.deepcopy(tb['JPY']); after_jpy=copy.deepcopy(ta['JPY'])
-    before_labour=before_jpy.pop('labour'); after_labour=after_jpy.pop('labour')
+    before_jpy.pop('labour'); after_jpy.pop('labour')
     before_detail=before_jpy.pop('as_of_detail'); after_detail=after_jpy.pop('as_of_detail')
     if before_jpy!=after_jpy:
         raise SystemExit('Unexpected JPY thermometer mutation outside labour/as_of_detail')
@@ -159,19 +156,20 @@ def main():
         raise SystemExit('D.json changed; forbidden for raw JPY labour refresh')
 
     result={
-        'schema_version':'GMFQ_JPN_LABOUR_AUG2026_CANDIDATE_V1',
+        'schema_version':'GMFQ_JPN_LABOUR_AUG2026_CORRECTION_V2',
         'status':'PASS','source':SOURCE,'release_date':RELEASE_DATE,'period':PERIOD,
         'official_unemployment_rate_sa':VALUE,
         'macro_series':{
-            'old_last_date':'2026-07','old_last_value':2.4,'new_last_date':PERIOD,'new_last_value':VALUE,
-            'old_n':old_series_n,'new_n':len(s['dates']),'append_only':s['dates'][:-1]==old_dates and s['values'][:-1]==old_values
+            'old_last_date':PERIOD,'old_last_value':2.5,'new_last_date':PERIOD,'new_last_value':VALUE,
+            'old_n':old_series_n,'new_n':len(s['dates']),'replace_existing':True,
+            'dates_unchanged':s['dates']==old_dates,'history_before_tail':old_values[-3:],'history_after_tail':s['values'][-3:]
         },
         'thermometer':{
-            'old_as_of':'2026-07','new_as_of':PERIOD,'old_value':2.4,'new_value':VALUE,
-            'old_percentile':12.1,'new_percentile':pct,'old_label':'MOLTO_FREDDO','new_label':temp_label(pct),
-            'old_direction':'SCENDE','new_direction':new_dir,'old_acceleration':'RALLENTA','new_acceleration':new_acc,
+            'old_as_of':PERIOD,'new_as_of':PERIOD,'old_value':2.5,'new_value':VALUE,
+            'old_percentile':31.7,'new_percentile':pct,'old_label':'FREDDO','new_label':temp_label(pct),
+            'old_direction':'SALE','new_direction':new_dir,'old_acceleration':'ACCELERA','new_acceleration':new_acc,
             'history_n':len(new_hist),'history_tail':new_hist[-5:],
-            'as_of_detail_unemployment_old':'2026-07','as_of_detail_unemployment_new':PERIOD,
+            'as_of_detail_unemployment_old':PERIOD,'as_of_detail_unemployment_new':PERIOD,
             'as_of_detail_inflation_unchanged':old_inflation_asof
         },
         'runtime_updates':[update_series,update_thermo],
