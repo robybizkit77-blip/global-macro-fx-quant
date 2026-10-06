@@ -15,29 +15,22 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect frozen macro archive structure
+      - name: Audit historical macro and 2Y input availability
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json
+          import json,re
           p=Path('history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js')
-          t=p.read_text(errors='ignore').strip()
-          eq=t.find('='); end=t.rfind(';')
-          x=json.loads(t[eq+1:end if end>eq else None].strip())
-          print('ROOT_TYPE',type(x).__name__)
-          if isinstance(x,dict):
-            print('ROOT_KEYS',list(x.keys())[:50])
-            for k,v in x.items():
-              print('KEY',k,'TYPE',type(v).__name__)
-              if isinstance(v,dict): print(' SUBKEYS',list(v.keys())[:30])
-              elif isinstance(v,list): print(' LEN',len(v),'FIRST_TYPE',type(v[0]).__name__ if v else None,'FIRST',str(v[0])[:1500] if v else '')
-          for c in ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']:
-            def walk(o,path='root',depth=0):
-              if depth>3:return
-              if isinstance(o,dict):
-                if c in o:
-                  v=o[c]; print('FOUND',c,'AT',path,'TYPE',type(v).__name__,'SAMPLE',str(v)[:3000])
-                for kk,vv in list(o.items())[:50]: walk(vv,path+'.'+str(kk),depth+1)
-            walk(x)
+          t=p.read_text(errors='ignore').strip(); x=json.loads(t[t.find('=')+1:t.rfind(';')].strip())
+          ids={
+            'USD':'US_DGS2_history_DGS2','GBP':'GBP_RATES_2016_2026_2Y','JPY':'JPY_RATES_2016_2026_2Y',
+            'CHF':'CH_CONFED_SPOT_2Y_history_value_pct','CAD':'CAD_RATES_2016_2026_2Y','AUD':'AU_FCMYGBAG2D_history_FCMYGBAG2D','NZD':'NZD_RATES_2016_2026_RBNZ_B2_2Y'}
+          for c,series in x.items():
+            cats={cat:sum(1 for s in series if s.get('category')==cat) for cat in ['Crescita','Lavoro']}
+            rid=ids.get(c)
+            rs=next((s for s in series if s.get('id')==rid),None) if rid else None
+            print(c,'TOTAL',len(series),'CATS',cats,'RATE_ID',rid,'RATE_FOUND',bool(rs),'RATE_N',len(rs.get('values',[])) if rs else None)
+            print(' LABOUR_IDS',[s.get('id') for s in series if s.get('category')=='Lavoro'])
+            print(' GROWTH_IDS',[s.get('id') for s in series if s.get('category')=='Crescita'])
           PY
