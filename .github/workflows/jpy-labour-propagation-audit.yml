@@ -1,5 +1,6 @@
 name: JPY Labour Propagation Audit
 
+# Post-correction certification trigger; runtime data are unchanged by this commit.
 on:
   push:
     branches:
