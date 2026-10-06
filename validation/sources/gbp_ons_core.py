@@ -36,18 +36,10 @@ CONFIG: dict[str, dict[str, Any]] = {
 }
 
 MONTHS = {
-    "JAN": 1, "JANUARY": 1,
-    "FEB": 2, "FEBRUARY": 2,
-    "MAR": 3, "MARCH": 3,
-    "APR": 4, "APRIL": 4,
-    "MAY": 5,
-    "JUN": 6, "JUNE": 6,
-    "JUL": 7, "JULY": 7,
-    "AUG": 8, "AUGUST": 8,
-    "SEP": 9, "SEPT": 9, "SEPTEMBER": 9,
-    "OCT": 10, "OCTOBER": 10,
-    "NOV": 11, "NOVEMBER": 11,
-    "DEC": 12, "DECEMBER": 12,
+    "JAN": 1, "JANUARY": 1, "FEB": 2, "FEBRUARY": 2, "MAR": 3, "MARCH": 3,
+    "APR": 4, "APRIL": 4, "MAY": 5, "JUN": 6, "JUNE": 6, "JUL": 7, "JULY": 7,
+    "AUG": 8, "AUGUST": 8, "SEP": 9, "SEPT": 9, "SEPTEMBER": 9,
+    "OCT": 10, "OCTOBER": 10, "NOV": 11, "NOVEMBER": 11, "DEC": 12, "DECEMBER": 12,
 }
 
 
@@ -59,16 +51,15 @@ def parse_month(row: dict[str, Any]) -> str:
     date = str(row.get("date", "")).strip()
     year = str(row.get("year", "")).strip()
     month = str(row.get("month", "")).strip().upper()
-
     if date:
         parts = date.replace("-", " ").split()
         if len(parts) >= 2 and parts[0].isdigit():
             y = int(parts[0])
             m = MONTHS.get(parts[1].upper())
             if m:
-                return f"{y:04d}-{m:02d}"
+                return f"{y:04d}-{m:02d}-01"
     if year.isdigit() and month in MONTHS:
-        return f"{int(year):04d}-{MONTHS[month]:02d}"
+        return f"{int(year):04d}-{MONTHS[month]:02d}-01"
     raise ValueError(f"cannot parse ONS monthly period from row: {row}")
 
 
@@ -113,19 +104,13 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
     series = load_json(SERIES_PATH)
     rows = series["GBP"]
     by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
-    candidates = [
-        heat_series_id,
-        f"UK_{heat_series_id}_history_value",
-        f"GB_{heat_series_id}_history_value",
-        f"GBP_{heat_series_id}_history_value",
-        f"UK_{heat_series_id}_history_{heat_series_id}",
-    ]
+    candidates = [heat_series_id, f"UK_{heat_series_id}_history_value", f"GB_{heat_series_id}_history_value",
+                  f"GBP_{heat_series_id}_history_value", f"UK_{heat_series_id}_history_{heat_series_id}"]
     hits = [cid for cid in dict.fromkeys(candidates) if cid in by_id]
     if len(hits) == 1:
         return hits[0]
     if len(hits) > 1:
         raise ValueError(f"ambiguous GBP {dimension} canonical IDs: {hits}")
-
     semantic: list[dict[str, Any]] = []
     for row in rows:
         text = " ".join(str(row.get(k, "")) for k in ("id", "label", "name", "title", "indicator")).lower()
@@ -134,16 +119,12 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
         elif dimension == "labour" and ("mgsx" in text or "unemp" in text or "disoccup" in text):
             semantic.append(row)
     if len(semantic) != 1:
-        raise ValueError(
-            f"cannot resolve unique GBP {dimension} MACRO_SERIES row; "
-            f"heatmap series_id={heat_series_id!r}; semantic_hits={len(semantic)}"
-        )
+        raise ValueError(f"cannot resolve unique GBP {dimension} MACRO_SERIES row; heatmap series_id={heat_series_id!r}; semantic_hits={len(semantic)}")
     return str(semantic[0]["id"])
 
 
 def build_api_url(dimension: str) -> str:
-    uri = CONFIG[dimension]["uri"]
-    return f"{API_BASE}?{urllib.parse.urlencode({'uri': uri})}"
+    return f"{API_BASE}?{urllib.parse.urlencode({'uri': CONFIG[dimension]['uri']})}"
 
 
 def fetch_payload(dimension: str) -> dict[str, Any]:
@@ -162,32 +143,17 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
     prior_period, prior_value = observations[-2]
     heat_series_id, frequency, transformation = resolve_heatmap_contract(dimension)
     macro_series_id = resolve_macro_series_id(dimension, heat_series_id)
-
     candidate = {
-        "currency": "GBP",
-        "dimension": dimension,
-        "macro_series_id": macro_series_id,
-        "observation_date": latest_period,
-        "value": latest_value,
-        "source": SOURCE,
-        "source_url": cfg["source_url"],
-        "series_id": heat_series_id,
-        "frequency": frequency,
-        "transformation": transformation,
-        "unit": cfg["unit"],
+        "currency": "GBP", "dimension": dimension, "macro_series_id": macro_series_id,
+        "observation_date": latest_period, "value": latest_value, "source": SOURCE,
+        "source_url": cfg["source_url"], "series_id": heat_series_id, "frequency": frequency,
+        "transformation": transformation, "unit": cfg["unit"],
     }
     audit = {
-        "upstream_series_id": cfg["series_id"],
-        "dataset": cfg["dataset"],
-        "ons_uri": cfg["uri"],
-        "api_url": build_api_url(dimension),
-        "latest_period": latest_period,
-        "latest_value": latest_value,
-        "prior_period": prior_period,
-        "prior_value": prior_value,
-        "delta": latest_value - prior_value,
-        "candidate_only": True,
-        "live_data_written": False,
+        "upstream_series_id": cfg["series_id"], "dataset": cfg["dataset"], "ons_uri": cfg["uri"],
+        "api_url": build_api_url(dimension), "latest_period": latest_period, "latest_value": latest_value,
+        "prior_period": prior_period, "prior_value": prior_value, "delta": latest_value - prior_value,
+        "candidate_only": True, "live_data_written": False,
     }
     return candidate, audit
 
@@ -195,18 +161,14 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Build GBP core macro candidate from official ONS published time-series API")
     ap.add_argument("--dimension", choices=sorted(CONFIG), required=True)
-    ap.add_argument("--fixture", type=Path, help="Read deterministic ONS JSON fixture instead of network")
+    ap.add_argument("--fixture", type=Path)
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--audit-output", type=Path)
     args = ap.parse_args()
-
     if args.fixture:
-        payload = load_json(args.fixture)
-        mode = "fixture"
+        payload = load_json(args.fixture); mode = "fixture"
     else:
-        payload = fetch_payload(args.dimension)
-        mode = "live"
-
+        payload = fetch_payload(args.dimension); mode = "live"
     candidate, audit = build_candidate(args.dimension, payload)
     audit["mode"] = mode
     args.output.parent.mkdir(parents=True, exist_ok=True)
