@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_ECB_FX_HISTORY_VALIDATION_V1",
+  "status": "PASS",
+  "source": "ECB official euro reference rates",
+  "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+  "requested_start": "2018-01-01",
+  "requested_end": "2026-09-30",
+  "first_observation": "2018-01-02",
+  "last_observation": "2026-09-30",
+  "observation_count": 2239,
+  "currency_count": 8,
+  "pair_count": 28,
+  "anchor_row": {
+    "USD": 1.1355,
+    "EUR": 1.0,
+    "GBP": 0.85463,
+    "JPY": 178.27,
+    "CHF": 0.9478,
+    "CAD": 1.6105,
+    "AUD": 1.6297,
+    "NZD": 2.0115
+  },
+  "max_anchor_row_error": 0.0,
+  "max_pair_anchor_error": 0.0,
+  "max_triangular_error": 5.684341886080802e-14,
+  "frozen_oos_anchor_match": true,
+  "live_data_modified": false,
+  "model_rules_modified": false,
+  "rules_fingerprint_expected_unchanged": "3356baf0"
+}
