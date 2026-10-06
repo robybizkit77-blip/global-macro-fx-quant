@@ -1,0 +1,91 @@
+name: AUD ABS Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-aud-abs-v1-2026-10-06
+    paths:
+      - 'validation/sources/aud_abs_core.py'
+      - 'validation/fixtures/aud_abs_cpi_contract.json'
+      - 'validation/fixtures/aud_abs_unemployment_contract.json'
+      - 'validation/test_aud_abs_source.py'
+      - 'validation/validate_macro_source_registry.py'
+      - 'validation/macro_source_registry.json'
+      - '.github/workflows/aud-abs-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic AUD ABS parser-builder contract
+        run: python validation/test_aud_abs_source.py
+      - name: Validate canonical macro source registry
+        run: python validation/validate_macro_source_registry.py
+      - name: Fetch official live ABS inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-aud-abs-live/inflation
+          python validation/sources/aud_abs_core.py --dimension inflation \
+            --output /tmp/gmfq-aud-abs-live/inflation/candidate.json \
+            --audit-output /tmp/gmfq-aud-abs-live/inflation/source-audit.json
+      - name: Pass live AUD inflation candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-aud-abs-live/inflation/candidate.json \
+            --output-dir /tmp/gmfq-aud-abs-live/inflation/built
+      - name: Fetch official live ABS labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-aud-abs-live/labour
+          python validation/sources/aud_abs_core.py --dimension labour \
+            --output /tmp/gmfq-aud-abs-live/labour/candidate.json \
+            --audit-output /tmp/gmfq-aud-abs-live/labour/source-audit.json
+      - name: Pass live AUD labour candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-aud-abs-live/labour/candidate.json \
+            --output-dir /tmp/gmfq-aud-abs-live/labour/built
+      - name: Verify ABS provenance and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out={}
+          for dim in ('inflation','labour'):
+              root=Path('/tmp/gmfq-aud-abs-live')/dim
+              c=json.loads((root/'candidate.json').read_text())
+              a=json.loads((root/'source-audit.json').read_text())
+              s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='AUD' and c['dimension']==dim,c
+              assert c['source']=='Australian Bureau of Statistics',c
+              assert a['mode']=='live' and a['live_data_written'] is False,a
+              assert s['status']=='PASS' and s['live_data_modified'] is False,s
+              assert s['observation_date']==c['observation_date'],(s,c)
+              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+          assert out['inflation']['series_id']=='AU_CPI_HEADLINE_Q_YOY' and out['inflation']['observation_date']=='2026-06',out
+          assert abs(float(out['inflation']['value'])-3.8)<1e-12,out
+          assert out['labour']['series_id']=='AU_UNEMP_RATE',out
+          print(json.dumps({'status':'PASS','source':'Australian Bureau of Statistics','results':out,'live_data_modified':False},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload ABS verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-abs-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-aud-abs-live/inflation/candidate.json
+            /tmp/gmfq-aud-abs-live/inflation/source-audit.json
+            /tmp/gmfq-aud-abs-live/inflation/built/summary.json
+            /tmp/gmfq-aud-abs-live/labour/candidate.json
+            /tmp/gmfq-aud-abs-live/labour/source-audit.json
+            /tmp/gmfq-aud-abs-live/labour/built/summary.json
