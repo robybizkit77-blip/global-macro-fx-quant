@@ -1,0 +1,81 @@
+name: Replay Original Walkforward With Frozen Price
+
+on:
+  push:
+    branches:
+      - validation-walkforward-original-s-frozen-price-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm init -y >/dev/null 2>&1 && npm install --save-dev playwright
+      - name: Extract exact original V9.3 script and swap only Price input
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/historical-walkforward-v93.yml')
+          text=p.read_text()
+          start=text.index("cat > walkforward.js <<'EOF'") + len("cat > walkforward.js <<'EOF'")
+          end=text.index('\n          EOF', start)
+          js=text[start:end]
+          # YAML block indentation is 10 spaces.
+          js='\n'.join(line[10:] if line.startswith('          ') else line for line in js.splitlines())
+          anchor="await page.waitForTimeout(2500);"
+          inject="""await page.waitForTimeout(2500);\n            const frozenPrice=JSON.parse(fs.readFileSync('history/ECB_FX_G8_2018_2026_CANONICAL_V1.json','utf8'));\n            await page.evaluate(rows=>{window.__GMFQ_FROZEN_PRICE_ROWS=rows},frozenPrice.rows);"""
+          if anchor not in js: raise SystemExit('page anchor not found')
+          js=js.replace(anchor,inject,1)
+          old="const prices=(D?.prices||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
+          new="const prices=(window.__GMFQ_FROZEN_PRICE_ROWS||[]).map(r=>({t:parseDate(r.Date),r})).filter(x=>x.t!=null).sort((a,b)=>a.t-b.t);"
+          if old not in js: raise SystemExit('price source line not found')
+          js=js.replace(old,new,1)
+          Path('/tmp/walkforward-frozen.js').write_text(js)
+          print('EXTRACTED_BYTES',len(js))
+          print('PRICE_SWAP_OK',new in js)
+          PY
+      - name: Run exact original logic against frozen ECB Price
+        shell: bash
+        run: |
+          node /tmp/walkforward-frozen.js | tee /tmp/walkforward-frozen.log
+      - name: Assert exact golden parity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('/tmp/walkforward-frozen.log').read_text()
+          expected=[
+            '"CONTRASTO STRUTTURALE FORTE": 316',
+            '"VANTAGGIO RELATIVO PARZIALE": 961',
+            '"PILASTRI DIVISI": 340',
+            '"NESSUN CONTRASTO": 397',
+            '"WITHHELD": 926',
+            '"hit": 0.47151898734177217',
+            '"mean": -0.052889186538895',
+            '"median": -0.05247623147417446'
+          ]
+          missing=[x for x in expected if x not in t]
+          if missing:
+            print('MISSING_GOLDEN_MARKERS',missing)
+            raise SystemExit(1)
+          print('EXACT_GOLDEN_PARITY=PASS')
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload replay log
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-v93-frozen-price-replay
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/walkforward-frozen.log
