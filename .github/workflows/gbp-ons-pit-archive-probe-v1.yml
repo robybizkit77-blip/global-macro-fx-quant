@@ -1,0 +1,49 @@
+name: GBP ONS PIT Archive Probe V1
+
+on:
+  push:
+    branches:
+      - validation-pit-gbp-ons-archive-v1-2026-10-06
+    paths:
+      - 'validation/probe_gbp_ons_release_archive.py'
+      - '.github/workflows/gbp-ons-pit-archive-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official ONS dated release archives
+        run: python validation/probe_gbp_ons_release_archive.py
+      - name: Assert read-only PIT discovery contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-gbp-ons-pit/archive_probe.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['summary']['families_total']==4,x
+          assert x['summary']['families_archive_discoverable']==4,x
+          assert x['summary']['runtime_series_covered']==5,x
+          assert x['guardrails']['live_data_modified'] is False,x
+          assert x['guardrails']['model_rules_modified'] is False,x
+          assert x['guardrails']['rules_fingerprint_expected_unchanged']=='3356baf0',x
+          print(json.dumps(x['summary'],indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-pit-archive-probe-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-gbp-ons-pit/archive_probe.json
