@@ -1,0 +1,95 @@
+{
+  "schema": "GMFQ_JPY_RATES_TRANSMISSION_OOS_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "source_transmission": "validation/JPY_RATES_TRANSMISSION_V1_2026-10-07.json",
+  "source_replay": "validation/JPY_REACTION_FUNCTION_REPLAY_V1_2026-10-06.json",
+  "oos_definition": "same chronological pooled OOS cohort as frozen JPY reaction replay; first 40% excluded",
+  "oos_events": 29,
+  "analysis_20d_fx_outcome_oos": {
+    "jpy2y_state_5obs": {
+      "CONFIRM": {
+        "n": 13,
+        "hit_rate": 0.6923076923076923,
+        "mean": 0.004152351926903958,
+        "median": 0.010890565758556663
+      },
+      "DIVERGE": {
+        "n": 14,
+        "hit_rate": 0.5,
+        "mean": -0.004090085024025538,
+        "median": -0.0006545720761660322
+      },
+      "FLAT": {
+        "n": 2,
+        "hit_rate": 0.5,
+        "mean": 0.0001357558196743245,
+        "median": 0.0001357558196743245
+      }
+    },
+    "jpy2y_state_20obs": {
+      "CONFIRM": {
+        "n": 13,
+        "hit_rate": 0.6153846153846154,
+        "mean": 0.004225447668281363,
+        "median": 0.006276053329888927
+      },
+      "DIVERGE": {
+        "n": 16,
+        "hit_rate": 0.5625,
+        "mean": -0.0036212452084321963,
+        "median": 0.001767411340123723
+      },
+      "FLAT": {
+        "n": 0,
+        "hit_rate": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "diff_state_5obs": {
+      "CONFIRM": {
+        "n": 9,
+        "hit_rate": 0.6666666666666666,
+        "mean": 0.0056380739821125965,
+        "median": 0.002435876173289229
+      },
+      "DIVERGE": {
+        "n": 19,
+        "hit_rate": 0.5789473684210527,
+        "mean": -0.001502020199171697,
+        "median": 0.0053840149530776935
+      },
+      "FLAT": {
+        "n": 1,
+        "hit_rate": 0.0,
+        "mean": -0.025213385702008543,
+        "median": -0.025213385702008543
+      }
+    },
+    "diff_state_20obs": {
+      "CONFIRM": {
+        "n": 8,
+        "hit_rate": 0.75,
+        "mean": 0.006192812211368745,
+        "median": 0.003299082889001331
+      },
+      "DIVERGE": {
+        "n": 21,
+        "hit_rate": 0.5238095238095238,
+        "mean": -0.0025024572065813037,
+        "median": 0.0053840149530776935
+      },
+      "FLAT": {
+        "n": 0,
+        "hit_rate": null,
+        "mean": null,
+        "median": null
+      }
+    }
+  },
+  "interpretation_guardrail": "diagnostic attribution only; no selection/tuning from result",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
