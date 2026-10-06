@@ -30,7 +30,6 @@ jobs:
           start=text.index("cat > walkforward.js <<'EOF'") + len("cat > walkforward.js <<'EOF'")
           end=text.index('\n          EOF', start)
           js=text[start:end]
-          # YAML block indentation is 10 spaces.
           js='\n'.join(line[10:] if line.startswith('          ') else line for line in js.splitlines())
           anchor="await page.waitForTimeout(2500);"
           inject="""await page.waitForTimeout(2500);\n            const frozenPrice=JSON.parse(fs.readFileSync('history/ECB_FX_G8_2018_2026_CANONICAL_V1.json','utf8'));\n            await page.evaluate(rows=>{window.__GMFQ_FROZEN_PRICE_ROWS=rows},frozenPrice.rows);"""
@@ -47,7 +46,7 @@ jobs:
       - name: Run exact original logic against frozen ECB Price
         shell: bash
         run: |
-          node /tmp/walkforward-frozen.js | tee /tmp/walkforward-frozen.log
+          NODE_PATH="$PWD/node_modules" node /tmp/walkforward-frozen.js | tee /tmp/walkforward-frozen.log
       - name: Assert exact golden parity
         shell: bash
         run: |
@@ -62,7 +61,16 @@ jobs:
             '"WITHHELD": 926',
             '"hit": 0.47151898734177217',
             '"mean": -0.052889186538895',
-            '"median": -0.05247623147417446'
+            '"median": -0.05247623147417446',
+            '"hit": 0.48417721518987344',
+            '"mean": -0.10259913446550911',
+            '"median": -0.12587913944271945',
+            '"hit": 0.5463258785942492',
+            '"mean": 0.18855289675144257',
+            '"median": 0.4649024727875428',
+            '"hit": 0.4890738813735692',
+            '"mean": 0.0013758042681298824',
+            '"median": -0.04878992536053728'
           ]
           missing=[x for x in expected if x not in t]
           if missing:
