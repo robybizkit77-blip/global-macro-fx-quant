@@ -1,0 +1,52 @@
+{
+  "schema": "GMFQ_EUR_REACTION_FUNCTION_PIT_SOURCE_FEASIBILITY_V1",
+  "created_at": "2026-10-06",
+  "status": "PARTIAL_FEASIBILITY_CONFIRMED",
+  "scope": "Assess whether euro-area labour mediation can be reconstructed point-in-time using negotiated wages and services/domestic inflation without revised-history substitution.",
+  "engine_guardrails": {
+    "frozen_engine_commit": "ff52198a75cc67e7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "threshold_tuning": false,
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false
+  },
+  "services_inflation": {
+    "status": "PIT_RECONSTRUCTION_FEASIBLE",
+    "official_source": "Eurostat HICP services / ECB HICP publication calendar",
+    "frequency": "monthly",
+    "release_structure": "flash estimate near month-end plus final release around mid-next-month",
+    "event_time_policy": "Use observation only after the relevant official release timestamp/date; prefer flash estimate when historically available, then final release only from its publication time onward.",
+    "revision_policy": "No ex-post revised series may be backfilled into earlier checkpoints.",
+    "assessment": "A services-inflation PIT bridge is structurally feasible because release timing is public and regular."
+  },
+  "negotiated_wages": {
+    "status": "WITHHELD_PENDING_VINTAGE_TABLE",
+    "official_source": "ECB Indicator of Negotiated Wages (INW/legacy STS series)",
+    "frequency": "quarterly",
+    "historical_series_exists": true,
+    "first_release_evidence": [
+      {
+        "reference_period": "2024-Q1",
+        "value_yoy_pct": 4.7,
+        "public_evidence_date": "2024-05-23",
+        "evidence_type": "ECB dated publication citing latest Q1 2024 negotiated-wage release"
+      }
+    ],
+    "risk": "Current long historical series may contain revised/backfilled observations; it cannot be used directly for PIT checkpoints without a certified first-release/vintage availability table.",
+    "activation_condition": "For each quarter used in backtest, certify the first public release date/time and the value observable at that release. If this cannot be established, keep the quarter WITHHELD.",
+    "assessment": "Structurally promising but not yet PIT-eligible."
+  },
+  "reaction_function_test_readiness": {
+    "direct_labour_channel": "AVAILABLE_BUT_DIAGNOSTIC_ONLY_FOR_EUR",
+    "labour_to_services_inflation_channel": "CAN_BE_BUILT_ONCE_SERVICES_PIT_TABLE_IS_MATERIALIZED",
+    "labour_to_negotiated_wages_to_services_channel": "WITHHELD_UNTIL_NEGOTIATED_WAGES_VINTAGES_ARE_CERTIFIED",
+    "full_mediated_ecb_channel": "NOT_READY"
+  },
+  "next_steps": [
+    "Materialize euro-area HICP services PIT release table from official flash/final release calendar.",
+    "Build a quarterly negotiated-wages vintage table using dated ECB releases and archive evidence.",
+    "Require exact first-known date/time and first-known value for every eligible negotiated-wage observation.",
+    "Only after both bridges are certified, rerun EUR direct-labour versus mediated-labour OOS tests without changing weights or thresholds."
+  ]
+}
