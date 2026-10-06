@@ -19,29 +19,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Print AUD canonical macro contract
+      - name: Print AUD target series storage schema
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
           series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          print('HEATMAP_AUD=', json.dumps(heat['currencies']['AUD'], indent=2, ensure_ascii=False))
-          rows=[]
+          targets={'AU_CPI_HEADLINE_Q_YOY_history_value','AU_UNEMP_RATE_history_value'}
           for r in series['AUD']:
-              if not isinstance(r,dict):
+              if not isinstance(r,dict) or r.get('id') not in targets:
                   continue
-              obs=r.get('observations') or r.get('data') or r.get('history') or []
-              first=obs[0] if isinstance(obs,list) and obs else None
-              last=obs[-1] if isinstance(obs,list) and obs else None
-              rows.append({
-                  'id':r.get('id'),
-                  'label':r.get('label'),
-                  'name':r.get('name'),
-                  'frequency':r.get('frequency'),
-                  'source_file':r.get('source_file'),
-                  'first':first,
-                  'last':last,
-              })
-          print('SERIES_AUD=', json.dumps(rows, indent=2, ensure_ascii=False))
+              print('TARGET=',r['id'])
+              print('KEYS=',sorted(r.keys()))
+              for k,v in r.items():
+                  if isinstance(v,list):
+                      print(k,'len=',len(v),'first=',v[0] if v else None,'last=',v[-1] if v else None)
+                  elif isinstance(v,dict):
+                      keys=list(v.keys())
+                      print(k,'dict_keys_sample=',keys[:5],'last_keys=',keys[-5:] if keys else [])
+                  elif k not in ('values',):
+                      print(k,'=',v)
           PY
