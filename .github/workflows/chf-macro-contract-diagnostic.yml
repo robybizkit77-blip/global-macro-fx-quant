@@ -15,27 +15,34 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Print frozen CHF contract
         run: python validation/diagnose_chf_macro_contract.py
-      - name: Discover SNB labour-market cube links
+      - name: Install Playwright chromium
         run: |
-          python - <<'PY'
-          import re, urllib.request
-          urls=['https://data.snb.ch/en/topics/uvo','https://data.snb.ch/fr/topics/uvo','https://data.snb.ch/de/topics/uvo']
-          for url in urls:
-              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
-              with urllib.request.urlopen(req,timeout=30) as r:
-                  text=r.read().decode('utf-8','replace')
-              print('URL',url,'BYTES',len(text))
-              links=sorted(set(re.findall(r'href=["\']([^"\']*(?:cube|labour|arbeits|march)[^"\']*)["\']',text,re.I)))
-              for x in links[:200]: print('LINK',x)
-              for pat in ('Labour market','Arbeitsmarkt','Marché du travail','unemployment','Arbeitslosenquote','chômage'):
-                  i=text.lower().find(pat.lower())
-                  if i>=0: print('CONTEXT',pat,text[max(0,i-1000):i+2000].replace('\n',' ')[:3000])
-          PY
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Discover rendered SNB labour-market links
+        run: |
+          node - <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            await page.goto('https://data.snb.ch/en/topics/uvo',{waitUntil:'networkidle',timeout:90000});
+            const links=await page.locator('a').evaluateAll(as=>as.map(a=>({text:(a.innerText||'').trim(),href:a.href})).filter(x=>/labour|unemployment|market/i.test(x.text)||/cube/i.test(x.href)));
+            console.log(JSON.stringify(links,null,2));
+            console.log('BODY_MATCHES');
+            const body=await page.locator('body').innerText();
+            for(const line of body.split('\n').filter(x=>/labour market|unemployment/i.test(x))) console.log(line);
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
