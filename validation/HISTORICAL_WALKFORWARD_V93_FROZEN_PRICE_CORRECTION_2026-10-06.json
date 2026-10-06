@@ -1,0 +1,150 @@
+{
+  "schema": "GMFQ_HISTORICAL_WALKFORWARD_FROZEN_PRICE_CORRECTION_V1",
+  "status": "PASS_WITH_DATA_COMPLETENESS_CORRECTION",
+  "certified_on": "2026-10-06",
+  "model_rules_version": "9.3-pair-attention-hierarchy",
+  "rules_fingerprint": "3356baf0",
+  "source_snapshot": {
+    "branch": "staging-historical-walkforward-v93-2026-10-01",
+    "head_sha": "001d373b591f72e808dfc0626e672d469884dfab",
+    "original_workflow": ".github/workflows/historical-walkforward-v93.yml"
+  },
+  "frozen_price": {
+    "path": "history/ECB_FX_G8_2018_2026_CANONICAL_V1.json",
+    "blob_sha": "20f50591dbbdf8dbbd0b09905af3aae0ae4e6b22",
+    "source": "ECB official euro reference rates",
+    "first_observation": "2018-01-02",
+    "last_observation": "2026-09-30",
+    "observation_count": 2239,
+    "currency_count": 8,
+    "pair_count": 28
+  },
+  "legacy_vs_frozen_price_audit": {
+    "legacy_rows": 2750,
+    "frozen_rows": 2239,
+    "overlap_rows": 2238,
+    "exact_overlap_rows": 2238,
+    "different_overlap_rows": 0,
+    "missing_official_fixing_in_legacy_from_2018_onward": [
+      "2026-09-29"
+    ],
+    "legacy_extra_rows_outside_frozen_window": 512,
+    "legacy_extra_rows_period": "2016-01-04 to 2017-12-29",
+    "interpretation": "From the 2018 pseudo-OOS start onward every overlapping legacy Price row is byte-equivalent in numeric values to the frozen ECB reconstruction. The only completeness gap is the omitted official 2026-09-29 fixing."
+  },
+  "methodology_effect": {
+    "checkpoint": "2026-09-01",
+    "horizon_calendar_days": 28,
+    "target_date": "2026-09-29",
+    "legacy_exit_used": "2026-09-30",
+    "correct_exit_under_first_observation_on_or_after_rule": "2026-09-29",
+    "classification_changed": false,
+    "model_logic_changed": false,
+    "reason": "The original methodology requires the first available ECB observation on or after the target date. The legacy matrix omitted 2026-09-29, so the old run incorrectly advanced one business day to 2026-09-30."
+  },
+  "quality_counts": {
+    "CONTRASTO STRUTTURALE FORTE": 316,
+    "VANTAGGIO RELATIVO PARZIALE": 961,
+    "PILASTRI DIVISI": 340,
+    "NESSUN CONTRASTO": 397,
+    "WITHHELD": 926,
+    "identical_to_legacy": true
+  },
+  "invariants": {
+    "7d_all_reported_metrics_identical": true,
+    "84d_all_reported_metrics_identical": true,
+    "strong_7d_identical": true,
+    "strong_28d_identical": true,
+    "strong_84d_identical": true,
+    "28d_partial_dev_2018_2022_identical": true
+  },
+  "corrected_28d_metrics": {
+    "partial": {
+      "legacy": {
+        "n": 961,
+        "hit": 0.4890738813735692,
+        "mean": 0.0013758042681298824,
+        "median": -0.04878992536053728
+      },
+      "corrected": {
+        "n": 961,
+        "hit": 0.4869927159209157,
+        "mean": -0.0012074713808572738,
+        "median": -0.04906463386424864
+      }
+    },
+    "partial_recent_2023_2026": {
+      "legacy_hit": 0.44052863436123346,
+      "corrected_hit": 0.43612334801762115,
+      "legacy_mean": -0.1939804017981849,
+      "corrected_mean": -0.19944852492302334,
+      "median_unchanged": -0.2876850825135835
+    },
+    "favored_all": {
+      "legacy_hit": 0.4878621769772905,
+      "corrected_hit": 0.48629600626468283,
+      "legacy_mean": -0.024353311346458854,
+      "corrected_mean": -0.026297342590528287,
+      "legacy_median": -0.06292712580979742,
+      "corrected_median": -0.06638908259368748
+    },
+    "recent_2023_2026": {
+      "legacy_hit": 0.4520766773162939,
+      "corrected_hit": 0.4488817891373802,
+      "legacy_mean": -0.16888873860384498,
+      "corrected_mean": -0.1728544381224978,
+      "median_unchanged": -0.22621634060713824
+    },
+    "year_2026": {
+      "n": 127,
+      "legacy_hit": 0.49606299212598426,
+      "corrected_hit": 0.48031496062992124,
+      "legacy_mean": 0.0678151116519452,
+      "corrected_mean": 0.048267647882837626,
+      "legacy_median": -0.12444531309951934,
+      "corrected_median": -0.18710677360620487
+    },
+    "partial_basket": {
+      "n_checkpoints": 104,
+      "legacy_hit": 0.5,
+      "corrected_hit": 0.49038461538461536,
+      "legacy_mean": 0.049961719275291853,
+      "corrected_mean": 0.0479725142282753,
+      "legacy_median": -0.009004330547680177,
+      "corrected_median": -0.06708303525703152
+    }
+  },
+  "affected_partial_setups_2026_09_01_28d": [
+    {"pair":"AUD/CHF","favored":"CHF","legacy_ret":-0.4793929962697785,"corrected_ret":-0.831261498830882,"hit_flip":false},
+    {"pair":"AUD/USD","favored":"USD","legacy_ret":2.430392737315734,"corrected_ret":1.9127820887073321,"hit_flip":false},
+    {"pair":"CAD/CHF","favored":"CHF","legacy_ret":-0.8378048120313064,"corrected_ret":-0.6819457497095893,"hit_flip":false},
+    {"pair":"CHF/JPY","favored":"CHF","legacy_ret":-4.816000062384851,"corrected_ret":-4.570083920446121,"hit_flip":false},
+    {"pair":"GBP/AUD","favored":"GBP","legacy_ret":0.6384018236960332,"corrected_ret":-0.19047793408517588,"hit_flip":true},
+    {"pair":"GBP/CAD","favored":"GBP","legacy_ret":0.28069875389789,"corrected_ret":-0.042456027617854275,"hit_flip":true},
+    {"pair":"GBP/JPY","favored":"GBP","legacy_ret":-3.7491251794638414,"corrected_ret":-3.9600957107621237,"hit_flip":false},
+    {"pair":"GBP/NZD","favored":"GBP","legacy_ret":2.471231484486225,"corrected_ret":1.9683073060531298,"hit_flip":false},
+    {"pair":"NZD/CHF","favored":"CHF","legacy_ret":1.3178100734487552,"corrected_ret":1.3034511861101938,"hit_flip":false},
+    {"pair":"NZD/USD","favored":"USD","legacy_ret":4.17555054982598,"corrected_ret":3.989400244558172,"hit_flip":false},
+    {"pair":"USD/CAD","favored":"USD","legacy_ret":2.126644579900616,"corrected_ret":2.1012793778938166,"hit_flip":false},
+    {"pair":"USD/JPY","favored":"USD","legacy_ret":-1.9773594974145436,"corrected_ret":-1.9003798055406418,"hit_flip":false}
+  ],
+  "hit_flips": [
+    "GBP/AUD",
+    "GBP/CAD"
+  ],
+  "evidence": {
+    "workflow_run_id": 37448062063,
+    "workflow_head_sha": "5b332984f486380032c4ae81ac27fe95981bea06",
+    "artifact_id": 11404002994,
+    "artifact_zip_sha256": "bf9b959ecf1afc3b698c7565ba5380fed29b2dcb8c341369969b5a30680accc8"
+  },
+  "governance": {
+    "change_type": "DATA_COMPLETENESS_FIX",
+    "model_rules_modified": false,
+    "rules_fingerprint_changed": false,
+    "live_data_modified": false,
+    "canonical_oos_baseline_modified": false,
+    "oos_restart_required": false,
+    "supersedes": "Only the 28-day partial/recent metrics in HISTORICAL_WALKFORWARD_V93_2026-10-01 that depend on the 2026-09-29 horizon endpoint. Structural classifications and all invariant metrics remain valid."
+  }
+}
