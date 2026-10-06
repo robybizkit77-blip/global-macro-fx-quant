@@ -1,0 +1,129 @@
+{
+  "schema": "GMFQ_MINIMUM_ROBUST_PIT_DATASET_READINESS_V1",
+  "created_at": "2026-10-06",
+  "purpose": "Define the minimum robust historical dataset required to assemble and run the next frozen-engine backtest without forcing complete PIT coverage for every planned series.",
+  "base_main_sha": "d904cffdae09dd993cfe7deff50eec205680ca01",
+  "frozen_engine": {
+    "commit_sha": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "status": "UNCHANGED"
+  },
+  "methodology_gate": {
+    "rule": "Only PIT-eligible observations available at each checkpoint may vote. WITHHELD series or blocks contribute no vote. Revised-history substitution is forbidden.",
+    "full_49_series_completion_required": false,
+    "minimum_requirement": "A declared PIT-eligible macro subset, canonical forward-price history, same-basis rates where used, immutable frozen rules, and explicit withholding of unsupported historical layers.",
+    "threshold_tuning_before_oos": false
+  },
+  "macro_readiness": {
+    "CAD": {
+      "status": "CORE_PIT_READY",
+      "growth": ["CA_REAL_GDP_M_history_value", "CA_RETAIL_VOLUME_history_value"],
+      "labour": ["CA_EMPLOYMENT_history_value", "CA_UNEMP_RATE_history_value"],
+      "action": "USE_CANONICAL_PIT_CORE_DO_NOT_REOPEN"
+    },
+    "EUR": {
+      "status": "PARTIAL_CORE_PIT_READY",
+      "growth": ["EA_IP_history_value"],
+      "labour": ["EA_UNEMP_history_value", "EA_EMPLOYMENT_history_value"],
+      "withheld": ["EA_RETAIL_VOL_history_value", "EA_NEGOTIATED_WAGES_YOY_history_value"],
+      "action": "ELIGIBLE_WITH_DECLARED_WITHHELD_INPUTS"
+    },
+    "USD": {
+      "status": "GROWTH_PIT_READY_LABOUR_WITHHELD",
+      "growth": ["US_INDPRO_history_value", "US_PI_history_PI", "US_NEWORDER_history_NEWORDER"],
+      "labour": [],
+      "action": "ELIGIBLE_GROWTH_ONLY_UNDER_ENGINE_WITHHELD_RULE"
+    },
+    "JPY": {
+      "status": "STRUCTURALLY_FEASIBLE_NOT_YET_PIT_ACTIVATED",
+      "evidence_branch": "validation-jpy-lfs-pit-feasibility-v1-2026-10-06",
+      "evidence_sha": "9ec25da9784dae820803a41efad8ee5141a95268",
+      "workflow_run_id": 37464834381,
+      "workflow_conclusion": "success",
+      "labour_series_count": 2,
+      "growth_series_count": 2,
+      "activation_blocker": "Labour release-date archives require separate official annual intraday schedule confirmation before PIT activation.",
+      "action": "MATERIALIZE_ONLY_AFTER_EVENT_TIME_POLICY_IS_CLOSED"
+    },
+    "GBP": {
+      "status": "LEGACY_READINESS_WITHHELD_BUT_NEW_2026_10_06_SOURCE_WORK_REQUIRES_CONSOLIDATION",
+      "legacy_readiness_status": "CLOSED_WITHHELD_NO_PIT_VOTES",
+      "latest_source_branch": "validation-gbp-ons-v1-2026-10-06",
+      "latest_source_sha": "50467a4b2f2ed67953f6d80ecde45c98bb699087",
+      "action": "CONSOLIDATE_NEW_GBP_EVIDENCE_BEFORE_ANY_PIT_VOTE"
+    },
+    "AUD": {
+      "status": "LIVE_OFFICIAL_SOURCE_CERTIFIED_HISTORICAL_PIT_WITHHELD",
+      "source_branch": "validation-aud-abs-v1-2026-10-06",
+      "action": "DO_NOT_BLOCK_MINIMUM_BACKTEST; NO_HISTORICAL_MACRO_VOTE_UNTIL_PIT_RECONSTRUCTION"
+    },
+    "NZD": {
+      "status": "LIVE_OFFICIAL_SOURCE_CERTIFIED_HISTORICAL_PIT_WITHHELD",
+      "source_branch": "validation-nzd-statsnz-v1-2026-10-06",
+      "action": "DO_NOT_BLOCK_MINIMUM_BACKTEST; NO_HISTORICAL_MACRO_VOTE_UNTIL_PIT_RECONSTRUCTION"
+    },
+    "CHF": {
+      "status": "LIVE_OFFICIAL_SOURCE_CERTIFIED_HISTORICAL_PIT_WITHHELD",
+      "source_branch": "validation-chf-official-v1-2026-10-06",
+      "action": "DO_NOT_BLOCK_MINIMUM_BACKTEST; NO_HISTORICAL_MACRO_VOTE_UNTIL_PIT_RECONSTRUCTION"
+    }
+  },
+  "cross_asset_readiness": {
+    "fx_price_matrix": {
+      "status": "FEASIBILITY_PASS_NOT_YET_CANONICAL_MATERIALIZED",
+      "branch": "audit-fx-price-matrix-feasibility-2026-10-06",
+      "sha": "7c263793dbacda23eab90df4709ac31b266297f0",
+      "workflow_run_id": 37465760725,
+      "workflow_conclusion": "success",
+      "derived_pairs": 28,
+      "requested_start": "2016-01-01",
+      "first_observation": "2016-01-04",
+      "latest_observation": "2026-10-05",
+      "complete_rows": 2754,
+      "incomplete_rows": 0,
+      "action": "MATERIALIZE_CANONICAL_DAILY_REFERENCE_PRICE_HISTORY_WITH_EVENT_TIME_POLICY"
+    },
+    "rates": {
+      "status": "G8_SOURCE_BASIS_GAP_FEASIBILITY_CLOSED",
+      "eur_branch": "audit-eur-historical-rates-same-basis-2026-10-06",
+      "eur_sha": "eaedeae6f92283b01a7a58d2b04b0eaa495c2c6c",
+      "workflow_run_id": 37466337495,
+      "workflow_conclusion": "success",
+      "eur_paired_2y_10y_observations": 2746,
+      "eur_date_mismatch_count": 0,
+      "action": "MATERIALIZE_CANONICAL_EUR_SAME_BASIS_HISTORY"
+    },
+    "cb_ois": {
+      "status": "WITHHELD_HISTORICAL_HOMOGENEOUS_G8_SOURCE_UNAVAILABLE",
+      "blocks_minimum_backtest": false,
+      "rule": "No synthetic or revised-history backfill. Leave historical CB/OIS vote WITHHELD where unsupported."
+    },
+    "liquidity": {
+      "NZD": "WITHHELD_HISTORICAL_REPLAY",
+      "blocks_minimum_backtest": false
+    }
+  },
+  "backtest_gate": {
+    "full_g8_all_layers_backtest_ready": false,
+    "minimum_robust_backtest_logic_ready": true,
+    "dataset_materialization_ready": true,
+    "backtest_should_start_immediately": false,
+    "reason_not_immediate": "The validated feasibility layers must first be materialized into one canonical immutable historical dataset with event-time alignment and explicit WITHHELD masks.",
+    "next_steps_in_order": [
+      "Materialize canonical FX daily reference-price matrix and define event-time alignment policy.",
+      "Materialize canonical EUR same-basis 2Y/10Y history.",
+      "Assemble PIT macro subset and WITHHELD masks from the latest per-currency evidence.",
+      "Resolve JPY labour intraday schedule policy before activating JPY PIT votes.",
+      "Consolidate latest GBP evidence and decide whether any GBP historical PIT votes are admissible.",
+      "Freeze one immutable backtest dataset manifest and fingerprint.",
+      "Run frozen-engine backtest without threshold tuning.",
+      "Only after that proceed to walk-forward/OOS robustness checks."
+    ]
+  },
+  "safety": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_oos_baseline": false,
+    "starts_backtest": false
+  }
+}
