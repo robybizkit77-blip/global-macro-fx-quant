@@ -1,0 +1,45 @@
+name: Materialize EUR HICP Services PIT V1
+
+on:
+  push:
+    branches:
+      - audit-minimum-robust-pit-dataset-2026-10-06
+    paths:
+      - validation/materialize_eur_hicp_services_pit_v1.py
+      - .github/workflows/materialize-eur-hicp-services-pit-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-minimum-robust-pit-dataset-2026-10-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize Eurostat first-published services inflation PIT
+        run: python validation/materialize_eur_hicp_services_pit_v1.py
+      - name: Confirm audit-only scope
+        run: |
+          git diff --name-only | tee changed.txt
+          python - <<'PY'
+          allowed={
+            'history/pit_v1/EUR_HICP_SERVICES_FIRST_PUBLISHED_2024_2026.csv',
+            'validation/EUR_HICP_SERVICES_PIT_MATERIALIZATION_2026-10-06.json'
+          }
+          changed=set(x.strip() for x in open('changed.txt') if x.strip())
+          bad=changed-allowed
+          assert not bad, f'Unexpected changed files: {sorted(bad)}'
+          PY
+      - name: Commit PIT evidence only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add history/pit_v1/EUR_HICP_SERVICES_FIRST_PUBLISHED_2024_2026.csv validation/EUR_HICP_SERVICES_PIT_MATERIALIZATION_2026-10-06.json
+          git commit -m "Materialize EUR HICP services first-published PIT" || exit 0
+          git push
