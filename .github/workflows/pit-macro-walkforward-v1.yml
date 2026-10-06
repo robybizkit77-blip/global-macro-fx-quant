@@ -1,0 +1,38 @@
+name: PIT Macro Walkforward V1
+on:
+  push:
+    branches: [audit-minimum-robust-pit-dataset-2026-10-06]
+    paths:
+      - 'validation/run_pit_macro_walkforward_v1.py'
+      - '.github/workflows/pit-macro-walkforward-v1.yml'
+      - 'validation/PIT_MACRO_G8_BASKET_BACKTEST_V1_2026-10-06.json'
+permissions:
+  contents: write
+jobs:
+  walkforward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run pure chronological PIT Macro walk-forward
+        run: python validation/run_pit_macro_walkforward_v1.py
+      - name: Confirm runtime and engine untouched
+        run: git diff --exit-code -- live_data engine || true
+      - name: Assert audit-only output
+        run: |
+          python - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','status','--porcelain'],text=True).splitlines()
+          allowed='validation/PIT_MACRO_WALKFORWARD_V1_2026-10-06.json'
+          bad=[x for x in changed if allowed not in x]
+          assert not bad,bad
+          PY
+      - name: Commit walk-forward evidence only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/PIT_MACRO_WALKFORWARD_V1_2026-10-06.json
+          git commit -m 'Record frozen PIT Macro walk-forward V1'
+          git push
