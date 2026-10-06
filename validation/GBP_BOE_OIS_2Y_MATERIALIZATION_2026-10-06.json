@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_GBP_BOE_OIS_2Y_MATERIALIZATION_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip",
+  "curve": "sterling OIS spot",
+  "tenor_years": 2.0,
+  "rows": 2209,
+  "start": "2018-01-02",
+  "end": "2026-09-30",
+  "source_files": [
+    {
+      "file": "OIS daily data_2016 to 2024.xlsx",
+      "sheet": "4. spot curve",
+      "tenor_years": 2.0,
+      "rows_2018_plus": 1767
+    },
+    {
+      "file": "OIS daily data_2025 to present.xlsx",
+      "sheet": "4. spot curve",
+      "tenor_years": 2.0,
+      "rows_2018_plus": 442
+    }
+  ],
+  "guardrails": [
+    "single full OIS spot curve only",
+    "exact 2Y tenor",
+    "no gilt substitution",
+    "daily official BoE archive",
+    "no engine/live_data changes"
+  ]
+}
