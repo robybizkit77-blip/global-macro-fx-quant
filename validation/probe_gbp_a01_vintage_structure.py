@@ -44,11 +44,15 @@ def versions():
     return out
 
 def first_snapshot_after(vs,target):
-    t=datetime.fromisoformat(target)
+    target_date=datetime.fromisoformat(target).date()
     for v in vs:
-        if datetime.fromisoformat(v['superseded_at'])>t:
+        if datetime.fromisoformat(v['superseded_at']).date()>target_date:
             return v
     return None
+
+def nonempty_row(row,limit=40):
+    vals=[str(x).strip() if pd.notna(x) else '' for x in row.tolist()]
+    return [{'col':j,'value':v} for j,v in enumerate(vals) if v][:limit]
 
 def probe_book(url,target):
     rr=requests.get(url,headers={'User-Agent':UA},timeout=120);rr.raise_for_status()
@@ -66,25 +70,28 @@ def probe_book(url,target):
             vals=[str(x).strip() if pd.notna(x) else '' for x in row.tolist()]
             joined=' | '.join(vals).lower()
             if any(p in joined for p in patterns):
-                nonempty=[{'col':j,'value':v} for j,v in enumerate(vals) if v][:30]
-                hits.append({'sheet':sheet,'row':int(i),'cells':nonempty})
+                hits.append({'sheet':sheet,'row':int(i),'cells':nonempty_row(row)})
                 if len(hits)>=80:break
         if len(hits)>=80:break
-    return {'downloaded_bytes':len(rr.content),'sheet_names':xf.sheet_names,'candidate_rows':hits}
+    df1=pd.read_excel(path,sheet_name='1',header=None,dtype=object)
+    table1_preview=[]
+    for i in range(min(45,len(df1))):
+        cells=nonempty_row(df1.iloc[i])
+        if cells:table1_preview.append({'row':i,'cells':cells})
+    return {'downloaded_bytes':len(rr.content),'sheet_names':xf.sheet_names,'candidate_rows':hits,'table1_preview':table1_preview}
 
 def main():
     OUT.parent.mkdir(parents=True,exist_ok=True)
-    vs=versions()
-    rows=[]
+    vs=versions();rows=[]
     for target in TARGETS:
         snap=first_snapshot_after(vs,target)
         if not snap:
             rows.append({'target_release':target,'status':'NO_SNAPSHOT'});continue
         probe=probe_book(snap['url'],target)
         rows.append({'target_release':target,'status':'PASS','selected_snapshot':snap,**probe})
-    ok=all(r.get('status')=='PASS' and r.get('candidate_rows') for r in rows)
-    out={'schema':'GMFQ_GBP_ONS_A01_VINTAGE_STRUCTURE_PROBE_V1','status':'PASS' if ok else 'FAIL',
-         'selection_rule':'For release D select the first archived A01 workbook whose superseded_at is later than D; this is the file that existed immediately after D until its first subsequent replacement/correction.',
+    ok=all(r.get('status')=='PASS' and r.get('candidate_rows') and r.get('table1_preview') for r in rows)
+    out={'schema':'GMFQ_GBP_ONS_A01_VINTAGE_STRUCTURE_PROBE_V2','status':'PASS' if ok else 'FAIL',
+         'selection_rule':'For release date D select the first archived A01 workbook whose calendar superseded date is strictly later than D. The selected file is therefore the vintage available after D until its first later replacement/correction.',
          'versions_discovered':len(vs),'targets':rows,
          'guardrails':{'read_only':True,'live_data_modified':False,'model_rules_modified':False,'uses_current_revised_timeseries_for_values':False,'rules_fingerprint_expected_unchanged':'3356baf0'}}
     OUT.write_text(json.dumps(out,indent=2,ensure_ascii=False)+'\n')
