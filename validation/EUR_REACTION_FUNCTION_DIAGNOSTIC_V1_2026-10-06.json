@@ -213,6 +213,24 @@
     "definition": "sign of change in latest actionable certified negotiated-wage annual growth at each unique availability date; new-sign regime entries only",
     "events": [
       {
+        "checkpoint": "2022-09-26",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2022-09-27",
+        "signed_5d": -0.01877841235062228,
+        "signed_20d": -0.027646459155132624,
+        "signed_60d": -0.030446186728163693
+      },
+      {
+        "checkpoint": "2022-11-28",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2022-11-29",
+        "signed_5d": 0.005522285881818335,
+        "signed_20d": 0.010343464080463563,
+        "signed_60d": 0.013994871768708084
+      },
+      {
         "checkpoint": "2024-08-29",
         "signal": -1,
         "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
@@ -260,21 +278,21 @@
     ],
     "stats": {
       "5d": {
-        "n": 5,
-        "hit_rate": 0.4,
-        "mean": 0.00045255513609200485,
+        "n": 7,
+        "hit_rate": 0.42857142857142855,
+        "mean": -0.0015704786840491315,
         "median": -0.0010119470947639526
       },
       "20d": {
-        "n": 5,
-        "hit_rate": 0.8,
-        "mean": 0.0019505531051888577,
+        "n": 7,
+        "hit_rate": 0.7142857142857143,
+        "mean": -0.0010786042212463961,
         "median": 0.0038577252079194263
       },
       "60d": {
-        "n": 5,
-        "hit_rate": 0.6,
-        "mean": 0.005642185452663234,
+        "n": 7,
+        "hit_rate": 0.5714285714285714,
+        "mean": 0.001679944614837223,
         "median": 0.00977021635724557
       }
     },
