@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_CAD_CORE_INFLATION_PIT_MATERIALIZATION_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "source": {
+    "provider": "Statistics Canada",
+    "table": "18-10-0259-01",
+    "url": "https://www150.statcan.gc.ca/n1/en/tbl/csv/18100259-eng.zip",
+    "purpose": "historical real-time releases of Bank of Canada core CPI measures"
+  },
+  "method": "For each core measure and reference month, retain the earliest official release date in the real-time table carrying a non-null YoY value. No current revised-history substitution.",
+  "coverage": {
+    "rows": 333,
+    "by_series": {
+      "CPI_COMMON_YOY": 111,
+      "CPI_MEDIAN_YOY": 111,
+      "CPI_TRIM_YOY": 111
+    },
+    "first_reference_month": "2017-01",
+    "last_reference_month": "2026-03"
+  },
+  "guardrails": [
+    "first observable vintage only",
+    "no revised substitution",
+    "no threshold tuning",
+    "audit/materialization only"
+  ],
+  "headline_cpi_status": "SEPARATE_DAILY_ARCHIVE_RECONSTRUCTION_REQUIRED",
+  "post_apr_2026_note": "StatCan discontinued updates to table 18-10-0259-01 from April 2026; subsequent first-release values must be taken from contemporaneous CPI Daily Table 4."
+}
