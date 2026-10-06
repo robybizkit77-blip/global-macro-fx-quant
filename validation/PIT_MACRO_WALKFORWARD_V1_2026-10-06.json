@@ -1,0 +1,247 @@
+{
+  "schema": "GMFQ_PIT_MACRO_WALKFORWARD_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Pure chronological expanding-window evaluation of frozen PIT Macro regime-entry signals for EUR and CAD versus G8 basket. Train windows are descriptive only; no fitting or tuning.",
+  "engine": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "threshold_tuning": false
+  },
+  "method": {
+    "sample": "regime entries only",
+    "split": "first 40% initial train, then three sequential ~20% OOS folds",
+    "rules_reestimated": false,
+    "parameters_reestimated": false
+  },
+  "currencies": {
+    "EUR": {
+      "regime_entries": 24,
+      "folds": [
+        {
+          "fold": 1,
+          "train_n": 9,
+          "test_n": 5,
+          "train_end": "2024-04-15",
+          "test_start": "2024-08-01",
+          "test_end": "2025-07-02",
+          "test": {
+            "5d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": -0.0006705327305884686,
+              "median": -0.0002042425686776943
+            },
+            "20d": {
+              "n": 5,
+              "hit_rate": 0.6,
+              "mean": -0.0006639685462307328,
+              "median": 0.006208237541981882
+            },
+            "60d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": -0.009513879137336406,
+              "median": -0.013087374390739575
+            }
+          }
+        },
+        {
+          "fold": 2,
+          "train_n": 14,
+          "test_n": 5,
+          "train_end": "2025-07-02",
+          "test_start": "2025-07-15",
+          "test_end": "2026-01-08",
+          "test": {
+            "5d": {
+              "n": 5,
+              "hit_rate": 0.6,
+              "mean": 0.0012691138765692396,
+              "median": 0.0012375530121283187
+            },
+            "20d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": -0.0015873649297345389,
+              "median": -0.0026488402354313393
+            },
+            "60d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": -0.0010966684492047392,
+              "median": -0.0003743827083889504
+            }
+          }
+        },
+        {
+          "fold": 3,
+          "train_n": 19,
+          "test_n": 5,
+          "train_end": "2026-01-08",
+          "test_start": "2026-04-01",
+          "test_end": "2026-07-30",
+          "test": {
+            "5d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": -0.0007119878983546012,
+              "median": -0.0013980806727185355
+            },
+            "20d": {
+              "n": 5,
+              "hit_rate": 0.4,
+              "mean": 0.00022735899037025817,
+              "median": -0.002983668905562845
+            },
+            "60d": {
+              "n": 4,
+              "hit_rate": 0.5,
+              "mean": -3.06304286018655e-05,
+              "median": -1.9632510267776062e-05
+            }
+          }
+        }
+      ],
+      "pooled_oos": {
+        "5d": {
+          "n": 15,
+          "hit_rate": 0.4666666666666667,
+          "mean": -3.780225079127676e-05,
+          "median": -0.0002042425686776943
+        },
+        "20d": {
+          "n": 15,
+          "hit_rate": 0.4666666666666667,
+          "mean": -0.0006746581618650044,
+          "median": -0.002162394198797286
+        },
+        "60d": {
+          "n": 14,
+          "hit_rate": 0.42857142857142855,
+          "mean": -0.0037982328319366558,
+          "median": -0.0017089120702496454
+        }
+      }
+    },
+    "CAD": {
+      "regime_entries": 30,
+      "folds": [
+        {
+          "fold": 1,
+          "train_n": 12,
+          "test_n": 6,
+          "train_end": "2023-09-29",
+          "test_start": "2023-11-03",
+          "test_end": "2024-08-23",
+          "test": {
+            "5d": {
+              "n": 6,
+              "hit_rate": 0.8333333333333334,
+              "mean": 0.0025410377901554032,
+              "median": 0.0031722417039886986
+            },
+            "20d": {
+              "n": 6,
+              "hit_rate": 0.5,
+              "mean": -0.00013015832236892323,
+              "median": -0.00100673336282251
+            },
+            "60d": {
+              "n": 6,
+              "hit_rate": 0.8333333333333334,
+              "mean": -0.0004890623717341043,
+              "median": 0.005454640232324334
+            }
+          }
+        },
+        {
+          "fold": 2,
+          "train_n": 18,
+          "test_n": 6,
+          "train_end": "2024-08-23",
+          "test_start": "2024-09-06",
+          "test_end": "2025-07-11",
+          "test": {
+            "5d": {
+              "n": 6,
+              "hit_rate": 0.8333333333333334,
+              "mean": 0.0032083069962202068,
+              "median": 0.0010573121790408751
+            },
+            "20d": {
+              "n": 6,
+              "hit_rate": 0.6666666666666666,
+              "mean": 0.0018014924523948002,
+              "median": 0.0017886437496543056
+            },
+            "60d": {
+              "n": 6,
+              "hit_rate": 0.5,
+              "mean": -0.0016065456540284566,
+              "median": -0.002258254141809972
+            }
+          }
+        },
+        {
+          "fold": 3,
+          "train_n": 24,
+          "test_n": 6,
+          "train_end": "2025-07-11",
+          "test_start": "2025-08-08",
+          "test_end": "2026-06-30",
+          "test": {
+            "5d": {
+              "n": 6,
+              "hit_rate": 0.3333333333333333,
+              "mean": -0.0012144682181680468,
+              "median": -0.0006519038960549521
+            },
+            "20d": {
+              "n": 6,
+              "hit_rate": 1.0,
+              "mean": 0.008158701692347928,
+              "median": 0.006310796069589978
+            },
+            "60d": {
+              "n": 6,
+              "hit_rate": 0.6666666666666666,
+              "mean": 0.0033467676637879418,
+              "median": 0.00337678445001834
+            }
+          }
+        }
+      ],
+      "pooled_oos": {
+        "5d": {
+          "n": 18,
+          "hit_rate": 0.6666666666666666,
+          "mean": 0.0015116255227358546,
+          "median": 0.0017285785723188726
+        },
+        "20d": {
+          "n": 18,
+          "hit_rate": 0.7222222222222222,
+          "mean": 0.0032766786074579354,
+          "median": 0.004905934487605353
+        },
+        "60d": {
+          "n": 18,
+          "hit_rate": 0.6666666666666666,
+          "mean": 0.00041705321267512693,
+          "median": 0.002340570979832309
+        }
+      }
+    }
+  },
+  "guardrails": [
+    "No threshold tuning",
+    "No parameter fitting",
+    "No revised-history fallback",
+    "Chronological order preserved",
+    "Audit-only output"
+  ],
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_oos_baseline": false
+}
