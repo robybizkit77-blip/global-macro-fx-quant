@@ -1,0 +1,64 @@
+name: Price ECB Historical Contract V1
+
+on:
+  push:
+    branches:
+      - validation-price-ecb-history-v1-2026-10-06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ecb-history-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build frozen ECB G8 history and validate OOS anchors
+        run: |
+          mkdir -p /tmp/gmfq-ecb-fx-history
+          python validation/build_ecb_fx_history.py \
+            --start-date 2018-01-01 \
+            --end-date 2026-09-30 \
+            --output /tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json \
+            --summary /tmp/gmfq-ecb-fx-history/summary.json
+
+      - name: Assert historical price contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('/tmp/gmfq-ecb-fx-history/summary.json').read_text())
+          assert s['status']=='PASS', s
+          assert s['last_observation']=='2026-09-30', s
+          assert s['currency_count']==8, s
+          assert s['pair_count']==28, s
+          assert s['observation_count']>2000, s
+          assert s['frozen_oos_anchor_match'] is True, s
+          assert float(s['max_anchor_row_error'])<=1e-12, s
+          assert float(s['max_pair_anchor_error'])<=1e-10, s
+          assert float(s['max_triangular_error'])<=1e-10, s
+          assert s['live_data_modified'] is False, s
+          assert s['model_rules_modified'] is False, s
+          assert s['rules_fingerprint_expected_unchanged']=='3356baf0', s
+          print(json.dumps(s, indent=2))
+          PY
+
+      - name: Confirm repository remained untouched by builder
+        run: git diff --exit-code
+
+      - name: Upload reproducibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecb-fx-history-contract-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json
+            /tmp/gmfq-ecb-fx-history/summary.json
