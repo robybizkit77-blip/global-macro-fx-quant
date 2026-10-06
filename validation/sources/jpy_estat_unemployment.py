@@ -62,9 +62,6 @@ def labelled_value(v: dict[str, Any], maps: dict[str, dict[str, str]]) -> str:
 
 
 def score_semantics(label: str) -> int:
-    # Fallback semantic matcher. Live e-Stat table 0002060004 identifies the
-    # target mechanically as Rate + Unemployed person rather than using the
-    # literal phrase "unemployment rate".
     target = (
         "unemployment rate" in label
         or "unemployed rate" in label
@@ -90,17 +87,17 @@ def score_semantics(label: str) -> int:
 
 def parse_period(label: str, code: str) -> str:
     text = f"{label} {code}"
-    m = re.search(r"(?P<year>20\d{2})[-/ ](?P<month>0?[1-9]|1[0-2])\b", text)
+    m = re.search(r"(?P<year>(?:19|20)\d{2})[-/ ](?P<month>0?[1-9]|1[0-2])\b", text)
     if m:
         return f"{int(m.group('year')):04d}-{int(m.group('month')):02d}"
-    m = re.search(r"\b(20\d{2})(0[1-9]|1[0-2])\b", text)
+    m = re.search(r"\b((?:19|20)\d{2})(0[1-9]|1[0-2])\b", text)
     if m:
         return f"{m.group(1)}-{m.group(2)}"
     months = {m.lower(): i for i, m in enumerate(
         ["January","February","March","April","May","June","July","August","September","October","November","December"], 1)}
     months.update({k[:3]: v for k, v in list(months.items())})
     lower = text.lower().replace(".", "")
-    y = re.search(r"\b(20\d{2})\b", lower)
+    y = re.search(r"\b((?:19|20)\d{2})\b", lower)
     if y:
         for name, month in months.items():
             if re.search(rf"\b{re.escape(name)}\b", lower):
@@ -109,26 +106,16 @@ def parse_period(label: str, code: str) -> str:
 
 
 def is_official_unemployment_rate_row(v: dict[str, Any], maps: dict[str, dict[str, str]]) -> bool:
-    """Match the headline Japan unemployment-rate slice in e-Stat table 0002060004.
-
-    The official table encodes the concept through dimensions, not the literal
-    text 'unemployment rate': tab=Rate, cat03=Unemployed person, both sexes,
-    age 15+, All Japan. Using the published dimension codes is more robust than
-    relying on translated labels.
-    """
     required_codes = {
-        "@tab": "02",      # Rate
-        "@cat01": "000",  # All industries
-        "@cat02": "0",    # Both sexes
-        "@cat03": "08",   # Unemployed person
-        "@cat04": "00",   # 15 years old or more
-        "@area": "00000", # All Japan
+        "@tab": "02",
+        "@cat01": "000",
+        "@cat02": "0",
+        "@cat03": "08",
+        "@cat04": "00",
+        "@area": "00000",
     }
     if all(str(v.get(k, "")) == code for k, code in required_codes.items()):
         return str(v.get("@unit", "%")) == "%"
-
-    # Defensive fallback for future code revisions: only accept the same
-    # economic semantics when the translated labels are still unambiguous.
     label = labelled_value(v, maps)
     return score_semantics(label) > 0
 
