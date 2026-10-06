@@ -6,10 +6,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "validation" / "macro_source_registry.json"
+HEATMAP = ROOT / "live_data" / "sections" / "MACRO_THERMOMETER_DATA.json"
 
 CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]
 DIMENSIONS = ["inflation", "labour"]
 EXPECTED = {(c, d) for c in CURRENCIES for d in DIMENSIONS}
+VALID_FREQUENCIES = {"M", "Q"}
 VALID_STATUS = {
     "PLANNED_UNVALIDATED",
     "SOURCE_IDENTIFIED_UNVALIDATED",
@@ -25,6 +27,7 @@ def fail(msg: str) -> None:
 
 def main() -> int:
     data = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    heatmap = json.loads(HEATMAP.read_text(encoding="utf-8"))
     policies = data.get("policies", {})
     streams = data.get("streams")
     if not isinstance(streams, list):
@@ -39,10 +42,7 @@ def main() -> int:
         fail("source adapters must remain read-only")
 
     seen: set[tuple[str, str]] = set()
-    ready = 0
-    validated = 0
-    planned = 0
-    identified = 0
+    ready = validated = planned = identified = 0
 
     for i, row in enumerate(streams):
         if not isinstance(row, dict):
@@ -53,10 +53,15 @@ def main() -> int:
         if key in seen:
             fail(f"duplicate stream key {key!r}")
         seen.add(key)
+        currency, dimension = key
         if row.get("role") != "core":
             fail(f"{key}: role must be core")
-        if row.get("frequency") != "M":
-            fail(f"{key}: core stream frequency must be monthly in registry v1")
+        frequency = row.get("frequency")
+        if frequency not in VALID_FREQUENCIES:
+            fail(f"{key}: frequency must be one of {sorted(VALID_FREQUENCIES)}; got {frequency!r}")
+        frozen_frequency = heatmap["currencies"][currency][dimension].get("frequency")
+        if frequency != frozen_frequency:
+            fail(f"{key}: registry frequency {frequency!r} != frozen heatmap frequency {frozen_frequency!r}")
         status = row.get("status")
         if status not in VALID_STATUS:
             fail(f"{key}: invalid status {status!r}")
@@ -102,7 +107,7 @@ def main() -> int:
     if len(streams) != 16:
         fail(f"registry must contain exactly 16 core streams; got {len(streams)}")
 
-    summary = {
+    print(json.dumps({
         "status": "PASS",
         "schema_version": data.get("schema_version"),
         "streams": len(streams),
@@ -111,10 +116,11 @@ def main() -> int:
         "validated": validated,
         "planned_unvalidated": planned,
         "coverage": "8 currencies x 2 core dimensions",
+        "allowed_frequencies": sorted(VALID_FREQUENCIES),
+        "frequency_matches_frozen_heatmap": True,
         "live_write_from_source_adapter": False,
         "silent_fallback": False,
-    }
-    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    }, indent=2, ensure_ascii=False))
     return 0
 
 
