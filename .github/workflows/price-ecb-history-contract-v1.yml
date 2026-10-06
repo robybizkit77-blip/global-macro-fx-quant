@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   ecb-history-contract:
@@ -50,8 +50,27 @@ jobs:
           print(json.dumps(s, indent=2))
           PY
 
-      - name: Confirm repository remained untouched by builder
+      - name: Confirm builder itself did not touch repository
         run: git diff --exit-code
+
+      - name: Freeze canonical historical evidence on validation branch
+        shell: bash
+        run: |
+          mkdir -p history validation
+          cp /tmp/gmfq-ecb-fx-history/ecb_fx_history_2018_2026.json \
+            history/ECB_FX_G8_2018_2026_CANONICAL_V1.json
+          cp /tmp/gmfq-ecb-fx-history/summary.json \
+            validation/ECB_FX_HISTORY_VALIDATION_V1_2026-10-06.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/ECB_FX_G8_2018_2026_CANONICAL_V1.json \
+                  validation/ECB_FX_HISTORY_VALIDATION_V1_2026-10-06.json
+          if git diff --cached --quiet; then
+            echo "Canonical ECB snapshot already frozen; no commit needed."
+          else
+            git commit -m "Freeze canonical ECB G8 FX history 2018-2026 [skip ci]"
+            git push origin HEAD:validation-price-ecb-history-v1-2026-10-06
+          fi
 
       - name: Upload reproducibility evidence
         uses: actions/upload-artifact@v4
