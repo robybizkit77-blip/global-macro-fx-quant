@@ -38,26 +38,22 @@ def chronological_folds(rs,nfold=4):
     rs=sorted(rs,key=lambda r:r['checkpoint'])
     n=len(rs);out=[]
     if n<8:return out
-    # expanding chronology: first 40% is seed, then four contiguous OOS blocks.
     seed=max(1,int(n*.40)); rem=n-seed
     for f in range(nfold):
         a=seed+(rem*f)//nfold; b=seed+(rem*(f+1))//nfold
         test=rs[a:b]
         if not test:continue
-        out.append({'fold':f+1,'train_end':rs[a-1]['checkpoint'] if a else None,'test_start':test[0]['checkpoint'],'test_end':test[-1]['checkpoint'],'test_n':len(test),'results':group_summary(test)})
+        out.append({'fold':f+1,'train_end':rs[a-1]['checkpoint'] if a else None,'test_start':test[0]['checkpoint'],'test_end':test[-1]['checkpoint'],'test_n':len(test),'results':group_summary(test),'test_keys':[(r['checkpoint'],r['event_type'],r['reference_month']) for r in test]})
     return out
 
-def pooled_oos(folds):
-    # Reconstruct pooled test rows by date ranges from the source universe.
-    chosen=[]
+def pooled_oos(base_rs,folds):
+    # Pool only the exact held-out rows from THIS state cohort. Never reconstruct by
+    # global date ranges, which can mix other joint states into the OOS sample.
+    wanted=set()
     for f in folds:
-        chosen.extend(r for r in rows if f['test_start']<=r['checkpoint']<=f['test_end'])
-    # avoid duplicates when ranges touch (they should not)
-    seen=set();uniq=[]
-    for r in sorted(chosen,key=lambda x:(x['checkpoint'],x['event_type'])):
-        k=(r['checkpoint'],r['event_type'],r['reference_month'])
-        if k not in seen:seen.add(k);uniq.append(r)
-    return group_summary(uniq)
+        wanted.update(tuple(k) for k in f['test_keys'])
+    chosen=[r for r in base_rs if (r['checkpoint'],r['event_type'],r['reference_month']) in wanted]
+    return group_summary(sorted(chosen,key=lambda x:(x['checkpoint'],x['event_type'])))
 
 def half_stability(rs):
     rs=sorted(rs,key=lambda r:r['checkpoint']);m=len(rs)//2
@@ -89,13 +85,16 @@ states={
 rob={}
 for name,rs in states.items():
     folds=chronological_folds(rs)
+    clean_folds=[]
+    for f in folds:
+        g=dict(f);g.pop('test_keys',None);clean_folds.append(g)
     rob[name]={
       'full_sample':group_summary(rs),
       'bootstrap_and_wilson_included':True,
       'half_stability':half_stability(rs),
       'event_type_split':event_type_split(rs),
-      'walk_forward_folds':folds,
-      'pooled_oos':pooled_oos(folds)
+      'walk_forward_folds':clean_folds,
+      'pooled_oos':pooled_oos(rs,folds)
     }
 
 paired={
@@ -108,8 +107,8 @@ res={
  'status':'PASS',
  'created_at':'2026-10-06',
  'source':'validation/USD_FED_REACTION_STATE_V1_2026-10-06.json',
- 'method':'No refit. Same fixed event universe, threshold 0.2, 5-market-day 2Y observation window and 5/20/60d FX horizons. Robustness uses bootstrap mean CI, Wilson hit-rate CI, first/second-half stability, event-type split and chronological expanding-window OOS blocks. Paired 2Y attribution is only within identical BOTH_DOVISH/BOTH_HAWKISH macro states.',
- 'guardrails':['no threshold tuning','no event filtering','no fitted weights','no post-hoc parameter selection','2Y comparison never mixes different joint macro states','PCE remains WITHHELD','engine/live_data untouched'],
+ 'method':'No refit. Same fixed event universe, threshold 0.2, 5-market-day 2Y observation window and 5/20/60d FX horizons. Robustness uses bootstrap mean CI, Wilson hit-rate CI, first/second-half stability, event-type split and chronological expanding-window OOS blocks. Pooled OOS preserves exact within-state test cohorts. Paired 2Y attribution is only within identical BOTH_DOVISH/BOTH_HAWKISH macro states.',
+ 'guardrails':['no threshold tuning','no event filtering','no fitted weights','no post-hoc parameter selection','pooled OOS preserves exact state cohort','2Y comparison never mixes different joint macro states','PCE remains WITHHELD','engine/live_data untouched'],
  'engine_baseline':src['engine_baseline'],
  'state_robustness':rob,
  'paired_2y_within_same_state':paired,
