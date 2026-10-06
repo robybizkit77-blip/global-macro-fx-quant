@@ -213,6 +213,87 @@
     "definition": "sign of change in latest actionable certified negotiated-wage annual growth at each unique availability date; new-sign regime entries only",
     "events": [
       {
+        "checkpoint": "2018-06-28",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2018-06-29",
+        "signed_5d": 0.0008561717166080947,
+        "signed_20d": -0.0025167588500555663,
+        "signed_60d": 0.005435101888657725
+      },
+      {
+        "checkpoint": "2019-09-26",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2019-09-27",
+        "signed_5d": -0.0015393132789198961,
+        "signed_20d": -0.003310840487097153,
+        "signed_60d": 0.007981212251010747
+      },
+      {
+        "checkpoint": "2019-12-27",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2019-12-30",
+        "signed_5d": 0.0016685327750318643,
+        "signed_20d": -0.002843048896971813,
+        "signed_60d": 0.05918723447150475
+      },
+      {
+        "checkpoint": "2020-03-26",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2020-03-27",
+        "signed_5d": 0.012690690843430621,
+        "signed_20d": 0.03281704374513086,
+        "signed_60d": 0.025326888712160687
+      },
+      {
+        "checkpoint": "2021-03-25",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2021-03-26",
+        "signed_5d": 0.0006654235808832288,
+        "signed_20d": 0.005210127939440208,
+        "signed_60d": 0.004937052036501516
+      },
+      {
+        "checkpoint": "2021-06-24",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2021-06-25",
+        "signed_5d": -0.001265356001385408,
+        "signed_20d": 0.0023513301393737456,
+        "signed_60d": 0.0006510156127331861
+      },
+      {
+        "checkpoint": "2021-09-23",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2021-09-24",
+        "signed_5d": -0.004816471140341614,
+        "signed_20d": -0.018944948633770022,
+        "signed_60d": -0.01644742927803584
+      },
+      {
+        "checkpoint": "2022-03-24",
+        "signal": -1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2022-03-25",
+        "signed_5d": -0.005681576235570254,
+        "signed_20d": -0.007984456546297652,
+        "signed_60d": -0.030746033291111103
+      },
+      {
+        "checkpoint": "2022-06-23",
+        "signal": 1,
+        "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
+        "entry_date": "2022-06-24",
+        "signed_5d": 0.0009968770872002194,
+        "signed_20d": -0.026368867154049635,
+        "signed_60d": -0.014233568716467478
+      },
+      {
         "checkpoint": "2022-09-26",
         "signal": -1,
         "source": "NEGOTIATED_WAGES_CERTIFIED_CHANGE",
@@ -278,22 +359,22 @@
     ],
     "stats": {
       "5d": {
-        "n": 7,
-        "hit_rate": 0.42857142857142855,
-        "mean": -0.0015704786840491315,
-        "median": -0.0010119470947639526
+        "n": 16,
+        "hit_rate": 0.5,
+        "mean": -0.0004636482150879415,
+        "median": -0.00017326175694036186
       },
       "20d": {
-        "n": 7,
-        "hit_rate": 0.7142857142857143,
-        "mean": -0.0010786042212463961,
-        "median": 0.0038577252079194263
+        "n": 16,
+        "hit_rate": 0.5,
+        "mean": -0.0018212905183138627,
+        "median": -0.0007954302575337079
       },
       "60d": {
-        "n": 7,
-        "hit_rate": 0.5714285714285714,
-        "mean": 0.001679944614837223,
-        "median": 0.00977021635724557
+        "n": 16,
+        "hit_rate": 0.625,
+        "mean": 0.003365692874425922,
+        "median": 0.005186076962579621
       }
     },
     "small_sample_warning": true
