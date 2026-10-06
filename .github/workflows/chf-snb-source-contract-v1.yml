@@ -1,0 +1,77 @@
+name: CHF SNB Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-chf-official-v1-2026-10-06
+    paths:
+      - 'validation/sources/chf_snb_official_core.py'
+      - 'validation/fixtures/chf_snb_cpi_contract.json'
+      - 'validation/fixtures/chf_snb_unemployment_contract.json'
+      - 'validation/test_chf_snb_source.py'
+      - '.github/workflows/chf-snb-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic CHF SNB parser-builder contract
+        run: python validation/test_chf_snb_source.py
+      - name: Fetch official live SNB inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-chf/inflation
+          python validation/sources/chf_snb_official_core.py --dimension inflation --output /tmp/gmfq-chf/inflation/candidate.json --audit-output /tmp/gmfq-chf/inflation/source-audit.json
+      - name: Pass live CHF inflation candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-chf/inflation/candidate.json --output-dir /tmp/gmfq-chf/inflation/built
+      - name: Fetch official live SNB labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-chf/labour
+          python validation/sources/chf_snb_official_core.py --dimension labour --output /tmp/gmfq-chf/labour/candidate.json --audit-output /tmp/gmfq-chf/labour/source-audit.json
+      - name: Pass live CHF labour candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-chf/labour/candidate.json --output-dir /tmp/gmfq-chf/labour/built
+      - name: Verify SNB provenance precision and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out={}
+          for dim in ('inflation','labour'):
+              r=Path('/tmp/gmfq-chf')/dim
+              c=json.loads((r/'candidate.json').read_text());a=json.loads((r/'source-audit.json').read_text());s=json.loads((r/'built/summary.json').read_text())
+              assert c['currency']=='CHF';assert c['source'].startswith('Swiss National Bank data portal /')
+              assert a['mode']=='live' and a['live_data_written'] is False and a['candidate_only'] is True
+              assert a['retrieval_url'].startswith('https://data.snb.ch/api/cube/') and a['retrieval_url'].endswith('/data/json/en')
+              assert s['status']=='PASS' and s['live_data_modified'] is False
+              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'raw_value':a['raw_value'],'cube':a['upstream_cube'],'series_label':a['upstream_series_label'],'normalization':a['normalization'],'series_action':s['series_action']}
+          assert out['inflation']['series_id']=='CH_CPI_HEADLINE_YOY' and out['inflation']['date']=='2026-08-01'
+          assert abs(float(out['inflation']['value'])-0.8)<1e-12 and abs(float(out['inflation']['raw_value'])-0.8072460486750788)<1e-12
+          assert out['inflation']['cube']=='plkopr' and out['inflation']['series_label']=='Change from the corresponding month of the previous year in %' and out['inflation']['normalization']=='round_to_1_decimal_reported_rate'
+          assert out['labour']['series_id']=='CH_UNEMP_RATE' and out['labour']['date']=='2026-08-01'
+          assert abs(float(out['labour']['value'])-3.13682671641221)<1e-12 and abs(float(out['labour']['raw_value'])-3.13682671641221)<1e-12
+          assert out['labour']['cube']=='amarbma' and out['labour']['series_label']=='Jobless rate - Seasonally adjusted' and out['labour']['normalization']=='none'
+          print(json.dumps({'status':'PASS','source':'SNB official API','results':out,'live_data_modified':False},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload SNB verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-snb-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-chf/inflation/candidate.json
+            /tmp/gmfq-chf/inflation/source-audit.json
+            /tmp/gmfq-chf/inflation/built/summary.json
+            /tmp/gmfq-chf/labour/candidate.json
+            /tmp/gmfq-chf/labour/source-audit.json
+            /tmp/gmfq-chf/labour/built/summary.json
