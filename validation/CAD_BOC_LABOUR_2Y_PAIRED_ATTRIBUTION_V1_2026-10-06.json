@@ -1,0 +1,184 @@
+{
+  "schema": "GMFQ_CAD_BOC_LABOUR_2Y_PAIRED_ATTRIBUTION_V1",
+  "status": "PASS",
+  "created_at": "2026-10-06",
+  "scope": "Frozen first-release CAD Labour block versus 5-market-day Canadian 2Y confirmation, same event universe and post-confirmation FX timing.",
+  "engine": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0"
+  },
+  "guardrails": [
+    "CAD Labour signal taken unchanged from frozen PIT sensitivity",
+    "5-market-day 2Y window predeclared to mirror GBP test",
+    "same post-confirmation FX timing for confirmed/rejected",
+    "no threshold tuning",
+    "no parameter fitting",
+    "engine/live_data untouched"
+  ],
+  "counts": {
+    "all": 54,
+    "confirmed": 21,
+    "rejected": 33
+  },
+  "all": {
+    "stats": {
+      "5d": {
+        "n": 54,
+        "hit_rate": 0.5925925925925926,
+        "mean": 0.0007809207625223531,
+        "median": 0.0008720827905600915
+      },
+      "20d": {
+        "n": 53,
+        "hit_rate": 0.5471698113207547,
+        "mean": 0.001114119253036024,
+        "median": 0.002142218593564701
+      },
+      "60d": {
+        "n": 51,
+        "hit_rate": 0.6470588235294118,
+        "mean": 0.001154718538383893,
+        "median": 0.0031080695117140385
+      }
+    },
+    "walkforward_reference": {
+      "train_n": 21,
+      "test_n": 33,
+      "test_start": "2023-02-10",
+      "test_end": "2026-09-04",
+      "test_stats": {
+        "5d": {
+          "n": 33,
+          "hit_rate": 0.5757575757575758,
+          "mean": 5.8931314300090533e-05,
+          "median": 0.000713321635038487
+        },
+        "20d": {
+          "n": 32,
+          "hit_rate": 0.5625,
+          "mean": 0.0008542529312327066,
+          "median": 0.0019290982899973202
+        },
+        "60d": {
+          "n": 30,
+          "hit_rate": 0.6,
+          "mean": -0.001095540757065695,
+          "median": 0.0005140782171643237
+        }
+      }
+    }
+  },
+  "confirmed": {
+    "stats": {
+      "5d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": 0.0005656544919712536,
+        "median": -0.00018164266318855836
+      },
+      "20d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": 0.002438909408834048,
+        "median": -0.001147824750645986
+      },
+      "60d": {
+        "n": 21,
+        "hit_rate": 0.47619047619047616,
+        "mean": -0.0003643106091944682,
+        "median": -0.0023140277902542242
+      }
+    },
+    "walkforward_reference": {
+      "train_n": 8,
+      "test_n": 13,
+      "test_start": "2023-02-10",
+      "test_end": "2026-01-09",
+      "test_stats": {
+        "5d": {
+          "n": 13,
+          "hit_rate": 0.46153846153846156,
+          "mean": -0.0007921001670563165,
+          "median": -0.0010108319185905008
+        },
+        "20d": {
+          "n": 13,
+          "hit_rate": 0.46153846153846156,
+          "mean": -0.00203382696872458,
+          "median": -0.0029362444365284455
+        },
+        "60d": {
+          "n": 13,
+          "hit_rate": 0.3076923076923077,
+          "mean": -0.007277174982844383,
+          "median": -0.00934469175233682
+        }
+      }
+    }
+  },
+  "rejected": {
+    "stats": {
+      "5d": {
+        "n": 33,
+        "hit_rate": 0.6666666666666666,
+        "mean": 0.0009179083892366892,
+        "median": 0.001154296532363867
+      },
+      "20d": {
+        "n": 32,
+        "hit_rate": 0.59375,
+        "mean": 0.0002447257132935705,
+        "median": 0.002900543239066661
+      },
+      "60d": {
+        "n": 30,
+        "hit_rate": 0.7666666666666667,
+        "mean": 0.002218038941688746,
+        "median": 0.004314608864775092
+      }
+    },
+    "walkforward_reference": {
+      "train_n": 13,
+      "test_n": 20,
+      "test_start": "2023-06-09",
+      "test_end": "2026-09-04",
+      "test_stats": {
+        "5d": {
+          "n": 20,
+          "hit_rate": 0.65,
+          "mean": 0.000612101777181755,
+          "median": 0.0008720827905600915
+        },
+        "20d": {
+          "n": 19,
+          "hit_rate": 0.631578947368421,
+          "mean": 0.0028303075996245343,
+          "median": 0.002598271927132947
+        },
+        "60d": {
+          "n": 17,
+          "hit_rate": 0.8235294117647058,
+          "mean": 0.0036315912979415373,
+          "median": 0.0031080695117140385
+        }
+      }
+    }
+  },
+  "incremental_confirmation": {
+    "5d": {
+      "confirmed_minus_rejected_hit_rate": -0.19047619047619047,
+      "confirmed_minus_rejected_mean": -0.0003522538972654355
+    },
+    "20d": {
+      "confirmed_minus_rejected_hit_rate": -0.11755952380952384,
+      "confirmed_minus_rejected_mean": 0.002194183695540478
+    },
+    "60d": {
+      "confirmed_minus_rejected_hit_rate": -0.29047619047619055,
+      "confirmed_minus_rejected_mean": -0.0025823495508832143
+    }
+  },
+  "assessment_policy": "Rates confirmation is useful only if confirmed events materially outperform rejected events and the effect persists in chronological holdout.",
+  "changes_engine_rules": false,
+  "changes_live_data": false
+}
