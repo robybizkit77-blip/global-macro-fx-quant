@@ -1,0 +1,89 @@
+name: GBP ONS Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-gbp-ons-v1-2026-10-06
+    paths:
+      - 'validation/sources/gbp_ons_core.py'
+      - 'validation/fixtures/gbp_ons_cpi_contract.json'
+      - 'validation/fixtures/gbp_ons_unemployment_contract.json'
+      - 'validation/test_gbp_ons_source.py'
+      - '.github/workflows/gbp-ons-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic ONS parser-builder contract
+        run: python validation/test_gbp_ons_source.py
+      - name: Fetch official live ONS inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-gbp-ons-live/inflation
+          python validation/sources/gbp_ons_core.py --dimension inflation \
+            --output /tmp/gmfq-gbp-ons-live/inflation/candidate.json \
+            --audit-output /tmp/gmfq-gbp-ons-live/inflation/source-audit.json
+      - name: Pass live GBP inflation candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-gbp-ons-live/inflation/candidate.json \
+            --output-dir /tmp/gmfq-gbp-ons-live/inflation/built
+      - name: Fetch official live ONS labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-gbp-ons-live/labour
+          python validation/sources/gbp_ons_core.py --dimension labour \
+            --output /tmp/gmfq-gbp-ons-live/labour/candidate.json \
+            --audit-output /tmp/gmfq-gbp-ons-live/labour/source-audit.json
+      - name: Pass live GBP labour candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-gbp-ons-live/labour/candidate.json \
+            --output-dir /tmp/gmfq-gbp-ons-live/labour/built
+      - name: Verify ONS provenance and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={'inflation':('D7G7','reported_yoy_rate'),'labour':('MGSX','level')}
+          out={}
+          for dim,(series_id,transformation) in expected.items():
+              root=Path('/tmp/gmfq-gbp-ons-live')/dim
+              c=json.loads((root/'candidate.json').read_text())
+              a=json.loads((root/'source-audit.json').read_text())
+              s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='GBP' and c['dimension']==dim, c
+              assert c['source']=='Office for National Statistics', c
+              assert c['series_id']==series_id, c
+              assert c['transformation']==transformation, c
+              assert a['upstream_series_id']==series_id, a
+              assert a['mode']=='live' and a['live_data_written'] is False, a
+              assert s['status']=='PASS' and s['live_data_modified'] is False, s
+              assert s['observation_date']==c['observation_date'], (s,c)
+              out[dim]={'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+          print(json.dumps({'status':'PASS','source':'ONS','results':out,'live_data_modified':False}, indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: |
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload ONS verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-gbp-ons-live/inflation/candidate.json
+            /tmp/gmfq-gbp-ons-live/inflation/source-audit.json
+            /tmp/gmfq-gbp-ons-live/inflation/built/summary.json
+            /tmp/gmfq-gbp-ons-live/labour/candidate.json
+            /tmp/gmfq-gbp-ons-live/labour/source-audit.json
+            /tmp/gmfq-gbp-ons-live/labour/built/summary.json
