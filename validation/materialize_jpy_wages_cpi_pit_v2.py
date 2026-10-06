@@ -13,6 +13,10 @@ SPEC.loader.exec_module(base)
 
 def direct_yoy(block: str):
     """Parse only the YoY statement inside one numbered overview item."""
+    # Official CPI releases sometimes express exactly 0.0% as 'same level as previous year'
+    # instead of printing a numeric YoY percentage (e.g. 2020-07 ex-fresh-food core).
+    if re.search(r'前年同月と同水準',block) or re.search(r'前年同月比[^。]{0,40}(?:変わらず|同水準)',block):
+        return 0.0
     m=re.search(r'前年同月比(?:は|が|、)?(-?[0-9]+(?:\.[0-9]+)?)%(?:の)?(上昇|下落)?',block)
     if not m:
         return None
@@ -45,6 +49,9 @@ def narrative_current_month(seg: str,label: str,current_month: int,headline: boo
         am=re.search(r'\([^)]*?→'+str(current_month)+r'月(-?[0-9]+(?:\.[0-9]+)?)%\)',sentence)
         if am:
             return float(am.group(1))
+        # Explicit unchanged wording is equivalent to 0.0% YoY.
+        if '変わらず' in sentence or '同水準' in sentence:
+            return 0.0
         # Some releases may express the current YoY directly inside the same sentence.
         dm=re.search(r'前年同月比(?:は|が|、)?(-?[0-9]+(?:\.[0-9]+)?)%(?:の)?(上昇|下落)?',sentence)
         if dm and '上昇幅' not in sentence[:dm.end()] and '下落幅' not in sentence[:dm.end()] and 'ポイント' not in sentence[:dm.end()]:
@@ -81,7 +88,7 @@ if __name__=='__main__':
     base.main()
     ev_path=base.EVID
     ev=json.loads(ev_path.read_text(encoding='utf-8'))
-    ev['materializer_revision']='2.0'
-    ev['cpi_extraction_policy']='Block-scoped parser: numbered overview items (1=headline, 2=ex-fresh core) are primary; fallback is restricted to the exact single narrative sentence for the same component. If overview and narrative are both available and disagree, the observation is WITHHELD. No cross-component regex traversal.'
+    ev['materializer_revision']='2.1'
+    ev['cpi_extraction_policy']='Block-scoped parser: numbered overview items (1=headline, 2=ex-fresh core) are primary; official unchanged/same-level wording maps mechanically to 0.0% YoY; fallback is restricted to the exact single narrative sentence for the same component. If overview and narrative are both available and disagree, the observation is WITHHELD. No cross-component regex traversal.'
     ev['semantic_crosscheck']='HARD_FAIL_ON_OVERVIEW_NARRATIVE_MISMATCH'
     ev_path.write_text(json.dumps(ev,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
