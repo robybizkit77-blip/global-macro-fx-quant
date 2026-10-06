@@ -1,0 +1,61 @@
+name: GBP ONS A01 Labour PIT Vintages V1
+
+on:
+  push:
+    branches:
+      - validation-pit-gbp-ons-archive-v1-2026-10-06
+    paths:
+      - 'validation/build_gbp_a01_labour_pit_vintages.py'
+      - '.github/workflows/gbp-ons-a01-labour-pit-vintages-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook readers
+        run: pip install --disable-pip-version-check -q pandas openpyxl xlrd beautifulsoup4 requests
+      - name: Build official ONS A01 labour PIT vintages
+        run: |
+          mkdir -p /tmp/gmfq-gbp-ons-pit
+          python validation/build_gbp_a01_labour_pit_vintages.py \
+            --start 2018-01-01 \
+            --end 2026-09-30 \
+            --output /tmp/gmfq-gbp-ons-pit/GBP_ONS_A01_LABOUR_PIT_VINTAGES_V1_2018_2026.json
+      - name: Assert full PIT vintage contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-gbp-ons-pit/GBP_ONS_A01_LABOUR_PIT_VINTAGES_V1_2018_2026.json').read_text())
+          assert x['status']=='PASS',x
+          assert x['vintage_count']>=100,x
+          assert x['guardrails']['uses_current_revised_timeseries_for_values'] is False,x
+          assert x['guardrails']['live_data_modified'] is False,x
+          assert x['guardrails']['model_rules_modified'] is False,x
+          assert x['guardrails']['rules_fingerprint_expected_unchanged']=='3356baf0',x
+          for d in ['2021-05-18','2024-02-13','2026-02-17']:
+            assert d in x['anchors'],(d,x['anchors'].keys())
+          a=x['anchors']['2024-02-13']
+          assert a['reference_period']=='Oct-Dec 2023',a
+          assert abs(a['employment_rate']-75.00856523743148)<1e-9,a
+          assert abs(a['unemployment_rate']-3.826618326559586)<1e-9,a
+          print(json.dumps({'status':x['status'],'vintage_count':x['vintage_count'],'year_counts':x['year_counts'],'anchors':x['anchors']},indent=2))
+          PY
+      - name: Confirm repository untouched
+        run: git diff --exit-code
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-a01-labour-pit-vintages-v1
+          if-no-files-found: error
+          retention-days: 14
+          path: /tmp/gmfq-gbp-ons-pit/GBP_ONS_A01_LABOUR_PIT_VINTAGES_V1_2018_2026.json
