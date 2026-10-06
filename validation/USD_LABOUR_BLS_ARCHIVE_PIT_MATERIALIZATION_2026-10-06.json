@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_USD_LABOUR_BLS_ARCHIVE_PIT_V1",
+  "status": "PASS",
+  "source": "Official BLS Employment Situation archived news releases",
+  "archive_index": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "coverage": {
+    "start": "2016-01",
+    "end": "2026-09",
+    "calendar_months": 129,
+    "published_complete_releases": 128,
+    "structural_withheld_months": 1
+  },
+  "structural_withheld": {
+    "2025-10": "BLS did not publish an October 2025 Employment Situation because of the 2025 lapse in federal government appropriations; household survey data were not collected retroactively."
+  },
+  "candidate_archive_urls": 128,
+  "fields": [
+    "NFP first-published monthly change (persons)",
+    "unemployment rate first-published",
+    "release date",
+    "08:30 ET release time"
+  ],
+  "method": "Extract reference month and opening-summary values from each archived Employment Situation release; no current database/revised-history substitution. Months with no official complete release remain explicitly WITHHELD.",
+  "strict_zero_parse_errors_on_published_releases": true,
+  "output": "history/pit_v1/USD_LABOUR_BLS_EMPLOYMENT_SITUATION_FIRST_RELEASE_2016_2026.csv",
+  "notes": [
+    "October 2025 is deliberately not backfilled because BLS did not publish an Employment Situation and household data were not collected retroactively.",
+    "NFP values are stored in persons, matching the explicit magnitudes printed in BLS releases.",
+    "No consensus-surprise series is introduced here.",
+    "This certifies Labour PIT inputs only; engine rules and live data remain untouched."
+  ]
+}
