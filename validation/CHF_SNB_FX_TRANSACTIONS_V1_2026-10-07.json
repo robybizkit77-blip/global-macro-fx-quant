@@ -1,0 +1,26 @@
+{
+  "schema": "GMFQ_CHF_SNB_FX_TRANSACTIONS_V1",
+  "status": "PASS",
+  "created_at": "2026-10-07",
+  "source": "Swiss National Bank data portal",
+  "cube": "snbfxtr",
+  "series_key": "EPB@SNB.snbfxtr{T0}",
+  "frequency": "P3M",
+  "unit": "In CHF millions",
+  "coverage": {
+    "n": 26,
+    "first": "2020-Q1",
+    "last": "2026-Q2"
+  },
+  "sign_semantics": {
+    "positive": "net purchases of foreign currency by SNB; CHF-liquidity providing / intended to counter CHF appreciation pressure",
+    "negative": "net sales of foreign currency by SNB; tighter monetary conditions / supports CHF",
+    "validation_anchor_2022_chf_mn": -22283.0,
+    "official_annual_report_2022": "net sales of foreign currency equivalent to CHF 22.3bn"
+  },
+  "pit_policy": "quarterly official transaction total as published by SNB; use only after its publication timestamp in event-time replay",
+  "sight_deposits_policy": "context only; never substitute for intervention volumes",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
