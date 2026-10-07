@@ -1,0 +1,61 @@
+name: Reaction Function Driver Source Readiness V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/build_reaction_function_driver_source_readiness_v1.py'
+      - 'validation/DASHBOARD_REACTION_FUNCTION_CONTRACT_V2_2026-10-07.json'
+      - 'validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json'
+      - 'validation/MACRO_SOURCE_RELEASE_REGISTRY_V1_2026-10-07.json'
+      - 'validation/NZD_RBNZ_REACTION_FEASIBILITY_V1_2026-10-07.json'
+      - 'validation/CHF_REACTION_READINESS_V1_2026-10-07.json'
+      - 'validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md'
+      - '.github/workflows/reaction-function-driver-source-readiness-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build driver source readiness
+        run: python validation/build_reaction_function_driver_source_readiness_v1.py
+      - name: Validate strict source-map policy
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('validation/REACTION_FUNCTION_DRIVER_SOURCE_READINESS_V1_2026-10-07.json'))
+          assert x['schema']=='GMFQ_REACTION_FUNCTION_DRIVER_SOURCE_READINESS_V1'
+          assert len(x['currencies'])==8
+          assert x['global_live_ingress']['daily_ready']==0
+          for c,d in x['currencies'].items():
+              assert d['driver_count']==len(d['drivers'])
+              assert d['cb_implication']=='WITHHELD_NOT_COMPUTED'
+              assert d['production_gate'] is False
+              for r in d['drivers']:
+                  if r['status'].startswith('WITHHELD_NO_EXACT_REPO_SOURCE'):
+                      assert r['local_path'] is None
+          assert all(v is False for v in x['guards'].values())
+          print('PASS_REACTION_FUNCTION_DRIVER_SOURCE_READINESS_V1')
+          PY
+      - name: Prove live runtime untouched
+        run: git diff --exit-code -- live_data/ payload/
+      - name: Commit output if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/REACTION_FUNCTION_DRIVER_SOURCE_READINESS_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No readiness change'
+            exit 0
+          fi
+          git commit -m 'Generate reaction-function driver source readiness'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
