@@ -156,3 +156,4 @@ jobs:
 # diagnostic G8 Rates runtime/canonical parity audit 2026-10-07
 # rerun after EUR canonical runtime adapter 2026-10-07
 # rerun after GBP canonical runtime adapter 2026-10-07
+# rerun after reverting destructive GBP adapter 2026-10-07
