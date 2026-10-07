@@ -1,0 +1,975 @@
+{
+  "schema": "GMFQ_DASHBOARD_PAIR_RENDER_PAYLOAD_V1",
+  "status": "RESEARCH_ONLY_UI_READY_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "purpose": "UI-ready current pair transmission payload. Descriptive only; no return fitting and no trade signal.",
+  "display_contract": {
+    "primary": "macro_anchor + transmission_state",
+    "secondary": "central_bank + front_end_rates + price",
+    "safety_badges": [
+      "robustness_badge",
+      "research_evidence"
+    ],
+    "never_hide_rule_sensitive": true,
+    "never_convert_withheld_to_neutral": true,
+    "never_flip_macro_from_downstream_layers": true
+  },
+  "summary": {
+    "state_counts": {
+      "TRANSMISSION_PARTIAL": 8,
+      "TRANSMISSION_WITHHELD": 6,
+      "TRANSMISSION_DIVERGENT": 12,
+      "TRANSMISSION_CLEAN": 2
+    },
+    "robustness_counts": {
+      "ROBUST_ACROSS_RULES": 22,
+      "RULE_SENSITIVE": 6
+    },
+    "focus_buckets": {
+      "clean_robust": [
+        "GBP/JPY",
+        "JPY/CAD"
+      ],
+      "divergent_robust": [
+        "CHF/CAD",
+        "EUR/NZD",
+        "USD/AUD",
+        "USD/CAD",
+        "USD/CHF",
+        "USD/NZD"
+      ],
+      "partial_robust": [
+        "AUD/NZD",
+        "CAD/AUD",
+        "EUR/AUD",
+        "EUR/JPY",
+        "GBP/AUD",
+        "JPY/NZD",
+        "USD/EUR",
+        "USD/JPY"
+      ],
+      "rule_sensitive": [
+        "CHF/NZD",
+        "EUR/CAD",
+        "EUR/CHF",
+        "GBP/CAD",
+        "GBP/CHF",
+        "GBP/NZD"
+      ],
+      "withheld": [
+        "CAD/NZD",
+        "CHF/AUD",
+        "EUR/GBP",
+        "JPY/AUD",
+        "JPY/CHF",
+        "USD/GBP"
+      ]
+    }
+  },
+  "pairs": {
+    "AUD/NZD": {
+      "pair": "AUD/NZD",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "CAD/AUD": {
+      "pair": "CAD/AUD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        }
+      },
+      "research_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "CAD/NZD": {
+      "pair": "CAD/NZD",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "CHF/AUD": {
+      "pair": "CHF/AUD",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "CHF/CAD": {
+      "pair": "CHF/CAD",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "CHF/NZD": {
+      "pair": "CHF/NZD",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/AUD": {
+      "pair": "EUR/AUD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/CAD": {
+      "pair": "EUR/CAD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/CHF": {
+      "pair": "EUR/CHF",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/GBP": {
+      "pair": "EUR/GBP",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/JPY": {
+      "pair": "EUR/JPY",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "EUR/NZD": {
+      "pair": "EUR/NZD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "GBP/AUD": {
+      "pair": "GBP/AUD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "GBP/CAD": {
+      "pair": "GBP/CAD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "GBP/CHF": {
+      "pair": "GBP/CHF",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "GBP/JPY": {
+      "pair": "GBP/JPY",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_CLEAN",
+      "state_label_it": "TRASMISSIONE PULITA",
+      "state_note_it": "Macro, banca centrale, front-end e prezzo sono coerenti.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Catena causale coerente: è uno dei cross più puliti del quadro corrente. Non è un segnale di trade automatico.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "GBP/NZD": {
+      "pair": "GBP/NZD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "RULE_SENSITIVE",
+      "robustness_label_it": "SENSIBILE ALLA REGOLA",
+      "robustness_note_it": "Lo stato cambia sotto almeno una regola descrittiva ragionevole; va letto con prudenza.",
+      "layers": {
+        "central_bank": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "La lettura dipende dalla regola descrittiva: utile come warning, non come conclusione forte.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "JPY/AUD": {
+      "pair": "JPY/AUD",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "JPY/CAD": {
+      "pair": "JPY/CAD",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_CLEAN",
+      "state_label_it": "TRASMISSIONE PULITA",
+      "state_note_it": "Macro, banca centrale, front-end e prezzo sono coerenti.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Catena causale coerente: è uno dei cross più puliti del quadro corrente. Non è un segnale di trade automatico.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "JPY/CHF": {
+      "pair": "JPY/CHF",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "JPY/NZD": {
+      "pair": "JPY/NZD",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/AUD": {
+      "pair": "USD/AUD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/CAD": {
+      "pair": "USD/CAD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/CHF": {
+      "pair": "USD/CHF",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/EUR": {
+      "pair": "USD/EUR",
+      "macro_anchor": "A",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/GBP": {
+      "pair": "USD/GBP",
+      "macro_anchor": "MIXED",
+      "state": "TRANSMISSION_WITHHELD",
+      "state_label_it": "NON CLASSIFICATA",
+      "state_note_it": "Il quadro macro relativo non è abbastanza direzionale per una classificazione affidabile.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "front_end_rates": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        },
+        "price": {
+          "status": "NOT_APPLICABLE_MACRO_MIXED",
+          "label_it": "non applicabile"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il macro anchor è misto: meglio non forzare una direzione finché il quadro relativo non si chiarisce.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/JPY": {
+      "pair": "USD/JPY",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_PARTIAL",
+      "state_label_it": "TRASMISSIONE PARZIALE",
+      "state_note_it": "Il quadro macro trova conferme, ma almeno un canale non è pienamente coerente.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "ALIGNED",
+          "label_it": "conferma"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Il quadro ha conferme reali ma non complete: serve osservare quale canale manca alla convergenza.",
+      "production_gate": false,
+      "predictive_claim": false
+    },
+    "USD/NZD": {
+      "pair": "USD/NZD",
+      "macro_anchor": "B",
+      "state": "TRANSMISSION_DIVERGENT",
+      "state_label_it": "DIVERGENZA",
+      "state_note_it": "Uno o più canali materiali stanno contraddicendo il quadro macro.",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "robustness_label_it": "ROBUSTA",
+      "robustness_note_it": "Lo stato resta uguale sotto tre regole descrittive ragionevoli.",
+      "layers": {
+        "central_bank": {
+          "status": "NEUTRAL_OR_MIXED",
+          "label_it": "misto/neutrale"
+        },
+        "front_end_rates": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        },
+        "price": {
+          "status": "DIVERGENT",
+          "label_it": "diverge"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "dashboard_read_it": "Divergenza stabile tra macro e trasmissione: richiede capire quale layer sta anticipando e quale sta ritardando.",
+      "production_gate": false,
+      "predictive_claim": false
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "return_fitting": false,
+    "predictive_claim": false
+  }
+}
