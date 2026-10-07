@@ -1,0 +1,21 @@
+name: Dashboard Reaction Function Contract V2
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/DASHBOARD_REACTION_FUNCTION_CONTRACT_V2_2026-10-07.json'
+      - 'validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3_2026-10-07.json'
+      - 'validation/validate_dashboard_reaction_function_contract_v2.py'
+      - '.github/workflows/dashboard-reaction-function-contract-v2.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate dashboard reaction-function contract V2
+        run: python validation/validate_dashboard_reaction_function_contract_v2.py
