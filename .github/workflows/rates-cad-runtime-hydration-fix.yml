@@ -23,7 +23,6 @@ jobs:
           p=Path('payload/part-15.txt')
           s=p.read_text()
 
-          # 1) The 30-Sep legacy overlay mutates the canonical CAD object back to 28-Sep.
           legacy_id='<script id="gmfq-cad-rates-boc-20260930">'
           assert s.count(legacy_id)==1, f'legacy CAD script count={s.count(legacy_id)}'
           a=s.index(legacy_id)
@@ -34,7 +33,6 @@ jobs:
           replacement='''<script id="gmfq-cad-rates-boc-20260930-disabled">\n(function(){\n  'use strict';\n  window.GMFQ_LEGACY_CAD_RATES_OVERLAY_DISABLED={status:'PASS',reason:'Canonical NATIVE_RATES_DATA is authoritative; legacy 28-Sep overlay disabled.'};\n})();\n</script>'''
           s=s[:a]+replacement+s[b:]
 
-          # 2) Integrity checks must validate canonical CAD dynamically, never old fixed values/dates.
           integ_id='<script id="gmfq-cad-live-hydration-integrity">'
           assert s.count(integ_id)==1, f'CAD integrity script count={s.count(integ_id)}'
           ia=s.index(integ_id)
@@ -42,16 +40,25 @@ jobs:
           block=s[ia:ib]
           old_meta="const metadataOk=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of==='2026-10-01';"
           old_values="const valuesOk=Number(cad?.['2Y'])===3.27 && Number(macro?.rate2y)===3.27 && Number(cad?.['10Y'])===3.94 && Number(cad?.curve_bp)===67;"
-          assert block.count(old_meta)==2, f'old metadata checks={block.count(old_meta)}'
-          assert block.count(old_values)==2, f'old value checks={block.count(old_values)}'
+          assert block.count(old_meta)==1, f'old metadata checks={block.count(old_meta)}'
+          assert block.count(old_values)==1, f'old value checks={block.count(old_values)}'
           new_meta="const expectedDate=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.CAD; const metadataOk=!!expectedDate && cad?.date===expectedDate && window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of===expectedDate;"
-          new_values="const valuesOk=Number.isFinite(Number(cad?.['2Y'])) && Number.isFinite(Number(cad?.['10Y'])) && Number(macro?.rate2y)===Number(cad?.['2Y']) && Number(cad?.curve_bp)===Number(((Number(cad?.['10Y'])-Number(cad?.['2Y']))*100).toFixed(10));"
+          new_values="const valuesOk=Number.isFinite(Number(cad?.['2Y'])) && Number.isFinite(Number(cad?.['10Y'])) && Number(macro?.rate2y)===Number(cad?.['2Y']) && Math.abs(Number(cad?.curve_bp)-((Number(cad?.['10Y'])-Number(cad?.['2Y']))*100))<1e-6;"
           block=block.replace(old_meta,new_meta).replace(old_values,new_values)
           assert '2026-10-01' not in block
           assert "===3.27" not in block and "===3.94" not in block
           s=s[:ia]+block+s[ib:]
 
-          # 3) The later metadata hydration must read canonical data, not a literal snapshot.
+          # A second delayed settlement block exists outside the integrity script; make it dynamic too.
+          old_meta2="const metadataOk=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of==='2026-10-01';"
+          old_values2="const valuesOk=Number(cad?.['2Y'])===3.27 && Number(macro?.rate2y)===3.27 && Number(cad?.['10Y'])===3.94 && Number(cad?.curve_bp)===67;"
+          assert s.count(old_meta2)==1, f'remaining delayed metadata checks={s.count(old_meta2)}'
+          assert s.count(old_values2)==1, f'remaining delayed value checks={s.count(old_values2)}'
+          new_meta2="const expectedDate=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.CAD; const metadataOk=!!expectedDate && cad?.date===expectedDate && window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of===expectedDate;"
+          new_values2="const valuesOk=Number.isFinite(Number(cad?.['2Y'])) && Number.isFinite(Number(cad?.['10Y'])) && Number(macro?.rate2y)===Number(cad?.['2Y']) && Math.abs(Number(cad?.curve_bp)-((Number(cad?.['10Y'])-Number(cad?.['2Y']))*100))<1e-6;"
+          s=s.replace(old_meta2,new_meta2,1).replace(old_values2,new_values2,1)
+          assert "current_as_of==='2026-10-01'" not in s
+
           hyd_id='<script id="gmfq-live-rates-audit-metadata-hydration">'
           assert s.count(hyd_id)==1
           ha=s.index(hyd_id); hb=s.index('</script>',ha)
