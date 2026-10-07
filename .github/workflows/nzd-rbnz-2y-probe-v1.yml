@@ -1,0 +1,42 @@
+name: NZD RBNZ 2Y Probe V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_nzd_rbnz_2y_probe_v1.py'
+      - '.github/workflows/nzd-rbnz-2y-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install xlsx parser
+        run: pip install openpyxl
+      - name: Probe official RBNZ B2 NZD 2Y history
+        run: python validation/run_nzd_rbnz_2y_probe_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/NZD_RBNZ_2Y_PROBE_V1_2026-10-07.json'))
+          assert p['changes_engine_rules'] is False and p['changes_live_data'] is False and p['changes_oos_baseline'] is False
+          print('PASS')
+          PY
+      - name: Commit probe evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/NZD_RBNZ_2Y_PROBE_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m "Probe official RBNZ NZD 2Y history"
+          git push
