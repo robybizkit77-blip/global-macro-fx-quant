@@ -1,0 +1,40 @@
+name: Forward Pair Snapshot Integrity V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/materialize_forward_pair_snapshot_v1.py'
+      - 'validation/validate_forward_pair_snapshots_v1.py'
+      - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
+      - 'validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json'
+      - '.github/workflows/forward-pair-snapshot-integrity-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  freeze-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize frozen pair snapshot
+        run: python validation/materialize_forward_pair_snapshot_v1.py
+      - name: Validate manifest and digests
+        run: python validation/validate_forward_pair_snapshots_v1.py
+      - name: Commit frozen snapshot and manifest if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/forward/MANIFEST_V1.json validation/forward/snapshots/*.json
+          if git diff --cached --quiet; then
+            echo 'No frozen snapshot change'
+            exit 0
+          fi
+          git commit -m 'Materialize frozen forward pair snapshot'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
