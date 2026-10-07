@@ -1,0 +1,215 @@
+{
+  "schema": "GMFQ_CURRENCY_COMPACT_PAYLOAD_V1",
+  "status": "RESEARCH_ONLY_UI_READY_NOT_PROMOTED",
+  "purpose": "Minimal currency-level payload for a future compact dashboard. Counts first; no universal score and no absolute bias override.",
+  "fields": [
+    "macro_relative",
+    "transmission",
+    "robustness",
+    "what_changed",
+    "historical_evidence"
+  ],
+  "currencies": {
+    "AUD": {
+      "currency": "AUD",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_FAVOREVOLE",
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission": {
+        "read": "CONFERME_PREVALENTI",
+        "clean": 0,
+        "partial": 4,
+        "divergent": 1,
+        "withheld": 2
+      },
+      "robustness": {
+        "robust": 7,
+        "rule_sensitive": 0
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "PROMISING_SMALL_SAMPLE",
+      "production_rule": "NO_GATE"
+    },
+    "CAD": {
+      "currency": "CAD",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "EQUILIBRIO_RELATIVO",
+        "favored": 3,
+        "opposed": 3,
+        "mixed": 1
+      },
+      "transmission": {
+        "read": "DIVERGENZA_DIFFUSA",
+        "clean": 1,
+        "partial": 1,
+        "divergent": 4,
+        "withheld": 1
+      },
+      "robustness": {
+        "robust": 5,
+        "rule_sensitive": 2
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "PROMISING_SMALL_SAMPLE",
+      "production_rule": "NO_GATE"
+    },
+    "CHF": {
+      "currency": "CHF",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_FAVOREVOLE",
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission": {
+        "read": "DIVERGENZA_DIFFUSA",
+        "clean": 0,
+        "partial": 0,
+        "divergent": 5,
+        "withheld": 2
+      },
+      "robustness": {
+        "robust": 4,
+        "rule_sensitive": 3
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "WITHHELD_SOURCE_ACCESS_GAP",
+      "production_rule": "WITHHELD"
+    },
+    "EUR": {
+      "currency": "EUR",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_SFAVOREVOLE",
+        "favored": 0,
+        "opposed": 6,
+        "mixed": 1
+      },
+      "transmission": {
+        "read": "QUADRO_MISTO",
+        "clean": 0,
+        "partial": 3,
+        "divergent": 3,
+        "withheld": 1
+      },
+      "robustness": {
+        "robust": 5,
+        "rule_sensitive": 2
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "NO_INCREMENTAL_VALUE",
+      "production_rule": "NO_GATE"
+    },
+    "GBP": {
+      "currency": "GBP",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_SFAVOREVOLE",
+        "favored": 0,
+        "opposed": 5,
+        "mixed": 2
+      },
+      "transmission": {
+        "read": "QUADRO_MISTO",
+        "clean": 1,
+        "partial": 1,
+        "divergent": 3,
+        "withheld": 2
+      },
+      "robustness": {
+        "robust": 4,
+        "rule_sensitive": 3
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "NO_INCREMENTAL_VALUE",
+      "production_rule": "NO_GATE"
+    },
+    "JPY": {
+      "currency": "JPY",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_FAVOREVOLE",
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission": {
+        "read": "TRASMISSIONE_PIU_COERENTE",
+        "clean": 2,
+        "partial": 3,
+        "divergent": 0,
+        "withheld": 2
+      },
+      "robustness": {
+        "robust": 7,
+        "rule_sensitive": 0
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "NO_INCREMENTAL_VALUE",
+      "production_rule": "NO_GATE"
+    },
+    "NZD": {
+      "currency": "NZD",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "EQUILIBRIO_RELATIVO",
+        "favored": 3,
+        "opposed": 3,
+        "mixed": 1
+      },
+      "transmission": {
+        "read": "DIVERGENZA_DIFFUSA",
+        "clean": 0,
+        "partial": 2,
+        "divergent": 4,
+        "withheld": 1
+      },
+      "robustness": {
+        "robust": 5,
+        "rule_sensitive": 2
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "WITHHELD_SOURCE_ACCESS_GAP",
+      "production_rule": "WITHHELD"
+    },
+    "USD": {
+      "currency": "USD",
+      "cross_count": 7,
+      "macro_relative": {
+        "read": "PREVALENZA_SFAVOREVOLE",
+        "favored": 1,
+        "opposed": 5,
+        "mixed": 1
+      },
+      "transmission": {
+        "read": "DIVERGENZA_DIFFUSA",
+        "clean": 0,
+        "partial": 2,
+        "divergent": 4,
+        "withheld": 1
+      },
+      "robustness": {
+        "robust": 7,
+        "rule_sensitive": 0
+      },
+      "what_changed": "BASELINE",
+      "historical_evidence": "SUPPORTED_DIAGNOSTIC",
+      "production_rule": "NO_GATE"
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "creates_universal_score": false,
+    "overrides_macro_bias": false,
+    "predictive_claim": false
+  }
+}
