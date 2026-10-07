@@ -1,0 +1,675 @@
+{
+  "schema": "GMFQ_MACRO_DOWNSTREAM_PROPAGATION_AUDIT_V1",
+  "created_at_utc": "2026-10-07T10:43:28.043220Z",
+  "status": "GAP_BLOCK_MACRO_APPLY",
+  "finding": "MACRO_SERIES and MACRO_THERMOMETER_DATA can be rebuilt, but no certified deterministic writer was found that propagates the resulting macro state into D/CERT53.",
+  "manifest": {
+    "MACRO_SERIES": {
+      "mode": "DIRECT_SINGLE_PART",
+      "part": 1,
+      "direct_update_allowed": true
+    },
+    "MACRO_THERMOMETER_DATA": {
+      "mode": "DIRECT_SINGLE_PART",
+      "part": 0,
+      "direct_update_allowed": true
+    },
+    "D": {
+      "mode": "DIRECT_SINGLE_PART",
+      "part": 0,
+      "direct_update_allowed": true
+    },
+    "CERT53": {
+      "mode": "DIRECT_SINGLE_PART",
+      "part": 0,
+      "direct_update_allowed": true
+    }
+  },
+  "macro_candidate_builder": {
+    "path": "validation/build_macro_candidate.py",
+    "produces_macro_series_and_heatmap": true,
+    "produces_D": false,
+    "produces_CERT53": false
+  },
+  "downstream_dependency": {
+    "pair_signed_inputs_path": "validation/build_dashboard_pair_signed_inputs_v1.py",
+    "reads_CERT53_fundamental_anchor_macro": true,
+    "cert53_pair_count": 28,
+    "cert53_pairs_with_macro_anchor": 28
+  },
+  "repository_scan": {
+    "scripts_with_relevant_references": [
+      {
+        "path": "validation/append_forward_snapshot_if_changed_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/audit_cert53_provenance_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/audit_macro_downstream_propagation_v1.py",
+        "reads_macro_heatmap": true,
+        "reads_macro_series": true,
+        "references_D": true,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/build_dashboard_pair_signed_inputs_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/build_forward_statistics_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": true,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/build_macro_candidate.py",
+        "reads_macro_heatmap": true,
+        "reads_macro_series": true,
+        "references_D": false,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/build_macro_source_release_registry_v1.py",
+        "reads_macro_heatmap": true,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/build_positioning_compact_payload_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": true,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/fetch_macro_usd_bls_candidate_v1.py",
+        "reads_macro_heatmap": true,
+        "reads_macro_series": true,
+        "references_D": false,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/replay_jpy_macro_candidate.py",
+        "reads_macro_heatmap": true,
+        "reads_macro_series": true,
+        "references_D": false,
+        "references_CERT53": false
+      },
+      {
+        "path": "validation/run_cert53_provenance_dry_run_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/run_cert53_refresh_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/update_live_direct_section.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/validate_cert53_canonical_refresh_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/validate_cert53_refresh_provenance_policy_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      },
+      {
+        "path": "validation/validate_forward_pair_snapshots_v1.py",
+        "reads_macro_heatmap": false,
+        "reads_macro_series": false,
+        "references_D": false,
+        "references_CERT53": true
+      }
+    ],
+    "candidate_bridge_writers": []
+  },
+  "live_structure_diagnostics": {
+    "D_macro_related_paths_sample": [
+      {
+        "path": "$.macro",
+        "preview": "dict"
+      },
+      {
+        "path": "$.macro.USD.labour",
+        "preview": 0.68
+      },
+      {
+        "path": "$.macro.USD.inflation",
+        "preview": 1.68
+      },
+      {
+        "path": "$.macro.EUR.labour",
+        "preview": 1.19
+      },
+      {
+        "path": "$.macro.EUR.inflation",
+        "preview": 0.84
+      },
+      {
+        "path": "$.macro.GBP.labour",
+        "preview": -0.63
+      },
+      {
+        "path": "$.macro.GBP.inflation",
+        "preview": 0.14
+      },
+      {
+        "path": "$.macro.JPY.labour",
+        "preview": 1.45
+      },
+      {
+        "path": "$.macro.JPY.inflation",
+        "preview": 0.55
+      },
+      {
+        "path": "$.macro.CHF.labour",
+        "preview": 0.42
+      },
+      {
+        "path": "$.macro.CHF.inflation",
+        "preview": 0.09
+      },
+      {
+        "path": "$.macro.CAD.labour",
+        "preview": 0.16
+      },
+      {
+        "path": "$.macro.CAD.inflation",
+        "preview": -0.36
+      },
+      {
+        "path": "$.macro.AUD.labour",
+        "preview": -0.02
+      },
+      {
+        "path": "$.macro.AUD.inflation",
+        "preview": -0.03
+      },
+      {
+        "path": "$.macro.NZD.labour",
+        "preview": -0.37
+      },
+      {
+        "path": "$.macro.NZD.inflation",
+        "preview": 0.69
+      },
+      {
+        "path": "$.pairStates.EUR/GBP.layers.macro",
+        "preview": "MISTO"
+      },
+      {
+        "path": "$.pairStates.EUR/AUD.layers.macro",
+        "preview": "AUD"
+      },
+      {
+        "path": "$.pairStates.EUR/NZD.layers.macro",
+        "preview": "NZD"
+      },
+      {
+        "path": "$.pairStates.EUR/USD.layers.macro",
+        "preview": "USD"
+      },
+      {
+        "path": "$.pairStates.EUR/CAD.layers.macro",
+        "preview": "CAD"
+      },
+      {
+        "path": "$.pairStates.EUR/CHF.layers.macro",
+        "preview": "CHF"
+      },
+      {
+        "path": "$.pairStates.EUR/JPY.layers.macro",
+        "preview": "JPY"
+      },
+      {
+        "path": "$.pairStates.GBP/AUD.layers.macro",
+        "preview": "AUD"
+      },
+      {
+        "path": "$.pairStates.GBP/NZD.layers.macro",
+        "preview": "NZD"
+      },
+      {
+        "path": "$.pairStates.GBP/USD.layers.macro",
+        "preview": "USD"
+      },
+      {
+        "path": "$.pairStates.GBP/CAD.layers.macro",
+        "preview": "CAD"
+      },
+      {
+        "path": "$.pairStates.GBP/CHF.layers.macro",
+        "preview": "CHF"
+      },
+      {
+        "path": "$.pairStates.GBP/JPY.layers.macro",
+        "preview": "JPY"
+      },
+      {
+        "path": "$.pairStates.AUD/NZD.layers.macro",
+        "preview": "AUD"
+      },
+      {
+        "path": "$.pairStates.AUD/USD.layers.macro",
+        "preview": "USD"
+      },
+      {
+        "path": "$.pairStates.AUD/CAD.layers.macro",
+        "preview": "AUD"
+      },
+      {
+        "path": "$.pairStates.AUD/CHF.layers.macro",
+        "preview": "MISTO"
+      },
+      {
+        "path": "$.pairStates.AUD/JPY.layers.macro",
+        "preview": "MISTO"
+      },
+      {
+        "path": "$.pairStates.NZD/USD.layers.macro",
+        "preview": "NZD"
+      },
+      {
+        "path": "$.pairStates.NZD/CAD.layers.macro",
+        "preview": "MISTO"
+      },
+      {
+        "path": "$.pairStates.NZD/CHF.layers.macro",
+        "preview": "CHF"
+      },
+      {
+        "path": "$.pairStates.NZD/JPY.layers.macro",
+        "preview": "JPY"
+      },
+      {
+        "path": "$.pairStates.USD/CAD.layers.macro",
+        "preview": "USD"
+      },
+      {
+        "path": "$.pairStates.USD/CHF.layers.macro",
+        "preview": "USD"
+      },
+      {
+        "path": "$.pairStates.USD/JPY.layers.macro",
+        "preview": "MISTO"
+      },
+      {
+        "path": "$.pairStates.CAD/CHF.layers.macro",
+        "preview": "CHF"
+      },
+      {
+        "path": "$.pairStates.CAD/JPY.layers.macro",
+        "preview": "JPY"
+      },
+      {
+        "path": "$.pairStates.CHF/JPY.layers.macro",
+        "preview": "MISTO"
+      }
+    ],
+    "CERT53_macro_related_paths_sample": [
+      {
+        "path": "$.pairs.USD/EUR.fundamental_anchor_macro",
+        "preview": "A"
+      },
+      {
+        "path": "$.pairs.USD/EUR.layer_directions.macro",
+        "preview": "A"
+      },
+      {
+        "path": "$.pairs.USD/EUR.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/EUR.secondary_macro_relationship",
+        "preview": "QUALIFIES_AND_PARTIALLY_CONFIRMS_USD_MACRO"
+      },
+      {
+        "path": "$.pairs.USD/EUR.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/GBP.fundamental_anchor_macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.USD/GBP.layer_directions.macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.USD/GBP.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/GBP.secondary_macro_relationship",
+        "preview": "QUALIFIES_AND_PARTIALLY_CONFIRMS_USD_MACRO"
+      },
+      {
+        "path": "$.pairs.USD/GBP.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/JPY.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/JPY.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/JPY.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/JPY.secondary_macro_relationship",
+        "preview": "USD_SECTORS_DIVERGE_FROM_PAIR_MACRO_DIRECTION_OR_PAIR_MACRO_MIXED"
+      },
+      {
+        "path": "$.pairs.USD/JPY.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/CHF.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/CHF.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/CHF.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/CHF.secondary_macro_relationship",
+        "preview": "QUALIFIES_AND_PARTIALLY_CONFIRMS_USD_MACRO"
+      },
+      {
+        "path": "$.pairs.USD/CHF.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/CAD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/CAD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/CAD.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/CAD.secondary_macro_relationship",
+        "preview": "QUALIFIES_AND_PARTIALLY_CONFIRMS_USD_MACRO"
+      },
+      {
+        "path": "$.pairs.USD/CAD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/AUD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/AUD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/AUD.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/AUD.secondary_macro_relationship",
+        "preview": "QUALIFIES_AND_PARTIALLY_CONFIRMS_USD_MACRO"
+      },
+      {
+        "path": "$.pairs.USD/AUD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.USD/NZD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/NZD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.USD/NZD.secondary_sector_context.macro_quality",
+        "preview": "POSITIVE_BUT_UNEVEN"
+      },
+      {
+        "path": "$.pairs.USD/NZD.secondary_macro_relationship",
+        "preview": "USD_SECTORS_DIVERGE_FROM_PAIR_MACRO_DIRECTION_OR_PAIR_MACRO_MIXED"
+      },
+      {
+        "path": "$.pairs.USD/NZD.secondary_sector_context_NZD.macro_quality",
+        "preview": "RECOVERY_WITH_LABOUR_WEAKNESS_AND_INFLATION_DIVERGENCE"
+      },
+      {
+        "path": "$.pairs.USD/NZD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/GBP.fundamental_anchor_macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.EUR/GBP.layer_directions.macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.EUR/GBP.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/JPY.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/JPY.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/JPY.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/CHF.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/CHF.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/CHF.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/CAD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/CAD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/CAD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/AUD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/AUD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/AUD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.EUR/NZD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/NZD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.EUR/NZD.secondary_sector_context_NZD.macro_quality",
+        "preview": "RECOVERY_WITH_LABOUR_WEAKNESS_AND_INFLATION_DIVERGENCE"
+      },
+      {
+        "path": "$.pairs.EUR/NZD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.GBP/JPY.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/JPY.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/JPY.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.GBP/CHF.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/CHF.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/CHF.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.GBP/CAD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/CAD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/CAD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.GBP/AUD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/AUD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/AUD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.GBP/NZD.fundamental_anchor_macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/NZD.layer_directions.macro",
+        "preview": "B"
+      },
+      {
+        "path": "$.pairs.GBP/NZD.secondary_sector_context_NZD.macro_quality",
+        "preview": "RECOVERY_WITH_LABOUR_WEAKNESS_AND_INFLATION_DIVERGENCE"
+      },
+      {
+        "path": "$.pairs.GBP/NZD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.JPY/CHF.fundamental_anchor_macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.JPY/CHF.layer_directions.macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.JPY/CHF.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.JPY/CAD.fundamental_anchor_macro",
+        "preview": "A"
+      },
+      {
+        "path": "$.pairs.JPY/CAD.layer_directions.macro",
+        "preview": "A"
+      },
+      {
+        "path": "$.pairs.JPY/CAD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      },
+      {
+        "path": "$.pairs.JPY/AUD.fundamental_anchor_macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.JPY/AUD.layer_directions.macro",
+        "preview": "MIXED"
+      },
+      {
+        "path": "$.pairs.JPY/AUD.macro_candidate_overlay_P70",
+        "preview": "dict"
+      }
+    ]
+  },
+  "policy": {
+    "macro_apply_allowed": false,
+    "reason": "Do not permit live macro apply until a deterministic propagation builder updates all downstream macro consumers and passes replay parity.",
+    "required_next_artifact": "Certified Macro Propagation Builder V1 with no-op parity + synthetic one-observation propagation test.",
+    "schedule_enabled": false
+  },
+  "guards": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
