@@ -1,0 +1,67 @@
+name: Macro USD BLS Candidate V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/fetch_macro_usd_bls_candidate_v1.py'
+      - '.github/workflows/macro-usd-bls-candidate-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capture protected hashes
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/CERT53.json live_data/manifest.v2.json payload/part-00.txt > /tmp/before.sha
+      - name: Fetch official BLS candidate
+        run: python validation/fetch_macro_usd_bls_candidate_v1.py --output /tmp/macro-usd-bls-candidate-v1.json | tee /tmp/macro-usd-bls-log.json
+      - name: Validate candidate contract and optionally exercise macro builder
+        run: |
+          python - <<'PY'
+          import json, pathlib, subprocess, sys
+          p=json.load(open('/tmp/macro-usd-bls-candidate-v1.json'))
+          assert p['schema']=='GMFQ_MACRO_USD_BLS_CANDIDATE_V1'
+          assert p['mode']=='READ_ONLY_OFFICIAL_SOURCE_CANDIDATE'
+          assert p['source']['provider']=='U.S. Bureau of Labor Statistics'
+          assert p['source']['fallback_used'] is False
+          assert len(p['observations'])==2
+          dims={x['dimension'] for x in p['observations']}
+          assert dims=={'inflation','labour'}
+          for x in p['observations']:
+              c=x['candidate']
+              assert c['currency']=='USD'
+              assert c['first_release_capture_certified'] is False
+              assert c['source_series_id'] in {'LNS14000000','CUSR0000SA0'}
+              if x['status']=='CANDIDATE_READY':
+                  f=pathlib.Path('/tmp')/f"usd-{x['dimension']}-candidate.json"
+                  f.write_text(json.dumps(c))
+                  out=pathlib.Path('/tmp')/f"macro-build-{x['dimension']}"
+                  subprocess.run([sys.executable,'validation/build_macro_candidate.py','--candidate',str(f),'--output-dir',str(out)],check=True)
+          print({'status':'PASS','overall':p['status'],'observations':[(x['dimension'],x['status'],x['runtime_as_of'],x['source_observation_date']) for x in p['observations']]})
+          PY
+      - name: Prove zero live mutation
+        run: |
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/CERT53.json live_data/manifest.v2.json payload/part-00.txt > /tmp/after.sha
+          diff -u /tmp/before.sha /tmp/after.sha
+          git diff --exit-code -- live_data payload
+      - name: Upload candidate evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-usd-bls-candidate-v1
+          path: |
+            /tmp/macro-usd-bls-candidate-v1.json
+            /tmp/macro-usd-bls-log.json
+            /tmp/macro-build-*/summary.json
+          if-no-files-found: ignore
