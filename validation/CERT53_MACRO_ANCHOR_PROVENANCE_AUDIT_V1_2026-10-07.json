@@ -1,0 +1,82 @@
+{
+  "schema": "GMFQ_CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1",
+  "status": "REGENERATOR_CANDIDATE_FOUND_REQUIRES_REVIEW",
+  "source_file": "live_data/sections/CERT53.json",
+  "pair_count": 28,
+  "certification_state": null,
+  "certified_at": null,
+  "git_history": [
+    "529acdd6026c88ecee8451e2e5bc36c740eece7d|2026-10-05T10:14:02+02:00|Build clean live runtime release candidate"
+  ],
+  "repository_references": [
+    ".github/workflows/cert53-canonical-refresh-v1.yml",
+    ".github/workflows/cert53-macro-anchor-provenance-v1.yml",
+    ".github/workflows/cert53-provenance-audit-v1.yml",
+    ".github/workflows/cert53-provenance-dry-run-v1.yml",
+    ".github/workflows/cert53-refresh-provenance-policy-v1.yml",
+    ".github/workflows/macro-usd-bls-candidate-v1.yml",
+    ".github/workflows/post-live-causal-chain-audit-v1.yml",
+    ".github/workflows/post-live-causal-chain-v1.yml",
+    "live_data/manifest.json",
+    "live_data/manifest.v2.json",
+    "payload/part-00.txt",
+    "payload/part-02.txt",
+    "payload/part-03.txt",
+    "payload/part-05.txt",
+    "payload/part-06.txt",
+    "payload/part-11.txt",
+    "payload/part-12.txt",
+    "validation/CERT53_PROVENANCE_AUDIT_V1_2026-10-07.json",
+    "validation/CERT53_REFRESH_PROVENANCE_TEMPLATE_V1_2026-10-07.json",
+    "validation/DAILY_INGRESS_READINESS_V1_2026-10-07.json",
+    "validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json",
+    "validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json",
+    "validation/FORWARD_AUTOMATION_WIRING_AUDIT_V1_2026-10-07.json",
+    "validation/FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1_2026-10-07.json",
+    "validation/FROZEN_MACRO_TRANSMISSION_REPLAY_V1_2026-10-07.json",
+    "validation/LIVE_UPDATE_PIPELINE_RUNBOOK_V1_2026-10-05.json",
+    "validation/MACRO_DOWNSTREAM_PROPAGATION_AUDIT_V1_2026-10-07.json",
+    "validation/append_forward_snapshot_if_changed_v1.py",
+    "validation/audit_cert53_macro_anchor_provenance_v1.py",
+    "validation/audit_cert53_provenance_v1.py",
+    "validation/audit_macro_downstream_propagation_v1.py",
+    "validation/build_dashboard_pair_signed_inputs_v1.py",
+    "validation/replay_transmission_with_frozen_macro_anchor_v1.py",
+    "validation/run_cert53_provenance_dry_run_v1.py",
+    "validation/run_cert53_refresh_v1.py",
+    "validation/update_live_direct_section.py",
+    "validation/validate_cert53_canonical_refresh_v1.py",
+    "validation/validate_cert53_refresh_provenance_policy_v1.py",
+    "validation/validate_forward_pair_snapshots_v1.py"
+  ],
+  "writer_candidates": [
+    ".github/workflows/cert53-canonical-refresh-v1.yml",
+    ".github/workflows/macro-usd-bls-candidate-v1.yml",
+    "validation/append_forward_snapshot_if_changed_v1.py",
+    "validation/audit_cert53_macro_anchor_provenance_v1.py",
+    "validation/audit_cert53_provenance_v1.py",
+    "validation/audit_macro_downstream_propagation_v1.py",
+    "validation/build_dashboard_pair_signed_inputs_v1.py",
+    "validation/run_cert53_provenance_dry_run_v1.py",
+    "validation/run_cert53_refresh_v1.py"
+  ],
+  "writer_candidate_count": 9,
+  "frozen_engine_architecture": {
+    "canonical_pair_macro_source": "compare canonical currency Macro states",
+    "legacy_pair_macro_override_allowed": false,
+    "note": "Frozen runtime explicitly prevents legacy relative pair Macro readings from overriding the canonical currency engine."
+  },
+  "interpretation": {
+    "does_not_claim_cert53_wrong": true,
+    "claim": "CERT53 can be a certified historical/current snapshot while still lacking a reproducible live regenerator.",
+    "macro_ingest_apply": "BLOCKED_UNTIL_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS",
+    "next_required_artifact": "CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_CONTRACT_V1"
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false
+  }
+}
