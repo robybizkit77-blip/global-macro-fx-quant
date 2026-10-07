@@ -1,0 +1,160 @@
+{
+  "schema": "GMFQ_CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "methodology_source": "validation/CENTRAL_BANK_REACTION_FUNCTION_MAP_V1_2026-10-06.json",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "principles": [
+    "Reaction-function theory and empirical evidence are separate layers.",
+    "No universal G8 transmission score is assumed.",
+    "Front-end and price confirmation may alter interpretation but cannot override the macro bias mechanically.",
+    "Evidence labels are descriptive research states, not production weights or gates.",
+    "WITHHELD is mandatory where PIT/OOS evidence is insufficient."
+  ],
+  "evidence_labels": {
+    "SUPPORTED_DIAGNOSTIC": "There is OOS evidence of economically coherent transmission, but not sufficient proof for a production gate.",
+    "PROMISING_SMALL_SAMPLE": "Direction is encouraging but sample size is too small for robust use.",
+    "NO_INCREMENTAL_VALUE": "The tested confirmation layer does not improve the macro signal reliably OOS.",
+    "WITHHELD": "Evidence is not yet sufficient or not yet tested on comparable certified PIT data."
+  },
+  "currencies": {
+    "USD": {
+      "central_bank": "FED",
+      "reaction_function": "DUAL_MANDATE",
+      "primary_macro_state": "Labour + inflation balance",
+      "front_end_role": "Transmission/context, strongest evidence in coherent dovish/easing regimes",
+      "evidence_status": "SUPPORTED_DIAGNOSTIC",
+      "directional_asymmetry": {
+        "dovish_negative_oos": {
+          "medium_n": 7,
+          "medium_hit_rate": 1.0,
+          "medium_mean_signed_20d": 0.01505005680388071,
+          "low_n": 16,
+          "low_hit_rate": 0.8125,
+          "low_mean_signed_20d": 0.007954669920481343
+        },
+        "hawkish_positive_oos": {
+          "medium_n": 13,
+          "medium_hit_rate": 0.6153846153846154,
+          "medium_mean_signed_20d": 0.001036357559221458,
+          "low_n": 21,
+          "low_hit_rate": 0.5714285714285714,
+          "low_mean_signed_20d": 0.0014534599502436208
+        }
+      },
+      "interpretation": "Fed easing transmission is the clearest validated diagnostic channel so far; tightening confirmation is weaker and should not be scored symmetrically.",
+      "production_rule": "NO_GATE"
+    },
+    "CAD": {
+      "central_bank": "BOC",
+      "reaction_function": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "primary_macro_state": "Growth/labour context + core/headline inflation coherence",
+      "front_end_role": "Useful only conditionally; not a standalone gate",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "coherent_oos": {
+        "medium_n": 8,
+        "medium_hit_rate": 0.75,
+        "medium_mean_signed_20d": 0.0005745485414798232,
+        "low_n": 13,
+        "low_hit_rate": 0.46153846153846156,
+        "low_mean_signed_20d": -0.0014054715078597286
+      },
+      "interpretation": "When the macro/inflation state is internally coherent, common-core confirmation improves directionally, but the sample remains too small for promotion.",
+      "production_rule": "NO_GATE"
+    },
+    "GBP": {
+      "central_bank": "BOE",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "primary_macro_state": "Wages + services inflation, with labour as context",
+      "front_end_role": "Observed state only",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "coherent_oos": {
+        "medium_n": 7,
+        "medium_hit_rate": 0.14285714285714285,
+        "medium_mean_signed_20d": -0.010823816289470113,
+        "low_n": 26,
+        "low_hit_rate": 0.4230769230769231,
+        "low_mean_signed_20d": 0.000766172998496483
+      },
+      "interpretation": "BoE OIS/front-end confirmation does not improve the coherent macro state OOS and can be misleading if converted into a conviction score.",
+      "production_rule": "NO_GATE"
+    },
+    "JPY": {
+      "central_bank": "BOJ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "primary_macro_state": "Wages + inflation agreement; labour/growth context",
+      "front_end_role": "Transmission/context only",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "coherent_oos": {
+        "medium_n": 5,
+        "medium_hit_rate": 0.4,
+        "medium_mean_signed_20d": -0.004686823597306759,
+        "low_n": 24,
+        "low_hit_rate": 0.6666666666666666,
+        "low_mean_signed_20d": 0.008047925377861897
+      },
+      "interpretation": "JGB 2Y and relative-rate transmission are economically meaningful but do not justify a mechanical conviction upgrade OOS.",
+      "production_rule": "NO_GATE"
+    },
+    "EUR": {
+      "central_bank": "ECB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "primary_macro_state": "Wages/services inflation mediation",
+      "front_end_role": "Diagnostic context only",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "interpretation": "Existing wages+2Y walk-forward does not establish robust incremental value from front-end confirmation.",
+      "production_rule": "NO_GATE"
+    },
+    "AUD": {
+      "central_bank": "RBA",
+      "reaction_function": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+      "primary_macro_state": "Labour + inflation",
+      "front_end_role": "Unvalidated",
+      "evidence_status": "WITHHELD",
+      "interpretation": "Reaction-function logic is defined, but comparable PIT/OOS transmission evidence is not yet certified.",
+      "production_rule": "WITHHELD"
+    },
+    "NZD": {
+      "central_bank": "RBNZ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_FLEXIBLE_INFLATION_TARGETING",
+      "primary_macro_state": "Inflation/slack",
+      "front_end_role": "Unvalidated",
+      "evidence_status": "WITHHELD",
+      "interpretation": "Comparable PIT/OOS transmission evidence is not yet certified.",
+      "production_rule": "WITHHELD"
+    },
+    "CHF": {
+      "central_bank": "SNB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_WITH_ECONOMIC_DEVELOPMENTS",
+      "primary_macro_state": "Inflation forecast + economic conditions + exchange-rate channel",
+      "front_end_role": "Incomplete without FX-intervention/monetary-conditions channel",
+      "evidence_status": "WITHHELD",
+      "interpretation": "A simple rates confirmation framework is structurally incomplete for the SNB because the exchange rate is itself part of the policy transmission mechanism.",
+      "production_rule": "WITHHELD"
+    }
+  },
+  "cross_currency_conclusion": {
+    "universal_conviction_score": "REJECTED",
+    "universal_front_end_gate": "REJECTED",
+    "preferred_architecture": "Macro state -> currency-specific central-bank reaction function -> front-end/relative-rates transmission -> price confirmation -> qualitative transmission state",
+    "allowed_dashboard_outputs": [
+      "TRANSMISSION_CLEAN",
+      "TRANSMISSION_PARTIAL",
+      "TRANSMISSION_DIVERGENT",
+      "TRANSMISSION_WITHHELD"
+    ],
+    "forbidden_in_v2": [
+      "Universal HIGH/MEDIUM/LOW numeric score",
+      "Automatic macro-bias inversion from rates",
+      "Common G8 rates weight",
+      "Post-hoc currency-specific thresholds"
+    ]
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
