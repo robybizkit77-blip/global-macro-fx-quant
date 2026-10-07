@@ -1,0 +1,86 @@
+{
+  "schema_version": "GMFQ_CB_PRICING_ACCESS_AUDIT_V1",
+  "currency": "USD",
+  "audit_as_of": "2026-10-07",
+  "decision": "WITHHELD",
+  "activation_allowed": false,
+  "scope": {
+    "required_instrument": "CBOT 30-Day Federal Funds futures (ZQ)",
+    "required_method": "CME FedWatch methodology",
+    "required_observations": [
+      "same-basis current ZQ strip",
+      "same-basis prior business-day ZQ strip",
+      "same-basis one-week-prior ZQ strip",
+      "sufficient contract months to map 3M, 6M and 12M horizons",
+      "official settlement timestamp/date for every observation"
+    ]
+  },
+  "official_evidence": [
+    {
+      "url": "https://www.cmegroup.com/articles/2023/understanding-the-cme-group-fedwatch-tool-methodology.html",
+      "finding": "FedWatch uses 30-Day Federal Funds (ZQ) futures; each contract price implies the delivery-month average daily EFFR. The meeting tree is built from the monthly contract prices.",
+      "result": "METHODOLOGY_CONFIRMED"
+    },
+    {
+      "url": "https://www.cmegroup.com/market-data/settlements/files/30-day-fed-fund-futures-daily-settlement-procedure.pdf",
+      "finding": "CME staff settle every ZQ contract month from the stated CME Globex settlement process.",
+      "result": "OFFICIAL_SETTLEMENT_DEFINITION_CONFIRMED"
+    },
+    {
+      "url": "https://www.cmegroup.com/market-data/daily-settlements.html",
+      "finding": "CME directs users seeking daily and final settlement data to CME DataMine.",
+      "result": "PUBLIC_PAGE_DOES_NOT_EXPOSE_MACHINE_RETRIEVABLE_HISTORICAL_ZQ_STRIP"
+    },
+    {
+      "url": "https://www.cmegroup.com/market-data/market-data-api/fedwatch-api.html",
+      "finding": "CME offers FedWatch end-of-day API access at $25/month and extended history back to 2015 through its API access flow.",
+      "result": "HISTORICAL_FEED_IS_SUBSCRIPTION_GATED"
+    }
+  ],
+  "reproduction": {
+    "attempted_utc": "2026-10-07T21:43:00Z",
+    "request": {
+      "method": "GET",
+      "url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.quotes.html",
+      "authentication": "none",
+      "purpose": "retrieve public current ZQ contract strip directly from CME"
+    },
+    "result": {
+      "http_status": 403,
+      "classification": "ACCESS_DENIED",
+      "interpretation": "No unauthenticated, reproducible programmatic capture was available in this environment. This result alone is not used to infer that a human browser cannot view the page."
+    },
+    "historical_check": {
+      "prior_business_day_same_basis_strip": "NOT_PUBLICLY_RETRIEVED",
+      "one_week_prior_same_basis_strip": "NOT_PUBLICLY_RETRIEVED",
+      "official_evidence_points_to": [
+        "CME DataMine for daily/final settlements",
+        "CME FedWatch End-of-Day API subscription for FedWatch history"
+      ]
+    }
+  },
+  "field_validation": {
+    "source": false,
+    "as_of": false,
+    "policy_rate": false,
+    "meeting_path": false,
+    "horizon_3m": false,
+    "horizon_6m": false,
+    "horizon_12m": false,
+    "change_1d": false,
+    "change_1w": false,
+    "reason": "A current observation cannot be certified and the required 1D/1W comparison strips are not accessible from the same directly captured official CME source."
+  },
+  "runtime_guard": {
+    "OIS_DATA_USD_status": "WITHHELD",
+    "live_data_mutated": false,
+    "proxy_or_secondary_data_used_for_activation": false,
+    "promotion_allowed": false
+  },
+  "unblock_requirements": [
+    "Provision licensed CME FedWatch EOD API access or the relevant CME DataMine ZQ settlement dataset.",
+    "Capture the full required ZQ settlement strips for current, prior business day and one week prior, including as-of metadata.",
+    "Map the settlement-derived EFFR expectations to 3M, 6M and 12M using the documented FedWatch calculation and the FOMC schedule.",
+    "Validate all required fields before creating a separate promotion candidate."
+  ]
+}
