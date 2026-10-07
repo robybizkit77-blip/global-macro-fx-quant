@@ -1,0 +1,48 @@
+name: CERT53 Macro Anchor Provenance V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/audit_cert53_macro_anchor_provenance_v1.py'
+      - 'live_data/sections/CERT53.json'
+      - '.github/workflows/cert53-macro-anchor-provenance-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Audit CERT53 Macro anchor provenance
+        run: python validation/audit_cert53_macro_anchor_provenance_v1.py
+      - name: Validate audit contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1_2026-10-07.json')
+          x=json.loads(p.read_text())
+          assert x['schema']=='GMFQ_CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1'
+          assert x['pair_count']==28
+          assert all(v is False for v in x['guards'].values())
+          assert x['interpretation']['macro_ingest_apply']=='BLOCKED_UNTIL_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS'
+          print(x['status'], 'writers=', x['writer_candidate_count'])
+          PY
+      - name: Commit provenance output if changed
+        run: |
+          if git diff --quiet -- validation/CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1_2026-10-07.json && git ls-files --error-unmatch validation/CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1_2026-10-07.json >/dev/null 2>&1; then
+            echo 'No provenance change'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1_2026-10-07.json
+          git commit -m 'Generate CERT53 Macro anchor provenance audit'
+          git push
