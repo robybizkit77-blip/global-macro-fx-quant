@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 ROOT=Path(__file__).resolve().parents[1]
 CERT53=ROOT/'live_data/sections/CERT53.json'
-PART=ROOT/'payload/part-15.txt'
+PART=ROOT/'payload/part-00.txt'
 PROV_DIR=ROOT/'live_data/provenance/cert53'
 UPDATER=ROOT/'validation/update_live_direct_section.py'
 OUT=ROOT/'validation/CERT53_PROVENANCE_DRY_RUN_V1_2026-10-07.json'
