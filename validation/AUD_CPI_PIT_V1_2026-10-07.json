@@ -1,0 +1,52 @@
+{
+  "schema": "GMFQ_AUD_CPI_PIT_V1",
+  "status": "PASS",
+  "created_at": "2026-10-07",
+  "source": "Australian Bureau of Statistics historical CPI release pages",
+  "definition": "headline All groups CPI year-over-year rate exactly as published in each quarterly release",
+  "coverage": {
+    "n": 24,
+    "modern_n": 23,
+    "first": "2018-Q4",
+    "modern_first": "2019-Q4",
+    "last": "2025-Q3",
+    "missing_modern_releases": 1
+  },
+  "anchors": {
+    "2018-Q4": {
+      "reference_quarter": "2018-Q4",
+      "release_date": "2019-01-30",
+      "headline_cpi_yoy_pct": 1.8,
+      "source_url": "https://www.abs.gov.au/AUSSTATS/abs%40.nsf/allprimarymainfeatures/97DE913203378356CA2583E5001D660C",
+      "archive_format": "legacy_AUSSTATS"
+    },
+    "2019-Q4": {
+      "reference_quarter": "2019-Q4",
+      "release_date": "2020-01-29",
+      "headline_cpi_yoy_pct": 1.8,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/dec-2019",
+      "archive_format": "modern"
+    },
+    "2020-Q1": {
+      "reference_quarter": "2020-Q1",
+      "release_date": "2020-04-29",
+      "headline_cpi_yoy_pct": 2.2,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/mar-2020",
+      "archive_format": "modern"
+    }
+  },
+  "failures": [
+    {
+      "reference_quarter": "2020-Q2",
+      "errors": [
+        "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2020: parse_none",
+        "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-quarter-2020: parse_none"
+      ]
+    }
+  ],
+  "frequency_policy": "quarterly CPI only through 2025-Q3; complete monthly CPI regime from Oct 2025 kept separate to avoid frequency break inside historical reaction test",
+  "first_release_policy": "archived release-page value only; no current revised-history substitution",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
