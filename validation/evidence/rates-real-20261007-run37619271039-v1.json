@@ -1,0 +1,31 @@
+{
+  "schema": "GMFQ_RATES_REFRESH_PROVENANCE_V1",
+  "status": "CANDIDATE_READY_READ_ONLY",
+  "section": "NATIVE_RATES_DATA",
+  "refresh_id": "rates-real-20261007-run37619271039-v1",
+  "created_at_utc": "2026-10-07T12:12:23Z",
+  "source_asof": "2026-10-06",
+  "candidate_sha256": "bc17ebc56e92082071a79f211bc8e8814c2a5f642b94c91bdbba29965014ec93",
+  "inputs": [
+    {"currency":"USD","source":"U.S. Department of the Treasury","source_asof":"2026-10-06","sha256_or_source_fingerprint":"df2d170c59c8617b2ea53838bea666b148c5bbb3bb2dd764b6b7184142b9dfb9","role":"rates_source"},
+    {"currency":"JPY","source":"Japan Ministry of Finance","source_asof":"2026-10-06","sha256_or_source_fingerprint":"f97137c909bc939a3c44d28f551b5223910de8b25d89404a43394d35bc47bf0c","role":"rates_source"},
+    {"currency":"EUR","source":"European Central Bank","source_asof":"2026-10-06","sha256_or_source_fingerprint":"0e86972d1c3d6cc2a1eeeaf6b41e5f55205737d26b6170ce9fa40e08f6296294","role":"rates_source"},
+    {"currency":"GBP","source":"Bank of England","source_asof":"2026-10-06","sha256_or_source_fingerprint":"574e2d44e4464ec0617e7edf0f3a12d2ade063d3532340c6c8728c581e54f496","role":"rates_source"},
+    {"currency":"CAD","source":"Bank of Canada","source_asof":"2026-10-05","sha256_or_source_fingerprint":"64d895706bf83a18570174daeebbcf09898562a74045cc4b1c2acb25219c5996","role":"rates_source"},
+    {"currency":"AUD","source":"Reserve Bank of Australia","source_asof":"2026-09-30","sha256_or_source_fingerprint":"df1f36583925b96730ab8d51f4e048e8be6af98a64e4de6be3a2fc10cf086ff7","role":"rates_source"},
+    {"currency":"NZD","source":"Reserve Bank of New Zealand","source_asof":"2026-10-01","sha256_or_source_fingerprint":"1f4552f323faf2a08446f7f3f468164b140c91d70f59c5e455eb34c710b37222","role":"rates_source"},
+    {"currency":"CHF","source":"Swiss National Bank","source_asof":"2026-09-30","sha256_or_source_fingerprint":"c7bf1511516f7adcf36dd49b872478cad719fbf87b6159c2162def490a3c40a4","role":"rates_source"}
+  ],
+  "validation": {
+    "eight_currencies_present": true,
+    "required_fields_present": true,
+    "source_metadata_checked": true,
+    "freshness_checked": true,
+    "manual_review_required": true
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
