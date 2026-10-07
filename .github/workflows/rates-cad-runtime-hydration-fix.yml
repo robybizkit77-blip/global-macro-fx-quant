@@ -15,30 +15,52 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Remove legacy hardcoded CAD overwrite
+      - name: Remove legacy CAD overwrite and hardcoded integrity expectations
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           p=Path('payload/part-15.txt')
           s=p.read_text()
-          script_id='<script id="gmfq-live-rates-audit-metadata-hydration">'
-          assert s.count(script_id)==1, f'hydration script count={s.count(script_id)}'
-          anchor=s.index(script_id)
-          start=s.index('const CAD={', anchor)
-          suffix="if(D?.macro?.CAD){D.macro.CAD.rate2y=CAD['2Y'];"
-          end=s.index(suffix, start)
-          legacy=s[start:end]
-          assert 'Object.assign(target,CAD)' in legacy, 'legacy CAD overwrite not found in target slice'
-          assert legacy.count('Object.assign(target,CAD)')==1, 'unexpected multiple CAD overwrite operations'
-          replacement="const CAD=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;if(!CAD)throw new Error('CAD_RUNTIME_SNAPSHOT_MISSING');"
-          out=s[:start]+replacement+s[end:]
-          hydration=out[anchor:out.index('</script>',anchor)]
-          assert 'Object.assign(target,CAD)' not in hydration
-          assert 'const CAD={' not in hydration
-          assert hydration.count(replacement)==1
-          p.write_text(out)
-          print({'status':'CAD_HYDRATION_CANONICALIZED','removed_bytes':len(legacy),'inserted_bytes':len(replacement)})
+
+          # 1) The 30-Sep legacy overlay mutates the canonical CAD object back to 28-Sep.
+          legacy_id='<script id="gmfq-cad-rates-boc-20260930">'
+          assert s.count(legacy_id)==1, f'legacy CAD script count={s.count(legacy_id)}'
+          a=s.index(legacy_id)
+          b=s.index('</script>',a)+len('</script>')
+          old=s[a:b]
+          for needle in ["date:'2026-09-28'","y2:3.37","y10:3.96","d['2Y']=snap.y2","d['10Y']=snap.y10"]:
+              assert needle in old, f'expected legacy mutation missing: {needle}'
+          replacement='''<script id="gmfq-cad-rates-boc-20260930-disabled">\n(function(){\n  'use strict';\n  window.GMFQ_LEGACY_CAD_RATES_OVERLAY_DISABLED={status:'PASS',reason:'Canonical NATIVE_RATES_DATA is authoritative; legacy 28-Sep overlay disabled.'};\n})();\n</script>'''
+          s=s[:a]+replacement+s[b:]
+
+          # 2) Integrity checks must validate canonical CAD dynamically, never old fixed values/dates.
+          integ_id='<script id="gmfq-cad-live-hydration-integrity">'
+          assert s.count(integ_id)==1, f'CAD integrity script count={s.count(integ_id)}'
+          ia=s.index(integ_id)
+          ib=s.index('</script>',ia)+len('</script>')
+          block=s[ia:ib]
+          old_meta="const metadataOk=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of==='2026-10-01';"
+          old_values="const valuesOk=Number(cad?.['2Y'])===3.27 && Number(macro?.rate2y)===3.27 && Number(cad?.['10Y'])===3.94 && Number(cad?.curve_bp)===67;"
+          assert block.count(old_meta)==2, f'old metadata checks={block.count(old_meta)}'
+          assert block.count(old_values)==2, f'old value checks={block.count(old_values)}'
+          new_meta="const expectedDate=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.CAD; const metadataOk=!!expectedDate && cad?.date===expectedDate && window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.rates?.CAD?.current_as_of===expectedDate;"
+          new_values="const valuesOk=Number.isFinite(Number(cad?.['2Y'])) && Number.isFinite(Number(cad?.['10Y'])) && Number(macro?.rate2y)===Number(cad?.['2Y']) && Number(cad?.curve_bp)===Number(((Number(cad?.['10Y'])-Number(cad?.['2Y']))*100).toFixed(10));"
+          block=block.replace(old_meta,new_meta).replace(old_values,new_values)
+          assert '2026-10-01' not in block
+          assert "===3.27" not in block and "===3.94" not in block
+          s=s[:ia]+block+s[ib:]
+
+          # 3) The later metadata hydration must read canonical data, not a literal snapshot.
+          hyd_id='<script id="gmfq-live-rates-audit-metadata-hydration">'
+          assert s.count(hyd_id)==1
+          ha=s.index(hyd_id); hb=s.index('</script>',ha)
+          hyd=s[ha:hb]
+          assert 'const CAD=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;' in hyd
+          assert 'const CAD={' not in hyd
+
+          p.write_text(s)
+          print({'status':'CAD_LEGACY_OVERLAY_REMOVED','legacy_bytes_removed':len(old),'integrity_checks_dynamic':2})
           PY
       - name: Rebuild manifest and verify contract
         run: |
@@ -57,11 +79,11 @@ jobs:
           assert 'payload/part-15.txt' in changed, changed
           print({'status':'SCOPE_PASS','changed':sorted(changed)})
           PY
-      - name: Commit canonical CAD hydration
+      - name: Commit canonical CAD runtime cleanup
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add payload/part-15.txt live_data/manifest.v2.json
-          git commit -m 'Use canonical runtime CAD in Rates hydration'
+          git commit -m 'Remove legacy CAD Rates runtime overwrite'
           git push origin HEAD:${GITHUB_REF_NAME}
