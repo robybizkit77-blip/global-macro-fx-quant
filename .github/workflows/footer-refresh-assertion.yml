@@ -1,0 +1,61 @@
+name: Footer Refresh Assertion
+
+on:
+  push:
+    branches:
+      - 'validation-public-footer-*'
+  workflow_dispatch:
+
+jobs:
+  footer-assertion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-footer-server.log 2>&1 &
+          sleep 2
+      - name: Assert public Rates refresh footer
+        run: |
+          cat > footer-assert.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const meta=await fetch('http://127.0.0.1:8000/live_data/sections/RATES_AUDIT_METADATA.json').then(r=>r.json());
+            const m=String(meta.audit_date||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if(!m) throw new Error('Invalid audit_date: '+meta.audit_date);
+            const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const expected=`refresh RATES ${Number(m[3])} ${mon[Number(m[2])-1]} ${m[1]}`;
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1600,height:1100}});
+            const errors=[];
+            page.on('console',x=>{ if(x.type()==='error') errors.push(x.text()); });
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForTimeout(8000);
+            const body=await page.locator('body').innerText();
+            const footerLines=body.split('\n').filter(x=>/v454|ogni layer|refresh RATES|aggiornata/i.test(x));
+            console.log(JSON.stringify({expected,footerLines},null,2));
+            if(!body.includes(expected)) throw new Error(`Footer assertion failed. Expected "${expected}". Observed: ${footerLines.join(' | ')}`);
+            if(errors.length) throw new Error('Console errors: '+errors.join(' | '));
+            await page.screenshot({path:'footer-refresh-assertion.png',fullPage:true});
+            await browser.close();
+          })().catch(e=>{console.error('::error title=Footer refresh assertion::'+String(e.message||e));process.exit(1);});
+          EOF
+          node footer-assert.js
+      - name: Upload footer assertion screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: footer-refresh-assertion
+          path: |
+            footer-refresh-assertion.png
+            /tmp/gmfq-footer-server.log
