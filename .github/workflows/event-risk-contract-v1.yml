@@ -1,0 +1,26 @@
+name: Event Risk Contract V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/EVENT_RISK_COMPACT_CONTRACT_V1_2026-10-07.json'
+      - 'validation/EVENT_RISK_SOURCE_READINESS_V1_2026-10-07.json'
+      - 'validation/validate_event_risk_contract_v1.py'
+      - '.github/workflows/event-risk-contract-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate event-risk contract and source gate
+        run: python validation/validate_event_risk_contract_v1.py
