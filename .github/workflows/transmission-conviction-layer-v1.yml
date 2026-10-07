@@ -1,0 +1,29 @@
+name: Transmission Conviction Layer V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/transmission_conviction_layer_v1.py'
+      - 'validation/TRANSMISSION_CONVICTION_LAYER_V1_SPEC_2026-10-07.md'
+      - '.github/workflows/transmission-conviction-layer-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run deterministic self-test
+        run: python validation/transmission_conviction_layer_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/TRANSMISSION_CONVICTION_LAYER_V1_SPEC_2026-10-07.md
+          grep -q '3356baf0' validation/TRANSMISSION_CONVICTION_LAYER_V1_SPEC_2026-10-07.md
