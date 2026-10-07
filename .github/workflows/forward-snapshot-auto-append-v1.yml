@@ -8,6 +8,7 @@ on:
     paths:
       - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
       - 'validation/append_forward_snapshot_if_changed_v1.py'
+      - 'validation/validate_forward_pair_snapshots_v1.py'
       - '.github/workflows/forward-snapshot-auto-append-v1.yml'
 
 permissions:
@@ -26,16 +27,18 @@ jobs:
           python-version: '3.12'
       - name: Append snapshot only on semantic change
         run: python validation/append_forward_snapshot_if_changed_v1.py
-      - name: Validate immutable ledger
+      - name: Validate aggregate ledger
         run: python validation/validate_forward_snapshot_ledger_v1.py
+      - name: Validate frozen pair snapshots and manifest
+        run: python validation/validate_forward_pair_snapshots_v1.py
       - name: Commit appended snapshot if any
         run: |
-          if git diff --quiet -- validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json; then
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json validation/forward/MANIFEST_V1.json validation/forward/snapshots/*.json
+          if git diff --cached --quiet; then
             echo 'No semantic change; no new snapshot'
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json
-          git commit -m 'Append changed causal forward snapshot'
+          git commit -m 'Append changed causal forward snapshot with frozen pairs'
           git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
