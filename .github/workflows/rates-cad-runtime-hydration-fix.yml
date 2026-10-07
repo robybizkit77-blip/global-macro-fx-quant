@@ -21,5 +21,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           git cat-file -e 99f9ec51133e34b192893877e7943f4667792e71^{commit}
           git revert --no-edit 99f9ec51133e34b192893877e7943f4667792e71
-          git diff --exit-code HEAD^
+          changed="$(git diff-tree --no-commit-id --name-only -r HEAD | sort)"
+          expected=$(printf '%s\n' 'live_data/manifest.v2.json' 'payload/part-15.txt' | sort)
+          test "$changed" = "$expected"
           git push origin HEAD:${GITHUB_REF_NAME}
