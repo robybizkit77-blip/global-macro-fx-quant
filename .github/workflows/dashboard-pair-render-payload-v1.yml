@@ -1,14 +1,7 @@
 name: Dashboard Pair Render Payload V1
 
 on:
-  push:
-    branches:
-      - research-transmission-conviction-layer-v1-2026-10-07
-    paths:
-      - 'validation/build_dashboard_pair_render_payload_v1.py'
-      - 'validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json'
-      - 'validation/DASHBOARD_PAIR_TRANSMISSION_ROBUSTNESS_OVERLAY_V1_2026-10-07.json'
-      - '.github/workflows/dashboard-pair-render-payload-v1.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -23,6 +16,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate live contract first
+        run: python validation/check_live_update_contract.py
       - name: Build UI-ready payload
         run: python validation/build_dashboard_pair_render_payload_v1.py
       - name: Guard descriptive-only contract
