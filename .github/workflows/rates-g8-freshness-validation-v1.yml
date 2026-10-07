@@ -1,0 +1,75 @@
+name: Rates G8 Freshness Validation V1
+on:
+  push:
+    branches:
+      - fix-rates-g8-freshness-nzd-live-2026-10-07
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Run unified Rates audit V2
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py | tee /tmp/rates-audit.json
+      - name: Assert NZD live and AUD CHF explicit freshness states
+        run: |
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/rates-audit.json'))
+          assert a['status']=='PASS', a
+          n=a['currencies']['NZD']
+          assert n['coverage_mode']=='LIVE_FETCH', n
+          assert n['official']['date'] > '2026-10-01', n
+          assert n['state'] in {'UPDATE_AVAILABLE','NO_CHANGE'}, n
+          au=a['currencies']['AUD']
+          assert au['coverage_mode']=='OFFICIAL_CADENCE_ASSERTION', au
+          assert au['state']=='NO_CHANGE', au
+          ch=a['currencies']['CHF']
+          assert ch['state']=='WITHHOLD', ch
+          assert ch['coverage_mode']=='SOURCE_EXPORT_BLOCKED', ch
+          print({'NZD':n,'AUD':au,'CHF':ch})
+          PY
+      - name: Build candidate
+        run: |
+          set -euo pipefail
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-audit.json --output /tmp/NATIVE_RATES_DATA.json | tee /tmp/candidate-summary.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/candidate-summary.json'))
+          assert s['status']=='CANDIDATE_READY', s
+          assert 'NZD' in s['changed_currencies'], s
+          print(s)
+          PY
+      - name: Build audit-derived metadata against candidate
+        run: |
+          cp live_data/sections/NATIVE_RATES_DATA.json /tmp/original-rates.json
+          cp /tmp/NATIVE_RATES_DATA.json live_data/sections/NATIVE_RATES_DATA.json
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-07 --audit /tmp/rates-audit.json --output /tmp/RATES_AUDIT_METADATA.json | tee /tmp/metadata-summary.json
+          python - <<'PY'
+          import json
+          m=json.load(open('/tmp/RATES_AUDIT_METADATA.json'))
+          assert m['rates']['NZD']['status']=='CURRENT_OFFICIAL_SAME_BASIS', m['rates']['NZD']
+          assert m['rates']['CHF']['status']=='WITHHELD_SOURCE_BLOCKED', m['rates']['CHF']
+          assert m['rates']['AUD']['status']=='CURRENT_BY_SOURCE_CADENCE', m['rates']['AUD']
+          assert m['expected_rates']['NZD'] > '2026-10-01', m['expected_rates']
+          print(m['rates'])
+          PY
+          mv /tmp/original-rates.json live_data/sections/NATIVE_RATES_DATA.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-g8-freshness-validation-v1
+          path: |
+            /tmp/rates-audit.json
+            /tmp/candidate-summary.json
+            /tmp/NATIVE_RATES_DATA.json
+            /tmp/RATES_AUDIT_METADATA.json
+          if-no-files-found: error
