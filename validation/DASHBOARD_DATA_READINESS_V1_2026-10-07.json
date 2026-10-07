@@ -1,0 +1,90 @@
+{
+  "schema": "GMFQ_DASHBOARD_DATA_READINESS_V1",
+  "status": "RESEARCH_ONLY_UI_PLANNING_NOT_PROMOTED",
+  "purpose": "Single readiness map for future dashboard redesign. READY means structurally usable for UI display, not production/trading readiness.",
+  "sections": {
+    "currency_core": {
+      "readiness": "READY",
+      "source": "validation/CURRENCY_COMPACT_PAYLOAD_V1_2026-10-07.json",
+      "note_it": "Macro relativo, trasmissione, robustezza, What Changed ed evidenza storica sono disponibili in forma compatta."
+    },
+    "pair_core": {
+      "readiness": "READY",
+      "source": "validation/PAIR_COMPACT_PAYLOAD_V1_2026-10-07.json",
+      "note_it": "I 28 cross hanno macro anchor, trasmissione, robustezza e layer causali descrittivi."
+    },
+    "pair_attention": {
+      "readiness": "READY",
+      "source": "validation/PAIR_ATTENTION_BUCKETS_V1_2026-10-07.json",
+      "note_it": "Bucket non numerici pronti per comprimere i 28 cross senza ranking artificiale."
+    },
+    "focus_themes": {
+      "readiness": "READY",
+      "source": "validation/FOCUS_THEMES_V1_2026-10-07.json",
+      "note_it": "Massimo quattro temi descrittivi; nessun segnale di trade."
+    },
+    "liquidity_context": {
+      "readiness": "READY",
+      "source": "validation/LIQUIDITY_COMPACT_PAYLOAD_V1_2026-10-07.json",
+      "note_it": "Contesto per valuta disponibile senza score comune e senza override FX."
+    },
+    "positioning_cot": {
+      "readiness": "PARTIAL",
+      "source": "validation/POSITIONING_COMPACT_PAYLOAD_V1_2026-10-07.json",
+      "missing": ["canonical_full_cot_dataset", "delta_net_1w", "net_oi_pct", "imbalance_alert"],
+      "note_it": "Il percentile COT 2Y è disponibile, ma il blocco COT finale richiede il dataset completo perché i numeri mancanti sono operativamente utili."
+    },
+    "event_risk": {
+      "readiness": "WITHHELD",
+      "source": "validation/EVENT_RISK_SOURCE_READINESS_V1_2026-10-07.json",
+      "missing": ["canonical_event_calendar_source"],
+      "note_it": "Nessun calendario canonico certificato con data/ora, precedente, consenso, actual e freshness."
+    },
+    "forward_test": {
+      "readiness": "PARTIAL",
+      "source": "validation/FORWARD_STATISTICS_V1_2026-10-07.json",
+      "missing": ["matured_5d_outcomes", "matured_20d_outcomes", "matured_60d_outcomes", "full_per_snapshot_pair_freeze_hardening"],
+      "note_it": "La struttura di raccolta esiste, ma gli outcome non sono ancora maturi e l'attribuzione multi-snapshot richiede hardening per-pair."
+    },
+    "reaction_function_evidence": {
+      "readiness": "PARTIAL",
+      "source": "validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3_2026-10-07.json",
+      "missing": ["CHF_historical_source_gap", "NZD_historical_source_gap", "forward_validation"],
+      "note_it": "Valida come badge di qualità della ricerca, non come production gate universale."
+    },
+    "macro_live": {
+      "readiness": "READY",
+      "source": "live_data/sections/MACRO_SERIES.json",
+      "note_it": "Layer macro live disponibile; la futura UI deve ridurne la quantità, non cambiarne la logica."
+    },
+    "rates_live": {
+      "readiness": "READY",
+      "source": "live_data/sections/NATIVE_RATES_DATA.json",
+      "note_it": "Rates disponibili come layer di trasmissione e contesto, non come gate universale."
+    },
+    "central_banks_live": {
+      "readiness": "READY",
+      "source": "live_data/sections/NATIVE_CB_DATA.json",
+      "note_it": "Dati CB correnti disponibili; interpretazione currency-specific già prevista dal contratto causale."
+    }
+  },
+  "summary": {
+    "READY": 8,
+    "PARTIAL": 3,
+    "WITHHELD": 1
+  },
+  "redesign_rule": {
+    "show_ready_by_default": true,
+    "show_partial_with_badge": true,
+    "never_present_withheld_as_neutral": true,
+    "no_new_universal_scores": true,
+    "details_on_demand": true
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "production_promotion": false,
+    "trade_signal": false,
+    "predictive_claim": false
+  }
+}
