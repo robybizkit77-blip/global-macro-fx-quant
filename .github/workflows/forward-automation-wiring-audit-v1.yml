@@ -1,0 +1,32 @@
+name: Forward Automation Wiring Audit V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/FORWARD_AUTOMATION_WIRING_AUDIT_V1_2026-10-07.json'
+      - 'validation/validate_forward_automation_wiring_audit_v1.py'
+      - '.github/workflows/forward-automation-wiring-audit-v1.yml'
+      - '.github/workflows/dashboard-pair-signed-inputs-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-current-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-rule-sensitivity-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-robustness-overlay-v1.yml'
+      - '.github/workflows/dashboard-pair-render-payload-v1.yml'
+      - '.github/workflows/forward-snapshot-auto-append-v1.yml'
+      - '.github/workflows/forward-ecb-fixing-outcomes-v1.yml'
+      - 'validation/LIVE_UPDATE_PIPELINE_RUNBOOK_V1_2026-10-05.json'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate automation boundary
+        run: python validation/validate_forward_automation_wiring_audit_v1.py
