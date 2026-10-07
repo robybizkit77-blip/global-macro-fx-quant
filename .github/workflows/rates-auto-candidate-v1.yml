@@ -51,7 +51,10 @@ jobs:
             exit 0
           fi
           python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/NATIVE_RATES_DATA.json --apply
-          python validation/build_rates_audit_metadata.py --audit-date "$(date -u +%Y-%m-%d)" --output /tmp/RATES_AUDIT_METADATA.json
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(date -u +%Y-%m-%d)" \
+            --audit /tmp/rates-audit.json \
+            --output /tmp/RATES_AUDIT_METADATA.json
           python validation/update_live_derived_sections.py --rates /tmp/RATES_AUDIT_METADATA.json --apply
           python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
           mv /tmp/manifest.v2.json live_data/manifest.v2.json
