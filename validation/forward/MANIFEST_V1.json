@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_FORWARD_SNAPSHOT_MANIFEST_V1",
+  "status": "ACTIVE_RESEARCH_MANIFEST",
+  "append_only_contract": true,
+  "digest_algorithm": "SHA256",
+  "snapshots": [
+    {
+      "snapshot_id": "2026-10-07T08:05:22Z__V1",
+      "captured_at": "2026-10-07T08:05:22Z",
+      "path": "validation/forward/snapshots/2026-10-07T080522Z__V1.json",
+      "sha256": "113c7727a9f11b37a9229b502ea5b011566811323634f5b0121d4333b2085759",
+      "pair_count": 28
+    }
+  ],
+  "guards": {
+    "production_promotion": false,
+    "changes_engine_rules": false,
+    "changes_live_data": false
+  }
+}
