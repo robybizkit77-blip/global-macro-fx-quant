@@ -1,0 +1,67 @@
+name: Rates CAD Runtime Hydration Fix
+on:
+  push:
+    branches:
+      - staging-rates-g8-refresh-2026-10-07
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Remove legacy hardcoded CAD overwrite
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('payload/part-15.txt')
+          s=p.read_text()
+          script_id='<script id="gmfq-live-rates-audit-metadata-hydration">'
+          assert s.count(script_id)==1, f'hydration script count={s.count(script_id)}'
+          anchor=s.index(script_id)
+          start=s.index('const CAD={', anchor)
+          suffix="if(D?.macro?.CAD){D.macro.CAD.rate2y=CAD['2Y'];"
+          end=s.index(suffix, start)
+          legacy=s[start:end]
+          assert 'Object.assign(target,CAD)' in legacy, 'legacy CAD overwrite not found in target slice'
+          assert legacy.count('Object.assign(target,CAD)')==1, 'unexpected multiple CAD overwrite operations'
+          replacement="const CAD=window.NATIVE_RATES_DATA?.CAD||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.CAD;if(!CAD)throw new Error('CAD_RUNTIME_SNAPSHOT_MISSING');"
+          out=s[:start]+replacement+s[end:]
+          hydration=out[anchor:out.index('</script>',anchor)]
+          assert 'Object.assign(target,CAD)' not in hydration
+          assert 'const CAD={' not in hydration
+          assert hydration.count(replacement)==1
+          p.write_text(out)
+          print({'status':'CAD_HYDRATION_CANONICALIZED','removed_bytes':len(legacy),'inserted_bytes':len(replacement)})
+          PY
+      - name: Rebuild manifest and verify contract
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Enforce exact patch scope
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'payload/part-15.txt','live_data/manifest.v2.json'}
+          assert changed and changed <= allowed, (changed,allowed)
+          assert 'payload/part-15.txt' in changed, changed
+          print({'status':'SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Commit canonical CAD hydration
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-15.txt live_data/manifest.v2.json
+          git commit -m 'Use canonical runtime CAD in Rates hydration'
+          git push origin HEAD:${GITHUB_REF_NAME}
