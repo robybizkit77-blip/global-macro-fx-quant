@@ -1,0 +1,361 @@
+{
+  "schema": "GMFQ_DASHBOARD_PAIR_TRANSMISSION_RULE_SENSITIVITY_V1",
+  "status": "DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "purpose": "Test descriptive-classification stability across three reasonable predeclared non-return-fitted rules.",
+  "no_return_fitting": true,
+  "rules": {
+    "strict": "Current rule: CLEAN all aligned; DIVERGENT if price diverges or CB+rates both diverge; otherwise PARTIAL.",
+    "price_first": "DIVERGENT only if price diverges; CLEAN only if all aligned; otherwise PARTIAL.",
+    "two_of_three": "DIVERGENT if at least two of CB/rates/price diverge; CLEAN only if all aligned; otherwise PARTIAL."
+  },
+  "distribution_by_rule": {
+    "strict": {
+      "PARTIAL": 8,
+      "WITHHELD": 6,
+      "DIVERGENT": 12,
+      "CLEAN": 2
+    },
+    "price_first": {
+      "PARTIAL": 13,
+      "WITHHELD": 6,
+      "DIVERGENT": 7,
+      "CLEAN": 2
+    },
+    "two_of_three": {
+      "PARTIAL": 9,
+      "WITHHELD": 6,
+      "DIVERGENT": 11,
+      "CLEAN": 2
+    }
+  },
+  "stability": {
+    "all_pairs_n": 28,
+    "stable_all_three_n": 22,
+    "stable_all_three_pct": 78.57,
+    "directional_pairs_n": 22,
+    "stable_directional_n": 16,
+    "stable_directional_pct": 72.73,
+    "unstable_pairs": [
+      "CHF/NZD",
+      "EUR/CAD",
+      "EUR/CHF",
+      "GBP/CAD",
+      "GBP/CHF",
+      "GBP/NZD"
+    ]
+  },
+  "stable_pairs": [
+    {
+      "pair": "AUD/NZD",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "CAD/AUD",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "NEUTRAL_OR_MIXED"
+    },
+    {
+      "pair": "CAD/NZD",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "CHF/AUD",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "CHF/CAD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT"
+    },
+    {
+      "pair": "EUR/AUD",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "EUR/GBP",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "EUR/JPY",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "EUR/NZD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT"
+    },
+    {
+      "pair": "GBP/AUD",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "GBP/JPY",
+      "strict": "CLEAN",
+      "price_first": "CLEAN",
+      "two_of_three": "CLEAN",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "JPY/AUD",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "JPY/CAD",
+      "strict": "CLEAN",
+      "price_first": "CLEAN",
+      "two_of_three": "CLEAN",
+      "stable_all_three": true,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "JPY/CHF",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "JPY/NZD",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "USD/AUD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "DIVERGENT"
+    },
+    {
+      "pair": "USD/CAD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT"
+    },
+    {
+      "pair": "USD/CHF",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT"
+    },
+    {
+      "pair": "USD/EUR",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "USD/GBP",
+      "strict": "WITHHELD",
+      "price_first": "WITHHELD",
+      "two_of_three": "WITHHELD",
+      "stable_all_three": true,
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+    },
+    {
+      "pair": "USD/JPY",
+      "strict": "PARTIAL",
+      "price_first": "PARTIAL",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "USD/NZD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": true,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT"
+    }
+  ],
+  "unstable_detail": [
+    {
+      "pair": "CHF/NZD",
+      "strict": "DIVERGENT",
+      "price_first": "PARTIAL",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": false,
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "EUR/CAD",
+      "strict": "DIVERGENT",
+      "price_first": "PARTIAL",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": false,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "EUR/CHF",
+      "strict": "DIVERGENT",
+      "price_first": "PARTIAL",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": false,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "GBP/CAD",
+      "strict": "DIVERGENT",
+      "price_first": "PARTIAL",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": false,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "GBP/CHF",
+      "strict": "DIVERGENT",
+      "price_first": "PARTIAL",
+      "two_of_three": "DIVERGENT",
+      "stable_all_three": false,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED"
+    },
+    {
+      "pair": "GBP/NZD",
+      "strict": "DIVERGENT",
+      "price_first": "DIVERGENT",
+      "two_of_three": "PARTIAL",
+      "stable_all_three": false,
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "DIVERGENT"
+    }
+  ],
+  "interpretation_rule": "If states are unstable across reasonable non-fitted descriptive rules, keep the layer descriptive and avoid production promotion until forward evidence accumulates."
+}
