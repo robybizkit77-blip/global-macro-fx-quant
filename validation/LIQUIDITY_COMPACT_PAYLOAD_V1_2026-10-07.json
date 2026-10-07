@@ -1,0 +1,220 @@
+{
+  "schema": "GMFQ_LIQUIDITY_COMPACT_PAYLOAD_V1",
+  "status": "RESEARCH_ONLY_CONTEXT_NOT_PROMOTED",
+  "purpose": "Compact liquidity/credit context by currency. Descriptive only; not an FX directional score or gate.",
+  "currencies": {
+    "USD": {
+      "currency": "USD",
+      "source_status": "COMPLETO",
+      "context_read": "ESPANSIONE",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-08",
+          "label": "M2"
+        },
+        "money": {
+          "status": "UNAVAILABLE",
+          "direction": null,
+          "last_date": null
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-09-09",
+          "label": "Credito bancario totale"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "EUR": {
+      "currency": "EUR",
+      "source_status": "COMPLETO",
+      "context_read": "MISTA",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "DOWN",
+          "last_date": "2026-09-21T00:00:00.000Z",
+          "label": "Liquidità in eccesso"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-08",
+          "label": "M3"
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "Prestiti imprese"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "GBP": {
+      "currency": "GBP",
+      "source_status": "COMPLETO",
+      "context_read": "CONTRAZIONE",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "DOWN",
+          "last_date": "2026-09-16",
+          "label": "BoE — reserve balances"
+        },
+        "money": {
+          "status": "UNAVAILABLE",
+          "direction": null,
+          "last_date": null
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "FLAT",
+          "last_date": "31 Jul 2026",
+          "label": "Credito garantito / secured lending YoY"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "JPY": {
+      "currency": "JPY",
+      "source_status": "COMPLETO",
+      "context_read": "MISTA",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "DOWN",
+          "last_date": "2026-08",
+          "label": "BoJ — reserve balances"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-08",
+          "label": "M3"
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "Credito bancario"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "CHF": {
+      "currency": "CHF",
+      "source_status": "COMPLETO",
+      "context_read": "MISTA",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "DOWN",
+          "last_date": "2026-07",
+          "label": "SNB — sight deposits"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "M3"
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "Credito bancario"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "CAD": {
+      "currency": "CAD",
+      "source_status": "COMPLETO",
+      "context_read": "ESPANSIONE",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-08-01",
+          "label": "Settlement balances"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07-01",
+          "label": "M2++"
+        },
+        "credit": {
+          "status": "UNAVAILABLE",
+          "direction": null,
+          "last_date": null
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "AUD": {
+      "currency": "AUD",
+      "source_status": "COMPLETO",
+      "context_read": "ESPANSIONE",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-09-16",
+          "label": "Exchange Settlement balances"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "31/07/2026",
+          "label": "Broad money"
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "31/07/2026",
+          "label": "Credito imprese"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    },
+    "NZD": {
+      "currency": "NZD",
+      "source_status": "COMPLETO",
+      "context_read": "MISTA",
+      "components": {
+        "liquidity": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "Average settlement cash"
+        },
+        "money": {
+          "status": "AVAILABLE",
+          "direction": "UP",
+          "last_date": "2026-07",
+          "label": "Broad money"
+        },
+        "credit": {
+          "status": "AVAILABLE",
+          "direction": "DOWN",
+          "last_date": "2026-07",
+          "label": "Private sector credit"
+        }
+      },
+      "note_it": "Contesto di liquidità/credito: non modifica automaticamente il bias macro o FX."
+    }
+  },
+  "guards": {
+    "universal_score": false,
+    "fx_directional_override": false,
+    "trade_signal": false,
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "production_promotion": false
+  }
+}
