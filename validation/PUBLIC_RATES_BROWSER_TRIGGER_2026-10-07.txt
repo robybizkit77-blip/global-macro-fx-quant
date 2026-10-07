@@ -1,0 +1,3 @@
+Trigger browser validation after certified Rates refresh was applied on the gh-pages baseline.
+Applied snapshot commit: 7fdcafc470f010e3a4f155c05d0d10f1fc837375
+No runtime data changes in this trigger commit.
