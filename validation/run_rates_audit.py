@@ -2,6 +2,7 @@
 from __future__ import annotations
 import importlib.util
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -9,6 +10,7 @@ VAL=ROOT/'validation'
 RATES=ROOT/'live_data'/'sections'/'NATIVE_RATES_DATA.json'
 REGISTRY=VAL/'RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
 OUT=VAL/'RATES_UNIFIED_AUDIT_OUTPUT.json'
+NZD_MANUAL=VAL/'NZD_RATES_MANUAL_OFFICIAL_VERIFICATION_2026-10-07.json'
 
 
 def load_module(name:str, path:Path):
@@ -31,6 +33,27 @@ def compare(cur:dict, official_date:str, y2:float, y10:float)->str:
     return 'UPDATE_AVAILABLE'
 
 
+def manual_nzd_fallback(exc:Exception)->dict:
+    if not NZD_MANUAL.exists():
+        raise RuntimeError(f'RBNZ fetch failed and no manual official fallback exists: {exc}')
+    m=json.loads(NZD_MANUAL.read_text())
+    today=datetime.now(timezone.utc).date().isoformat()
+    if m.get('schema')!='GMFQ_MANUAL_OFFICIAL_RATES_VERIFICATION_V1':
+        raise RuntimeError('NZD manual fallback schema mismatch')
+    if m.get('currency')!='NZD' or m.get('authority')!='Reserve Bank of New Zealand':
+        raise RuntimeError('NZD manual fallback identity mismatch')
+    if m.get('verified_on')!=today or m.get('expires_after')!=today:
+        raise RuntimeError(f'NZD manual fallback expired/not valid today: verified={m.get("verified_on")} expires={m.get("expires_after")} today={today}')
+    src=str(m.get('source_url') or '')
+    if 'rbnz.govt.nz' not in src:
+        raise RuntimeError('NZD manual fallback is not tied to official RBNZ URL')
+    return {
+      'date':str(m['official_date']), '2Y':float(m['2Y']), '10Y':float(m['10Y']),
+      'authority':m['authority'], 'source':m['source'], 'source_url':src,
+      'verification_note':m.get('verification_note'), 'fetch_error':repr(exc)
+    }
+
+
 def main()->int:
     rates=json.loads(RATES.read_text())
     reg=json.loads(REGISTRY.read_text())
@@ -43,7 +66,6 @@ def main()->int:
     }
     failures=[]
 
-    # USD + JPY: official Treasury and Japan MoF adapters.
     uj=load_module('rates_usd_jpy',VAL/'fetch_rates_usd_jpy.py')
     for c,src in [('USD',uj.parse_treasury(uj.fetch(uj.TREASURY_URL))),('JPY',uj.parse_mof(uj.fetch(uj.MOF_URL)))]:
         state=compare(rates[c],src['date'],src['2Y'],src['10Y'])
@@ -54,7 +76,6 @@ def main()->int:
         }
         if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append(c)
 
-    # EUR + GBP: ECB AAA Svensson curve and BoE nominal government zero-coupon spot curve.
     eg=load_module('rates_eur_gbp',VAL/'fetch_rates_eur_gbp.py')
     e2=eg.ecb('SR_2Y'); e10=eg.ecb('SR_10Y')
     if e2[0] != e10[0]:
@@ -76,7 +97,6 @@ def main()->int:
     }
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('GBP')
 
-    # CAD: Bank of Canada Valet benchmark Government of Canada bond yields.
     cad=load_module('rates_cad',VAL/'fetch_rates_cad.py')
     raw=cad.get_json(cad.URL)
     obs=[]
@@ -97,20 +117,23 @@ def main()->int:
     }
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('CAD')
 
-    # NZD: official RBNZ B2 daily government bond close, one-business-day publication lag.
     nz=load_module('rates_nzd',VAL/'fetch_rates_nzd.py')
-    nsrc=nz.parse(nz.fetch())
+    nmode='LIVE_FETCH'
+    try:
+        nsrc=nz.parse(nz.fetch())
+    except Exception as exc:
+        nsrc=manual_nzd_fallback(exc)
+        nmode='MANUAL_OFFICIAL_VERIFICATION'
     state=compare(rates['NZD'],nsrc['date'],nsrc['2Y'],nsrc['10Y'])
     out['currencies']['NZD']={
-      'state':state,'coverage_mode':'LIVE_FETCH','authority':nsrc['authority'],
+      'state':state,'coverage_mode':nmode,'authority':nsrc['authority'],
       'official':{'date':nsrc['date'],'2Y':nsrc['2Y'],'10Y':nsrc['10Y']},
       'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},
-      'reason':'RBNZ B2 is daily with a one-business-day publication lag; latest official same-row 2Y/10Y is fetched directly.'
+      'reason':('RBNZ B2 live official fetch.' if nmode=='LIVE_FETCH' else nsrc.get('verification_note')),
+      'source_url':nsrc.get('source_url')
     }
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('NZD')
 
-    # AUD: official RBA F2 is weekly-published (Friday) although it contains daily observations.
-    # Until a live F2 adapter is added, enforce the validated current-by-source-cadence snapshot explicitly.
     meta=reg['currencies']['AUD']
     expected=meta['current_snapshot']
     state='NO_CHANGE' if str(rates['AUD']['date']) == expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
@@ -124,7 +147,6 @@ def main()->int:
     }
     if state != 'NO_CHANGE': failures.append('AUD')
 
-    # CHF: intentionally WITHHELD until the official SNB same-basis export yields both 2Y and 10Y again.
     chf=reg['currencies']['CHF']
     out['currencies']['CHF']={
       'state':'WITHHOLD',
@@ -138,7 +160,8 @@ def main()->int:
     states={c:v['state'] for c,v in out['currencies'].items()}
     out['summary']={
       'live_fetch_count':sum(v['coverage_mode']=='LIVE_FETCH' for v in out['currencies'].values()),
-      'cadence_or_lag_assertion_count':sum(v['coverage_mode']=='OFFICIAL_CADENCE_ASSERTION' for v in out['currencies'].values()),
+      'manual_official_verification_count':sum(v['coverage_mode']=='MANUAL_OFFICIAL_VERIFICATION' for v in out['currencies'].values()),
+      'cadence_assertion_count':sum(v['coverage_mode']=='OFFICIAL_CADENCE_ASSERTION' for v in out['currencies'].values()),
       'withheld_count':sum(v['state']=='WITHHOLD' for v in out['currencies'].values()),
       'updates_available':[c for c,s in states.items() if s=='UPDATE_AVAILABLE'],
       'no_change':[c for c,s in states.items() if s=='NO_CHANGE'],
