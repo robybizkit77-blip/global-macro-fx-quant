@@ -1,0 +1,73 @@
+name: Post Live Causal Chain Audit V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - '.github/workflows/post-live-causal-chain-v1.yml'
+      - '.github/workflows/post-live-causal-chain-audit-v1.yml'
+      - '.github/workflows/dashboard-pair-signed-inputs-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-current-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-rule-sensitivity-v1.yml'
+      - '.github/workflows/dashboard-pair-transmission-robustness-overlay-v1.yml'
+      - '.github/workflows/dashboard-pair-render-payload-v1.yml'
+      - '.github/workflows/forward-snapshot-auto-append-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capture protected hashes
+        run: |
+          sha256sum live_data/sections/CERT53.json live_data/manifest.v2.json payload/part-00.txt > /tmp/protected.before
+      - name: Live contract must be green before causal build
+        run: python validation/check_live_update_contract.py
+      - name: Rebuild causal sequence in exact canonical order
+        run: |
+          python validation/build_dashboard_pair_signed_inputs_v1.py
+          python validation/classify_dashboard_pair_transmission_v1.py
+          python validation/run_dashboard_pair_transmission_rule_sensitivity_v1.py
+          python validation/run_dashboard_pair_transmission_robustness_overlay_v1.py
+          python validation/build_dashboard_pair_render_payload_v1.py
+          python validation/append_forward_snapshot_if_changed_v1.py
+          python validation/validate_forward_snapshot_ledger_v1.py
+          python validation/validate_forward_pair_snapshots_v1.py
+      - name: Re-check live contract after causal build
+        run: python validation/check_live_update_contract.py
+      - name: Protected live/runtime hashes must be identical
+        run: |
+          sha256sum live_data/sections/CERT53.json live_data/manifest.v2.json payload/part-00.txt > /tmp/protected.after
+          diff -u /tmp/protected.before /tmp/protected.after
+      - name: Audit semantic invariants
+        run: |
+          python - <<'PY'
+          import json
+          signed=json.load(open('validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json'))
+          trans=json.load(open('validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json'))
+          render=json.load(open('validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'))
+          assert signed['engine_commit']=='ff52198a75cc67f7dae96fc2bbf65623f170791c'
+          assert signed['rules_fingerprint']=='3356baf0'
+          assert len(signed['pairs'])==28
+          assert sum(trans['distribution'].values())==28
+          assert trans['rule_contract']['optimization']=='NONE'
+          assert trans['rule_contract']['predictive_claim'] is False
+          assert len(render['pairs'])==28
+          assert render['guards']['changes_engine_rules'] is False
+          assert render['guards']['changes_live_data'] is False
+          assert render['guards']['production_promotion'] is False
+          assert render['guards']['return_fitting'] is False
+          assert render['guards']['predictive_claim'] is False
+          print('PASS canonical causal-chain dry run')
+          PY
+      - name: Show working-tree scope
+        run: git status --short
