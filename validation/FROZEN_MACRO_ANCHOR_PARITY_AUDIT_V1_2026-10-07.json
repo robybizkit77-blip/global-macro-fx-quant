@@ -1,0 +1,264 @@
+{
+  "schema": "GMFQ_FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1",
+  "status": "ARCHITECTURAL_MISMATCH_FOUND",
+  "frozen_engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "purpose": "Compare the frozen canonical pair Macro rule against the current research signed-input Macro anchors without changing engine, live data, OOS baseline or production state.",
+  "frozen_rule": {
+    "currency_macro": "layerPolarity(currencyIntelData[c].macro): Favorevole=+1, Contrario=-1, otherwise 0",
+    "pair_macro": "A if macroA>macroB; B if macroB>macroA; otherwise MIXED/TIE",
+    "cert53_role": "Frozen runtime comment explicitly says legacy relative Macro readings must not override the canonical currency engine."
+  },
+  "frozen_currency_macro": {
+    "USD": {
+      "label": "Favorevole",
+      "polarity": 1
+    },
+    "EUR": {
+      "label": "Divergente",
+      "polarity": 0
+    },
+    "GBP": {
+      "label": "Divergente",
+      "polarity": 0
+    },
+    "JPY": {
+      "label": "Divergente",
+      "polarity": 0
+    },
+    "CHF": {
+      "label": "Neutrale",
+      "polarity": 0
+    },
+    "CAD": {
+      "label": "Favorevole",
+      "polarity": 1
+    },
+    "AUD": {
+      "label": "Favorevole",
+      "polarity": 1
+    },
+    "NZD": {
+      "label": "Divergente",
+      "polarity": 0
+    }
+  },
+  "distribution": {
+    "frozen_canonical": {
+      "A": 7,
+      "B": 8,
+      "MIXED": 13
+    },
+    "research_current": {
+      "A": 6,
+      "B": 16,
+      "MIXED": 6
+    },
+    "match_count": 8,
+    "mismatch_count": 20
+  },
+  "mismatched_pairs": [
+    "CAD/AUD",
+    "CAD/NZD",
+    "CHF/AUD",
+    "CHF/CAD",
+    "CHF/NZD",
+    "EUR/CHF",
+    "EUR/JPY",
+    "EUR/NZD",
+    "GBP/CHF",
+    "GBP/JPY",
+    "GBP/NZD",
+    "JPY/AUD",
+    "JPY/CAD",
+    "JPY/NZD",
+    "USD/AUD",
+    "USD/CAD",
+    "USD/CHF",
+    "USD/GBP",
+    "USD/JPY",
+    "USD/NZD"
+  ],
+  "pairs": {
+    "AUD/NZD": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "CAD/AUD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "CAD/NZD": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "CHF/AUD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "CHF/CAD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "CHF/NZD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "EUR/AUD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "EUR/CAD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "EUR/CHF": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "EUR/GBP": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "EUR/JPY": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "EUR/NZD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "GBP/AUD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "GBP/CAD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "GBP/CHF": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "GBP/JPY": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "GBP/NZD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "JPY/AUD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "JPY/CAD": {
+      "frozen_canonical_anchor": "B",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "JPY/CHF": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "JPY/NZD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/AUD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/CAD": {
+      "frozen_canonical_anchor": "MIXED",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/CHF": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/EUR": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "A",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": true
+    },
+    "USD/GBP": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "MIXED",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/JPY": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    },
+    "USD/NZD": {
+      "frozen_canonical_anchor": "A",
+      "research_current_anchor": "B",
+      "research_macro_source": "CERT53.fundamental_anchor_macro",
+      "match": false
+    }
+  },
+  "interpretation": {
+    "claim": "This audit tests architectural parity only, not predictive performance.",
+    "if_mismatch": "Do not promote or silently rewrite current research states. First choose a canonical Macro-state regeneration contract and replay downstream research layers read-only.",
+    "macro_ingest_gate": "BLOCK_APPLY_UNTIL_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS"
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false
+  }
+}
