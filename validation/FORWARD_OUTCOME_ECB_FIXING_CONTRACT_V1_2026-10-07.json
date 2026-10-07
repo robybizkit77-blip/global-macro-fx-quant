@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_FORWARD_OUTCOME_ECB_FIXING_CONTRACT_V1",
+  "status": "RESEARCH_ONLY_ACTIVE_CONTRACT",
+  "created_at": "2026-10-07",
+  "purpose": "Measure forward outcomes for the frozen causal-transmission snapshots using one homogeneous official FX fixing source without retroactive entry selection.",
+  "source": {
+    "provider": "European Central Bank",
+    "dataset": "Euro foreign exchange reference rates",
+    "base_currency": "EUR",
+    "coverage_required": ["USD","JPY","GBP","CHF","AUD","CAD","NZD"],
+    "official_daily_xml": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    "official_history_xml": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+    "pair_derivation": "For BASE/QUOTE, with ECB q(CCY)=CCY per EUR and q(EUR)=1, pair price = q(QUOTE)/q(BASE)."
+  },
+  "entry_policy": {
+    "rule": "Use the first published ECB fixing whose fixing date is on or after the UTC calendar date of the frozen snapshot, and whose publication necessarily occurs after the snapshot capture time. If the same-day fixing had already been published before capture, it may be used; otherwise use the first subsequent fixing.",
+    "snapshot_2026_10_07": {
+      "snapshot_id": "2026-10-07T08:05:22Z__V1",
+      "captured_at": "2026-10-07T08:05:22Z",
+      "expected_entry_fixing": "first ECB fixing published after capture; expected 2026-10-07 if available after publication",
+      "do_not_use_stale_D_json_price_asof": "2026-09-28"
+    },
+    "selection_must_be_ex_ante": true,
+    "retroactive_entry_replacement_forbidden": true
+  },
+  "outcome_policy": {
+    "horizons_fixing_observations": [5,20,60],
+    "primary_horizon": 20,
+    "raw_return_pct": "100 * (exit_pair_price / entry_pair_price - 1)",
+    "signed_macro_return_pct": "If macro_anchor=A then raw_return_pct; if macro_anchor=B then -raw_return_pct; if macro_anchor=MIXED then null.",
+    "hit": "signed_macro_return_pct > 0; null for MIXED/WITHHELD macro anchors",
+    "zero_return_hit": false,
+    "store_raw_and_signed": true
+  },
+  "immutability": {
+    "snapshot_labels_frozen": true,
+    "entry_fixing_once_locked_is_frozen": true,
+    "outcomes_append_only": true,
+    "corrections_require_new_correction_record": true,
+    "no_retroactive_tuning": true
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "vendor_price_substitution": false
+  }
+}
