@@ -1,0 +1,45 @@
+name: CHF SNB FX Transactions V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_chf_snb_fx_transactions_v1.py'
+      - '.github/workflows/chf-snb-fx-transactions-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official SNB quarterly FX-transactions history
+        run: python validation/run_chf_snb_fx_transactions_v1.py
+      - name: Guard frozen research contract
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/CHF_SNB_FX_TRANSACTIONS_V1_2026-10-07.json'))
+          assert p['status']=='PASS'
+          assert p['coverage']['n'] >= 24
+          assert p['changes_engine_rules'] is False
+          assert p['changes_live_data'] is False
+          assert p['changes_oos_baseline'] is False
+          assert abs(p['sign_semantics']['validation_anchor_2022_chf_mn'] + 22283.0) < 1e-9
+          print('PASS')
+          PY
+      - name: Commit evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/pit_v1/CHF_SNB_FX_TRANSACTIONS_QUARTERLY_2020_2026Q1.csv validation/CHF_SNB_FX_TRANSACTIONS_V1_2026-10-07.json
+          git commit -m "Materialize CHF SNB FX transactions" || exit 0
+          git push
