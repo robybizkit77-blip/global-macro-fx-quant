@@ -1,57 +1,63 @@
-name: Rates Bootstrap Diagnostic V1
+name: Rates EUR Runtime Canonicalization Fix
 on:
   push:
     branches:
       - staging-rates-g8-refresh-2026-10-07
-  workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
-  diagnose:
+  patch:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 22
-      - name: Install Playwright
+          python-version: '3.12'
+      - name: Replace legacy EUR runtime overwrite with canonical adapter
         run: |
-          npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
-          npx playwright install --with-deps chromium
-      - name: Start local server
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('payload/part-15.txt')
+          s=p.read_text()
+          script_id='<script id="gmfq-eur-rates-ecb-aaa-20260930">'
+          assert s.count(script_id)==1, f'EUR legacy script count={s.count(script_id)}'
+          a=s.index(script_id)
+          b=s.index('</script>',a)+len('</script>')
+          old=s[a:b]
+          for needle in ["date:'2026-09-29'","y2:3.2105877756","y10:3.6076715398","d.date=snap.date","d['2Y']=snap.y2","d['10Y']=snap.y10"]:
+              assert needle in old, f'missing expected EUR legacy mutation: {needle}'
+          assert old.count('stableModelRefresh()')==1, f'legacy EUR refresh count={old.count("stableModelRefresh()")}'
+          replacement='''<script id="gmfq-eur-rates-canonical-runtime-adapter">\n(function(){\n  'use strict';\n  try{\n    const d=window.NATIVE_RATES_DATA?.EUR||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.EUR;\n    if(!d) throw new Error('EUR_NATIVE_RATES_MISSING');\n    const expected=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.EUR||null;\n    const metadataOk=!!expected && d.date===expected;\n    if(window.__GMFQ_DATA?.D?.macro?.EUR){window.__GMFQ_DATA.D.macro.EUR.rate2y=d['2Y'];window.__GMFQ_DATA.D.macro.EUR.rate_status='CURRENT';}\n    try{if(typeof syncVisibleRatesSnapshots==='function')syncVisibleRatesSnapshots();}catch(e){}\n    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(e){}\n    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(e){}\n    try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(e){}\n    const basis=typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity():null;\n    const visible=typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity():null;\n    window.GMFQ_EUR_RATES_AUDIT={status:metadataOk&&basis?.ok===true&&visible?.ok===true?'PASS':'FAIL',source:d.source||null,as_of:d.date||null,values:{'2Y':d['2Y']??null,'10Y':d['10Y']??null,curve_bp:d.curve_bp??null},metadata_ok:metadataOk,basis_ok:basis?.ok??null,visible_ok:visible?.ok??null,mode:'CANONICAL_RUNTIME_ADAPTER'};\n    document.documentElement.setAttribute('data-eur-rates-audit',window.GMFQ_EUR_RATES_AUDIT.status);\n    document.documentElement.setAttribute('data-eur-rates-asof',d.date||'');\n  }catch(e){\n    window.GMFQ_EUR_RATES_AUDIT={status:'FAIL',error:String(e?.message||e)};\n    document.documentElement.setAttribute('data-eur-rates-audit','FAIL');\n  }\n})();\n</script>'''
+          s=s[:a]+replacement+s[b:]
+          assert "date:'2026-09-29'" not in s[a:a+len(replacement)+100]
+          p.write_text(s)
+          print({'status':'EUR_LEGACY_RUNTIME_OVERWRITE_REMOVED','old_bytes':len(old),'new_bytes':len(replacement)})
+          PY
+      - name: Rebuild manifest and verify contract
         run: |
-          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
-          sleep 2
-      - name: Diagnose bootstrap only
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Enforce exact patch scope
         run: |
-          cat > bootstrap-diagnostic.js <<'EOF'
-          const { chromium } = require('playwright');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage();
-            const consoleErrors=[]; const pageErrors=[];
-            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
-            page.on('pageerror',e=>pageErrors.push(String(e)));
-            const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForTimeout(5000);
-            const state=await page.evaluate(()=>({
-              title:document.title,
-              body:(document.body?.innerText||'').slice(0,2000),
-              dataset:{...document.documentElement.dataset},
-              hasNativeRates:!!(window.NATIVE_RATES_DATA||window.__GMFQ_DATA?.NATIVE_RATES_DATA),
-              hasFinalAudit:!!window.GMFQ_POST_GATE_FINAL_AUDIT,
-              readyState:document.readyState
-            }));
-            console.log('BOOTSTRAP_DIAGNOSTIC '+JSON.stringify({http:response?.status(),state,consoleErrors,pageErrors},null,2));
-            await browser.close();
-          })().catch(e=>{console.error('BOOTSTRAP_DIAGNOSTIC_FATAL '+String(e?.stack||e));process.exit(1)});
-          EOF
-          node bootstrap-diagnostic.js
-      - name: Upload server log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rates-bootstrap-diagnostic
-          path: /tmp/gmfq-server.log
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'payload/part-15.txt','live_data/manifest.v2.json'}
+          assert changed and changed <= allowed, (changed,allowed)
+          assert 'payload/part-15.txt' in changed
+          print({'status':'SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Commit EUR canonical runtime adapter
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-15.txt live_data/manifest.v2.json
+          git commit -m 'Use canonical runtime EUR in Rates hydration'
+          git push origin HEAD:${GITHUB_REF_NAME}
