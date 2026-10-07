@@ -1,0 +1,4117 @@
+{
+  "schema": "GMFQ_TRANSMISSION_REGIME_ATTRIBUTION_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "purpose": "Test whether common-core transmission confirmation works specifically inside predeclared internally coherent macro regimes; no regime mining or tuning.",
+  "regime_definitions": {
+    "USD": "Labour and inflation BOTH_DOVISH or BOTH_HAWKISH",
+    "GBP": "DOMESTIC_LABOUR_ALIGNED only",
+    "CAD": "CORE_HEADLINE_BOTH_ALIGNED relative to frozen macro polarity",
+    "JPY": "existing directional wages+CPI agreement cohort; all common-core JPY rows coherent by construction"
+  },
+  "guardrails": [
+    "regimes defined before reading this test outcome",
+    "same common-core 5-observation post-release classification",
+    "same subsequent signed 20d outcome",
+    "same 40% chronological OOS exclusion",
+    "no threshold/window/weight tuning",
+    "no engine/live/OOS baseline changes"
+  ],
+  "counts": {
+    "rows": 391,
+    "oos": 237,
+    "coherent_oos": 140
+  },
+  "pooled_oos": {
+    "COHERENT": {
+      "MEDIUM": {
+        "n": 40,
+        "hit_rate": 0.6,
+        "mean": 0.0006054650554014474,
+        "median": 0.0018111517920380397
+      },
+      "LOW": {
+        "n": 100,
+        "hit_rate": 0.58,
+        "mean": 0.0035259695511023516,
+        "median": 0.002783606727742718
+      },
+      "medium_gt_low_hit": true,
+      "medium_gt_low_mean": false
+    },
+    "OTHER": {
+      "MEDIUM": {
+        "n": 26,
+        "hit_rate": 0.4230769230769231,
+        "mean": -0.0026749672755963846,
+        "median": -0.002039535137696748
+      },
+      "LOW": {
+        "n": 71,
+        "hit_rate": 0.5211267605633803,
+        "mean": 0.0004780361214753912,
+        "median": 0.0011978830633803466
+      },
+      "medium_gt_low_hit": false,
+      "medium_gt_low_mean": false
+    }
+  },
+  "oos_by_currency": {
+    "USD": {
+      "COHERENT": {
+        "MEDIUM": {
+          "n": 20,
+          "hit_rate": 0.75,
+          "mean": 0.0059411522948521955,
+          "median": 0.008548453744613074
+        },
+        "LOW": {
+          "n": 37,
+          "hit_rate": 0.6756756756756757,
+          "mean": 0.0042647939914275,
+          "median": 0.00784728104732355
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      },
+      "OTHER": {
+        "MEDIUM": {
+          "n": 0,
+          "hit_rate": null,
+          "mean": null,
+          "median": null
+        },
+        "LOW": {
+          "n": 0,
+          "hit_rate": null,
+          "mean": null,
+          "median": null
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      }
+    },
+    "GBP": {
+      "COHERENT": {
+        "MEDIUM": {
+          "n": 7,
+          "hit_rate": 0.14285714285714285,
+          "mean": -0.010823816289470113,
+          "median": -0.009711990974021924
+        },
+        "LOW": {
+          "n": 26,
+          "hit_rate": 0.4230769230769231,
+          "mean": 0.000766172998496483,
+          "median": -0.0006525751824603551
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      },
+      "OTHER": {
+        "MEDIUM": {
+          "n": 10,
+          "hit_rate": 0.5,
+          "mean": -0.00113563340796147,
+          "median": 0.00018173602410330545
+        },
+        "LOW": {
+          "n": 34,
+          "hit_rate": 0.4117647058823529,
+          "mean": -0.002088115516998206,
+          "median": -0.0019748505174664844
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      }
+    },
+    "CAD": {
+      "COHERENT": {
+        "MEDIUM": {
+          "n": 8,
+          "hit_rate": 0.75,
+          "mean": 0.0005745485414798232,
+          "median": 0.0011547208650440808
+        },
+        "LOW": {
+          "n": 13,
+          "hit_rate": 0.46153846153846156,
+          "mean": -0.0014054715078597286,
+          "median": -0.00345541939694587
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      },
+      "OTHER": {
+        "MEDIUM": {
+          "n": 16,
+          "hit_rate": 0.375,
+          "mean": -0.003637050942868206,
+          "median": -0.0035371703422822235
+        },
+        "LOW": {
+          "n": 37,
+          "hit_rate": 0.6216216216216216,
+          "mean": 0.002836121410883562,
+          "median": 0.002356924572193788
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      }
+    },
+    "JPY": {
+      "COHERENT": {
+        "MEDIUM": {
+          "n": 5,
+          "hit_rate": 0.4,
+          "mean": -0.004686823597306759,
+          "median": -0.0018643165906654193
+        },
+        "LOW": {
+          "n": 24,
+          "hit_rate": 0.6666666666666666,
+          "mean": 0.008047925377861897,
+          "median": 0.004054733346605813
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      },
+      "OTHER": {
+        "MEDIUM": {
+          "n": 0,
+          "hit_rate": null,
+          "mean": null,
+          "median": null
+        },
+        "LOW": {
+          "n": 0,
+          "hit_rate": null,
+          "mean": null,
+          "median": null
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      }
+    }
+  },
+  "rows": [
+    {
+      "currency": "USD",
+      "checkpoint": "2016-11-04",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.002340878646285717,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2016-12-15",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.032961060500350824,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-02-03",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.019685818460124044,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-02-15",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0063096978688147315,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-03-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.000907862426343989,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-04-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.007521428693095969,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-08-11",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.012623552554751167,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-11-03",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0015225345020197568,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2017-12-08",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.03314402216093784,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-01-12",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.007716739427470058,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-02-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0010520762148740544,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-03-09",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.009537031233383047,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-06-12",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.008301121367164635,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-10-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.005609246243504999,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-11-02",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0014451611538997277,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2018-12-12",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.008934291984496953,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-02-13",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.00103663683869675,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-03-08",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.006335294460298935,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-03-12",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.01166502053624611,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-04-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008941321246089238,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-05-03",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.004195508445465416,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-05-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0012556733526351955,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-06-12",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0060252945094450725,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-10-04",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006620047768862026,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-11-13",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.011168696706596357,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2019-12-11",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0018013527867274171,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-03-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.009613922848913414,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-04-10",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.01571736706980812,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-05-08",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.03457657324652537,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-05-12",
+      "macro_direction": -1,
+      "front_end_direction": 0,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.02562282103725658,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-07-14",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.012822075404794488,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-09-04",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.007457584125227983,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-09-11",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.002359763122165823,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-11-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.02358438934294093,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2020-12-04",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008799996013909349,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-02-05",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.009018797400515772,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-03-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.00738128421860543,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-04-02",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.028079528122509693,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-04-13",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.011080160828913567,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-06-04",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.018553231479511458,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-06-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.011318657616410464,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-07-02",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.005997851433855354,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-07-13",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.009637893239399812,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-08-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0022945295257589373,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-09-03",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.012119504647260448,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-09-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.006495282451133717,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-10-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.021582836456255555,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-11-05",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.01271923255981071,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-11-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.013158919636595634,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-12-03",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0031941099818676958,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2021-12-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.010087316057413602,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-01-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.010283110476268533,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-01-12",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0004930962958813418,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-02-04",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.011034367764076073,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-02-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0064620670963854,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-03-04",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.002344702545396294,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-03-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.01786535899119567,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-08-05",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.017949487412353037,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-09-02",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.045392846790286864,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-10-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.06451595498143717,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-10-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.04523056966140969,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2022-11-10",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.02050940348337388,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-03-10",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008320418538676377,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-03-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0019103767669312924,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-06-02",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.008657725078889945,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-06-13",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.013583499065801702,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-08-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.012516984376631594,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-10-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.015168982504063122,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-11-03",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.029041858657250254,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2023-11-14",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.02667198931913711,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-02-02",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.005827222409591705,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-03-08",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.018013538850913103,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-04-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.017143422319803116,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-05-15",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.001197444087490958,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-07-05",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.00877648895054977,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-07-11",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.020163045049955093,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-08-02",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.018017362246272667,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-08-14",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008281134240463232,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-10-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.02236518954687177,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-12-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.021898704217169645,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2024-12-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0011702870626918787,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-01-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.010057718683834805,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-03-12",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.04688063129632687,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-05-02",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.02353687522468974,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-05-13",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.005931298380598993,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-07-03",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.00784728104732355,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-07-15",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.018471981369865848,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-10-24",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.004978123983769884,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-12-16",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.021092712962702338,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2025-12-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.02627635523503715,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2026-03-06",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.00782898162427589,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2026-04-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.008556720512749595,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2026-06-05",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.011173909012574758,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "USD",
+      "checkpoint": "2026-06-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.003400281130529443,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-08-15",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.017520722168153098,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-09-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0013051270886724254,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-09-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0065394893220719055,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-10-16",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.008731830647471453,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-11-13",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.012597285758345853,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-11-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.010924589833541392,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-12-11",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.016834383928937137,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2018-12-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.024938981826645692,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-01-22",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.02197070177643506,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-03-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.005680942827903065,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-03-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.002848760772340863,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-04-16",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.020403640476684935,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-04-17",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0254556140344686,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-05-14",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.011782625659237543,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-06-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.02094064053398936,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-07-16",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.016482242302988104,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-07-17",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.007721196572553583,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-08-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.02609427969574089,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-09-10",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.023903263107101887,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-09-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.033481305216807686,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-10-16",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.00552266705603626,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2019-12-18",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0025461890905307725,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-01-15",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.009072307936827175,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-02-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.04239479872251002,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-04-22",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.02049358587744551,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-05-19",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.011187417269275104,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-05-20",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.018500607404848636,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-06-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0008898375178434606,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-06-17",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.009374979084634935,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-07-15",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.021882617455112774,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-07-16",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.016519943445745613,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-08-11",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.027774952684432284,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-09-15",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.012863803228781005,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-10-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.006565154879820249,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-11-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0007430832690234014,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-11-18",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0021148524402316168,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-12-15",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0020121717865883696,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2020-12-16",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.008066823501876996,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-01-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.013686703903114234,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-01-26",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.019533969798118476,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-02-17",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.011636652294727112,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-02-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.007951309502427876,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-03-24",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.012247491264364063,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-04-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.016510898209725632,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-05-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0013403991767141567,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-05-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.006153254415460134,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-06-15",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.00023341018274246122,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-06-16",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.00120460156219019,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-07-14",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0010465351781245374,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-07-15",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.00014109836087024459,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-08-18",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.002879505801469988,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-09-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.002092449957262114,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-10-20",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.006626157227268116,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2021-11-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.005784920511479561,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-02-15",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.017342547083281885,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-03-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0009971385933014926,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-05-17",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006044671691700791,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-05-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.004518925778552657,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-06-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.014440751330807872,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-06-22",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.002378634151772935,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-07-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.018634328990665482,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-07-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.017001345543419148,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-08-16",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.014789997383230032,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-08-17",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.030351875610764825,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-09-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.03236367389386409,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-09-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0559227883089678,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-10-11",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.003986152095437004,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-10-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0034924782231023376,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-11-15",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.014304445133293375,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-11-16",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.012724014716840834,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-12-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.010648850642628108,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2022-12-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0038663123404485693,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-01-17",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.003271981858438758,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-01-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0018572510776708546,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-02-15",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.012555854193172533,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-03-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.011713358970976336,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-04-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0070647927402108165,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-04-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0013855892121060586,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-05-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.01567467836368763,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-06-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.003372940013500952,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-06-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0003377128502246387,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-07-19",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.007430733931225945,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-08-16",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.023728539421221124,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-09-20",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.00030801177161921743,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-11-15",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.016530031716815254,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-12-12",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.02210363634343069,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2023-12-20",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.018413909497387856,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-01-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.001507804494829687,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-02-13",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.010307248252840902,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-02-14",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.005111993273709607,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-03-20",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.004849905865880916,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-06-11",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.017652044182293096,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-06-19",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.015105595924457893,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-07-17",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.009606905619793979,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-07-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008217943741211663,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-08-13",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0047914500506477525,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-08-14",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.007488665003748326,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-09-10",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0017028120747061733,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-10-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.016905708867281644,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-11-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.017787205209747987,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-12-17",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.014489714568626017,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2024-12-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.011413404397533284,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-01-21",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.00946508687219542,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-02-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.012434668990648998,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-03-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0064327635274216794,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-03-26",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.005552053549686828,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-04-15",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.013869536409117514,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-04-16",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.008434203465428624,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-05-13",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.004335834811242394,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-06-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0013012224155995813,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-06-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.016995551686533595,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-08-12",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0012145200688449109,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-09-17",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0014104802109995971,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-10-14",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.00921925087396087,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-11-11",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.009672166686168096,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-11-19",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.006659934974124795,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-12-16",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0002768613006741035,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2025-12-17",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0018274288862974958,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-01-20",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.01133774211982844,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-02-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.009711990974021924,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-03-19",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.004511504633943557,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-03-25",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0024066884555553523,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-04-21",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.005165669115499378,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-05-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.011454759321576202,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-06-17",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.005578191553221027,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-06-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0029889266593415083,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "GBP",
+      "checkpoint": "2026-07-22",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0010221171638994477,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-03-02",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.013424334717483095,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-04-28",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.005354413252722265,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-04-30",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.005619781066513986,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-06-23",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.00913209048060142,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-06-30",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.001188521372866285,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-08-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0069163590058092805,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-08-31",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.02204119891831341,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-09-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.03214192613391649,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-09-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.009285207066435744,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-10-22",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.011427706481608749,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-10-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.004499504795674652,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-11-05",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.015842784962359698,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-11-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0013671015281786403,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-12-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.011330050960175489,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2021-12-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.008460828898444286,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-01-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.009219146709481532,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-01-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.003805962726948434,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-02-01",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006350436825257888,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-02-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.01733540565445482,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-03-01",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.029111832547094794,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-03-18",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.019209794061490367,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-03-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.015920891615356935,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-04-08",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.014947473521938454,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-04-22",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0058733790555430395,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-04-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.020865347211160002,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-05-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.00900998256922908,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-05-26",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0029398273430102815,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-06-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.012280257517158439,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-06-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.008211977829941252,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-06-30",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.006673650121865306,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-07-08",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006350903555520831,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-07-22",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0019103724546415924,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-08-31",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.003936931617745111,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-09-23",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0007354807551408192,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-09-29",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0017184885761095962,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-10-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.038018539433607376,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-10-28",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.05900874380381403,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-11-04",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.04724670129934494,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-11-22",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.015201858209156729,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2022-11-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0017961028965268035,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-01-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.012056697981288495,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-01-20",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.01585144037964247,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-01-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0017135864779454452,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-02-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.015125072772626974,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-02-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.01055238252956422,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-02-28",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0026668841824008306,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-03-10",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.00695616916114593,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-03-24",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.009105667811617233,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-03-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.003834251138633028,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-04-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.001672381819838144,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-04-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.01278133717669927,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-05-05",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.015252741397119698,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-06-09",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.01861499519629688,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-06-21",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.014125414246293594,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-06-30",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0034532682857457793,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-07-28",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.002356924572193788,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-09-01",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.00018071313206629894,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-09-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.010550138985296135,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-10-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.01634650976904633,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-11-03",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0010318406914083757,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-11-24",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.004487515492339951,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-12-01",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0036733743198173628,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-12-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.006566614148578662,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2023-12-22",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.003797498377107162,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-01-05",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.01065675828712257,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-01-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.01040655779003905,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-02-09",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0017159779864299393,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-02-22",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.010119731036017323,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-02-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.00838047083589551,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-03-08",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0056452340144636974,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-03-28",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.002358263473168666,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-05-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006024249060231653,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-05-24",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.009061260733215264,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-06-07",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0012263152548088949,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-06-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.021472563154719414,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-06-28",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.022381110304815082,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-07-31",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.003897182290236865,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-08-23",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0038020485819848103,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-09-06",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0029362444365284455,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-10-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.006600937502153597,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-10-25",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.005173422352816852,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-10-31",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.007632948526645254,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-11-08",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.015341809771081327,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-11-22",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.002467689810206479,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2024-11-29",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.012827130275878266,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-01-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.002142218593564701,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-01-23",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0011978830633803466,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-02-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.004059653384556556,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-02-28",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.02073517309207253,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-03-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0012776010386797859,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-03-21",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.004149476330578171,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-03-28",
+      "macro_direction": 1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.011759107728452874,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-04-30",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.00345541939694587,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-05-09",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.010038339550680644,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-05-23",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.010332019765909686,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-06-27",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0042481892176715625,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-07-11",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.006813410658801665,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-08-08",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.006817592579533828,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-09-19",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0033310037073590515,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-09-26",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -4.281500091627815e-05,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-10-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.01120733395858851,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-10-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0007688646151902945,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-10-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.007218957343452301,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-11-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.00374474457943846,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-11-28",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0029248643539862757,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-12-05",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0028018995138478432,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2025-12-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.011289968518621725,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-01-09",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.008927424730256458,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-01-23",
+      "macro_direction": -1,
+      "front_end_direction": 0,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.010569781984053148,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-02-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.015588125025056286,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-02-20",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.004875959210589682,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-02-27",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.013521878043305601,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-04-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.00014225304177674028,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-04-24",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.014815770441047486,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-04-30",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0024593807810339477,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-05-22",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.002954596966133662,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-05-29",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.009649332090588034,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-06-30",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0017143488351327413,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-07-10",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.0057077883038553195,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-07-23",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.007384826427188623,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-07-31",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.0008015167790066,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-08-07",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0028581135923814575,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "CAD",
+      "checkpoint": "2026-08-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.005061698060217719,
+      "macro_regime": "OTHER"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2018-10-19",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.013846133223813758,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2018-11-07",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.003424475996859525,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2018-12-07",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.024492347316519735,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-01-18",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.011948720828362689,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-04-19",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.013437838418824647,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-06-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.01116127509016301,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-08-06",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.020185339763006932,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-09-06",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.003734995584421088,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-10-08",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.002105226319755913,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-10-18",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0013394983572998268,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-11-22",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0082768870804878,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-12-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.007880250964277894,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2019-12-20",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.013567154082849696,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-04-07",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.009428126098877328,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-04-24",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.05703099941762807,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-05-08",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.030179881675340667,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-05-22",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0046540477920766,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-06-09",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.010956857955740366,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-08-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.027388789950849948,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-09-08",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.002816566197318016,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-10-09",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.00384209670137197,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2020-11-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.016419927351185103,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-02-19",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.01730027285275242,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-03-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.01276781724566751,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-05-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0004969106560231577,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-06-18",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.011033918780820854,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-07-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": -0.0009701715612656557,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-07-20",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0027506472581674203,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-08-20",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.004260789598353186,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2021-09-07",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.03737091962691479,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-01-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.0018643165906654193,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-01-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.006513411512267517,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-03-18",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.025653586470642954,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-04-05",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.019120716992877384,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-04-22",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.019568460251050534,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-06-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": 1,
+      "conviction": "MEDIUM",
+      "signed_20d": -0.022237458071662965,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-08-19",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.0038486770948584414,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-10-07",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.015512569988278943,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-10-21",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.030170859431156574,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-12-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.05492456874124165,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2022-12-23",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": 1,
+      "conviction": "LOW",
+      "signed_20d": 0.009730514062800484,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-02-07",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.02537514927684878,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-02-24",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.005372427255299662,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-03-24",
+      "macro_direction": -1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": 0.014469002388415085,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-06-06",
+      "macro_direction": 1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.0034525817838994754,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-07-21",
+      "macro_direction": 1,
+      "front_end_direction": 1,
+      "price_direction": -1,
+      "conviction": "LOW",
+      "signed_20d": -0.00856359769593626,
+      "macro_regime": "COHERENT"
+    },
+    {
+      "currency": "JPY",
+      "checkpoint": "2023-08-18",
+      "macro_direction": -1,
+      "front_end_direction": -1,
+      "price_direction": -1,
+      "conviction": "MEDIUM",
+      "signed_20d": 0.002935844074092704,
+      "macro_regime": "COHERENT"
+    }
+  ],
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
