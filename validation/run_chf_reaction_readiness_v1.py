@@ -12,17 +12,16 @@ UA={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
 
 def get(url):
     req=urllib.request.Request(url,headers=UA)
-    with urllib.request.urlopen(req,timeout=90) as r:
-        return r.read(), (r.headers.get('Content-Type') or '')
+    with urllib.request.urlopen(req,timeout=90) as r:return r.read(),(r.headers.get('Content-Type') or '')
 
 def snb_json(cube):
     raw,ctype=get(f'https://data.snb.ch/api/cube/{cube}/data/json/en')
-    if 'json' not in ctype.lower(): raise RuntimeError(f'{cube}: non-json {ctype}')
+    if 'json' not in ctype.lower():raise RuntimeError(f'{cube}: non-json {ctype}')
     return json.loads(raw.decode('utf-8'))
 
 def header_label(ts):
     h=ts.get('header')
-    if not isinstance(h,list) or len(h)!=1 or not isinstance(h[0],dict): return None
+    if not isinstance(h,list) or len(h)!=1 or not isinstance(h[0],dict):return None
     return h[0].get('dimItem') if h[0].get('dim')=='Overview' else None
 
 def norm_date(s):
@@ -36,34 +35,26 @@ def norm_date(s):
     return None
 
 def materialize_2y():
-    base='https://data.snb.ch/api/cube/rendoblid/data/csv/en'
-    params={'dimSel':'D0(2J)','fromDate':'2018-01-01','toDate':'2026-10-07'}
-    url=base+'?'+urllib.parse.urlencode(params)
-    raw,_=get(url)
+    base='https://data.snb.ch/api/cube/rendoblid/data/csv/en';params={'dimSel':'D0(2J)','fromDate':'2018-01-01','toDate':'2026-10-07'}
+    url=base+'?'+urllib.parse.urlencode(params);raw,_=get(url)
     rows=list(csv.reader(io.StringIO(raw.decode('utf-8-sig','replace')),delimiter=';'))
-    if len(rows)<500: raise RuntimeError(f'2Y unexpectedly short rows={len(rows)} sample={rows[:5]}')
-    header=rows[0]
-    date_idx=next((i for i,x in enumerate(header) if str(x).strip().lower() in {'date','datum'}),0)
-    candidate_idxs=[i for i,x in enumerate(header) if re.search(r'2\s*(year|jahre|j|y)',str(x),re.I)]
-    if not candidate_idxs:
-        candidate_idxs=[i for i in range(len(header)) if i!=date_idx]
-    if len(candidate_idxs)!=1: raise RuntimeError(f'2Y column ambiguity header={header} candidates={candidate_idxs}')
-    vi=candidate_idxs[0]
+    hdr_i=next((i for i,r in enumerate(rows) if len(r)>=3 and r[0].strip()=='Date' and r[1].strip()=='D0' and r[2].strip()=='Value'),None)
+    if hdr_i is None:raise RuntimeError(f'SNB 2Y header not found sample={rows[:10]}')
     out=[]
-    for r in rows[1:]:
-        if len(r)<=max(date_idx,vi): continue
-        d=norm_date(r[date_idx]); v=str(r[vi]).strip().replace(',','.')
-        if not d: continue
+    for r in rows[hdr_i+1:]:
+        if len(r)<3 or r[1].strip()!='2J':continue
+        d=norm_date(r[0]);v=r[2].strip().replace(',','.')
+        if not d or not v:continue
         try:x=float(v)
         except:continue
         out.append((d,x))
     out.sort()
-    if len(out)<1500: raise RuntimeError(f'2Y valid obs too short n={len(out)} header={header} sample={rows[:8]}')
+    if len(out)<1500:raise RuntimeError(f'2Y valid obs too short n={len(out)} sample={rows[hdr_i:hdr_i+8]}')
     OUT_2Y.parent.mkdir(parents=True,exist_ok=True)
     with OUT_2Y.open('w',newline='',encoding='utf-8') as f:
         w=csv.writer(f);w.writerow(['date','chf_govt_2y_pct','source','cube','series_selector'])
         for d,x in out:w.writerow([d,f'{x:.6f}','Swiss National Bank','rendoblid','D0(2J)'])
-    return {'n':len(out),'first':out[0][0],'last':out[-1][0],'header':header,'url':url}
+    return {'n':len(out),'first':out[0][0],'last':out[-1][0],'url':url,'header_row':rows[hdr_i]}
 
 def next_month_15(ym):
     y,m=map(int,ym.split('-'))
@@ -72,9 +63,7 @@ def next_month_15(ym):
     return f'{y:04d}-{m:02d}-15'
 
 def materialize_cpi():
-    obj=snb_json('plkopr')
-    ts=obj.get('timeseries',[])
-    label='Change from the corresponding month of the previous year in %'
+    obj=snb_json('plkopr');ts=obj.get('timeseries',[]);label='Change from the corresponding month of the previous year in %'
     hits=[x for x in ts if isinstance(x,dict) and header_label(x)==label]
     if len(hits)!=1:raise RuntimeError(f'CPI series exact match count={len(hits)}')
     vals=[]
