@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_AUD_RBA_2Y_PROBE_V1",
+  "status": "PASS_PROBE_NOT_CERTIFIED",
+  "created_at": "2026-10-07",
+  "source": "Reserve Bank of Australia Table F2 \u2013 Capital Market Yields \u2013 Government Bonds \u2013 Daily",
+  "source_url": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
+  "descriptor": {
+    "row": 1,
+    "col": 1,
+    "text": "Australian Government 2 year bond"
+  },
+  "series_id": "FCMYGBAG2D",
+  "coverage": {
+    "n": 2205,
+    "first": "2018-01-02",
+    "last": "2026-09-30"
+  },
+  "candidate_anchors": {
+    "2019-12-02": 0.711,
+    "2020-03-02": 0.468,
+    "2022-05-02": 2.56,
+    "2024-01-02": 3.724,
+    "2025-09-01": 3.342
+  },
+  "value_range": {
+    "min": -0.001,
+    "max": 5.057
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
