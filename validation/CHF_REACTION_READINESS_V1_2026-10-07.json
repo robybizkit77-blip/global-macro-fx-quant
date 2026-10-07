@@ -1,0 +1,42 @@
+{
+  "schema": "GMFQ_CHF_REACTION_READINESS_V1",
+  "status": "PARTIAL_PASS_LABOUR_PIT_REQUIRED",
+  "created_at": "2026-10-07",
+  "swiss_2y": {
+    "status": "PASS_SAME_BASIS_OFFICIAL",
+    "details": {
+      "n": 1904,
+      "first": "2018-01-03",
+      "last": "2025-07-31",
+      "url": "https://data.snb.ch/api/cube/rendoblid/data/csv/en?dimSel=D0%282J%29&fromDate=2018-01-01&toDate=2026-10-07",
+      "header_row": [
+        "Date",
+        "D0",
+        "Value"
+      ]
+    }
+  },
+  "cpi": {
+    "status": "PASS_TIMING_CONSERVATIVE_NOT_RELEASE_ARCHIVE",
+    "details": {
+      "n": 104,
+      "first": "2018-01",
+      "last": "2026-08",
+      "availability_rule": "15th calendar day of following month (conservative, deliberately later than normal FSO release timing)",
+      "pit_quality": "PIT_COMPATIBLE_FOR_TIMING_BUT_NOT_ARCHIVED_RELEASE_VINTAGE"
+    },
+    "methodology_note": "Headline CPI is used only with conservative post-month availability; this does not substitute for an archived release vintage if later evidence shows historical headline revisions."
+  },
+  "labour": {
+    "status": "WITHHELD_VINTAGE_REQUIRED",
+    "reason": "SECO seasonally adjusted unemployment is explicitly recomputed when each new observation arrives; current historical SA data would therefore contain vintage revisions. Archived monthly first-release values are required."
+  },
+  "fx_transactions": "PASS_OFFICIAL_QUARTERLY_PIT_POLICY",
+  "replay_allowed": false,
+  "blocker": "SECO seasonally adjusted unemployment first-release/vintage history with publication timing",
+  "frozen_engine": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
