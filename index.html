@@ -3,7 +3,7 @@
 <body><div style="font:14px system-ui;padding:24px">Caricamento GLOBAL MACRO FX QUANT…</div>
 <script>
 (async()=>{
- const parts=["payload/part-00.txt","payload/part-01.txt","payload/part-02.txt","payload/part-03.txt","payload/part-04.txt","payload/part-05.txt","payload/part-06.txt","payload/part-07.txt","payload/part-08.txt","payload/part-09.txt","payload/part-10.txt","payload/part-11.txt","payload/part-12.txt","payload/part-13.txt","payload/part-14.txt","payload/part-15.txt","payload/part-16.txt"];
+ const parts=["payload/part-00.txt","payload/part-01.txt","payload/part-02.txt","payload/part-03.txt","payload/part-04.txt","payload/part-05.txt","payload/part-06.txt","payload/part-07.txt","payload/part-08.txt","payload/part-09.txt","payload/part-10.txt","payload/part-11.txt","payload/part-12.txt","payload/part-13.txt","payload/part-14.txt","payload/part-15.txt","payload/part-16.txt","payload/part-17.txt"];
  const responses=await Promise.all(parts.map(async p=>{
    const r=await fetch(p,{cache:'default'});
    if(!r.ok) throw new Error('Impossibile caricare '+p);
