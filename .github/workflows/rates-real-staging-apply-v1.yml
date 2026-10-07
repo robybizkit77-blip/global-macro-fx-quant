@@ -1,0 +1,82 @@
+name: Rates Real Staging Apply V1
+on:
+  push:
+    branches: [staging-rates-real-apply-2026-10-07]
+    paths:
+      - '.github/workflows/rates-real-staging-apply-v1.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Rebuild certified real Rates candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/rates-audit.json
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-audit.json --output /tmp/NATIVE_RATES_DATA.json > /tmp/candidate-summary.json
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-07 --output /tmp/RATES_AUDIT_METADATA.json
+      - name: Verify certified candidate hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL=$(sha256sum /tmp/NATIVE_RATES_DATA.json | awk '{print $1}')
+          EXPECTED=bc17ebc56e92082071a79f211bc8e8814c2a5f642b94c91bdbba29965014ec93
+          echo "actual=$ACTUAL"
+          echo "expected=$EXPECTED"
+          test "$ACTUAL" = "$EXPECTED"
+      - name: Apply canonical Rates candidate to staging branch
+        run: |
+          python validation/apply_rates_candidate_canonical_v1.py \
+            --rates /tmp/NATIVE_RATES_DATA.json \
+            --audit-metadata /tmp/RATES_AUDIT_METADATA.json \
+            --provenance validation/evidence/rates-real-20261007-run37619271039-v1.json \
+            --apply \
+            --confirm-refresh-id rates-real-20261007-run37619271039-v1
+      - name: Validate exact staging mutation scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain
+          python - <<'PY'
+          import subprocess
+          out=subprocess.check_output(['git','status','--porcelain'],text=True)
+          changed=[]
+          for line in out.splitlines():
+              p=line[3:]
+              if ' -> ' in p:
+                  p=p.split(' -> ',1)[1]
+              changed.append(p)
+          allowed={
+              'live_data/sections/NATIVE_RATES_DATA.json',
+              'live_data/sections/RATES_AUDIT_METADATA.json',
+              'live_data/manifest.v2.json',
+              'payload/part-00.txt',
+              'payload/part-15.txt',
+              'live_data/provenance/rates/rates-real-20261007-run37619271039-v1.json',
+          }
+          bad=sorted(set(changed)-allowed)
+          missing=sorted(allowed-set(changed))
+          if bad:
+              raise SystemExit('Unexpected staging mutations: '+repr(bad))
+          if missing:
+              raise SystemExit('Expected staging mutations missing: '+repr(missing))
+          print({'status':'STAGING_SCOPE_PASS','changed':sorted(changed)})
+          PY
+          python validation/check_live_update_contract.py
+      - name: Commit staging-only applied snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt live_data/provenance/rates/rates-real-20261007-run37619271039-v1.json
+          git commit -m "Apply certified real Rates candidate to staging"
+          git push origin HEAD:staging-rates-real-apply-2026-10-07
