@@ -1,0 +1,68 @@
+{
+  "schema": "GMFQ_AUD_RBA_REACTION_FEASIBILITY_V1",
+  "status": "WITHHELD_DATA_GAP",
+  "created_at": "2026-10-07",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "purpose": "Assess whether AUD can enter the same reaction-function/transmission research framework used for USD/GBP/CAD/JPY without revised-history substitution or timing shortcuts.",
+  "findings": {
+    "macro_live_source_contract": {
+      "status": "AVAILABLE",
+      "source": "Australian Bureau of Statistics",
+      "branch": "validation-aud-abs-v1-2026-10-06",
+      "series": [
+        "AU_CPI_HEADLINE_Q_YOY",
+        "AU_UNEMP_RATE"
+      ],
+      "limitation": "current/latest-release candidate contract only; not a certified historical first-release event panel"
+    },
+    "historical_macro_pit": {
+      "status": "MISSING_FOR_REACTION_REPLAY",
+      "required": [
+        "AUD unemployment first-release release-date history",
+        "AUD inflation first-release release-date history"
+      ]
+    },
+    "rba_front_end_history": {
+      "status": "NOT_CERTIFIED_FOR_EVENT_REPLAY",
+      "note": "legacy AUD/RBA branches contain current/runtime/pricing probes and payload snapshots, not a clean certified historical front-end series aligned to macro event dates"
+    },
+    "fx_history": {
+      "status": "AVAILABLE",
+      "source": "history/pit_v1/FX_G8_DAILY_ECB_2016_2026.csv"
+    },
+    "reaction_function": {
+      "status": "PREDECLARED",
+      "type": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+      "macro_channels": [
+        "labour/full-employment gap -> RBA reaction -> front-end rates -> AUD",
+        "inflation -> RBA reaction -> front-end rates -> AUD"
+      ]
+    }
+  },
+  "decision": {
+    "evidence_status": "WITHHELD",
+    "production_rule": "WITHHELD",
+    "reason": "Cannot test AUD reaction/transmission honestly until historical first-release macro events and a certified historical RBA/front-end series share a common timestamped event universe.",
+    "do_not_use": [
+      "revised macro history as substitute for first-release events",
+      "current runtime snapshots as historical front-end history",
+      "ASX/RBA pricing probes as if they were a certified continuous historical 2Y/OIS series",
+      "universal USD-style reaction weights"
+    ]
+  },
+  "next_research_contract": {
+    "step_1": "Materialize ABS first-release unemployment history with publication dates.",
+    "step_2": "Materialize ABS first-release CPI history with publication dates; keep quarterly/monthly regime changes explicit rather than backfilling one definition across time.",
+    "step_3": "Certify a historical RBA-sensitive front-end series on a fixed basis and timestamp convention.",
+    "step_4": "Build frozen dual-mandate AUD macro states without fitted weights.",
+    "step_5": "Observe fixed post-release 5-market-day front-end repricing and subsequent signed 20d AUD G8 basket return.",
+    "step_6": "Use 40% initial chronology + pooled forward OOS and robustness; no threshold/window tuning."
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
