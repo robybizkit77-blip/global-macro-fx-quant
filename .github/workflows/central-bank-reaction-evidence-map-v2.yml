@@ -1,0 +1,24 @@
+name: Central Bank Reaction Evidence Map V2
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json'
+      - 'validation/check_central_bank_reaction_evidence_map_v2.py'
+      - '.github/workflows/central-bank-reaction-evidence-map-v2.yml'
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate G8 reaction evidence map
+        run: python validation/check_central_bank_reaction_evidence_map_v2.py
+      - name: Guard frozen engine identifiers
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json
+          grep -q '3356baf0' validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json
