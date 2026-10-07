@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_FOCUS_THEMES_V1",
+  "status": "RESEARCH_ONLY_DESCRIPTIVE_NOT_PROMOTED",
+  "purpose": "Maximum four compact themes for future dashboard focus. No numeric ranking, no trade signal, no predictive claim.",
+  "theme_count": 3,
+  "max_themes": 4,
+  "themes": [
+    {
+      "type": "CLEAN_CROSSES",
+      "label_it": "CROSS PIÙ COERENTI",
+      "subjects": [
+        "GBP/JPY",
+        "JPY/CAD"
+      ],
+      "read_it": "Macro relativo, banca centrale, front-end/rates e prezzo sono allineati.",
+      "meaning_it": "Sono i cross con la catena causale più pulita oggi; non è una previsione di rendimento.",
+      "action_it": "Osservare per primi, poi verificare timing e rischio."
+    },
+    {
+      "type": "CURRENCY_BROAD_COHERENCE",
+      "label_it": "COERENZA RELATIVA G8",
+      "subjects": [
+        "JPY"
+      ],
+      "read_it": "La valuta è favorita nella maggioranza dei cross e non presenta divergenze di trasmissione nei confronti direzionali.",
+      "meaning_it": "Il quadro relativo è più coerente del resto del G8, senza trasformarlo in uno score assoluto.",
+      "action_it": "Usare come contesto per selezionare i cross, non come segnale standalone."
+    },
+    {
+      "type": "MACRO_TRANSMISSION_DISCONNECT",
+      "label_it": "MACRO E TRASMISSIONE NON COINCIDONO",
+      "subjects": [
+        "CHF",
+        "USD"
+      ],
+      "read_it": "Il quadro macro relativo è direzionale, ma molti cross mostrano trasmissione divergente.",
+      "meaning_it": "È un’area da diagnosticare: può esserci ritardo, repricing o una view macro non ancora accettata dal mercato.",
+      "action_it": "Capire quale layer diverge prima di usare la view operativamente."
+    }
+  ],
+  "guards": {
+    "numeric_ranking": false,
+    "trade_signal": false,
+    "predictive_claim": false,
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "production_promotion": false
+  }
+}
