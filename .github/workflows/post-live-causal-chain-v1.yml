@@ -1,0 +1,123 @@
+name: Post Live Causal Chain V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'live_data/sections/CERT53.json'
+      - 'live_data/manifest.v2.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post-live-causal-chain-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rebuild-causal-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: HARD GATE - live manifest and frozen contract must pass first
+        run: python validation/check_live_update_contract.py
+
+      - name: Build signed pair inputs
+        run: python validation/build_dashboard_pair_signed_inputs_v1.py
+
+      - name: Guard signed inputs
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json'))
+          assert p['engine_commit']=='ff52198a75cc67f7dae96fc2bbf65623f170791c'
+          assert p['rules_fingerprint']=='3356baf0'
+          assert len(p['pairs'])==28
+          assert p['guards']['changes_engine_rules'] is False
+          assert p['guards']['changes_live_data'] is False
+          assert p['guards']['changes_oos_baseline'] is False
+          print('PASS signed inputs')
+          PY
+
+      - name: Build transmission from the exact signed inputs
+        run: python validation/classify_dashboard_pair_transmission_v1.py
+
+      - name: Build rule sensitivity from the same exact signed inputs
+        run: python validation/run_dashboard_pair_transmission_rule_sensitivity_v1.py
+
+      - name: Build robustness only after transmission and sensitivity are both current
+        run: python validation/run_dashboard_pair_transmission_robustness_overlay_v1.py
+
+      - name: Build render payload only after robustness is current
+        run: python validation/build_dashboard_pair_render_payload_v1.py
+
+      - name: Guard downstream descriptive contract
+        run: |
+          python - <<'PY'
+          import json
+          t=json.load(open('validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json'))
+          s=json.load(open('validation/DASHBOARD_PAIR_TRANSMISSION_RULE_SENSITIVITY_V1_2026-10-07.json'))
+          r=json.load(open('validation/DASHBOARD_PAIR_TRANSMISSION_ROBUSTNESS_OVERLAY_V1_2026-10-07.json'))
+          p=json.load(open('validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'))
+          assert sum(t['distribution'].values())==28
+          assert t['rule_contract']['optimization']=='NONE'
+          assert t['rule_contract']['predictive_claim'] is False
+          assert len(p['pairs'])==28
+          assert p['guards']['changes_engine_rules'] is False
+          assert p['guards']['changes_live_data'] is False
+          assert p['guards']['production_promotion'] is False
+          assert p['guards']['return_fitting'] is False
+          assert p['guards']['predictive_claim'] is False
+          assert p['display_contract']['never_hide_rule_sensitive'] is True
+          assert p['display_contract']['never_convert_withheld_to_neutral'] is True
+          print('PASS transmission + sensitivity + robustness + render')
+          PY
+
+      - name: Append frozen forward snapshot only after full chain passes
+        run: python validation/append_forward_snapshot_if_changed_v1.py
+
+      - name: Validate forward ledger
+        run: python validation/validate_forward_snapshot_ledger_v1.py
+
+      - name: Validate frozen pair snapshots and SHA manifest
+        run: python validation/validate_forward_pair_snapshots_v1.py
+
+      - name: Re-check live contract after all research builders
+        run: python validation/check_live_update_contract.py
+
+      - name: Prove causal builders did not mutate live data or runtime
+        run: |
+          git diff --exit-code -- live_data payload || {
+            echo 'FAIL: downstream causal builders modified live_data or payload'
+            exit 2
+          }
+
+      - name: Commit causal outputs atomically
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json \
+            validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json \
+            validation/DASHBOARD_PAIR_TRANSMISSION_RULE_SENSITIVITY_V1_2026-10-07.json \
+            validation/DASHBOARD_PAIR_TRANSMISSION_ROBUSTNESS_OVERLAY_V1_2026-10-07.json \
+            validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json \
+            validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json \
+            validation/forward/MANIFEST_V1.json \
+            validation/forward/snapshots/*.json
+          if git diff --cached --quiet; then
+            echo 'No semantic/generated change to commit'
+            exit 0
+          fi
+          git commit -m 'Refresh causal chain after validated live data'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
