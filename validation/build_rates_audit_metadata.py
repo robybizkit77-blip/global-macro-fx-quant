@@ -27,6 +27,9 @@ def audit_policy(c:str,row:dict|None):
         return ('WITHHELD_SOURCE_BLOCKED','WITHHOLD',row.get('reason') or DEFAULT_POLICY[c][2])
     if mode=='OFFICIAL_CADENCE_ASSERTION':
         return ('CURRENT_BY_SOURCE_CADENCE','CURRENT_BY_SOURCE_CADENCE',row.get('reason') or DEFAULT_POLICY[c][2])
+    if mode=='MANUAL_OFFICIAL_VERIFICATION' and c=='NZD' and state in {'NO_CHANGE','UPDATE_AVAILABLE'}:
+        action='UPDATED' if state=='UPDATE_AVAILABLE' else 'CURRENT'
+        return ('CURRENT_OFFICIAL_SAME_BASIS_MANUAL_VERIFIED',action,row.get('reason') or 'Official RBNZ B2 same-basis snapshot manually verified because automated source access was blocked.')
     if mode=='LIVE_FETCH' and state in {'NO_CHANGE','UPDATE_AVAILABLE'}:
         action='UPDATED' if state=='UPDATE_AVAILABLE' else 'CURRENT'
         return ('CURRENT_OFFICIAL_SAME_BASIS',action,row.get('reason') or DEFAULT_POLICY[c][2])
