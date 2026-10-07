@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1",
-  "status": "REGENERATOR_CANDIDATE_FOUND_REQUIRES_REVIEW",
+  "status": "NO_LIVE_ECONOMIC_REGENERATOR_FOUND",
   "source_file": "live_data/sections/CERT53.json",
   "pair_count": 28,
   "certification_state": null,
@@ -49,7 +49,7 @@
     "validation/validate_cert53_refresh_provenance_policy_v1.py",
     "validation/validate_forward_pair_snapshots_v1.py"
   ],
-  "writer_candidates": [
+  "cert53_applicators": [
     ".github/workflows/cert53-canonical-refresh-v1.yml",
     ".github/workflows/macro-usd-bls-candidate-v1.yml",
     "validation/append_forward_snapshot_if_changed_v1.py",
@@ -57,10 +57,21 @@
     "validation/audit_cert53_provenance_v1.py",
     "validation/audit_macro_downstream_propagation_v1.py",
     "validation/build_dashboard_pair_signed_inputs_v1.py",
+    "validation/replay_transmission_with_frozen_macro_anchor_v1.py",
     "validation/run_cert53_provenance_dry_run_v1.py",
-    "validation/run_cert53_refresh_v1.py"
+    "validation/run_cert53_refresh_v1.py",
+    "validation/update_live_direct_section.py"
   ],
-  "writer_candidate_count": 9,
+  "applicator_count": 11,
+  "economic_regenerator_candidates": [],
+  "economic_regenerator_count": 0,
+  "classification_note": "A safe CERT53 candidate applicator is not a Macro economic regenerator. A regenerator must construct fundamental_anchor_macro from explicit Macro inputs.",
+  "known_safe_refresh_path": {
+    "path": "validation/run_cert53_refresh_v1.py",
+    "role": "APPLICATOR_ONLY",
+    "requires_prebuilt_candidate": true,
+    "derives_macro_anchor": false
+  },
   "frozen_engine_architecture": {
     "canonical_pair_macro_source": "compare canonical currency Macro states",
     "legacy_pair_macro_override_allowed": false,
@@ -68,7 +79,7 @@
   },
   "interpretation": {
     "does_not_claim_cert53_wrong": true,
-    "claim": "CERT53 can be a certified historical/current snapshot while still lacking a reproducible live regenerator.",
+    "claim": "CERT53 has a safe refresh/apply mechanism, but no repository component was found that economically regenerates fundamental_anchor_macro from current canonical Macro inputs.",
     "macro_ingest_apply": "BLOCKED_UNTIL_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS",
     "next_required_artifact": "CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_CONTRACT_V1"
   },
