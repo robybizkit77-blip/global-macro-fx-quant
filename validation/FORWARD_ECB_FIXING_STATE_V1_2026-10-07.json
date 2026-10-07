@@ -1,0 +1,41 @@
+{
+  "schema": "GMFQ_FORWARD_ECB_FIXING_STATE_V1",
+  "status": "ACTIVE_RESEARCH_FORWARD_OUTCOME_STATE",
+  "source": "ECB euro foreign exchange reference rates",
+  "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+  "entry_cutoff_policy": "same-day allowed only when snapshot captured before 14:00 Europe/Brussels; otherwise next fixing",
+  "horizons_fixing_observations": [
+    5,
+    20,
+    60
+  ],
+  "primary_horizon": 20,
+  "snapshots": {
+    "2026-10-07T08:05:22Z__V1": {
+      "snapshot_id": "2026-10-07T08:05:22Z__V1",
+      "captured_at": "2026-10-07T08:05:22Z",
+      "entry_fixing_date": null,
+      "entry_locked": false,
+      "entry_prices": {},
+      "outcomes": {},
+      "state_counts": {
+        "TRANSMISSION_CLEAN": 2,
+        "TRANSMISSION_PARTIAL": 8,
+        "TRANSMISSION_DIVERGENT": 12,
+        "TRANSMISSION_WITHHELD": 6
+      },
+      "robustness_counts": {
+        "ROBUST_ACROSS_RULES": 22,
+        "RULE_SENSITIVE": 6
+      }
+    }
+  },
+  "latest_ecb_fixing_date": "2026-10-06",
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "retroactive_label_changes": false
+  }
+}
