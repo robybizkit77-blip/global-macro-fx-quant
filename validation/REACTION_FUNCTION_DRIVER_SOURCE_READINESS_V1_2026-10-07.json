@@ -1,0 +1,423 @@
+{
+  "schema": "GMFQ_REACTION_FUNCTION_DRIVER_SOURCE_READINESS_V1",
+  "status": "RESEARCH_ONLY_SOURCE_MAP__NO_CB_IMPLICATION",
+  "purpose": "Map every reaction-function driver to an exact branch-local source/provenance status. Runtime availability, historical PIT quality and live-ingress readiness are separate. Missing drivers are never proxied or treated as neutral.",
+  "global_live_ingress": {
+    "core_registry_status": "RESEARCH_ONLY_UPSTREAM_INGRESS_NOT_DAILY_READY",
+    "core_series": 16,
+    "daily_ready": 0
+  },
+  "currencies": {
+    "USD": {
+      "currency": "USD",
+      "central_bank": "FED",
+      "reaction_function": "DUAL_MANDATE",
+      "evidence_status": "SUPPORTED_DIAGNOSTIC",
+      "drivers": [
+        {
+          "driver": "labour",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "UNRATE",
+          "source_provider": "FRED/BLS",
+          "runtime_as_of": "2026-09-01",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "inflation",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "CPIAUCSL",
+          "source_provider": "FRED/BLS",
+          "runtime_as_of": "2026-08-01",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 2,
+      "available_or_runtime_count": 2,
+      "partial_count": 0,
+      "withheld_count": 0,
+      "reaction_input_status": "SOURCE_FAMILIES_MAPPED",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "EUR": {
+      "currency": "EUR",
+      "central_bank": "ECB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "drivers": [
+        {
+          "driver": "wages",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "services_inflation",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "inflation",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "EA_HICP_HEADLINE_YOY",
+          "source_provider": "Eurostat prc_hicp_minr via Wolfram HTTP transport",
+          "runtime_as_of": "2026-09",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 3,
+      "available_or_runtime_count": 1,
+      "partial_count": 0,
+      "withheld_count": 2,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "GBP": {
+      "currency": "GBP",
+      "central_bank": "BOE",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "drivers": [
+        {
+          "driver": "wages",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "services_inflation",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "labour_context",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "MGSX",
+          "source_provider": "ONS",
+          "runtime_as_of": "2026-06",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 3,
+      "available_or_runtime_count": 1,
+      "partial_count": 0,
+      "withheld_count": 2,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "JPY": {
+      "currency": "JPY",
+      "central_bank": "BOJ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "drivers": [
+        {
+          "driver": "wages",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "inflation",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "JP_CPI_HEADLINE_YOY",
+          "source_provider": "Statistics Bureau of Japan / e-Stat",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "labour_context",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "JP_UNEMP_RATE",
+          "source_provider": "Statistics Bureau of Japan / e-Stat",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "growth_context",
+          "status": "AVAILABLE_CANONICAL_PROFILE_SOURCE_REGISTRY_INCOMPLETE",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "growth",
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_ASSESSED_IN_CORE_RELEASE_REGISTRY",
+          "live_ingress_status": "NOT_ASSESSED_IN_CORE_RELEASE_REGISTRY",
+          "note": "Canonical profile block exists; exact upstream release adapter is outside the current inflation+labour source registry."
+        }
+      ],
+      "driver_count": 4,
+      "available_or_runtime_count": 3,
+      "partial_count": 0,
+      "withheld_count": 1,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "CAD": {
+      "currency": "CAD",
+      "central_bank": "BOC",
+      "reaction_function": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "drivers": [
+        {
+          "driver": "growth",
+          "status": "AVAILABLE_CANONICAL_PROFILE_SOURCE_REGISTRY_INCOMPLETE",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "growth",
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_ASSESSED_IN_CORE_RELEASE_REGISTRY",
+          "live_ingress_status": "NOT_ASSESSED_IN_CORE_RELEASE_REGISTRY",
+          "note": "Canonical profile block exists; exact upstream release adapter is outside the current inflation+labour source registry."
+        },
+        {
+          "driver": "labour",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "CA_UNEMP_RATE",
+          "source_provider": "Statistics Canada",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "core_inflation",
+          "status": "WITHHELD_NO_EXACT_REPO_SOURCE_ARTIFACT",
+          "local_path": null,
+          "source_series": null,
+          "source_provider": null,
+          "historical_pit_status": "NOT_VERIFIABLE_FROM_CURRENT_BRANCH_ARTIFACTS",
+          "live_ingress_status": "NOT_READY",
+          "note": "Required by the reaction contract, but no exact branch-local materialized source artifact is available. Narrative/evidence labels do not count as a source series."
+        },
+        {
+          "driver": "headline_inflation",
+          "status": "AVAILABLE_RUNTIME_NOT_DAILY_READY",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "CA_CPI_HEADLINE_YOY",
+          "source_provider": "Statistics Canada",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 4,
+      "available_or_runtime_count": 3,
+      "partial_count": 0,
+      "withheld_count": 1,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "AUD": {
+      "currency": "AUD",
+      "central_bank": "RBA",
+      "reaction_function": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "drivers": [
+        {
+          "driver": "labour",
+          "status": "AVAILABLE_RESEARCH_PIT",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "AU_UNEMP_RATE",
+          "source_provider": "Australian Bureau of Statistics",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "PASS_RESEARCH_PIT",
+          "historical_pit_artifact": "validation/AUD_UNEMPLOYMENT_PIT_V1_2026-10-07.json",
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "inflation",
+          "status": "AVAILABLE_RESEARCH_PIT",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "AU_CPI_HEADLINE_Q_YOY",
+          "source_provider": "Australian Bureau of Statistics",
+          "runtime_as_of": "2026-06",
+          "historical_pit_status": "PASS_RESEARCH_PIT",
+          "historical_pit_artifact": "validation/AUD_CPI_PIT_V1_2026-10-07.json",
+          "live_ingress_status": "SOURCE_ADAPTER_REQUIRED",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 2,
+      "available_or_runtime_count": 2,
+      "partial_count": 0,
+      "withheld_count": 0,
+      "reaction_input_status": "SOURCE_FAMILIES_MAPPED",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "NZD": {
+      "currency": "NZD",
+      "central_bank": "RBNZ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "drivers": [
+        {
+          "driver": "inflation",
+          "status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "inflation",
+          "source_series": "NZ_CPI_HEADLINE_YOY",
+          "source_provider": "Stats NZ via Figure.NZ mirror",
+          "runtime_as_of": "2026-06",
+          "historical_pit_status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "historical_pit_artifact": null,
+          "live_ingress_status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        },
+        {
+          "driver": "slack",
+          "status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "local_path": "validation/NZD_RBNZ_REACTION_FEASIBILITY_V1_2026-10-07.json",
+          "source_series": "Stats NZ Labour Market Statistics / unemployment as predeclared slack state",
+          "source_provider": "Stats NZ",
+          "historical_pit_status": "PUBLIC_BROWSER_VERIFIED_AUTOMATION_BLOCKED",
+          "live_ingress_status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Reaction feasibility predeclares latest-known unemployment as slack input, but reproducible first-release materialization is blocked."
+        }
+      ],
+      "driver_count": 2,
+      "available_or_runtime_count": 0,
+      "partial_count": 0,
+      "withheld_count": 2,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    },
+    "CHF": {
+      "currency": "CHF",
+      "central_bank": "SNB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_WITH_ECONOMIC_DEVELOPMENTS",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "drivers": [
+        {
+          "driver": "inflation_forecast",
+          "status": "WITHHELD_NO_EXACT_MATERIALIZED_DRIVER",
+          "local_path": "validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md",
+          "source_series": null,
+          "source_provider": "SNB/SFSO/SECO conceptual source family only",
+          "historical_pit_status": "NOT_MATERIALIZED_AS_EXACT_DRIVER",
+          "live_ingress_status": "NOT_READY",
+          "note": "Dedicated CHF spec defines the causal role, but this exact higher-level driver is not materialized as a reproducible branch-local series."
+        },
+        {
+          "driver": "economic_conditions",
+          "status": "WITHHELD_NO_EXACT_MATERIALIZED_DRIVER",
+          "local_path": "validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md",
+          "source_series": null,
+          "source_provider": "SNB/SFSO/SECO conceptual source family only",
+          "historical_pit_status": "NOT_MATERIALIZED_AS_EXACT_DRIVER",
+          "live_ingress_status": "NOT_READY",
+          "note": "Dedicated CHF spec defines the causal role, but this exact higher-level driver is not materialized as a reproducible branch-local series."
+        },
+        {
+          "driver": "exchange_rate_channel",
+          "status": "PARTIAL_RESEARCH_SOURCE_AVAILABLE",
+          "local_path": "validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md",
+          "supporting_artifacts": [
+            "validation/CHF_SNB_FX_TRANSACTIONS_V1_2026-10-07.json"
+          ],
+          "source_series": "CHF G8 basket pressure + official SNB FX transaction volumes",
+          "source_provider": "ECB price matrix + SNB",
+          "historical_pit_status": "FX_TRANSACTIONS_PASS_OFFICIAL_QUARTERLY_PIT_POLICY__PRICE_CAUSAL_TIMING_REQUIRED",
+          "live_ingress_status": "NOT_PROMOTED",
+          "note": "FX channel is not sight deposits. Official FX transactions plus contemporaneous CHF pressure are required; no single scalar proxy is allowed."
+        },
+        {
+          "driver": "labour",
+          "status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "local_path": "validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json",
+          "profile_block": "labour",
+          "source_series": "CH_UNEMP_RATE",
+          "source_provider": "Swiss National Bank data portal / SECO",
+          "runtime_as_of": "2026-08",
+          "historical_pit_status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "historical_pit_artifact": "validation/CHF_SECO_UNEMPLOYMENT_ACCESS_GAP_V1_2026-10-07.json",
+          "live_ingress_status": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Runtime/profile availability is kept separate from historical PIT quality and live ingress readiness."
+        }
+      ],
+      "driver_count": 4,
+      "available_or_runtime_count": 0,
+      "partial_count": 1,
+      "withheld_count": 3,
+      "reaction_input_status": "WITHHELD_MISSING_EXACT_DRIVER",
+      "cb_implication": "WITHHELD_NOT_COMPUTED",
+      "production_gate": false
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "proxy_substitution": false,
+    "computes_cb_implication": false,
+    "missing_as_neutral": false
+  }
+}
