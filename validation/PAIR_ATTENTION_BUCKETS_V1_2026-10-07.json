@@ -1,0 +1,775 @@
+{
+  "schema": "GMFQ_PAIR_ATTENTION_BUCKETS_V1",
+  "status": "RESEARCH_ONLY_DESCRIPTIVE_NOT_PROMOTED",
+  "purpose": "Non-numeric attention buckets for a future compact dashboard. This is not a ranking, score, trade signal, or predictive claim.",
+  "display_priority": [
+    "CLEAN_ROBUST",
+    "PARTIAL_ROBUST",
+    "DIVERGENT_ROBUST",
+    "RULE_SENSITIVE",
+    "WITHHELD"
+  ],
+  "display_policy": {
+    "no_numeric_score": true,
+    "no_cross_ranking_within_bucket": true,
+    "show_clean_first_as_current_coherence_not_expected_return": true,
+    "show_divergent_as_diagnostic_attention_not_trade_reversal": true,
+    "rule_sensitive_must_show_warning": true,
+    "withheld_must_not_be_forced_directional": true
+  },
+  "counts": {
+    "CLEAN_ROBUST": 2,
+    "PARTIAL_ROBUST": 8,
+    "DIVERGENT_ROBUST": 6,
+    "RULE_SENSITIVE": 6,
+    "WITHHELD": 6
+  },
+  "buckets": {
+    "CLEAN_ROBUST": [
+      {
+        "pair": "GBP/JPY",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_CLEAN",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "ALIGNED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "JPY/CAD",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_CLEAN",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "ALIGNED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      }
+    ],
+    "PARTIAL_ROBUST": [
+      {
+        "pair": "AUD/NZD",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "CAD/AUD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "ALIGNED",
+          "front_end_rates": "ALIGNED",
+          "price": "NEUTRAL_OR_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/AUD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/JPY",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "GBP/AUD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "JPY/NZD",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/EUR",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "ALIGNED",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/JPY",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_PARTIAL",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      }
+    ],
+    "DIVERGENT_ROBUST": [
+      {
+        "pair": "CHF/CAD",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/NZD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "DIVERGENT",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/AUD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "ALIGNED",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/CAD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/CHF",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/NZD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NEUTRAL_OR_MIXED",
+          "front_end_rates": "DIVERGENT",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      }
+    ],
+    "RULE_SENSITIVE": [
+      {
+        "pair": "CHF/NZD",
+        "macro_anchor": "A",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/CAD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/CHF",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "GBP/CAD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "GBP/CHF",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "DIVERGENT",
+          "front_end_rates": "DIVERGENT",
+          "price": "ALIGNED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "GBP/NZD",
+        "macro_anchor": "B",
+        "transmission": "TRANSMISSION_DIVERGENT",
+        "robustness": "RULE_SENSITIVE",
+        "layers": {
+          "central_bank": "ALIGNED",
+          "front_end_rates": "ALIGNED",
+          "price": "DIVERGENT"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      }
+    ],
+    "WITHHELD": [
+      {
+        "pair": "CAD/NZD",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "CAD": "PROMISING_SMALL_SAMPLE",
+          "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "CHF/AUD",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "EUR/GBP",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "EUR": "NO_INCREMENTAL_VALUE",
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "JPY/AUD",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "AUD": "PROMISING_SMALL_SAMPLE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "JPY/CHF",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "JPY": "NO_INCREMENTAL_VALUE",
+          "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      },
+      {
+        "pair": "USD/GBP",
+        "macro_anchor": "MIXED",
+        "transmission": "TRANSMISSION_WITHHELD",
+        "robustness": "ROBUST_ACROSS_RULES",
+        "layers": {
+          "central_bank": "NOT_APPLICABLE_MACRO_MIXED",
+          "front_end_rates": "NOT_APPLICABLE_MACRO_MIXED",
+          "price": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "what_changed": {
+          "status": "BASELINE",
+          "changed_fields": []
+        },
+        "forward": {
+          "entry_locked": false,
+          "entry_fixing_date": null,
+          "primary_horizon": 20,
+          "status": "ENTRY_PENDING"
+        },
+        "research_evidence": {
+          "USD": "SUPPORTED_DIAGNOSTIC",
+          "GBP": "NO_INCREMENTAL_VALUE",
+          "note": "Historical evidence quality is separate from current live-state availability."
+        }
+      }
+    ]
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "creates_universal_score": false,
+    "predictive_claim": false
+  }
+}
