@@ -1,0 +1,438 @@
+{
+  "schema": "GMFQ_CURRENCY_CROSS_DISPERSION_V1",
+  "status": "RESEARCH_ONLY_DESCRIPTIVE_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "purpose": "Compact currency-level summary derived from each currency's seven G8 crosses. No score, no bias inversion, no predictive claim.",
+  "currencies": {
+    "USD": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 1,
+        "opposed": 5,
+        "mixed": 1
+      },
+      "transmission_states": {
+        "TRANSMISSION_DIVERGENT": 4,
+        "TRANSMISSION_PARTIAL": 2,
+        "TRANSMISSION_WITHHELD": 1
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 7
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "DIVERGENT": 3,
+          "NEUTRAL_OR_MIXED": 3,
+          "NOT_APPLICABLE_MACRO_MIXED": 1
+        },
+        "front_end_rates": {
+          "ALIGNED": 2,
+          "DIVERGENT": 4,
+          "NOT_APPLICABLE_MACRO_MIXED": 1
+        },
+        "price": {
+          "DIVERGENT": 4,
+          "ALIGNED": 2,
+          "NOT_APPLICABLE_MACRO_MIXED": 1
+        }
+      },
+      "crosses": [
+        "USD/AUD",
+        "USD/CAD",
+        "USD/CHF",
+        "USD/EUR",
+        "USD/GBP",
+        "USD/JPY",
+        "USD/NZD"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "EUR": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 0,
+        "opposed": 6,
+        "mixed": 1
+      },
+      "transmission_states": {
+        "TRANSMISSION_PARTIAL": 3,
+        "TRANSMISSION_DIVERGENT": 3,
+        "TRANSMISSION_WITHHELD": 1
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 5,
+        "RULE_SENSITIVE": 2
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "DIVERGENT": 3,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "NEUTRAL_OR_MIXED": 3
+        },
+        "front_end_rates": {
+          "ALIGNED": 3,
+          "DIVERGENT": 3,
+          "NOT_APPLICABLE_MACRO_MIXED": 1
+        },
+        "price": {
+          "ALIGNED": 5,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 1
+        }
+      },
+      "crosses": [
+        "EUR/AUD",
+        "EUR/CAD",
+        "EUR/CHF",
+        "EUR/GBP",
+        "EUR/JPY",
+        "EUR/NZD",
+        "USD/EUR"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "GBP": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 0,
+        "opposed": 5,
+        "mixed": 2
+      },
+      "transmission_states": {
+        "TRANSMISSION_WITHHELD": 2,
+        "TRANSMISSION_PARTIAL": 1,
+        "TRANSMISSION_DIVERGENT": 3,
+        "TRANSMISSION_CLEAN": 1
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 4,
+        "RULE_SENSITIVE": 3
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "NEUTRAL_OR_MIXED": 1,
+          "DIVERGENT": 2,
+          "ALIGNED": 2
+        },
+        "front_end_rates": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "ALIGNED": 3,
+          "DIVERGENT": 2
+        },
+        "price": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "ALIGNED": 4,
+          "DIVERGENT": 1
+        }
+      },
+      "crosses": [
+        "EUR/GBP",
+        "GBP/AUD",
+        "GBP/CAD",
+        "GBP/CHF",
+        "GBP/JPY",
+        "GBP/NZD",
+        "USD/GBP"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "JPY": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission_states": {
+        "TRANSMISSION_PARTIAL": 3,
+        "TRANSMISSION_CLEAN": 2,
+        "TRANSMISSION_WITHHELD": 2
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 7
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "NEUTRAL_OR_MIXED": 3,
+          "ALIGNED": 2,
+          "NOT_APPLICABLE_MACRO_MIXED": 2
+        },
+        "front_end_rates": {
+          "ALIGNED": 4,
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "DIVERGENT": 1
+        },
+        "price": {
+          "ALIGNED": 5,
+          "NOT_APPLICABLE_MACRO_MIXED": 2
+        }
+      },
+      "crosses": [
+        "EUR/JPY",
+        "GBP/JPY",
+        "JPY/AUD",
+        "JPY/CAD",
+        "JPY/CHF",
+        "JPY/NZD",
+        "USD/JPY"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "CHF": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission_states": {
+        "TRANSMISSION_WITHHELD": 2,
+        "TRANSMISSION_DIVERGENT": 5
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 4,
+        "RULE_SENSITIVE": 3
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "DIVERGENT": 5
+        },
+        "front_end_rates": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "DIVERGENT": 5
+        },
+        "price": {
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "DIVERGENT": 2,
+          "ALIGNED": 3
+        }
+      },
+      "crosses": [
+        "CHF/AUD",
+        "CHF/CAD",
+        "CHF/NZD",
+        "EUR/CHF",
+        "GBP/CHF",
+        "JPY/CHF",
+        "USD/CHF"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "CAD": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 3,
+        "opposed": 3,
+        "mixed": 1
+      },
+      "transmission_states": {
+        "TRANSMISSION_PARTIAL": 1,
+        "TRANSMISSION_WITHHELD": 1,
+        "TRANSMISSION_DIVERGENT": 4,
+        "TRANSMISSION_CLEAN": 1
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 5,
+        "RULE_SENSITIVE": 2
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "ALIGNED": 2,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 4
+        },
+        "front_end_rates": {
+          "ALIGNED": 2,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 4
+        },
+        "price": {
+          "NEUTRAL_OR_MIXED": 1,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 2,
+          "ALIGNED": 3
+        }
+      },
+      "crosses": [
+        "CAD/AUD",
+        "CAD/NZD",
+        "CHF/CAD",
+        "EUR/CAD",
+        "GBP/CAD",
+        "JPY/CAD",
+        "USD/CAD"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "AUD": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 5,
+        "opposed": 0,
+        "mixed": 2
+      },
+      "transmission_states": {
+        "TRANSMISSION_PARTIAL": 4,
+        "TRANSMISSION_WITHHELD": 2,
+        "TRANSMISSION_DIVERGENT": 1
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 7
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "DIVERGENT": 3,
+          "ALIGNED": 1,
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "NEUTRAL_OR_MIXED": 1
+        },
+        "front_end_rates": {
+          "ALIGNED": 5,
+          "NOT_APPLICABLE_MACRO_MIXED": 2
+        },
+        "price": {
+          "ALIGNED": 3,
+          "NEUTRAL_OR_MIXED": 1,
+          "NOT_APPLICABLE_MACRO_MIXED": 2,
+          "DIVERGENT": 1
+        }
+      },
+      "crosses": [
+        "AUD/NZD",
+        "CAD/AUD",
+        "CHF/AUD",
+        "EUR/AUD",
+        "GBP/AUD",
+        "JPY/AUD",
+        "USD/AUD"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    },
+    "NZD": {
+      "cross_count": 7,
+      "macro_relative": {
+        "favored": 3,
+        "opposed": 3,
+        "mixed": 1
+      },
+      "transmission_states": {
+        "TRANSMISSION_PARTIAL": 2,
+        "TRANSMISSION_WITHHELD": 1,
+        "TRANSMISSION_DIVERGENT": 4
+      },
+      "robustness": {
+        "ROBUST_ACROSS_RULES": 5,
+        "RULE_SENSITIVE": 2
+      },
+      "layer_dispersion": {
+        "central_bank": {
+          "DIVERGENT": 2,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "NEUTRAL_OR_MIXED": 3,
+          "ALIGNED": 1
+        },
+        "front_end_rates": {
+          "ALIGNED": 3,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 3
+        },
+        "price": {
+          "ALIGNED": 3,
+          "NOT_APPLICABLE_MACRO_MIXED": 1,
+          "DIVERGENT": 3
+        }
+      },
+      "crosses": [
+        "AUD/NZD",
+        "CAD/NZD",
+        "CHF/NZD",
+        "EUR/NZD",
+        "GBP/NZD",
+        "JPY/NZD",
+        "USD/NZD"
+      ],
+      "display_contract": {
+        "show_counts_only": true,
+        "do_not_convert_to_score": true,
+        "do_not_call_absolute_bias": true,
+        "suggested_compact_fields": [
+          "macro_relative",
+          "transmission_states",
+          "robustness"
+        ]
+      }
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "creates_universal_score": false
+  }
+}
