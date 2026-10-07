@@ -1,11 +1,27 @@
-name: Rates GBP Non-Destructive Canonicalization Fix
+name: Revert Failed GBP Canonicalization Safely
 on:
-  workflow_dispatch:
+  push:
+    branches: [staging-rates-g8-refresh-2026-10-07]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  completed:
+  revert:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Completed staging fix
-        run: echo 'GBP non-destructive canonicalization already applied; workflow frozen after successful patch.'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Revert failed GBP runtime patch only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git cat-file -e 1b85f84e46f2d4f84b7445412feccdba5f7186e4^{commit}
+          git revert --no-edit 1b85f84e46f2d4f84b7445412feccdba5f7186e4
+          changed="$(git diff-tree --no-commit-id --name-only -r HEAD | sort)"
+          expected=$(printf '%s\n' 'live_data/manifest.v2.json' 'payload/part-15.txt' | sort)
+          test "$changed" = "$expected"
+          git push origin HEAD:${GITHUB_REF_NAME}
