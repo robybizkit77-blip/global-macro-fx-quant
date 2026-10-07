@@ -17,15 +17,14 @@ ANCHORS={('2019-01',2.4),('2020-01',2.3),('2022-11',2.0),('2024-06',2.4),('2026-
 
 def get(url):
     req=urllib.request.Request(url,headers=UA)
-    with urllib.request.urlopen(req,timeout=45) as r:return r.read()
+    with urllib.request.urlopen(req,timeout=7) as r:return r.read()
 
 def try_get(url):
     try:return get(url)
     except Exception:return None
 
 def next_month_15(year,month):
-    if month==12:return f'{year+1:04d}-01-15'
-    return f'{year:04d}-{month+1:02d}-15'
+    return f'{year+1:04d}-01-15' if month==12 else f'{year:04d}-{month+1:02d}-15'
 
 def parse_reference_month(text,url):
     s=(text+' '+url).lower().replace('_',' ').replace('-',' ')
@@ -41,11 +40,10 @@ def parse_reference_month(text,url):
 
 def parse_pub(txt):
     d=re.search(r'\b(\d{1,2})\.(\d{1,2})\.(20\d{2})\b',txt)
-    if d:return f'{int(d.group(3)):04d}-{int(d.group(2)):02d}-{int(d.group(1)):02d}'
-    return None
+    return f'{int(d.group(3)):04d}-{int(d.group(2)):02d}-{int(d.group(1)):02d}' if d else None
 
 def new_archive_links():
-    raw=get(ARCHIVE);soup=BeautifulSoup(raw,'html.parser');found={}
+    soup=BeautifulSoup(get(ARCHIVE),'html.parser');found={}
     for a in soup.find_all('a',href=True):
         href=urljoin(ARCHIVE,a['href']);label=' '.join(a.stripped_strings)
         if '.pdf' not in href.lower() or 'arbeitsmarkt' not in (href+' '+label).lower():continue
@@ -61,16 +59,26 @@ def new_archive_links():
     return found
 
 def candidate_urls(year,month):
-    yy=str(year)[2:];mm=f'{month:02d}';mn=MONTH_NAMES[month]
+    yy=str(year)[2:];mm=f'{month:02d}';mn=MONTH_NAMES[month];cap=mn.capitalize()
     root='https://www.seco.admin.ch/dam/seco/de/dokumente/Publikationen_Dienstleistungen/Publikationen_Formulare/Arbeit/Arbeitslosenversicherung/Die%20Lage%20auf%20dem%20Arbeitsmarkt/'
     folder='Lage_arbeitsmarkt_2018' if year==2018 else ('Arbeitsmarkt_2019' if year==2019 else f'arbeitsmarkt_{year}')
-    prefix=root+folder+'/'
-    stems=[
-      f'alz_{mm}_{year}.pdf.download.pdf',f'alz_{mm}_{yy}.pdf.download.pdf',f'ALZ_PRESSEDOK{yy}{mm}.pdf.download.pdf',f'ALZ_PRESSEDOK_{yy}{mm}.pdf.download.pdf',f'alz_pressedok_{yy}{mm}.pdf.download.pdf',
-      f'lage_arbeitsmarkt_{mn}_{year}.pdf.download.pdf',f'lage_arbeitsmarkt_{mn}-{year}.pdf.download.pdf',f'Arbeitsmarkt_{mn.capitalize()}_{year}.pdf.download.pdf',f'large_arbeitsmarkt_{mn}_{year}.pdf.download.pdf'
-    ]
-    tails=[f'PRESSEDOK{yy}{mm}_D.pdf',f'alz_{mm}_{year}_de.pdf',f'alz_{mn}_{year}_de.pdf',f'{year}-{mm}_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf']
-    return [prefix+s+'/'+t for s in stems for t in tails]
+    p=root+folder+'/'
+    pairs=[]
+    if year==2018:
+        pairs=[(f'Arbeitsmarkt_{cap}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_{mm}_{yy}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2019:
+        pairs=[(f'alz_{mm}_{yy}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'ALZ_PRESSEDOK{yy}{mm}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'ALZ_PRESSEDOK_{yy}{mm}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2020:
+        pairs=[(f'alz_{mm}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_pressedok_{yy}{mm}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'lage_arbeitsmarkt_{mn}-{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2021:
+        pairs=[(f'alz_{mm}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_{mm}_{yy}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_{mm}_{year}.pdf.download.pdf',f'alz_{mn}_{year}_de.pdf'),(f'lage_arbeitsmarkt_{mn}-{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2022:
+        pairs=[(f'lage_arbeitsmarkt_{mn}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'lage_arbeitsmarkt_{mn}-{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_{mm}_{yy}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'alz_{mm}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2023:
+        pairs=[(f'alz_{mm}_{year}.pdf.download.pdf',f'alz_{mm}_{year}_de.pdf'),(f'alz_{mm}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'lage_arbeitsmarkt_{mn}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf')]
+    elif year==2024:
+        pairs=[(f'lage_arbeitsmarkt_{mn}_{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'lage_arbeitsmarkt_{mn}-{year}.pdf.download.pdf',f'PRESSEDOK{yy}{mm}_D.pdf'),(f'large_arbeitsmarkt_{mn}_{year}.pdf.download.pdf',f'{year}-{mm}_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf')]
+    return [p+s+'/'+t for s,t in pairs]
 
 def all_months():
     found=new_archive_links()
@@ -87,8 +95,7 @@ def extract_rate(pdf_bytes):
     if pos>=0:text=text[pos:pos+10000]
     for line in text.splitlines():
         if 'Saisonbereinigt' not in line:continue
-        after=line.split('Saisonbereinigt',1)[1]
-        nums=re.findall(r'(?<!\d)(\d[\.,]\d)(?!\d)',after)
+        nums=re.findall(r'(?<!\d)(\d[\.,]\d)(?!\d)',line.split('Saisonbereinigt',1)[1])
         if nums:
             x=float(nums[0].replace(',','.'))
             if 0.5<=x<=10:return x,line.strip()
@@ -105,15 +112,13 @@ def main():
         for url in meta['urls']:
             raw=try_get(url)
             if raw is None:continue
-            try:
-                rate,ctx=extract_rate(raw);success=(url,rate,ctx);break
+            try:rate,ctx=extract_rate(raw);success=(url,rate,ctx);break
             except Exception as e:errs.append(str(e))
         if success:
             url,rate,ctx=success;rows.append({**meta,'url':url,'rate':rate,'parser_context':ctx})
         else:failures.append({'reference_month':ym,'n_candidates':len(meta['urls']),'errors':errs[:3]})
-    if len(rows)<65:raise RuntimeError(f'parsed coverage too short n={len(rows)} failures={failures[:12]}')
-    by={r['reference_month']:r['rate'] for r in rows}
-    anchor_results=[]
+    if len(rows)<65:raise RuntimeError(f'parsed coverage too short n={len(rows)} failures={failures[:20]}')
+    by={r['reference_month']:r['rate'] for r in rows};anchor_results=[]
     for ym,expected in sorted(ANCHORS):
         got=by.get(ym);ok=got is not None and abs(got-expected)<1e-9
         anchor_results.append({'reference_month':ym,'expected':expected,'got':got,'pass':ok})
@@ -121,7 +126,7 @@ def main():
     OUT.parent.mkdir(parents=True,exist_ok=True)
     with OUT.open('w',newline='',encoding='utf-8') as f:
         w=csv.writer(f);w.writerow(['reference_month','unemployment_rate_sa_pct','available_from','timing_quality','source','source_url','vintage_policy'])
-        for r in rows:w.writerow([r['reference_month'],f"{r['rate']:.1f}",r['publication_date'] or '', 'ACTUAL_ARCHIVE_DATE' if r['discovery']=='new_archive' else 'CONSERVATIVE_15TH_NEXT_MONTH','SECO - Die Lage auf dem Arbeitsmarkt',r['url'],'value extracted from archived monthly first-release PDF'])
+        for r in rows:w.writerow([r['reference_month'],f"{r['rate']:.1f}",r['publication_date'] or '','ACTUAL_ARCHIVE_DATE' if r['discovery']=='new_archive' else 'CONSERVATIVE_15TH_NEXT_MONTH','SECO - Die Lage auf dem Arbeitsmarkt',r['url'],'value extracted from archived monthly first-release PDF'])
     payload={'schema':'GMFQ_CHF_UNEMPLOYMENT_SA_PIT_V1','status':'PASS','created_at':'2026-10-07','source':'SECO archived monthly Die Lage auf dem Arbeitsmarkt PDFs','series':'Arbeitslosenquote - Saisonbereinigt','coverage':{'n':len(rows),'first':rows[0]['reference_month'],'last':rows[-1]['reference_month']},'anchors':anchor_results,'failures':failures,'timing_policy':'actual archive release date when available; otherwise conservative 15th of following month, deliberately later than normal SECO release timing','pit_policy':'use the SA unemployment rate printed in each contemporaneous monthly SECO PDF; never substitute current recomputed SA history','changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
     EVID.write_text(json.dumps(payload,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
     print(json.dumps(payload,indent=2,ensure_ascii=False))
