@@ -2,7 +2,7 @@
   "schema_version": "GMFQ_CB_PRICING_CANDIDATE_V1",
   "currency": "AUD",
   "as_of": "2026-09-30",
-  "status": "PARTIAL_VALIDATED_POST_RBA",
+  "status": "FULLY_VALIDATED_PENDING_SEPARATE_PROMOTION",
   "policy": {
     "central_bank": "Reserve Bank of Australia",
     "cash_rate_target_pct": 4.60,
@@ -14,11 +14,26 @@
     "primary": "ASX 30 Day Interbank Cash Rate futures (IB)",
     "official_policy_source": "RBA cash rate target",
     "eod_source": "ASX Futures End of Day Data - Futures Night Traded at close of trade date 30/09/26",
+    "eod_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary260930SFD.htm",
     "quote_convention": "implied_rate_pct = 100 - settlement_price",
     "current_eod_status": "DIRECT_OFFICIAL_CAPTURED",
     "historical_source_validation": {
       "status": "VALIDATED",
-      "evidence": "ASX public EOD market summary exposes IB settlement and Sett Chg by monthly expiry."
+      "evidence": "ASX public EOD market summaries expose IB settlement and Sett Chg by monthly expiry. Matched historical reference captured from 24/09/26.",
+      "one_week_reference": {
+        "as_of": "2026-09-24",
+        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary260924SFD.htm",
+        "settlements": {
+          "Dec-2026": 95.255,
+          "Mar-2027": 95.12,
+          "Sep-2027": 94.98
+        },
+        "rates_pct": {
+          "3m": 4.745,
+          "6m": 4.88,
+          "12m": 5.02
+        }
+      }
     }
   },
   "ois_contract": {
@@ -60,7 +75,12 @@
         "change_1d_bp": -5.0,
         "policy_delta_bp": 31.0
       },
-      "change_1w_bp": null,
+      "change_1w_bp": {
+        "3m": -6.0,
+        "6m": -7.0,
+        "12m": -11.0,
+        "method": "(current implied rate - 2026-09-24 implied rate) * 100; same ASX IB contracts and settlement convention"
+      },
       "direction": "UP_VS_POLICY",
       "change_direction_1d": "DOWN"
     }
@@ -70,14 +90,14 @@
     "source_family_validated": true,
     "current_post_decision_curve_validated": true,
     "historical_1d_validated": true,
-    "historical_1w_validated": false,
-    "activation_allowed": false,
-    "activation_blocker": "Exact same-basis 1W ASX IB settlement strip is still missing. Runtime OIS_DATA must remain WITHHELD until that field validates."
+    "historical_1w_validated": true,
+    "activation_allowed": true,
+    "activation_blocker": null
   },
   "runtime_policy": {
     "mutate_live_data": false,
     "mutate_engine": false,
     "mutate_forward_oos": false,
-    "promotion_rule": "Promote only after exact same-basis 1W ASX IB settlement strip validates."
+    "promotion_rule": "Candidate is complete. Any runtime promotion requires a separate, explicitly scoped change."
   }
 }
