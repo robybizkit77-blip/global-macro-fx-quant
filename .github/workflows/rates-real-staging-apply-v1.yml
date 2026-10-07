@@ -44,10 +44,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git status --porcelain
+          rm -f validation/RATES_UNIFIED_AUDIT_OUTPUT.json
+          find validation -type d -name __pycache__ -prune -exec rm -rf {} +
+          git status --porcelain --untracked-files=all
           python - <<'PY'
           import subprocess
-          out=subprocess.check_output(['git','status','--porcelain'],text=True)
+          out=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True)
           changed=[]
           for line in out.splitlines():
               p=line[3:]
