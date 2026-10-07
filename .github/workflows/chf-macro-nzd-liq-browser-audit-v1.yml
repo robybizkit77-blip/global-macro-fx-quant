@@ -1,0 +1,81 @@
+name: CHF Macro NZD Liquidity Browser Audit V1
+on:
+  push:
+    branches:
+      - staging-chf-macro-nzd-liq-2026-10-07
+    paths:
+      - '.github/workflows/chf-macro-nzd-liq-browser-audit-v1.yml'
+permissions:
+  contents: read
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-server.log 2>&1 &
+          sleep 2
+      - name: Assert browser runtime CHF macro and NZD liquidity
+        shell: bash
+        run: |
+          cat > browser-audit.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const consoleErrors=[]; const pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            const r=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForTimeout(8000);
+            const result=await page.evaluate(()=>{
+              const keys=Object.keys(window).filter(k=>/MACRO|LIQ/.test(k));
+              const macro=window.MACRO_THERMOMETER_DATA||window.__GMFQ_DATA?.MACRO_THERMOMETER_DATA||null;
+              const series=window.MACRO_SERIES||window.__GMFQ_DATA?.MACRO_SERIES||null;
+              const liq=window.NATIVE_LIQ_DATA||window.__GMFQ_DATA?.NATIVE_LIQ_DATA||null;
+              const finalAudit=window.GMFQ_POST_GATE_FINAL_AUDIT||null;
+              const chfMacro=typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState('CHF'):null;
+              const nzdMacro=typeof window.deriveCurrencyState==='function'?window.deriveCurrencyState('NZD'):null;
+              return {keys,macro,series,liq,finalAudit,chfMacro,nzdMacro,title:document.title,body:document.body?.innerText||''};
+            });
+            console.log(JSON.stringify({keys:result.keys,finalAudit:result.finalAudit,chfMacro:result.chfMacro,nzdMacro:result.nzdMacro,consoleErrors,pageErrors},null,2));
+            if(!String(result.title||'').startsWith('GLOBAL MACRO FX QUANT')) throw new Error('Unexpected title');
+            if(!result.macro) throw new Error('MACRO_THERMOMETER_DATA runtime missing; keys='+JSON.stringify(result.keys));
+            if(!result.series) throw new Error('MACRO_SERIES runtime missing; keys='+JSON.stringify(result.keys));
+            if(!result.liq) throw new Error('NATIVE_LIQ_DATA runtime missing; keys='+JSON.stringify(result.keys));
+            const ch=result.macro.currencies?.CHF?.inflation;
+            if(!ch||ch.as_of!=='2026-09'||Number(ch.latest_value)!==1.0||Number(ch.percentile)!==66.7||ch.direction!=='SALE'||ch.acceleration!=='RALLENTA') throw new Error('CHF macro runtime mismatch '+JSON.stringify(ch));
+            const sr=(result.series.CHF||[]).filter(x=>x?.id==='CH_CPI_HEADLINE_YOY_history_value');
+            if(sr.length!==1||sr[0].last_date!=='2026-09'||Number(sr[0].last_value)!==1.0) throw new Error('CHF macro series mismatch '+JSON.stringify(sr));
+            const nz=result.liq.NZD;
+            if(!nz||nz.as_of!=='2026-08 · released 2026-09-30') throw new Error('NZD liquidity as_of mismatch '+JSON.stringify(nz));
+            if(Number(nz.liquidity?.last_value)!==26460||Number(nz.money?.last_value)!==454671||Number(nz.credit?.last_value)!==624663) throw new Error('NZD liquidity values mismatch '+JSON.stringify(nz));
+            if(nz.liquidity_dir!=='IN CALO'||nz.credit_dir!=='IN AUMENTO') throw new Error('NZD liquidity direction mismatch '+JSON.stringify(nz));
+            if(!result.chfMacro||!result.nzdMacro) throw new Error('Derived currency state missing');
+            if(result.finalAudit?.status && result.finalAudit.status!=='PASS') throw new Error('Final audit non-PASS '+JSON.stringify(result.finalAudit));
+            if(pageErrors.length) throw new Error('Page errors '+pageErrors.join(' | '));
+            if(consoleErrors.length) throw new Error('Console errors '+consoleErrors.join(' | '));
+            await page.screenshot({path:'chf-nzd-browser-audit.png',fullPage:true});
+            await browser.close();
+          })().catch(e=>{console.error('::error title=CHF/NZD browser audit::'+String(e.message||e));process.exit(1)});
+          EOF
+          node browser-audit.js
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-macro-nzd-liq-browser-audit-v1
+          path: |
+            chf-nzd-browser-audit.png
+            /tmp/gmfq-server.log
