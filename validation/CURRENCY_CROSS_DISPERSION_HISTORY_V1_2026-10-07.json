@@ -1,0 +1,286 @@
+{
+  "schema": "GMFQ_CURRENCY_CROSS_DISPERSION_HISTORY_V1",
+  "status": "ACTIVE_RESEARCH_HISTORY",
+  "append_only": true,
+  "snapshots": [
+    {
+      "snapshot_id": "2026-10-07T08:41:53Z__CURRENCY_DISPERSION_V1",
+      "captured_at": "2026-10-07T08:41:53Z",
+      "semantic_fingerprint": "364ba14d91802972",
+      "currencies": {
+        "AUD": {
+          "macro_relative": {
+            "favored": 5,
+            "opposed": 0,
+            "mixed": 2
+          },
+          "transmission_states": {
+            "TRANSMISSION_PARTIAL": 4,
+            "TRANSMISSION_WITHHELD": 2,
+            "TRANSMISSION_DIVERGENT": 1
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 7
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "DIVERGENT": 3,
+              "ALIGNED": 1,
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "NEUTRAL_OR_MIXED": 1
+            },
+            "front_end_rates": {
+              "ALIGNED": 5,
+              "NOT_APPLICABLE_MACRO_MIXED": 2
+            },
+            "price": {
+              "ALIGNED": 3,
+              "NEUTRAL_OR_MIXED": 1,
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "DIVERGENT": 1
+            }
+          }
+        },
+        "CAD": {
+          "macro_relative": {
+            "favored": 3,
+            "opposed": 3,
+            "mixed": 1
+          },
+          "transmission_states": {
+            "TRANSMISSION_PARTIAL": 1,
+            "TRANSMISSION_WITHHELD": 1,
+            "TRANSMISSION_DIVERGENT": 4,
+            "TRANSMISSION_CLEAN": 1
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 5,
+            "RULE_SENSITIVE": 2
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "ALIGNED": 2,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 4
+            },
+            "front_end_rates": {
+              "ALIGNED": 2,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 4
+            },
+            "price": {
+              "NEUTRAL_OR_MIXED": 1,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 2,
+              "ALIGNED": 3
+            }
+          }
+        },
+        "CHF": {
+          "macro_relative": {
+            "favored": 5,
+            "opposed": 0,
+            "mixed": 2
+          },
+          "transmission_states": {
+            "TRANSMISSION_WITHHELD": 2,
+            "TRANSMISSION_DIVERGENT": 5
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 4,
+            "RULE_SENSITIVE": 3
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "DIVERGENT": 5
+            },
+            "front_end_rates": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "DIVERGENT": 5
+            },
+            "price": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "DIVERGENT": 2,
+              "ALIGNED": 3
+            }
+          }
+        },
+        "EUR": {
+          "macro_relative": {
+            "favored": 0,
+            "opposed": 6,
+            "mixed": 1
+          },
+          "transmission_states": {
+            "TRANSMISSION_PARTIAL": 3,
+            "TRANSMISSION_DIVERGENT": 3,
+            "TRANSMISSION_WITHHELD": 1
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 5,
+            "RULE_SENSITIVE": 2
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "DIVERGENT": 3,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "NEUTRAL_OR_MIXED": 3
+            },
+            "front_end_rates": {
+              "ALIGNED": 3,
+              "DIVERGENT": 3,
+              "NOT_APPLICABLE_MACRO_MIXED": 1
+            },
+            "price": {
+              "ALIGNED": 5,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 1
+            }
+          }
+        },
+        "GBP": {
+          "macro_relative": {
+            "favored": 0,
+            "opposed": 5,
+            "mixed": 2
+          },
+          "transmission_states": {
+            "TRANSMISSION_WITHHELD": 2,
+            "TRANSMISSION_PARTIAL": 1,
+            "TRANSMISSION_DIVERGENT": 3,
+            "TRANSMISSION_CLEAN": 1
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 4,
+            "RULE_SENSITIVE": 3
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "NEUTRAL_OR_MIXED": 1,
+              "DIVERGENT": 2,
+              "ALIGNED": 2
+            },
+            "front_end_rates": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "ALIGNED": 3,
+              "DIVERGENT": 2
+            },
+            "price": {
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "ALIGNED": 4,
+              "DIVERGENT": 1
+            }
+          }
+        },
+        "JPY": {
+          "macro_relative": {
+            "favored": 5,
+            "opposed": 0,
+            "mixed": 2
+          },
+          "transmission_states": {
+            "TRANSMISSION_PARTIAL": 3,
+            "TRANSMISSION_CLEAN": 2,
+            "TRANSMISSION_WITHHELD": 2
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 7
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "NEUTRAL_OR_MIXED": 3,
+              "ALIGNED": 2,
+              "NOT_APPLICABLE_MACRO_MIXED": 2
+            },
+            "front_end_rates": {
+              "ALIGNED": 4,
+              "NOT_APPLICABLE_MACRO_MIXED": 2,
+              "DIVERGENT": 1
+            },
+            "price": {
+              "ALIGNED": 5,
+              "NOT_APPLICABLE_MACRO_MIXED": 2
+            }
+          }
+        },
+        "NZD": {
+          "macro_relative": {
+            "favored": 3,
+            "opposed": 3,
+            "mixed": 1
+          },
+          "transmission_states": {
+            "TRANSMISSION_PARTIAL": 2,
+            "TRANSMISSION_WITHHELD": 1,
+            "TRANSMISSION_DIVERGENT": 4
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 5,
+            "RULE_SENSITIVE": 2
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "DIVERGENT": 2,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "NEUTRAL_OR_MIXED": 3,
+              "ALIGNED": 1
+            },
+            "front_end_rates": {
+              "ALIGNED": 3,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 3
+            },
+            "price": {
+              "ALIGNED": 3,
+              "NOT_APPLICABLE_MACRO_MIXED": 1,
+              "DIVERGENT": 3
+            }
+          }
+        },
+        "USD": {
+          "macro_relative": {
+            "favored": 1,
+            "opposed": 5,
+            "mixed": 1
+          },
+          "transmission_states": {
+            "TRANSMISSION_DIVERGENT": 4,
+            "TRANSMISSION_PARTIAL": 2,
+            "TRANSMISSION_WITHHELD": 1
+          },
+          "robustness": {
+            "ROBUST_ACROSS_RULES": 7
+          },
+          "layer_dispersion": {
+            "central_bank": {
+              "DIVERGENT": 3,
+              "NEUTRAL_OR_MIXED": 3,
+              "NOT_APPLICABLE_MACRO_MIXED": 1
+            },
+            "front_end_rates": {
+              "ALIGNED": 2,
+              "DIVERGENT": 4,
+              "NOT_APPLICABLE_MACRO_MIXED": 1
+            },
+            "price": {
+              "DIVERGENT": 4,
+              "ALIGNED": 2,
+              "NOT_APPLICABLE_MACRO_MIXED": 1
+            }
+          }
+        }
+      },
+      "frozen": true
+    }
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "creates_universal_score": false,
+    "retroactive_history_rewrite": false
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_CURRENCY_WHAT_CHANGED_V1",
+  "status": "RESEARCH_ONLY_DESCRIPTIVE_NOT_PROMOTED",
+  "comparison_available": false,
+  "currencies": {
+    "AUD": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "CAD": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "CHF": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "EUR": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "GBP": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "JPY": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "NZD": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    },
+    "USD": {
+      "label": "BASELINE",
+      "deltas": null,
+      "note_it": "Primo snapshot: nessun confronto precedente disponibile."
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "creates_universal_score": false,
+    "retroactive_tuning": false
+  },
+  "current_snapshot_id": "2026-10-07T08:41:53Z__CURRENCY_DISPERSION_V1"
+}
