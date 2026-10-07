@@ -1,38 +1,25 @@
-name: Rates GBP Runtime Canonicalization Fix
+name: Revert GBP Runtime Adapter Safely
 on:
   push:
     branches: [staging-rates-g8-refresh-2026-10-07]
 permissions:
   contents: write
 jobs:
-  patch:
+  revert:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
-      - name: Canonicalize GBP runtime
+        with:
+          fetch-depth: 0
+      - name: Revert GBP adapter commit
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('payload/part-15.txt'); s=p.read_text()
-          sid='<script id="gmfq-gbp-rates-boe-20260930">'
-          assert s.count(sid)==1
-          a=s.index(sid); b=s.index('</script>',a)+9
-          old=s[a:b]
-          assert "date:'2026-09-29'" in old and "y2:4.684827469902199" in old and "y10:5.380692223244884" in old
-          new='''<script id="gmfq-gbp-rates-canonical-runtime-adapter">\n(function(){\ntry{\nconst d=window.NATIVE_RATES_DATA?.GBP||window.__GMFQ_DATA?.NATIVE_RATES_DATA?.GBP;if(!d)throw new Error('GBP_NATIVE_RATES_MISSING');\nconst e=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.GBP;\nif(window.__GMFQ_DATA?.D?.macro?.GBP){window.__GMFQ_DATA.D.macro.GBP.rate2y=d['2Y'];window.__GMFQ_DATA.D.macro.GBP.rate_status='CURRENT';}\ntry{syncVisibleRatesSnapshots?.();}catch(_){} try{rebuildCanonicalState?.();}catch(_){} try{stableModelRefresh?.();}catch(_){} try{syncCoreFreshnessRegistryFromLive?.();}catch(_){}\nwindow.GMFQ_GBP_RATES_AUDIT={status:e&&d.date===e?'PASS':'FAIL',as_of:d.date,values:{'2Y':d['2Y'],'10Y':d['10Y'],curve_bp:d.curve_bp},mode:'CANONICAL_RUNTIME_ADAPTER'};\n}catch(err){window.GMFQ_GBP_RATES_AUDIT={status:'FAIL',error:String(err)}}\n})();\n</script>'''
-          p.write_text(s[:a]+new+s[b:])
-          PY
-          python validation/build_live_manifest_v2.py > /tmp/m.json
-          mv /tmp/m.json live_data/manifest.v2.json
-          python validation/check_live_update_contract.py
-          git diff --name-only
-      - name: Commit
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add payload/part-15.txt live_data/manifest.v2.json
-          git commit -m 'Use canonical runtime GBP in Rates hydration'
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git cat-file -e 99f9ec51133e34b192893877e7943f4667792e71^{commit}
+          git revert --no-edit 99f9ec51133e34b192893877e7943f4667792e71
+          git diff --exit-code HEAD^
           git push origin HEAD:${GITHUB_REF_NAME}
