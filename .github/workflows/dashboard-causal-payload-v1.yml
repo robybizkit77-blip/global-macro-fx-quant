@@ -1,0 +1,33 @@
+name: Dashboard Causal Payload V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/build_dashboard_causal_payload_v1.py'
+      - 'validation/validate_dashboard_causal_payload_v1.py'
+      - 'validation/DASHBOARD_REACTION_FUNCTION_CONTRACT_V2_2026-10-07.json'
+      - 'live_data/sections/COUNTRY_CTX.json'
+      - 'live_data/sections/NATIVE_CB_DATA.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - '.github/workflows/dashboard-causal-payload-v1.yml'
+permissions:
+  contents: write
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build read-only causal payload
+        run: python validation/build_dashboard_causal_payload_v1.py
+      - name: Validate causal payload
+        run: python validation/validate_dashboard_causal_payload_v1.py
+      - name: Commit research payload
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/DASHBOARD_CAUSAL_PAYLOAD_CURRENT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Build dashboard causal payload current V1'
+          git push
