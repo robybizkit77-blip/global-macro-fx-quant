@@ -1,0 +1,899 @@
+{
+  "schema": "GMFQ_DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1",
+  "status": "RESEARCH_ONLY_DESCRIPTIVE_NOT_PREDICTIVE",
+  "created_at": "2026-10-07",
+  "rule_contract": {
+    "WITHHELD": "Macro anchor MIXED/unavailable or price missing.",
+    "DIVERGENT": "Price diverges from macro OR both central-bank impulse and rates diverge from macro.",
+    "CLEAN": "Macro directional and CB + rates + price all aligned.",
+    "PARTIAL": "All remaining directional cases with incomplete/contradictory transmission.",
+    "optimization": "NONE",
+    "return_fitting": false,
+    "predictive_claim": false
+  },
+  "distribution": {
+    "TRANSMISSION_PARTIAL": 8,
+    "TRANSMISSION_WITHHELD": 6,
+    "TRANSMISSION_DIVERGENT": 12,
+    "TRANSMISSION_CLEAN": 2
+  },
+  "pairs": {
+    "AUD/NZD": {
+      "pair": "AUD/NZD",
+      "leg_a": "AUD",
+      "leg_b": "NZD",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "CAD/AUD": {
+      "pair": "CAD/AUD",
+      "leg_a": "CAD",
+      "leg_b": "AUD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        }
+      },
+      "research_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "CAD/NZD": {
+      "pair": "CAD/NZD",
+      "leg_a": "CAD",
+      "leg_b": "NZD",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "CHF/AUD": {
+      "pair": "CHF/AUD",
+      "leg_a": "CHF",
+      "leg_b": "AUD",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "CHF/CAD": {
+      "pair": "CHF/CAD",
+      "leg_a": "CHF",
+      "leg_b": "CAD",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "CHF/NZD": {
+      "pair": "CHF/NZD",
+      "leg_a": "CHF",
+      "leg_b": "NZD",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it."
+    },
+    "EUR/AUD": {
+      "pair": "EUR/AUD",
+      "leg_a": "EUR",
+      "leg_b": "AUD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "EUR/CAD": {
+      "pair": "EUR/CAD",
+      "leg_a": "EUR",
+      "leg_b": "CAD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it."
+    },
+    "EUR/CHF": {
+      "pair": "EUR/CHF",
+      "leg_a": "EUR",
+      "leg_b": "CHF",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it."
+    },
+    "EUR/GBP": {
+      "pair": "EUR/GBP",
+      "leg_a": "EUR",
+      "leg_b": "GBP",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "EUR/JPY": {
+      "pair": "EUR/JPY",
+      "leg_a": "EUR",
+      "leg_b": "JPY",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "EUR/NZD": {
+      "pair": "EUR/NZD",
+      "leg_a": "EUR",
+      "leg_b": "NZD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "GBP/AUD": {
+      "pair": "GBP/AUD",
+      "leg_a": "GBP",
+      "leg_b": "AUD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "GBP/CAD": {
+      "pair": "GBP/CAD",
+      "leg_a": "GBP",
+      "leg_b": "CAD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it."
+    },
+    "GBP/CHF": {
+      "pair": "GBP/CHF",
+      "leg_a": "GBP",
+      "leg_b": "CHF",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it."
+    },
+    "GBP/JPY": {
+      "pair": "GBP/JPY",
+      "leg_a": "GBP",
+      "leg_b": "JPY",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_CLEAN",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro, central-bank impulse, front-end relative rates and price are directionally coherent."
+    },
+    "GBP/NZD": {
+      "pair": "GBP/NZD",
+      "leg_a": "GBP",
+      "leg_b": "NZD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "JPY/AUD": {
+      "pair": "JPY/AUD",
+      "leg_a": "JPY",
+      "leg_b": "AUD",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "JPY/CAD": {
+      "pair": "JPY/CAD",
+      "leg_a": "JPY",
+      "leg_b": "CAD",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_CLEAN",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro, central-bank impulse, front-end relative rates and price are directionally coherent."
+    },
+    "JPY/CHF": {
+      "pair": "JPY/CHF",
+      "leg_a": "JPY",
+      "leg_b": "CHF",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "JPY/NZD": {
+      "pair": "JPY/NZD",
+      "leg_a": "JPY",
+      "leg_b": "NZD",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "PARTIAL_CONVERGENCE",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "USD/AUD": {
+      "pair": "USD/AUD",
+      "leg_a": "USD",
+      "leg_b": "AUD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "USD/CAD": {
+      "pair": "USD/CAD",
+      "leg_a": "USD",
+      "leg_b": "CAD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "USD/CHF": {
+      "pair": "USD/CHF",
+      "leg_a": "USD",
+      "leg_b": "CHF",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    },
+    "USD/EUR": {
+      "pair": "USD/EUR",
+      "leg_a": "USD",
+      "leg_b": "EUR",
+      "macro_anchor": "A",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "USD/GBP": {
+      "pair": "USD/GBP",
+      "leg_a": "USD",
+      "leg_b": "GBP",
+      "macro_anchor": "MIXED",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "NOT_APPLICABLE_MACRO_MIXED"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted."
+    },
+    "USD/JPY": {
+      "pair": "USD/JPY",
+      "leg_a": "USD",
+      "leg_b": "JPY",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "B",
+          "vs_macro": "ALIGNED"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_PARTIAL",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory."
+    },
+    "USD/NZD": {
+      "pair": "USD/NZD",
+      "leg_a": "USD",
+      "leg_b": "NZD",
+      "macro_anchor": "B",
+      "macro_source": "CERT53.fundamental_anchor_macro",
+      "signed_layers": {
+        "central_bank": {
+          "direction": "MIXED",
+          "vs_macro": "NEUTRAL_OR_MIXED"
+        },
+        "rates_front_end_relative": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        },
+        "price": {
+          "direction": "A",
+          "vs_macro": "DIVERGENT"
+        }
+      },
+      "research_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      },
+      "legacy_state_reference_only": "DIVERGENT",
+      "final_transmission_state": "TRANSMISSION_DIVERGENT",
+      "classification_status": "CURRENT_DESCRIPTIVE_CLASSIFICATION_READY",
+      "production_gate": false,
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor."
+    }
+  },
+  "historical_evidence_rule": "Historical PIT/OOS evidence remains a separate badge and does not mechanically overwrite current descriptive state.",
+  "engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
