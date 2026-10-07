@@ -1,0 +1,58 @@
+name: Currency What Changed V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/CURRENCY_CROSS_DISPERSION_V1_2026-10-07.json'
+      - 'validation/build_currency_dispersion_history_v1.py'
+      - 'validation/build_currency_what_changed_v1.py'
+      - '.github/workflows/currency-what-changed-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Update append-only dispersion history
+        run: python validation/build_currency_dispersion_history_v1.py
+      - name: Build currency what changed
+        run: python validation/build_currency_what_changed_v1.py
+      - name: Validate contracts
+        run: |
+          python - <<'PY'
+          import json
+          h=json.load(open('validation/CURRENCY_CROSS_DISPERSION_HISTORY_V1_2026-10-07.json'))
+          w=json.load(open('validation/CURRENCY_WHAT_CHANGED_V1_2026-10-07.json'))
+          assert h['schema']=='GMFQ_CURRENCY_CROSS_DISPERSION_HISTORY_V1'
+          assert h['append_only'] is True
+          assert len(h['snapshots'])>=1
+          assert all(s['frozen'] is True for s in h['snapshots'])
+          assert all(len(s['currencies'])==8 for s in h['snapshots'])
+          assert w['schema']=='GMFQ_CURRENCY_WHAT_CHANGED_V1'
+          assert len(w['currencies'])==8
+          assert all(v is False for v in w['guards'].values())
+          if len(h['snapshots'])==1:
+              assert w['comparison_available'] is False
+              assert all(x['label']=='BASELINE' for x in w['currencies'].values())
+          print('PASS_CURRENCY_WHAT_CHANGED_V1')
+          PY
+      - name: Commit generated evidence if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CURRENCY_CROSS_DISPERSION_HISTORY_V1_2026-10-07.json validation/CURRENCY_WHAT_CHANGED_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No currency history/what-changed update'
+            exit 0
+          fi
+          git commit -m 'Update currency dispersion history and what changed'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
