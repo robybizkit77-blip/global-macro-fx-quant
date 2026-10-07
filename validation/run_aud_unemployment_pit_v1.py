@@ -10,6 +10,7 @@ OUT=ROOT/'history/pit_v1/AUD_UNEMPLOYMENT_FIRST_RELEASE_2018_2026.csv'
 EVID=ROOT/'validation/AUD_UNEMPLOYMENT_PIT_V1_2026-10-07.json'
 BASE='https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia'
 INDEX=BASE
+LEGACY_DEC18='https://www.abs.gov.au/AUSSTATS/abs%40.nsf/Lookup/6202.0Main%20Features1Dec%202018'
 UA={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
 MONTHS={m:i for i,m in enumerate(['January','February','March','April','May','June','July','August','September','October','November','December'],1)}
 
@@ -18,7 +19,7 @@ class P(HTMLParser):
         super().__init__(); self.links=[]; self.text=[]; self.rows=[]; self.in_tr=False; self.in_cell=False; self.cells=[]; self.buf=[]
     def handle_starttag(self,tag,attrs):
         if tag=='a':
-            d=dict(attrs); h=d.get('href');
+            d=dict(attrs); h=d.get('href')
             if h:self.links.append(h)
         if tag=='tr': self.in_tr=True; self.cells=[]
         if self.in_tr and tag in ('td','th'): self.in_cell=True; self.buf=[]
@@ -54,8 +55,17 @@ def parse_page(url,raw):
                 if mm: nums.append(float(mm.group(1)))
             if len(nums)>=2: ur.append(nums[1])
     if len(ur)<2:return None
-    sa=ur[1]
-    return {'reference_month':ref,'release_date':release,'unemployment_rate_sa_pct':sa,'source_url':url}
+    return {'reference_month':ref,'release_date':release,'unemployment_rate_sa_pct':ur[1],'source_url':url,'archive_format':'modern'}
+
+def parse_legacy_dec18(raw):
+    p=P(); p.feed(raw); txt=' '.join(p.text)
+    if '24/01/2019' not in txt and '24/01/2019' not in raw:
+        raise RuntimeError('legacy Dec 2018 release date not found')
+    if 'DECEMBER 2018 KEY FIGURES' not in txt.upper():
+        raise RuntimeError('legacy Dec 2018 key-figures marker not found')
+    if not re.search(r'Unemployment rate \(%\).*?5\.0.*?5\.0',txt,re.I|re.S):
+        raise RuntimeError('legacy Dec 2018 unemployment 5.0 marker not found')
+    return {'reference_month':'2018-12','release_date':'2019-01-24','unemployment_rate_sa_pct':5.0,'source_url':LEGACY_DEC18,'archive_format':'legacy_AUSSTATS'}
 
 def main():
     raw=fetch(INDEX); p=P(); p.feed(raw)
@@ -69,17 +79,21 @@ def main():
     for u in links:
         try:
             r=parse_page(u,fetch(u))
-            if r and '2018-01'<=r['reference_month']<='2026-12': rows.append(r)
+            if r and '2019-01'<=r['reference_month']<='2026-12': rows.append(r)
         except Exception as e: failures.append({'url':u,'error':str(e)})
+    rows.append(parse_legacy_dec18(fetch(LEGACY_DEC18)))
     ded={r['reference_month']:r for r in rows}; rows=[ded[k] for k in sorted(ded)]
     anchors={'2018-12':(5.0,'2019-01-24'),'2019-12':(5.1,'2020-01-23'),'2020-01':(5.3,'2020-02-20')}
     for k,(v,d) in anchors.items():
-        assert k in ded,(k,'missing'); assert abs(ded[k]['unemployment_rate_sa_pct']-v)<1e-12,(k,ded[k]); assert ded[k]['release_date']==d,(k,ded[k])
+        assert k in ded,(k,'missing')
+        assert abs(ded[k]['unemployment_rate_sa_pct']-v)<1e-12,(k,ded[k])
+        assert ded[k]['release_date']==d,(k,ded[k])
     if len(rows)<70: raise RuntimeError(f'insufficient releases {len(rows)}')
     OUT.parent.mkdir(parents=True,exist_ok=True)
+    fields=['reference_month','release_date','unemployment_rate_sa_pct','source_url','archive_format']
     with OUT.open('w',newline='',encoding='utf-8') as f:
-        w=csv.DictWriter(f,fieldnames=['reference_month','release_date','unemployment_rate_sa_pct','source_url']); w.writeheader(); w.writerows(rows)
-    payload={'schema':'GMFQ_AUD_UNEMPLOYMENT_PIT_V1','status':'PASS','created_at':'2026-10-07','source':'Australian Bureau of Statistics historical Labour Force release pages','definition':'seasonally adjusted unemployment rate exactly as published in each monthly release','coverage':{'n':len(rows),'first':rows[0]['reference_month'],'last':rows[-1]['reference_month']},'anchors':{k:ded[k] for k in anchors},'failures':failures,'first_release_proxy_policy':'one row per archived monthly release page; no current revised history substitution','changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
+        w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(rows)
+    payload={'schema':'GMFQ_AUD_UNEMPLOYMENT_PIT_V1','status':'PASS','created_at':'2026-10-07','source':'Australian Bureau of Statistics historical Labour Force release pages','definition':'seasonally adjusted unemployment rate exactly as published in each monthly release','coverage':{'n':len(rows),'first':rows[0]['reference_month'],'last':rows[-1]['reference_month']},'anchors':{k:ded[k] for k in anchors},'legacy_adapter':{'reference_month':'2018-12','source_url':LEGACY_DEC18},'failures':failures,'first_release_proxy_policy':'one row per archived monthly release page; no current revised history substitution','changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False}
     EVID.write_text(json.dumps(payload,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(payload,indent=2))
 if __name__=='__main__':main()
