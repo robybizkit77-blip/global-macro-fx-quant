@@ -27,7 +27,8 @@
       "robustness_counts": {
         "ROBUST_ACROSS_RULES": 22,
         "RULE_SENSITIVE": 6
-      }
+      },
+      "label_source": "FROZEN_PAIR_SNAPSHOT_MANIFEST_V1"
     }
   },
   "latest_ecb_fixing_date": "2026-10-06",
@@ -36,6 +37,7 @@
     "changes_live_data": false,
     "changes_oos_baseline": false,
     "production_promotion": false,
-    "retroactive_label_changes": false
+    "retroactive_label_changes": false,
+    "uses_current_render_payload_for_historical_labels": false
   }
 }
