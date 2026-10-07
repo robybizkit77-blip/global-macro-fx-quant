@@ -1,0 +1,57 @@
+name: Rates Public Baseline Apply V1
+on:
+  push:
+    branches: [staging-public-rates-real-2026-10-07]
+    paths:
+      - '.github/workflows/rates-public-baseline-apply-v1.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply certified Rates candidate on public baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement validation/candidates/NATIVE_RATES_DATA_2026-10-07.json \
+            --apply
+          python validation/update_live_derived_sections.py \
+            --rates validation/candidates/RATES_AUDIT_METADATA_2026-10-07.json \
+            --apply
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Validate public runtime mutation scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/RATES_AUDIT_METADATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-15.txt',
+          }
+          if changed != allowed:
+              raise SystemExit(f'public scope mismatch changed={sorted(changed)} expected={sorted(allowed)}')
+          print({'status':'PUBLIC_SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Commit public-staging snapshot only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
+          git commit -m "Apply certified Rates refresh on public baseline"
+          git push origin HEAD:staging-public-rates-real-2026-10-07
