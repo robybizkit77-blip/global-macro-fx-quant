@@ -1,0 +1,353 @@
+{
+  "schema": "GMFQ_CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2",
+  "status": "RESEARCH_ONLY_READ_ONLY_PROFILE__NO_DIRECTIONAL_FX_VOTE",
+  "source": "live_data/sections/CERT53.json",
+  "currencies": {
+    "USD": {
+      "currency": "USD",
+      "cycle": "GOLDILOCKS",
+      "blocks": {
+        "growth": {
+          "state": 0.08810210277604225,
+          "momentum": 0.025182640961483427,
+          "direction": "FLAT",
+          "velocity_percentile": 15.92114695340502,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 45.303500221533,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": 0.16789950175411414,
+          "momentum": -0.009459910884518238,
+          "direction": "FLAT",
+          "velocity_percentile": 39.20315502593984,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 24.350644055007773,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": 0.488092100139877,
+          "momentum": -1.3153722603004587,
+          "direction": "DOWN",
+          "velocity_percentile": 68.1985294117647,
+          "velocity_class": "MODERATA",
+          "acceleration_percentile": 36.7910447761194,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "CONFIRMED_2_OBS",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "EUR": {
+      "currency": "EUR",
+      "cycle": "SLOWDOWN_DISINFLATION",
+      "blocks": {
+        "growth": {
+          "state": -0.4544265954118604,
+          "momentum": -0.3673547629664826,
+          "direction": "DOWN",
+          "velocity_percentile": 29.838709677419356,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 37.704918032786885,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": 1.192298271878152,
+          "momentum": -1.8372453797382975,
+          "direction": "DOWN",
+          "velocity_percentile": 81.53846153846153,
+          "velocity_class": "RAPIDA",
+          "acceleration_percentile": 64.0625,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": 0.8360284623764521,
+          "momentum": -0.3679040506235975,
+          "direction": "DOWN",
+          "velocity_percentile": 31.060606060606062,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 53.07692307692308,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "GBP": {
+      "currency": "GBP",
+      "cycle": "STAGFLATION",
+      "blocks": {
+        "growth": {
+          "state": 0.4687671619333124,
+          "momentum": -0.43005500375706535,
+          "direction": "DOWN",
+          "velocity_percentile": 42.626728110599075,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 48.704389212057116,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": -0.6263128480854109,
+          "momentum": -0.1686226898691488,
+          "direction": "DOWN",
+          "velocity_percentile": 23.4375,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 33.33333333333333,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": 0.1430421579694944,
+          "momentum": 0.13489815189531926,
+          "direction": "UP",
+          "velocity_percentile": 15.151515151515149,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 31.53846153846154,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "CONFIRMED_2_OBS",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "JPY": {
+      "currency": "JPY",
+      "cycle": "REFLATION",
+      "blocks": {
+        "growth": {
+          "state": 1.3680788193231455,
+          "momentum": 0.24842655393661017,
+          "direction": "UP",
+          "velocity_percentile": 63.37011884550085,
+          "velocity_class": "MODERATA",
+          "acceleration_percentile": 46.36685866194063,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": 1.4493521676848267,
+          "momentum": -0.9535903840876002,
+          "direction": "DOWN",
+          "velocity_percentile": 90.76923076923077,
+          "velocity_class": "RAPIDA",
+          "acceleration_percentile": 81.25,
+          "acceleration_class": "RAPIDA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": true
+        },
+        "inflation": {
+          "state": 0.5470152331640328,
+          "momentum": 0.48713221517754124,
+          "direction": "UP",
+          "velocity_percentile": 34.84848484848485,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 21.53846153846154,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "CONFIRMED_2_OBS",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "CHF": {
+      "currency": "CHF",
+      "cycle": "REFLATION",
+      "blocks": {
+        "growth": {
+          "state": 0.960602470417933,
+          "momentum": 1.079153628630293,
+          "direction": "UP",
+          "velocity_percentile": 66.02326811210999,
+          "velocity_class": "MODERATA",
+          "acceleration_percentile": 41.51639344262295,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "CONFIRMED_2_OBS",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": 0.4173075398667605,
+          "momentum": 0.03127577853943064,
+          "direction": "FLAT",
+          "velocity_percentile": 45.45454545454545,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 77.94871794871796,
+          "acceleration_class": "MODERATA",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": 0.08672024050413371,
+          "momentum": 0.5620756328971628,
+          "direction": "UP",
+          "velocity_percentile": 40.90909090909091,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 73.07692307692308,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": true
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "CAD": {
+      "currency": "CAD",
+      "cycle": "GOLDILOCKS",
+      "blocks": {
+        "growth": {
+          "state": 0.08422896146104328,
+          "momentum": 0.9430777055499454,
+          "direction": "UP",
+          "velocity_percentile": 56.0,
+          "velocity_class": "MODERATA",
+          "acceleration_percentile": 86.91870190699231,
+          "acceleration_class": "RAPIDA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": true
+        },
+        "labour": {
+          "state": 0.1591723892345085,
+          "momentum": 0.04203348211230146,
+          "direction": "FLAT",
+          "velocity_percentile": 49.25373134328358,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 81.06060606060606,
+          "acceleration_class": "RAPIDA",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": -0.35710536562577494,
+          "momentum": -0.06315509330083084,
+          "direction": "FLAT",
+          "velocity_percentile": 8.582089552238806,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 22.727272727272727,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "AUD": {
+      "currency": "AUD",
+      "cycle": "REFLATION",
+      "blocks": {
+        "growth": {
+          "state": 0.46686892003987124,
+          "momentum": 1.7926443885285492,
+          "direction": "UP",
+          "velocity_percentile": 78.26086956521739,
+          "velocity_class": "MODERATA",
+          "acceleration_percentile": 75.82417582417582,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": true
+        },
+        "labour": {
+          "state": -0.0227615761453888,
+          "momentum": 0.27795560879988346,
+          "direction": "UP",
+          "velocity_percentile": 24.736842105263158,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 55.851063829787236,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": -0.027492829869969863,
+          "momentum": 0.01152975657224951,
+          "direction": "FLAT",
+          "velocity_percentile": 10.9375,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 16.129032258064516,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "MIXED_NEAR_ZERO",
+          "candidate_p70": false
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    },
+    "NZD": {
+      "currency": "NZD",
+      "cycle": "REFLATION",
+      "blocks": {
+        "growth": {
+          "state": 0.2406363660428204,
+          "momentum": 0.5027559951679264,
+          "direction": "UP",
+          "velocity_percentile": 30.227272727272727,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 32.70676691729323,
+          "acceleration_class": "LENTA_NORMALE",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": false
+        },
+        "labour": {
+          "state": -0.3727620429184657,
+          "momentum": -0.6340213139079935,
+          "direction": "DOWN",
+          "velocity_percentile": 40.90909090909091,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 59.523809523809526,
+          "acceleration_class": "MODERATA",
+          "persistence": "CONFIRMED_2_OBS",
+          "candidate_p70": false
+        },
+        "inflation": {
+          "state": 0.6943287229906124,
+          "momentum": 0.8431134493457438,
+          "direction": "UP",
+          "velocity_percentile": 45.45454545454546,
+          "velocity_class": "LENTA_NORMALE",
+          "acceleration_percentile": 76.19047619047619,
+          "acceleration_class": "MODERATA",
+          "persistence": "FRESH_TURN_1_OBS",
+          "candidate_p70": true
+        }
+      },
+      "fx_directional_vote": "WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER",
+      "reaction_function_status": "REQUIRED_DOWNSTREAM",
+      "interpretation_note": "Profile preserves structural level and impulse separately. Inflation does not cast a direct FX vote."
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "universal_score": false,
+    "automatic_fx_direction": false,
+    "legacy_anchor_fit": false
+  }
+}
