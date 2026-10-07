@@ -1,0 +1,85 @@
+{
+  "schema": "GMFQ_DAILY_INGRESS_READINESS_V1",
+  "created_at": "2026-10-07",
+  "status": "RESEARCH_PIPELINE_NOT_FULLY_AUTOMATED",
+  "purpose": "Track whether each live-data domain has a certified source-to-candidate-to-apply path before any daily scheduling is enabled.",
+  "global_policy": {
+    "daily_schedule_enabled": false,
+    "reason": "Upstream scheduling remains disabled until each scheduled domain has source validation, freshness/as-of checks, deterministic candidate generation, provenance, apply gate, rollback and repeated manual end-to-end PASS.",
+    "missing_is_not_neutral": true,
+    "no_silent_fallback_source": true,
+    "no_direct_payload_writes": true,
+    "engine_rules_frozen": true,
+    "rules_fingerprint": "3356baf0"
+  },
+  "domains": {
+    "RATES": {
+      "readiness": "CANDIDATE_READY_MANUAL",
+      "canonical_section": "live_data/sections/NATIVE_RATES_DATA.json",
+      "candidate_workflow": ".github/workflows/rates-auto-candidate-v1.yml",
+      "collector_or_audit": "validation/run_rates_audit.py",
+      "candidate_builder": "validation/build_rates_candidate_from_audit.py",
+      "candidate_is_read_only": true,
+      "schedule_enabled": false,
+      "strengths": ["unified audit exists", "deterministic candidate builder exists", "no-update path is byte checked", "live contract checked on candidate path"],
+      "remaining_before_daily": ["certified provenance record for every accepted rates refresh", "transactional apply/rollback path equivalent to CERT53", "repeated manual real-refresh PASS", "explicit scheduler activation gate"],
+      "next_action": "HARDEN_RATES_APPLY_PATH"
+    },
+    "MACRO": {
+      "readiness": "PARTIAL_INTERNAL_REFRESH_READY",
+      "canonical_section": "live_data/sections/MACRO_SERIES.json",
+      "related_sections": ["live_data/sections/MACRO_THERMOMETER_DATA.json", "live_data/sections/D.json", "live_data/sections/CERT53.json"],
+      "schedule_enabled": false,
+      "strengths": ["generic macro refresh mechanism has been replay-validated", "candidate/self-test workflows exist", "PIT source work exists for multiple currencies"],
+      "remaining_before_daily": ["one canonical G8 source collector registry", "release-calendar aware polling", "first-release/PIT rule per indicator", "consensus/previous/actual contract where relevant", "source-level provenance for each accepted release", "single daily/event-driven orchestrator"],
+      "next_action": "BUILD_MACRO_SOURCE_REGISTRY"
+    },
+    "CENTRAL_BANKS": {
+      "readiness": "WITHHELD_NO_CANONICAL_COLLECTOR",
+      "canonical_section": "live_data/sections/NATIVE_CB_DATA.json",
+      "schedule_enabled": false,
+      "remaining_before_daily": ["official-source collector per central bank", "meeting/speech freshness rules", "statement provenance", "candidate/apply gate"],
+      "next_action": "DESIGN_CB_SOURCE_REGISTRY"
+    },
+    "OIS_PRICING": {
+      "readiness": "WITHHELD_NO_CANONICAL_COLLECTOR",
+      "canonical_section": "live_data/sections/OIS_DATA.json",
+      "schedule_enabled": false,
+      "remaining_before_daily": ["certified market-pricing source", "timestamp and timezone contract", "staleness gate", "candidate/apply gate"],
+      "next_action": "CERTIFY_OIS_SOURCE"
+    },
+    "LIQUIDITY_CREDIT": {
+      "readiness": "WITHHELD_NO_CANONICAL_COLLECTOR",
+      "canonical_section": "live_data/sections/NATIVE_LIQ_DATA.json",
+      "schedule_enabled": false,
+      "remaining_before_daily": ["source collector per component", "frequency-aware freshness rules", "component-specific semantics", "candidate/apply gate"],
+      "next_action": "DESIGN_LIQUIDITY_SOURCE_REGISTRY"
+    },
+    "COT_POSITIONING": {
+      "readiness": "PARTIAL_RUNTIME_ONLY",
+      "canonical_section": "CERT53 runtime percentile context",
+      "schedule_enabled": false,
+      "strengths": ["2Y percentile context currently available in runtime"],
+      "remaining_before_daily": ["canonical full CFTC Legacy Futures Only dataset in repository or certified external ingest", "weekly delta net", "Net/OI", "30 percent imbalance alert", "release-date provenance", "Friday post-release update path"],
+      "next_action": "CONNECT_CANONICAL_CFTC_DATASET"
+    },
+    "EVENT_RISK": {
+      "readiness": "WITHHELD_EVENT_SOURCE",
+      "canonical_section": null,
+      "schedule_enabled": false,
+      "remaining_before_daily": ["canonical economic-calendar source", "previous/consensus/actual fields", "event timestamps/timezones", "revision handling", "freshness gate"],
+      "next_action": "CERTIFY_EVENT_SOURCE"
+    },
+    "FX_PRICE": {
+      "readiness": "WITHHELD_NO_STANDALONE_INGRESS_CONTRACT",
+      "canonical_section": "price context currently consumed through CERT53/render layers",
+      "schedule_enabled": false,
+      "remaining_before_daily": ["canonical spot/fixing source contract", "timestamp convention", "staleness/failure behavior", "candidate/apply gate"],
+      "next_action": "CERTIFY_PRICE_SOURCE"
+    }
+  },
+  "priority_order": ["RATES", "MACRO", "CENTRAL_BANKS", "OIS_PRICING", "FX_PRICE", "COT_POSITIONING", "LIQUIDITY_CREDIT", "EVENT_RISK"],
+  "current_next_step": "HARDEN_RATES_APPLY_PATH",
+  "production_claim": false,
+  "fully_autonomous_claim": false
+}
