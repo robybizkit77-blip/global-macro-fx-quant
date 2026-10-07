@@ -1,0 +1,407 @@
+{
+  "schema": "GMFQ_MACRO_SOURCE_RELEASE_REGISTRY_V1",
+  "created_at_utc": "2026-10-07T10:36:28.862839Z",
+  "status": "RESEARCH_ONLY_UPSTREAM_INGRESS_NOT_DAILY_READY",
+  "scope": "G8 core macro release ingestion: inflation + labour only",
+  "source_of_runtime_metadata": "live_data/sections/MACRO_THERMOMETER_DATA.json",
+  "candidate_builder": "validation/build_macro_candidate.py",
+  "readiness_contract": {
+    "daily_ready_requires": [
+      "runtime_valid",
+      "live_release_collector_present",
+      "freshness_rule_present",
+      "first_release_policy_present",
+      "candidate_builder_present",
+      "provenance_apply_gate_present"
+    ],
+    "historical_pit_script_is_not_live_collector": true,
+    "runtime_value_does_not_imply_ingress_readiness": true,
+    "missing_is_not_neutral": true
+  },
+  "summary": {
+    "core_series": 16,
+    "runtime_valid": 16,
+    "live_collectors": 0,
+    "daily_ready": 0,
+    "source_adapter_required": 13,
+    "withheld_source_access_gap": 3
+  },
+  "series": [
+    {
+      "currency": "USD",
+      "dimension": "inflation",
+      "series_id": "CPIAUCSL",
+      "source": "FRED/BLS",
+      "frequency": "M",
+      "transformation": "yoy_pct_from_index",
+      "runtime_as_of": "2026-08-01",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "USD",
+      "dimension": "labour",
+      "series_id": "UNRATE",
+      "source": "FRED/BLS",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-09-01",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "EUR",
+      "dimension": "inflation",
+      "series_id": "EA_HICP_HEADLINE_YOY",
+      "source": "Eurostat prc_hicp_minr via Wolfram HTTP transport",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-09",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "EUR",
+      "dimension": "labour",
+      "series_id": "EA_UNEMP",
+      "source": "ECB LFSI transport; underlying source EUROSTAT",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "GBP",
+      "dimension": "inflation",
+      "series_id": "D7G7",
+      "source": "ONS",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "GBP",
+      "dimension": "labour",
+      "series_id": "MGSX",
+      "source": "ONS",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-06",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "JPY",
+      "dimension": "inflation",
+      "series_id": "JP_CPI_HEADLINE_YOY",
+      "source": "Statistics Bureau of Japan / e-Stat",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "JPY",
+      "dimension": "labour",
+      "series_id": "JP_UNEMP_RATE",
+      "source": "Statistics Bureau of Japan / e-Stat",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "CHF",
+      "dimension": "inflation",
+      "series_id": "CH_CPI_HEADLINE_YOY",
+      "source": "Swiss National Bank data portal / SFSO",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "CHF",
+      "dimension": "labour",
+      "series_id": "CH_UNEMP_RATE",
+      "source": "Swiss National Bank data portal / SECO",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "WITHHELD_SOURCE_ACCESS_GAP",
+        "artifact": "validation/CHF_SECO_UNEMPLOYMENT_ACCESS_GAP_V1_2026-10-07.json",
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "WITHHELD_SOURCE_ACCESS_GAP"
+    },
+    {
+      "currency": "CAD",
+      "dimension": "inflation",
+      "series_id": "CA_CPI_HEADLINE_YOY",
+      "source": "Statistics Canada",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "CAD",
+      "dimension": "labour",
+      "series_id": "CA_UNEMP_RATE",
+      "source": "Statistics Canada",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "NOT_FORMALIZED_FOR_DAILY_INGRESS",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "AUD",
+      "dimension": "inflation",
+      "series_id": "AU_CPI_HEADLINE_Q_YOY",
+      "source": "Australian Bureau of Statistics",
+      "frequency": "Q",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-06",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "PASS_RESEARCH_PIT",
+        "artifact": "validation/AUD_CPI_PIT_V1_2026-10-07.json",
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": true,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "AUD",
+      "dimension": "labour",
+      "series_id": "AU_UNEMP_RATE",
+      "source": "Australian Bureau of Statistics",
+      "frequency": "M",
+      "transformation": "level",
+      "runtime_as_of": "2026-08",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "PASS_RESEARCH_PIT",
+        "artifact": "validation/AUD_UNEMPLOYMENT_PIT_V1_2026-10-07.json",
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": true,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "SOURCE_ADAPTER_REQUIRED"
+    },
+    {
+      "currency": "NZD",
+      "dimension": "inflation",
+      "series_id": "NZ_CPI_HEADLINE_YOY",
+      "source": "Stats NZ via Figure.NZ mirror",
+      "frequency": "Q",
+      "transformation": "reported_yoy_rate",
+      "runtime_as_of": "2026-06",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "WITHHELD_SOURCE_ACCESS_GAP",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "WITHHELD_SOURCE_ACCESS_GAP"
+    },
+    {
+      "currency": "NZD",
+      "dimension": "labour",
+      "series_id": "NZ_UNEMP_RATE",
+      "source": "Stats NZ via Figure.NZ mirror",
+      "frequency": "Q",
+      "transformation": "level",
+      "runtime_as_of": "2026-06",
+      "runtime_valid": true,
+      "historical_pit": {
+        "status": "WITHHELD_SOURCE_ACCESS_GAP",
+        "artifact": null,
+        "counts_as_live_collector": false
+      },
+      "daily_ingress": {
+        "live_release_collector_present": false,
+        "freshness_rule_present": false,
+        "first_release_policy_present": false,
+        "candidate_builder_present": true,
+        "provenance_apply_gate_present": false
+      },
+      "status": "WITHHELD_SOURCE_ACCESS_GAP"
+    }
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "schedule_enabled": false
+  }
+}
