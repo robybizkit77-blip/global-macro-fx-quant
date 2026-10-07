@@ -1,0 +1,103 @@
+name: CHF Macro NZD Liquidity Staging Apply V1
+on:
+  push:
+    branches:
+      - staging-chf-macro-nzd-liq-2026-10-07
+    paths:
+      - '.github/workflows/chf-macro-nzd-liq-staging-apply-v1.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging-chf-macro-nzd-liq-2026-10-07
+          fetch-depth: 1
+      - name: Build certified candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/chf-macro-candidate
+          python validation/build_macro_candidate.py \
+            --candidate validation/CHF_CPI_CANDIDATE_2026-09.json \
+            --output-dir /tmp/chf-macro-candidate
+          python - <<'PY'
+          import copy,json
+          from pathlib import Path
+          live=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())
+          spec=json.loads(Path('validation/NZD_LIQ_CANDIDATE_2026-08.json').read_text())
+          out=copy.deepcopy(live); n=out['NZD']; d=spec['observation_date']
+          expected={'liquidity':(28303,26460),'money':(458490,454671),'credit':(621266,624663)}
+          for key,(old,new) in expected.items():
+              assert n[key]['last_date']=='2026-07' and n[key]['last_value']==old
+              assert d not in n[key]['dates']
+              n[key]['dates'].append(d); n[key]['values'].append(new)
+              n[key]['last_date']=d; n[key]['last_value']=new
+          n['liquidity_dir']='IN CALO'
+          n['credit_dir']='IN AUMENTO'
+          n['current_note']='RBNZ: settlement cash medio 26,460 NZD mln ad agosto 2026; broad money 454,671 mln; credito privato 624,663 mln. Liquidità primaria in calo sul mese, credito ancora in espansione.'
+          n['as_of']='2026-08 · released 2026-09-30'
+          n['source_note']='RBNZ D10 + C50. Dati agosto 2026 pubblicati 30 Sep 2026; prossimo aggiornamento previsto 30 Oct 2026.'
+          Path('/tmp/NATIVE_LIQ_DATA.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':'))+'\n')
+          print({'status':'NZD_LIQ_CANDIDATE_READY','as_of':n['as_of'],'liquidity_dir':n['liquidity_dir'],'credit_dir':n['credit_dir']})
+          PY
+      - name: Apply only certified direct sections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py --section MACRO_SERIES --replacement /tmp/chf-macro-candidate/MACRO_SERIES.json --apply
+          python validation/update_live_direct_section.py --section MACRO_THERMOMETER_DATA --replacement /tmp/chf-macro-candidate/MACRO_THERMOMETER_DATA.json --apply
+          python validation/update_live_direct_section.py --section NATIVE_LIQ_DATA --replacement /tmp/NATIVE_LIQ_DATA.json --apply
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Assert exact values and scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          l=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())
+          ch=m['currencies']['CHF']['inflation']
+          assert ch['as_of']=='2026-09' and float(ch['latest_value'])==1.0
+          assert ch['percentile']==66.7 and ch['direction']=='SALE' and ch['acceleration']=='RALLENTA'
+          row=[x for x in s['CHF'] if x.get('id')=='CH_CPI_HEADLINE_YOY_history_value']
+          assert len(row)==1 and row[0]['last_date']=='2026-09' and float(row[0]['last_value'])==1.0
+          nz=l['NZD']
+          assert nz['as_of']=='2026-08 · released 2026-09-30'
+          assert nz['liquidity']['last_value']==26460 and nz['money']['last_value']==454671 and nz['credit']['last_value']==624663
+          assert nz['liquidity_dir']=='IN CALO' and nz['credit_dir']=='IN AUMENTO'
+          print({'status':'EXACT_VALUE_ASSERTIONS_PASS'})
+          PY
+          git diff --name-only > /tmp/changed.txt
+          python - <<'PY'
+          changed=set(open('/tmp/changed.txt').read().splitlines())
+          allowed={
+            'live_data/sections/MACRO_SERIES.json',
+            'live_data/sections/MACRO_THERMOMETER_DATA.json',
+            'live_data/sections/NATIVE_LIQ_DATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-01.txt'
+          }
+          bad=sorted(changed-allowed)
+          missing={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/NATIVE_LIQ_DATA.json','live_data/manifest.v2.json'}-changed
+          if bad: raise SystemExit('Unexpected staging files: '+repr(bad))
+          if missing: raise SystemExit('Expected staging files missing: '+repr(sorted(missing)))
+          print({'status':'SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Commit certified staging snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/NATIVE_LIQ_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt
+          git commit -m 'Apply certified CHF macro and NZD liquidity refresh to staging'
+          git push origin HEAD:staging-chf-macro-nzd-liq-2026-10-07
