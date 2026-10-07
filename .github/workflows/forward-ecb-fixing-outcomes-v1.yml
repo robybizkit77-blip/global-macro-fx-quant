@@ -52,12 +52,13 @@ jobs:
           PY
       - name: Commit forward state if changed
         run: |
-          if git diff --quiet -- validation/FORWARD_ECB_FIXING_STATE_V1_2026-10-07.json && [ -f validation/FORWARD_ECB_FIXING_STATE_V1_2026-10-07.json ]; then
+          FILE=validation/FORWARD_ECB_FIXING_STATE_V1_2026-10-07.json
+          if [ -z "$(git status --porcelain -- "$FILE")" ]; then
             echo 'No forward state change'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/FORWARD_ECB_FIXING_STATE_V1_2026-10-07.json
-          git commit -m 'Update forward ECB fixing outcome state' || exit 0
+          git add "$FILE"
+          git commit -m 'Update forward ECB fixing outcome state'
           git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
