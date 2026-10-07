@@ -1,8 +1,8 @@
 {
   "schema_version": "GMFQ_CB_PRICING_CANDIDATE_V1",
   "currency": "AUD",
-  "as_of": "2026-10-07",
-  "status": "WITHHELD_PENDING_CURRENT_ASX_EOD",
+  "as_of": "2026-09-30",
+  "status": "PARTIAL_VALIDATED_POST_RBA",
   "policy": {
     "central_bank": "Reserve Bank of Australia",
     "cash_rate_target_pct": 4.60,
@@ -11,12 +11,14 @@
     "next_meeting": "2026-11-03"
   },
   "source_contract": {
-    "primary_required": "ASX 30 Day Interbank Cash Rate futures (IB) / RBA Rate Tracker",
+    "primary": "ASX 30 Day Interbank Cash Rate futures (IB)",
     "official_policy_source": "RBA cash rate target",
-    "current_eod_status": "NOT_CAPTURED_FOR_2026-10-07",
+    "eod_source": "ASX Futures End of Day Data - Futures Night Traded at close of trade date 30/09/26",
+    "quote_convention": "implied_rate_pct = 100 - settlement_price",
+    "current_eod_status": "DIRECT_OFFICIAL_CAPTURED",
     "historical_source_validation": {
       "status": "VALIDATED",
-      "evidence": "ASX public EOD market summaries expose IB contract settlements by expiry using the 100 minus implied rate convention."
+      "evidence": "ASX public EOD market summary exposes IB settlement and Sett Chg by monthly expiry."
     }
   },
   "ois_contract": {
@@ -31,28 +33,51 @@
       "change_1d_bp",
       "change_1w_bp"
     ],
+    "mapped_horizons": {
+      "3m_contract": "Dec-2026",
+      "6m_contract": "Mar-2027",
+      "12m_contract": "Sep-2027"
+    },
     "current_state": {
-      "meeting_path": "WITHHELD",
-      "3m_rate": null,
-      "6m_rate": null,
-      "12m_rate": null,
-      "change_1d_bp": null,
-      "change_1w_bp": null
+      "3m": {
+        "settlement_price": 95.315,
+        "rate_pct": 4.685,
+        "sett_change_price_points": 0.055,
+        "change_1d_bp": -5.5,
+        "policy_delta_bp": 8.5
+      },
+      "6m": {
+        "settlement_price": 95.190,
+        "rate_pct": 4.810,
+        "sett_change_price_points": 0.045,
+        "change_1d_bp": -4.5,
+        "policy_delta_bp": 21.0
+      },
+      "12m": {
+        "settlement_price": 95.090,
+        "rate_pct": 4.910,
+        "sett_change_price_points": 0.050,
+        "change_1d_bp": -5.0,
+        "policy_delta_bp": 31.0
+      },
+      "change_1w_bp": null,
+      "direction": "UP_VS_POLICY",
+      "change_direction_1d": "DOWN"
     }
   },
   "validation": {
     "official_policy_validated": true,
     "source_family_validated": true,
-    "current_eod_curve_validated": false,
-    "historical_1d_validated": false,
+    "current_post_decision_curve_validated": true,
+    "historical_1d_validated": true,
     "historical_1w_validated": false,
     "activation_allowed": false,
-    "activation_blocker": "Current ASX post-RBA EOD IB settlement strip for 2026-10-07, plus exact same-basis 1D and 1W observations, has not yet been captured. Runtime OIS_DATA must remain WITHHELD."
+    "activation_blocker": "Exact same-basis 1W ASX IB settlement strip is still missing. Runtime OIS_DATA must remain WITHHELD until that field validates."
   },
   "runtime_policy": {
     "mutate_live_data": false,
     "mutate_engine": false,
     "mutate_forward_oos": false,
-    "promotion_rule": "Promote only after current, 1D and 1W ASX IB settlement strips validate on the same contract basis."
+    "promotion_rule": "Promote only after exact same-basis 1W ASX IB settlement strip validates."
   }
 }
