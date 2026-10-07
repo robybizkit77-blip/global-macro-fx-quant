@@ -2,7 +2,8 @@
   "schema": "GMFQ_FORWARD_STATISTICS_V1",
   "status": "AWAITING_MATURED_OUTCOMES",
   "primary_horizon": 20,
-  "methodology_note": "Descriptive forward evidence only. No production promotion, sizing, threshold tuning or predictive claim from small samples.",
+  "methodology_note": "Descriptive forward evidence only, grouped by frozen snapshot labels. No production promotion, sizing, threshold tuning or predictive claim from small samples.",
+  "label_source": "FROZEN_PAIR_SNAPSHOT_MANIFEST_V1",
   "horizons": {
     "5": {
       "matured_pair_observations": 0,
@@ -25,6 +26,7 @@
     "changes_live_data": false,
     "changes_oos_baseline": false,
     "production_promotion": false,
-    "retroactive_tuning": false
+    "retroactive_tuning": false,
+    "uses_current_render_payload_for_historical_labels": false
   }
 }
