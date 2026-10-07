@@ -1,0 +1,58 @@
+{
+  "schema_version": "GMFQ_CB_PRICING_CANDIDATE_V1",
+  "currency": "AUD",
+  "as_of": "2026-10-07",
+  "status": "WITHHELD_PENDING_CURRENT_ASX_EOD",
+  "policy": {
+    "central_bank": "Reserve Bank of Australia",
+    "cash_rate_target_pct": 4.60,
+    "effective_date": "2026-09-30",
+    "last_action": "+25bp",
+    "next_meeting": "2026-11-03"
+  },
+  "source_contract": {
+    "primary_required": "ASX 30 Day Interbank Cash Rate futures (IB) / RBA Rate Tracker",
+    "official_policy_source": "RBA cash rate target",
+    "current_eod_status": "NOT_CAPTURED_FOR_2026-10-07",
+    "historical_source_validation": {
+      "status": "VALIDATED",
+      "evidence": "ASX public EOD market summaries expose IB contract settlements by expiry using the 100 minus implied rate convention."
+    }
+  },
+  "ois_contract": {
+    "required_fields": [
+      "source",
+      "as_of",
+      "policy_rate",
+      "meeting_path",
+      "3m_rate",
+      "6m_rate",
+      "12m_rate",
+      "change_1d_bp",
+      "change_1w_bp"
+    ],
+    "current_state": {
+      "meeting_path": "WITHHELD",
+      "3m_rate": null,
+      "6m_rate": null,
+      "12m_rate": null,
+      "change_1d_bp": null,
+      "change_1w_bp": null
+    }
+  },
+  "validation": {
+    "official_policy_validated": true,
+    "source_family_validated": true,
+    "current_eod_curve_validated": false,
+    "historical_1d_validated": false,
+    "historical_1w_validated": false,
+    "activation_allowed": false,
+    "activation_blocker": "Current ASX post-RBA EOD IB settlement strip for 2026-10-07, plus exact same-basis 1D and 1W observations, has not yet been captured. Runtime OIS_DATA must remain WITHHELD."
+  },
+  "runtime_policy": {
+    "mutate_live_data": false,
+    "mutate_engine": false,
+    "mutate_forward_oos": false,
+    "promotion_rule": "Promote only after current, 1D and 1W ASX IB settlement strips validate on the same contract basis."
+  }
+}
