@@ -1,0 +1,48 @@
+name: Rates Real Canonical Preflight V1
+on:
+  push:
+    branches: [validation-rates-real-canonical-preflight-2026-10-07]
+    paths:
+      - '.github/workflows/rates-real-canonical-preflight-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Rebuild real Rates candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/rates-audit.json
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-audit.json --output /tmp/NATIVE_RATES_DATA.json > /tmp/candidate-summary.json
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-07 --output /tmp/RATES_AUDIT_METADATA.json
+      - name: Candidate hash must match certified artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL=$(sha256sum /tmp/NATIVE_RATES_DATA.json | awk '{print $1}')
+          EXPECTED=bc17ebc56e92082071a79f211bc8e8814c2a5f642b94c91bdbba29965014ec93
+          echo "actual=$ACTUAL"
+          echo "expected=$EXPECTED"
+          test "$ACTUAL" = "$EXPECTED"
+      - name: Canonical preflight on real candidate
+        run: |
+          python validation/apply_rates_candidate_canonical_v1.py \
+            --rates /tmp/NATIVE_RATES_DATA.json \
+            --audit-metadata /tmp/RATES_AUDIT_METADATA.json \
+            --provenance validation/evidence/rates-real-20261007-run37619271039-v1.json
+      - name: Prove zero mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload
+          test ! -e live_data/provenance/rates/rates-real-20261007-run37619271039-v1.json
