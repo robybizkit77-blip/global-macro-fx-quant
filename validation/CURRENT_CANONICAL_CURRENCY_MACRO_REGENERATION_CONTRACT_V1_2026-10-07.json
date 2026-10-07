@@ -1,0 +1,87 @@
+{
+  "schema": "GMFQ_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_CONTRACT_V1",
+  "status": "CONTRACT_DEFINED__DECISION_TABLE_NOT_YET_EXECUTABLE",
+  "purpose": "Define the only acceptable interface for regenerating current canonical G8 currency Macro states from validated Macro data without inventing a universal score or changing the frozen engine semantics.",
+  "frozen_semantics": {
+    "currency_macro_polarity": {
+      "FAVOREVOLE": 1,
+      "CONTRARIO": -1,
+      "DIVERGENTE": 0,
+      "NEUTRALE": 0,
+      "WITHHELD": null
+    },
+    "pair_macro_rule": "Compare the two canonical currency Macro polarities: A if macroA > macroB, B if macroB > macroA, otherwise MIXED/TIE.",
+    "cert53_relative_anchor_is_canonical_source": false
+  },
+  "allowed_inputs": {
+    "macro_dimensions": ["growth", "labour", "inflation"],
+    "required_metadata_per_input": ["source", "series_id", "observation_date", "frequency", "transformation", "freshness_status", "pit_first_release_status"],
+    "canonical_runtime_sources": ["live_data/sections/MACRO_SERIES.json", "live_data/sections/MACRO_THERMOMETER_DATA.json"],
+    "central_bank_reaction_function_allowed_inside_macro_state": false,
+    "rates_allowed_inside_macro_state": false,
+    "price_allowed_inside_macro_state": false,
+    "cot_allowed_inside_macro_state": false,
+    "liquidity_allowed_inside_macro_state": false
+  },
+  "state_contract": {
+    "FAVOREVOLE": "Directional positive Macro state only when the currency-specific decision rule has valid, fresh and evidence-backed support.",
+    "CONTRARIO": "Directional negative Macro state only when the currency-specific decision rule has valid, fresh and evidence-backed support.",
+    "DIVERGENTE": "Two or more valid Macro dimensions provide materially conflicting directional information under the currency-specific rule.",
+    "NEUTRALE": "Valid and sufficiently complete Macro evidence is genuinely balanced/non-directional under the currency-specific rule. Missing data cannot produce NEUTRALE.",
+    "WITHHELD": "Required evidence is missing, stale, non-PIT, ambiguous, or the currency-specific decision rule is not yet certified. WITHHELD is not zero and not neutral."
+  },
+  "forbidden_methods": [
+    "universal G8 weighted Macro score",
+    "single universal threshold applied to all currencies",
+    "post-hoc threshold tuning to reproduce current CERT53 anchors",
+    "using CB/rates/price/COT/liquidity to flip or manufacture the primary Macro state",
+    "treating missing or stale Macro inputs as neutral",
+    "using the historical frozen currencyIntelData labels as current live truth",
+    "using current CERT53 pair anchors as training labels without provenance and OOS controls"
+  ],
+  "currency_decision_tables": {
+    "USD": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "EUR": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "GBP": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "JPY": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "CHF": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "CAD": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "AUD": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"},
+    "NZD": {"status": "NOT_YET_EXECUTABLE", "required": "currency-specific evidence-backed Macro decision table"}
+  },
+  "required_output_per_currency": [
+    "currency",
+    "macro_state",
+    "macro_polarity",
+    "dimension_states",
+    "input_asof",
+    "freshness",
+    "pit_status",
+    "rule_version",
+    "evidence_trace",
+    "withheld_reason"
+  ],
+  "validation_sequence": [
+    "reconstruct or document the historical methodology that produced the frozen currency Macro labels if recoverable",
+    "define each currency decision table before observing future outcomes used for validation",
+    "run read-only current-state generation",
+    "compare architecture/parity without forcing historical labels",
+    "run historical PIT replay where source coverage allows",
+    "freeze rule version",
+    "only then enable Macro ingest propagation into pair anchors"
+  ],
+  "current_gate": {
+    "macro_live_apply": "BLOCKED",
+    "reason": "No certified executable current currency Macro regenerator exists yet.",
+    "cert53_safe_applicator_exists": true,
+    "cert53_economic_regenerator_exists": false
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "universal_score": false
+  }
+}
