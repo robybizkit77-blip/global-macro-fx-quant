@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_FORWARD_STATISTICS_V1",
+  "status": "AWAITING_MATURED_OUTCOMES",
+  "primary_horizon": 20,
+  "methodology_note": "Descriptive forward evidence only. No production promotion, sizing, threshold tuning or predictive claim from small samples.",
+  "horizons": {
+    "5": {
+      "matured_pair_observations": 0,
+      "by_state": {},
+      "by_robustness": {}
+    },
+    "20": {
+      "matured_pair_observations": 0,
+      "by_state": {},
+      "by_robustness": {}
+    },
+    "60": {
+      "matured_pair_observations": 0,
+      "by_state": {},
+      "by_robustness": {}
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "retroactive_tuning": false
+  }
+}
