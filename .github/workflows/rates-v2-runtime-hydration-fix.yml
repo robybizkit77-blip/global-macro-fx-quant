@@ -1,0 +1,57 @@
+name: Rates V2 Runtime Hydration Fix
+on:
+  push:
+    branches:
+      - staging-rates-g8-refresh-2026-10-07
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch exact V1-only hydration guard
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('payload/part-15.txt')
+          s=p.read_text()
+          old="if(!M||M.schema!=='GMFQ_RATES_AUDIT_METADATA_V1')throw new Error('RATES_AUDIT_METADATA_MISSING')"
+          new="if(!M||!['GMFQ_RATES_AUDIT_METADATA_V1','GMFQ_RATES_AUDIT_METADATA_V2'].includes(M.schema))throw new Error('RATES_AUDIT_METADATA_MISSING')"
+          n=s.count(old)
+          assert n==1, f'expected exactly one V1-only hydration guard, found {n}'
+          p.write_text(s.replace(old,new,1))
+          assert p.read_text().count(new)==1
+          print('RATES_V2_HYDRATION_GUARD_PATCHED')
+          PY
+      - name: Rebuild manifest and verify contract
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Enforce exact patch scope
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'payload/part-15.txt','live_data/manifest.v2.json'}
+          assert changed and changed <= allowed, (changed,allowed)
+          assert 'payload/part-15.txt' in changed, changed
+          print({'status':'SCOPE_PASS','changed':sorted(changed)})
+          PY
+      - name: Commit hydration compatibility patch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-15.txt live_data/manifest.v2.json
+          git commit -m 'Allow Rates metadata V2 in runtime hydration'
+          git push origin HEAD:${GITHUB_REF_NAME}
