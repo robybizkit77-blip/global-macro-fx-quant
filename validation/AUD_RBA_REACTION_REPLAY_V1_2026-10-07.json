@@ -1,0 +1,421 @@
+{
+  "schema": "GMFQ_AUD_RBA_REACTION_REPLAY_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "contract": {
+    "checkpoint": "quarterly CPI first-release only",
+    "dual_mandate_rule": "HAWKISH iff CPI YoY rises and latest-known unemployment falls; DOVISH iff CPI YoY falls and unemployment rises; otherwise MIXED/WITHHELD",
+    "cpi_continuity": "require consecutive quarterly CPI observations; skip across missing 2020-Q2 rather than using a six-month delta",
+    "front_end_window": "5 common RBA/ECB market observations from first common date on/after release",
+    "price_confirmation": "AUD equal-weight log basket vs other 7 G8 over same t0->t5 window",
+    "outcome": "signed AUD G8 basket return t5->t25; positive means move in macro-expected direction",
+    "oos": "first 40% chronology labelled INITIAL_40; remaining 60% forward OOS; no tuning"
+  },
+  "sources": {
+    "labour": "history/pit_v1/AUD_UNEMPLOYMENT_FIRST_RELEASE_2018_2026.csv",
+    "cpi": "history/pit_v1/AUD_CPI_HEADLINE_FIRST_RELEASE_2018_2025Q3.csv",
+    "front_end": "history/pit_v1/AUD_RBA_GOVT_2Y_DAILY_2018_2026.csv",
+    "fx": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.zip"
+  },
+  "coverage": {
+    "eligible_events": 9,
+    "initial_n": 3,
+    "oos_n": 6,
+    "skipped_n": 14,
+    "first_event": "2021-01-27",
+    "last_event": "2025-07-30"
+  },
+  "full": {
+    "all": {
+      "n": 9,
+      "hit_rate": 0.6666666666666666,
+      "mean": 0.007436485105366369,
+      "median": 0.010980484692106884
+    },
+    "by_macro": {
+      "DOVISH": {
+        "n": 4,
+        "hit_rate": 0.5,
+        "mean": 0.005184463276434362,
+        "median": 0.0024495752213913313
+      },
+      "HAWKISH": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "mean": 0.009238102568511975,
+        "median": 0.011206689038177065
+      }
+    },
+    "by_transmission": {
+      "BOTH_ALIGNED": {
+        "n": 1,
+        "hit_rate": 1.0,
+        "mean": 0.0012094466882893729,
+        "median": 0.0012094466882893729
+      },
+      "BOTH_DIVERGENT": {
+        "n": 3,
+        "hit_rate": 0.3333333333333333,
+        "mean": -0.0007054497314749053,
+        "median": -0.006081334249324222
+      },
+      "MIXED": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "mean": 0.013567053690886533,
+        "median": 0.02127624478604151
+      }
+    },
+    "front_end_aligned": {
+      "n": 4,
+      "hit_rate": 0.75,
+      "mean": 0.006172015927612046,
+      "median": 0.006094965690198129
+    },
+    "front_end_divergent": {
+      "n": 5,
+      "hit_rate": 0.6,
+      "mean": 0.008448060447569827,
+      "median": 0.011206689038177065
+    }
+  },
+  "oos": {
+    "all": {
+      "n": 6,
+      "hit_rate": 0.6666666666666666,
+      "mean": 0.00887013115499267,
+      "median": 0.011093586865141974
+    },
+    "by_macro": {
+      "DOVISH": {
+        "n": 4,
+        "hit_rate": 0.5,
+        "mean": 0.005184463276434362,
+        "median": 0.0024495752213913313
+      },
+      "HAWKISH": {
+        "n": 2,
+        "hit_rate": 1.0,
+        "mean": 0.016241466912109287,
+        "median": 0.016241466912109287
+      }
+    },
+    "by_transmission": {
+      "BOTH_DIVERGENT": {
+        "n": 3,
+        "hit_rate": 0.3333333333333333,
+        "mean": -0.0007054497314749053,
+        "median": -0.006081334249324222
+      },
+      "MIXED": {
+        "n": 3,
+        "hit_rate": 1.0,
+        "mean": 0.018445712041460244,
+        "median": 0.02127624478604151
+      }
+    },
+    "front_end_aligned": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "mean": 0.010980484692106884,
+      "median": 0.010980484692106884
+    },
+    "front_end_divergent": {
+      "n": 5,
+      "hit_rate": 0.6,
+      "mean": 0.008448060447569827,
+      "median": 0.011206689038177065
+    }
+  },
+  "events": [
+    {
+      "reference_quarter": "2020-Q4",
+      "release_date": "2021-01-27",
+      "cpi_yoy": 0.9,
+      "prev_cpi_yoy": 0.7,
+      "labour_reference_month": "2020-12",
+      "unemployment": 6.6,
+      "prev_unemployment": 6.8,
+      "macro_direction": 1,
+      "macro_label": "HAWKISH",
+      "market_t0": "2021-01-27",
+      "market_t5": "2021-02-03",
+      "market_t25": "2021-03-03",
+      "aud_2y_change_5d_pctpt": 0.008999999999999994,
+      "aud_basket_log_change_5d": -0.004884362442437784,
+      "aud_basket_log_change_next20d": 0.022293156827712768,
+      "signed_20d": 0.022293156827712768,
+      "front_end_state": "ALIGNED",
+      "price_state": "DIVERGENT",
+      "transmission": "MIXED",
+      "sample": "INITIAL_40"
+    },
+    {
+      "reference_quarter": "2021-Q1",
+      "release_date": "2021-04-28",
+      "cpi_yoy": 1.1,
+      "prev_cpi_yoy": 0.9,
+      "labour_reference_month": "2021-03",
+      "unemployment": 5.6,
+      "prev_unemployment": 5.8,
+      "macro_direction": 1,
+      "macro_label": "HAWKISH",
+      "market_t0": "2021-04-28",
+      "market_t5": "2021-05-05",
+      "market_t25": "2021-06-02",
+      "aud_2y_change_5d_pctpt": 0.01100000000000001,
+      "aud_basket_log_change_5d": -0.0014172738989353673,
+      "aud_basket_log_change_next20d": -0.009795024497660842,
+      "signed_20d": -0.009795024497660842,
+      "front_end_state": "ALIGNED",
+      "price_state": "DIVERGENT",
+      "transmission": "MIXED",
+      "sample": "INITIAL_40"
+    },
+    {
+      "reference_quarter": "2021-Q2",
+      "release_date": "2021-07-28",
+      "cpi_yoy": 3.8,
+      "prev_cpi_yoy": 1.1,
+      "labour_reference_month": "2021-06",
+      "unemployment": 4.9,
+      "prev_unemployment": 5.1,
+      "macro_direction": 1,
+      "macro_label": "HAWKISH",
+      "market_t0": "2021-07-28",
+      "market_t5": "2021-08-05",
+      "market_t25": "2021-09-02",
+      "aud_2y_change_5d_pctpt": 0.004,
+      "aud_basket_log_change_5d": 0.0026515546917350585,
+      "aud_basket_log_change_next20d": 0.0012094466882893729,
+      "signed_20d": 0.0012094466882893729,
+      "front_end_state": "ALIGNED",
+      "price_state": "ALIGNED",
+      "transmission": "BOTH_ALIGNED",
+      "sample": "INITIAL_40"
+    },
+    {
+      "reference_quarter": "2021-Q3",
+      "release_date": "2021-10-27",
+      "cpi_yoy": 3.0,
+      "prev_cpi_yoy": 3.8,
+      "labour_reference_month": "2021-09",
+      "unemployment": 4.6,
+      "prev_unemployment": 4.5,
+      "macro_direction": -1,
+      "macro_label": "DOVISH",
+      "market_t0": "2021-10-27",
+      "market_t5": "2021-11-03",
+      "market_t25": "2021-12-01",
+      "aud_2y_change_5d_pctpt": 0.36999999999999994,
+      "aud_basket_log_change_5d": -0.009141238022063125,
+      "aud_basket_log_change_next20d": -0.023080406646232343,
+      "signed_20d": 0.023080406646232343,
+      "front_end_state": "DIVERGENT",
+      "price_state": "ALIGNED",
+      "transmission": "MIXED",
+      "sample": "OOS_60"
+    },
+    {
+      "reference_quarter": "2021-Q4",
+      "release_date": "2022-01-25",
+      "cpi_yoy": 3.5,
+      "prev_cpi_yoy": 3.0,
+      "labour_reference_month": "2021-12",
+      "unemployment": 4.2,
+      "prev_unemployment": 4.6,
+      "macro_direction": 1,
+      "macro_label": "HAWKISH",
+      "market_t0": "2022-01-25",
+      "market_t5": "2022-02-02",
+      "market_t25": "2022-03-02",
+      "aud_2y_change_5d_pctpt": -0.04399999999999993,
+      "aud_basket_log_change_5d": 0.0023873989345275515,
+      "aud_basket_log_change_next20d": 0.02127624478604151,
+      "signed_20d": 0.02127624478604151,
+      "front_end_state": "DIVERGENT",
+      "price_state": "ALIGNED",
+      "transmission": "MIXED",
+      "sample": "OOS_60"
+    },
+    {
+      "reference_quarter": "2022-Q2",
+      "release_date": "2022-07-27",
+      "cpi_yoy": 6.1,
+      "prev_cpi_yoy": 5.1,
+      "labour_reference_month": "2022-06",
+      "unemployment": 3.5,
+      "prev_unemployment": 3.9,
+      "macro_direction": 1,
+      "macro_label": "HAWKISH",
+      "market_t0": "2022-07-27",
+      "market_t5": "2022-08-03",
+      "market_t25": "2022-08-31",
+      "aud_2y_change_5d_pctpt": -0.04899999999999993,
+      "aud_basket_log_change_5d": -0.007139887849341386,
+      "aud_basket_log_change_next20d": 0.011206689038177065,
+      "signed_20d": 0.011206689038177065,
+      "front_end_state": "DIVERGENT",
+      "price_state": "DIVERGENT",
+      "transmission": "BOTH_DIVERGENT",
+      "sample": "OOS_60"
+    },
+    {
+      "reference_quarter": "2024-Q1",
+      "release_date": "2024-04-24",
+      "cpi_yoy": 3.6,
+      "prev_cpi_yoy": 4.1,
+      "labour_reference_month": "2024-03",
+      "unemployment": 3.8,
+      "prev_unemployment": 3.7,
+      "macro_direction": -1,
+      "macro_label": "DOVISH",
+      "market_t0": "2024-04-24",
+      "market_t5": "2024-05-03",
+      "market_t25": "2024-05-31",
+      "aud_2y_change_5d_pctpt": 0.01499999999999968,
+      "aud_basket_log_change_5d": 0.004515096360910742,
+      "aud_basket_log_change_next20d": 0.007241703983277559,
+      "signed_20d": -0.007241703983277559,
+      "front_end_state": "DIVERGENT",
+      "price_state": "DIVERGENT",
+      "transmission": "BOTH_DIVERGENT",
+      "sample": "OOS_60"
+    },
+    {
+      "reference_quarter": "2024-Q4",
+      "release_date": "2025-01-29",
+      "cpi_yoy": 2.4,
+      "prev_cpi_yoy": 2.8,
+      "labour_reference_month": "2024-12",
+      "unemployment": 4.0,
+      "prev_unemployment": 3.9,
+      "macro_direction": -1,
+      "macro_label": "DOVISH",
+      "market_t0": "2025-01-29",
+      "market_t5": "2025-02-05",
+      "market_t25": "2025-03-05",
+      "aud_2y_change_5d_pctpt": -0.04899999999999993,
+      "aud_basket_log_change_5d": 0.0024317814445049546,
+      "aud_basket_log_change_next20d": -0.010980484692106884,
+      "signed_20d": 0.010980484692106884,
+      "front_end_state": "ALIGNED",
+      "price_state": "DIVERGENT",
+      "transmission": "MIXED",
+      "sample": "OOS_60"
+    },
+    {
+      "reference_quarter": "2025-Q2",
+      "release_date": "2025-07-30",
+      "cpi_yoy": 2.1,
+      "prev_cpi_yoy": 2.4,
+      "labour_reference_month": "2025-06",
+      "unemployment": 4.3,
+      "prev_unemployment": 4.1,
+      "macro_direction": -1,
+      "macro_label": "DOVISH",
+      "market_t0": "2025-07-30",
+      "market_t5": "2025-08-06",
+      "market_t25": "2025-09-03",
+      "aud_2y_change_5d_pctpt": 0.027000000000000135,
+      "aud_basket_log_change_5d": 0.0017914230495443828,
+      "aud_basket_log_change_next20d": 0.006081334249324222,
+      "signed_20d": -0.006081334249324222,
+      "front_end_state": "DIVERGENT",
+      "price_state": "DIVERGENT",
+      "transmission": "BOTH_DIVERGENT",
+      "sample": "OOS_60"
+    }
+  ],
+  "skipped": [
+    {
+      "q": "2019-Q4",
+      "reason": "non_consecutive_cpi"
+    },
+    {
+      "q": "2020-Q1",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": -1
+    },
+    {
+      "q": "2020-Q3",
+      "reason": "non_consecutive_cpi"
+    },
+    {
+      "q": "2022-Q1",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": 0
+    },
+    {
+      "q": "2022-Q3",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": 0
+    },
+    {
+      "q": "2022-Q4",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": -1
+    },
+    {
+      "q": "2023-Q1",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": -1,
+      "labour_dir": 0
+    },
+    {
+      "q": "2023-Q2",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": -1,
+      "labour_dir": 1
+    },
+    {
+      "q": "2023-Q3",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": -1,
+      "labour_dir": 1
+    },
+    {
+      "q": "2023-Q4",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": -1,
+      "labour_dir": 0
+    },
+    {
+      "q": "2024-Q2",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": -1
+    },
+    {
+      "q": "2024-Q3",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": -1,
+      "labour_dir": 1
+    },
+    {
+      "q": "2025-Q1",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 0,
+      "labour_dir": 0
+    },
+    {
+      "q": "2025-Q3",
+      "reason": "mixed_or_neutral_dual_mandate",
+      "cpi_dir": 1,
+      "labour_dir": -1
+    }
+  ],
+  "assessment_policy": "diagnostic only; small samples must not be promoted as a gate; compare aligned vs divergent without threshold/window tuning",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
