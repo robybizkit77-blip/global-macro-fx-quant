@@ -1,0 +1,33 @@
+{
+  "schema": "GMFQ_CERT53_PROVENANCE_AUDIT_V1",
+  "status": "PARTIAL_PROVENANCE",
+  "purpose": "Audit whether CERT53 is hash-verified and whether its upstream lineage is explicit enough for autonomous forward-snapshot provenance.",
+  "cert53": {
+    "path": "live_data/sections/CERT53.json",
+    "sha256": "b12fc3a3d13d0eef7efdd04a6cc5efe5b0d7796958cf407704186bb96f7b8b56",
+    "bytes": 128669,
+    "pair_count": 28,
+    "manifest_sha_match": true,
+    "manifest_mode": "DIRECT_SINGLE_PART",
+    "direct_update_allowed": true,
+    "file_level_provenance_present": false
+  },
+  "assessment": {
+    "runtime_integrity": "PASS",
+    "upstream_lineage": "PARTIAL",
+    "automatic_downstream_from_cert53": true,
+    "automatic_upstream_ingestion": false,
+    "fully_autonomous_claim_allowed": false
+  },
+  "required_for_ready_provenance": [
+    "canonical file-level source/as-of metadata or deterministic builder input manifest",
+    "input hashes for the live sections used to construct CERT53",
+    "refresh identifier or canonical refresh commit recorded at generation time"
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
