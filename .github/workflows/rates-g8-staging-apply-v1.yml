@@ -1,0 +1,75 @@
+name: Rates G8 Staging Apply V1
+on:
+  push:
+    branches:
+      - staging-rates-g8-refresh-2026-10-07
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Rebuild certified Rates candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/rates-audit.json
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-audit.json --output /tmp/NATIVE_RATES_DATA.json | tee /tmp/candidate-summary.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/candidate-summary.json'))
+          assert s['status']=='CANDIDATE_READY', s
+          assert set(s['changed_currencies'])=={'CAD','NZD'}, s
+          n=s['currencies']['NZD']; c=s['currencies']['CAD']
+          assert n['new_date']=='2026-10-05' and abs(n['2Y']-3.83)<1e-9 and abs(n['10Y']-5.04)<1e-9, n
+          assert c['new_date']=='2026-10-06' and abs(c['2Y']-3.23)<1e-9 and abs(c['10Y']-3.92)<1e-9, c
+          print('CANDIDATE_CERTIFIED',s)
+          PY
+      - name: Apply candidate to staging runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/NATIVE_RATES_DATA.json --apply
+          python validation/build_rates_audit_metadata.py --audit-date 2026-10-07 --audit /tmp/rates-audit.json --output /tmp/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py --rates /tmp/RATES_AUDIT_METADATA.json --apply
+          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
+          mv /tmp/manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+      - name: Enforce exact staging scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf validation/__pycache__
+          git status --porcelain
+          git diff --name-only > /tmp/changed.txt
+          python - <<'PY'
+          changed=set(open('/tmp/changed.txt').read().splitlines())
+          allowed={
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/RATES_AUDIT_METADATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-15.txt'
+          }
+          bad=sorted(changed-allowed)
+          if bad: raise SystemExit('Unexpected tracked files: '+repr(bad))
+          required={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json'}
+          if not required.issubset(changed): raise SystemExit('Missing required runtime changes: '+repr(sorted(required-changed)))
+          print('SCOPE_PASS',sorted(changed))
+          PY
+      - name: Commit staging snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
+          git commit -m 'Apply certified CAD NZD Rates refresh to staging'
+          git push origin HEAD:staging-rates-g8-refresh-2026-10-07
