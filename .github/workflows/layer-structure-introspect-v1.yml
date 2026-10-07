@@ -1,0 +1,24 @@
+name: Layer Structure Introspect V1
+on:
+  push:
+    branches: [research-layer-freshness-metadata-v1-2026-10-07]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print CHF macro and NZD liquidity structure only
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          macro=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          liq=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())
+          print('CHF_HEATMAP=',json.dumps(macro['currencies']['CHF'],ensure_ascii=False,indent=2))
+          print('CHF_SERIES=',json.dumps(series['CHF'],ensure_ascii=False,indent=2))
+          print('NZD_LIQ=',json.dumps(liq['NZD'],ensure_ascii=False,indent=2))
+          PY
