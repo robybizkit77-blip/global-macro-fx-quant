@@ -1548,26 +1548,28 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     if(!d) throw new Error('GBP_NATIVE_RATES_MISSING');
 
     const rows=[
-      {date:'2026-09-23',y2:4.669921562630079,y10:5.305545920608861},
-      {date:'2026-09-24',y2:4.693872310931161,y10:5.361281731875085},
-      {date:'2026-09-25',y2:4.639504333788631,y10:5.384198743491068},
-      {date:'2026-09-28',y2:4.712985890055187,y10:5.412276884439468},
-      {date:'2026-09-29',y2:4.684827469902199,y10:5.380692223244884}
+      {date:"2026-09-25",y2:4.639,y10:5.384},
+      {date:"2026-10-01",y2:4.600778759919967,y10:5.424033836234473},
+      {date:"2026-10-02",y2:4.602510071695553,y10:5.353951791036986},
+      {date:"2026-10-06",y2:4.612482282704806,y10:5.367668852434683}
     ];
     const snap={
-      date:'2026-09-29',
-      source:'Bank of England · UK nominal government zero-coupon spot curve · official latest yield curve data',
-      y2:4.684827469902199,
-      y5:4.944927166285526,
-      y10:5.380692223244884,
-      y30:5.962687505950194,
-      week_ref_date:'2026-09-22',
-      week_ref_y2:4.573660307604147,
-      week_ref_y10:5.211332620761877
+      date:"2026-10-06",
+      source:"Bank of England · UK nominal government zero-coupon spot curve · 2026-10-06",
+      y2:4.612482282704806,
+      y5:4.92,
+      y10:5.367668852434683,
+      y30:5.93,
+      week_ref_date:"2026-09-25",
+      week_ref_y2:4.639,
+      week_ref_y10:5.384,
+      chg2_bp:-2.7,
+      chg10_bp:-1.6,
+      curve_bp:75.5
     };
-    const chg2=(snap.y2-snap.week_ref_y2)*100;
-    const chg10=(snap.y10-snap.week_ref_y10)*100;
-    const curve=(snap.y10-snap.y2)*100;
+    const chg2=snap.chg2_bp;
+    const chg10=snap.chg10_bp;
+    const curve=snap.curve_bp;
 
     function rebuildTail(h,key){
       if(!h?.dates || !h?.values) throw new Error('GBP_HISTORY_MISSING_'+key);
@@ -1586,23 +1588,18 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 
     d.date=snap.date;
     d.source=snap.source;
-    d.quality='FULL_CURRENT_VALIDATED';
+    d.quality="FULL_CURRENT_OFFICIAL";
     d['2Y']=snap.y2;
     d['10Y']=snap.y10;
     d.curve_bp=curve;
     d.chg2_bp=chg2;
     d.chg10_bp=chg10;
-    d.curve_state='Bear steepening';
-    d.tenors=[
-      {tenor:'2Y',value:snap.y2,date:snap.date},
-      {tenor:'5Y',value:snap.y5,date:snap.date},
-      {tenor:'10Y',value:snap.y10,date:snap.date},
-      {tenor:'30Y',value:snap.y30,date:snap.date}
-    ];
-    d.freshness_status='CURRENT_SAME_BASIS';
-    d.freshness_note='BoE official nominal government zero-coupon spot curve updated through 29 Sep 2026.';
-    d.history_status='FULL_HISTORY';
-    d.history_note='Same-basis official BoE nominal spot history; 23, 24, 25, 28 and 29 Sep tail synchronized from the official current-month workbook.';
+    d.curve_state="Bull steepening";
+    d.tenors=[{"tenor":"2Y","value":4.612482282704806,"date":"2026-10-06"},{"tenor":"5Y","value":4.92,"date":"2026-09-25"},{"tenor":"10Y","value":5.367668852434683,"date":"2026-10-06"},{"tenor":"30Y","value":5.93,"date":"2026-09-25"}];
+    d.freshness_status="CURRENT_OFFICIAL_SAME_BASIS";
+    d.freshness_note="Official same-basis 2Y/10Y updated through 2026-10-06.";
+    d.history_status="FULL_HISTORY";
+    d.history_note="Same-basis official BoE nominal spot history synchronized through 2026-10-06";
 
     if(D?.macro?.GBP){
       D.macro.GBP.rate2y=snap.y2;
