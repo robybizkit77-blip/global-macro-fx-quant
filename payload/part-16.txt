@@ -1,0 +1,54 @@
+
+<style id="v491-forward-causal-layer-css">
+#fwdCausalV1{margin:18px 0 22px;padding:18px;border:1px solid rgba(148,163,184,.22);border-radius:18px;background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(2,6,23,.92));color:#e5e7eb}.fwdCausalHead{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.fwdCausalHead h3{margin:0 0 5px;font-size:20px}.fwdCausalSub{font-size:12px;color:#94a3b8;max-width:760px}.fwdCausalBadges{display:flex;gap:7px;flex-wrap:wrap}.fwdCausalBadge{font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#111827;border:1px solid rgba(148,163,184,.22)}.fwdCausalGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}.fwdCausalCard{padding:12px;border-radius:14px;background:rgba(15,23,42,.66);border:1px solid rgba(148,163,184,.14)}.fwdCausalCard span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}.fwdCausalCard b{display:block;margin-top:4px;font-size:19px}.fwdCausalClean b{color:#4ade80}.fwdCausalPartial b{color:#fbbf24}.fwdCausalDiv b{color:#fb7185}.fwdCausalWithheld b{color:#94a3b8}.fwdCausalBlock{margin-top:14px}.fwdCausalBlock h4{margin:0 0 8px;font-size:13px;color:#cbd5e1}.fwdCausalRow{display:grid;grid-template-columns:120px 1fr 105px 105px 105px;gap:8px;align-items:center;padding:9px 0;border-top:1px solid rgba(148,163,184,.12);font-size:12px}.fwdCausalRow.head{color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:.06em}.fwdCausalState{font-weight:800}.fwdCausalState.clean{color:#4ade80}.fwdCausalState.partial{color:#fbbf24}.fwdCausalState.divergent{color:#fb7185}.fwdCausalState.withheld{color:#94a3b8}.fwdCausalPending{color:#94a3b8}.fwdCausalNote{margin-top:12px;padding:10px 12px;border-left:3px solid #64748b;background:rgba(15,23,42,.5);font-size:11px;color:#cbd5e1}.fwdCausalErr{padding:12px;border-radius:12px;background:rgba(127,29,29,.2);color:#fecaca;font-size:12px}@media(max-width:760px){.fwdCausalGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.fwdCausalRow{grid-template-columns:90px 1fr 68px 68px 68px;font-size:11px;gap:5px}.fwdCausalRow.head{font-size:9px}}
+</style>
+<script id="v491-forward-causal-layer-js">
+(function(){
+'use strict';
+const LEDGER='validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json';
+const PAYLOAD='validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json';
+let cache=null;
+const stateLabel=s=>({TRANSMISSION_CLEAN:'CLEAN',TRANSMISSION_PARTIAL:'PARTIAL',TRANSMISSION_DIVERGENT:'DIVERGENT',TRANSMISSION_WITHHELD:'WITHHELD'}[s]||s||'—');
+const stateCls=s=>String(s||'').replace('TRANSMISSION_','').toLowerCase();
+function ensure(){
+ const host=document.getElementById('forwarddesk'); if(!host) return null;
+ let el=document.getElementById('fwdCausalV1');
+ if(!el){el=document.createElement('div');el.id='fwdCausalV1';host.insertAdjacentElement('afterbegin',el);} return el;
+}
+async function load(){
+ if(cache) return cache;
+ const [lr,pr]=await Promise.all([fetch(LEDGER,{cache:'no-store'}),fetch(PAYLOAD,{cache:'no-store'})]);
+ if(!lr.ok||!pr.ok) throw new Error('Nuovo forward ledger non disponibile');
+ cache={ledger:await lr.json(),payload:await pr.json()}; return cache;
+}
+function outcomeCell(x){return x==null?'<span class="fwdCausalPending">IN ATTESA</span>':String(x);}
+function pairRows(snap,payload){
+ const buckets=[
+  ['CLEAN robusti',snap.focus_buckets?.clean_robust||[]],
+  ['Divergenze robuste',snap.focus_buckets?.divergent_robust||[]],
+  ['Parziali robuste',snap.focus_buckets?.partial_robust||[]],
+  ['Sensibili alla regola',snap.focus_buckets?.rule_sensitive||[]],
+  ['Non classificati',snap.focus_buckets?.withheld||[]]
+ ];
+ return buckets.map(([title,pairs])=>{
+  if(!pairs.length) return '';
+  const rows=pairs.map(pair=>{const p=payload.pairs?.[pair]||{};return `<div class="fwdCausalRow"><b>${pair}</b><div><span class="fwdCausalState ${stateCls(p.state)}">${stateLabel(p.state)}</span>${p.robustness_badge==='RULE_SENSITIVE'?' · <span style="color:#fbbf24">RULE SENSITIVE</span>':''}</div><div>${outcomeCell(snap.forward_outcomes?.t_plus_5)}</div><div>${outcomeCell(snap.forward_outcomes?.t_plus_20)}</div><div>${outcomeCell(snap.forward_outcomes?.t_plus_60)}</div></div>`}).join('');
+  return `<div class="fwdCausalBlock"><h4>${title}</h4><div class="fwdCausalRow head"><div>Cross</div><div>Stato congelato</div><div>5D</div><div>20D</div><div>60D</div></div>${rows}</div>`;
+ }).join('');
+}
+async function render(){
+ const root=ensure(); if(!root) return;
+ root.innerHTML='<div class="fwdCausalPending">Caricamento nuovo Forward Test…</div>';
+ try{
+  const {ledger,payload}=await load(); const snap=ledger.snapshots?.[ledger.snapshots.length-1]; if(!snap) throw new Error('Snapshot forward assente');
+  const c=snap.state_counts||{}, r=snap.robustness_counts||{};
+  root.innerHTML=`<div class="fwdCausalHead"><div><h3>Forward Test · Causal Transmission V1</h3><div class="fwdCausalSub">Snapshot immutabile: Macro relativo → Banca centrale → Front-end/rates → Prezzo → stato di trasmissione. Il bias macro non viene mai ribaltato dai layer downstream.</div></div><div class="fwdCausalBadges"><span class="fwdCausalBadge">SNAPSHOT ${String(snap.captured_at||'').slice(0,10)}</span><span class="fwdCausalBadge">20D ORIZZONTE PRINCIPALE</span><span class="fwdCausalBadge">RESEARCH ONLY</span></div></div><div class="fwdCausalGrid"><div class="fwdCausalCard fwdCausalClean"><span>Clean</span><b>${c.TRANSMISSION_CLEAN??0}</b></div><div class="fwdCausalCard fwdCausalPartial"><span>Partial</span><b>${c.TRANSMISSION_PARTIAL??0}</b></div><div class="fwdCausalCard fwdCausalDiv"><span>Divergent</span><b>${c.TRANSMISSION_DIVERGENT??0}</b></div><div class="fwdCausalCard fwdCausalWithheld"><span>Withheld</span><b>${c.TRANSMISSION_WITHHELD??0}</b></div></div><div class="fwdCausalBadges"><span class="fwdCausalBadge">${r.ROBUST_ACROSS_RULES??0} robusti</span><span class="fwdCausalBadge">${r.RULE_SENSITIVE??0} rule-sensitive</span><span class="fwdCausalBadge">${snap.pair_count||0} cross</span></div>${pairRows(snap,payload)}<div class="fwdCausalNote"><b>Regola forward:</b> gli outcome a 5D / 20D / 60D vengono aggiunti solo quando maturano. Lo stato originale dello snapshot resta congelato; nessun tuning retroattivo. CHF/NZD mantengono un badge separato di evidenza storica incompleta.</div>`;
+  window.__GMFQ_FORWARD_CAUSAL_V1__={status:'PASS',snapshot_id:snap.snapshot_id,pair_count:snap.pair_count};
+ }catch(e){root.innerHTML=`<div class="fwdCausalErr">Forward Test V1 non caricato: ${e.message}</div>`;window.__GMFQ_FORWARD_CAUSAL_V1__={status:'FAIL',error:String(e.message||e)};}
+}
+const base=window.renderForwardMonitor;
+if(typeof base==='function') window.renderForwardMonitor=function(){const out=base.apply(this,arguments);setTimeout(()=>render(),0);return out;};
+window.renderForwardCausalV1=render;
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(render,600)); else setTimeout(render,600);
+})();
+</script>
