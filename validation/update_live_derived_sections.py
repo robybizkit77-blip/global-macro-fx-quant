@@ -16,6 +16,7 @@ SPECS={
 }
 CCY_COT={'EUR','GBP','JPY','CHF','AUD','NZD','CAD','USD'}
 CCY_RATES={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+RATES_SCHEMAS={'GMFQ_RATES_AUDIT_METADATA_V1','GMFQ_RATES_AUDIT_METADATA_V2'}
 
 def validate_cot(d:dict)->None:
     if set(d)!=CCY_COT: raise ValueError('COT output must contain exactly 8 G8 currencies')
@@ -27,12 +28,19 @@ def validate_cot(d:dict)->None:
         if x['signal'] not in {'EXTREME LONG','EXTREME SHORT','NEUTRALE'}: raise ValueError(f'{c}: invalid signal')
 
 def validate_rates(d:dict)->None:
-    if d.get('schema')!='GMFQ_RATES_AUDIT_METADATA_V1': raise ValueError('Invalid rates metadata schema')
+    schema=d.get('schema')
+    if schema not in RATES_SCHEMAS: raise ValueError(f'Invalid rates metadata schema: {schema!r}')
     exp=d.get('expected_rates',{}); rates=d.get('rates',{})
     if set(exp)!=CCY_RATES or set(rates)!=CCY_RATES: raise ValueError('Rates metadata must contain exactly 8 G8 currencies')
     for c in CCY_RATES:
-        if rates[c].get('current_as_of')!=exp[c]: raise ValueError(f'{c}: current_as_of != expected_rates')
-        if not rates[c].get('status') or not rates[c].get('action') or not rates[c].get('reason'): raise ValueError(f'{c}: incomplete rates metadata')
+        row=rates[c]
+        if row.get('current_as_of')!=exp[c]: raise ValueError(f'{c}: current_as_of != expected_rates')
+        if not row.get('status') or not row.get('action') or not row.get('reason'): raise ValueError(f'{c}: incomplete rates metadata')
+    if schema=='GMFQ_RATES_AUDIT_METADATA_V2':
+        summary=d.get('audit_summary')
+        if not isinstance(summary,dict): raise ValueError('V2 rates metadata requires audit_summary')
+        if not isinstance(summary.get('withheld'),list) or not isinstance(summary.get('updates_available'),list):
+            raise ValueError('V2 rates metadata has incomplete audit_summary')
 
 def locate(parts:list[str],prefix:str):
     runtime=''.join(parts)
