@@ -1,0 +1,27 @@
+name: Dashboard Pair Transmission Economic Audit V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/run_dashboard_pair_transmission_economic_audit_v1.py'
+      - 'validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json'
+      - '.github/workflows/dashboard-pair-transmission-economic-audit-v1.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run economic sanity audit
+        run: python validation/run_dashboard_pair_transmission_economic_audit_v1.py
+      - name: Commit audit evidence
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation/DASHBOARD_PAIR_TRANSMISSION_ECONOMIC_AUDIT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize pair transmission economic audit V1'
+          git push
