@@ -1,0 +1,357 @@
+{
+  "schema": "GMFQ_DASHBOARD_PAIR_TRANSMISSION_ROBUSTNESS_OVERLAY_V1",
+  "status": "RESEARCH_ONLY_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "purpose": "Expose whether the current descriptive pair transmission state is stable across reasonable non-return-fitted classification rules.",
+  "summary": {
+    "all_pairs": 28,
+    "robust_across_rules": 22,
+    "rule_sensitive": 6,
+    "directional_stability_pct": 72.73
+  },
+  "pairs": {
+    "AUD/NZD": {
+      "pair": "AUD/NZD",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "CAD/AUD": {
+      "pair": "CAD/AUD",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "CAD/NZD": {
+      "pair": "CAD/NZD",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "CHF/AUD": {
+      "pair": "CHF/AUD",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "CHF/CAD": {
+      "pair": "CHF/CAD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "CHF/NZD": {
+      "pair": "CHF/NZD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "PARTIAL",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "EUR/AUD": {
+      "pair": "EUR/AUD",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "EUR/CAD": {
+      "pair": "EUR/CAD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "PARTIAL",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "EUR/CHF": {
+      "pair": "EUR/CHF",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "PARTIAL",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "EUR/GBP": {
+      "pair": "EUR/GBP",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "EUR/JPY": {
+      "pair": "EUR/JPY",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "EUR/NZD": {
+      "pair": "EUR/NZD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "GBP/AUD": {
+      "pair": "GBP/AUD",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "GBP/CAD": {
+      "pair": "GBP/CAD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "PARTIAL",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "GBP/CHF": {
+      "pair": "GBP/CHF",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "PARTIAL",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "GBP/JPY": {
+      "pair": "GBP/JPY",
+      "current_state": "TRANSMISSION_CLEAN",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "CLEAN",
+        "price_first": "CLEAN",
+        "two_of_three": "CLEAN"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "GBP/NZD": {
+      "pair": "GBP/NZD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "RULE_SENSITIVE",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state with RULE_SENSITIVE warning; do not present as strong confirmation/divergence.",
+      "production_gate": false
+    },
+    "JPY/AUD": {
+      "pair": "JPY/AUD",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "JPY/CAD": {
+      "pair": "JPY/CAD",
+      "current_state": "TRANSMISSION_CLEAN",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "CLEAN",
+        "price_first": "CLEAN",
+        "two_of_three": "CLEAN"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "JPY/CHF": {
+      "pair": "JPY/CHF",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "JPY/NZD": {
+      "pair": "JPY/NZD",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/AUD": {
+      "pair": "USD/AUD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/CAD": {
+      "pair": "USD/CAD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/CHF": {
+      "pair": "USD/CHF",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/EUR": {
+      "pair": "USD/EUR",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/GBP": {
+      "pair": "USD/GBP",
+      "current_state": "TRANSMISSION_WITHHELD",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "WITHHELD",
+        "price_first": "WITHHELD",
+        "two_of_three": "WITHHELD"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/JPY": {
+      "pair": "USD/JPY",
+      "current_state": "TRANSMISSION_PARTIAL",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "PARTIAL",
+        "price_first": "PARTIAL",
+        "two_of_three": "PARTIAL"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    },
+    "USD/NZD": {
+      "pair": "USD/NZD",
+      "current_state": "TRANSMISSION_DIVERGENT",
+      "robustness_badge": "ROBUST_ACROSS_RULES",
+      "rule_states": {
+        "strict": "DIVERGENT",
+        "price_first": "DIVERGENT",
+        "two_of_three": "DIVERGENT"
+      },
+      "ui_rule": "Show current state normally",
+      "production_gate": false
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "return_fitting": false
+  }
+}
