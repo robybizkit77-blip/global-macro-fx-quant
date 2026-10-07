@@ -1,0 +1,40 @@
+name: Forward Snapshot Ledger V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json'
+      - 'validation/validate_forward_snapshot_ledger_v1.py'
+      - '.github/workflows/forward-snapshot-ledger-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate immutable forward ledger
+        run: python validation/validate_forward_snapshot_ledger_v1.py
+      - name: Guard frozen engine contract
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          p='validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json'
+          x=json.load(open(p))
+          assert x['engine_commit']=='ff52198a75cc67f7dae96fc2bbf65623f170791c'
+          assert x['rules_fingerprint']=='3356baf0'
+          assert x['guards']['changes_engine_rules'] is False
+          assert x['guards']['changes_live_data'] is False
+          assert x['guards']['changes_oos_baseline'] is False
+          assert x['guards']['production_promotion'] is False
+          print('PASS_FROZEN_RESEARCH_BASELINE')
+          PY
