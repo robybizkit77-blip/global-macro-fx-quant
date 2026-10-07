@@ -1,0 +1,39 @@
+name: Liquidity Compact Payload V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - 'validation/build_liquidity_compact_payload_v1.py'
+      - 'validation/validate_liquidity_compact_payload_v1.py'
+      - '.github/workflows/liquidity-compact-payload-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build compact liquidity context
+        run: python validation/build_liquidity_compact_payload_v1.py
+      - name: Validate compact liquidity context
+        run: python validation/validate_liquidity_compact_payload_v1.py
+      - name: Commit generated payload if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/LIQUIDITY_COMPACT_PAYLOAD_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No compact liquidity change'
+            exit 0
+          fi
+          git commit -m 'Update compact liquidity context'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
