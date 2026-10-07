@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_EVENT_RISK_SOURCE_READINESS_V1",
+  "status": "WITHHELD_EVENT_SOURCE",
+  "checked_at": "2026-10-07",
+  "current_repo_state": {
+    "canonical_event_feed_present": false,
+    "scheduled_at_present": false,
+    "consensus_present": false,
+    "previous_present": false,
+    "actual_present": false,
+    "source_asof_present": false
+  },
+  "reason": "The current live repository does not expose a canonical, freshness-audited event calendar with scheduled time, previous, consensus and actual. Event risk must remain withheld rather than inferred from narrative text or hardcoded dates.",
+  "ui_state": {
+    "label_it": "EVENT RISK NON COLLEGATO",
+    "show_fake_or_stale_events": false,
+    "allowed_message_it": "Calendario eventi non ancora collegato a una sorgente canonica; nessun evento viene inventato o riutilizzato se non verificato."
+  },
+  "promotion_requirements": [
+    "One canonical event source or audited adapter",
+    "Timezone-normalized scheduled_at",
+    "Previous and consensus fields when applicable",
+    "Actual field after release",
+    "Source and source_asof on every record",
+    "Freshness validation",
+    "Deterministic relevance filter using EVENT_RISK_COMPACT_CONTRACT_V1"
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "fills_missing_events": false
+  }
+}
