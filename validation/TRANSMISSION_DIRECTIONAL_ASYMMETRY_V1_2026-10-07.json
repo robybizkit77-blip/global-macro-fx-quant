@@ -1,0 +1,193 @@
+{
+  "schema": "GMFQ_TRANSMISSION_DIRECTIONAL_ASYMMETRY_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "purpose": "Predeclared directional asymmetry test inside coherent macro regimes: positive/hawkish versus negative/dovish macro direction; same common-core transmission labels and same signed 20d outcome.",
+  "guardrails": [
+    "direction split economically predeclared",
+    "coherent regimes unchanged",
+    "same 40% chronological OOS exclusion",
+    "no tuning",
+    "no engine/live/OOS baseline changes"
+  ],
+  "pooled_oos": {
+    "HAWKISH_POSITIVE": {
+      "MEDIUM": {
+        "n": 23,
+        "hit_rate": 0.5652173913043478,
+        "mean": -0.0013317045226110644,
+        "median": 0.0007688646151902945
+      },
+      "LOW": {
+        "n": 64,
+        "hit_rate": 0.546875,
+        "mean": 0.0030490113131719154,
+        "median": 0.002783606727742718
+      },
+      "medium_gt_low_hit": true,
+      "medium_gt_low_mean": false
+    },
+    "DOVISH_NEGATIVE": {
+      "MEDIUM": {
+        "n": 17,
+        "hit_rate": 0.6470588235294118,
+        "mean": 0.00322634154330073,
+        "median": 0.003897182290236865
+      },
+      "LOW": {
+        "n": 36,
+        "hit_rate": 0.6388888888888888,
+        "mean": 0.004373895307423128,
+        "median": 0.0026818225263385356
+      },
+      "medium_gt_low_hit": true,
+      "medium_gt_low_mean": false
+    }
+  },
+  "oos_by_currency": {
+    "USD": {
+      "HAWKISH_POSITIVE": {
+        "MEDIUM": {
+          "n": 13,
+          "hit_rate": 0.6153846153846154,
+          "mean": 0.001036357559221458,
+          "median": 0.005997851433855354
+        },
+        "LOW": {
+          "n": 21,
+          "hit_rate": 0.5714285714285714,
+          "mean": 0.0014534599502436208,
+          "median": 0.00784728104732355
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": false
+      },
+      "DOVISH_NEGATIVE": {
+        "MEDIUM": {
+          "n": 7,
+          "hit_rate": 1.0,
+          "mean": 0.01505005680388071,
+          "median": 0.00877648895054977
+        },
+        "LOW": {
+          "n": 16,
+          "hit_rate": 0.8125,
+          "mean": 0.007954669920481343,
+          "median": 0.008243353351582917
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      }
+    },
+    "GBP": {
+      "HAWKISH_POSITIVE": {
+        "MEDIUM": {
+          "n": 2,
+          "hit_rate": 0.5,
+          "mean": -0.0015176135816381568,
+          "median": -0.0015176135816381568
+        },
+        "LOW": {
+          "n": 15,
+          "hit_rate": 0.4666666666666667,
+          "mean": 0.00242507353580138,
+          "median": -0.0009971385933014926
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": false
+      },
+      "DOVISH_NEGATIVE": {
+        "MEDIUM": {
+          "n": 5,
+          "hit_rate": 0.0,
+          "mean": -0.014546297372602896,
+          "median": -0.017652044182293096
+        },
+        "LOW": {
+          "n": 11,
+          "hit_rate": 0.36363636363636365,
+          "mean": -0.0014959640978283763,
+          "median": -0.00030801177161921743
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      }
+    },
+    "CAD": {
+      "HAWKISH_POSITIVE": {
+        "MEDIUM": {
+          "n": 5,
+          "hit_rate": 0.8,
+          "mean": 0.0005207219573443582,
+          "median": 0.0012776010386797859
+        },
+        "LOW": {
+          "n": 8,
+          "hit_rate": 0.5,
+          "mean": -0.0006211798378455851,
+          "median": -0.0011718376990633083
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      },
+      "DOVISH_NEGATIVE": {
+        "MEDIUM": {
+          "n": 3,
+          "hit_rate": 0.6666666666666666,
+          "mean": 0.0006642595150389317,
+          "median": 0.0010318406914083757
+        },
+        "LOW": {
+          "n": 5,
+          "hit_rate": 0.4,
+          "mean": -0.002660338179882358,
+          "median": -0.00345541939694587
+        },
+        "medium_gt_low_hit": true,
+        "medium_gt_low_mean": true
+      }
+    },
+    "JPY": {
+      "HAWKISH_POSITIVE": {
+        "MEDIUM": {
+          "n": 3,
+          "hit_rate": 0.0,
+          "mean": -0.014556744971126306,
+          "median": -0.019568460251050534
+        },
+        "LOW": {
+          "n": 20,
+          "hit_rate": 0.6,
+          "mean": 0.006660370037681525,
+          "median": 0.003332621646088229
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      },
+      "DOVISH_NEGATIVE": {
+        "MEDIUM": {
+          "n": 2,
+          "hit_rate": 1.0,
+          "mean": 0.010118058463422562,
+          "median": 0.010118058463422562
+        },
+        "LOW": {
+          "n": 4,
+          "hit_rate": 1.0,
+          "mean": 0.01498570207876376,
+          "median": 0.009364895993384135
+        },
+        "medium_gt_low_hit": false,
+        "medium_gt_low_mean": false
+      }
+    }
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
