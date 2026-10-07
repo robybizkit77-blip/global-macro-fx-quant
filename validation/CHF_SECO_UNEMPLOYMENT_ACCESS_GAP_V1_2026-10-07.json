@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_CHF_SECO_UNEMPLOYMENT_ACCESS_GAP_V1",
+  "status": "WITHHELD_SOURCE_ACCESS_GAP",
+  "created_at": "2026-10-07",
+  "currency": "CHF",
+  "series": "SECO registered unemployment rate - seasonally adjusted, contemporaneous monthly vintage",
+  "required_for": "CHF/SNB historical reaction replay",
+  "official_source": "SECO - Die Lage auf dem Arbeitsmarkt monthly archived releases",
+  "economic_data_availability": "AVAILABLE",
+  "reproducible_runner_materialization": "BLOCKED_FOR_LEGACY_ARCHIVE",
+  "evidence": {
+    "current_archive": "GitHub Actions can access and parse recent SECO releases; latest attempt produced 17 valid rows before the coverage gate.",
+    "legacy_archive": "2019-2024 official release PDFs/pages are publicly indexed and browser-accessible, but direct historical downloads fail from the GitHub Actions runner used by this project.",
+    "anchor_examples_verified_externally": {
+      "2019-01": 2.4,
+      "2020-01": 2.3,
+      "2022-11": 2.0,
+      "2024-06": 2.4,
+      "2026-06": 3.1
+    },
+    "revision_reason": "SECO explicitly states that seasonal adjustment is recomputed when each new observation is added, so the current historical SA series cannot substitute for contemporaneous vintages without revision look-ahead."
+  },
+  "attempts": [
+    {"workflow_run": 37584589691, "result": "FAIL_DISCOVERY_CURRENT_ARCHIVE_ONLY"},
+    {"workflow_run": 37584753608, "result": "FAIL_LEGACY_ARCHIVE_ACCESS"},
+    {"workflow_run": 37584969433, "result": "INEFFICIENT_LEGACY_ASSET_PROBE"},
+    {"workflow_run": 37585701554, "result": "FAIL_COVERAGE_17_ROWS_LEGACY_ACCESS_BLOCKED"}
+  ],
+  "already_certified_chf_blocks": {
+    "headline_cpi": "PASS_TIMING_CONSERVATIVE_NOT_RELEASE_ARCHIVE",
+    "swiss_2y": "PASS_SAME_BASIS_OFFICIAL",
+    "snb_fx_transactions": "PASS_OFFICIAL_QUARTERLY_PIT_POLICY",
+    "chf_g8_price_outcome": "AVAILABLE_USING_CERTIFIED_ECB_G8_MATRIX_CONVENTION"
+  },
+  "replay_allowed": false,
+  "blocker": "Materialize a reproducible 2021+ SECO seasonally-adjusted unemployment vintage series from contemporaneous releases without using the current recomputed history.",
+  "forbidden_workarounds": [
+    "current revised/recomputed seasonally-adjusted SECO history",
+    "vendor history used as first-release substitute",
+    "raw sight-deposit changes used as intervention proxy",
+    "dropping labour after inspecting CHF FX outcomes"
+  ],
+  "production_rule": "WITHHELD",
+  "frozen_engine": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
