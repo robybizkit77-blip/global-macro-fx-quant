@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_RATES_REFRESH_PROVENANCE_V1",
+  "status": "TEMPLATE_NOT_A_REFRESH_RECORD",
+  "section": "NATIVE_RATES_DATA",
+  "refresh_id": "REPLACE_ME",
+  "created_at_utc": "REPLACE_ME",
+  "source_asof": "REPLACE_ME",
+  "candidate_sha256": "REPLACE_ME",
+  "inputs": [
+    {
+      "currency": "USD",
+      "source": "REPLACE_WITH_CERTIFIED_SOURCE",
+      "source_asof": "REPLACE_ME",
+      "sha256_or_source_fingerprint": "REPLACE_ME",
+      "role": "rates_source"
+    }
+  ],
+  "validation": {
+    "eight_currencies_present": true,
+    "required_fields_present": true,
+    "source_metadata_checked": true,
+    "freshness_checked": true,
+    "manual_review_required": true
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
