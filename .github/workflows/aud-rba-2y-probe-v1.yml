@@ -1,0 +1,40 @@
+name: AUD RBA 2Y Probe V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_aud_rba_2y_probe_v1.py'
+      - '.github/workflows/aud-rba-2y-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official RBA F2 AUD 2Y history
+        run: python validation/run_aud_rba_2y_probe_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          python - <<'PY'
+          ENGINE='ff52198a75cc67f7dae96fc2bbf65623f170791c'
+          FP='3356baf0'
+          assert len(ENGINE)==40 and FP=='3356baf0'
+          print({'engine':ENGINE,'fingerprint':FP,'changes_engine_rules':False,'changes_live_data':False,'changes_oos_baseline':False})
+          PY
+      - name: Commit probe evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/AUD_RBA_2Y_PROBE_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m "Materialize AUD RBA 2Y probe evidence"
+          git push
