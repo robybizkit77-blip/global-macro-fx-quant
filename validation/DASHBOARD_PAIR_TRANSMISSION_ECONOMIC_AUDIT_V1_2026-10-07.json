@@ -1,0 +1,510 @@
+{
+  "schema": "GMFQ_DASHBOARD_PAIR_TRANSMISSION_ECONOMIC_AUDIT_V1",
+  "status": "PASS_SANITY",
+  "created_at": "2026-10-07",
+  "purpose": "Economic-logic sanity audit of the current descriptive pair transmission classification; no return fitting, no rule tuning, no production promotion.",
+  "distribution": {
+    "TRANSMISSION_PARTIAL": 8,
+    "TRANSMISSION_WITHHELD": 6,
+    "TRANSMISSION_DIVERGENT": 12,
+    "TRANSMISSION_CLEAN": 2
+  },
+  "clean_pairs": [
+    "GBP/JPY",
+    "JPY/CAD"
+  ],
+  "partial_pairs": [
+    "AUD/NZD",
+    "CAD/AUD",
+    "EUR/AUD",
+    "EUR/JPY",
+    "GBP/AUD",
+    "JPY/NZD",
+    "USD/EUR",
+    "USD/JPY"
+  ],
+  "divergent_pairs": [
+    "CHF/CAD",
+    "CHF/NZD",
+    "EUR/CAD",
+    "EUR/CHF",
+    "EUR/NZD",
+    "GBP/CAD",
+    "GBP/CHF",
+    "GBP/NZD",
+    "USD/AUD",
+    "USD/CAD",
+    "USD/CHF",
+    "USD/NZD"
+  ],
+  "withheld_pairs": [
+    "CAD/NZD",
+    "CHF/AUD",
+    "EUR/GBP",
+    "JPY/AUD",
+    "JPY/CHF",
+    "USD/GBP"
+  ],
+  "clean_detail": [
+    {
+      "pair": "GBP/JPY",
+      "state": "TRANSMISSION_CLEAN",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Macro, central-bank impulse, front-end relative rates and price are directionally coherent.",
+      "economic_pattern": "MACRO_B__CB_ALIGNED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "JPY/CAD",
+      "state": "TRANSMISSION_CLEAN",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Macro, central-bank impulse, front-end relative rates and price are directionally coherent.",
+      "economic_pattern": "MACRO_A__CB_ALIGNED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    }
+  ],
+  "partial_detail": [
+    {
+      "pair": "AUD/NZD",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_A__CB_DIVERGENT__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "CAD/AUD",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "NEUTRAL_OR_MIXED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_B__CB_ALIGNED__RATES_ALIGNED__PRICE_NEUTRAL_OR_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/AUD",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/JPY",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_B__CB_NEUTRAL_OR_MIXED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "GBP/AUD",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_B__CB_NEUTRAL_OR_MIXED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "JPY/NZD",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_A__CB_NEUTRAL_OR_MIXED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/EUR",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_A__CB_NEUTRAL_OR_MIXED__RATES_ALIGNED__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/JPY",
+      "state": "TRANSMISSION_PARTIAL",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "The macro anchor has some downstream confirmation, but at least one material channel is neutral, mixed or contradictory.",
+      "economic_pattern": "MACRO_B__CB_NEUTRAL_OR_MIXED__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    }
+  ],
+  "divergent_detail": [
+    {
+      "pair": "CHF/CAD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_A__CB_DIVERGENT__RATES_DIVERGENT__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "CHF/NZD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "A",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it.",
+      "economic_pattern": "MACRO_A__CB_DIVERGENT__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/CAD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/CHF",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/NZD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_NEUTRAL_OR_MIXED__RATES_DIVERGENT__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "GBP/CAD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "GBP/CHF",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "ALIGNED",
+      "classification_reason": "Both central-bank impulse and front-end relative rates contradict the macro anchor, even if price has not yet broken with it.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_ALIGNED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "GBP/NZD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "ALIGNED",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_ALIGNED__RATES_ALIGNED__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/AUD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "ALIGNED",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_ALIGNED__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/CAD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/CHF",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "DIVERGENT",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_DIVERGENT__RATES_DIVERGENT__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/NZD",
+      "state": "TRANSMISSION_DIVERGENT",
+      "macro_anchor": "B",
+      "central_bank_vs_macro": "NEUTRAL_OR_MIXED",
+      "rates_vs_macro": "DIVERGENT",
+      "price_vs_macro": "DIVERGENT",
+      "classification_reason": "Price, the final confirmation layer, is moving against the macro anchor.",
+      "economic_pattern": "MACRO_B__CB_NEUTRAL_OR_MIXED__RATES_DIVERGENT__PRICE_DIVERGENT",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    }
+  ],
+  "withheld_detail": [
+    {
+      "pair": "CAD/NZD",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "CHF/AUD",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "EUR/GBP",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "JPY/AUD",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "JPY/CHF",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    },
+    {
+      "pair": "USD/GBP",
+      "state": "TRANSMISSION_WITHHELD",
+      "macro_anchor": "MIXED",
+      "central_bank_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "rates_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "price_vs_macro": "NOT_APPLICABLE_MACRO_MIXED",
+      "classification_reason": "Macro anchor is MIXED or unavailable; no directional transmission classification is permitted.",
+      "economic_pattern": "MACRO_MIXED__CB_NOT_APPLICABLE_MACRO_MIXED__RATES_NOT_APPLICABLE_MACRO_MIXED__PRICE_NOT_APPLICABLE_MACRO_MIXED",
+      "sanity_issues": [],
+      "historical_evidence": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "note": "Historical evidence quality is separate from current live-state availability."
+      }
+    }
+  ],
+  "sanity_issue_count": 0,
+  "notes": [
+    "This audit checks internal economic/classification coherence only.",
+    "It does not claim predictive edge or statistical superiority.",
+    "Historical reaction-function evidence remains separate from current live-state classification."
+  ]
+}
