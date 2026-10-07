@@ -1,0 +1,445 @@
+{
+  "schema": "GMFQ_DASHBOARD_CAUSAL_PAYLOAD_CURRENT_V1",
+  "status": "RESEARCH_ONLY_READ_ONLY_ADAPTER",
+  "created_at": "2026-10-07",
+  "engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "source_files": [
+    "live_data/sections/COUNTRY_CTX.json",
+    "live_data/sections/NATIVE_CB_DATA.json",
+    "live_data/sections/NATIVE_RATES_DATA.json",
+    "validation/DASHBOARD_REACTION_FUNCTION_CONTRACT_V2_2026-10-07.json"
+  ],
+  "classification_policy": "Adapter only. It normalizes validated current inputs but does not infer macro sign, relative-rate sign, price sign, or final transmission state unless the evidence map requires WITHHELD.",
+  "currencies": {
+    "USD": {
+      "currency": "USD",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": "POSITIVE_BUT_UNEVEN",
+        "summary_it": "USA: capex ancora forte (core capital goods +1,6% ad agosto), ma fiducia Michigan scende a 48,1 e aspettative inflazione 1Y salgono al 4,6%. Quadro resiliente, con pressione inflazionistica e tassi più alti.",
+        "sector_states_it": {
+          "Consumi e reddito": "Resilienti ma fragili",
+          "Immobiliare": "Supporto in calo",
+          "Imprese e investimenti": "In accelerazione",
+          "Mercato del lavoro": "Ancora resiliente",
+          "Salari e produttività": "Misto",
+          "Persistenza dell'inflazione": "Mista e ancora appiccicosa",
+          "Liquidità, credito e condizioni finanziarie": "Favorevoli"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "FED",
+        "reaction_function": "DUAL_MANDATE",
+        "evidence_status": "SUPPORTED_DIAGNOSTIC",
+        "dashboard_read": "La trasmissione Fed è più informativa nei regimi coerentemente dovish/easing; la conferma hawkish è più debole e non va trattata in modo simmetrico."
+      },
+      "cb_implication": {
+        "stance": "HAWKISH · restrittiva",
+        "impulse": "TIGHTENING",
+        "official_bias": "BIAS HAWKISH",
+        "context": "Target range raised by 25bp to 3.75-4.00%; activity expanding at a solid pace; inflation remains elevated.",
+        "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+        "pricing_freshness": "VALIDATED_SECONDARY_STALE"
+      },
+      "front_end_transmission": {
+        "level_2y": 4.83,
+        "change_2y_bp": 2.0,
+        "date": "2026-10-02",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "source": "U.S. Treasury Daily Par Yield Curve · 2 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "USD relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "EUR": {
+      "currency": "EUR",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": null,
+        "summary_it": "Area euro: M3 accelera al 3,5% e il credito privato resta in crescita, ma i prestiti alle imprese rallentano al 4,2%; in Germania il clima consumatori GfK peggiora a -30,6. Quadro ancora misto.",
+        "sector_states_it": {
+          "Attività e imprese": "Misto",
+          "Consumi e domanda interna": "Misto",
+          "Mercato del lavoro": "Stabile / ancora solido",
+          "Salari e persistenza inflazionistica": "Mista / ancora appiccicosa",
+          "Credito e trasmissione bancaria": "Primi segnali di allentamento",
+          "Liquidità e condizioni finanziarie": "Liquidità stabile; condizioni finanziarie da leggere separatamente"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "ECB",
+        "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+        "evidence_status": "NO_INCREMENTAL_VALUE",
+        "dashboard_read": "Il front-end resta utile per capire il repricing ECB, ma non aumenta meccanicamente la qualità del segnale macro OOS."
+      },
+      "cb_implication": {
+        "stance": "HAWKISH · restrittiva",
+        "impulse": "TIGHTENING",
+        "official_bias": "BIAS HAWKISH",
+        "context": "Three key ECB rates raised by 25bp; deposit facility rate at 2.50%; decisions remain data-dependent around the 2% medium-term objective.",
+        "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+        "pricing_freshness": "VALIDATED_SECONDARY_RECENT"
+      },
+      "front_end_transmission": {
+        "level_2y": 2.9918960503,
+        "change_2y_bp": -25.7,
+        "date": "2026-10-02",
+        "quality": "FULL_CURRENT_OFFICIAL_SAME_BASIS",
+        "source": "European Central Bank · AAA Svensson spot curve · 2 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "EUR relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "GBP": {
+      "currency": "GBP",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": null,
+        "summary_it": "Regno Unito: attività complessivamente mista, primi segnali di ripresa della domanda, lavoro misto; salari/inflazione restano persistenti. La liquidità aggregata è stabile e il credito cresce, mentre funding e housing restano contesti separati.",
+        "sector_states_it": {
+          "Attività e imprese": "Misto",
+          "Consumi e domanda interna": "Primi segnali di ripresa",
+          "Mercato del lavoro": "Misto",
+          "Salari e persistenza inflazionistica": "Persistente / in riaccelerazione",
+          "Credito e funding bancario": "Restrittivo",
+          "Liquidità": "Stabile",
+          "Housing e trasmissione alle famiglie": "Misto"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "BOE",
+        "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+        "evidence_status": "NO_INCREMENTAL_VALUE",
+        "dashboard_read": "OIS e front-end descrivono la trasmissione BoE, ma non devono diventare un moltiplicatore automatico di convinzione."
+      },
+      "cb_implication": {
+        "stance": "INVARIATA · rischio hawkish",
+        "impulse": "HOLD_HAWKISH_RISK",
+        "official_bias": "HOLD · RISCHIO RIALZO",
+        "context": "Bank Rate held at 3.75% by 6-3; three members preferred a 25bp increase; CPI inflation was 3.1% in August and expected to rise further.",
+        "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+        "pricing_freshness": "VALIDATED_SECONDARY"
+      },
+      "front_end_transmission": {
+        "level_2y": 4.602510071695553,
+        "change_2y_bp": -3.6,
+        "date": "2026-10-02",
+        "quality": "FULL_CURRENT_OFFICIAL_SAME_BASIS",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "GBP relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "JPY": {
+      "currency": "JPY",
+      "macro_state": {
+        "status": "ACTIVE_STABLE_STRUTTURALE_ENRICHED",
+        "macro_quality": null,
+        "summary_it": "Giappone: attività e domanda interna miste; lavoro osservato resiliente; inflazione osservata in riaccelerazione; credito favorevole, liquidità in primi segnali di irrigidimento e condizioni finanziarie miste. Il ciclo salari→prezzi domestici→BoJ è ora coperto: salari forti, domanda di lavoro resiliente ma non in accelerazione, servizi appiccicosi ma senza nuova riaccelerazione.",
+        "sector_states_it": {
+          "Attività e imprese": "Misto",
+          "Domanda interna": "Misto",
+          "Mercato del lavoro osservato": "Resiliente",
+          "Inflazione osservata": "In riaccelerazione",
+          "Credito e trasmissione bancaria": "Favorevole",
+          "Liquidità BoJ / sistema": "Primi segnali di irrigidimento",
+          "Condizioni finanziarie / canale yen": "Miste"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "BOJ",
+        "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+        "evidence_status": "NO_INCREMENTAL_VALUE",
+        "dashboard_read": "JGB 2Y e differenziale JPY-USD spiegano la trasmissione, ma il replay armonizzato non supporta un upgrade meccanico della convinzione."
+      },
+      "cb_implication": {
+        "stance": "HAWKISH · restrittiva",
+        "impulse": "TIGHTENING",
+        "official_bias": "BIAS HAWKISH",
+        "context": "Guideline for money market operations changed; the Bank will encourage the overnight call rate to remain at around 1.25%.",
+        "pricing_quality": "COMPLETO",
+        "pricing_freshness": "CURRENT_VALIDATED"
+      },
+      "front_end_transmission": {
+        "level_2y": 1.919,
+        "change_2y_bp": -0.6,
+        "date": "2026-10-02",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "JPY_MINUS_USD_2Y"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "CAD": {
+      "currency": "CAD",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": null,
+        "summary_it": "Canada: crescita e domanda hanno mostrato miglioramento recente, ma dopo il filtro anti-rumore l'attività resta mista; lavoro resiliente; headline CPI più alta ma trim/median vicini al 2%; liquidità favorevole, credito e condizioni finanziarie miste.",
+        "sector_states_it": {
+          "Attività e imprese": "Misto",
+          "Domanda interna": "Mista",
+          "Mercato del lavoro": "Resiliente",
+          "Persistenza dell'inflazione": "Core benigno / headline più alta",
+          "Credito e trasmissione bancaria": "Misto",
+          "Liquidità BoC / sistema": "Favorevole",
+          "Condizioni finanziarie / canale CAD": "Miste"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "BOC",
+        "reaction_function": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+        "evidence_status": "PROMISING_SMALL_SAMPLE",
+        "dashboard_read": "Quando macro e inflazione sono coerenti, la trasmissione migliora nei test recenti, ma il campione è ancora troppo piccolo per un gate."
+      },
+      "cb_implication": {
+        "stance": "INVARIATA · rischio inflazione",
+        "impulse": "HOLD_INFLATION_RISK",
+        "official_bias": "HOLD · RISCHIO INFLAZIONE",
+        "context": "Overnight rate held at 2.25%; inflation risks increased amid higher energy prices and renewed trade uncertainty.",
+        "pricing_quality": "COMPLETO",
+        "pricing_freshness": "CURRENT_VALIDATED"
+      },
+      "front_end_transmission": {
+        "level_2y": 3.25,
+        "change_2y_bp": -8.8,
+        "date": "2026-10-02",
+        "quality": "FULL_CURRENT_OFFICIAL_SAME_BASIS",
+        "source": "Bank of Canada Valet API · selected benchmark Government of Canada bond yields · 2 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "CAD relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "AUD": {
+      "currency": "AUD",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": null,
+        "summary_it": "Australia: domanda interna forte e lavoro ancora resiliente, ma attività/lead indicator restano più misti. Inflazione sottostante ancora persistente, salari elevati ma non in accelerazione; credito housing e business resta espansivo. La liquidità aggregata è stabile e le condizioni finanziarie restano complessivamente miste.",
+        "sector_states_it": {
+          "Attività e imprese": "Misto",
+          "Domanda interna": "Forte",
+          "Mercato del lavoro": "Resiliente",
+          "Inflazione": "Persistente / in riaccelerazione",
+          "Salari": "Elevati ma in raffreddamento",
+          "Housing e credito": "Favorevoli ma costosi",
+          "Liquidità": "Stabile",
+          "Condizioni finanziarie": "Miste"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "RBA",
+        "reaction_function": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+        "evidence_status": "PROMISING_SMALL_SAMPLE",
+        "dashboard_read": "Il replay è promettente soprattutto sul lato hawkish, ma non è abbastanza ampio per trasformare il 2Y in filtro operativo."
+      },
+      "cb_implication": {
+        "stance": "HAWKISH · restrittiva",
+        "impulse": "TIGHTENING",
+        "official_bias": "BIAS HAWKISH",
+        "context": "RBA: cash rate target raised by 25 bp to 4.60% on 29 Sep 2026; inflation remains elevated and upside inflation risks are materialising.",
+        "pricing_quality": "COMPLETO_STALE_PRE_DECISION",
+        "pricing_freshness": "PENDING_POST_DECISION_EOD"
+      },
+      "front_end_transmission": {
+        "level_2y": 4.942,
+        "change_2y_bp": -0.5,
+        "date": "2026-09-30",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "AUD relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": null,
+      "classification_status": "AWAITING_SIGNED_INPUTS",
+      "withheld_reason": null,
+      "production_gate": false
+    },
+    "NZD": {
+      "currency": "NZD",
+      "macro_state": {
+        "status": "ACTIVE_STABLE_PARTIAL",
+        "macro_quality": "RECOVERY_WITH_LABOUR_WEAKNESS_AND_INFLATION_DIVERGENCE",
+        "summary_it": "Nuova Zelanda in recupero sul PIL ma con lavoro ancora debole e inflazione headline sopra il core. Il layer liquidità NZD non è determinato in modo robusto: i dati correnti sono presenti, ma storico e credito non bastano ancora per una conclusione stabile. Housing e condizioni finanziarie restano contesto separato e non modificano da soli la struttura FX.",
+        "sector_states_it": {
+          "Attività e imprese": "Espansione stabile; accelerazione recente ancora candidata",
+          "Domanda interna": "Forte ma ultimo retail disponibile Q1 2026",
+          "Mercato del lavoro": "Debole/deteriorato; ultimo trimestre mostra solo un primo tentativo di stabilizzazione",
+          "Inflazione": "Mista; headline in forte riaccelerazione ma core moderato",
+          "Salari": "In moderazione, contesto corrente",
+          "Credito": "Housing favorevole; business misto (lettura corrente ufficiale, storico stabile pending)",
+          "Liquidità": "Dati correnti disponibili; direzione robusta non determinata finché storico e credito restano incompleti",
+          "Condizioni finanziarie": "In easing via mutui/TWI; costo business ancora rigido (storico stabile pending)"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "RBNZ",
+        "reaction_function": "PRICE_STABILITY_PRIMARY_FLEXIBLE_INFLATION_TARGETING",
+        "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+        "dashboard_read": "Reaction function definita teoricamente, ma la trasmissione storica resta WITHHELD finché il dataset PIT non è riproducibile."
+      },
+      "cb_implication": {
+        "stance": "HAWKISH · restrittiva",
+        "impulse": "TIGHTENING",
+        "official_bias": "BIAS HAWKISH",
+        "context": "OCR raised by 25bp to 2.75%; inflation was 4.1% in the June quarter and the economic recovery remains uneven.",
+        "pricing_quality": "PARZIALE_OFFICIAL",
+        "pricing_freshness": "PARTIAL_VALIDATED"
+      },
+      "front_end_transmission": {
+        "level_2y": 3.89,
+        "change_2y_bp": -4.0,
+        "date": "2026-10-01",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "source": "RBNZ B2 Wholesale interest rates · government bond close · 1 Oct 2026",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": null
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "WITHHELD_BY_EVIDENCE_MAP",
+      "withheld_reason": "Reaction function definita teoricamente, ma la trasmissione storica resta WITHHELD finché il dataset PIT non è riproducibile.",
+      "production_gate": false
+    },
+    "CHF": {
+      "currency": "CHF",
+      "macro_state": {
+        "status": "ACTIVE_STABLE",
+        "macro_quality": null,
+        "summary_it": "Svizzera: attività forte ma distorta dal pharma, domanda interna in moderato miglioramento, lavoro misto; inflazione resta bassa e il rialzo headline è soprattutto energetico. Credito e mutui continuano a crescere, ma il costo dei mutui è più alto. Liquidità divergente; il franco più debole allenta parte delle condizioni finanziarie.",
+        "sector_states_it": {
+          "Attività e imprese": "In accelerazione, ma con effetto pharma da non sovrainterpretare",
+          "Domanda interna": "Supporto in aumento moderato",
+          "Mercato del lavoro": "Misto: occupazione cresce, disoccupazione sale gradualmente",
+          "Inflazione domestica": "Bassa; headline in rialzo soprattutto per energia, core ancora contenuta",
+          "Credito e housing": "Quantità ancora favorevoli, costo dei mutui più alto",
+          "Liquidità SNB / sistema": "Divergente",
+          "Condizioni finanziarie / canale CHF": "Miste: franco più debole allenta, tassi mutui più alti irrigidiscono"
+        },
+        "mechanical_override": false
+      },
+      "central_bank_reaction_function": {
+        "central_bank": "SNB",
+        "reaction_function": "PRICE_STABILITY_PRIMARY_WITH_ECONOMIC_DEVELOPMENTS",
+        "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+        "dashboard_read": "Per SNB il cambio è anche parte della trasmissione di policy; senza unemployment vintage SECO il replay storico resta bloccato e il pannello deve mostrare WITHHELD."
+      },
+      "cb_implication": {
+        "stance": "DOVISH · accomodante",
+        "impulse": "HOLD_ACCOMMODATIVE",
+        "official_bias": "BIAS DOVISH / ACCOMODANTE",
+        "context": "SNB policy rate held at 0%; inflation pressure increased only slightly; SNB remains willing to be active in FX as necessary.",
+        "pricing_quality": "COMPLETO_SECONDARY_QUOTE",
+        "pricing_freshness": "VALIDATED_SECONDARY_RECENT"
+      },
+      "front_end_transmission": {
+        "level_2y": 0.287,
+        "change_2y_bp": -3.7,
+        "date": "2026-09-30",
+        "quality": "FULL_CURRENT_OFFICIAL",
+        "source": "Swiss National Bank · spot interest rates on Swiss Confederation bonds · rendeiduebd",
+        "direction_vs_macro": null
+      },
+      "relative_rates_transmission": {
+        "direction_vs_macro": null,
+        "value": null,
+        "benchmark": "CHF relative 2Y versus counterpart when available"
+      },
+      "price_confirmation": {
+        "direction_vs_macro": null,
+        "source": null
+      },
+      "transmission_state": "TRANSMISSION_WITHHELD",
+      "classification_status": "WITHHELD_BY_EVIDENCE_MAP",
+      "withheld_reason": "Per SNB il cambio è anche parte della trasmissione di policy; senza unemployment vintage SECO il replay storico resta bloccato e il pannello deve mostrare WITHHELD.",
+      "production_gate": false
+    }
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false,
+  "production_promotion": false
+}
