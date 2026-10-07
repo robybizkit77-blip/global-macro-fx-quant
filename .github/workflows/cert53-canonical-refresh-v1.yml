@@ -1,0 +1,90 @@
+name: CERT53 Canonical Refresh V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_cert53_refresh_v1.py'
+      - 'validation/validate_cert53_canonical_refresh_v1.py'
+      - 'validation/update_live_direct_section.py'
+      - 'validation/build_live_manifest_v2.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/LIVE_UPDATE_PIPELINE_RUNBOOK_V1_2026-10-05.json'
+      - '.github/workflows/cert53-canonical-refresh-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safety-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate canonical refresh contract
+        run: python validation/validate_cert53_canonical_refresh_v1.py
+      - name: Build synthetic candidate and provenance
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          c=json.loads(Path('live_data/sections/CERT53.json').read_text())
+          c['_canonical_refresh_preflight_probe']={'synthetic':True,'must_never_apply':True}
+          raw=(json.dumps(c,separators=(',',':'),ensure_ascii=False)+'\n').encode()
+          Path('/tmp/CERT53.candidate.json').write_bytes(raw)
+          h=hashlib.sha256(raw).hexdigest()
+          base=Path('live_data/sections/CERT53.json').read_bytes()
+          p={
+            'schema':'GMFQ_CERT53_REFRESH_PROVENANCE_V1',
+            'status':'CI_PREFLIGHT_ONLY__NOT_APPLIED',
+            'section':'CERT53',
+            'refresh_id':'CI_CERT53_CANONICAL_PREFLIGHT_V1',
+            'created_at_utc':'2026-10-07T00:00:00Z',
+            'source_asof':'SYNTHETIC_CI_PREFLIGHT',
+            'candidate_sha256':h,
+            'inputs':[{'path':'live_data/sections/CERT53.json','sha256':hashlib.sha256(base).hexdigest(),'role':'CI_BASELINE_INPUT'}],
+            'validation':{'candidate_schema_valid':True,'pair_count_28':True,'source_metadata_checked':True,'manual_review_required':True},
+            'guards':{'changes_engine_rules':False,'changes_oos_baseline':False,'production_promotion':False}
+          }
+          Path('/tmp/CERT53.provenance.json').write_text(json.dumps(p,indent=2)+'\n')
+          PY
+      - name: Canonical wrapper preflight must pass
+        run: |
+          python validation/run_cert53_refresh_v1.py \
+            --candidate /tmp/CERT53.candidate.json \
+            --provenance /tmp/CERT53.provenance.json > /tmp/preflight.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/preflight.json'))
+          assert d['status']=='PREFLIGHT_PASS'
+          assert d['mode']=='PREFLIGHT_ONLY'
+          assert d['live_data_changed'] is False
+          print('PASS canonical wrapper preflight')
+          PY
+      - name: Apply without exact refresh confirmation must be refused
+        run: |
+          set +e
+          python validation/run_cert53_refresh_v1.py \
+            --candidate /tmp/CERT53.candidate.json \
+            --provenance /tmp/CERT53.provenance.json \
+            --apply > /tmp/refusal.out 2>&1
+          rc=$?
+          set -e
+          test "$rc" -ne 0
+          grep -q -- '--apply requires --confirm-refresh-id exactly matching provenance refresh_id' /tmp/refusal.out
+          echo 'PASS unsafe apply refused'
+      - name: Prove live runtime and provenance untouched
+        run: |
+          git diff --exit-code -- live_data/ payload/
+          test ! -e live_data/provenance/cert53/CI_CERT53_CANONICAL_PREFLIGHT_V1.json
+          python validation/check_live_update_contract.py >/tmp/live-contract.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/live-contract.json'))
+          assert d['status']=='PASS'
+          print('PASS current live contract unchanged')
+          PY
