@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "4acd001b7bb14dd2f9981049b8b32f4633bbbfdc915479e91bea5b957ce43b4c",
-  "runtime_bytes": 2719904,
+  "runtime_sha256": "a5d5fd76b838bd2251a5871bc016b9265e944ac77672bb4705510f57959c97e7",
+  "runtime_bytes": 2701743,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
