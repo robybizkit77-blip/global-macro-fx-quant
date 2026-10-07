@@ -1,0 +1,84 @@
+name: Pair Causal UI Browser V1
+
+on:
+  push:
+    branches:
+      - 'research-transmission-conviction-layer-v1-2026-10-07'
+    paths:
+      - 'index.html'
+      - 'payload/part-17.txt'
+      - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
+      - '.github/workflows/pair-causal-ui-browser-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-pair-server.log 2>&1 &
+          sleep 2
+      - name: Audit pair causal UI
+        run: |
+          cat > pair-causal-audit.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const pageErrors=[]; const consoleErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            const res=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!res?.ok()) throw new Error('HTTP load failed');
+            await page.waitForTimeout(1800);
+            async function check(pair,expectedState,expectedRobustness){
+              return await page.evaluate(async ({pair,expectedState,expectedRobustness})=>{
+                if(typeof window.showView==='function') window.showView('pairs');
+                const sel=document.querySelector('#pairSelect');
+                if(sel){sel.value=pair;sel.dispatchEvent(new Event('change',{bubbles:true}));}
+                if(typeof window.renderPair==='function') window.renderPair();
+                if(typeof window.renderPairCausalV1==='function') await window.renderPairCausalV1(pair);
+                const st=window.__GMFQ_PAIR_CAUSAL_V1__||{};
+                return {st,text:document.getElementById('gmfqPairCausalEvidence')?.innerText||'',bar:document.getElementById('gmfqPairCausalBar')?.innerText||'',expectedState,expectedRobustness};
+              },{pair,expectedState,expectedRobustness});
+            }
+            const clean=await check('GBP/JPY','TRANSMISSION_CLEAN','ROBUST_ACROSS_RULES');
+            const div=await check('USD/CAD','TRANSMISSION_DIVERGENT','ROBUST_ACROSS_RULES');
+            const sens=await check('EUR/CAD',null,'RULE_SENSITIVE');
+            for(const x of [clean,div,sens]){
+              if(x.st.status!=='PASS') throw new Error('Pair causal status fail '+JSON.stringify(x));
+              if(x.expectedState && x.st.state!==x.expectedState) throw new Error('State mismatch '+JSON.stringify(x));
+              if(x.st.robustness!==x.expectedRobustness) throw new Error('Robustness mismatch '+JSON.stringify(x));
+              if(!x.text.includes('Lettura causale')) throw new Error('Causal narrative missing');
+              if(!x.text.includes('non modifica il bias macro')) throw new Error('Safety wording missing');
+            }
+            if(!clean.bar.includes('TRASMISSIONE CLEAN')) throw new Error('Clean UI label missing');
+            if(!div.bar.includes('TRASMISSIONE DIVERGENTE')) throw new Error('Divergent UI label missing');
+            if(!sens.bar.includes('SENSIBILE ALLA REGOLA')) throw new Error('Rule-sensitive UI label missing');
+            if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
+            if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
+            await page.screenshot({path:'pair-causal-ui.png',fullPage:true});
+            console.log(JSON.stringify({clean,div,sens},null,2));
+            await browser.close();
+          })().catch(e=>{console.error('::error title=Pair causal UI audit::'+String(e.message||e));process.exit(1)});
+          EOF
+          node pair-causal-audit.js
+      - name: Upload audit screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pair-causal-ui-audit
+          path: |
+            pair-causal-ui.png
+            /tmp/gmfq-pair-server.log
