@@ -1,0 +1,47 @@
+name: CERT53 Provenance Audit V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'live_data/sections/CERT53.json'
+      - 'live_data/manifest.v2.json'
+      - 'validation/audit_cert53_provenance_v1.py'
+      - '.github/workflows/cert53-provenance-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit CERT53 provenance
+        run: python validation/audit_cert53_provenance_v1.py
+      - name: Guard no false autonomy claim
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/CERT53_PROVENANCE_AUDIT_V1_2026-10-07.json'))
+          assert p['assessment']['runtime_integrity']=='PASS'
+          assert p['assessment']['automatic_downstream_from_cert53'] is True
+          assert p['assessment']['automatic_upstream_ingestion'] is False
+          assert p['assessment']['fully_autonomous_claim_allowed'] is False
+          print('PASS provenance boundary guard:',p['status'])
+          PY
+      - name: Commit audit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CERT53_PROVENANCE_AUDIT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize CERT53 provenance audit V1'
+          git push
