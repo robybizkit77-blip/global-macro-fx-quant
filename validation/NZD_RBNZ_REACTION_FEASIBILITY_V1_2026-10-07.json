@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_NZD_RBNZ_REACTION_FEASIBILITY_V1",
+  "status": "WITHHELD_SOURCE_ACCESS_GAP",
+  "created_at": "2026-10-07",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "purpose": "Assess NZD/RBNZ reaction-function feasibility under the same PIT/OOS discipline used for AUD without substituting revised history or vendor data.",
+  "verified_official_sources": {
+    "macro": {
+      "source": "Stats NZ archived CPI and Labour Market Statistics quarterly releases",
+      "status": "PUBLIC_BROWSER_VERIFIED_AUTOMATION_BLOCKED",
+      "known_anchor": {
+        "reference_quarter": "2021-Q3",
+        "cpi_yoy_pct": 4.9,
+        "cpi_release_date": "2021-10-18",
+        "unemployment_rate_pct": 3.4,
+        "labour_release_date": "2021-11-03"
+      }
+    },
+    "front_end": {
+      "source": "Reserve Bank of New Zealand Wholesale interest rates (B2)",
+      "series": "Secondary market government bond closing yield - 2 year",
+      "periodicity": "Daily",
+      "official_data_file": "https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
+      "status": "PUBLIC_BROWSER_VERIFIED_GITHUB_AND_SESSION_DOWNLOAD_403",
+      "basis_note": "RBNZ states that from 25 August 2025 the source changed to NZFMA closing rates and both historical data and future publications were transitioned to the closing-rate basis with a one-day publication lag."
+    },
+    "fx": {
+      "source": "ECB G8 historical daily reference-rate matrix",
+      "status": "AVAILABLE_CERTIFIED_FOR_FORWARD_RETURN_MEASUREMENT"
+    }
+  },
+  "attempts": {
+    "stats_nz_pit_workflow_run_id": 37581708245,
+    "stats_nz_result": "FAIL_ACCESS_OR_ARCHIVE_ROUTING_BEFORE_ANCHOR_GATE",
+    "rbnz_probe_run_ids": [37581768780, 37581834823],
+    "rbnz_result": "HTTP_403_FROM_GITHUB_ACTIONS_ON_PAGE_AND_DIRECT_XLSX",
+    "session_direct_download": "FAILED"
+  },
+  "predeclared_reaction_contract": {
+    "type": "INFLATION_SLACK_COHERENCE",
+    "checkpoint": "quarterly CPI first-release",
+    "hawkish": "CPI YoY rises and latest-known unemployment falls",
+    "dovish": "CPI YoY falls and latest-known unemployment rises",
+    "otherwise": "MIXED_WITHHELD",
+    "front_end_window": "5 market observations",
+    "outcome": "signed NZD equal-weight G8 basket return t5->t25",
+    "oos": "first 40% chronology initial, remaining 60% forward OOS",
+    "tuning": "NONE"
+  },
+  "decision": {
+    "evidence_status": "WITHHELD",
+    "production_rule": "WITHHELD",
+    "reason": "Official data are identified but cannot currently be materialized reproducibly from the research runner. Revised macro history, vendor rates, or runtime snapshots must not be substituted merely to obtain a replay result.",
+    "resume_when": "Official Stats NZ first-release panel and RBNZ B2 2-year history can be materialized with source hashes/provenance under a reproducible access path."
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
