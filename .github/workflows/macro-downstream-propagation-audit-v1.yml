@@ -1,0 +1,49 @@
+name: Macro Downstream Propagation Audit V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/audit_macro_downstream_propagation_v1.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/build_dashboard_pair_signed_inputs_v1.py'
+      - 'live_data/manifest.v2.json'
+      - '.github/workflows/macro-downstream-propagation-audit-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run macro downstream propagation audit
+        run: python validation/audit_macro_downstream_propagation_v1.py
+      - name: Enforce fail-closed apply policy while gap exists
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/MACRO_DOWNSTREAM_PROPAGATION_AUDIT_V1_2026-10-07.json'))
+          assert p['status'] in {'GAP_BLOCK_MACRO_APPLY','CONNECTED_REVIEW_REQUIRED'}
+          assert p['policy']['macro_apply_allowed'] is False
+          assert p['policy']['schedule_enabled'] is False
+          assert p['guards']['changes_live_data'] is False
+          assert p['guards']['changes_engine_rules'] is False
+          print({'audit_status':p['status'],'bridge_writers':len(p['repository_scan']['candidate_bridge_writers'])})
+          PY
+      - name: Prove zero live mutation
+        run: git diff --exit-code -- live_data payload
+      - name: Commit audit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/MACRO_DOWNSTREAM_PROPAGATION_AUDIT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize macro downstream propagation audit V1'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
