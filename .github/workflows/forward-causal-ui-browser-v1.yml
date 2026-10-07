@@ -1,0 +1,80 @@
+name: Forward Causal UI Browser V1
+
+on:
+  push:
+    branches:
+      - 'research-transmission-conviction-layer-v1-2026-10-07'
+    paths:
+      - 'index.html'
+      - 'payload/part-16.txt'
+      - 'validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json'
+      - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
+      - '.github/workflows/forward-causal-ui-browser-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-forward-server.log 2>&1 &
+          sleep 2
+      - name: Audit causal forward UI
+        run: |
+          cat > forward-ui-audit.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const pageErrors=[]; const consoleErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            const res=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!res?.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.__GMFQ_FORWARD_CAUSAL_V1__?.status==='PASS',null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              if(typeof window.showView==='function') window.showView('forwarddesk');
+              const root=document.getElementById('fwdCausalV1');
+              return {
+                forward:window.__GMFQ_FORWARD_CAUSAL_V1__||null,
+                rootExists:!!root,
+                text:root?.innerText||'',
+                legacyMounts:['fwdIntegrity','fwdTopCards','fwdHorizonTable','fwdRecentSnapshots'].map(id=>({id,exists:!!document.getElementById(id)})),
+                bodyTextLength:document.body?.innerText?.length||0
+              };
+            });
+            console.log(JSON.stringify({out,pageErrors,consoleErrors},null,2));
+            if(!out.rootExists) throw new Error('New forward causal root missing');
+            if(out.forward?.pair_count!==28) throw new Error('Forward pair count mismatch');
+            if(!out.text.includes('Forward Test · Causal Transmission V1')) throw new Error('Forward title missing');
+            if(!out.text.includes('20D ORIZZONTE PRINCIPALE')) throw new Error('Primary horizon label missing');
+            if(!out.text.includes('GBP/JPY') || !out.text.includes('JPY/CAD')) throw new Error('Clean pair rows missing');
+            if(!out.text.includes('IN ATTESA')) throw new Error('Pending forward outcomes missing');
+            if(out.legacyMounts.some(x=>!x.exists)) throw new Error('Legacy forward mounts broken: '+JSON.stringify(out.legacyMounts));
+            if(out.bodyTextLength<1000) throw new Error('Dashboard body unexpectedly small');
+            if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
+            if(consoleErrors.length) throw new Error('Console errors: '+consoleErrors.join(' | '));
+            await page.screenshot({path:'forward-causal-ui.png',fullPage:true});
+            await browser.close();
+          })().catch(e=>{console.error('::error title=Forward causal UI audit::'+String(e.message||e));process.exit(1)});
+          EOF
+          node forward-ui-audit.js
+      - name: Upload audit screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forward-causal-ui-audit
+          path: |
+            forward-causal-ui.png
+            /tmp/gmfq-forward-server.log
