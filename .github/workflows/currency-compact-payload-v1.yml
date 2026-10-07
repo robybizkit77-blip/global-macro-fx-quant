@@ -1,0 +1,53 @@
+name: Currency Compact Payload V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/CURRENCY_CROSS_DISPERSION_V1_2026-10-07.json'
+      - 'validation/CURRENCY_WHAT_CHANGED_V1_2026-10-07.json'
+      - 'validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3_2026-10-07.json'
+      - 'validation/build_currency_compact_payload_v1.py'
+      - '.github/workflows/currency-compact-payload-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build compact currency payload
+        run: python validation/build_currency_compact_payload_v1.py
+      - name: Validate compact payload
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('validation/CURRENCY_COMPACT_PAYLOAD_V1_2026-10-07.json'))
+          assert x['schema']=='GMFQ_CURRENCY_COMPACT_PAYLOAD_V1'
+          assert len(x['currencies'])==8
+          for c,d in x['currencies'].items():
+              assert d['cross_count']==7
+              assert d['macro_relative']['favored']+d['macro_relative']['opposed']+d['macro_relative']['mixed']==7
+              assert d['transmission']['clean']+d['transmission']['partial']+d['transmission']['divergent']+d['transmission']['withheld']==7
+              assert d['robustness']['robust']+d['robustness']['rule_sensitive']==7
+          assert all(v is False for v in x['guards'].values())
+          print('PASS_CURRENCY_COMPACT_PAYLOAD_V1')
+          PY
+      - name: Commit compact payload if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CURRENCY_COMPACT_PAYLOAD_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No compact payload change'
+            exit 0
+          fi
+          git commit -m 'Update compact currency payload'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
