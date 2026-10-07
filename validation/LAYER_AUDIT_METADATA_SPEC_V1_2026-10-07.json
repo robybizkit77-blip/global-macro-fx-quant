@@ -1,0 +1,143 @@
+{
+  "schema": "GMFQ_LAYER_AUDIT_METADATA_SPEC_V1",
+  "created_on": "2026-10-07",
+  "purpose": "Canonical freshness/provenance contract for non-Rates dashboard layers. Audit/refresh date must never be conflated with underlying observation dates.",
+  "common_contract": {
+    "required_top_level_fields": [
+      "schema",
+      "layer",
+      "audit_date",
+      "status",
+      "coverage",
+      "component_as_of",
+      "source_quality",
+      "stale_components",
+      "withheld_components",
+      "refresh_id"
+    ],
+    "status_enum": [
+      "CURRENT_VALIDATED",
+      "CURRENT_BY_SOURCE_CADENCE",
+      "UPDATE_AVAILABLE",
+      "STALE",
+      "PARTIAL_VALIDATED",
+      "WITHHELD_SOURCE_BLOCKED",
+      "WITHHELD_NOT_SAME_BASIS"
+    ],
+    "rules": [
+      "audit_date is the date the layer was checked/rebuilt, not the maximum observation date",
+      "component_as_of carries the actual observation/release date for every materially distinct component",
+      "do not infer freshness from repository commit/file modification timestamps",
+      "do not mark a component stale merely because its observation date is old; compare against source release cadence",
+      "if current same-basis data cannot be validated, retain the last validated snapshot and mark WITHHELD rather than mixing sources",
+      "source_quality must distinguish official, official-manual, validated-secondary and mirror/transport sources",
+      "dashboard labels must expose both layer audit date and material component as-of dates when they differ"
+    ]
+  },
+  "layers": {
+    "MACRO": {
+      "schema": "GMFQ_MACRO_AUDIT_METADATA_V1",
+      "canonical_data": ["MACRO_SERIES", "MACRO_THERMOMETER_DATA"],
+      "component_granularity": "currency x macro series",
+      "minimum_components": ["inflation", "labour"],
+      "special_rules": [
+        "respect native frequency: monthly, quarterly and rolling-window series have different natural ages",
+        "rolling labour windows must expose reference_period separately from release_date when available",
+        "a single currency as_of is not authoritative when inflation and labour dates differ"
+      ],
+      "current_known_cases_2026_10_07": {
+        "CHF.inflation": {
+          "status": "UPDATE_AVAILABLE",
+          "current_runtime_as_of": "2026-08",
+          "official_available_as_of": "2026-09",
+          "official_latest_value_yoy": 1.0,
+          "official_release_date": "2026-10-01"
+        },
+        "GBP.labour": {
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "runtime_reference_as_of": "2026-06",
+          "interpretation": "rolling-period reference, not evidence of a June-only stale release"
+        },
+        "AUD.inflation": {
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "frequency": "Q"
+        },
+        "NZD.inflation": {
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "frequency": "Q"
+        }
+      }
+    },
+    "CB": {
+      "schema": "GMFQ_CB_AUDIT_METADATA_V1",
+      "canonical_data": ["NATIVE_CB_DATA", "OIS_DATA"],
+      "component_granularity": "currency x policy decision / market pricing",
+      "minimum_components": ["policy_decision", "market_pricing"],
+      "special_rules": [
+        "policy decision date and market-pricing as_of must be separate",
+        "secondary futures quotes may be usable but must never be labeled official-current",
+        "pre-decision market pricing becomes stale immediately after a decision unless explicitly revalidated post-decision"
+      ],
+      "current_known_cases_2026_10_07": {
+        "JPY.market_pricing": {"status": "CURRENT_VALIDATED", "as_of": "2026-09-25"},
+        "CAD.market_pricing": {"status": "CURRENT_VALIDATED", "as_of": "2026-09-29"},
+        "EUR.market_pricing": {"status": "PARTIAL_VALIDATED", "quality": "VALIDATED_SECONDARY_RECENT"},
+        "CHF.market_pricing": {"status": "PARTIAL_VALIDATED", "quality": "VALIDATED_SECONDARY_RECENT"},
+        "USD.market_pricing": {"status": "UPDATE_AVAILABLE", "runtime_quality": "VALIDATED_SECONDARY_STALE", "newer_official_tool_observed_through": "2026-10-06"},
+        "AUD.market_pricing": {"status": "UPDATE_AVAILABLE", "runtime_as_of": "2026-09-24", "reason": "pre-decision snapshot; official ASX post-decision settlement exists"},
+        "NZD.market_pricing": {"status": "PARTIAL_VALIDATED", "as_of": "2026-09-02"},
+        "GBP.market_pricing": {"status": "PARTIAL_VALIDATED", "quality": "VALIDATED_SECONDARY", "action": "reverify before CURRENT label"}
+      }
+    },
+    "LIQ": {
+      "schema": "GMFQ_LIQ_AUDIT_METADATA_V1",
+      "canonical_data": ["NATIVE_LIQ_DATA"],
+      "component_granularity": "currency x liquidity component",
+      "minimum_components": ["primary_liquidity", "money", "credit", "financial_conditions"],
+      "special_rules": [
+        "mixed-frequency components require separate component_as_of dates",
+        "layer-level as_of is informational only and must not overwrite component dates",
+        "current-by-cadence is allowed when an older date is still the latest officially released observation"
+      ],
+      "current_known_cases_2026_10_07": {
+        "NZD": {
+          "status": "UPDATE_AVAILABLE",
+          "runtime_period": "2026-07",
+          "official_available_period": "2026-08",
+          "official_release_date": "2026-09-30"
+        }
+      }
+    },
+    "COT": {
+      "schema": "GMFQ_COT_AUDIT_METADATA_V1",
+      "canonical_data": ["V250_COT_CHART_DATA", "V247_COT_STORIES"],
+      "component_granularity": "currency x CFTC snapshot",
+      "minimum_components": ["positioning", "open_interest", "price_confirmation"],
+      "special_rules": [
+        "CFTC report date must be judged against the official weekly release schedule",
+        "price confirmation is a separate component and may remain WITHHELD without invalidating the positioning snapshot",
+        "all G8 currencies should share the same CFTC report date for a canonical weekly snapshot"
+      ],
+      "current_known_cases_2026_10_07": {
+        "G8.positioning": {
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "report_date": "2026-09-29",
+          "next_expected_release": "2026-10-09"
+        },
+        "G8.price_confirmation": {
+          "status": "WITHHELD_NOT_SAME_BASIS",
+          "reason": "price was not recalculated in the same COT refresh"
+        }
+      }
+    }
+  },
+  "dashboard_presentation_contract": {
+    "label_pattern": "refresh <LAYER> <audit_date> · dati sottostanti per componente",
+    "forbidden_patterns": [
+      "updated to <audit_date>" ,
+      "all current" ,
+      "fresh" 
+    ],
+    "unless": "every material component has independently passed the relevant source-cadence/currentness gate"
+  }
+}
