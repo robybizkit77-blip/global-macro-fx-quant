@@ -1,0 +1,27 @@
+{
+  "schema": "GMFQ_AUD_RBA_REACTION_EVIDENCE_UPDATE_V1",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "source_evidence": "validation/AUD_RBA_REACTION_REPLAY_V1_2026-10-07.json",
+  "previous_status": "WITHHELD_DATA_GAP",
+  "new_evidence_status": "PROMISING_SMALL_SAMPLE",
+  "production_rule": "NO_GATE",
+  "summary": {
+    "eligible_events": 9,
+    "oos_events": 6,
+    "full_hit_rate": 0.6666666666666666,
+    "full_mean_signed_20d": 0.007436485105366369,
+    "oos_hit_rate": 0.6666666666666666,
+    "oos_mean_signed_20d": 0.00887013115499267,
+    "hawkish_full_n": 5,
+    "hawkish_full_hit_rate": 0.8,
+    "dovish_full_n": 4,
+    "dovish_full_hit_rate": 0.5,
+    "both_aligned_full_n": 1,
+    "both_aligned_oos_n": 0
+  },
+  "interpretation": "The frozen dual-mandate AUD macro state is directionally encouraging, especially on hawkish observations, but the sample is too small and full front-end+price alignment is too rare to support a transmission gate. AUD does not currently replicate the USD Fed-easing confirmation pattern.",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
