@@ -1,0 +1,15 @@
+{
+  "schema": "GMFQ_MANUAL_OFFICIAL_RATES_VERIFICATION_V1",
+  "currency": "NZD",
+  "authority": "Reserve Bank of New Zealand",
+  "source": "Wholesale interest rates (B2)",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "verified_on": "2026-10-07",
+  "expires_after": "2026-10-07",
+  "official_date": "2026-10-05",
+  "2Y": 3.83,
+  "10Y": 5.04,
+  "release_observed": "2026-10-06",
+  "verification_note": "Official RBNZ B2 public page shows the 05 Oct 2026 secondary-market government bond closing yields at 3.83% for 2Y and 5.04% for 10Y. GitHub-hosted runners receive HTTP 403 from both the HTML and official XLSX endpoints, so this evidence is an explicit one-day manual official fallback, not an automated fetch.",
+  "automation_status": "SOURCE_BLOCKS_GITHUB_RUNNER_403"
+}
