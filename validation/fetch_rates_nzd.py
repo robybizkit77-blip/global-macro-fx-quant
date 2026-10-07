@@ -1,60 +1,84 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-from datetime import datetime
-from html.parser import HTMLParser
+from datetime import date, datetime
+from io import BytesIO
 from urllib.request import Request, urlopen
+import openpyxl
 
-URL='https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates'
+URL='https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx'
 AUTHORITY='Reserve Bank of New Zealand'
 
-class TableParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.rows=[]; self.row=None; self.cell=None
-    def handle_starttag(self,tag,attrs):
-        if tag=='tr': self.row=[]
-        elif tag in {'td','th'} and self.row is not None: self.cell=[]
-    def handle_data(self,data):
-        if self.cell is not None: self.cell.append(data)
-    def handle_endtag(self,tag):
-        if tag in {'td','th'} and self.cell is not None and self.row is not None:
-            self.row.append(' '.join(''.join(self.cell).split()))
-            self.cell=None
-        elif tag=='tr' and self.row is not None:
-            if self.row: self.rows.append(self.row)
-            self.row=None
 
-def fetch(url:str=URL)->str:
-    req=Request(url,headers={'User-Agent':'Mozilla/5.0 GMFQ-rates-audit/1.0'})
-    with urlopen(req,timeout=45) as r:
-        raw=r.read()
-    return raw.decode('utf-8','replace')
+def fetch(url:str=URL)->bytes:
+    req=Request(url,headers={
+        'User-Agent':'Mozilla/5.0 GMFQ-rates-audit/1.0',
+        'Accept':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*',
+        'Referer':'https://www.rbnz.govt.nz/statistics/series/data-file-index-page'
+    })
+    with urlopen(req,timeout=60) as r:
+        return r.read()
 
-def parse_date(s:str):
-    s=' '.join(str(s).replace('\xa0',' ').split())
-    for fmt in ('%d %b %Y','%d %B %Y'):
+
+def norm(x)->str:
+    return ' '.join(str(x or '').replace('\xa0',' ').split()).lower()
+
+
+def as_date(x):
+    if isinstance(x,datetime): return x.date()
+    if isinstance(x,date): return x
+    s=' '.join(str(x or '').split())
+    for fmt in ('%d %b %Y','%d %B %Y','%Y-%m-%d','%d/%m/%Y'):
         try: return datetime.strptime(s,fmt).date()
         except ValueError: pass
     return None
 
-def parse(html:str)->dict:
-    p=TableParser(); p.feed(html)
-    obs=[]
-    # Official summary table columns:
-    # Date, OCR, ODR, ORRF, interbank, 30d, 60d, 90d, 1Y, 2Y, 5Y, 10Y, 2-10s.
-    for row in p.rows:
-        if len(row) < 12: continue
-        d=parse_date(row[0])
-        if d is None: continue
-        try:
-            y2=float(row[9]); y10=float(row[11])
-        except (ValueError,TypeError,IndexError):
+
+def parse(raw:bytes)->dict:
+    wb=openpyxl.load_workbook(BytesIO(raw),read_only=True,data_only=True)
+    best=None
+    for ws in wb.worksheets:
+        rows=list(ws.iter_rows(values_only=True))
+        first_data=None
+        for i,row in enumerate(rows[:80]):
+            if row and as_date(row[0]) is not None:
+                first_data=i; break
+        if first_data is None or first_data < 1:
             continue
-        obs.append((d.isoformat(),y2,y10))
-    if not obs:
-        raise RuntimeError('RBNZ B2: no dated same-row 2Y/10Y observations parsed')
-    d,y2,y10=max(obs,key=lambda x:x[0])
-    return {'date':d,'2Y':y2,'10Y':y10,'authority':AUTHORITY,'source':'RBNZ B2 wholesale interest rates'}
+        width=max(len(r) for r in rows[:first_data+1])
+        ctx=[]
+        for c in range(width):
+            bits=[]
+            for r in rows[:first_data]:
+                if c < len(r) and r[c] not in (None,''):
+                    bits.append(norm(r[c]))
+            ctx.append(' | '.join(bits))
+        def pick(term):
+            strong=[i for i,s in enumerate(ctx) if term in s and 'government' in s and ('close' in s or 'closing' in s)]
+            if len(strong)==1: return strong[0]
+            govt=[i for i,s in enumerate(ctx) if term in s and 'government' in s]
+            if len(govt)==1: return govt[0]
+            return None
+        c2=pick('2 year'); c10=pick('10 year')
+        if c2 is None or c10 is None:
+            continue
+        obs=[]
+        for row in rows[first_data:]:
+            if not row: continue
+            d=as_date(row[0])
+            if d is None: continue
+            try:
+                y2=float(row[c2]); y10=float(row[c10])
+            except (ValueError,TypeError,IndexError):
+                continue
+            obs.append((d.isoformat(),y2,y10))
+        if obs:
+            candidate=max(obs,key=lambda x:x[0])
+            if best is None or candidate[0] > best[0]: best=candidate
+    if best is None:
+        raise RuntimeError('RBNZ B2 XLSX: no same-row government 2Y/10Y observations parsed')
+    d,y2,y10=best
+    return {'date':d,'2Y':y2,'10Y':y10,'authority':AUTHORITY,'source':'RBNZ B2 daily close XLSX'}
+
 
 def main()->int:
     import json
