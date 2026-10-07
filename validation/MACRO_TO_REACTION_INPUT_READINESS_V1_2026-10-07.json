@@ -1,0 +1,269 @@
+{
+  "schema": "GMFQ_MACRO_TO_REACTION_INPUT_READINESS_V1",
+  "status": "RESEARCH_ONLY_INPUT_COVERAGE__NO_CB_IMPLICATION",
+  "purpose": "Show which canonical Macro-profile blocks can feed each currency-specific reaction function directly and which distinct source families are still required. No proxy substitution and no policy implication is computed.",
+  "currencies": {
+    "AUD": {
+      "currency": "AUD",
+      "central_bank": "RBA",
+      "reaction_function": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "required_macro_drivers": [
+        "labour",
+        "inflation"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "labour",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [],
+      "readiness": "FULL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "CAD": {
+      "currency": "CAD",
+      "central_bank": "BOC",
+      "reaction_function": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "required_macro_drivers": [
+        "growth",
+        "labour",
+        "core_inflation",
+        "headline_inflation"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "growth",
+          "profile_block": "growth",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "labour",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "headline_inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "core_inflation",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "PARTIAL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "CHF": {
+      "currency": "CHF",
+      "central_bank": "SNB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_WITH_ECONOMIC_DEVELOPMENTS",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "required_macro_drivers": [
+        "inflation_forecast",
+        "economic_conditions",
+        "exchange_rate_channel",
+        "labour"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "labour",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "inflation_forecast",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        },
+        {
+          "driver": "economic_conditions",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        },
+        {
+          "driver": "exchange_rate_channel",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "WITHHELD_RESEARCH_EVIDENCE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "EUR": {
+      "currency": "EUR",
+      "central_bank": "ECB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "required_macro_drivers": [
+        "wages",
+        "services_inflation",
+        "inflation"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "wages",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        },
+        {
+          "driver": "services_inflation",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "PARTIAL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "GBP": {
+      "currency": "GBP",
+      "central_bank": "BOE",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "required_macro_drivers": [
+        "wages",
+        "services_inflation",
+        "labour_context"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "labour_context",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "wages",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        },
+        {
+          "driver": "services_inflation",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "PARTIAL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "JPY": {
+      "currency": "JPY",
+      "central_bank": "BOJ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "required_macro_drivers": [
+        "wages",
+        "inflation",
+        "labour_context",
+        "growth_context"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "labour_context",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "growth_context",
+          "profile_block": "growth",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "wages",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "PARTIAL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "NZD": {
+      "currency": "NZD",
+      "central_bank": "RBNZ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "required_macro_drivers": [
+        "inflation",
+        "slack"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [
+        {
+          "driver": "slack",
+          "reason": "DISTINCT_SOURCE_REQUIRED"
+        }
+      ],
+      "readiness": "WITHHELD_RESEARCH_EVIDENCE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    },
+    "USD": {
+      "currency": "USD",
+      "central_bank": "FED",
+      "reaction_function": "DUAL_MANDATE",
+      "evidence_status": "SUPPORTED_DIAGNOSTIC",
+      "required_macro_drivers": [
+        "labour",
+        "inflation"
+      ],
+      "direct_profile_inputs": [
+        {
+          "driver": "labour",
+          "profile_block": "labour",
+          "mapping": "DIRECT_CANONICAL"
+        },
+        {
+          "driver": "inflation",
+          "profile_block": "inflation",
+          "mapping": "DIRECT_CANONICAL"
+        }
+      ],
+      "missing_distinct_inputs": [],
+      "readiness": "FULL_PROFILE_INPUT_COVERAGE",
+      "cb_implication": "WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER",
+      "production_gate": false
+    }
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "proxy_substitution": false,
+    "computes_cb_implication": false,
+    "universal_score": false
+  }
+}
