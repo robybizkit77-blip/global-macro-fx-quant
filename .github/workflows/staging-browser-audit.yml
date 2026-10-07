@@ -134,3 +134,5 @@ jobs:
           path: |
             staging-browser-audit.png
             /tmp/gmfq-server.log
+
+# re-run after canonical CAD hydration fix 2026-10-07
