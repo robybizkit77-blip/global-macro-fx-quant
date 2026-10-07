@@ -1,0 +1,40 @@
+name: Focus Themes V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/CURRENCY_COMPACT_PAYLOAD_V1_2026-10-07.json'
+      - 'validation/PAIR_ATTENTION_BUCKETS_V1_2026-10-07.json'
+      - 'validation/build_focus_themes_v1.py'
+      - 'validation/validate_focus_themes_v1.py'
+      - '.github/workflows/focus-themes-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build focus themes
+        run: python validation/build_focus_themes_v1.py
+      - name: Validate focus themes
+        run: python validation/validate_focus_themes_v1.py
+      - name: Commit generated focus if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/FOCUS_THEMES_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No focus theme change'
+            exit 0
+          fi
+          git commit -m 'Update compact focus themes'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
