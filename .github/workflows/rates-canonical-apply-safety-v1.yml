@@ -1,0 +1,65 @@
+name: Rates Canonical Apply Safety V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/apply_rates_candidate_canonical_v1.py'
+      - 'validation/RATES_REFRESH_PROVENANCE_TEMPLATE_V1.json'
+      - 'validation/DAILY_INGRESS_READINESS_V1_2026-10-07.json'
+      - '.github/workflows/rates-canonical-apply-safety-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capture protected hashes
+        run: |
+          sha256sum live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt > /tmp/before.sha
+      - name: Build synthetic valid candidate and provenance
+        run: |
+          python - <<'PY'
+          import json,hashlib,datetime
+          p='live_data/sections/NATIVE_RATES_DATA.json'
+          d=json.load(open(p))
+          d['USD']['2Y']=round(float(d['USD']['2Y'])+0.001,3)
+          d['USD']['curve_bp']=round((float(d['USD']['10Y'])-float(d['USD']['2Y']))*100,1)
+          raw=(json.dumps(d,separators=(',',':'),ensure_ascii=False)+'\n').encode()
+          open('/tmp/NATIVE_RATES_DATA.json','wb').write(raw)
+          h=hashlib.sha256(raw).hexdigest()
+          prov={
+            'schema':'GMFQ_RATES_REFRESH_PROVENANCE_V1','status':'SYNTHETIC_DRY_RUN_ONLY',
+            'section':'NATIVE_RATES_DATA','refresh_id':'rates-dryrun-20261007-v1',
+            'created_at_utc':'2026-10-07T10:30:00Z','source_asof':'SYNTHETIC_DRY_RUN_ONLY',
+            'candidate_sha256':h,
+            'inputs':[{'currency':'USD','source':'SYNTHETIC_DRY_RUN_ONLY','source_asof':'SYNTHETIC_DRY_RUN_ONLY','sha256_or_source_fingerprint':h,'role':'rates_source'}],
+            'validation':{'eight_currencies_present':True,'required_fields_present':True,'source_metadata_checked':True,'freshness_checked':True,'manual_review_required':True},
+            'guards':{'changes_engine_rules':False,'changes_oos_baseline':False,'production_promotion':False}
+          }
+          json.dump(prov,open('/tmp/rates-prov.json','w'),indent=2)
+          PY
+          cp live_data/sections/RATES_AUDIT_METADATA.json /tmp/RATES_AUDIT_METADATA.json
+      - name: Preflight must pass without writes
+        run: |
+          python validation/apply_rates_candidate_canonical_v1.py --rates /tmp/NATIVE_RATES_DATA.json --audit-metadata /tmp/RATES_AUDIT_METADATA.json --provenance /tmp/rates-prov.json
+      - name: Apply without exact refresh confirmation must fail
+        shell: bash
+        run: |
+          set +e
+          python validation/apply_rates_candidate_canonical_v1.py --rates /tmp/NATIVE_RATES_DATA.json --audit-metadata /tmp/RATES_AUDIT_METADATA.json --provenance /tmp/rates-prov.json --apply >/tmp/should-fail.log 2>&1
+          code=$?
+          set -e
+          cat /tmp/should-fail.log
+          test $code -ne 0
+          grep -q -- '--confirm-refresh-id must exactly match' /tmp/should-fail.log
+      - name: Prove zero mutation
+        run: |
+          sha256sum live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt > /tmp/after.sha
+          diff -u /tmp/before.sha /tmp/after.sha
+          test ! -e live_data/provenance/rates/rates-dryrun-20261007-v1.json
+          git diff --exit-code -- live_data payload
