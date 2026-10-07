@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_CONTRACT_V2",
+  "status": "RESEARCH_ONLY_PROFILE_BRIDGE_DEFINED__NO_FX_DIRECTIONAL_VOTE",
+  "supersedes_for_research": "GMFQ_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_CONTRACT_V1 scalar-polarity-first design",
+  "purpose": "Preserve the canonical G8 Macro information as a multidimensional structural profile before central-bank reaction and market transmission. Avoid collapsing growth, labour and inflation into a premature universal FX polarity.",
+  "canonical_source": "live_data/sections/CERT53.json -> macro.<CCY>",
+  "profile_dimensions": ["growth", "labour", "inflation"],
+  "required_block_fields": ["state", "momentum", "direction", "velocity_percentile", "velocity_class", "acceleration_percentile", "acceleration_class", "persistence", "candidate_p70"],
+  "required_currency_fields": ["currency", "cycle", "blocks", "fx_directional_vote", "reaction_function_status"],
+  "semantics": {
+    "state": "Structural level/state produced by the existing canonical Macro layer; preserve numerically and do not reinterpret as an FX score.",
+    "momentum": "Current block impulse; preserve separately from structural level.",
+    "direction": "Observed block direction UP/DOWN/FLAT; variable direction only, not automatic FX judgement.",
+    "velocity_percentile": "How unusual the current speed is relative to the block history.",
+    "acceleration_percentile": "How unusual the change in speed is relative to history.",
+    "persistence": "Whether the directional move is fresh, confirmed or mixed/near zero.",
+    "candidate_p70": "Early warning only; never a mechanical override."
+  },
+  "architecture": [
+    "PIT/validated Macro series",
+    "canonical Macro block profile: growth + labour + inflation",
+    "currency-specific central-bank reaction function",
+    "front-end / relative-rates transmission",
+    "price confirmation",
+    "qualitative transmission state"
+  ],
+  "inflation_rule": {
+    "direct_fx_vote": false,
+    "reason": "The same inflation direction can imply different FX consequences depending on starting level, growth/labour context and the currency-specific central-bank reaction function.",
+    "required_path": "inflation block -> currency-specific reaction function -> front-end transmission"
+  },
+  "pair_anchor_policy": {
+    "current_CERT53_fundamental_anchor_macro": "LEGACY_RESEARCH_REFERENCE_ONLY_UNTIL_REGENERATED",
+    "new_pair_macro_anchor_from_profile": "WITHHELD_NOT_YET_CERTIFIED",
+    "no_universal_aggregation": true,
+    "no_post_hoc_fit_to_legacy_anchors": true
+  },
+  "historical_method_recovery": {
+    "status": "NOT_REPRODUCIBLE_AS_EXECUTABLE_DECISION_TABLE",
+    "evidence": [
+      "Frozen runtime contains static currency Macro labels used by deriveCurrencyState.",
+      "Historical methodology commits explicitly separate structural Macro from temporal lead, surprise, COT and price confirmation.",
+      "No repository component was found that economically regenerates fundamental_anchor_macro from current Macro inputs."
+    ]
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false,
+    "universal_score": false,
+    "automatic_fx_direction": false,
+    "legacy_anchor_fit": false
+  }
+}
