@@ -1,0 +1,58 @@
+name: Current Canonical Currency Macro Profile V2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'live_data/sections/CERT53.json'
+      - 'validation/build_current_canonical_currency_macro_profile_v2.py'
+      - 'validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_CONTRACT_V2_2026-10-07.json'
+      - '.github/workflows/current-canonical-currency-macro-profile-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build read-only G8 Macro profiles
+        run: python validation/build_current_canonical_currency_macro_profile_v2.py
+      - name: Validate profile contract
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json'))
+          assert x['schema']=='GMFQ_CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2'
+          assert len(x['currencies'])==8
+          assert set(x['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          req={'state','momentum','direction','velocity_percentile','velocity_class','acceleration_percentile','acceleration_class','persistence','candidate_p70'}
+          for c,d in x['currencies'].items():
+              assert set(d['blocks'])=={'growth','labour','inflation'}
+              for b,row in d['blocks'].items():
+                  assert req.issubset(row)
+                  assert row['direction'] in {'UP','DOWN','FLAT'}
+              assert d['fx_directional_vote']=='WITHHELD_NOT_DERIVED_AT_MACRO_PROFILE_LAYER'
+              assert d['reaction_function_status']=='REQUIRED_DOWNSTREAM'
+          assert all(v is False for v in x['guards'].values())
+          print('PASS_CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2')
+          PY
+      - name: Prove runtime untouched
+        run: git diff --exit-code -- live_data/ payload/
+      - name: Commit profile if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No profile change'
+            exit 0
+          fi
+          git commit -m 'Generate canonical currency Macro profiles V2'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
