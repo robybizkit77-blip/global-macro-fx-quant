@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_DASHBOARD_TRANSMISSION_PROMOTION_READINESS_V1",
+  "status": "NOT_READY_FOR_PRODUCTION",
+  "created_at": "2026-10-07",
+  "scope": "Transmission/causal UI layer only; frozen macro engine remains unchanged.",
+  "current_snapshot": {
+    "pair_count": 28,
+    "state_counts": {
+      "TRANSMISSION_PARTIAL": 8,
+      "TRANSMISSION_WITHHELD": 6,
+      "TRANSMISSION_DIVERGENT": 12,
+      "TRANSMISSION_CLEAN": 2
+    },
+    "robustness_counts": {
+      "ROBUST_ACROSS_RULES": 22,
+      "RULE_SENSITIVE": 6
+    },
+    "currency_evidence_status": {
+      "USD": "SUPPORTED_DIAGNOSTIC",
+      "CAD": "PROMISING_SMALL_SAMPLE",
+      "GBP": "NO_INCREMENTAL_VALUE",
+      "JPY": "NO_INCREMENTAL_VALUE",
+      "EUR": "NO_INCREMENTAL_VALUE",
+      "AUD": "PROMISING_SMALL_SAMPLE",
+      "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+      "CHF": "WITHHELD_SOURCE_ACCESS_GAP"
+    }
+  },
+  "blockers": [
+    "HISTORICAL_REACTION_EVIDENCE_WITHHELD:CHF,NZD",
+    "FORWARD_VALIDATION_NOT_YET_ACCUMULATED"
+  ],
+  "warnings": [
+    "RULE_SENSITIVE_PAIRS=6",
+    "WITHHELD_CURRENT_PAIRS=6",
+    "REACTION_EVIDENCE_NOT_PRODUCTION_GRADE:AUD,CAD,EUR,GBP,JPY"
+  ],
+  "what_is_ready_now": [
+    "Research-only UI payload for 28 crosses",
+    "Current descriptive CLEAN/PARTIAL/DIVERGENT/WITHHELD states",
+    "Robustness badge across three non-return-fitted descriptive rules",
+    "Separate historical-evidence badge"
+  ],
+  "what_is_not_ready": [
+    "Using transmission state to change macro bias",
+    "Using transmission state for trade sizing or entry rules",
+    "Claiming predictive edge from CLEAN/DIVERGENT labels",
+    "Production promotion before forward validation and unresolved withheld evidence"
+  ],
+  "recommended_next_gate": "FORWARD_SNAPSHOT_LEDGER_V1",
+  "recommended_rule": "Freeze current descriptive classifier, append timestamped forward snapshots, and evaluate later without retroactive label changes.",
+  "engine_changed": false,
+  "live_data_changed": false,
+  "oos_baseline_changed": false
+}
