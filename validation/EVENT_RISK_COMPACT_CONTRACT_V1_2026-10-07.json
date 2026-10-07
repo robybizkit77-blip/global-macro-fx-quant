@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_EVENT_RISK_COMPACT_CONTRACT_V1",
+  "status": "RESEARCH_ONLY_CONTRACT_NOT_PROMOTED",
+  "purpose": "Compact event-risk layer for the future dashboard. Show only events that can materially change a currency or pair view; never fill space with a full calendar.",
+  "required_source_fields": [
+    "event_id",
+    "currency",
+    "event_name",
+    "scheduled_at",
+    "timezone",
+    "importance",
+    "previous",
+    "consensus",
+    "actual",
+    "source",
+    "source_asof"
+  ],
+  "accepted_importance": ["HIGH", "MEDIUM_IF_VIEW_RELEVANT"],
+  "display_policy": {
+    "max_events_global": 8,
+    "max_events_per_currency": 2,
+    "hide_low_impact": true,
+    "hide_past_events_after_actual_is_processed": true,
+    "show_previous_consensus_actual": true,
+    "show_why_it_matters": true,
+    "show_affected_currency_and_pairs": true,
+    "do_not_infer_missing_consensus": true,
+    "do_not_use_stale_schedule": true,
+    "do_not_convert_event_to_trade_signal": true
+  },
+  "relevance_rules": {
+    "currency_view": "Keep an event only when its category maps to a current macro/CB driver or an explicit invalidate/confirm condition.",
+    "pair_view": "Keep an event only when it affects one or both legs and can change the relative macro/CB/rates contrast.",
+    "focus_view": "Prioritize events linked to CLEAN/PARTIAL focus pairs or to currencies with macro-transmission disconnects."
+  },
+  "event_categories": [
+    "CENTRAL_BANK_DECISION",
+    "CENTRAL_BANK_SPEECH",
+    "INFLATION",
+    "LABOUR",
+    "GROWTH_ACTIVITY",
+    "WAGES",
+    "SURVEY_SENTIMENT",
+    "FISCAL_SUPPLY",
+    "OTHER_MATERIAL"
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "trade_signal": false,
+    "predictive_claim": false
+  }
+}
