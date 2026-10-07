@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3",
+  "status": "PASS_DIAGNOSTIC_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "supersedes": "validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "currencies": {
+    "USD": {"central_bank":"FED","evidence_status":"SUPPORTED_DIAGNOSTIC","production_rule":"NO_GATE","key_read":"Coherent dovish/easing regimes show the clearest OOS transmission; hawkish transmission is materially weaker."},
+    "CAD": {"central_bank":"BOC","evidence_status":"PROMISING_SMALL_SAMPLE","production_rule":"NO_GATE","key_read":"Coherent macro/inflation states are promising, but samples remain too small for a rates gate."},
+    "GBP": {"central_bank":"BOE","evidence_status":"NO_INCREMENTAL_VALUE","production_rule":"NO_GATE","key_read":"OIS/front-end confirmation does not reliably improve the coherent macro state OOS."},
+    "JPY": {"central_bank":"BOJ","evidence_status":"NO_INCREMENTAL_VALUE","production_rule":"NO_GATE","key_read":"JGB 2Y/relative rates are useful transmission context but not a mechanical conviction upgrade."},
+    "EUR": {"central_bank":"ECB","evidence_status":"NO_INCREMENTAL_VALUE","production_rule":"NO_GATE","key_read":"Existing wages/front-end walk-forward does not establish robust incremental value."},
+    "AUD": {"central_bank":"RBA","evidence_status":"PROMISING_SMALL_SAMPLE","production_rule":"NO_GATE","key_read":"Dual-mandate replay is promising, particularly hawkish, but only 9 coherent events / 6 OOS and 2Y+price confirmation is too sparse for promotion.","evidence_file":"validation/AUD_RBA_REACTION_REPLAY_V1_2026-10-07.json"},
+    "NZD": {"central_bank":"RBNZ","evidence_status":"WITHHELD_SOURCE_ACCESS_GAP","production_rule":"WITHHELD","key_read":"Official Stats NZ/RBNZ data are identified, but reproducible historical materialization is blocked by source access in the available runner."},
+    "CHF": {"central_bank":"SNB","evidence_status":"WITHHELD_SOURCE_ACCESS_GAP","production_rule":"WITHHELD","key_read":"Swiss 2Y, CPI timing and official SNB FX transactions are certified; the remaining blocker is contemporaneous SECO seasonally-adjusted unemployment vintages. Legacy releases are publicly browser-accessible but blocked to the project runner.","certified_blocks":["SNB FX transactions quarterly","Swiss 2Y same-basis","headline CPI conservative timing"],"blocker_file":"validation/CHF_SECO_UNEMPLOYMENT_ACCESS_GAP_V1_2026-10-07.json"}
+  },
+  "cross_currency_conclusion": {
+    "universal_conviction_score": "REJECTED",
+    "universal_front_end_gate": "REJECTED",
+    "preferred_architecture": "Macro state -> currency-specific central-bank reaction function -> front-end/relative-rates transmission -> price confirmation -> qualitative transmission state",
+    "allowed_dashboard_outputs": ["TRANSMISSION_CLEAN","TRANSMISSION_PARTIAL","TRANSMISSION_DIVERGENT","TRANSMISSION_WITHHELD"]
+  },
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
