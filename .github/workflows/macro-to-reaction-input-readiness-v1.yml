@@ -1,0 +1,52 @@
+name: Macro to Reaction Input Readiness V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/CURRENT_CANONICAL_CURRENCY_MACRO_PROFILE_V2_2026-10-07.json'
+      - 'validation/DASHBOARD_REACTION_FUNCTION_CONTRACT_V2_2026-10-07.json'
+      - 'validation/build_macro_to_reaction_input_readiness_v1.py'
+      - '.github/workflows/macro-to-reaction-input-readiness-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build strict input readiness
+        run: python validation/build_macro_to_reaction_input_readiness_v1.py
+      - name: Validate no proxy and no implication
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('validation/MACRO_TO_REACTION_INPUT_READINESS_V1_2026-10-07.json'))
+          assert x['schema']=='GMFQ_MACRO_TO_REACTION_INPUT_READINESS_V1'
+          assert len(x['currencies'])==8
+          for c,d in x['currencies'].items():
+              assert d['cb_implication']=='WITHHELD_NOT_COMPUTED_BY_READINESS_LAYER'
+              assert d['production_gate'] is False
+              for m in d['direct_profile_inputs']:
+                  assert m['mapping']=='DIRECT_CANONICAL'
+          assert all(v is False for v in x['guards'].values())
+          print('PASS_MACRO_TO_REACTION_INPUT_READINESS_V1')
+          PY
+      - name: Commit output if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/MACRO_TO_REACTION_INPUT_READINESS_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No readiness change'
+            exit 0
+          fi
+          git commit -m 'Generate Macro to reaction input readiness'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
