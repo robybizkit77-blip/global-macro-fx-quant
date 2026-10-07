@@ -1,0 +1,43 @@
+name: AUD CPI PIT V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_aud_cpi_pit_v1.py'
+      - '.github/workflows/aud-cpi-pit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build AUD CPI first-release PIT
+        run: python validation/run_aud_cpi_pit_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/AUD_CPI_PIT_V1_2026-10-07.json'))
+          assert p['changes_engine_rules'] is False
+          assert p['changes_live_data'] is False
+          assert p['changes_oos_baseline'] is False
+          assert p['coverage']['modern_n'] >= 22
+          print('PASS')
+          PY
+      - name: Commit evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/pit_v1/AUD_CPI_HEADLINE_FIRST_RELEASE_2018_2025Q3.csv validation/AUD_CPI_PIT_V1_2026-10-07.json
+          git commit -m "Materialize AUD CPI first-release PIT" || exit 0
+          git push
