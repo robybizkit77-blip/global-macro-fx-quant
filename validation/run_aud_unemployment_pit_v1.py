@@ -17,45 +17,36 @@ ABBR={i:m[:3].lower() for i,m in enumerate(NAMES,1)}
 
 class P(HTMLParser):
     def __init__(self):
-        super().__init__(); self.text=[]; self.rows=[]; self.in_tr=False; self.in_cell=False; self.cells=[]; self.buf=[]
-    def handle_starttag(self,tag,attrs):
-        if tag=='tr': self.in_tr=True; self.cells=[]
-        if self.in_tr and tag in ('td','th'): self.in_cell=True; self.buf=[]
-    def handle_endtag(self,tag):
-        if self.in_tr and tag in ('td','th') and self.in_cell:
-            self.cells.append(re.sub(r'\s+',' ',' '.join(self.buf)).strip()); self.in_cell=False
-        if tag=='tr' and self.in_tr:
-            if self.cells:self.rows.append(self.cells[:])
-            self.in_tr=False
+        super().__init__(); self.text=[]
     def handle_data(self,data):
         s=data.strip()
         if s:self.text.append(s)
-        if self.in_cell and s:self.buf.append(s)
+
+def visible(raw):
+    p=P(); p.feed(raw); return re.sub(r'\s+',' ',' '.join(p.text)).strip()
 
 def fetch(url):
     req=urllib.request.Request(url,headers=UA)
     with urllib.request.urlopen(req,timeout=30) as r:return r.read().decode('utf-8',errors='replace')
 
 def parse_page(url,raw):
-    p=P(); p.feed(raw); txt=' '.join(p.text)
+    txt=visible(raw)
     m=re.search(r'Reference period\s+([A-Z][a-z]+)\s+(20\d{2})',txt)
     rm=re.search(r'Released\s+(\d{2}/\d{2}/\d{4})',txt)
     if not m or not rm:return None
     ref=f'{int(m.group(2)):04d}-{MONTHS[m.group(1)]:02d}'
     release=datetime.strptime(rm.group(1),'%d/%m/%Y').date().isoformat()
-    ur=[]
-    for row in p.rows:
-        if row and row[0].strip().lower().startswith('unemployment rate'):
-            nums=[]
-            for c in row[1:]:
-                mm=re.fullmatch(r'(-?\d+(?:\.\d+)?)',c.replace('%','').strip())
-                if mm:nums.append(float(mm.group(1)))
-            if len(nums)>=2:ur.append(nums[1])
-    if len(ur)<2:return None
-    return {'reference_month':ref,'release_date':release,'unemployment_rate_sa_pct':ur[1],'source_url':url,'archive_format':'modern'}
+    sm=re.search(r'Seasonally Adjusted.*?Unemployment rate\s*\(%\)\s*([0-9]+(?:\.[0-9]+)?)\s*([0-9]+(?:\.[0-9]+)?)',txt,re.I|re.S)
+    if not sm:
+        sm=re.search(r'Seasonally adjusted terms.*?unemployment rate.*?(?:to|was|at)\s+([0-9]+(?:\.[0-9]+)?)%',txt,re.I|re.S)
+        if not sm:return None
+        sa=float(sm.group(1))
+    else:
+        sa=float(sm.group(2))
+    return {'reference_month':ref,'release_date':release,'unemployment_rate_sa_pct':sa,'source_url':url,'archive_format':'modern'}
 
 def parse_legacy_dec18(raw):
-    p=P(); p.feed(raw); txt=' '.join(p.text)
+    txt=visible(raw)
     if '24/01/2019' not in txt and '24/01/2019' not in raw:raise RuntimeError('legacy release date missing')
     if not re.search(r'Unemployment rate \(%\).*?5\.0.*?5\.0',txt,re.I|re.S):raise RuntimeError('legacy unemployment marker missing')
     return {'reference_month':'2018-12','release_date':'2019-01-24','unemployment_rate_sa_pct':5.0,'source_url':LEGACY_DEC18,'archive_format':'legacy_AUSSTATS'}
@@ -80,9 +71,9 @@ def main():
     ded={r['reference_month']:r for r in rows}; rows=[ded[k] for k in sorted(ded)]
     anchors={'2018-12':(5.0,'2019-01-24'),'2019-12':(5.1,'2020-01-23'),'2020-01':(5.3,'2020-02-20')}
     for k,(v,d) in anchors.items():
-        assert k in ded,(k,'missing'); assert abs(ded[k]['unemployment_rate_sa_pct']-v)<1e-12,(k,ded[k]); assert ded[k]['release_date']==d,(k,ded[k])
+        assert k in ded,(k,'missing',failures[:6]); assert abs(ded[k]['unemployment_rate_sa_pct']-v)<1e-12,(k,ded[k]); assert ded[k]['release_date']==d,(k,ded[k])
     modern=[r for r in rows if r['archive_format']=='modern']
-    if len(modern)<75:raise RuntimeError(f'insufficient modern releases {len(modern)} failures={len(failures)}')
+    if len(modern)<75:raise RuntimeError(f'insufficient modern releases {len(modern)} failures={failures[:12]}')
     OUT.parent.mkdir(parents=True,exist_ok=True)
     fields=['reference_month','release_date','unemployment_rate_sa_pct','source_url','archive_format']
     with OUT.open('w',newline='',encoding='utf-8') as f:
