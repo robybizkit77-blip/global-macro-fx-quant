@@ -20,16 +20,20 @@ jobs:
         run: |
           set -euo pipefail
           python validation/run_rates_audit.py | tee /tmp/rates-audit.json
-      - name: Assert NZD live and AUD CHF explicit freshness states
+      - name: Assert NZD official fallback and AUD CHF explicit freshness states
         run: |
           python - <<'PY'
           import json
           a=json.load(open('/tmp/rates-audit.json'))
           assert a['status']=='PASS', a
           n=a['currencies']['NZD']
-          assert n['coverage_mode']=='LIVE_FETCH', n
-          assert n['official']['date'] > '2026-10-01', n
-          assert n['state'] in {'UPDATE_AVAILABLE','NO_CHANGE'}, n
+          assert n['coverage_mode'] in {'LIVE_FETCH','MANUAL_OFFICIAL_VERIFICATION'}, n
+          assert n['official']['date']=='2026-10-05', n
+          assert abs(float(n['official']['2Y'])-3.83)<1e-9, n
+          assert abs(float(n['official']['10Y'])-5.04)<1e-9, n
+          assert n['state']=='UPDATE_AVAILABLE', n
+          if n['coverage_mode']=='MANUAL_OFFICIAL_VERIFICATION':
+              assert 'rbnz.govt.nz' in str(n.get('source_url') or ''), n
           au=a['currencies']['AUD']
           assert au['coverage_mode']=='OFFICIAL_CADENCE_ASSERTION', au
           assert au['state']=='NO_CHANGE', au
@@ -47,6 +51,9 @@ jobs:
           s=json.load(open('/tmp/candidate-summary.json'))
           assert s['status']=='CANDIDATE_READY', s
           assert 'NZD' in s['changed_currencies'], s
+          n=s['currencies']['NZD']
+          assert n['new_date']=='2026-10-05', n
+          assert abs(float(n['2Y'])-3.83)<1e-9 and abs(float(n['10Y'])-5.04)<1e-9, n
           print(s)
           PY
       - name: Build audit-derived metadata against candidate
@@ -57,10 +64,12 @@ jobs:
           python - <<'PY'
           import json
           m=json.load(open('/tmp/RATES_AUDIT_METADATA.json'))
-          assert m['rates']['NZD']['status']=='CURRENT_OFFICIAL_SAME_BASIS', m['rates']['NZD']
+          assert m['rates']['NZD']['status'] in {'CURRENT_OFFICIAL_SAME_BASIS','CURRENT_OFFICIAL_SAME_BASIS_MANUAL_VERIFIED'}, m['rates']['NZD']
+          assert m['rates']['NZD']['action']=='UPDATED', m['rates']['NZD']
           assert m['rates']['CHF']['status']=='WITHHELD_SOURCE_BLOCKED', m['rates']['CHF']
+          assert m['rates']['CHF']['action']=='WITHHOLD', m['rates']['CHF']
           assert m['rates']['AUD']['status']=='CURRENT_BY_SOURCE_CADENCE', m['rates']['AUD']
-          assert m['expected_rates']['NZD'] > '2026-10-01', m['expected_rates']
+          assert m['expected_rates']['NZD']=='2026-10-05', m['expected_rates']
           print(m['rates'])
           PY
           mv /tmp/original-rates.json live_data/sections/NATIVE_RATES_DATA.json
