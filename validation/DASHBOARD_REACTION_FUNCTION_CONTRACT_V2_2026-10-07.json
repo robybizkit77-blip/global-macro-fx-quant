@@ -1,0 +1,159 @@
+{
+  "schema": "GMFQ_DASHBOARD_REACTION_FUNCTION_CONTRACT_V2",
+  "status": "RESEARCH_ONLY_NOT_PROMOTED",
+  "created_at": "2026-10-07",
+  "supersedes": "validation/TRANSMISSION_CONVICTION_LAYER_V1_SPEC_2026-10-07.md",
+  "evidence_map": "validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3_2026-10-07.json",
+  "engine_baseline": {
+    "commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+    "rules_fingerprint": "3356baf0",
+    "modified": false
+  },
+  "purpose": "Expose the causal transmission chain for each G8 currency without creating a universal conviction score or changing the frozen macro bias.",
+  "display_order": [
+    "macro_state",
+    "central_bank_reaction_function",
+    "cb_implication",
+    "front_end_transmission",
+    "relative_rates_transmission",
+    "price_confirmation",
+    "transmission_state",
+    "what_changed",
+    "confirm_or_invalidate"
+  ],
+  "allowed_transmission_states": {
+    "TRANSMISSION_CLEAN": "Most available downstream evidence is directionally consistent with the macro state and there is no material contradiction.",
+    "TRANSMISSION_PARTIAL": "Some important channels confirm the macro state but one or more are neutral, missing or not yet decisive.",
+    "TRANSMISSION_DIVERGENT": "One or more material downstream channels contradict the macro state; the macro bias remains unchanged but confidence in transmission is reduced.",
+    "TRANSMISSION_WITHHELD": "Evidence is insufficient, source access is blocked, or the currency-specific reaction function is not yet certified."
+  },
+  "forbidden_outputs": [
+    "Universal HIGH/MEDIUM/LOW conviction score",
+    "Universal numeric G8 transmission score",
+    "Common G8 rates weight",
+    "Automatic macro-bias inversion from rates",
+    "Automatic macro-bias inversion from price",
+    "Treating missing evidence as neutral evidence",
+    "Post-hoc threshold tuning by currency"
+  ],
+  "currency_contracts": {
+    "USD": {
+      "central_bank": "FED",
+      "reaction_function": "DUAL_MANDATE",
+      "evidence_status": "SUPPORTED_DIAGNOSTIC",
+      "macro_drivers": ["labour", "inflation"],
+      "front_end": "UST_2Y",
+      "relative_rates": "USD relative 2Y versus counterpart when available",
+      "price_role": "confirmation_only",
+      "asymmetry": "DOVISH_EASING_TRANSMISSION_STRONGER_THAN_HAWKISH",
+      "dashboard_read": "La trasmissione Fed è più informativa nei regimi coerentemente dovish/easing; la conferma hawkish è più debole e non va trattata in modo simmetrico.",
+      "production_gate": false
+    },
+    "EUR": {
+      "central_bank": "ECB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "macro_drivers": ["wages", "services_inflation", "inflation"],
+      "front_end": "EUR_2Y",
+      "relative_rates": "EUR relative 2Y versus counterpart when available",
+      "price_role": "confirmation_only",
+      "asymmetry": "NOT_ESTABLISHED",
+      "dashboard_read": "Il front-end resta utile per capire il repricing ECB, ma non aumenta meccanicamente la qualità del segnale macro OOS.",
+      "production_gate": false
+    },
+    "GBP": {
+      "central_bank": "BOE",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "macro_drivers": ["wages", "services_inflation", "labour_context"],
+      "front_end": "GBP_2Y_OIS",
+      "relative_rates": "GBP relative 2Y versus counterpart when available",
+      "price_role": "confirmation_only",
+      "asymmetry": "CONFIRMATION_UNSTABLE_OOS",
+      "dashboard_read": "OIS e front-end descrivono la trasmissione BoE, ma non devono diventare un moltiplicatore automatico di convinzione.",
+      "production_gate": false
+    },
+    "JPY": {
+      "central_bank": "BOJ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_LABOUR_MEDIATED",
+      "evidence_status": "NO_INCREMENTAL_VALUE",
+      "macro_drivers": ["wages", "inflation", "labour_context", "growth_context"],
+      "front_end": "JGB_2Y",
+      "relative_rates": "JPY_MINUS_USD_2Y",
+      "price_role": "confirmation_only",
+      "asymmetry": "TIMING_SENSITIVE_NOT_ESTABLISHED",
+      "dashboard_read": "JGB 2Y e differenziale JPY-USD spiegano la trasmissione, ma il replay armonizzato non supporta un upgrade meccanico della convinzione.",
+      "production_gate": false
+    },
+    "CAD": {
+      "central_bank": "BOC",
+      "reaction_function": "INFLATION_ANCHORED_WITH_DIRECT_EMPLOYMENT_ROLE",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "macro_drivers": ["growth", "labour", "core_inflation", "headline_inflation"],
+      "front_end": "CAD_2Y",
+      "relative_rates": "CAD relative 2Y versus counterpart when available",
+      "price_role": "confirmation_only",
+      "asymmetry": "COHERENT_MACRO_STATE_PROMISING_BOTH_DIRECTIONS_SMALL_N",
+      "dashboard_read": "Quando macro e inflazione sono coerenti, la trasmissione migliora nei test recenti, ma il campione è ancora troppo piccolo per un gate.",
+      "production_gate": false
+    },
+    "AUD": {
+      "central_bank": "RBA",
+      "reaction_function": "DUAL_MANDATE_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "PROMISING_SMALL_SAMPLE",
+      "macro_drivers": ["labour", "inflation"],
+      "front_end": "AUD_2Y",
+      "relative_rates": "AUD relative 2Y versus counterpart when available",
+      "price_role": "confirmation_only",
+      "asymmetry": "HAWKISH_SIDE_PROMISING_SMALL_N",
+      "dashboard_read": "Il replay è promettente soprattutto sul lato hawkish, ma non è abbastanza ampio per trasformare il 2Y in filtro operativo.",
+      "production_gate": false
+    },
+    "NZD": {
+      "central_bank": "RBNZ",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_FLEXIBLE_INFLATION_TARGETING",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "macro_drivers": ["inflation", "slack"],
+      "front_end": null,
+      "relative_rates": null,
+      "price_role": "confirmation_only_when_certified",
+      "asymmetry": "WITHHELD",
+      "dashboard_read": "Reaction function definita teoricamente, ma la trasmissione storica resta WITHHELD finché il dataset PIT non è riproducibile.",
+      "production_gate": false
+    },
+    "CHF": {
+      "central_bank": "SNB",
+      "reaction_function": "PRICE_STABILITY_PRIMARY_WITH_ECONOMIC_DEVELOPMENTS",
+      "evidence_status": "WITHHELD_SOURCE_ACCESS_GAP",
+      "macro_drivers": ["inflation_forecast", "economic_conditions", "exchange_rate_channel", "labour"],
+      "front_end": "CHF_2Y",
+      "relative_rates": "CHF relative 2Y versus counterpart when available",
+      "price_role": "policy_channel_and_confirmation",
+      "asymmetry": "WITHHELD",
+      "dashboard_read": "Per SNB il cambio è anche parte della trasmissione di policy; senza unemployment vintage SECO il replay storico resta bloccato e il pannello deve mostrare WITHHELD.",
+      "production_gate": false
+    }
+  },
+  "rendering_rules": {
+    "macro_bias_is_primary": true,
+    "transmission_can_flip_macro_bias": false,
+    "rates_can_flip_macro_bias": false,
+    "price_can_flip_macro_bias": false,
+    "missing_is_neutral": false,
+    "withheld_is_visually_distinct": true,
+    "show_reason_for_withheld": true,
+    "show_currency_specific_language": true,
+    "show_raw_research_sample_sizes_in_main_ui": false,
+    "show_research_evidence_on_detail_expand": true
+  },
+  "what_changed_contract": {
+    "allowed_labels": ["CONFERMATO", "IN_MIGLIORAMENTO", "IN_PEGGIORAMENTO", "DIVERGENZA", "WITHHELD"],
+    "rule": "Compare current causal chain state with the previous validated snapshot; never infer change from a single downstream market move alone."
+  },
+  "research_guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
