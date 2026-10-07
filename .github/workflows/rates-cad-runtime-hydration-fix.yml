@@ -1,71 +1,11 @@
 name: Rates GBP Non-Destructive Canonicalization Fix
 on:
-  push:
-    branches: [staging-rates-g8-refresh-2026-10-07]
+  workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  patch:
-    if: github.actor != 'github-actions[bot]'
+  completed:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Preserve legacy GBP bootstrap and restore canonical snapshot after it
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('payload/part-15.txt')
-          s=p.read_text()
-          legacy='<script id="gmfq-gbp-rates-boe-20260930">'
-          capture_id='<script id="gmfq-gbp-canonical-prelegacy-capture">'
-          restore_id='<script id="gmfq-gbp-canonical-postlegacy-restore">'
-          assert s.count(legacy)==1, f'GBP legacy block count={s.count(legacy)}'
-          assert capture_id not in s and restore_id not in s, 'GBP canonical guards already present'
-          a=s.index(legacy)
-          b=s.index('</script>',a)+len('</script>')
-          old=s[a:b]
-          for needle in ["date:'2026-09-29'","y2:4.684827469902199","y10:5.380692223244884"]:
-              assert needle in old, f'missing expected GBP legacy marker {needle}'
-
-          capture='''<script id="gmfq-gbp-canonical-prelegacy-capture">\n(function(){\n  'use strict';\n  try{\n    const root=(typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA:null);\n    const d=root?.GBP;\n    if(!d) throw new Error('GBP_NATIVE_RATES_PRELEGACY_MISSING');\n    window.__GMFQ_GBP_CANONICAL_PRELEGACY=JSON.parse(JSON.stringify(d));\n  }catch(e){\n    window.__GMFQ_GBP_CANONICAL_PRELEGACY_ERROR=String(e?.message||e);\n  }\n})();\n</script>\n\n'''
-
-          restore='''\n\n<script id="gmfq-gbp-canonical-postlegacy-restore">\n(function(){\n  'use strict';\n  try{\n    const root=(typeof NATIVE_RATES_DATA!=='undefined'?NATIVE_RATES_DATA:null);\n    const d=root?.GBP;\n    const snap=window.__GMFQ_GBP_CANONICAL_PRELEGACY;\n    if(!d||!snap) throw new Error('GBP_CANONICAL_RESTORE_INPUT_MISSING');\n    for(const k of Object.keys(d)) delete d[k];\n    Object.assign(d,JSON.parse(JSON.stringify(snap)));\n    if(typeof D!=='undefined' && D?.macro?.GBP){\n      D.macro.GBP.rate2y=d['2Y'];\n      D.macro.GBP.rate_status='CURRENT';\n    }\n    try{if(typeof syncVisibleRatesSnapshots==='function')syncVisibleRatesSnapshots();}catch(_){}\n    try{if(typeof rebuildCanonicalState==='function')rebuildCanonicalState();}catch(_){}\n    try{if(typeof stableModelRefresh==='function')stableModelRefresh();}catch(_){}\n    try{if(typeof syncCoreFreshnessRegistryFromLive==='function')syncCoreFreshnessRegistryFromLive();}catch(_){}\n    const expected=window.__GMFQ_DATA?.RATES_AUDIT_METADATA?.expected_rates?.GBP||null;\n    const basis=typeof ratesCanonicalBasisIntegrity==='function'?ratesCanonicalBasisIntegrity():null;\n    const visible=typeof visibleRatesSnapshotIntegrity==='function'?visibleRatesSnapshotIntegrity():null;\n    window.GMFQ_GBP_RATES_AUDIT={\n      status:expected&&d.date===expected&&basis?.ok===true&&visible?.ok===true?'PASS':'FAIL',\n      as_of:d.date||null,\n      values:{'2Y':d['2Y']??null,'10Y':d['10Y']??null,curve_bp:d.curve_bp??null},\n      metadata_ok:!!expected&&d.date===expected,\n      basis_ok:basis?.ok??null,\n      visible_ok:visible?.ok??null,\n      mode:'CANONICAL_POSTLEGACY_RESTORE'\n    };\n    document.documentElement.setAttribute('data-gbp-rates-audit',window.GMFQ_GBP_RATES_AUDIT.status);\n    document.documentElement.setAttribute('data-gbp-rates-asof',d.date||'');\n  }catch(e){\n    window.GMFQ_GBP_RATES_AUDIT={status:'FAIL',error:String(e?.message||e),mode:'CANONICAL_POSTLEGACY_RESTORE'};\n    document.documentElement.setAttribute('data-gbp-rates-audit','FAIL');\n  }\n})();\n</script>'''
-
-          s=s[:a]+capture+s[a:b]+restore+s[b:]
-          assert s.count(legacy)==1
-          assert s.count(capture_id)==1 and s.count(restore_id)==1
-          # Critical safety: legacy block must remain byte-identical.
-          na=s.index(legacy); nb=s.index('</script>',na)+len('</script>')
-          assert s[na:nb]==old, 'legacy GBP bootstrap block mutated'
-          p.write_text(s)
-          print({'status':'GBP_NON_DESTRUCTIVE_CANONICALIZATION_PREPARED','legacy_bytes_preserved':len(old)})
-          PY
-      - name: Rebuild manifest and verify live contract
-        run: |
-          set -euo pipefail
-          python validation/build_live_manifest_v2.py > /tmp/manifest.v2.json
-          mv /tmp/manifest.v2.json live_data/manifest.v2.json
-          python validation/check_live_update_contract.py
-      - name: Enforce exact runtime patch scope
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import subprocess
-          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          allowed={'payload/part-15.txt','live_data/manifest.v2.json'}
-          assert changed==allowed, (changed,allowed)
-          print({'status':'SCOPE_PASS','changed':sorted(changed)})
-          PY
-      - name: Commit non-destructive GBP canonicalization
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add payload/part-15.txt live_data/manifest.v2.json
-          git commit -m 'Restore canonical GBP Rates after legacy bootstrap'
-          git push origin HEAD:${GITHUB_REF_NAME}
+      - name: Completed staging fix
+        run: echo 'GBP non-destructive canonicalization already applied; workflow frozen after successful patch.'
