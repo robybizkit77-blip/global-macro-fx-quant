@@ -1,0 +1,3 @@
+Clean Rates promotion browser validation trigger.
+Base data commit: a0cb8d056e7a598fe4d8eea175f23f8e35e3b1c4
+No runtime or live-data changes in this trigger commit.
