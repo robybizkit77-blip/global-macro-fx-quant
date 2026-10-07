@@ -1,0 +1,34 @@
+name: CERT53 Refresh Provenance Policy V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/update_live_direct_section.py'
+      - 'validation/CERT53_REFRESH_PROVENANCE_TEMPLATE_V1_2026-10-07.json'
+      - 'validation/CERT53_PROVENANCE_AUDIT_V1_2026-10-07.json'
+      - 'validation/validate_cert53_refresh_provenance_policy_v1.py'
+      - '.github/workflows/cert53-refresh-provenance-policy-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-transmission-conviction-layer-v1-2026-10-07
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate future CERT53 provenance enforcement
+        run: python validation/validate_cert53_refresh_provenance_policy_v1.py
+      - name: Guard research-only boundary
+        run: |
+          git diff --exit-code
+          echo 'No live data, engine rules, OOS baseline or production state changed.'
