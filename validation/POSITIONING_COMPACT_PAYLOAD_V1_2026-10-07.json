@@ -1,0 +1,100 @@
+{
+  "schema": "GMFQ_POSITIONING_COMPACT_PAYLOAD_V1",
+  "status": "RESEARCH_ONLY_PARTIAL_SOURCE_NOT_PROMOTED",
+  "purpose": "Compact positioning context from currently available runtime COT percentile only. No fabricated flow or Net/OI fields.",
+  "source": {
+    "runtime_file": "live_data/sections/D.json",
+    "available_field": "macro.<CCY>.cot_pct",
+    "canonical_full_cot_dataset_connected": false
+  },
+  "currencies": {
+    "USD": {
+      "currency": "USD",
+      "percentile_2y": 78.846154,
+      "positioning_read": "LONG_BIAS",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "EUR": {
+      "currency": "EUR",
+      "percentile_2y": 8.653846,
+      "positioning_read": "EXTREME_SHORT",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "GBP": {
+      "currency": "GBP",
+      "percentile_2y": 3.846154,
+      "positioning_read": "EXTREME_SHORT",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "JPY": {
+      "currency": "JPY",
+      "percentile_2y": 64.423077,
+      "positioning_read": "LONG_BIAS",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "CHF": {
+      "currency": "CHF",
+      "percentile_2y": 84.615385,
+      "positioning_read": "EXTREME_LONG",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "CAD": {
+      "currency": "CAD",
+      "percentile_2y": 65.384615,
+      "positioning_read": "LONG_BIAS",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "AUD": {
+      "currency": "AUD",
+      "percentile_2y": 33.653846,
+      "positioning_read": "SHORT_BIAS",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    },
+    "NZD": {
+      "currency": "NZD",
+      "percentile_2y": 76.923077,
+      "positioning_read": "LONG_BIAS",
+      "delta_net_1w": null,
+      "net_oi_pct": null,
+      "flow_status": "WITHHELD_SOURCE_NOT_AVAILABLE",
+      "imbalance_alert": null,
+      "note_it": "Contesto positioning limitato al percentile COT già presente nel runtime. Delta Net 1W e Net/OI restano withheld finché il dataset CFTC canonico non è collegato."
+    }
+  },
+  "guards": {
+    "fabricates_missing_flow": false,
+    "fabricates_missing_net_oi": false,
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "production_promotion": false,
+    "trade_signal": false
+  }
+}
