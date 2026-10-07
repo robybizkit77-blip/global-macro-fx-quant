@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib, json, pathlib, sys
+import argparse, hashlib, json, pathlib, sys
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 PAYLOAD=ROOT/'payload'
@@ -12,6 +12,9 @@ TRANSFORMED={'V247_COT_STORIES','RATES_AUDIT_METADATA'}
 def sha(b:bytes)->str: return hashlib.sha256(b).hexdigest()
 
 def main()->int:
+    ap=argparse.ArgumentParser()
+    ap.add_argument('--write', help='Write the generated manifest to this path after validation.')
+    args=ap.parse_args()
     old=json.loads(OLD.read_text())
     part_bytes=[p.read_bytes() for p in PARTS]
     runtime=b''.join(part_bytes)
@@ -41,6 +44,8 @@ def main()->int:
       'failures':failures,
       'status':'PASS' if not failures else 'FAIL'
     }
+    if args.write:
+        pathlib.Path(args.write).write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
     print(json.dumps(manifest,indent=2,ensure_ascii=False))
     return 0 if not failures else 2
 
