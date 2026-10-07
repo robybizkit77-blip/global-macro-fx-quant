@@ -1,0 +1,70 @@
+name: CHF Macro NZD Liquidity Candidate V1
+on:
+  push:
+    branches: [candidate-chf-macro-nzd-liq-2026-10-07]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build CHF macro candidate read-only
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/chf-macro-candidate
+          python validation/build_macro_candidate.py \
+            --candidate validation/CHF_CPI_CANDIDATE_2026-09.json \
+            --output-dir /tmp/chf-macro-candidate
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('/tmp/chf-macro-candidate/summary.json').read_text())
+          h=json.loads(Path('/tmp/chf-macro-candidate/MACRO_THERMOMETER_DATA.json').read_text())
+          r=h['currencies']['CHF']['inflation']
+          assert s['status']=='PASS' and s['live_data_modified'] is False
+          assert s['observation_date']=='2026-09' and float(s['new_value'])==1.0
+          assert r['as_of']=='2026-09' and float(r['latest_value'])==1.0
+          assert h['currencies']['CHF']['as_of_detail']['inflation']=='2026-09'
+          print('CHF_MACRO_CANDIDATE=',json.dumps({'summary':s,'derived':{k:r.get(k) for k in ['percentile','temperature_label','direction','acceleration','as_of','latest_value']}},ensure_ascii=False,indent=2))
+          PY
+      - name: Build NZD liquidity candidate read-only
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy,json
+          from pathlib import Path
+          live=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())
+          spec=json.loads(Path('validation/NZD_LIQ_CANDIDATE_2026-08.json').read_text())
+          out=copy.deepcopy(live)
+          n=out['NZD']
+          assert n['liquidity']['last_date']=='2026-07' and n['liquidity']['last_value']==28303
+          assert n['money']['last_date']=='2026-07' and n['money']['last_value']==458490
+          assert n['credit']['last_date']=='2026-07' and n['credit']['last_value']==621266
+          d=spec['observation_date']
+          for key in ('liquidity','money','credit'):
+            v=spec['components'][key]['value']
+            assert d not in n[key]['dates']
+            n[key]['dates'].append(d); n[key]['values'].append(v)
+            n[key]['last_date']=d; n[key]['last_value']=v
+          # Direction semantics for candidate: latest monthly move only; no production mutation here.
+          n['liquidity_dir']='IN CALO' if n['liquidity']['values'][-1] < n['liquidity']['values'][-2] else 'IN AUMENTO' if n['liquidity']['values'][-1] > n['liquidity']['values'][-2] else 'STABILE'
+          n['credit_dir']='IN CALO' if n['credit']['values'][-1] < n['credit']['values'][-2] else 'IN AUMENTO' if n['credit']['values'][-1] > n['credit']['values'][-2] else 'STABILE'
+          n['current_note']='RBNZ: settlement cash medio 26,460 NZD mln ad agosto 2026; broad money 454,671 mln; credito privato 624,663 mln. Liquidità primaria in calo sul mese, credito ancora in espansione.'
+          n['as_of']='2026-08 · released 2026-09-30'
+          n['source_note']='RBNZ D10 + C50. Dati agosto 2026 pubblicati 30 Sep 2026; prossimo aggiornamento previsto 30 Oct 2026.'
+          Path('/tmp/NATIVE_LIQ_DATA.candidate.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':'))+'\n')
+          summary={
+            'status':'PASS','mode':'CANDIDATE_ONLY','live_data_modified':False,
+            'currency':'NZD','observation_date':d,
+            'old':{'liquidity':28303,'money':458490,'credit':621266},
+            'new':{'liquidity':26460,'money':454671,'credit':624663},
+            'derived':{'liquidity_dir':n['liquidity_dir'],'credit_dir':n['credit_dir']},
+            'as_of':n['as_of'],'source_note':n['source_note']
+          }
+          assert n['liquidity_dir']=='IN CALO' and n['credit_dir']=='IN AUMENTO'
+          print('NZD_LIQ_CANDIDATE=',json.dumps(summary,ensure_ascii=False,indent=2))
+          PY
+      - name: Prove zero live mutation
+        run: git diff --exit-code -- live_data
