@@ -1,0 +1,51 @@
+name: CERT53 Provenance Dry Run V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_cert53_provenance_dry_run_v1.py'
+      - 'validation/update_live_direct_section.py'
+      - 'validation/CERT53_REFRESH_PROVENANCE_TEMPLATE_V1_2026-10-07.json'
+      - 'live_data/sections/CERT53.json'
+      - 'live_data/manifest.v2.json'
+      - 'payload/part-00.txt'
+      - '.github/workflows/cert53-provenance-dry-run-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run synthetic CERT53 provenance dry-run
+        run: python validation/run_cert53_provenance_dry_run_v1.py
+      - name: Validate audit result
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/CERT53_PROVENANCE_DRY_RUN_V1_2026-10-07.json')
+          d=json.loads(p.read_text())
+          assert d['schema']=='GMFQ_CERT53_PROVENANCE_DRY_RUN_V1'
+          assert d['status']=='PASS'
+          assert d['mode']=='SYNTHETIC_NO_APPLY'
+          assert d['pair_count']==28
+          assert all(d['checks'].values())
+          assert d['guards']['changes_live_data'] is False
+          assert d['guards']['changes_runtime_payload'] is False
+          assert d['guards']['writes_provenance_record'] is False
+          print('PASS CERT53 provenance dry-run audit')
+          PY
+      - name: Prove live runtime untouched
+        run: |
+          git diff --exit-code -- live_data/ payload/
+          test ! -e live_data/provenance/cert53/DRYRUN_CERT53_20261007_V1.json
+          echo 'PASS no live/runtime/provenance mutation'
