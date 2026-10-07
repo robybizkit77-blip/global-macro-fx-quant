@@ -1,0 +1,44 @@
+{
+  "schema": "GMFQ_FORWARD_AUTOMATION_WIRING_AUDIT_V1",
+  "status": "PARTIAL_AUTOMATION__UPSTREAM_LIVE_REFRESH_MANUAL",
+  "created_at": "2026-10-07",
+  "purpose": "Record the actual automation boundary for the research transmission/forward pipeline without overstating autonomy.",
+  "findings": {
+    "signed_input_builder_source": [
+      "live_data/sections/CERT53.json",
+      "validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V3_2026-10-07.json"
+    ],
+    "cert53_change_triggers_signed_inputs": true,
+    "signed_inputs_trigger_transmission": true,
+    "signed_inputs_trigger_rule_sensitivity": true,
+    "transmission_and_sensitivity_feed_robustness": true,
+    "transmission_and_robustness_feed_render_payload": true,
+    "render_payload_change_triggers_semantic_snapshot_auto_append": true,
+    "semantic_snapshot_auto_append_materializes_frozen_pair_snapshot": true,
+    "semantic_snapshot_auto_append_updates_sha256_manifest": true,
+    "ecb_forward_outcome_collection_scheduled": true,
+    "historical_outcome_labels_read_from_frozen_snapshot": true,
+    "upstream_live_data_ingest_scheduled": false,
+    "upstream_live_data_ingest_status": "DESIGN_READY__MANUAL_ONLY",
+    "fully_autonomous_forward_collection": false
+  },
+  "automation_boundary": {
+    "automatic_from": "Validated change committed to live_data/sections/CERT53.json",
+    "automatic_through": "Pair signed inputs -> transmission -> rule sensitivity -> robustness -> render payload -> semantic-change snapshot -> frozen pair snapshot + SHA256 manifest",
+    "manual_before_boundary": "Source ingest / validation / canonical live_data refresh that creates the validated CERT53 change",
+    "reason_manual": "The canonical live-update runbook explicitly disables scheduling until repeated manual end-to-end validation, release and rollback gates pass."
+  },
+  "classification": {
+    "downstream_research_chain": "AUTOMATED_EVENT_DRIVEN",
+    "forward_outcome_monitor": "AUTOMATED_SCHEDULED",
+    "canonical_live_refresh": "MANUAL_GATED",
+    "overall": "PARTIALLY_AUTOMATED_NOT_FULLY_AUTONOMOUS"
+  },
+  "guards": {
+    "does_not_enable_upstream_schedule": true,
+    "does_not_change_engine_rules": true,
+    "does_not_change_live_data": true,
+    "does_not_change_oos_baseline": true,
+    "production_promotion": false
+  }
+}
