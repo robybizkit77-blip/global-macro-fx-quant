@@ -1,0 +1,33 @@
+name: AUD Unemployment PIT V1
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_aud_unemployment_pit_v1.py'
+      - '.github/workflows/aud-unemployment-pit-v1.yml'
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build AUD unemployment first-release PIT
+        run: python validation/run_aud_unemployment_pit_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json
+          grep -q '3356baf0' validation/CENTRAL_BANK_REACTION_FUNCTION_EVIDENCE_MAP_V2_2026-10-07.json
+      - name: Commit evidence
+        run: |
+          git config user.name 'gmfq-bot'
+          git config user.email 'gmfq-bot@users.noreply.github.com'
+          git add history/pit_v1/AUD_UNEMPLOYMENT_FIRST_RELEASE_2018_2026.csv validation/AUD_UNEMPLOYMENT_PIT_V1_2026-10-07.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Materialize AUD unemployment first-release PIT v1'
+          git push
