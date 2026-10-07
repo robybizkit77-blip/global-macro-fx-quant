@@ -6,6 +6,7 @@ from pathlib import Path
 LEDGER=Path('validation/FORWARD_SNAPSHOT_LEDGER_V1_2026-10-07.json')
 PAYLOAD=Path('validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json')
 CERT53=Path('live_data/sections/CERT53.json')
+CERT53_PROV_ROOT=Path('live_data/provenance/cert53')
 MANIFEST=Path('validation/forward/MANIFEST_V1.json')
 SNAPDIR=Path('validation/forward/snapshots')
 
@@ -20,6 +21,35 @@ manifest=json.loads(MANIFEST.read_text(encoding='utf-8')) if MANIFEST.exists() e
 
 def sha256_file(p:Path)->str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def resolve_cert53_provenance(cert_sha:str)->dict:
+    matches=[]
+    if CERT53_PROV_ROOT.exists():
+        for p in sorted(CERT53_PROV_ROOT.glob('*.json')):
+            try:
+                d=json.loads(p.read_text(encoding='utf-8'))
+            except Exception:
+                continue
+            if d.get('schema')!='GMFQ_CERT53_REFRESH_PROVENANCE_V1':
+                continue
+            if d.get('section')!='CERT53' or d.get('candidate_sha256')!=cert_sha:
+                continue
+            matches.append((p,d))
+    if len(matches)>1:
+        raise SystemExit('AMBIGUOUS_CERT53_PROVENANCE:'+','.join(str(p) for p,_ in matches))
+    if not matches:
+        return {
+          'status':'HASH_LINKED_FROM_CERT53_DOWNSTREAM__UPSTREAM_LINEAGE_PARTIAL',
+          'refresh_id':None,'record_path':None,'record_sha256':None,'source_asof':None
+        }
+    p,d=matches[0]
+    return {
+      'status':'CERTIFIED_REFRESH_LINKED',
+      'refresh_id':d.get('refresh_id'),
+      'record_path':str(p),
+      'record_sha256':sha256_file(p),
+      'source_asof':d.get('source_asof')
+    }
 
 semantic={}
 for pair in sorted(pairs):
@@ -55,6 +85,7 @@ if any(x['snapshot_id']==snapshot_id for x in manifest['snapshots']): raise Syst
 
 source_payload_sha256=sha256_file(PAYLOAD)
 source_cert53_sha256=sha256_file(CERT53)
+prov=resolve_cert53_provenance(source_cert53_sha256)
 
 frozen_pairs={}
 for pair in sorted(pairs):
@@ -66,7 +97,8 @@ for pair in sorted(pairs):
 full={'schema':'GMFQ_FORWARD_PAIR_SNAPSHOT_V1','status':'FROZEN_RESEARCH_SNAPSHOT','snapshot_id':snapshot_id,'captured_at':iso,
   'materialized_before_entry_lock':True,'source_payload':str(PAYLOAD),'source_payload_sha256':source_payload_sha256,
   'source_cert53':'live_data/sections/CERT53.json','source_cert53_sha256':source_cert53_sha256,
-  'source_provenance_status':'HASH_LINKED_FROM_CERT53_DOWNSTREAM__UPSTREAM_LINEAGE_PARTIAL',
+  'source_refresh_id':prov['refresh_id'],'source_refresh_record':prov['record_path'],'source_refresh_record_sha256':prov['record_sha256'],
+  'source_refresh_asof':prov['source_asof'],'source_provenance_status':prov['status'],
   'ledger_source':str(LEDGER),'engine_commit':ledger['engine_commit'],
   'rules_fingerprint':ledger['rules_fingerprint'],'classifier_version':ledger['classifier_version'],
   'robustness_overlay_version':ledger['robustness_overlay_version'],'semantic_fingerprint':fingerprint,'pair_count':28,'pairs':frozen_pairs,
@@ -75,13 +107,17 @@ full={'schema':'GMFQ_FORWARD_PAIR_SNAPSHOT_V1','status':'FROZEN_RESEARCH_SNAPSHO
 SNAPDIR.mkdir(parents=True,exist_ok=True); path.write_text(json.dumps(full,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
 digest=hashlib.sha256(path.read_bytes()).hexdigest()
 manifest['snapshots'].append({'snapshot_id':snapshot_id,'captured_at':iso,'path':str(path),'sha256':digest,'pair_count':28,
-  'source_payload_sha256':source_payload_sha256,'source_cert53_sha256':source_cert53_sha256})
+  'source_payload_sha256':source_payload_sha256,'source_cert53_sha256':source_cert53_sha256,
+  'source_refresh_id':prov['refresh_id'],'source_refresh_record':prov['record_path'],'source_refresh_record_sha256':prov['record_sha256'],
+  'source_provenance_status':prov['status']})
 MANIFEST.parent.mkdir(parents=True,exist_ok=True); MANIFEST.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
 
 snap={'snapshot_id':snapshot_id,'captured_at':iso,'source_payload':str(PAYLOAD),'source_payload_sha256':source_payload_sha256,
-  'source_cert53_sha256':source_cert53_sha256,'semantic_fingerprint':fingerprint,'pair_count':28,
+  'source_cert53_sha256':source_cert53_sha256,'source_refresh_id':prov['refresh_id'],'source_refresh_record':prov['record_path'],
+  'source_refresh_record_sha256':prov['record_sha256'],'source_provenance_status':prov['status'],
+  'semantic_fingerprint':fingerprint,'pair_count':28,
   'state_counts':state_counts,'robustness_counts':robustness_counts,'focus_buckets':focus,
   'historical_evidence_status':last.get('historical_evidence_status',{}),'forward_outcomes':{'t_plus_5':None,'t_plus_20':None,'t_plus_60':None},
   'frozen':True,'frozen_pair_snapshot_path':str(path),'frozen_pair_snapshot_sha256':digest}
 ledger['snapshots'].append(snap); LEDGER.write_text(json.dumps(ledger,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
-print(f'APPENDED_FORWARD_SNAPSHOT {snapshot_id} {fingerprint[:12]} {digest[:12]} cert53={source_cert53_sha256[:12]}')
+print(f"APPENDED_FORWARD_SNAPSHOT {snapshot_id} {fingerprint[:12]} {digest[:12]} cert53={source_cert53_sha256[:12]} provenance={prov['status']} refresh={prov['refresh_id']}")
