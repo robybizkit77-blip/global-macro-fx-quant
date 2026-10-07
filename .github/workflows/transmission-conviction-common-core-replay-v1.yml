@@ -1,0 +1,32 @@
+name: Transmission Conviction Common Core Replay V1
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/run_transmission_conviction_common_core_replay_v1.py'
+      - '.github/workflows/transmission-conviction-common-core-replay-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run common-core replay
+        run: python validation/run_transmission_conviction_common_core_replay_v1.py
+      - name: Guard frozen engine identifiers
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/TRANSMISSION_CONVICTION_COMMON_CORE_REPLAY_V1_2026-10-07.json
+          grep -q '3356baf0' validation/TRANSMISSION_CONVICTION_COMMON_CORE_REPLAY_V1_2026-10-07.json
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/TRANSMISSION_CONVICTION_COMMON_CORE_REPLAY_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Add transmission conviction common-core replay evidence'
+          git push
