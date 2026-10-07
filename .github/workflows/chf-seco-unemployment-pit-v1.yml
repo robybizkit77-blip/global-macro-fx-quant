@@ -1,0 +1,32 @@
+name: CHF SECO Unemployment PIT V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/run_chf_seco_unemployment_pit_v1.py'
+      - '.github/workflows/chf-seco-unemployment-pit-v1.yml'
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser deps
+        run: pip install beautifulsoup4 pdfplumber
+      - name: Materialize SECO unemployment SA PIT
+        run: python validation/run_chf_seco_unemployment_pit_v1.py
+      - name: Guard frozen research contract
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md
+          grep -q '3356baf0' validation/CHF_SNB_REACTION_FUNCTION_SPEC_V1_2026-10-07.md
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add history/pit_v1/CHF_UNEMPLOYMENT_SA_FIRST_RELEASE_2018_2026.csv validation/CHF_UNEMPLOYMENT_SA_PIT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize CHF SECO unemployment SA PIT'
+          git push
