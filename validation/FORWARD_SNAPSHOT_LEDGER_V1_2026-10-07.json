@@ -1,0 +1,71 @@
+{
+  "schema": "GMFQ_FORWARD_SNAPSHOT_LEDGER_V1",
+  "status": "ACTIVE_RESEARCH_LEDGER",
+  "created_at": "2026-10-07T08:05:22Z",
+  "immutability_contract": {
+    "append_only": true,
+    "retroactive_label_changes_forbidden": true,
+    "historical_records_must_not_be_rewritten": true,
+    "corrections_must_be_appended_as_new_records": true
+  },
+  "engine_commit": "ff52198a75cc67f7dae96fc2bbf65623f170791c",
+  "rules_fingerprint": "3356baf0",
+  "classifier_version": "DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1",
+  "robustness_overlay_version": "DASHBOARD_PAIR_TRANSMISSION_ROBUSTNESS_OVERLAY_V1",
+  "render_payload_version": "DASHBOARD_PAIR_RENDER_PAYLOAD_V1",
+  "evaluation_policy": {
+    "no_retroactive_tuning": true,
+    "no_return_fitting_during_collection": true,
+    "future_evaluation_horizons_market_days": [5, 20, 60],
+    "primary_horizon_market_days": 20,
+    "store_future_returns_only_when_horizon_matures": true,
+    "do_not_change_original_state_after_outcome": true
+  },
+  "snapshots": [
+    {
+      "snapshot_id": "2026-10-07T08:05:22Z__V1",
+      "captured_at": "2026-10-07T08:05:22Z",
+      "source_payload": "validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json",
+      "pair_count": 28,
+      "state_counts": {
+        "TRANSMISSION_CLEAN": 2,
+        "TRANSMISSION_PARTIAL": 8,
+        "TRANSMISSION_DIVERGENT": 12,
+        "TRANSMISSION_WITHHELD": 6
+      },
+      "robustness_counts": {
+        "ROBUST_ACROSS_RULES": 22,
+        "RULE_SENSITIVE": 6
+      },
+      "focus_buckets": {
+        "clean_robust": ["GBP/JPY", "JPY/CAD"],
+        "divergent_robust": ["CHF/CAD", "EUR/NZD", "USD/AUD", "USD/CAD", "USD/CHF", "USD/NZD"],
+        "partial_robust": ["AUD/NZD", "CAD/AUD", "EUR/AUD", "EUR/JPY", "GBP/AUD", "JPY/NZD", "USD/EUR", "USD/JPY"],
+        "rule_sensitive": ["CHF/NZD", "EUR/CAD", "EUR/CHF", "GBP/CAD", "GBP/CHF", "GBP/NZD"],
+        "withheld": ["CAD/NZD", "CHF/AUD", "EUR/GBP", "JPY/AUD", "JPY/CHF", "USD/GBP"]
+      },
+      "historical_evidence_status": {
+        "USD": "SUPPORTED_DIAGNOSTIC",
+        "CAD": "PROMISING_SMALL_SAMPLE",
+        "AUD": "PROMISING_SMALL_SAMPLE",
+        "EUR": "NO_INCREMENTAL_VALUE",
+        "GBP": "NO_INCREMENTAL_VALUE",
+        "JPY": "NO_INCREMENTAL_VALUE",
+        "NZD": "WITHHELD_SOURCE_ACCESS_GAP",
+        "CHF": "WITHHELD_SOURCE_ACCESS_GAP"
+      },
+      "forward_outcomes": {
+        "t_plus_5": null,
+        "t_plus_20": null,
+        "t_plus_60": null
+      },
+      "frozen": true
+    }
+  ],
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false
+  }
+}
