@@ -154,3 +154,4 @@ jobs:
             /tmp/gmfq-server.log
 
 # diagnostic G8 Rates runtime/canonical parity audit 2026-10-07
+# rerun after EUR canonical runtime adapter 2026-10-07
