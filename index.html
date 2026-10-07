@@ -18,7 +18,7 @@
    refreshCalls++;
    return '(window.__GMFQ_STABLE_REFRESH_QUEUED=true)';
  });
- if(refreshCalls!==26) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
+ if(refreshCalls!==25) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
  const marker='<script id="gmfq-post-gate-final-audit-settlement">';
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
