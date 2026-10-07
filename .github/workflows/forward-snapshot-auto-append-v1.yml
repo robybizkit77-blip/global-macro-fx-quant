@@ -2,14 +2,6 @@ name: Forward Snapshot Auto Append V1
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - research-transmission-conviction-layer-v1-2026-10-07
-    paths:
-      - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
-      - 'validation/append_forward_snapshot_if_changed_v1.py'
-      - 'validation/validate_forward_pair_snapshots_v1.py'
-      - '.github/workflows/forward-snapshot-auto-append-v1.yml'
 
 permissions:
   contents: write
@@ -25,6 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate live contract first
+        run: python validation/check_live_update_contract.py
       - name: Append snapshot only on semantic change
         run: python validation/append_forward_snapshot_if_changed_v1.py
       - name: Validate aggregate ledger
