@@ -1,0 +1,340 @@
+{
+  "schema": "GMFQ_FROZEN_MACRO_TRANSMISSION_REPLAY_V1",
+  "status": "READ_ONLY_ARCHITECTURE_SENSITIVITY",
+  "purpose": "Measure how much the current strict transmission classification depends on using CERT53 Macro anchors instead of the frozen canonical currency-Macro comparison rule.",
+  "important_limit": "Frozen currency Macro labels are the historical frozen snapshot, not regenerated current Macro states. This is architecture sensitivity, not a proposal to replace current live Macro with stale labels.",
+  "rule_change": false,
+  "only_changed_input": "macro_anchor_source",
+  "distribution": {
+    "current_reconstructed": {
+      "CLEAN": 2,
+      "DIVERGENT": 12,
+      "PARTIAL": 8,
+      "WITHHELD": 6
+    },
+    "frozen_macro_replay": {
+      "CLEAN": 4,
+      "DIVERGENT": 6,
+      "PARTIAL": 5,
+      "WITHHELD": 13
+    },
+    "unchanged_pairs": 8,
+    "changed_pairs": 20
+  },
+  "changed_pair_list": [
+    "CAD/AUD",
+    "CAD/NZD",
+    "CHF/AUD",
+    "CHF/CAD",
+    "CHF/NZD",
+    "EUR/CHF",
+    "EUR/JPY",
+    "EUR/NZD",
+    "GBP/CHF",
+    "GBP/JPY",
+    "GBP/NZD",
+    "JPY/AUD",
+    "JPY/CAD",
+    "JPY/NZD",
+    "USD/AUD",
+    "USD/CAD",
+    "USD/CHF",
+    "USD/GBP",
+    "USD/JPY",
+    "USD/NZD"
+  ],
+  "pairs": {
+    "AUD/NZD": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "B",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "PARTIAL",
+      "transmission_changed": false
+    },
+    "CAD/AUD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "MIXED",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "CAD/NZD": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": true
+    },
+    "CHF/AUD": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "CLEAN",
+      "transmission_changed": true
+    },
+    "CHF/CAD": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "CLEAN",
+      "transmission_changed": true
+    },
+    "CHF/NZD": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "EUR/AUD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "A",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "PARTIAL",
+      "transmission_changed": false
+    },
+    "EUR/CAD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": false
+    },
+    "EUR/CHF": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "EUR/GBP": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": false
+    },
+    "EUR/JPY": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "EUR/NZD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "GBP/AUD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "PARTIAL",
+      "transmission_changed": false
+    },
+    "GBP/CAD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": false
+    },
+    "GBP/CHF": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "GBP/JPY": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "CLEAN",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "GBP/NZD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "B",
+      "rates_direction": "B",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "JPY/AUD": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "A",
+      "rates_direction": "B",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": true
+    },
+    "JPY/CAD": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "B",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "CLEAN",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": true
+    },
+    "JPY/CHF": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": false
+    },
+    "JPY/NZD": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "USD/AUD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "B",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "USD/CAD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "MIXED",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "WITHHELD",
+      "transmission_changed": true
+    },
+    "USD/CHF": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "CLEAN",
+      "transmission_changed": true
+    },
+    "USD/EUR": {
+      "current_macro_anchor": "A",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "PARTIAL",
+      "transmission_changed": false
+    },
+    "USD/GBP": {
+      "current_macro_anchor": "MIXED",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "A",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "WITHHELD",
+      "frozen_macro_replay_transmission": "CLEAN",
+      "transmission_changed": true
+    },
+    "USD/JPY": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "A",
+      "price_direction": "B",
+      "current_reconstructed_transmission": "PARTIAL",
+      "frozen_macro_replay_transmission": "DIVERGENT",
+      "transmission_changed": true
+    },
+    "USD/NZD": {
+      "current_macro_anchor": "B",
+      "frozen_macro_anchor": "A",
+      "central_bank_direction": "MIXED",
+      "rates_direction": "A",
+      "price_direction": "A",
+      "current_reconstructed_transmission": "DIVERGENT",
+      "frozen_macro_replay_transmission": "PARTIAL",
+      "transmission_changed": true
+    }
+  },
+  "conclusion": {
+    "if_material_change": "Current transmission research is materially dependent on the legacy CERT53 Macro anchor source. Do not treat it as frozen-engine-parity until a current canonical currency-Macro regeneration contract exists.",
+    "macro_apply_gate": "BLOCKED",
+    "next_required_artifact": "CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_CONTRACT_V1"
+  },
+  "guards": {
+    "changes_engine_rules": false,
+    "changes_live_data": false,
+    "changes_oos_baseline": false,
+    "production_promotion": false,
+    "predictive_claim": false
+  }
+}
