@@ -28,5 +28,23 @@ for e in m['snapshots']:
         assert r['production_gate'] is False
         assert r['predictive_claim'] is False
     assert d['forward_outcomes'] is None
+
+    prov_status=d.get('source_provenance_status') or e.get('source_provenance_status')
+    refresh_id=d.get('source_refresh_id') or e.get('source_refresh_id')
+    if prov_status=='CERTIFIED_REFRESH_LINKED':
+        assert refresh_id
+        rp=d.get('source_refresh_record') or e.get('source_refresh_record')
+        rh=d.get('source_refresh_record_sha256') or e.get('source_refresh_record_sha256')
+        cert_sha=d.get('source_cert53_sha256') or e.get('source_cert53_sha256')
+        assert rp and rh and cert_sha
+        rpath=Path(rp); assert rpath.exists()
+        assert hashlib.sha256(rpath.read_bytes()).hexdigest()==rh
+        rec=json.loads(rpath.read_text())
+        assert rec['schema']=='GMFQ_CERT53_REFRESH_PROVENANCE_V1'
+        assert rec['refresh_id']==refresh_id
+        assert rec['section']=='CERT53'
+        assert rec['candidate_sha256']==cert_sha
+    elif refresh_id is not None:
+        raise AssertionError('refresh_id present without CERTIFIED_REFRESH_LINKED status')
 assert l['snapshots'][0]['snapshot_id'] in ids
-print('PASS',len(ids),'snapshot(s) digest-verified')
+print('PASS',len(ids),'snapshot(s) digest/provenance-verified')
