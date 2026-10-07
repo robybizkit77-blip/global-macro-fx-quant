@@ -7,13 +7,20 @@ m=json.loads(M.read_text())
 l=json.loads(L.read_text())
 assert m['schema']=='GMFQ_FORWARD_SNAPSHOT_MANIFEST_V1'
 assert m['append_only_contract'] is True
-ids=set()
-ledger_ids={x['snapshot_id'] for x in l['snapshots']}
+ids=set(); paths=set()
+ledger_ids=[x['snapshot_id'] for x in l['snapshots']]
+assert len(ledger_ids)==len(set(ledger_ids)), 'duplicate snapshot_id in ledger'
+manifest_ids=[e['snapshot_id'] for e in m['snapshots']]
+assert len(manifest_ids)==len(set(manifest_ids)), 'duplicate snapshot_id in manifest'
+assert set(manifest_ids)==set(ledger_ids), 'manifest/ledger snapshot_id sets differ'
 for e in m['snapshots']:
     assert e['snapshot_id'] not in ids
     ids.add(e['snapshot_id'])
-    assert e['snapshot_id'] in ledger_ids
-    p=Path(e['path']); assert p.exists()
+    assert e['snapshot_id'] in set(ledger_ids)
+    path_str=e['path']
+    assert path_str not in paths, f'duplicate snapshot path in manifest: {path_str}'
+    paths.add(path_str)
+    p=Path(path_str); assert p.exists()
     assert hashlib.sha256(p.read_bytes()).hexdigest()==e['sha256']
     d=json.loads(p.read_text())
     assert d['schema']=='GMFQ_FORWARD_PAIR_SNAPSHOT_V1'
@@ -46,5 +53,4 @@ for e in m['snapshots']:
         assert rec['candidate_sha256']==cert_sha
     elif refresh_id is not None:
         raise AssertionError('refresh_id present without CERTIFIED_REFRESH_LINKED status')
-assert l['snapshots'][0]['snapshot_id'] in ids
-print('PASS',len(ids),'snapshot(s) digest/provenance-verified')
+print('PASS',len(ids),'snapshot(s) digest/provenance/path/ledger-identity verified')
