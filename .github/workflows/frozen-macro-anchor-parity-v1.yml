@@ -1,0 +1,50 @@
+name: Frozen Macro Anchor Parity V1
+
+on:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/audit_frozen_macro_anchor_parity_v1.py'
+      - 'validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json'
+      - '.github/workflows/frozen-macro-anchor-parity-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run frozen macro anchor parity audit
+        run: python validation/audit_frozen_macro_anchor_parity_v1.py
+      - name: Validate audit contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1_2026-10-07.json')
+          x=json.loads(p.read_text())
+          assert x['schema']=='GMFQ_FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1'
+          assert len(x['frozen_currency_macro'])==8
+          assert len(x['pairs'])==28
+          assert x['distribution']['match_count'] + x['distribution']['mismatch_count'] == 28
+          assert all(v is False for v in x['guards'].values())
+          assert x['interpretation']['macro_ingest_gate']=='BLOCK_APPLY_UNTIL_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS'
+          print(x['status'], x['distribution'])
+          PY
+      - name: Commit audit output if changed
+        run: |
+          if git diff --quiet -- validation/FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1_2026-10-07.json && git ls-files --error-unmatch validation/FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1_2026-10-07.json >/dev/null 2>&1; then
+            echo 'No audit change'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/FROZEN_MACRO_ANCHOR_PARITY_AUDIT_V1_2026-10-07.json
+          git commit -m 'Generate frozen macro anchor parity audit'
+          git push
