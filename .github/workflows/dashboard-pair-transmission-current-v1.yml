@@ -1,0 +1,43 @@
+name: Dashboard Pair Transmission Current V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/classify_dashboard_pair_transmission_v1.py'
+      - 'validation/DASHBOARD_PAIR_SIGNED_INPUTS_V1_2026-10-07.json'
+      - '.github/workflows/dashboard-pair-transmission-current-v1.yml'
+permissions:
+  contents: write
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Classify current pair transmission
+        run: python validation/classify_dashboard_pair_transmission_v1.py
+      - name: Guard research-only descriptive contract
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json'))
+          assert p['status']=='RESEARCH_ONLY_DESCRIPTIVE_NOT_PREDICTIVE'
+          assert p['rule_contract']['optimization']=='NONE'
+          assert p['rule_contract']['return_fitting'] is False
+          assert p['rule_contract']['predictive_claim'] is False
+          assert sum(p['distribution'].values())==28
+          assert p['guards']['changes_engine_rules'] is False
+          assert p['guards']['changes_live_data'] is False
+          assert p['guards']['changes_oos_baseline'] is False
+          assert p['guards']['production_promotion'] is False
+          print('PASS descriptive guard')
+          PY
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/DASHBOARD_PAIR_TRANSMISSION_CURRENT_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize current pair transmission V1'
+          git push
