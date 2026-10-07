@@ -1,0 +1,32 @@
+name: CHF Reaction Readiness V1
+on:
+  push:
+    branches: [research-transmission-conviction-layer-v1-2026-10-07]
+    paths:
+      - 'validation/run_chf_reaction_readiness_v1.py'
+      - '.github/workflows/chf-reaction-readiness-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Certify CHF 2Y and CPI readiness
+        run: python validation/run_chf_reaction_readiness_v1.py
+      - name: Guard frozen research contract
+        run: |
+          grep -q 'ff52198a75cc67f7dae96fc2bbf65623f170791c' validation/CHF_REACTION_READINESS_V1_2026-10-07.json
+          grep -q '3356baf0' validation/CHF_REACTION_READINESS_V1_2026-10-07.json
+          grep -q '"replay_allowed": false' validation/CHF_REACTION_READINESS_V1_2026-10-07.json
+      - name: Commit evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add history/pit_v1/CHF_SNB_GOVT_2Y_DAILY_2018_2026.csv history/pit_v1/CHF_CPI_HEADLINE_PIT_COMPATIBLE_2018_2026.csv validation/CHF_REACTION_READINESS_V1_2026-10-07.json
+          git diff --cached --quiet || git commit -m 'Materialize CHF reaction readiness inputs'
+          git push
