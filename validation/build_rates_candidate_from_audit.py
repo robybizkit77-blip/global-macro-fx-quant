@@ -78,7 +78,7 @@ def main():
         summary['changed_currencies'].append(c)
         summary['currencies'][c]={'old_date':old.get('date'),'new_date':dt,'2Y':y2,'10Y':y10,'curve_bp':obj['curve_bp'],'reference_2Y_date':r2d,'reference_10Y_date':r10d,'chg2_bp':d2,'chg10_bp':d10,'curve_state':obj['curve_state']}
     changed=[c for c in cur if cur[c]!=out[c]]
-    if changed!=summary['changed_currencies']: raise SystemExit(f'scope mismatch expected={summary["changed_currencies"]} actual={changed}')
+    if sorted(changed)!=sorted(summary['changed_currencies']): raise SystemExit(f'scope mismatch expected={summary["changed_currencies"]} actual={changed}')
     pathlib.Path(a.output).write_text(json.dumps(out,separators=(',',':'),ensure_ascii=False)+'\n')
     print(json.dumps(summary,indent=2,ensure_ascii=False))
     return 0
