@@ -1,0 +1,59 @@
+{
+  "schema": "GMFQ_AUD_UNEMPLOYMENT_PIT_V1",
+  "status": "PASS",
+  "created_at": "2026-10-07",
+  "source": "Australian Bureau of Statistics historical Labour Force release pages",
+  "definition": "seasonally adjusted unemployment rate exactly as published in each release",
+  "coverage": {
+    "n": 82,
+    "modern_n": 81,
+    "first": "2018-12",
+    "modern_first": "2019-12",
+    "last": "2026-08",
+    "missing_modern_releases": 3
+  },
+  "anchors": {
+    "2018-12": {
+      "reference_month": "2018-12",
+      "release_date": "2019-01-24",
+      "unemployment_rate_sa_pct": 5.0,
+      "source_url": "https://www.abs.gov.au/AUSSTATS/abs%40.nsf/Lookup/6202.0Main%20Features1Dec%202018",
+      "archive_format": "legacy_AUSSTATS"
+    },
+    "2019-12": {
+      "reference_month": "2019-12",
+      "release_date": "2020-01-23",
+      "unemployment_rate_sa_pct": 5.1,
+      "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/dec-2019",
+      "archive_format": "modern"
+    },
+    "2020-01": {
+      "reference_month": "2020-01",
+      "release_date": "2020-02-20",
+      "unemployment_rate_sa_pct": 5.3,
+      "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/jan-2020",
+      "archive_format": "modern"
+    }
+  },
+  "failures": [
+    {
+      "reference_month": "2019-09",
+      "url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/sep-2019",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "reference_month": "2019-10",
+      "url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2019",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "reference_month": "2019-11",
+      "url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/nov-2019",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "first_release_policy": "archived release-page value only; no current revised-history substitution",
+  "changes_engine_rules": false,
+  "changes_live_data": false,
+  "changes_oos_baseline": false
+}
