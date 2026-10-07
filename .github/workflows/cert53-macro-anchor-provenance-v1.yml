@@ -31,9 +31,11 @@ jobs:
           x=json.loads(p.read_text())
           assert x['schema']=='GMFQ_CERT53_MACRO_ANCHOR_PROVENANCE_AUDIT_V1'
           assert x['pair_count']==28
+          assert isinstance(x['applicator_count'], int)
+          assert isinstance(x['economic_regenerator_count'], int)
           assert all(v is False for v in x['guards'].values())
           assert x['interpretation']['macro_ingest_apply']=='BLOCKED_UNTIL_CURRENT_CANONICAL_CURRENCY_MACRO_REGENERATION_EXISTS'
-          print(x['status'], 'writers=', x['writer_candidate_count'])
+          print(x['status'], 'applicators=', x['applicator_count'], 'economic_regenerators=', x['economic_regenerator_count'])
           PY
       - name: Commit provenance output if changed
         run: |
