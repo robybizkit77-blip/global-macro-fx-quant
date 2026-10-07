@@ -35,7 +35,7 @@ def main()->int:
     rates=json.loads(RATES.read_text())
     reg=json.loads(REGISTRY.read_text())
     out={
-      'schema':'GMFQ_RATES_UNIFIED_AUDIT_V1',
+      'schema':'GMFQ_RATES_UNIFIED_AUDIT_V2',
       'status':'PASS',
       'policy':reg['policy'],
       'currencies':{},
@@ -97,23 +97,34 @@ def main()->int:
     }
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('CAD')
 
-    # AUD/NZD are operational, but publication cadence/lag are part of the official contract.
-    # This V1 orchestrator records those checks explicitly rather than pretending they are live-fetched.
-    for c in ('AUD','NZD'):
-        meta=reg['currencies'][c]
-        expected=meta['current_snapshot']
-        state='NO_CHANGE' if str(rates[c]['date']) == expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
-        out['currencies'][c]={
-          'state':state,
-          'coverage_mode':'OFFICIAL_CADENCE_ASSERTION' if c=='AUD' else 'OFFICIAL_SOURCE_LAG_ASSERTION',
-          'authority':meta['authority'],
-          'official_contract_snapshot':expected,
-          'current':{'date':rates[c]['date'],'2Y':rates[c]['2Y'],'10Y':rates[c]['10Y']},
-          'reason':meta.get('reason')
-        }
-        if state != 'NO_CHANGE': failures.append(c)
+    # NZD: official RBNZ B2 daily government bond close, one-business-day publication lag.
+    nz=load_module('rates_nzd',VAL/'fetch_rates_nzd.py')
+    nsrc=nz.parse(nz.fetch())
+    state=compare(rates['NZD'],nsrc['date'],nsrc['2Y'],nsrc['10Y'])
+    out['currencies']['NZD']={
+      'state':state,'coverage_mode':'LIVE_FETCH','authority':nsrc['authority'],
+      'official':{'date':nsrc['date'],'2Y':nsrc['2Y'],'10Y':nsrc['10Y']},
+      'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},
+      'reason':'RBNZ B2 is daily with a one-business-day publication lag; latest official same-row 2Y/10Y is fetched directly.'
+    }
+    if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('NZD')
 
-    # CHF is intentionally WITHHELD until the official SNB same-basis export works again.
+    # AUD: official RBA F2 is weekly-published (Friday) although it contains daily observations.
+    # Until a live F2 adapter is added, enforce the validated current-by-source-cadence snapshot explicitly.
+    meta=reg['currencies']['AUD']
+    expected=meta['current_snapshot']
+    state='NO_CHANGE' if str(rates['AUD']['date']) == expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
+    out['currencies']['AUD']={
+      'state':state,
+      'coverage_mode':'OFFICIAL_CADENCE_ASSERTION',
+      'authority':meta['authority'],
+      'official_contract_snapshot':expected,
+      'current':{'date':rates['AUD']['date'],'2Y':rates['AUD']['2Y'],'10Y':rates['AUD']['10Y']},
+      'reason':meta.get('reason')
+    }
+    if state != 'NO_CHANGE': failures.append('AUD')
+
+    # CHF: intentionally WITHHELD until the official SNB same-basis export yields both 2Y and 10Y again.
     chf=reg['currencies']['CHF']
     out['currencies']['CHF']={
       'state':'WITHHOLD',
@@ -127,7 +138,7 @@ def main()->int:
     states={c:v['state'] for c,v in out['currencies'].items()}
     out['summary']={
       'live_fetch_count':sum(v['coverage_mode']=='LIVE_FETCH' for v in out['currencies'].values()),
-      'cadence_or_lag_assertion_count':sum(v['coverage_mode'] in {'OFFICIAL_CADENCE_ASSERTION','OFFICIAL_SOURCE_LAG_ASSERTION'} for v in out['currencies'].values()),
+      'cadence_or_lag_assertion_count':sum(v['coverage_mode']=='OFFICIAL_CADENCE_ASSERTION' for v in out['currencies'].values()),
       'withheld_count':sum(v['state']=='WITHHOLD' for v in out['currencies'].values()),
       'updates_available':[c for c,s in states.items() if s=='UPDATE_AVAILABLE'],
       'no_change':[c for c,s in states.items() if s=='NO_CHANGE'],
