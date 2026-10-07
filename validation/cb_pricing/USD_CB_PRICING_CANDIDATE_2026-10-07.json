@@ -1,0 +1,67 @@
+{
+  "schema_version": "GMFQ_CB_PRICING_CANDIDATE_V1",
+  "currency": "USD",
+  "as_of": "2026-10-07",
+  "status": "WITHHELD_PENDING_DIRECT_CURVE",
+  "policy": {
+    "central_bank": "Federal Reserve",
+    "target_range_pct": [3.75, 4.00],
+    "midpoint_pct": 3.875,
+    "last_decision_date": "2026-09-16",
+    "last_action": "+25bp",
+    "next_meeting": "2026-10-28"
+  },
+  "source_contract": {
+    "primary_required": "CME FedWatch / CBOT 30-Day Federal Funds futures (ZQ)",
+    "primary_methodology_url": "https://www.cmegroup.com/articles/2023/understanding-the-cme-group-fedwatch-tool-methodology.html",
+    "primary_tool_url": "https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html",
+    "direct_api_status": "ACCESS_NOT_CONFIGURED",
+    "direct_settlement_status": "NOT_CAPTURED",
+    "secondary_current_observation": {
+      "source": "Reuters reporting of CME FedWatch",
+      "observed_2026-10-07": {
+        "oct_2026_hike_probability_pct": 21.6,
+        "oct_2026_hold_probability_pct": 78.4,
+        "dec_2026_hike_probability_pct": 82.8
+      },
+      "use": "context_only_not_activation"
+    }
+  },
+  "ois_contract": {
+    "required_fields": [
+      "source",
+      "as_of",
+      "policy_rate",
+      "meeting_path",
+      "3m_rate",
+      "6m_rate",
+      "12m_rate",
+      "change_1d_bp",
+      "change_1w_bp"
+    ],
+    "current_state": {
+      "meeting_path": "PARTIAL_CURRENT_SECONDARY_ONLY",
+      "3m_rate": null,
+      "6m_rate": null,
+      "12m_rate": null,
+      "change_1d_bp": null,
+      "change_1w_bp": null
+    }
+  },
+  "validation": {
+    "source_validated": true,
+    "methodology_validated": true,
+    "current_meeting_probability_secondary_validated": true,
+    "direct_current_curve_validated": false,
+    "historical_1d_validated": false,
+    "historical_1w_validated": false,
+    "activation_allowed": false,
+    "activation_blocker": "Direct CME same-basis Fed Funds futures curve plus exact 1D and 1W historical observations are not yet captured. Runtime OIS_DATA must remain WITHHELD."
+  },
+  "runtime_policy": {
+    "mutate_live_data": false,
+    "mutate_engine": false,
+    "mutate_forward_oos": false,
+    "promotion_rule": "Promote only after all OIS activation fields validate on one homogeneous source basis."
+  }
+}
