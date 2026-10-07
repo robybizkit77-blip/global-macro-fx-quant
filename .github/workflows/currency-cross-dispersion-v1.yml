@@ -1,0 +1,39 @@
+name: Currency Cross Dispersion V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research-transmission-conviction-layer-v1-2026-10-07
+    paths:
+      - 'validation/DASHBOARD_PAIR_RENDER_PAYLOAD_V1_2026-10-07.json'
+      - 'validation/build_currency_cross_dispersion_v1.py'
+      - 'validation/validate_currency_cross_dispersion_v1.py'
+      - '.github/workflows/currency-cross-dispersion-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build currency dispersion
+        run: python validation/build_currency_cross_dispersion_v1.py
+      - name: Validate currency dispersion
+        run: python validation/validate_currency_cross_dispersion_v1.py
+      - name: Commit generated payload if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/CURRENCY_CROSS_DISPERSION_V1_2026-10-07.json
+          if git diff --cached --quiet; then
+            echo 'No currency dispersion change'
+            exit 0
+          fi
+          git commit -m 'Update currency cross dispersion payload'
+          git push origin HEAD:research-transmission-conviction-layer-v1-2026-10-07
