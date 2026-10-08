@@ -342,11 +342,17 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Build macro/heatmap replacement candidates without touching live data")
     ap.add_argument("--candidate", help="Validated observation candidate JSON")
     ap.add_argument("--output-dir", default="/tmp/gmfq-macro-candidate")
+    ap.add_argument("--series-input", help="Read MACRO_SERIES from this snapshot instead of live_data (read-only replay)")
+    ap.add_argument("--heatmap-input", help="Read MACRO_THERMOMETER_DATA from this snapshot instead of live_data (read-only replay)")
     ap.add_argument("--self-test", action="store_true")
     args = ap.parse_args()
 
-    series = load(SERIES_PATH)
-    heatmap = load(HEATMAP_PATH)
+    if bool(args.series_input) != bool(args.heatmap_input):
+        raise SystemExit("--series-input and --heatmap-input must be supplied together")
+    series_input = pathlib.Path(args.series_input) if args.series_input else SERIES_PATH
+    heatmap_input = pathlib.Path(args.heatmap_input) if args.heatmap_input else HEATMAP_PATH
+    series = load(series_input)
+    heatmap = load(heatmap_input)
     validate_roots(series, heatmap)
 
     if args.self_test:
