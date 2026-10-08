@@ -1,0 +1,80 @@
+name: EUR Eurostat Source Contract V2
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - 'validation/sources/eur_eurostat_core.py'
+      - 'validation/fixtures/eur_eurostat_hicp_contract.json'
+      - 'validation/fixtures/eur_eurostat_unemployment_contract.json'
+      - 'validation/test_eur_eurostat_source.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/eur-eurostat-source-contract-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot canonical live data before certification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/eur-before.sha256
+      - name: Run deterministic Eurostat parser-builder contract
+        run: python validation/test_eur_eurostat_source.py
+      - name: Fetch official live Eurostat inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-eur/inflation
+          python validation/sources/eur_eurostat_core.py --dimension inflation \
+            --output /tmp/gmfq-eur/inflation/candidate.json \
+            --audit-output /tmp/gmfq-eur/inflation/source-audit.json
+      - name: Pass live EUR inflation candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-eur/inflation/candidate.json --output-dir /tmp/gmfq-eur/inflation/built
+      - name: Fetch official live Eurostat labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-eur/labour
+          python validation/sources/eur_eurostat_core.py --dimension labour \
+            --output /tmp/gmfq-eur/labour/candidate.json \
+            --audit-output /tmp/gmfq-eur/labour/source-audit.json
+      - name: Pass live EUR labour candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-eur/labour/candidate.json --output-dir /tmp/gmfq-eur/labour/built
+      - name: Verify Eurostat provenance freshness and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['EUR']
+          expected={'inflation':('prc_hicp_minr','EA_HICP_HEADLINE_YOY','reported_yoy_rate'),'labour':('une_rt_m','EA_UNEMP','level')}
+          out={}
+          for dim,(dataset,series_id,transformation) in expected.items():
+              root=Path('/tmp/gmfq-eur')/dim
+              c=json.loads((root/'candidate.json').read_text()); a=json.loads((root/'source-audit.json').read_text()); s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='EUR' and c['dimension']==dim and c['source']=='Eurostat',c
+              assert c['series_id']==series_id and c['transformation']==transformation and c['frequency']=='M',c
+              assert a['dataset']==dataset and a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False,a
+              assert a['api_url'].startswith('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/'),a
+              assert s['status']=='PASS' and s['live_data_modified'] is False and s['observation_date']==c['observation_date'],(s,c)
+              current=str(heat[dim]['as_of'])[:10]
+              assert c['observation_date'] >= current,(c,current)
+              out[dim]={'dataset':dataset,'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'prior_period':a['prior_period'],'prior_value':a['prior_value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
+          print(json.dumps({'status':'PASS','source':'Eurostat','results':out,'live_data_modified':False,'dynamic_latest_observation':True},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: |
+          sha256sum -c /tmp/eur-before.sha256
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload Eurostat verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-eurostat-source-verification-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: /tmp/gmfq-eur/
