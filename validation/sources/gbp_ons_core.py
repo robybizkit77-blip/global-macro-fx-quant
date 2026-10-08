@@ -33,6 +33,7 @@ CONFIG: dict[str, dict[str, Any]] = {
         "expected_heatmap_series_id": "MGSX",
         "expected_transformation": "level",
         "unit": "%",
+        "macro_series_id": "UK_UNEMP_RATE_history_value",
     },
 }
 
@@ -109,43 +110,17 @@ def resolve_heatmap_contract(dimension: str) -> tuple[str, str, str]:
     return series_id, frequency, transformation
 
 
-def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
+def resolve_macro_series_id(dimension: str) -> str:
     series = load_json(SERIES_PATH)
     rows = series["GBP"]
-    by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
-    explicit = CONFIG[dimension].get("macro_series_id")
-    if explicit is not None:
-        if explicit not in by_id:
-            raise ValueError(f"GBP {dimension} canonical MACRO_SERIES id missing: {explicit!r}")
-        return str(explicit)
-
-    candidates = [
-        heat_series_id,
-        f"UK_{heat_series_id}_history_value",
-        f"GB_{heat_series_id}_history_value",
-        f"GBP_{heat_series_id}_history_value",
-        f"UK_{heat_series_id}_history_{heat_series_id}",
-    ]
-    hits = [cid for cid in dict.fromkeys(candidates) if cid in by_id]
-    if len(hits) == 1:
-        return hits[0]
-    if len(hits) > 1:
-        raise ValueError(f"ambiguous GBP {dimension} canonical IDs: {hits}")
-
-    semantic: list[dict[str, Any]] = []
-    for row in rows:
-        text = " ".join(str(row.get(k, "")) for k in ("id", "label", "name", "title", "indicator")).lower()
-        if dimension == "inflation" and ("d7g7" in text or "cpi" in text or "infl" in text):
-            semantic.append(row)
-        elif dimension == "labour" and ("mgsx" in text or "unemp" in text or "disoccup" in text):
-            semantic.append(row)
-    if len(semantic) != 1:
-        details = [(str(r.get("id")), str(r.get("label", ""))) for r in semantic]
+    expected = str(CONFIG[dimension]["macro_series_id"])
+    hits = [r for r in rows if isinstance(r, dict) and str(r.get("id")) == expected]
+    if len(hits) != 1:
         raise ValueError(
-            f"cannot resolve unique GBP {dimension} MACRO_SERIES row; "
-            f"heatmap series_id={heat_series_id!r}; semantic_hits={details}"
+            f"GBP {dimension} canonical MACRO_SERIES contract drift: "
+            f"expected exactly one {expected!r}, got {len(hits)}"
         )
-    return str(semantic[0]["id"])
+    return expected
 
 
 def build_api_url(dimension: str) -> str:
@@ -168,7 +143,7 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
     latest_period, latest_value = observations[-1]
     prior_period, prior_value = observations[-2]
     heat_series_id, frequency, transformation = resolve_heatmap_contract(dimension)
-    macro_series_id = resolve_macro_series_id(dimension, heat_series_id)
+    macro_series_id = resolve_macro_series_id(dimension)
     candidate = {
         "currency": "GBP",
         "dimension": dimension,
@@ -187,6 +162,7 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
         "dataset": cfg["dataset"],
         "ons_uri": cfg["uri"],
         "api_url": build_api_url(dimension),
+        "canonical_macro_series_id": macro_series_id,
         "latest_period": latest_period,
         "latest_value": latest_value,
         "prior_period": prior_period,
