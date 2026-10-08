@@ -21,6 +21,7 @@ from openpyxl import load_workbook
 SHEET = "1. fwds, short end"
 WORKBOOK_RE = re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I)
 TENORS = {"3m": 3, "6m": 6, "12m": 12}
+YEAR_FRACTIONS = {3: 0.25, 6: 0.5, 12: 1.0}
 
 
 def as_date(v):
@@ -38,26 +39,59 @@ def find_workbook(zf: zipfile.ZipFile) -> str:
     return matches[0]
 
 
+def number_token(v):
+    if isinstance(v, bool) or v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        s = v.strip().lower().replace(',', '.')
+        # Header cells can be plain numbers or labelled forms such as '3 months'.
+        m = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)\s*(?:m|month|months)?", s)
+        if m:
+            return float(m.group(1))
+        try:
+            return float(s)
+        except ValueError:
+            return None
+    return None
+
+
+def row_mapping(row, targets, tol=1e-10):
+    mapping = {}
+    for c_idx, v in enumerate(row, start=1):
+        n = number_token(v)
+        if n is None:
+            continue
+        for key, target in targets.items():
+            if abs(n - target) <= tol:
+                mapping[key] = c_idx
+    return mapping
+
+
 def detect_tenor_columns(rows):
-    # BoE short-end workbook has a header row containing month tenors 1..12.
+    # The BoE workbook exposes both a month header (1..12) and a year-fraction
+    # header (1/12, 2/12, 0.25, ... 0.5, ... 1.0). Accept either exact form.
     candidates = []
-    for r_idx, row in enumerate(rows[:15], start=1):
-        mapping = {}
-        for c_idx, v in enumerate(row, start=1):
-            try:
-                if isinstance(v, bool):
-                    continue
-                n = float(v)
-            except (TypeError, ValueError):
-                continue
-            if n in (3.0, 6.0, 12.0):
-                mapping[int(n)] = c_idx
-        if all(x in mapping for x in (3, 6, 12)):
-            candidates.append((r_idx, mapping))
+    month_targets = {3: 3.0, 6: 6.0, 12: 12.0}
+    fraction_targets = YEAR_FRACTIONS
+    for r_idx, row in enumerate(rows[:30], start=1):
+        mm = row_mapping(row, month_targets)
+        if all(x in mm for x in (3, 6, 12)):
+            candidates.append((0, r_idx, mm, "months"))
+        ff = row_mapping(row, fraction_targets, tol=1e-8)
+        if all(x in ff for x in (3, 6, 12)):
+            candidates.append((1, r_idx, ff, "year_fractions"))
     if not candidates:
-        raise SystemExit("Could not detect exact 3M/6M/12M header columns")
-    # Prefer the earliest complete header row.
-    return candidates[0]
+        preview=[]
+        for i,row in enumerate(rows[:20],start=1):
+            vals=[v for v in row[:20] if v is not None]
+            if vals:
+                preview.append({"row":i,"values":[str(v) for v in vals[:12]]})
+        raise SystemExit("Could not detect exact 3M/6M/12M header columns; header preview="+json.dumps(preview))
+    candidates.sort(key=lambda x: (x[0], x[1]))
+    _, r_idx, mapping, method = candidates[0]
+    return r_idx, mapping, method
 
 
 def extract(zip_path: pathlib.Path, requested_as_of: str | None):
@@ -72,7 +106,7 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             raise SystemExit(f"Missing required sheet: {SHEET}")
         ws = wb[SHEET]
         rows = [tuple(r) for r in ws.iter_rows(values_only=True)]
-        header_row, month_cols = detect_tenor_columns(rows)
+        header_row, month_cols, header_method = detect_tenor_columns(rows)
 
         observations = []
         for excel_row, row in enumerate(rows[header_row:], start=header_row + 1):
@@ -94,7 +128,7 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
                     good = False
                     break
                 v = row[c - 1]
-                if not isinstance(v, (int, float)):
+                if not isinstance(v, (int, float)) or isinstance(v, bool):
                     good = False
                     break
                 vals[key] = float(v)
@@ -139,6 +173,7 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             "instrument": "UK instantaneous OIS forward curve based on SONIA",
             "quotation": "annualised continuously-compounded forward rate, percent",
             "horizon_mapping": "exact 3M / 6M / 12M columns; no interpolation",
+            "header_detection": header_method,
             "as_of": current["date"],
             "observations": {"current": current, "t_minus_1": t1, "t_minus_5": t5},
             "change_1d_bp": change_1d,
