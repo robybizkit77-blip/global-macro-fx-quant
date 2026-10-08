@@ -32,24 +32,6 @@ jobs:
         run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/nzd-before.sha256
       - name: Run deterministic Stats NZ parser-builder contract
         run: python validation/test_nzd_statsnz_source.py
-      - name: Diagnose Stats NZ raw discovery payload
-        run: |
-          python - <<'PY'
-          import html,re,urllib.request
-          url='https://www.stats.govt.nz/'
-          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'})
-          raw=urllib.request.urlopen(req,timeout=45).read().decode('utf-8',errors='replace')
-          print('RAW_LEN',len(raw))
-          needles=['Consumers price','consumer','4.1','June 2026','Unemployment','5.6','__NEXT_DATA__','application/ld+json']
-          lower=raw.lower()
-          for needle in needles:
-              i=lower.find(needle.lower())
-              print('NEEDLE',repr(needle),'INDEX',i)
-              if i>=0:
-                  snippet=raw[max(0,i-400):min(len(raw),i+1400)]
-                  snippet=re.sub(r'\s+',' ',html.unescape(snippet))
-                  print('SNIPPET',snippet[:1800])
-          PY
       - name: Fetch official Stats NZ inflation candidate
         run: |
           mkdir -p /tmp/gmfq-nzd/inflation
@@ -84,6 +66,7 @@ jobs:
               assert a['source_url'].startswith('https://www.stats.govt.nz/indicators/'),a
               assert a['retrieval_url']=='https://www.stats.govt.nz/',a
               assert a['dynamic_release_discovery'] is True,a
+              assert a['structured_payload'] is True,a
               assert a['upstream_indicator']==expected_indicator[dim],a
               assert s['status']=='PASS' and s['live_data_modified'] is False,s
               assert s['observation_date']==c['observation_date'],(s,c)
@@ -107,7 +90,8 @@ jobs:
               'source':'Stats NZ',
               'results':out,
               'live_data_modified':False,
-              'dynamic_release_discovery':True
+              'dynamic_release_discovery':True,
+              'structured_payload':True
           },indent=2))
           PY
       - name: Audit macro source registry
