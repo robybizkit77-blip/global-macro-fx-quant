@@ -13,7 +13,13 @@ ROOT = Path(__file__).resolve().parents[2]
 SERIES_PATH = ROOT / "live_data" / "sections" / "MACRO_SERIES.json"
 HEATMAP_PATH = ROOT / "live_data" / "sections" / "MACRO_THERMOMETER_DATA.json"
 SOURCE = "Statistics Bureau of Japan / CPI"
-SOURCE_URL = "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+SOURCE_URL = "https://www.stat.go.jp/english/"
+
+MONTHS = {
+    "january": 1, "february": 2, "march": 3, "april": 4,
+    "may": 5, "june": 6, "july": 7, "august": 8,
+    "september": 9, "october": 10, "november": 11, "december": 12,
+}
 
 
 def load_json(path: Path) -> Any:
@@ -29,25 +35,37 @@ def html_to_text(payload: str) -> str:
 
 def extract_official_headline(payload: str) -> tuple[str, float, str]:
     text = html_to_text(payload)
-    period = re.search(r"(?P<year>20\d{2})年(?:（[^）]*）)?\s*(?P<month>1[0-2]|0?[1-9])月分", text)
-    if not period:
-        raise ValueError("cannot identify national CPI reference month on Statistics Bureau page")
-    obs_date = f"{int(period.group('year')):04d}-{int(period.group('month')):02d}"
 
-    # Only accept the first official headline point: all-items CPI for Japan.
-    # This deliberately excludes the fresh-food and fresh-food-and-energy measures.
+    # Preferred live transport: the Statistics Bureau English homepage exposes
+    # the national headline CPI as a compact latest-indicator block.
+    en = re.search(
+        r"Consumer Price Index\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s*%\s*"
+        r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+"
+        r"(20\d{2})\s*change over the year",
+        text,
+        flags=re.I | re.S,
+    )
+    if en:
+        value = float(en.group(1))
+        month = MONTHS[en.group(2).lower()]
+        obs_date = f"{int(en.group(3)):04d}-{month:02d}"
+        return obs_date, value, "Consumer Price Index / change over the year / national latest indicator"
+
+    # Deterministic fixture and defensive fallback for the official Japanese
+    # monthly-results page. Only the first headline point (all items) is valid.
+    period = re.search(r"(?P<year>20\d{2})年(?:（[^）]*）)?\s*(?P<month>1[0-2]|0?[1-9])月分", text)
     point = re.search(
         r"(?:\(\s*1\s*\)|（\s*1\s*）)\s*総合指数.*?前年同月比は\s*([0-9]+(?:\.[0-9]+)?)\s*[％%]\s*の\s*(上昇|下落)",
         text,
         flags=re.S,
     )
-    if not point:
-        raise ValueError("cannot identify headline all-items YoY CPI on Statistics Bureau page")
+    if not period or not point:
+        raise ValueError("cannot identify official national headline CPI period/value on Statistics Bureau page")
+    obs_date = f"{int(period.group('year')):04d}-{int(period.group('month')):02d}"
     raw = float(point.group(1))
     direction = point.group(2)
     value = raw if direction == "上昇" else -raw
-    semantics = f"総合指数 / 前年同月比 / {direction}"
-    return obs_date, value, semantics
+    return obs_date, value, f"総合指数 / 前年同月比 / {direction}"
 
 
 def resolve_ids() -> tuple[str, str, str, str]:
@@ -89,16 +107,21 @@ def fetch_html() -> str:
         SOURCE_URL,
         headers={
             "User-Agent": "global-macro-fx-quant/1.0",
-            "Accept-Language": "ja,en;q=0.8",
+            "Accept-Language": "en,ja;q=0.8",
         },
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         raw = resp.read()
-        charset = resp.headers.get_content_charset() or "utf-8"
-    try:
-        return raw.decode(charset)
-    except (LookupError, UnicodeDecodeError):
-        return raw.decode("utf-8", errors="replace")
+        charset = resp.headers.get_content_charset()
+    encodings = [charset, "utf-8", "cp932", "shift_jis"]
+    for enc in encodings:
+        if not enc:
+            continue
+        try:
+            return raw.decode(enc)
+        except (LookupError, UnicodeDecodeError):
+            pass
+    raise ValueError("cannot decode Statistics Bureau response")
 
 
 def build_candidate(payload: str) -> tuple[dict[str, Any], dict[str, Any]]:
