@@ -100,7 +100,6 @@ jobs:
           python3 validation/build_macro_candidate.py \
             --candidate /tmp/gmfq-jpy-estat-live/candidate.json \
             --output-dir /tmp/gmfq-jpy-estat-live/built \
-            --allow-revisions \
             | tee /tmp/gmfq-jpy-estat-live/builder-run.json
           python3 - <<'PY'
           import json
