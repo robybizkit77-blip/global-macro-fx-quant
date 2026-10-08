@@ -10,6 +10,7 @@ on:
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/build_macro_candidate.py'
       - 'validation/replay_jpy_macro_candidate.py'
+      - 'validation/replay_chf_inflation_macro_candidate.py'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - '.github/workflows/macro-source-registry-audit.yml'
@@ -44,7 +45,7 @@ jobs:
           assert d['status']=='PASS'
           assert d['core_series']==16
           assert d['candidate_layer_ready']==16
-          assert d['historical_replay_certified']==['JPY.labour']
+          assert d['historical_replay_certified']==['CHF.inflation','JPY.labour']
           assert d['automatic_publication'] is False
           print('MACRO_SOURCE_REGISTRY_PASS')
           PY
