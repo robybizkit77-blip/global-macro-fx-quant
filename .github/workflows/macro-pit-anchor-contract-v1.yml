@@ -1,5 +1,7 @@
 name: Macro PIT Anchor Contract V1
 
+# The constrained push trigger validates the implementation branch; operational
+# anchor verification remains manual or reusable and requires captured evidence.
 on:
   push:
     branches:
