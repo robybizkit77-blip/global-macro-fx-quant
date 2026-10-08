@@ -6,6 +6,7 @@ on:
       - validation-cb-pricing-refresh-readiness-2026-10-08
     paths:
       - 'validation/cb_pricing/collect_gbp_boe_ois.py'
+      - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
       - '.github/workflows/gbp-boe-ois-refresh-readiness.yml'
   workflow_dispatch:
 
@@ -32,42 +33,60 @@ jobs:
             --zip /tmp/oisddata.zip \
             --as-of 2026-09-29 \
             --output /tmp/gbp-benchmark.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py \
+            --snapshot /tmp/gbp-benchmark.json \
+            --output /tmp/gbp-benchmark-candidate.json
           python3 - <<'PY'
           import json, pathlib
-          p=json.loads(pathlib.Path('/tmp/gbp-benchmark.json').read_text())
+          s=json.loads(pathlib.Path('/tmp/gbp-benchmark.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/gbp-benchmark-candidate.json').read_text())
           exp={
             'current': {'date':'2026-09-29','3m':4.0707067450601,'6m':4.438953403175621,'12m':4.865918782825779},
             't_minus_1': {'date':'2026-09-28','3m':4.066723783453592,'6m':4.428555992006569,'12m':4.828541155959475},
             't_minus_5': {'date':'2026-09-22','3m':4.030117517991387,'6m':4.394366351385613,'12m':4.800520288124897},
           }
           for bucket,want in exp.items():
-            got=p['observations'][bucket]
+            got=s['observations'][bucket]
             if got['date'] != want['date']:
               raise SystemExit(f'{bucket} date mismatch: {got["date"]} != {want["date"]}')
             for k in ('3m','6m','12m'):
               if abs(got[k]-want[k]) > 1e-12:
                 raise SystemExit(f'{bucket} {k} mismatch: {got[k]} != {want[k]}')
-          bp1={'3m':0.3983,'6m':1.0398,'12m':3.7378}
-          bpw={'3m':4.0589,'6m':4.4587,'12m':6.5398}
-          for k,v in bp1.items():
-            if abs(p['change_1d_bp'][k]-v) > 0.0001: raise SystemExit(f'1D {k} mismatch')
-          for k,v in bpw.items():
-            if abs(p['change_1w_bp'][k]-v) > 0.0001: raise SystemExit(f'1W {k} mismatch')
-          print('GBP_CERTIFIED_2026_09_29_REGRESSION_PASS')
+          if c['schema'] != 'GMFQ_CB_PRICING_CANDIDATE_V1' or c['status'] != 'READY_FOR_DRY_RUN':
+            raise SystemExit('candidate schema/status mismatch')
+          if c['as_of'] != '2026-09-29' or c['source'] != s['source']:
+            raise SystemExit('candidate source/as-of mismatch')
+          if c['policy_rate'] != 3.75 or not c['meeting_path']:
+            raise SystemExit('canonical policy metadata missing')
+          for k in ('3m','6m','12m'):
+            if abs(c['horizons'][k]['rate']-s['observations']['current'][k]) > 1e-12:
+              raise SystemExit(f'candidate {k} rate mismatch')
+            if abs(c['horizons'][k]['change_1d_bp']-s['change_1d_bp'][k]) > 1e-12:
+              raise SystemExit(f'candidate {k} 1D mismatch')
+            if abs(c['horizons'][k]['change_1w_bp']-s['change_1w_bp'][k]) > 1e-12:
+              raise SystemExit(f'candidate {k} 1W mismatch')
+          print('GBP_CERTIFIED_2026_09_29_REGRESSION_AND_CANDIDATE_PASS')
           PY
-      - name: Build latest read-only source snapshot
+      - name: Build latest read-only source snapshot and candidate
         run: |
           set -euo pipefail
           python3 validation/cb_pricing/collect_gbp_boe_ois.py \
             --zip /tmp/oisddata.zip \
             --output /tmp/gbp-latest.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py \
+            --snapshot /tmp/gbp-latest.json \
+            --output /tmp/gbp-latest-candidate.json
           python3 - <<'PY'
           import json, pathlib
-          p=json.loads(pathlib.Path('/tmp/gbp-latest.json').read_text())
-          if p['status'] != 'SOURCE_SNAPSHOT_ONLY': raise SystemExit('unexpected status')
-          if not p['validation']['runtime_mutated'] is False: raise SystemExit('runtime mutation flag invalid')
-          if not p['validation']['payload_mutated'] is False: raise SystemExit('payload mutation flag invalid')
-          print(json.dumps({'status':'PASS','as_of':p['as_of'],'observations':p['observations'],'change_1d_bp':p['change_1d_bp'],'change_1w_bp':p['change_1w_bp']},indent=2))
+          s=json.loads(pathlib.Path('/tmp/gbp-latest.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/gbp-latest-candidate.json').read_text())
+          if s['status'] != 'SOURCE_SNAPSHOT_ONLY': raise SystemExit('unexpected snapshot status')
+          if c['status'] != 'READY_FOR_DRY_RUN': raise SystemExit('unexpected candidate status')
+          if c['as_of'] != s['as_of']: raise SystemExit('latest candidate as-of mismatch')
+          if not c['validation']['source_registry_authorized']: raise SystemExit('source registry authorization missing')
+          if c['validation']['runtime_mutated'] or c['validation']['payload_mutated']:
+            raise SystemExit('candidate builder mutation flags invalid')
+          print(json.dumps({'status':'PASS','as_of':c['as_of'],'horizons':c['horizons'],'direction':c['direction'],'change_direction_1d':c['change_direction_1d'],'change_direction_1w':c['change_direction_1w']},indent=2))
           PY
       - name: Prove repository remained read-only
         run: |
@@ -78,12 +97,14 @@ jobs:
             exit 1
           fi
           echo READ_ONLY_PASS
-      - name: Upload GBP source snapshots
+      - name: Upload GBP source snapshots and candidates
         uses: actions/upload-artifact@v4
         with:
           name: gbp-boe-ois-refresh-readiness
           path: |
             /tmp/gbp-benchmark.json
+            /tmp/gbp-benchmark-candidate.json
             /tmp/gbp-latest.json
+            /tmp/gbp-latest-candidate.json
           if-no-files-found: error
           retention-days: 30
