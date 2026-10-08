@@ -5,13 +5,14 @@ from datetime import date, timedelta
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CURRENT=ROOT/'live_data'/'sections'/'NATIVE_RATES_DATA.json'
-SUPPORTED={'USD','EUR','GBP','JPY','CAD'}
+SUPPORTED={'USD','EUR','GBP','JPY','CAD','AUD'}
 SOURCE_LABELS={
  'USD':'U.S. Department of the Treasury · Daily Par Yield Curve',
  'EUR':'European Central Bank · AAA Svensson spot curve',
  'GBP':'Bank of England · UK nominal government zero-coupon spot curve',
  'JPY':'Japan Ministry of Finance · JGB Interest Rate',
  'CAD':'Bank of Canada · benchmark Government of Canada bond yields',
+ 'AUD':'Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily',
 }
 
 def hist_points(obj,key):
@@ -48,6 +49,7 @@ def main():
     audit=json.load(open(a.audit))
     if audit.get('status')!='PASS': raise SystemExit('unified audit is not PASS')
     updates=list(audit.get('summary',{}).get('updates_available') or [])
+    if len(updates)!=len(set(updates)): raise SystemExit('duplicate UPDATE_AVAILABLE currencies: '+repr(updates))
     unsupported=[c for c in updates if c not in SUPPORTED]
     if unsupported: raise SystemExit('UPDATE_AVAILABLE without generic live-fetch support: '+repr(unsupported))
     cur=json.load(open(a.current_rates)); out=copy.deepcopy(cur)
@@ -78,7 +80,8 @@ def main():
         summary['changed_currencies'].append(c)
         summary['currencies'][c]={'old_date':old.get('date'),'new_date':dt,'2Y':y2,'10Y':y10,'curve_bp':obj['curve_bp'],'reference_2Y_date':r2d,'reference_10Y_date':r10d,'chg2_bp':d2,'chg10_bp':d10,'curve_state':obj['curve_state']}
     changed=[c for c in cur if cur[c]!=out[c]]
-    if changed!=summary['changed_currencies']: raise SystemExit(f'scope mismatch expected={summary["changed_currencies"]} actual={changed}')
+    if len(changed)!=len(set(changed)): raise SystemExit('duplicate changed currencies: '+repr(changed))
+    if set(changed)!=set(summary['changed_currencies']): raise SystemExit(f'scope mismatch expected={summary["changed_currencies"]} actual={changed}')
     pathlib.Path(a.output).write_text(json.dumps(out,separators=(',',':'),ensure_ascii=False)+'\n')
     print(json.dumps(summary,indent=2,ensure_ascii=False))
     return 0
