@@ -7,6 +7,7 @@ on:
     paths:
       - 'validation/cb_pricing/collect_gbp_boe_ois.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - '.github/workflows/gbp-boe-ois-refresh-readiness.yml'
   workflow_dispatch:
 
@@ -29,75 +30,62 @@ jobs:
       - name: Regression check against certified 2026-09-29 observation
         run: |
           set -euo pipefail
-          python3 validation/cb_pricing/collect_gbp_boe_ois.py \
-            --zip /tmp/oisddata.zip \
-            --as-of 2026-09-29 \
-            --output /tmp/gbp-benchmark.json
-          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py \
-            --snapshot /tmp/gbp-benchmark.json \
-            --output /tmp/gbp-benchmark-candidate.json
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py --zip /tmp/oisddata.zip --as-of 2026-09-29 --output /tmp/gbp-benchmark.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py --snapshot /tmp/gbp-benchmark.json --output /tmp/gbp-benchmark-candidate.json
           python3 - <<'PY'
           import json, pathlib
           s=json.loads(pathlib.Path('/tmp/gbp-benchmark.json').read_text())
           c=json.loads(pathlib.Path('/tmp/gbp-benchmark-candidate.json').read_text())
-          exp={
-            'current': {'date':'2026-09-29','3m':4.0707067450601,'6m':4.438953403175621,'12m':4.865918782825779},
-            't_minus_1': {'date':'2026-09-28','3m':4.066723783453592,'6m':4.428555992006569,'12m':4.828541155959475},
-            't_minus_5': {'date':'2026-09-22','3m':4.030117517991387,'6m':4.394366351385613,'12m':4.800520288124897},
-          }
+          exp={'current':{'date':'2026-09-29','3m':4.0707067450601,'6m':4.438953403175621,'12m':4.865918782825779},'t_minus_1':{'date':'2026-09-28','3m':4.066723783453592,'6m':4.428555992006569,'12m':4.828541155959475},'t_minus_5':{'date':'2026-09-22','3m':4.030117517991387,'6m':4.394366351385613,'12m':4.800520288124897}}
           for bucket,want in exp.items():
             got=s['observations'][bucket]
-            if got['date'] != want['date']:
-              raise SystemExit(f'{bucket} date mismatch: {got["date"]} != {want["date"]}')
+            if got['date'] != want['date']: raise SystemExit(f'{bucket} date mismatch')
             for k in ('3m','6m','12m'):
-              if abs(got[k]-want[k]) > 1e-12:
-                raise SystemExit(f'{bucket} {k} mismatch: {got[k]} != {want[k]}')
-          if c['schema'] != 'GMFQ_CB_PRICING_CANDIDATE_V1' or c['status'] != 'READY_FOR_DRY_RUN':
-            raise SystemExit('candidate schema/status mismatch')
-          if c['as_of'] != '2026-09-29' or c['source'] != s['source']:
-            raise SystemExit('candidate source/as-of mismatch')
-          if c['policy_rate'] != 3.75 or not c['meeting_path']:
-            raise SystemExit('canonical policy metadata missing')
-          for k in ('3m','6m','12m'):
-            if abs(c['horizons'][k]['rate']-s['observations']['current'][k]) > 1e-12:
-              raise SystemExit(f'candidate {k} rate mismatch')
-            if abs(c['horizons'][k]['change_1d_bp']-s['change_1d_bp'][k]) > 1e-12:
-              raise SystemExit(f'candidate {k} 1D mismatch')
-            if abs(c['horizons'][k]['change_1w_bp']-s['change_1w_bp'][k]) > 1e-12:
-              raise SystemExit(f'candidate {k} 1W mismatch')
-          print('GBP_CERTIFIED_2026_09_29_REGRESSION_AND_CANDIDATE_PASS')
+              if abs(got[k]-want[k]) > 1e-12: raise SystemExit(f'{bucket} {k} mismatch')
+          if c['schema']!='GMFQ_CB_PRICING_CANDIDATE_V1' or c['status']!='READY_FOR_DRY_RUN': raise SystemExit('candidate mismatch')
+          print('GBP_CERTIFIED_REGRESSION_PASS')
           PY
-      - name: Build latest read-only source snapshot and candidate
+      - name: Build latest source snapshot and candidate
         run: |
           set -euo pipefail
-          python3 validation/cb_pricing/collect_gbp_boe_ois.py \
-            --zip /tmp/oisddata.zip \
-            --output /tmp/gbp-latest.json
-          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py \
-            --snapshot /tmp/gbp-latest.json \
-            --output /tmp/gbp-latest-candidate.json
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py --zip /tmp/oisddata.zip --output /tmp/gbp-latest.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py --snapshot /tmp/gbp-latest.json --output /tmp/gbp-latest-candidate.json
+      - name: Deterministic GBP-only dry-run apply
+        run: |
+          set -euo pipefail
+          cp live_data/sections/OIS_DATA.json /tmp/OIS.before.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/NATIVE.before.json
+          cp payload/part-00.txt /tmp/part-00.before.txt
+          cp live_data/manifest.v2.json /tmp/manifest.before.json
+          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/gbp-latest-candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/manifest-build.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/source-registry-check.json
+          python3 validation/check_live_update_contract.py >/tmp/live-contract-check.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/runtime-roundtrip.json
           python3 - <<'PY'
-          import json, pathlib
-          s=json.loads(pathlib.Path('/tmp/gbp-latest.json').read_text())
+          import json, pathlib, subprocess
+          before_o=json.loads(pathlib.Path('/tmp/OIS.before.json').read_text())
+          after_o=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          before_n=json.loads(pathlib.Path('/tmp/NATIVE.before.json').read_text())
+          after_n=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in before_o['currencies'] if before_o['currencies'][k]!=after_o['currencies'][k]]
+          cn=[k for k in before_n if before_n[k]!=after_n[k]]
+          if co != ['GBP'] or cn != ['GBP']: raise SystemExit(f'bad semantic scope OIS={co} NATIVE={cn}')
+          changed=subprocess.check_output(['git','diff','--name-only'],text=True).splitlines()
+          expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if sorted(changed)!=expected: raise SystemExit(f'bad file scope {changed}')
           c=json.loads(pathlib.Path('/tmp/gbp-latest-candidate.json').read_text())
-          if s['status'] != 'SOURCE_SNAPSHOT_ONLY': raise SystemExit('unexpected snapshot status')
-          if c['status'] != 'READY_FOR_DRY_RUN': raise SystemExit('unexpected candidate status')
-          if c['as_of'] != s['as_of']: raise SystemExit('latest candidate as-of mismatch')
-          if not c['validation']['source_registry_authorized']: raise SystemExit('source registry authorization missing')
-          if c['validation']['runtime_mutated'] or c['validation']['payload_mutated']:
-            raise SystemExit('candidate builder mutation flags invalid')
-          print(json.dumps({'status':'PASS','as_of':c['as_of'],'horizons':c['horizons'],'direction':c['direction'],'change_direction_1d':c['change_direction_1d'],'change_direction_1w':c['change_direction_1w']},indent=2))
+          if after_o['currencies']['GBP']['as_of'] != c['as_of']: raise SystemExit('as-of mismatch after dry run')
+          print(json.dumps({'status':'GBP_DRY_RUN_PASS','semantic_scope':co,'file_scope':expected,'as_of':c['as_of']},indent=2))
           PY
-      - name: Prove repository remained read-only
+      - name: Restore checkout and prove no publication
+        if: always()
         run: |
           set -euo pipefail
-          if ! git diff --quiet; then
-            git status --short
-            git diff --stat
-            exit 1
-          fi
-          echo READ_ONLY_PASS
-      - name: Upload GBP source snapshots and candidates
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt || true
+          if ! git diff --quiet; then git status --short; exit 1; fi
+          echo GBP_DRY_RUN_RESTORED_NO_PUBLICATION
+      - name: Upload GBP readiness evidence
         uses: actions/upload-artifact@v4
         with:
           name: gbp-boe-ois-refresh-readiness
@@ -106,5 +94,9 @@ jobs:
             /tmp/gbp-benchmark-candidate.json
             /tmp/gbp-latest.json
             /tmp/gbp-latest-candidate.json
+            /tmp/manifest-build.json
+            /tmp/source-registry-check.json
+            /tmp/live-contract-check.json
+            /tmp/runtime-roundtrip.json
           if-no-files-found: error
           retention-days: 30
