@@ -1,0 +1,60 @@
+{
+  "schema": "GMFQ_CB_PRICING_REFRESH_READINESS_V1",
+  "as_of": "2026-10-08",
+  "scope": "ACTIVE CB-pricing currencies only",
+  "production_runtime_changed": false,
+  "summary": {
+    "active_currencies": ["AUD", "CAD", "GBP", "JPY"],
+    "daily_ready": [],
+    "active_but_not_daily_ready": ["AUD", "CAD", "GBP", "JPY"],
+    "key_distinction": "ACTIVE means current pricing was source-validated and promoted. DAILY_READY additionally requires a canonical source collector/parser, homogeneous current/T-1/T-5 handling, candidate build, fail-closed validation, deterministic runtime apply and promotion path available from main without relying on dated one-shot validation branches."
+  },
+  "currencies": {
+    "AUD": {
+      "status": "ACTIVE_NOT_DAILY_READY",
+      "source": "ASX 30 Day Interbank Cash Rate futures (IB)",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": false,
+      "known_validation_history": ["validation-cb-pricing-usd-aud-2026-10-07", "staging-aud-asx-history-probe-2026-09-30", "staging-aud-asx-post-rba-2026-09-30"],
+      "blocker": "Activation/probe logic exists in historical validation branches, but no canonical reusable daily collector/parser/apply pipeline is present on main.",
+      "next_required": "Promote a source-specific ASX IB collector/parser into a clean refresh module; parameterize trade date and horizon mapping; reuse source-registry and live-update preflight before any runtime mutation."
+    },
+    "CAD": {
+      "status": "ACTIVE_NOT_DAILY_READY",
+      "source": "Montréal Exchange Three-Month CORRA Futures (CRA)",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": false,
+      "known_validation_history": ["validation-cb-pricing-cad-2026-10-07", "staging-cad-corra-2026-09-30", "test-cad-corra-browser-2026-09-30"],
+      "blocker": "Official Market Review observations were validated and promoted, but the production branch does not yet contain a canonical reusable daily CRA collector/parser/apply pipeline.",
+      "next_required": "Build a current-date Market Review resolver plus contract parser with direct quarterly buckets and fail closed when current/T-1/T-5 homogeneous observations are incomplete."
+    },
+    "GBP": {
+      "status": "ACTIVE_NOT_DAILY_READY",
+      "source": "Bank of England estimated sterling OIS forward curve",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": false,
+      "known_validation_history": ["validation-cb-pricing-gbp-2026-10-08"],
+      "blocker": "The official BoE workbook extraction was successfully certified for activation, but the extractor/candidate workflow remains validation-branch based rather than a canonical parameterized refresh module on main.",
+      "next_required": "Promote a clean BoE OIS archive extractor that resolves latest official business day and homogeneous T-1/T-5 observations, emits CB_PRICING_CANDIDATE_V1, and performs no runtime writes."
+    },
+    "JPY": {
+      "status": "ACTIVE_NOT_DAILY_READY",
+      "source": "Tokyo Financial Exchange Three-month TONA Futures",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": false,
+      "known_validation_history": ["validation-cb-pricing-jpy-2026-10-08"],
+      "evidence": "validation/build_jpy_tona_ois_candidate.py on the validation branch is fail-closed and JPY-scoped, but it references a dated candidate file and contains dated/static market-pricing text/values in the native-CB update path.",
+      "blocker": "Builder is suitable for one-shot promotion verification, not a generic daily collector/updater.",
+      "next_required": "Separate source collection from candidate-to-runtime application; parameterize dates/contracts/values; remove hard-coded pricing strings; retain JPY-only semantic scope checks."
+    }
+  },
+  "implementation_order": [
+    "GBP",
+    "JPY",
+    "CAD",
+    "AUD"
+  ],
+  "implementation_order_rationale": "GBP has a stable official downloadable daily archive and exact tenor columns; JPY already has a strong fail-closed builder pattern; CAD and AUD are next once their source discovery/history retrieval is converted from activation-time probes into reusable daily collectors.",
+  "promotion_rule": "Do not mark any ACTIVE currency DAILY_READY until a clean main-based dry run can produce a candidate from fresh official data, pass source registry and negative fail-closed checks, rebuild runtime deterministically, and demonstrate currency-only semantic delta without publishing automatically.",
+  "gh_pages_modified": false
+}
