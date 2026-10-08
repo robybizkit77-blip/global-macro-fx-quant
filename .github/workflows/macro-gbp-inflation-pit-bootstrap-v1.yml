@@ -159,3 +159,5 @@ jobs:
           path: /tmp/gbp-cpi-bootstrap/
           if-no-files-found: error
           retention-days: 90
+
+# Exact-head validation trigger after registry promotion and probe cleanup.
