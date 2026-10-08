@@ -1,0 +1,74 @@
+name: CME ZQ T5 Archive Probe Once
+
+on:
+  push:
+    branches:
+      - validation-cme-zq-capture-2026-10-08
+    paths:
+      - .github/workflows/cme-zq-t5-archive-probe-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-cme-zq-capture-2026-10-08
+      - name: Download and inspect official CME IR archive for ZQ
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cme validation/cb_pricing/cme_zq_capture
+          url='https://www.cmegroup.com/ftp/pub/pub/grs/ctr/rt/rates/2026/10-Oct/IR.20261002.csv'
+          curl -fLsS --retry 3 -A 'Mozilla/5.0' "$url" -o /tmp/cme/IR.20261002.csv
+          echo "bytes=$(stat -c%s /tmp/cme/IR.20261002.csv)"
+          file /tmp/cme/IR.20261002.csv || true
+          head -n 8 /tmp/cme/IR.20261002.csv || true
+          python3 - <<'PY'
+          import csv,pathlib,json,hashlib,re
+          p=pathlib.Path('/tmp/cme/IR.20261002.csv')
+          raw=p.read_bytes()
+          text=raw.decode('utf-8-sig','replace')
+          lines=text.splitlines()
+          zq_lines=[]
+          targets=['ZQZ6','ZQH7','ZQU7','DEC26','MAR27','SEP27','DEC 26','MAR 27','SEP 27']
+          for i,line in enumerate(lines):
+              u=line.upper()
+              if 'ZQ' in u or any(t in u for t in targets):
+                  zq_lines.append({'line_no':i+1,'line':line})
+          # retain compact context around likely target contract lines
+          target_hits=[]
+          for i,line in enumerate(lines):
+              u=line.upper()
+              if any(t in u for t in targets):
+                  target_hits.append({'line_no':i+1,'line':line,'context':lines[max(0,i-2):min(len(lines),i+3)]})
+          out={
+            'source':'CME official rates archive',
+            'url':'https://www.cmegroup.com/ftp/pub/pub/grs/ctr/rt/rates/2026/10-Oct/IR.20261002.csv',
+            'archive_date':'2026-10-02',
+            'bytes':len(raw),
+            'sha256':hashlib.sha256(raw).hexdigest(),
+            'line_count':len(lines),
+            'zq_like_count':len(zq_lines),
+            'zq_like_lines':zq_lines[:500],
+            'target_hits':target_hits[:100]
+          }
+          pathlib.Path('validation/cb_pricing/cme_zq_capture/CME_ZQ_T5_IR_20261002_PROBE.json').write_text(json.dumps(out,indent=2),encoding='utf-8')
+          print(json.dumps({'bytes':out['bytes'],'lines':out['line_count'],'zq_like_count':out['zq_like_count'],'target_hits':len(out['target_hits'])},indent=2))
+          if len(raw)<100: raise SystemExit('Archive download unexpectedly small')
+          if not zq_lines: raise SystemExit('No ZQ-like rows found in official archive')
+          PY
+      - name: Commit official T5 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/cb_pricing/cme_zq_capture/CME_ZQ_T5_IR_20261002_PROBE.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Capture CME ZQ T-5 archive evidence'
+          git push origin HEAD:validation-cme-zq-capture-2026-10-08
