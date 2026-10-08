@@ -21,36 +21,36 @@ jobs:
           unzip -l /tmp/oisddata.zip | tee /tmp/archive-list.txt
       - name: Install parser dependencies
         run: python3 -m pip install --disable-pip-version-check pandas openpyxl
-      - name: Extract 2025-present OIS workbook and target dates
+      - name: Extract BoE short-end headers and target dates
         run: |
           python3 - <<'PY'
           import zipfile, re, os, json
           import pandas as pd
-          z='/tmp/oisddata.zip'
-          out='/tmp/boe_ois'
-          os.makedirs(out, exist_ok=True)
+          z='/tmp/oisddata.zip'; out='/tmp/boe_ois'; os.makedirs(out,exist_ok=True)
           with zipfile.ZipFile(z) as zz:
               names=zz.namelist()
-              c=[n for n in names if re.search(r'OIS',n,re.I) and re.search(r'daily',n,re.I) and re.search(r'2025|present',n,re.I) and re.search(r'\.xlsx?$',n,re.I)]
-              if not c:
-                  c=[n for n in names if re.search(r'OIS',n,re.I) and re.search(r'daily',n,re.I) and re.search(r'\.xlsx?$',n,re.I)]
-              if not c: raise SystemExit('No OIS daily workbook found')
-              name=c[-1]
-              zz.extract(name,out)
-              path=os.path.join(out,name)
+              c=[n for n in names if re.search(r'OIS daily data_2025 to present\.xlsx$',n,re.I)]
+              if not c: raise SystemExit('2025-present OIS workbook not found')
+              name=c[0]; zz.extract(name,out); path=os.path.join(out,name)
           xls=pd.ExcelFile(path)
-          result={'workbook':name,'sheets':xls.sheet_names,'targets':{}}
+          result={'workbook':name,'sheets':xls.sheet_names,'headers':{},'targets':{}}
           targets={pd.Timestamp('2026-09-22'),pd.Timestamp('2026-09-28'),pd.Timestamp('2026-09-29')}
-          for sheet in xls.sheet_names:
+          for sheet in ['1. fwds, short end','3. spot, short end']:
               df=pd.read_excel(path,sheet_name=sheet,header=None)
+              result['headers'][sheet]=[]
+              for i in range(min(12,len(df))):
+                  vals=[]
+                  for v in df.iloc[i].tolist():
+                      if pd.isna(v): vals.append(None)
+                      elif isinstance(v,pd.Timestamp): vals.append(v.isoformat())
+                      else: vals.append(v.item() if hasattr(v,'item') else v)
+                  result['headers'][sheet].append({'row':i,'values':vals})
               for idx,row in df.iterrows():
                   hit=False
                   for v in row.tolist():
                       try:
-                          if pd.Timestamp(v).normalize() in targets:
-                              hit=True; break
-                      except Exception:
-                          pass
+                          if pd.Timestamp(v).normalize() in targets: hit=True; break
+                      except Exception: pass
                   if hit:
                       vals=[]
                       for v in row.tolist():
