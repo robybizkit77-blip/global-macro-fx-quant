@@ -1,0 +1,99 @@
+name: Macro PIT Registry Promotion V1
+
+on:
+  push:
+    branches:
+      - 'feature/macro-pit-registry-promotion-*'
+    paths:
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/test_macro_pit_registry_promotion.py'
+      - 'validation/macro/check_macro_source_registry.py'
+      - '.github/workflows/macro-pit-registry-promotion-v1.yml'
+      - '.github/workflows/macro-source-registry-audit.yml'
+  workflow_dispatch:
+    inputs:
+      evidence_run_id:
+        description: GitHub Actions run containing a GREEN PIT evidence artifact
+        required: true
+        type: string
+      artifact_name:
+        description: Exact artifact name containing macro_pit_anchor_evidence.json
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  self-test:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit current registry
+        run: python3 validation/macro/check_macro_source_registry.py | tee /tmp/macro-registry-audit.json
+      - name: Test fail-closed promotion proposal helper
+        run: python3 validation/test_macro_pit_registry_promotion.py | tee /tmp/macro-promotion-selftest.json
+      - name: Prove canonical state remains untouched
+        run: git diff --exit-code -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json live_data payload
+      - name: Upload self-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-pit-registry-promotion-selftest-${{ github.run_id }}
+          path: |
+            /tmp/macro-registry-audit.json
+            /tmp/macro-promotion-selftest.json
+
+  build-proposal:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download PIT evidence artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.evidence_run_id }}
+          ARTIFACT_NAME: ${{ inputs.artifact_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-pit-promotion/source
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT_NAME" --dir /tmp/macro-pit-promotion/source
+          evidence="$(find /tmp/macro-pit-promotion/source -type f -name 'macro_pit_anchor_evidence.json' -print -quit)"
+          test -n "$evidence"
+          echo "EVIDENCE_PATH=$evidence" >> "$GITHUB_ENV"
+      - name: Build registry promotion proposal
+        run: |
+          set -euo pipefail
+          python3 validation/macro_pit_registry_promotion.py \
+            --evidence "$EVIDENCE_PATH" \
+            --proposed-registry /tmp/macro-pit-promotion/MACRO_SOURCE_REGISTRY_PROPOSED.json \
+            --receipt /tmp/macro-pit-promotion/promotion_receipt.json \
+            | tee /tmp/macro-pit-promotion/promotion_stdout.json
+      - name: Enforce explicit-review-only contract
+        run: |
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-pit-promotion/promotion_receipt.json'))
+          assert r['status']=='PASS', r
+          assert r['canonical_registry_modified'] is False, r
+          assert r['registry_promotion']=='REVIEW_REQUIRED', r
+          assert r['promotion_action'] in {'PROPOSAL_CREATED','ALREADY_CERTIFIED'}, r
+          print('MACRO_PIT_REGISTRY_PROMOTION_PROPOSAL_PASS')
+          PY
+          git diff --exit-code -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json live_data payload
+      - name: Upload proposed registry and receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-pit-registry-promotion-proposal-${{ github.run_id }}
+          path: |
+            /tmp/macro-pit-promotion/MACRO_SOURCE_REGISTRY_PROPOSED.json
+            /tmp/macro-pit-promotion/promotion_receipt.json
+            /tmp/macro-pit-promotion/promotion_stdout.json
+          if-no-files-found: error
+          retention-days: 30

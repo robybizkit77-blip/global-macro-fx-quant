@@ -5,15 +5,19 @@ on:
     branches:
       - validation-macro-source-registry-2026-10-08
       - release-candidate-macro-source-registry-2026-10-08
+      - 'feature/macro-pit-registry-promotion-*'
     paths:
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/build_macro_candidate.py'
       - 'validation/replay_jpy_macro_candidate.py'
       - 'validation/replay_chf_inflation_macro_candidate.py'
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/test_macro_pit_registry_promotion.py'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - '.github/workflows/macro-source-registry-audit.yml'
+      - '.github/workflows/macro-pit-registry-promotion-v1.yml'
   workflow_dispatch:
 
 permissions:
@@ -45,7 +49,10 @@ jobs:
           assert d['status']=='PASS'
           assert d['core_series']==16
           assert d['candidate_layer_ready']==16
-          assert d['historical_replay_certified']==['CHF.inflation','JPY.labour']
+          certified=d['historical_replay_certified']
+          assert {'CHF.inflation','JPY.labour'}.issubset(set(certified)), certified
+          assert d['historical_replay_certified_count']==len(certified)
+          assert 2 <= len(certified) <= 16
           assert d['automatic_publication'] is False
           print('MACRO_SOURCE_REGISTRY_PASS')
           PY
@@ -81,6 +88,13 @@ jobs:
           print('JPY_LABOUR_REPLAY_CERTIFICATION_PASS')
           PY
 
+      - name: Verify promotion proposal helper remains read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/test_macro_pit_registry_promotion.py | tee /tmp/macro-promotion-selftest.json
+          git diff --exit-code -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json live_data payload
+
       - name: Verify live update contract and read-only scope
         shell: bash
         run: |
@@ -99,6 +113,7 @@ jobs:
             /tmp/macro-source-registry-audit.json
             /tmp/macro-candidate-selftest.json
             /tmp/jpy-macro-replay.json
+            /tmp/macro-promotion-selftest.json
             /tmp/live-contract-after-macro-registry.json
           if-no-files-found: error
           retention-days: 30

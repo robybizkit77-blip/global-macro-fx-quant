@@ -32,21 +32,13 @@ def fail(message: str) -> None:
 
 
 def certified_adapter_contract(key: str, row: dict) -> tuple[str | None, dict | None]:
-    """Return the effective refresh transport without rewriting frozen runtime provenance."""
     canonical_transport = row.get("transport_class")
     certified = row.get("certified_adapter")
     if certified is None:
         return canonical_transport, None
     if not isinstance(certified, dict):
         fail(f"{key} certified_adapter must be an object")
-    required = (
-        "source",
-        "transport_class",
-        "adapter",
-        "workflow",
-        "dynamic_release_discovery",
-        "read_only",
-    )
+    required = ("source", "transport_class", "adapter", "workflow", "dynamic_release_discovery", "read_only")
     missing = [field for field in required if field not in certified]
     if missing:
         fail(f"{key} certified_adapter missing fields: {missing}")
@@ -63,6 +55,39 @@ def certified_adapter_contract(key: str, row: dict) -> tuple[str | None, dict | 
     if not workflow_path.exists():
         fail(f"{key} certified workflow file missing: {workflow_path}")
     return str(certified.get("transport_class")), certified
+
+
+def historical_replay_contract(key: str, row: dict) -> None:
+    if row.get("historical_replay_certified") is not True:
+        if row.get("historical_replay_evidence") is not None:
+            fail(f"{key} has replay evidence but is not certified")
+        return
+    if row.get("source_adapter_status") != "READY":
+        fail(f"{key} historical replay certification requires READY source adapter")
+
+    replay = row.get("replay")
+    ref = row.get("historical_replay_evidence")
+    if replay:
+        replay_path = ROOT / str(replay)
+        if not replay_path.exists():
+            fail(f"{key} certified replay file missing: {replay_path}")
+        return
+
+    if not isinstance(ref, dict):
+        fail(f"{key} certified replay requires replay file or historical_replay_evidence")
+    required = (
+        "schema", "evidence_schema", "evidence_sha256", "macro_series_id",
+        "observation_date", "before_git_head", "after_git_head", "promotion_mode",
+    )
+    missing = [field for field in required if not ref.get(field)]
+    if missing:
+        fail(f"{key} historical_replay_evidence missing fields: {missing}")
+    if ref.get("schema") != "GMFQ_MACRO_PIT_CERTIFICATION_REF_V1":
+        fail(f"{key} unexpected historical replay evidence schema")
+    if ref.get("evidence_schema") != "GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1":
+        fail(f"{key} unexpected PIT evidence schema")
+    if ref.get("promotion_mode") != "EXPLICIT_REVIEW_REQUIRED":
+        fail(f"{key} historical replay promotion mode must remain explicit")
 
 
 def main() -> int:
@@ -117,9 +142,6 @@ def main() -> int:
 
         canonical_transport = r.get("transport_class")
         effective_transport, certified = certified_adapter_contract(key, r)
-
-        # Frozen runtime provenance remains truthful. READY may only override a weak
-        # historical transport when a separate strong, dynamic and read-only certified adapter exists.
         if status == "READY":
             if effective_transport in WEAK_TRANSPORT or effective_transport not in STRONG_ADAPTER_TRANSPORT:
                 fail(f"{key} READY requires a strong effective adapter transport: {effective_transport}")
@@ -133,6 +155,7 @@ def main() -> int:
         if currency not in macro or not isinstance(macro[currency], list) or not macro[currency]:
             fail(f"MACRO_SERIES coverage missing for {currency}")
 
+        historical_replay_contract(key, r)
         statuses[status] += 1
         if r.get("historical_replay_certified"):
             replay_certified.append(key)
@@ -147,9 +170,6 @@ def main() -> int:
             "latest_value": h.get("latest_value"),
         })
 
-    if replay_certified != ["CHF.inflation", "JPY.labour"]:
-        fail(f"unexpected replay certification set: {replay_certified}")
-
     out = {
         "status": "PASS",
         "schema": "GMFQ_MACRO_SOURCE_REGISTRY_AUDIT_V1",
@@ -157,6 +177,7 @@ def main() -> int:
         "candidate_layer_ready": len(rows),
         "source_adapter_status_counts": dict(sorted(statuses.items())),
         "historical_replay_certified": replay_certified,
+        "historical_replay_certified_count": len(replay_certified),
         "automatic_publication": False,
         "rows": rows,
     }
