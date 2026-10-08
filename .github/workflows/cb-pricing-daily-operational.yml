@@ -5,6 +5,8 @@ on:
     branches:
       - validation-cb-pricing-active-orchestrator-2026-10-08
       - release-candidate-cb-pricing-daily-operational-2026-10-08
+      - validation-operational-retry-cadence-2026-10-08
+      - release-candidate-operational-retry-cadence-2026-10-08
     paths:
       - '.github/workflows/cb-pricing-daily-operational.yml'
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
@@ -23,13 +25,19 @@ on:
       - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
   workflow_dispatch:
   schedule:
-    # Canonical operational cadence: Europe/Rome 07:30 across CET/CEST.
-    # The local-time gate below lets only one of these two UTC cron entries proceed.
+    # Europe/Rome retry cadence: 06:00, 06:30, 07:00 on working days.
+    # Duplicate UTC cron entries cover CET/CEST; the local-time gate admits only the intended Rome slots.
+    - cron: '0 4 * * 1-5'
+    - cron: '0 5 * * 1-5'
+    - cron: '30 4 * * 1-5'
     - cron: '30 5 * * 1-5'
-    - cron: '30 6 * * 1-5'
+    - cron: '0 6 * * 1-5'
 
 permissions:
   contents: read
+
+actions:
+  read: true
 
 concurrency:
   group: cb-pricing-daily-operational
@@ -41,20 +49,24 @@ jobs:
     outputs:
       should_run: ${{ steps.gate.outputs.should_run }}
       local_time: ${{ steps.gate.outputs.local_time }}
+      retry_key: ${{ steps.gate.outputs.retry_key }}
     steps:
       - id: gate
         shell: bash
         run: |
           set -euo pipefail
           local_time="$(TZ=Europe/Rome date +'%Y-%m-%dT%H:%M:%S%z')"
+          local_date="$(TZ=Europe/Rome date +'%Y-%m-%d')"
           hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != "schedule" || "$hhmm" == "07:30" ]]; then
+          allowed='06:00 06:30 07:00'
+          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
             should_run=true
           else
             should_run=false
           fi
           echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
           echo "local_time=$local_time" >> "$GITHUB_OUTPUT"
+          echo "retry_key=cb-pricing-daily-green-$local_date" >> "$GITHUB_OUTPUT"
           echo "event=${{ github.event_name }} local_time=$local_time should_run=$should_run"
 
   observe:
@@ -65,17 +77,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Restore same-day successful marker
+        id: success-marker
+        if: github.event_name == 'schedule'
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/cb-pricing-daily-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
+
+      - name: Skip retry after earlier GREEN run
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit == 'true'
+        run: echo "CB pricing already GREEN today; later retry skipped."
+
       - name: Install source parser dependencies
+        if: steps.success-marker.outputs.cache-hit != 'true'
         run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
 
       - name: Run all four daily source/candidate/dry-run paths
+        if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
           bash validation/cb_pricing/run_active_cb_pricing_daily.sh
 
       - name: Upload daily operational evidence
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: cb-pricing-daily-operational-${{ github.run_id }}
@@ -84,7 +110,7 @@ jobs:
           retention-days: 30
 
       - name: Enforce daily operational status
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -100,3 +126,17 @@ jobs:
               raise SystemExit('publication safety contract violated')
           print('CB_PRICING_DAILY_OPERATIONAL_GREEN_NO_PUBLICATION')
           PY
+
+      - name: Create same-day GREEN marker
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit != 'true' && success()
+        shell: bash
+        run: |
+          mkdir -p /tmp/cb-pricing-daily-success
+          printf '%s\n' "${{ needs.schedule-gate.outputs.local_time }}" > /tmp/cb-pricing-daily-success/green.txt
+
+      - name: Save same-day GREEN marker
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit != 'true' && success()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/cb-pricing-daily-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
