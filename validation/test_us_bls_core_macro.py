@@ -27,6 +27,13 @@ by_date = dict(yoy)
 assert abs(by_date["2026-08"] - 3.4) < 1e-12, by_date
 assert abs(by_date["2026-07"] - ((329.0 / 319.0 - 1.0) * 100.0)) < 1e-12, by_date
 
+# Diagnostic is intentionally limited to the two canonical USD rows/ids exposed by the current runtime.
+series_contract = json.loads((ROOT / "live_data" / "sections" / "MACRO_SERIES.json").read_text(encoding="utf-8"))["USD"]
+print("USD_MACRO_SERIES_CONTRACT=" + json.dumps([
+    {k: row.get(k) for k in ("id", "name", "title", "indicator", "label") if row.get(k) is not None}
+    for row in series_contract
+], ensure_ascii=False))
+
 candidates, audit = mod.build(payload)
 assert candidates["labour"]["currency"] == "USD"
 assert candidates["labour"]["dimension"] == "labour"
