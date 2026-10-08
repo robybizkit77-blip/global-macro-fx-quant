@@ -1,0 +1,136 @@
+name: JPY Statistics Bureau CPI Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - 'validation/sources/jpy_statistics_bureau_cpi.py'
+      - 'validation/fixtures/jpy_statistics_bureau_cpi_fixture.html'
+      - 'validation/test_jpy_statistics_bureau_cpi.py'
+      - '.github/workflows/jpy-statistics-bureau-cpi-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run deterministic JPY CPI parser contract
+        run: python validation/test_jpy_statistics_bureau_cpi.py
+
+      - name: Fetch official live Statistics Bureau CPI candidate
+        run: |
+          mkdir -p /tmp/gmfq-jpy-cpi/live
+          python validation/sources/jpy_statistics_bureau_cpi.py \
+            --output /tmp/gmfq-jpy-cpi/live/candidate.json \
+            --audit-output /tmp/gmfq-jpy-cpi/live/source-audit.json
+
+      - name: Classify JPY CPI freshness against canonical history
+        id: freshness
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-jpy-cpi/live/candidate.json').read_text())
+          rows=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())['JPY']
+          hits=[r for r in rows if isinstance(r,dict) and r.get('id')==c['macro_series_id']]
+          assert len(hits)==1, (c['macro_series_id'], len(hits))
+          dates=hits[0].get('dates') or []
+          values=hits[0].get('values') or []
+          assert dates and len(dates)==len(values)
+          canonical_date=str(dates[-1])
+          canonical_value=float(values[-1])
+          ck=c['observation_date'][:7]; lk=canonical_date[:7]
+          if ck < lk:
+              status='NO_UPDATE_STALE_OFFICIAL_SOURCE'; actionable=False
+          else:
+              status='ACTIONABLE'; actionable=True
+          out={
+              'status':status,
+              'candidate_date':c['observation_date'],
+              'candidate_value':float(c['value']),
+              'canonical_latest_date':canonical_date,
+              'canonical_latest_value':canonical_value,
+              'actionable':actionable,
+          }
+          Path('/tmp/gmfq-jpy-cpi/live/freshness.json').write_text(json.dumps(out,indent=2)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write(f"actionable={'true' if actionable else 'false'}\n")
+          print(json.dumps(out,indent=2))
+          PY
+
+      - name: Pass actionable live JPY CPI candidate through canonical macro builder
+        if: steps.freshness.outputs.actionable == 'true'
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-jpy-cpi/live/candidate.json \
+            --output-dir /tmp/gmfq-jpy-cpi/live/built
+
+      - name: Verify Statistics Bureau provenance, semantics, freshness and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=Path('/tmp/gmfq-jpy-cpi/live')
+          c=json.loads((r/'candidate.json').read_text())
+          a=json.loads((r/'source-audit.json').read_text())
+          f=json.loads((r/'freshness.json').read_text())
+          assert c['currency']=='JPY' and c['dimension']=='inflation'
+          assert c['series_id']=='JP_CPI_HEADLINE_YOY'
+          assert c['frequency']=='M'
+          assert c['source']=='Statistics Bureau of Japan / CPI'
+          assert c['source_url'].startswith('https://www.stat.go.jp/')
+          assert a['authority']=='Statistics Bureau of Japan'
+          assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
+          assert a['retrieval_url'].startswith('https://www.stat.go.jp/')
+          assert '総合指数' in a['matched_semantics'] and '前年同月比' in a['matched_semantics']
+          assert f['status'] in ('ACTIONABLE','NO_UPDATE_STALE_OFFICIAL_SOURCE')
+          item={
+              'date':c['observation_date'],
+              'value':c['value'],
+              'macro_series_id':c['macro_series_id'],
+              'series_id':c['series_id'],
+              'freshness':f['status'],
+              'canonical_latest_date':f['canonical_latest_date'],
+              'canonical_latest_value':f['canonical_latest_value'],
+          }
+          summary=r/'built/summary.json'
+          if f['status']=='ACTIONABLE':
+              assert summary.exists()
+              s=json.loads(summary.read_text())
+              assert s['status']=='PASS' and s['live_data_modified'] is False
+              item['series_action']=s['series_action']
+          else:
+              assert c['observation_date'][:7] < f['canonical_latest_date'][:7]
+              item['series_action']='SKIPPED_NO_UPDATE'
+          print(json.dumps({
+              'status':'PASS' if f['status']=='ACTIONABLE' else 'PASS_WITH_NO_UPDATE',
+              'source':'Statistics Bureau of Japan official CPI page',
+              'result':item,
+              'live_data_modified':False,
+          }, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Confirm repository live data remained untouched
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Upload JPY CPI verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-statistics-bureau-cpi-source-verification
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/gmfq-jpy-cpi/live/candidate.json
+            /tmp/gmfq-jpy-cpi/live/source-audit.json
+            /tmp/gmfq-jpy-cpi/live/freshness.json
+            /tmp/gmfq-jpy-cpi/live/built/summary.json
