@@ -1,6 +1,7 @@
 name: GBP ONS Macro Live Certification
 
 # Re-certify the current adapter contract on every relevant source change.
+# Low-level ref trigger keeps this branch certification reproducible.
 on:
   push:
     branches:
