@@ -24,44 +24,118 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Run deterministic CHF SNB parser-builder contract
+
+      - name: Run deterministic CHF SNB adapter contract
         run: python validation/test_chf_snb_source.py
+
       - name: Fetch official live SNB inflation candidate
         run: |
           mkdir -p /tmp/gmfq-chf/inflation
           python validation/sources/chf_snb_official_core.py --dimension inflation --output /tmp/gmfq-chf/inflation/candidate.json --audit-output /tmp/gmfq-chf/inflation/source-audit.json
-      - name: Pass live CHF inflation candidate through canonical macro builder
+
+      - name: Classify CHF inflation freshness against canonical history
+        id: inflation_freshness
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-chf/inflation/candidate.json').read_text())
+          rows=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())['CHF']
+          hits=[r for r in rows if isinstance(r,dict) and r.get('id')==c['macro_series_id']]
+          assert len(hits)==1
+          dates=hits[0].get('dates') or []
+          assert dates
+          canonical_date=dates[-1]
+          ck=c['observation_date'][:7]; lk=canonical_date[:7]
+          if ck < lk:
+              status='NO_UPDATE_STALE_OFFICIAL_SOURCE'; actionable=False
+          else:
+              status='ACTIONABLE'; actionable=True
+          out={'status':status,'candidate_date':c['observation_date'],'canonical_latest_date':canonical_date,'actionable':actionable}
+          Path('/tmp/gmfq-chf/inflation/freshness.json').write_text(json.dumps(out,indent=2)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write(f"actionable={'true' if actionable else 'false'}\n")
+          print(json.dumps(out,indent=2))
+          PY
+
+      - name: Pass actionable live CHF inflation candidate through canonical macro builder
+        if: steps.inflation_freshness.outputs.actionable == 'true'
         run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-chf/inflation/candidate.json --output-dir /tmp/gmfq-chf/inflation/built
+
       - name: Fetch official live SNB labour candidate
         run: |
           mkdir -p /tmp/gmfq-chf/labour
           python validation/sources/chf_snb_official_core.py --dimension labour --output /tmp/gmfq-chf/labour/candidate.json --audit-output /tmp/gmfq-chf/labour/source-audit.json
-      - name: Pass live CHF labour candidate through canonical macro builder
+
+      - name: Classify CHF labour freshness against canonical history
+        id: labour_freshness
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-chf/labour/candidate.json').read_text())
+          rows=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())['CHF']
+          hits=[r for r in rows if isinstance(r,dict) and r.get('id')==c['macro_series_id']]
+          assert len(hits)==1
+          dates=hits[0].get('dates') or []
+          assert dates
+          canonical_date=dates[-1]
+          ck=c['observation_date'][:7]; lk=canonical_date[:7]
+          if ck < lk:
+              status='NO_UPDATE_STALE_OFFICIAL_SOURCE'; actionable=False
+          else:
+              status='ACTIONABLE'; actionable=True
+          out={'status':status,'candidate_date':c['observation_date'],'canonical_latest_date':canonical_date,'actionable':actionable}
+          Path('/tmp/gmfq-chf/labour/freshness.json').write_text(json.dumps(out,indent=2)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write(f"actionable={'true' if actionable else 'false'}\n")
+          print(json.dumps(out,indent=2))
+          PY
+
+      - name: Pass actionable live CHF labour candidate through canonical macro builder
+        if: steps.labour_freshness.outputs.actionable == 'true'
         run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-chf/labour/candidate.json --output-dir /tmp/gmfq-chf/labour/built
-      - name: Verify SNB provenance precision and read-only contract
+
+      - name: Verify SNB provenance, freshness and read-only contract
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
+          expected={
+            'inflation':('CH_CPI_HEADLINE_YOY','plkopr','Change from the corresponding month of the previous year in %','round_to_1_decimal_reported_rate'),
+            'labour':('CH_UNEMP_RATE','amarbma','Jobless rate - Seasonally adjusted','none'),
+          }
           out={}
           for dim in ('inflation','labour'):
               r=Path('/tmp/gmfq-chf')/dim
-              c=json.loads((r/'candidate.json').read_text());a=json.loads((r/'source-audit.json').read_text());s=json.loads((r/'built/summary.json').read_text())
-              assert c['currency']=='CHF';assert c['source'].startswith('Swiss National Bank data portal /')
+              c=json.loads((r/'candidate.json').read_text())
+              a=json.loads((r/'source-audit.json').read_text())
+              f=json.loads((r/'freshness.json').read_text())
+              sid,cube,label,norm=expected[dim]
+              assert c['currency']=='CHF' and c['series_id']==sid
+              assert c['source'].startswith('Swiss National Bank data portal /')
               assert a['mode']=='live' and a['live_data_written'] is False and a['candidate_only'] is True
               assert a['retrieval_url'].startswith('https://data.snb.ch/api/cube/') and a['retrieval_url'].endswith('/data/json/en')
-              assert s['status']=='PASS' and s['live_data_modified'] is False
-              out[dim]={'series_id':c['series_id'],'date':c['observation_date'],'value':c['value'],'raw_value':a['raw_value'],'cube':a['upstream_cube'],'series_label':a['upstream_series_label'],'normalization':a['normalization'],'series_action':s['series_action']}
-          assert out['inflation']['series_id']=='CH_CPI_HEADLINE_YOY' and out['inflation']['date']=='2026-08-01'
-          assert abs(float(out['inflation']['value'])-0.8)<1e-12 and abs(float(out['inflation']['raw_value'])-0.8072460486750788)<1e-12
-          assert out['inflation']['cube']=='plkopr' and out['inflation']['series_label']=='Change from the corresponding month of the previous year in %' and out['inflation']['normalization']=='round_to_1_decimal_reported_rate'
-          assert out['labour']['series_id']=='CH_UNEMP_RATE' and out['labour']['date']=='2026-08-01'
-          assert abs(float(out['labour']['value'])-3.13682671641221)<1e-12 and abs(float(out['labour']['raw_value'])-3.13682671641221)<1e-12
-          assert out['labour']['cube']=='amarbma' and out['labour']['series_label']=='Jobless rate - Seasonally adjusted' and out['labour']['normalization']=='none'
-          print(json.dumps({'status':'PASS','source':'SNB official API','results':out,'live_data_modified':False},indent=2))
+              assert a['upstream_cube']==cube and a['upstream_series_label']==label and a['normalization']==norm
+              assert f['status'] in ('ACTIONABLE','NO_UPDATE_STALE_OFFICIAL_SOURCE')
+              item={'series_id':sid,'date':c['observation_date'],'value':c['value'],'raw_value':a['raw_value'],'freshness':f['status'],'canonical_latest_date':f['canonical_latest_date']}
+              summary=r/'built/summary.json'
+              if f['status']=='ACTIONABLE':
+                  assert summary.exists()
+                  s=json.loads(summary.read_text())
+                  assert s['status']=='PASS' and s['live_data_modified'] is False
+                  item['series_action']=s['series_action']
+              else:
+                  assert c['observation_date'][:7] < f['canonical_latest_date'][:7]
+                  item['series_action']='SKIPPED_NO_UPDATE'
+              out[dim]=item
+          overall='PASS' if all(v['freshness']=='ACTIONABLE' for v in out.values()) else 'PASS_WITH_NO_UPDATE'
+          print(json.dumps({'status':overall,'source':'SNB official API','results':out,'live_data_modified':False},indent=2))
           PY
+
       - name: Confirm repository live data remained untouched
         run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
       - name: Upload SNB verification evidence
         uses: actions/upload-artifact@v4
         with:
@@ -71,7 +145,9 @@ jobs:
           path: |
             /tmp/gmfq-chf/inflation/candidate.json
             /tmp/gmfq-chf/inflation/source-audit.json
+            /tmp/gmfq-chf/inflation/freshness.json
             /tmp/gmfq-chf/inflation/built/summary.json
             /tmp/gmfq-chf/labour/candidate.json
             /tmp/gmfq-chf/labour/source-audit.json
+            /tmp/gmfq-chf/labour/freshness.json
             /tmp/gmfq-chf/labour/built/summary.json
