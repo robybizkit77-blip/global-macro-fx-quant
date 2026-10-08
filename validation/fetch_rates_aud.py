@@ -22,6 +22,9 @@ def parse(text:str)->dict:
     if len(rows)<12:
         raise RuntimeError('RBA F2: unexpectedly short CSV')
     title=rows[1]
+    frequency=rows[3]
+    source=rows[8]
+    publication=rows[9]
     series=rows[10]
     if not series or series[0].strip()!='Series ID':
         raise RuntimeError(f'RBA F2: Series ID row not found at canonical position: {series[:3]}')
@@ -32,6 +35,17 @@ def parse(text:str)->dict:
         raise RuntimeError(f'RBA F2: required official series IDs missing: {SERIES_2Y}/{SERIES_10Y}') from exc
     if '2 year' not in title[i2].lower() or '10 year' not in title[i10].lower():
         raise RuntimeError('RBA F2: series ID/title semantic mismatch')
+    if frequency[i2].strip()!='Daily' or frequency[i10].strip()!='Daily':
+        raise RuntimeError('RBA F2: required series are no longer marked Daily')
+    if source[i2].strip()!='RBA' or source[i10].strip()!='RBA':
+        raise RuntimeError('RBA F2: required series source is no longer RBA')
+    try:
+        p2=datetime.strptime(publication[i2].strip(),'%d-%b-%Y').date().isoformat()
+        p10=datetime.strptime(publication[i10].strip(),'%d-%b-%Y').date().isoformat()
+    except ValueError as exc:
+        raise RuntimeError('RBA F2: invalid publication date') from exc
+    if p2!=p10:
+        raise RuntimeError(f'RBA F2: 2Y/10Y publication-date mismatch {p2} vs {p10}')
     obs=[]
     for row in rows[11:]:
         if len(row)<=max(i2,i10):
@@ -51,6 +65,7 @@ def parse(text:str)->dict:
     d,y2,y10=max(obs,key=lambda x:x[0])
     return {
         'date':d,'2Y':y2,'10Y':y10,
+        'publication_date':p2,
         'authority':AUTHORITY,'source':'F2 Capital Market Yields – Government Bonds – Daily',
         'series_2Y':SERIES_2Y,'series_10Y':SERIES_10Y,
         'source_url':URL,
