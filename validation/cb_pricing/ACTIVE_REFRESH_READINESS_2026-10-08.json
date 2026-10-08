@@ -5,20 +5,42 @@
   "production_runtime_changed": false,
   "summary": {
     "active_currencies": ["AUD", "CAD", "GBP", "JPY"],
-    "source_collector_ready": ["GBP", "JPY", "CAD"],
-    "candidate_builder_ready": ["GBP", "JPY", "CAD"],
-    "dry_run_apply_certified": ["GBP", "JPY", "CAD"],
-    "daily_ready": ["GBP", "JPY", "CAD"],
-    "active_but_not_daily_ready": ["AUD"],
-    "key_distinction": "GBP, JPY and CAD are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on main and were certified from clean main-based release candidates. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit."
+    "source_collector_ready": ["GBP", "JPY", "CAD", "AUD"],
+    "candidate_builder_ready": ["GBP", "JPY", "CAD", "AUD"],
+    "dry_run_apply_certified": ["GBP", "JPY", "CAD", "AUD"],
+    "daily_ready": ["GBP", "JPY", "CAD", "AUD"],
+    "active_but_not_daily_ready": [],
+    "key_distinction": "GBP, JPY, CAD and AUD are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on main and were certified from clean main-based release candidates. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit."
   },
   "currencies": {
     "AUD": {
-      "status": "ACTIVE_NOT_DAILY_READY",
+      "status": "DAILY_READY",
       "source": "ASX 30 Day Interbank Cash Rate futures (IB)",
       "validated_runtime": true,
-      "canonical_refresh_code_on_main": false,
-      "next_required": "Build reusable ASX collector/parser and deterministic candidate/apply path."
+      "canonical_refresh_code_on_main": true,
+      "source_collector_ready": true,
+      "candidate_builder_ready": true,
+      "dry_run_apply_certified": true,
+      "automatic_publication": false,
+      "collector": "validation/cb_pricing/collect_aud_asx_ib.py",
+      "candidate_builder": "validation/cb_pricing/build_aud_asx_ib_candidate.py",
+      "apply": "validation/cb_pricing/apply_aud_asx_ib_candidate.py",
+      "validation_workflow": ".github/workflows/aud-asx-ib-refresh-readiness.yml",
+      "canonical_code_main_sha": "5a2109be65f7352582dea7679c5d74fbed4dfd00",
+      "clean_release_candidate_sha": "5a2109be65f7352582dea7679c5d74fbed4dfd00",
+      "clean_release_candidate_validation": {
+        "aud_readiness_run_id": 37766585287,
+        "engine_run_id": 37766585192,
+        "browser_run_id": 37766585207,
+        "status": "ALL_GREEN"
+      },
+      "contract_mapping": {"3m":"Dec 2026","6m":"Mar 2027","12m":"Sep 2027"},
+      "methodology": "Direct official ASX SFN settlement prices transformed as 100 minus settlement; canonical Dec-26/Mar-27/Sep-27 buckets; no interpolation.",
+      "weekly_reference_rule": "Use the fifth prior complete official ASX SFN trading session (T-5); no calendar approximation.",
+      "regression_benchmark": {"as_of":"2026-09-30","status":"PASS_EXACT_OFFICIAL_23_29_30_SEP_VALUES_AND_T5_CHANGES","current":{"3m":4.685,"6m":4.81,"12m":4.91},"t_minus_1":{"date":"2026-09-29","3m":4.74,"6m":4.855,"12m":4.96},"t_minus_5":{"date":"2026-09-23","3m":4.725,"6m":4.84,"12m":4.935},"change_1d_bp":{"3m":-5.5,"6m":-4.5,"12m":-5.0},"change_1w_bp":{"3m":-4.0,"6m":-3.0,"12m":-2.5}},
+      "legacy_runtime_note": "The currently published 2026-09-30 runtime still carries the earlier 24-Sep approximate weekly comparison (-6/-7/-11 bp). DAILY_READY certification adopts exact official T-5 (23-Sep: -4/-3/-2.5 bp) for future refreshes. Published runtime is not changed by this readiness promotion.",
+      "guarantees": ["official ASX SFN source collection","direct IB settlement prices, 100 minus settlement","canonical Dec-26/Mar-27/Sep-27 buckets","no interpolation","official T-1 session","exact T-5 fifth prior complete official ASX trading session","robust fallback across unpublished EOD dates","registry-authorized candidate","AUD-only OIS semantic delta","AUD-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","second refresh successfully reads canonical mapping and T-5 rule","checkout restored after dry run","no automatic publication"],
+      "next_required": "Operational use may collect and dry-run fresh AUD pricing from main. Any live runtime publication remains a separate explicit gated promotion."
     },
     "CAD": {
       "status": "DAILY_READY",
@@ -103,7 +125,7 @@
       "next_required": "Operational use may collect and dry-run fresh JPY pricing from main. Any live runtime publication remains a separate explicit gated promotion."
     }
   },
-  "implementation_order": ["AUD"],
+  "implementation_order": [],
   "promotion_rule": "DAILY_READY allows repeatable source collection and deterministic dry-run refresh from main. It never authorizes automatic live_data or gh-pages publication; live publication remains separately gated and explicit.",
   "gh_pages_modified": false
 }
