@@ -16,36 +16,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download official RBA F2 CSV and RBNZ B2 XLSX
+      - name: Download and inspect official RBA F2 CSV
         shell: bash
         run: |
           set -euo pipefail
           curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT rates validation' \
             'https://www.rba.gov.au/statistics/tables/csv/f2-data.csv' -o /tmp/rba-f2.csv
-          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT rates validation' \
-            'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx' -o /tmp/rbnz-b2.xlsx
           echo '=== RBA F2 first 25 lines ==='
           sed -n '1,25p' /tmp/rba-f2.csv
-      - name: Inspect RBNZ workbook structure
+      - name: Probe official RBNZ B2 page and optional XLSX
+        shell: bash
         run: |
-          python3 -m pip install --disable-pip-version-check openpyxl
+          set -euo pipefail
+          curl -L --fail --retry 3 --user-agent 'Mozilla/5.0 GLOBAL-MACRO-FX-QUANT rates validation' \
+            'https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates' \
+            -o /tmp/rbnz-b2.html
+          echo '=== RBNZ page markers ==='
+          grep -n -E '2 year|10 year|Daily close|Periodicity|one business day lag' /tmp/rbnz-b2.html | head -80 || true
+          if curl -L --fail --retry 1 --user-agent 'Mozilla/5.0 GLOBAL-MACRO-FX-QUANT rates validation' \
+            'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx' \
+            -o /tmp/rbnz-b2.xlsx; then
+            echo RBNZ_XLSX_DOWNLOAD_OK
+          else
+            echo RBNZ_XLSX_DOWNLOAD_BLOCKED_PAGE_FALLBACK_OK
+            rm -f /tmp/rbnz-b2.xlsx
+          fi
+      - name: Inspect official page rows semantically
+        run: |
           python3 - <<'PY'
-          import openpyxl, json
-          p='/tmp/rbnz-b2.xlsx'
-          wb=openpyxl.load_workbook(p, read_only=True, data_only=True)
-          print('SHEETS', wb.sheetnames)
-          for ws in wb.worksheets:
-              print('===',ws.title,'===')
-              for i,row in enumerate(ws.iter_rows(values_only=True), start=1):
-                  vals=[v for v in row]
-                  if any(v is not None for v in vals):
-                      print(i, json.dumps(vals[:20], default=str))
-                  if i>=25: break
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+          text=Path('/tmp/rbnz-b2.html').read_text(errors='ignore')
+          plain=re.sub(r'<[^>]+>',' ',text)
+          plain=re.sub(r'\s+',' ',plain)
+          for needle in ('2 year','10 year','one business day lag','Daily close'):
+              i=plain.lower().find(needle.lower())
+              print('MARKER',needle, plain[max(0,i-300):i+600] if i>=0 else 'NOT_FOUND')
+          PY
       - name: Upload probe inputs
         uses: actions/upload-artifact@v4
         with:
           name: rates-aud-nzd-source-probe
           path: |
             /tmp/rba-f2.csv
+            /tmp/rbnz-b2.html
             /tmp/rbnz-b2.xlsx
+          if-no-files-found: warn
           retention-days: 7
