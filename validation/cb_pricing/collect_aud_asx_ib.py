@@ -48,22 +48,20 @@ def latest():
 def build(asof=None):
  cur=get(asof) if asof else latest()
  obs=[]
- for i in range(1,12):
+ for i in range(1,16):
   day=cur[0]-dt.timedelta(days=i)
   if day.weekday()>=5: continue
   try: obs.append(get(day))
   except Exception: continue
- prev=obs[0] if obs else None
- if prev is None: raise SystemExit('no prior ASX session')
- target=cur[0]-dt.timedelta(days=7)
- week=min(obs,key=lambda x:(abs((x[0]-target).days),0 if x[0]<=target else 1,-x[0].toordinal()))
+ if len(obs)<5: raise SystemExit('fewer than five prior complete ASX sessions')
+ prev=obs[0]; week=obs[4]
  def pack(x):
   d,rows,url=x
   rates={h:round(100-rows[e]['settlement'],6) for h,e in MAP.items()}
   return {'date':d.isoformat(),'url':url,**rates,'raw':{h:rows[e] for h,e in MAP.items()}}
  a,b,w=pack(cur),pack(prev),pack(week)
  d1={h:round((a[h]-b[h])*100,4) for h in MAP}; dw={h:round((a[h]-w[h])*100,4) for h in MAP}
- return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'AUD','status':'SOURCE_SNAPSHOT_ONLY','source':'ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)','source_url':cur[2],'instrument':'ASX 30 Day Interbank Cash Rate futures (IB)','quotation':'100 minus implied average monthly interbank overnight cash rate','contract_mapping':MAP,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'complete official ASX SFN session nearest to as_of minus 7 calendar days; ties prefer on/before target'}}
+ return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'AUD','status':'SOURCE_SNAPSHOT_ONLY','source':'ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)','source_url':cur[2],'instrument':'ASX 30 Day Interbank Cash Rate futures (IB)','quotation':'100 minus implied average monthly interbank overnight cash rate','contract_mapping':MAP,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'fifth prior complete official ASX SFN trading session (T-5); no calendar approximation'}}
 def main():
  ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args()
  o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n'
