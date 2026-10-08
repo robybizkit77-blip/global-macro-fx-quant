@@ -1,0 +1,26 @@
+{
+  "currency": "USD",
+  "status": "WITHHELD",
+  "as_of": "2026-10-08",
+  "instrument": "CBOT 30-Day Federal Funds Futures (ZQ)",
+  "official_source": "CME Group / CBOT",
+  "validated_state": {
+    "current_official_snapshot": true,
+    "t_minus_1_reconstructed_from_official_point_change": true,
+    "t_minus_5_required": true,
+    "t_minus_5_obtained": false
+  },
+  "t5_target": {
+    "trade_date": "2026-10-02",
+    "archive_file": "IR.20261002.csv",
+    "archive_directory_confirmed": true,
+    "archive_file_confirmed_present": true,
+    "github_runner_http_result": 403,
+    "browser_direct_access_result": "not accessible",
+    "historical_daily_bulletin_route": "CME DataMine"
+  },
+  "decision": "Keep USD OIS WITHHELD until a reproducible official CME T-5 ZQ settlement snapshot is obtained. Do not use third-party prices or infer T-5 values.",
+  "production_modified": false,
+  "main_modified": false,
+  "gh_pages_modified": false
+}
