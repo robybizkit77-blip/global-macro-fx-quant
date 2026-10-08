@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "JPY",
+    "dimension": "inflation",
+    "macro_series_id": "JP_CPI_HEADLINE_YOY_history_value"
+  },
+  "authority": "Statistics Bureau of Japan",
+  "source": "Statistics Bureau of Japan / e-Stat",
+  "official_transport_source": "Statistics Bureau of Japan / CPI",
+  "series_id": "JP_CPI_HEADLINE_YOY",
+  "frequency": "M",
+  "transformation": "reported_yoy_rate",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 1.9,
+    "release_date": "2026-08-21",
+    "official_reference": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 1.9,
+    "release_date": "2026-09-18",
+    "official_reference": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.stat.go.jp/english/data/cpi/1582.html",
+    "canonical_source_label_preserved": true,
+    "note": "July and August 2026 national headline CPI were distinct official monthly releases; both reported 1.9 percent year over year. The bootstrap validates the period transition while preserving the canonical e-Stat source label; the current official transport is the Statistics Bureau CPI page."
+  }
+}

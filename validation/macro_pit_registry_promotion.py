@@ -63,6 +63,38 @@ def validate_evidence(evidence: dict) -> tuple[str, dict, dict]:
     return f"{target['currency']}.{target['dimension']}", target, candidate
 
 
+def evidence_class(evidence: dict) -> tuple[str, dict[str, Any]]:
+    bootstrap = evidence.get("bootstrap_provenance")
+    if isinstance(bootstrap, dict):
+        require(bootstrap.get("official_release_pair_verified") is True, "bootstrap official release pair not verified")
+        require(str(bootstrap.get("before_state", "")).startswith("RECONSTRUCTED_"), "bootstrap before state is not explicitly reconstructed")
+        return "RECONSTRUCTED_HISTORICAL_REPLAY", {
+            "before_state": bootstrap.get("before_state"),
+            "after_state": bootstrap.get("after_state"),
+            "official_release_pair_verified": True,
+            "manifest_sha256": bootstrap.get("manifest_sha256"),
+        }
+    return "DIRECT_PIT_REPLAY", {}
+
+
+def build_reference(evidence: dict, target: dict, candidate: dict) -> dict[str, Any]:
+    klass, extra = evidence_class(evidence)
+    ref = {
+        "schema": "GMFQ_MACRO_PIT_CERTIFICATION_REF_V1",
+        "evidence_schema": evidence["schema"],
+        "evidence_sha256": canonical_sha256(evidence),
+        "evidence_class": klass,
+        "macro_series_id": target["macro_series_id"],
+        "observation_date": candidate.get("observation_date"),
+        "value": candidate.get("value"),
+        "before_git_head": evidence["anchor"]["before_git_head"],
+        "after_git_head": evidence["anchor"]["after_git_head"],
+        "promotion_mode": "EXPLICIT_REVIEW_REQUIRED",
+    }
+    ref.update({k: v for k, v in extra.items() if v is not None})
+    return ref
+
+
 def build_proposal(registry: dict, evidence: dict) -> tuple[dict, dict]:
     key, target, candidate = validate_evidence(evidence)
     series = registry.get("series", {})
@@ -76,29 +108,40 @@ def build_proposal(registry: dict, evidence: dict) -> tuple[dict, dict]:
     already = row.get("historical_replay_certified") is True
     proposed = copy.deepcopy(registry)
     out_row = proposed["series"][key]
+    fresh_ref = build_reference(evidence, target, candidate)
+    action = "PROPOSAL_CREATED"
+
     if not already:
         out_row["historical_replay_certified"] = True
-        out_row["historical_replay_evidence"] = {
-            "schema": "GMFQ_MACRO_PIT_CERTIFICATION_REF_V1",
-            "evidence_schema": evidence["schema"],
-            "evidence_sha256": canonical_sha256(evidence),
-            "macro_series_id": target["macro_series_id"],
-            "observation_date": candidate.get("observation_date"),
-            "value": candidate.get("value"),
-            "before_git_head": evidence["anchor"]["before_git_head"],
-            "after_git_head": evidence["anchor"]["after_git_head"],
-            "promotion_mode": "EXPLICIT_REVIEW_REQUIRED",
-        }
+        out_row["historical_replay_evidence"] = fresh_ref
+    else:
+        existing = out_row.get("historical_replay_evidence")
+        require(isinstance(existing, dict), f"{key} certified row is missing historical_replay_evidence")
+        require(existing.get("macro_series_id") == target["macro_series_id"], "existing certification target differs")
+        require(existing.get("observation_date") == candidate.get("observation_date"), "existing certification observation differs")
+        require(float(existing.get("value")) == float(candidate.get("value")), "existing certification value differs")
+
+        # Never silently repin a reviewed evidence hash/head on a later rerun. We may
+        # only enrich legacy certification metadata with the provenance class.
+        changed = False
+        for field in ("evidence_class", "before_state", "after_state", "official_release_pair_verified", "manifest_sha256"):
+            if field in fresh_ref and field not in existing:
+                existing[field] = fresh_ref[field]
+                changed = True
+            elif field in fresh_ref and field in existing:
+                require(existing[field] == fresh_ref[field], f"existing certification {field} differs")
+        action = "METADATA_ENRICHMENT_PROPOSED" if changed else "ALREADY_CERTIFIED"
 
     receipt = {
         "schema": "GMFQ_MACRO_PIT_REGISTRY_PROMOTION_RECEIPT_V1",
         "status": "PASS",
         "target": key,
-        "promotion_action": "ALREADY_CERTIFIED" if already else "PROPOSAL_CREATED",
+        "promotion_action": action,
         "canonical_registry_modified": False,
         "historical_replay_certified_before": bool(row.get("historical_replay_certified")),
         "historical_replay_certified_proposed": True,
-        "evidence_sha256": canonical_sha256(evidence),
+        "current_evidence_sha256": canonical_sha256(evidence),
+        "evidence_class": evidence_class(evidence)[0],
         "registry_promotion": "REVIEW_REQUIRED",
     }
     return proposed, receipt
