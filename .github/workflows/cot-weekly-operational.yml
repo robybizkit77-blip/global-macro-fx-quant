@@ -64,8 +64,17 @@ jobs:
           cleanup() { git checkout -- live_data/sections/V250_COT_CHART_DATA.json live_data/sections/V247_COT_STORIES.json live_data/manifest.v2.json payload >/dev/null 2>&1 || true; }
           trap cleanup EXIT
           if [ "$STATUS" = "NO_UPDATE" ]; then
-            python validation/update_live_direct_section.py --section V250_COT_CHART_DATA --replacement live_data/sections/V250_COT_CHART_DATA.json > /tmp/cot-weekly/direct-validate.json
-            python validation/update_live_derived_sections.py --cot live_data/sections/V247_COT_STORIES.json > /tmp/cot-weekly/derived-validate.json
+            python - <<'PY'
+          import json, pathlib
+          pairs=[
+            ('/tmp/cot-weekly/V250_COT_CHART_DATA.json','live_data/sections/V250_COT_CHART_DATA.json','V250'),
+            ('/tmp/cot-weekly/V247_COT_STORIES.json','live_data/sections/V247_COT_STORIES.json','V247'),
+          ]
+          for candidate,current,label in pairs:
+              a=json.loads(pathlib.Path(candidate).read_text()); b=json.loads(pathlib.Path(current).read_text())
+              if a!=b: raise SystemExit(f'{label}: NO_UPDATE candidate differs from live section')
+          print('COT_NO_UPDATE_SEMANTIC_IDENTITY_PASS')
+          PY
             python validation/check_live_update_contract.py > /tmp/cot-weekly/live-contract.json
             python validation/rebuild_live_data_runtime.py --verify-only > /tmp/cot-weekly/runtime-roundtrip.json
             git diff --exit-code -- live_data payload
