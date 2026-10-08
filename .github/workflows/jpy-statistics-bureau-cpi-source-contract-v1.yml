@@ -92,7 +92,11 @@ jobs:
           assert a['authority']=='Statistics Bureau of Japan'
           assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
           assert a['retrieval_url'].startswith('https://www.stat.go.jp/')
-          assert '総合指数' in a['matched_semantics'] and '前年同月比' in a['matched_semantics']
+          semantics=str(a['matched_semantics'])
+          assert (
+              ('Consumer Price Index' in semantics and 'change over the year' in semantics)
+              or ('総合指数' in semantics and '前年同月比' in semantics)
+          )
           assert f['status'] in ('ACTIONABLE','NO_UPDATE_STALE_OFFICIAL_SOURCE')
           item={
               'date':c['observation_date'],
@@ -114,7 +118,7 @@ jobs:
               item['series_action']='SKIPPED_NO_UPDATE'
           print(json.dumps({
               'status':'PASS' if f['status']=='ACTIONABLE' else 'PASS_WITH_NO_UPDATE',
-              'source':'Statistics Bureau of Japan official CPI page',
+              'source':'Statistics Bureau of Japan official CPI transport',
               'result':item,
               'live_data_modified':False,
           }, ensure_ascii=False, indent=2))
