@@ -1,0 +1,58 @@
+name: GBP BoE Latest Yield Curve Probe Once
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-active-orchestrator-2026-10-08
+    paths:
+      - '.github/workflows/gbp-boe-latest-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install parser dependencies
+        run: python3 -m pip install --disable-pip-version-check pandas openpyxl
+      - name: Download and inspect official BoE latest package
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT validation' \
+            'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip' \
+            -o /tmp/boe-latest.zip
+          unzip -l /tmp/boe-latest.zip | tee /tmp/boe-latest-list.txt
+          python3 - <<'PY'
+          import zipfile, pathlib
+          z=zipfile.ZipFile('/tmp/boe-latest.zip')
+          print('FILES', z.namelist())
+          PY
+      - name: Try canonical GBP parser against latest package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py --zip /tmp/boe-latest.zip --output /tmp/gbp-latest-source.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py --snapshot /tmp/gbp-latest-source.json --output /tmp/gbp-latest-candidate.json
+          python3 - <<'PY'
+          import json, pathlib
+          s=json.loads(pathlib.Path('/tmp/gbp-latest-source.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/gbp-latest-candidate.json').read_text())
+          print('AS_OF', s['as_of'])
+          print('CURRENT', s['observations']['current'])
+          print('CANDIDATE_STATUS', c['status'])
+          PY
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-boe-latest-probe
+          path: |
+            /tmp/boe-latest-list.txt
+            /tmp/gbp-latest-source.json
+            /tmp/gbp-latest-candidate.json
+          if-no-files-found: warn
+          retention-days: 30
