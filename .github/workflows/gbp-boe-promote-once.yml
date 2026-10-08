@@ -1,4 +1,4 @@
-name: GBP BoE OIS Promote Once
+name: GBP BoE OIS Publish Once
 
 on:
   push:
@@ -11,138 +11,38 @@ permissions:
   contents: write
 
 jobs:
-  promote-main:
+  publish-gh-pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout validated GBP source branch
-        uses: actions/checkout@v4
-        with:
-          ref: validation-cb-pricing-gbp-2026-10-08
-          path: source
-          persist-credentials: false
-
       - name: Checkout current main
         uses: actions/checkout@v4
         with:
           ref: main
-          path: target
+          path: source-main
+          persist-credentials: false
+
+      - name: Checkout current gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: public
           persist-credentials: true
 
-      - name: Apply validated GBP BoE OIS candidate to current main runtime
+      - name: Copy only certified runtime files from main
         shell: bash
         run: |
-          python3 - <<'PY'
-          import json, pathlib, copy
-          root = pathlib.Path.cwd()
-          src = root / 'source'
-          dst = root / 'target'
-          cand = json.loads((src/'validation/cb_pricing/GBP_CB_PRICING_CANDIDATE_2026-10-08.json').read_text(encoding='utf-8'))
-          if cand.get('currency') != 'GBP' or cand.get('status') != 'READY_FOR_SEPARATE_PROMOTION':
-              raise SystemExit('GBP candidate not promotion-ready')
-          req = ('source_validated','asof_validated','meeting_path_validated','changes_validated','current_real','previous_real','week_real','tenor_headers_validated','no_interpolation')
-          if not all(cand.get('validation',{}).get(k) is True for k in req):
-              raise SystemExit('GBP validation gate incomplete')
+          cp source-main/live_data/manifest.v2.json public/live_data/manifest.v2.json
+          cp source-main/live_data/sections/OIS_DATA.json public/live_data/sections/OIS_DATA.json
+          cp source-main/live_data/sections/NATIVE_CB_DATA.json public/live_data/sections/NATIVE_CB_DATA.json
+          cp source-main/payload/part-00.txt public/payload/part-00.txt
 
-          ois_p = dst/'live_data/sections/OIS_DATA.json'
-          nat_p = dst/'live_data/sections/NATIVE_CB_DATA.json'
-          pay_p = dst/'payload/part-00.txt'
-          ois = json.loads(ois_p.read_text(encoding='utf-8'))
-          nat = json.loads(nat_p.read_text(encoding='utf-8'))
-          before_ois = copy.deepcopy(ois)
-          before_nat = copy.deepcopy(nat)
-
-          def r4(x): return round(float(x),4)
-          def r1(x): return round(float(x),1)
-          h = cand['horizons']
-          gbp = {
-            'status':'ACTIVE',
-            'as_of':cand['as_of'],
-            'source':cand['source'],
-            'source_url':cand['source_url'],
-            'source_meta':{
-              'official_public':True,
-              'instrument':cand['instrument'],
-              'quotation':cand['quotation'],
-              'horizon_mapping':'BoE short-end instantaneous OIS forward curve: exact 3M / 6M / 12M columns; no interpolation'
-            },
-            'policy_rate':cand['policy_rate'],
-            'meetings':[{'date':cand['meeting_path'][0]['date'],'source':'Bank of England MPC meeting schedule','status':'mapped'}],
-            'horizons':{
-              '3m':{'rate':r4(h['3m']['rate']),'change_1d_bp':r1(h['3m']['change_1d_bp']),'change_1w_bp':r1(h['3m']['change_1w_bp']),'policy_delta_bp':r1(h['3m']['policy_delta_bp'])},
-              '6m':{'rate':r4(h['6m']['rate']),'change_1d_bp':r1(h['6m']['change_1d_bp']),'change_1w_bp':r1(h['6m']['change_1w_bp']),'policy_delta_bp':r1(h['6m']['policy_delta_bp'])},
-              '12m':{'rate':r4(h['12m']['rate']),'change_1d_bp':r1(h['12m']['change_1d_bp']),'change_1w_bp':r1(h['12m']['change_1w_bp']),'policy_delta_bp':r1(h['12m']['policy_delta_bp'])}
-            },
-            'cuts_hikes_priced':{'3m_bp':r1(cand['cuts_hikes_priced']['3m_bp']),'6m_bp':r1(cand['cuts_hikes_priced']['6m_bp']),'12m_bp':r1(cand['cuts_hikes_priced']['12m_bp'])},
-            'direction':cand['direction'],
-            'change_direction_1d':cand['change_direction_1d'],
-            'change_direction_1w':cand['change_direction_1w'],
-            'validation':cand['validation'],
-            'provenance':cand['provenance'] | {'observations':cand['observations']}
-          }
-          ois['currencies']['GBP'] = gbp
-
-          n = nat['GBP']
-          n['pricing_tier'] = 'COMPLETO_OFFICIAL_BOE_OIS_HISTORY'
-          n['pricing_status'] = 'BoE official estimated SONIA OIS forward curve: 3M 4.0707%; 6M 4.4390%; 12M 4.8659%.'
-          n['market_3m'] = '4.0707%'
-          n['market_6m'] = '4.4390%'
-          n['market_12m'] = '4.8659%'
-          n['market_pricing'] = {
-            'as_of':cand['as_of'],
-            'instrument':cand['instrument'],
-            'quality':'COMPLETO_OFFICIAL_BOE_OIS_HISTORY',
-            'h3m':r4(h['3m']['rate']),
-            'h6m':r4(h['6m']['rate']),
-            'h12m':r4(h['12m']['rate']),
-            'near_term':'Official BoE short-end SONIA OIS forward-curve columns; current, 1D and homogeneous 1W history validated.',
-            'source':cand['source'],
-            'source_url':cand['source_url'],
-            'note':cand['provenance']['methodology_note'],
-            'freshness_status':'CURRENT_VALIDATED'
-          }
-
-          changed_ois = [k for k in before_ois['currencies'] if before_ois['currencies'][k] != ois['currencies'][k]]
-          changed_nat = [k for k in before_nat if before_nat[k] != nat[k]]
-          if changed_ois != ['GBP'] or changed_nat != ['GBP']:
-              raise SystemExit(f'Scope violation OIS={changed_ois} NATIVE={changed_nat}')
-
-          raw = pay_p.read_bytes()
-          def replace(marker, obj, raw):
-              m = raw.find(marker)
-              if m < 0: raise SystemExit(f'Marker missing: {marker!r}')
-              start = m + len(marker)
-              text = raw[start:].decode('utf-8')
-              old, nchar = json.JSONDecoder().raw_decode(text)
-              end = start + len(text[:nchar].encode('utf-8'))
-              if marker.endswith(b'OIS_DATA=') and old != before_ois: raise SystemExit('OIS runtime/section mismatch before write')
-              if marker.endswith(b'NATIVE_CB_DATA=') and old != before_nat: raise SystemExit('NATIVE runtime/section mismatch before write')
-              b = json.dumps(obj,separators=(',',':'),ensure_ascii=False).encode('utf-8')
-              out = raw[:start] + b + raw[end:]
-              chk_text = out[start:].decode('utf-8')
-              chk, _ = json.JSONDecoder().raw_decode(chk_text)
-              if chk != obj: raise SystemExit('Runtime roundtrip mismatch')
-              return out, b
-
-          raw, ois_b = replace(b'window.__GMFQ_DATA.OIS_DATA=', ois, raw)
-          raw, nat_b = replace(b'window.__GMFQ_DATA.NATIVE_CB_DATA=', nat, raw)
-          ois_p.write_bytes(ois_b)
-          nat_p.write_bytes(nat_b)
-          pay_p.write_bytes(raw)
-          print('GBP_RUNTIME_APPLY_PASS')
-          PY
-
-      - name: Rebuild manifest and verify runtime contract
-        working-directory: target
+      - name: Verify public runtime contract and exact scope
+        working-directory: public
+        shell: bash
         run: |
-          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
           python3 validation/check_live_update_contract.py
           python3 validation/rebuild_live_data_runtime.py --verify-only
-
-      - name: Enforce exactly four production runtime files changed
-        working-directory: target
-        shell: bash
-        run: |
           mapfile -t changed < <(git diff --name-only)
           printf '%s\n' "${changed[@]}"
           expected=$(printf '%s\n' \
@@ -152,14 +52,18 @@ jobs:
             payload/part-00.txt | sort)
           actual=$(printf '%s\n' "${changed[@]}" | sort)
           test "$actual" = "$expected"
-          echo GBP_PRODUCTION_SCOPE_PASS
+          cmp -s live_data/manifest.v2.json ../source-main/live_data/manifest.v2.json
+          cmp -s live_data/sections/OIS_DATA.json ../source-main/live_data/sections/OIS_DATA.json
+          cmp -s live_data/sections/NATIVE_CB_DATA.json ../source-main/live_data/sections/NATIVE_CB_DATA.json
+          cmp -s payload/part-00.txt ../source-main/payload/part-00.txt
+          echo GBP_GHPAGES_PARITY_PASS
 
-      - name: Commit GBP runtime to main
-        working-directory: target
+      - name: Commit GBP runtime to gh-pages
+        working-directory: public
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt
-          git commit -m 'Activate GBP SONIA OIS pricing from official BoE history'
-          git push origin HEAD:main
+          git commit -m 'Publish GBP SONIA OIS pricing runtime'
+          git push origin HEAD:gh-pages
