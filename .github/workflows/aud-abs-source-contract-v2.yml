@@ -1,0 +1,106 @@
+name: AUD ABS Source Contract V2
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - 'validation/sources/aud_abs_core.py'
+      - 'validation/fixtures/aud_abs_cpi_contract.json'
+      - 'validation/fixtures/aud_abs_unemployment_contract.json'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/aud-abs-source-contract-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot canonical live data before certification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/aud-before.sha256
+      - name: Verify deterministic ABS fixtures through canonical builder
+        run: |
+          set -euo pipefail
+          for dim in inflation labour; do
+            mkdir -p /tmp/gmfq-aud-abs-fixture/$dim
+            fixture="validation/fixtures/aud_abs_cpi_contract.json"
+            [ "$dim" = labour ] && fixture="validation/fixtures/aud_abs_unemployment_contract.json"
+            python validation/sources/aud_abs_core.py --dimension "$dim" --fixture "$fixture" \
+              --output /tmp/gmfq-aud-abs-fixture/$dim/candidate.json \
+              --audit-output /tmp/gmfq-aud-abs-fixture/$dim/source-audit.json
+            python validation/build_macro_candidate.py \
+              --candidate /tmp/gmfq-aud-abs-fixture/$dim/candidate.json \
+              --output-dir /tmp/gmfq-aud-abs-fixture/$dim/built
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={'inflation':('AU_CPI_HEADLINE_Q_YOY','2026-06-01',3.8,'Q','reported_yoy_rate'),'labour':('AU_UNEMP_RATE','2026-08-01',4.6,'M','level')}
+          for dim,e in expected.items():
+              root=Path('/tmp/gmfq-aud-abs-fixture')/dim
+              c=json.loads((root/'candidate.json').read_text()); a=json.loads((root/'source-audit.json').read_text()); s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='AUD' and c['dimension']==dim and c['source']=='Australian Bureau of Statistics',c
+              assert (c['series_id'],c['observation_date'],float(c['value']),c['frequency'],c['transformation'])==(e[0],e[1],e[2],e[3],e[4]),c
+              assert a['candidate_only'] is True and a['live_data_written'] is False and a['mode']=='fixture',a
+              assert s['status']=='PASS' and s['live_data_modified'] is False,s
+          print('AUD_ABS_DETERMINISTIC_CONTRACT_PASS')
+          PY
+      - name: Fetch official live ABS inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-aud-abs-live/inflation
+          python validation/sources/aud_abs_core.py --dimension inflation \
+            --output /tmp/gmfq-aud-abs-live/inflation/candidate.json \
+            --audit-output /tmp/gmfq-aud-abs-live/inflation/source-audit.json
+      - name: Pass live AUD inflation candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-aud-abs-live/inflation/candidate.json --output-dir /tmp/gmfq-aud-abs-live/inflation/built
+      - name: Fetch official live ABS labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-aud-abs-live/labour
+          python validation/sources/aud_abs_core.py --dimension labour \
+            --output /tmp/gmfq-aud-abs-live/labour/candidate.json \
+            --audit-output /tmp/gmfq-aud-abs-live/labour/source-audit.json
+      - name: Pass live AUD labour candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-aud-abs-live/labour/candidate.json --output-dir /tmp/gmfq-aud-abs-live/labour/built
+      - name: Verify ABS live provenance freshness and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['AUD']
+          out={}
+          for dim in ('inflation','labour'):
+              root=Path('/tmp/gmfq-aud-abs-live')/dim
+              c=json.loads((root/'candidate.json').read_text()); a=json.loads((root/'source-audit.json').read_text()); s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='AUD' and c['dimension']==dim and c['source']=='Australian Bureau of Statistics',c
+              assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False,a
+              assert s['status']=='PASS' and s['live_data_modified'] is False,s
+              assert s['observation_date']==c['observation_date'],(s,c)
+              current=str(heat[dim]['as_of'])[:10]
+              assert c['observation_date'] >= current,(c,current)
+              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
+          assert out['inflation']['series_id']=='AU_CPI_HEADLINE_Q_YOY',out
+          assert out['labour']['series_id']=='AU_UNEMP_RATE',out
+          print(json.dumps({'status':'PASS','source':'Australian Bureau of Statistics','results':out,'live_data_modified':False},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: |
+          sha256sum -c /tmp/aud-before.sha256
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload ABS verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-abs-source-verification-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            /tmp/gmfq-aud-abs-fixture/
+            /tmp/gmfq-aud-abs-live/
