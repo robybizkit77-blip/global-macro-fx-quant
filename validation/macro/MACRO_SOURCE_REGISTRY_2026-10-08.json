@@ -1,0 +1,218 @@
+{
+  "schema": "GMFQ_MACRO_SOURCE_REGISTRY_V1",
+  "as_of": "2026-10-08",
+  "scope": {
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "dimensions": ["inflation", "labour"],
+    "core_series_count": 16
+  },
+  "candidate_layer": {
+    "builder": "validation/build_macro_candidate.py",
+    "status": "READY",
+    "writes_live_data": false,
+    "supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "supported_dimensions": ["inflation", "labour"]
+  },
+  "rules": {
+    "ready_requires_official_authority": true,
+    "ready_requires_direct_or_certified_official_transport": true,
+    "mirror_or_secondary_transport_must_be_withheld": true,
+    "candidate_generation_must_be_read_only": true,
+    "automatic_publication": false
+  },
+  "series": {
+    "USD.labour": {
+      "currency": "USD",
+      "dimension": "labour",
+      "series_id": "UNRATE",
+      "source": "FRED/BLS",
+      "authority": "U.S. Bureau of Labor Statistics",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DERIVED_TRANSPORT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "USD.inflation": {
+      "currency": "USD",
+      "dimension": "inflation",
+      "series_id": "CPIAUCSL",
+      "source": "FRED/BLS",
+      "authority": "U.S. Bureau of Labor Statistics",
+      "frequency": "M",
+      "transformation": "yoy_pct_from_index",
+      "transport_class": "OFFICIAL_DERIVED_TRANSPORT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "EUR.labour": {
+      "currency": "EUR",
+      "dimension": "labour",
+      "series_id": "EA_UNEMP",
+      "source": "ECB LFSI transport; underlying source EUROSTAT",
+      "authority": "Eurostat",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "EUR.inflation": {
+      "currency": "EUR",
+      "dimension": "inflation",
+      "series_id": "EA_HICP_HEADLINE_YOY",
+      "source": "Eurostat prc_hicp_minr via Wolfram HTTP transport",
+      "authority": "Eurostat",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "INTERMEDIARY_TRANSPORT",
+      "source_adapter_status": "NEEDS_OFFICIAL_DIRECT_TRANSPORT",
+      "historical_replay_certified": false
+    },
+    "GBP.labour": {
+      "currency": "GBP",
+      "dimension": "labour",
+      "series_id": "MGSX",
+      "source": "ONS",
+      "authority": "UK Office for National Statistics",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "GBP.inflation": {
+      "currency": "GBP",
+      "dimension": "inflation",
+      "series_id": "D7G7",
+      "source": "ONS",
+      "authority": "UK Office for National Statistics",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "JPY.labour": {
+      "currency": "JPY",
+      "dimension": "labour",
+      "series_id": "JP_UNEMP_RATE",
+      "source": "Statistics Bureau of Japan / e-Stat",
+      "authority": "Statistics Bureau of Japan",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": true,
+      "replay": "validation/replay_jpy_macro_candidate.py"
+    },
+    "JPY.inflation": {
+      "currency": "JPY",
+      "dimension": "inflation",
+      "series_id": "JP_CPI_HEADLINE_YOY",
+      "source": "Statistics Bureau of Japan / e-Stat",
+      "authority": "Statistics Bureau of Japan",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "CHF.labour": {
+      "currency": "CHF",
+      "dimension": "labour",
+      "series_id": "CH_UNEMP_RATE",
+      "source": "Swiss National Bank data portal / SECO",
+      "authority": "SECO",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "CHF.inflation": {
+      "currency": "CHF",
+      "dimension": "inflation",
+      "series_id": "CH_CPI_HEADLINE_YOY",
+      "source": "Swiss National Bank data portal / SFSO",
+      "authority": "Swiss Federal Statistical Office",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "CAD.labour": {
+      "currency": "CAD",
+      "dimension": "labour",
+      "series_id": "CA_UNEMP_RATE",
+      "source": "Statistics Canada",
+      "authority": "Statistics Canada",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "CAD.inflation": {
+      "currency": "CAD",
+      "dimension": "inflation",
+      "series_id": "CA_CPI_HEADLINE_YOY",
+      "source": "Statistics Canada",
+      "authority": "Statistics Canada",
+      "frequency": "M",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "AUD.labour": {
+      "currency": "AUD",
+      "dimension": "labour",
+      "series_id": "AU_UNEMP_RATE",
+      "source": "Australian Bureau of Statistics",
+      "authority": "Australian Bureau of Statistics",
+      "frequency": "M",
+      "transformation": "level",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "AUD.inflation": {
+      "currency": "AUD",
+      "dimension": "inflation",
+      "series_id": "AU_CPI_HEADLINE_Q_YOY",
+      "source": "Australian Bureau of Statistics",
+      "authority": "Australian Bureau of Statistics",
+      "frequency": "Q",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "OFFICIAL_DIRECT",
+      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "historical_replay_certified": false
+    },
+    "NZD.labour": {
+      "currency": "NZD",
+      "dimension": "labour",
+      "series_id": "NZ_UNEMP_RATE",
+      "source": "Stats NZ via Figure.NZ mirror",
+      "authority": "Stats NZ",
+      "frequency": "Q",
+      "transformation": "level",
+      "transport_class": "SECONDARY_MIRROR",
+      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
+      "historical_replay_certified": false
+    },
+    "NZD.inflation": {
+      "currency": "NZD",
+      "dimension": "inflation",
+      "series_id": "NZ_CPI_HEADLINE_YOY",
+      "source": "Stats NZ via Figure.NZ mirror",
+      "authority": "Stats NZ",
+      "frequency": "Q",
+      "transformation": "reported_yoy_rate",
+      "transport_class": "SECONDARY_MIRROR",
+      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
+      "historical_replay_certified": false
+    }
+  }
+}
