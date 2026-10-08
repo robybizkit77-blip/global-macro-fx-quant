@@ -17,18 +17,17 @@ def parse(html):
   if m:
    d=dt.datetime.strptime(' '.join(m.groups()),'%B %d %Y').date(); break
  if d is None: raise SystemExit('Market Review heading date missing')
- lines=[x.strip() for x in soup.stripped_strings]
- try:start=next(i for i,x in enumerate(lines) if 'Three-Month CORRA Futures' in x)
- except StopIteration:raise SystemExit('CRA heading missing')
- end=len(lines)
- for i in range(start+1,len(lines)):
-  if any(k in lines[i] for k in ('Two-Year Government of Canada Bond Futures','Five-Year Government of Canada Bond Futures')):
-   end=i; break
- section=' '.join(lines[start:end])
- pat=re.compile(r'\b(MR|JN|SE|DE)\s+(\d{2})\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([-0-9.]+)\s+([0-9,]+)\s+([0-9,]+)')
+ title=soup.find(['th','td'],string=re.compile(r'^Three-Month CORRA Futures \(CRA\)$'))
+ if title is None: raise SystemExit('CRA table heading missing')
+ table=title.find_parent('table')
+ if table is None: raise SystemExit('CRA parent table missing')
  out={}
- for m in pat.finditer(section):
-  code=f'{m.group(1)} {m.group(2)}'; out[code]={'settlement':float(m.group(6)),'change':float(m.group(7)),'volume':int(m.group(8).replace(',','')),'open_interest':int(m.group(9).replace(',',''))}
+ for tr in table.find_all('tr'):
+  cells=[c.get_text(' ',strip=True) for c in tr.find_all(['th','td'])]
+  if len(cells)!=8 or not re.fullmatch(r'(MR|JN|SE|DE)\s+\d{2}',cells[0]): continue
+  try:
+   out[cells[0]]={'settlement':float(cells[4]),'change':float(cells[5]),'volume':int(cells[6].replace(',','')),'open_interest':int(cells[7].replace(',',''))}
+  except ValueError as e: raise SystemExit(f'CRA numeric parse failed for {cells}: {e}')
  if not out: raise SystemExit('CRA rows missing')
  return d,out
 def get(rid=None):
@@ -65,6 +64,7 @@ def build(asof=None):
  return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'CAD','status':'SOURCE_SNAPSHOT_ONLY','source':'Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)','source_url':BASE,'instrument':'Three-Month CORRA Futures (CRA)','quotation':'100 minus compounded CORRA','contract_mapping':cm,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'nearest complete official session on or before as_of minus 5 calendar days'}}
 def main():
  ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args(); o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n'
- if a.output:a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(t)
+ if a.output:
+  a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(t)
  print(t,end='')
 if __name__=='__main__':main()
