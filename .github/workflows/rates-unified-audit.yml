@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - validation-unified-rates-audit-v1-2026-10-05
+      - release-candidate-rates-aud-live-fetch-2026-10-08
+    paths:
+      - 'validation/run_rates_audit.py'
+      - 'validation/fetch_rates_aud.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - '.github/workflows/rates-unified-audit.yml'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           python validation/run_rates_audit.py | tee /tmp/rates-unified-audit.log
-      - name: Confirm read-only scope
+      - name: Confirm read-only scope and coverage contract
         shell: bash
         run: |
           set -euo pipefail
@@ -33,13 +39,16 @@ jobs:
           test -f validation/RATES_UNIFIED_AUDIT_OUTPUT.json
           python - <<'PY'
           import json
-          p='validation/RATES_UNIFIED_AUDIT_OUTPUT.json'
-          d=json.load(open(p))
+          d=json.load(open('validation/RATES_UNIFIED_AUDIT_OUTPUT.json'))
           assert d['status']=='PASS', d
           assert set(d['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert d['currencies']['AUD']['coverage_mode']=='LIVE_FETCH'
+          assert d['currencies']['NZD']['coverage_mode']=='OFFICIAL_SOURCE_LAG_ASSERTION'
           assert d['currencies']['CHF']['state']=='WITHHOLD'
-          assert d['summary']['live_fetch_count']==5
-          print('UNIFIED_RATES_AUDIT_CONTRACT_PASS')
+          assert d['summary']['live_fetch_count']==6, d['summary']
+          assert d['summary']['cadence_or_lag_assertion_count']==1, d['summary']
+          assert d['summary']['withheld_count']==1, d['summary']
+          print('UNIFIED_RATES_AUDIT_CONTRACT_PASS_6_LIVE_1_ASSERTION_1_WITHHELD')
           PY
       - uses: actions/upload-artifact@v4
         with:
