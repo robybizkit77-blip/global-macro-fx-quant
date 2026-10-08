@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import pathlib
-import sys
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -40,12 +39,21 @@ def certified_adapter_contract(key: str, row: dict) -> tuple[str | None, dict | 
         return canonical_transport, None
     if not isinstance(certified, dict):
         fail(f"{key} certified_adapter must be an object")
-    required = ("source", "transport_class", "adapter", "workflow", "read_only")
+    required = (
+        "source",
+        "transport_class",
+        "adapter",
+        "workflow",
+        "dynamic_release_discovery",
+        "read_only",
+    )
     missing = [field for field in required if field not in certified]
     if missing:
         fail(f"{key} certified_adapter missing fields: {missing}")
     if certified.get("transport_class") not in STRONG_ADAPTER_TRANSPORT:
         fail(f"{key} certified adapter transport is not strong: {certified.get('transport_class')}")
+    if certified.get("dynamic_release_discovery") is not True:
+        fail(f"{key} certified adapter must discover current releases dynamically")
     if certified.get("read_only") is not True:
         fail(f"{key} certified adapter must be read-only")
     adapter_path = ROOT / str(certified.get("adapter"))
@@ -111,7 +119,7 @@ def main() -> int:
         effective_transport, certified = certified_adapter_contract(key, r)
 
         # Frozen runtime provenance remains truthful. READY may only override a weak
-        # historical transport when a separate strong, read-only certified adapter exists.
+        # historical transport when a separate strong, dynamic and read-only certified adapter exists.
         if status == "READY":
             if effective_transport in WEAK_TRANSPORT or effective_transport not in STRONG_ADAPTER_TRANSPORT:
                 fail(f"{key} READY requires a strong effective adapter transport: {effective_transport}")
