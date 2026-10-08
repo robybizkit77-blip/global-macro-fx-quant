@@ -14,8 +14,23 @@
     }
   },
   "t1_reconstruction": "Derived directly from CME settlement price and official point-change field in the same bulletin; no secondary source or proxy used.",
+  "official_history_archive": {
+    "directory": "https://www.cmegroup.com/ftp/pub/pub/grs/ctr/rt/rates/2026/10-Oct/",
+    "files_confirmed_present": [
+      "IR.20261001.csv",
+      "IR.20261002.csv",
+      "IR.20261003.csv",
+      "IR.20261004.csv",
+      "IR.20261005.csv",
+      "IR.20261006.csv"
+    ],
+    "candidate_t5_file": "IR.20261002.csv",
+    "archive_validated": true,
+    "candidate_t5_content_validated": false,
+    "note": "CME official public archive is confirmed. The remaining blocker is parsing/validating the ZQ rows for the same Dec-26 / Mar-27 / Sep-27 strip from the T-5-ish daily CSV in this environment. No values are inferred or substituted."
+  },
   "missing": [
-    "verified same-basis CME T-5-ish settlement strip",
+    "validated ZQ rows from the same-basis CME T-5-ish daily CSV",
     "change_1w_bp for 3m/6m/12m"
   ],
   "activation_rule": "USD remains WITHHELD until current, T-1 and approximately T-5 business-day official CME ZQ snapshots are all available on a homogeneous basis.",
