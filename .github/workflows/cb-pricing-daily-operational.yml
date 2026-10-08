@@ -36,9 +36,6 @@ on:
 permissions:
   contents: read
 
-actions:
-  read: true
-
 concurrency:
   group: cb-pricing-daily-operational
   cancel-in-progress: false
