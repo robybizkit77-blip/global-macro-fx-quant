@@ -6,7 +6,6 @@ import html
 import json
 import re
 import urllib.request
-from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +28,9 @@ CONFIG = {
         "transformation": "reported_yoy_rate",
         "unit": "% YoY",
         "indicator": "consumers-price-index-cpi",
+        "name": "Consumers price index",
+        "period_suffix": "year",
+        "description": "Annual change",
     },
     "labour": {
         "series_id": "NZ_UNEMP_RATE",
@@ -37,40 +39,26 @@ CONFIG = {
         "transformation": "level",
         "unit": "%",
         "indicator": "unemployment-rate",
+        "name": "Unemployment rate",
+        "period_suffix": "quarter",
+        "description": "Quarterly",
     },
 }
 
 MONTHS = {"march": 3, "june": 6, "september": 9, "december": 12}
 
 
-class TextExtractor(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__()
-        self.parts: list[str] = []
-
-    def handle_data(self, data: str) -> None:
-        if data.strip():
-            self.parts.append(data.strip())
-
-
-def html_text(raw: str) -> str:
-    parser = TextExtractor()
-    parser.feed(raw)
-    return re.sub(r"\s+", " ", html.unescape(" ".join(parser.parts))).strip()
-
-
 def load(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def fetch_html_text(url: str) -> str:
+def fetch_raw(url: str) -> str:
     req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=45) as response:
         raw = response.read().decode("utf-8", errors="replace")
-    text = html_text(raw)
-    if len(text) < 200:
+    if len(raw) < 200:
         raise ValueError(f"Stats NZ response unexpectedly short: {url}")
-    return text
+    return raw
 
 
 def quarter_date(month_name: str, year: str) -> str:
@@ -78,38 +66,39 @@ def quarter_date(month_name: str, year: str) -> str:
     return f"{int(year):04d}-{month:02d}-01"
 
 
-def parse_homepage_indicator(dimension: str, text: str) -> tuple[str, float]:
-    if dimension == "inflation":
-        label = "Consumers price index"
-        suffix = "year"
-    else:
-        label = "Unemployment rate"
-        suffix = "quarter"
+def normalize_structured_payload(raw: str) -> str:
+    # Stats NZ embeds IndicatorBlock objects in an escaped structured payload.
+    # Decode HTML entities and JSON-style escaped quotes/slashes, but do not
+    # execute scripts or depend on client-side rendering.
+    normalized = html.unescape(raw)
+    normalized = normalized.replace('\\"', '"').replace('\\/', '/')
+    return normalized
 
-    # Stats NZ may render the homepage KPI card as plain text or as hydration
-    # data with field names/punctuation between label, value and period. Keep
-    # the match local to the indicator label, then select only the latest date.
-    label_re = re.escape(label)
-    value_re = r"\+?(-?[0-9]+(?:\.[0-9]+)?)\s*(?:%|percent)"
-    period_re = r"(March|June|September|December)\s+(20\d{2})\s+" + suffix
-    patterns = [
-        label_re + r".{0,700}?" + value_re + r".{0,700}?" + period_re,
-        label_re + r".{0,700}?" + period_re + r".{0,700}?" + value_re,
-    ]
+
+def parse_homepage_indicator(dimension: str, raw: str) -> tuple[str, float]:
+    cfg = CONFIG[dimension]
+    text = normalize_structured_payload(raw)
+
+    # Match one Stats NZ IndicatorBlock by its stable semantic fields:
+    # Name -> Value -> Period -> Description. Fail closed if the latest period
+    # resolves to conflicting values or descriptions.
+    name = re.escape(cfg["name"])
+    suffix = re.escape(cfg["period_suffix"])
+    description = re.escape(cfg["description"])
+    pattern = (
+        r'"Name":"' + name + r'\s*","Value":"\+?(-?[0-9]+(?:\.[0-9]+)?)%",'
+        r'"Period":"(March|June|September|December)\s+(20\d{2})\s+' + suffix + r'",'
+        r'"Description":"' + description + r'"'
+    )
 
     hits: list[tuple[str, float]] = []
-    for pattern_index, pattern in enumerate(patterns):
-        for match in re.finditer(pattern, text, re.I | re.S):
-            if pattern_index == 0:
-                value = float(match.group(1))
-                date = quarter_date(match.group(2), match.group(3))
-            else:
-                date = quarter_date(match.group(1), match.group(2))
-                value = float(match.group(3))
-            hits.append((date, value))
+    for match in re.finditer(pattern, text, re.I):
+        value = float(match.group(1))
+        date = quarter_date(match.group(2), match.group(3))
+        hits.append((date, value))
 
     if not hits:
-        raise ValueError(f"cannot parse latest Stats NZ {dimension} homepage indicator")
+        raise ValueError(f"cannot parse Stats NZ structured {dimension} IndicatorBlock")
 
     latest_date = max(date for date, _ in hits)
     latest_values = {value for date, value in hits if date == latest_date}
@@ -146,8 +135,8 @@ def build(dimension: str, fixture: Path | None = None):
         retrieval_url = source_url
         mode = "fixture"
     else:
-        text = fetch_html_text(DISCOVERY_URL)
-        date, value = parse_homepage_indicator(dimension, text)
+        raw = fetch_raw(DISCOVERY_URL)
+        date, value = parse_homepage_indicator(dimension, raw)
         retrieval_url = DISCOVERY_URL
         mode = "live"
 
@@ -174,6 +163,7 @@ def build(dimension: str, fixture: Path | None = None):
         "value": value,
         "upstream_indicator": cfg["indicator"],
         "dynamic_release_discovery": True,
+        "structured_payload": True,
     }
     return candidate, audit
 
