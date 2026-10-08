@@ -5,6 +5,8 @@ on:
     branches:
       - validation-cot-weekly-operational-2026-10-08
       - release-candidate-cot-weekly-operational-2026-10-08
+      - validation-operational-retry-cadence-2026-10-08
+      - release-candidate-operational-retry-cadence-2026-10-08
     paths:
       - '.github/workflows/cot-weekly-operational.yml'
       - 'validation/build_cot_candidate.py'
@@ -12,8 +14,16 @@ on:
       - 'validation/verify_cftc_current_snapshot.py'
   workflow_dispatch:
   schedule:
-    - cron: '0 20 * * 5'
-    - cron: '0 21 * * 5'
+    # Europe/Rome Saturday retry cadence: 00:00, 02:00, 05:00, 08:00.
+    # The Friday UTC entries cover local midnight under CET/CEST.
+    - cron: '0 22 * * 5'
+    - cron: '0 23 * * 5'
+    - cron: '0 0 * * 6'
+    - cron: '0 1 * * 6'
+    - cron: '0 3 * * 6'
+    - cron: '0 4 * * 6'
+    - cron: '0 6 * * 6'
+    - cron: '0 7 * * 6'
 
 permissions:
   contents: read
@@ -27,15 +37,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.gate.outputs.should_run }}
+      local_time: ${{ steps.gate.outputs.local_time }}
+      retry_key: ${{ steps.gate.outputs.retry_key }}
     steps:
       - id: gate
         shell: bash
         run: |
           set -euo pipefail
+          local_time="$(TZ=Europe/Rome date +'%Y-%m-%dT%H:%M:%S%z')"
           hhmm="$(TZ=Europe/Rome date +'%H:%M')"
           dow="$(TZ=Europe/Rome date +'%u')"
-          if [[ "${{ github.event_name }}" != "schedule" || ( "$dow" == "5" && "$hhmm" == "22:00" ) ]]; then should_run=true; else should_run=false; fi
+          iso_week="$(TZ=Europe/Rome date +'%G-W%V')"
+          allowed='00:00 02:00 05:00 08:00'
+          if [[ "${{ github.event_name }}" != "schedule" || ( "$dow" == "6" && " $allowed " == *" $hhmm "* ) ]]; then should_run=true; else should_run=false; fi
           echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "local_time=$local_time" >> "$GITHUB_OUTPUT"
+          echo "retry_key=cot-new-release-green-$iso_week" >> "$GITHUB_OUTPUT"
+          echo "event=${{ github.event_name }} local_time=$local_time should_run=$should_run"
 
   observe:
     needs: schedule-gate
@@ -44,10 +62,26 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore same-week new-release marker
+        id: success-marker
+        if: github.event_name == 'schedule'
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/cot-weekly-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
+
+      - name: Skip retry after new CFTC release already validated
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit == 'true'
+        run: echo "New CFTC release already validated this week; later retry skipped."
+
       - uses: actions/setup-python@v5
+        if: steps.success-marker.outputs.cache-hit != 'true'
         with:
           python-version: '3.12'
+
       - name: Build official CFTC candidate and derived stories
+        if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -55,7 +89,9 @@ jobs:
           python validation/build_cot_candidate.py --output /tmp/cot-weekly/V250_COT_CHART_DATA.json | tee /tmp/cot-weekly/candidate-summary.json
           python validation/build_cot_stories.py --source /tmp/cot-weekly/V250_COT_CHART_DATA.json --output /tmp/cot-weekly/V247_COT_STORIES.json > /tmp/cot-weekly/stories-summary.json
           git diff --exit-code -- live_data payload
+
       - name: Dry-run direct plus derived COT runtime update
+        if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -101,8 +137,9 @@ jobs:
           cleanup
           trap - EXIT
           git diff --exit-code -- live_data payload
+
       - name: Build weekly operational receipt
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -117,11 +154,34 @@ jobs:
           print(json.dumps(receipt,indent=2,ensure_ascii=False))
           if receipt['status']=='FAILED_NO_PUBLICATION': raise SystemExit('COT weekly operational failure')
           PY
+
       - name: Upload weekly COT evidence
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: cot-weekly-operational-${{ github.run_id }}
           path: /tmp/cot-weekly/
           if-no-files-found: error
           retention-days: 60
+
+      - name: Decide whether new-release retry marker should be saved
+        id: marker-eligibility
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit != 'true' && success()
+        shell: bash
+        run: |
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/cot-weekly/candidate-summary.json'))['status'])")
+          if [ "$STATUS" = "CANDIDATE_READY" ]; then echo "save=true" >> "$GITHUB_OUTPUT"; else echo "save=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Create same-week new-release marker
+        if: steps.marker-eligibility.outputs.save == 'true'
+        shell: bash
+        run: |
+          mkdir -p /tmp/cot-weekly-success
+          printf '%s\n' "${{ needs.schedule-gate.outputs.local_time }}" > /tmp/cot-weekly-success/new-release-green.txt
+
+      - name: Save same-week new-release marker
+        if: steps.marker-eligibility.outputs.save == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/cot-weekly-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
