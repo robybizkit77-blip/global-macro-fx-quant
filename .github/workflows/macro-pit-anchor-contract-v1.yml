@@ -1,0 +1,113 @@
+name: Macro PIT Anchor Contract V1
+
+# The constrained push trigger validates the implementation branch; operational
+# anchor verification remains manual or reusable and requires captured evidence.
+on:
+  push:
+    branches:
+      - 'feature/pit-anchor-contract-*'
+    paths:
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_anchor_contract.py'
+      - 'validation/test_macro_pit_anchor_contract.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - '.github/workflows/macro-pit-anchor-contract-v1.yml'
+  workflow_dispatch:
+    inputs:
+      evidence_dir:
+        description: Repository-relative evidence directory containing before/ and after/
+        required: false
+        default: ''
+        type: string
+      currency:
+        description: Core currency code
+        required: false
+        type: choice
+        options: [USD, EUR, GBP, JPY, CHF, CAD, AUD, NZD]
+      dimension:
+        description: Core macro dimension
+        required: false
+        type: choice
+        options: [inflation, labour]
+      macro_series_id:
+        description: Exact MACRO_SERIES id for the single refreshed series
+        required: false
+        type: string
+      candidate:
+        description: Optional repository-relative candidate JSON to cross-check against AFTER
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      evidence_dir: {required: true, type: string}
+      currency: {required: true, type: string}
+      dimension: {required: true, type: string}
+      macro_series_id: {required: true, type: string}
+      candidate: {required: false, type: string}
+
+permissions:
+  contents: read
+
+jobs:
+  contract-self-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing registry scope remains unchanged
+        run: python3 validation/macro/check_macro_source_registry.py | tee /tmp/macro-pit-anchor-registry.json
+      - name: Run positive and non-atomic negative contract tests
+        run: python3 validation/test_macro_pit_anchor_contract.py | tee /tmp/macro-pit-anchor-selftest.json
+      - name: Prove self-test did not write live data
+        run: git diff --quiet -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+      - name: Upload self-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-pit-anchor-contract-selftest-v1
+          path: |
+            /tmp/macro-pit-anchor-selftest.json
+            /tmp/macro-pit-anchor-registry.json
+  verify-anchor:
+    if: ${{ inputs.evidence_dir != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify source registry and frozen certification scope
+        run: python3 validation/macro/check_macro_source_registry.py | tee /tmp/macro-source-registry.json
+      - name: Replay one atomic PIT anchor from BEFORE snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(verify --evidence-dir "${{ inputs.evidence_dir }}" --currency "${{ inputs.currency }}" --dimension "${{ inputs.dimension }}" --macro-series-id "${{ inputs.macro_series_id }}")
+          if [ -n "${{ inputs.candidate }}" ]; then args+=(--candidate "${{ inputs.candidate }}"); fi
+          python3 validation/macro_pit_anchor_contract.py "${args[@]}" | tee /tmp/macro-pit-anchor-evidence.json
+      - name: Enforce exact, atomic and read-only contract
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-pit-anchor-evidence.json'))
+          assert d['status']=='PASS', d
+          assert d['macro_series_exact_match'] is True, d
+          assert d['heatmap_exact_match'] is True, d
+          assert d['live_data_written_by_replay'] is False, d
+          assert d['engine_or_source_infrastructure_changed'] is False, d
+          assert d['registry_promotion']=='NOT_ATTEMPTED', d
+          assert len(d['atomic_delta']['changed_rows']) == 1, d
+          print('MACRO_PIT_ANCHOR_CONTRACT_PASS')
+          PY
+          git diff --quiet -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+      - name: Upload auditable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-pit-anchor-contract-v1
+          if-no-files-found: warn
+          path: |
+            /tmp/macro-pit-anchor-evidence.json
+            /tmp/macro-source-registry.json
+            ${{ inputs.evidence_dir }}/before/capture.json
+            ${{ inputs.evidence_dir }}/after/capture.json
