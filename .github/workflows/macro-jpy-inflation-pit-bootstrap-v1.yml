@@ -1,0 +1,123 @@
+name: Macro JPY Inflation PIT Bootstrap V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-jpy-inflation-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-jpy-inflation-pit-bootstrap-v1.yml'
+      - 'validation/macro_pit_historical_bootstrap.py'
+      - 'validation/test_macro_pit_historical_bootstrap.py'
+      - 'validation/macro/jpy_inflation_historical_anchor_2026-08.json'
+      - 'validation/sources/jpy_statistics_bureau_cpi.py'
+      - 'validation/test_jpy_statistics_bureau_cpi.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-jpy-inflation-pit-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  historical-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run bootstrap fail-closed tests
+        run: python3 validation/test_macro_pit_historical_bootstrap.py
+
+      - name: Revalidate deterministic JPY CPI parser
+        run: python3 validation/test_jpy_statistics_bureau_cpi.py
+
+      - name: Verify current official JPY CPI candidate read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jpy-cpi-bootstrap/live
+          python3 validation/sources/jpy_statistics_bureau_cpi.py \
+            --output /tmp/jpy-cpi-bootstrap/live/candidate.json \
+            --audit-output /tmp/jpy-cpi-bootstrap/live/source-audit.json \
+            | tee /tmp/jpy-cpi-bootstrap/live/source-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/jpy-cpi-bootstrap/live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/jpy-cpi-bootstrap/live/source-audit.json').read_text())
+          m=json.loads(Path('validation/macro/jpy_inflation_historical_anchor_2026-08.json').read_text())
+          assert c['currency']=='JPY' and c['dimension']=='inflation'
+          assert c['series_id']==m['series_id']
+          assert c['macro_series_id']==m['target']['macro_series_id']
+          assert c['observation_date'][:7]==m['current']['observation_date'][:7]
+          assert float(c['value'])==float(m['current']['value'])
+          assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
+          print(json.dumps({'status':'CURRENT_OFFICIAL_JPY_CPI_MATCH','candidate':c}, indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+      - name: Run historical PIT bootstrap replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jpy-cpi-bootstrap/replay
+          python3 validation/macro_pit_historical_bootstrap.py \
+            --anchor-manifest validation/macro/jpy_inflation_historical_anchor_2026-08.json \
+            --evidence-output /tmp/jpy-cpi-bootstrap/macro_pit_anchor_evidence.json \
+            --work-dir /tmp/jpy-cpi-bootstrap/replay \
+            | tee /tmp/jpy-cpi-bootstrap/bootstrap-run.json
+
+      - name: Build review-only registry promotion proposal
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/macro_pit_registry_promotion.py \
+            --evidence /tmp/jpy-cpi-bootstrap/macro_pit_anchor_evidence.json \
+            --proposed-registry /tmp/jpy-cpi-bootstrap/proposed-registry.json \
+            --receipt /tmp/jpy-cpi-bootstrap/promotion-receipt.json \
+            | tee /tmp/jpy-cpi-bootstrap/promotion-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          canonical=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())
+          proposed=json.loads(Path('/tmp/jpy-cpi-bootstrap/proposed-registry.json').read_text())
+          receipt=json.loads(Path('/tmp/jpy-cpi-bootstrap/promotion-receipt.json').read_text())
+          key='JPY.inflation'
+          assert canonical['series'][key]['historical_replay_certified'] is False
+          assert proposed['series'][key]['historical_replay_certified'] is True
+          assert receipt['status']=='PASS' and receipt['promotion_action']=='PROPOSAL_CREATED'
+          c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
+          c2['series'][key].pop('historical_replay_certified',None)
+          p2['series'][key].pop('historical_replay_certified',None)
+          p2['series'][key].pop('historical_replay_evidence',None)
+          assert c2==p2, 'promotion proposal changed fields outside JPY.inflation certification metadata'
+          print(json.dumps({'status':'JPY_INFLATION_PROMOTION_SCOPE_PASS','target':key}, indent=2))
+          PY
+
+      - name: Enforce no canonical publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+
+      - name: Upload bootstrap and promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-jpy-inflation-pit-bootstrap-${{ github.run_id }}
+          path: /tmp/jpy-cpi-bootstrap/
+          if-no-files-found: error
+          retention-days: 90
