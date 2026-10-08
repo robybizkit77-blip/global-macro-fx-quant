@@ -1,0 +1,83 @@
+name: EUR Eurex FST3 History Probe Once
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-eur-2026-10-08
+    paths:
+      - .github/workflows/eur-eurex-fst3-history-probe-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-cb-pricing-eur-2026-10-08
+      - name: Probe official Eurex FST3 pages and scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/eur_probe validation/cb_pricing
+          urls=(
+            'https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480'
+            'https://www.eurex.com/ex-en/data/statistics/market-statistics-online'
+            'https://www.eurex.com/ex-en/data/trading-files/product-and-price-report'
+          )
+          i=0
+          for u in "${urls[@]}"; do
+            i=$((i+1))
+            echo "FETCH $u"
+            curl -fLsS --retry 2 -A 'Mozilla/5.0' "$u" -o "/tmp/eur_probe/page${i}.html"
+          done
+          python3 - <<'PY'
+          import pathlib,re,json
+          root=pathlib.Path('/tmp/eur_probe')
+          out={'source':'Eurex official public pages','product':'FST3','target_dates':['2026-09-22','2026-09-28','2026-09-29'],'files':{},'candidate_endpoints':[]}
+          pats=[r'https://[^"\'<> ]+', r'/[^"\'<> ]*(?:api|statistic|market|price|settlement|history)[^"\'<> ]*']
+          seen=set()
+          for p in sorted(root.glob('*.html')):
+              text=p.read_text(encoding='utf-8',errors='replace')
+              out['files'][p.name]={'bytes':len(text),'contains_FST3':'FST3' in text,'contains_settlement':'settlement' in text.lower()}
+              for pat in pats:
+                  for m in re.findall(pat,text,re.I):
+                      if isinstance(m,tuple): m=''.join(m)
+                      if any(k in m.lower() for k in ['api','statistic','market','price','settlement','history']):
+                          if m not in seen:
+                              seen.add(m); out['candidate_endpoints'].append(m[:500])
+          # Save snippets around FST3 and likely data-loader terms.
+          snippets=[]
+          keys=['FST3','settlement','history','marketStatistics','ajax','api/']
+          for p in sorted(root.glob('*.html')):
+              text=p.read_text(encoding='utf-8',errors='replace')
+              low=text.lower()
+              for key in keys:
+                  start=0
+                  k=key.lower()
+                  while True:
+                      idx=low.find(k,start)
+                      if idx<0: break
+                      snippets.append({'file':p.name,'key':key,'snippet':text[max(0,idx-700):idx+1500]})
+                      start=idx+len(k)
+                      if len(snippets)>=120: break
+                  if len(snippets)>=120: break
+              if len(snippets)>=120: break
+          out['snippets']=snippets
+          dest=pathlib.Path('validation/cb_pricing/EUR_EUREX_FST3_HISTORY_PROBE_2026-10-08.json')
+          dest.write_text(json.dumps(out,indent=2),encoding='utf-8')
+          print('endpoints',len(out['candidate_endpoints']),'snippets',len(snippets))
+          PY
+      - name: Commit diagnostic evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/cb_pricing/EUR_EUREX_FST3_HISTORY_PROBE_2026-10-08.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Capture official Eurex FST3 history probe evidence'
+          git push origin HEAD:validation-cb-pricing-eur-2026-10-08
