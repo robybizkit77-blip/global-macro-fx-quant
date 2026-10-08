@@ -18,74 +18,58 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: validation-cb-pricing-eur-2026-10-08
-      - name: Download official Eurex daily trading statistics
+      - name: Resolve and download official Eurex daily statistics
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/eurex validation/cb_pricing
           base='https://www.eurex.com'
-          page="$base/ex-en/data/statistics/trading-statistics/122!search?hitsPerPage=100&query=&state="
-          curl -fLsS --retry 2 -A 'Mozilla/5.0' "$page" -o /tmp/eurex/index.html
+          for p in 1 2 3 4 5; do
+            curl -fLsS --retry 2 -A 'Mozilla/5.0' "$base/ex-en/data/statistics/trading-statistics/122!search?pageNum=$p&hitsPerPage=100&query=&state=" -o "/tmp/eurex/page$p.html"
+          done
           python3 - <<'PY'
-          import re, html, pathlib, json
-          txt=pathlib.Path('/tmp/eurex/index.html').read_text(errors='replace')
-          targets={'Sep 22, 2026':'2026-09-22','Sep 28, 2026':'2026-09-28','Sep 29, 2026':'2026-09-29'}
+          import pathlib,re,html,json
+          joined='\n'.join(p.read_text(errors='replace') for p in sorted(pathlib.Path('/tmp/eurex').glob('page*.html')))
           links={}
-          for label,iso in targets.items():
-              i=txt.find(label)
-              if i<0: continue
-              chunk=txt[i:i+5000]
-              m=re.search(r'href="([^"]+)"[^>]*>\s*Download',chunk,re.I|re.S)
-              if not m:
-                  m=re.search(r'href="([^"]+)"',chunk,re.I)
+          for iso,stamp in [('2026-09-22','20260922'),('2026-09-28','20260928'),('2026-09-29','20260929')]:
+              m=re.search(r'href="([^"]*dailystat_'+stamp+r'\.xls[^"]*)"',joined,re.I)
               if m: links[iso]=html.unescape(m.group(1))
           pathlib.Path('/tmp/eurex/links.json').write_text(json.dumps(links,indent=2))
           print(links)
-          if len(links)<3: raise SystemExit('Did not resolve all three official Eurex daily statistic links')
+          if len(links)!=3: raise SystemExit('Could not resolve all official daily statistic files')
           PY
           python3 - <<'PY'
-          import json,subprocess,pathlib,urllib.parse
-          base='https://www.eurex.com'
-          links=json.loads(pathlib.Path('/tmp/eurex/links.json').read_text())
+          import pathlib,json,subprocess
+          base='https://www.eurex.com'; links=json.loads(pathlib.Path('/tmp/eurex/links.json').read_text())
           for d,u in links.items():
               if u.startswith('/'): u=base+u
-              out=f'/tmp/eurex/{d}.bin'
+              out=f'/tmp/eurex/{d}.xls'
               subprocess.run(['curl','-fLsS','--retry','2','-A','Mozilla/5.0',u,'-o',out],check=True)
               print(d,u,pathlib.Path(out).stat().st_size)
           PY
-      - name: Inspect files for FST3 and price fields
+      - name: Inspect XLS for FST3 and settlement-like fields
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m pip install -q pandas xlrd
           python3 - <<'PY'
-          import pathlib,json,zipfile,gzip,re,hashlib,shutil,os
-          root=pathlib.Path('/tmp/eurex')
-          out={'source':'Eurex official Trading statistics downloads','product':'FST3','dates':{}}
-          for f in sorted(root.glob('2026-09-*.bin')):
-              d=f.stem
-              raw=f.read_bytes()
-              texts=[]
-              try:
-                  if raw[:2]==b'PK':
-                      z=zipfile.ZipFile(f)
-                      for n in z.namelist():
-                          try: texts.append((n,z.read(n).decode('utf-8','replace')))
-                          except: pass
-                  elif raw[:2]==b'\x1f\x8b':
-                      texts=[(f.name,gzip.decompress(raw).decode('utf-8','replace'))]
-                  else:
-                      texts=[(f.name,raw.decode('utf-8','replace'))]
-              except Exception as e:
-                  texts=[(f.name,raw.decode('latin1','replace'))]
-              rec={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'matches':[]}
-              for name,text in texts:
-                  for m in re.finditer(r'FST3',text,re.I):
-                      sn=text[max(0,m.start()-500):m.start()+1500]
-                      rec['matches'].append({'file':name,'snippet':sn})
-                      if len(rec['matches'])>=20: break
-              out['dates'][d]=rec
+          import pandas as pd, pathlib, json, hashlib, re
+          out={'source':'Eurex official daily Trading statistics XLS','product':'FST3','dates':{}}
+          for f in sorted(pathlib.Path('/tmp/eurex').glob('2026-09-*.xls')):
+              rec={'bytes':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'sheets':{},'fst3_rows':[]}
+              book=pd.ExcelFile(f)
+              for s in book.sheet_names:
+                  df=pd.read_excel(f,sheet_name=s,header=None,dtype=str)
+                  mask=df.apply(lambda col: col.astype(str).str.contains('FST3',case=False,na=False)).any(axis=1)
+                  hits=df[mask]
+                  rec['sheets'][s]={'rows':len(df),'cols':len(df.columns),'fst3_hits':len(hits)}
+                  for idx,row in hits.iterrows():
+                      vals=[None if pd.isna(v) else str(v) for v in row.tolist()]
+                      rec['fst3_rows'].append({'sheet':s,'row':int(idx),'values':vals})
+              out['dates'][f.stem]=rec
           pathlib.Path('validation/cb_pricing/EUR_EUREX_FST3_DAILY_STATS_PROBE_2026-10-08.json').write_text(json.dumps(out,indent=2),encoding='utf-8')
-          print({d:len(v['matches']) for d,v in out['dates'].items()})
+          print({d:len(v['fst3_rows']) for d,v in out['dates'].items()})
+          if not all(v['fst3_rows'] for v in out['dates'].values()): raise SystemExit('FST3 missing from one or more official XLS files')
           PY
       - name: Commit daily statistics evidence
         shell: bash
