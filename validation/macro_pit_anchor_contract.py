@@ -71,7 +71,10 @@ def protected_fingerprints() -> dict[str, str]:
 
 
 def dirty_paths() -> list[str]:
-    return [line[3:] for line in git("status", "--porcelain").splitlines() if line]
+    # Porcelain status uses two state columns followed by a separator, but a
+    # staged/unstaged combination may carry more than one separating space.
+    # Strip the remainder rather than slicing a presumed fixed separator.
+    return [line[2:].strip() for line in git("status", "--porcelain").splitlines() if line]
 
 
 def snapshot_paths(evidence_dir: pathlib.Path, phase: str) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
@@ -95,7 +98,7 @@ def capture(args: argparse.Namespace) -> int:
     allowed_live_dirty = {SERIES_REL.as_posix(), HEAT_REL.as_posix()}
     allow_live_dirty = args.phase == "after" and args.allow_live_data_dirty
     if dirty and (not allow_live_dirty or not set(dirty).issubset(allowed_live_dirty)):
-        raise ValueError("capture requires a clean repository; AFTER may opt in only to dirty target live artifacts")
+        raise ValueError(f"capture requires a clean repository; AFTER may opt in only to dirty target live artifacts: {dirty}")
     evidence_dir = pathlib.Path(args.evidence_dir).resolve()
     series_out, heat_out, manifest_out = snapshot_paths(evidence_dir, args.phase)
     if manifest_out.exists() and not args.overwrite:
@@ -224,7 +227,7 @@ def verify(args: argparse.Namespace) -> int:
     if after_meta.get("repository_state") not in {"CLEAN", "LIVE_DATA_ONLY_DIRTY"} or not set(after_meta.get("dirty_paths", [])).issubset(allowed_live_dirty):
         raise ValueError("AFTER capture repository state is not restricted to the two live artifacts")
     changed_rules = subprocess.run(
-        ["git", "diff", "--quiet", before_meta["git_head"], after_meta["git_head"], "--", *[str(p) for p in PROTECTED_PATHS],
+        ["git", "diff", "--quiet", before_meta["git_head"], after_meta["git_head"], "--", *[str(p) for p in PROTECTED_PATHS]],
         cwd=ROOT,
     ).returncode != 0
     if changed_rules:
