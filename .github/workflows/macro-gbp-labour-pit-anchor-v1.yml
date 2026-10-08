@@ -1,0 +1,133 @@
+name: Macro GBP Labour PIT Anchor V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-gbp-labour-pit-anchor-*'
+    paths:
+      - '.github/workflows/macro-gbp-labour-pit-anchor-v1.yml'
+      - '.github/workflows/macro-single-series-pit-refresh-v1.yml'
+      - 'validation/sources/gbp_ons_core.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_anchor_contract.py'
+      - 'validation/update_live_direct_section.py'
+      - 'validation/build_live_manifest_v2.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-gbp-labour-pit-anchor-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      candidate_json: ${{ steps.candidate.outputs.candidate_json }}
+      macro_series_id: ${{ steps.candidate.outputs.macro_series_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build live GBP labour candidate from official ONS source
+        id: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-labour-pit
+          python3 validation/sources/gbp_ons_core.py \
+            --dimension labour \
+            --output /tmp/gbp-labour-pit/candidate.json \
+            --audit-output /tmp/gbp-labour-pit/source-audit.json \
+            | tee /tmp/gbp-labour-pit/source-run.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          candidate = json.loads(Path('/tmp/gbp-labour-pit/candidate.json').read_text())
+          audit = json.loads(Path('/tmp/gbp-labour-pit/source-audit.json').read_text())
+
+          expected = {
+              'currency': 'GBP',
+              'dimension': 'labour',
+              'source': 'Office for National Statistics',
+              'series_id': 'MGSX',
+              'frequency': 'M',
+              'transformation': 'level',
+          }
+          got = {key: candidate.get(key) for key in expected}
+          if got != expected:
+              raise SystemExit(f'GBP labour source contract mismatch: expected={expected} got={got}')
+          if not candidate.get('macro_series_id'):
+              raise SystemExit('GBP labour candidate did not resolve a canonical MACRO_SERIES id')
+          if audit.get('mode') != 'live':
+              raise SystemExit(f'expected live ONS mode, got {audit.get("mode")!r}')
+          if audit.get('candidate_only') is not True or audit.get('live_data_written') is not False:
+              raise SystemExit(f'ONS adapter violated candidate-only contract: {audit}')
+
+          series = json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          ids = [str(row.get('id')) for row in series['GBP'] if isinstance(row, dict)]
+          if candidate['macro_series_id'] not in ids:
+              raise SystemExit(f"resolved macro_series_id not present in GBP runtime: {candidate['macro_series_id']}")
+
+          print(json.dumps({
+              'status': 'GBP_LABOUR_LIVE_CANDIDATE_PASS',
+              'macro_series_id': candidate['macro_series_id'],
+              'observation_date': candidate['observation_date'],
+              'value': candidate['value'],
+              'source': candidate['source'],
+              'series_id': candidate['series_id'],
+          }, indent=2))
+          PY
+
+          python3 validation/build_macro_candidate.py \
+            --candidate /tmp/gbp-labour-pit/candidate.json \
+            --output-dir /tmp/gbp-labour-pit/built \
+            | tee /tmp/gbp-labour-pit/builder.json
+
+          git diff --exit-code -- live_data payload validation/macro
+
+          CANDIDATE_JSON="$(jq -c . /tmp/gbp-labour-pit/candidate.json)"
+          MACRO_SERIES_ID="$(jq -r .macro_series_id /tmp/gbp-labour-pit/candidate.json)"
+          echo "candidate_json=$CANDIDATE_JSON" >> "$GITHUB_OUTPUT"
+          echo "macro_series_id=$MACRO_SERIES_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Upload source candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-gbp-labour-source-${{ github.run_id }}
+          path: /tmp/gbp-labour-pit/
+          if-no-files-found: error
+          retention-days: 60
+
+      - name: Enforce source stage is read-only
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload validation/macro
+
+  pit-anchor:
+    needs: source-candidate
+    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
+    with:
+      refresh_scope: single_series
+      currency: GBP
+      dimension: labour
+      macro_series_id: ${{ needs.source-candidate.outputs.macro_series_id }}
+      dry_run: false
+      candidate_json: ${{ needs.source-candidate.outputs.candidate_json }}
