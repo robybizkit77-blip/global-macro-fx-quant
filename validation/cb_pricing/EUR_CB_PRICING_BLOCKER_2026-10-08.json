@@ -1,0 +1,44 @@
+{
+  "currency": "EUR",
+  "status": "WITHHELD",
+  "as_of": "2026-10-08",
+  "instrument": "Eurex Three-Month Euro STR Futures (FST3)",
+  "quote_convention": "100 - rate",
+  "official_source": "Eurex",
+  "validated": {
+    "instrument": true,
+    "product_page": true,
+    "current_market_endpoint": true,
+    "official_daily_statistics_files": true
+  },
+  "history_required": ["current", "T-1", "approximately T-5 business days"],
+  "history_status": "BLOCKED_FREE_OFFICIAL_SETTLEMENT_HISTORY",
+  "evidence": {
+    "daily_files_checked": [
+      "dailystat_20260922.xls",
+      "dailystat_20260928.xls",
+      "dailystat_20260929.xls"
+    ],
+    "fst3_present_all_dates": true,
+    "daily_statistics_columns": [
+      "Traded Contracts",
+      "Traded Contracts Flexible Products",
+      "Traded Contracts (month)",
+      "Traded Contracts Flexible Products (month)",
+      "Traded Contracts (year)",
+      "Traded Contracts Flexible Products (year)",
+      "Traded Contracts - avg (month)",
+      "Traded Contracts - avg (year)",
+      "P/C Ratio",
+      "Open Interest (prev Day)",
+      "Volume in EUR",
+      "Volume in EUR (month)",
+      "Volume in EUR (year)",
+      "Open Interest in EUR (prev Day)"
+    ],
+    "contains_contract_settlement_prices": false,
+    "historical_query_test": "Common date parameters against the public fullOrderBook endpoint were ignored and returned current/delayed data, not target-date history."
+  },
+  "decision": "Do not activate EUR OIS. Do not infer historical settlement prices from current order-book data, volume statistics, or realized compounded Euro STR. Keep WITHHELD until homogeneous official Eurex settlement history for the required contracts is obtained.",
+  "production_modified": false
+}
