@@ -4,13 +4,14 @@ import argparse,datetime as dt,json,pathlib,re,requests
 from bs4 import BeautifulSoup
 ROOT=pathlib.Path(__file__).resolve().parents[2]; OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; BASE='https://www.m-x.ca/en/trading/data/market-review'
 def cmap():
- l=json.loads(OIS.read_text())['currencies']['CAD']; s=l.get('source_meta',{}).get('contract_mapping');
+ l=json.loads(OIS.read_text())['currencies']['CAD']; s=l.get('source_meta',{}).get('contract_mapping')
  if isinstance(s,dict) and all(s.get(k) for k in ('3m','6m','12m')): return {k:str(s[k]) for k in ('3m','6m','12m')}
  if 'Dec-26 / Mar-27 / Sep-27' not in l.get('source_meta',{}).get('horizon_mapping',''): raise SystemExit('bad CAD mapping')
  return {'3m':'DE 26','6m':'MR 27','12m':'SE 27'}
 def parse(html):
  soup=BeautifulSoup(html,'html.parser'); txt='\n'.join(soup.stripped_strings); m=re.search(r'([A-Z][a-z]+) (\d{1,2}), (20\d{2})',txt)
- if not m: raise SystemExit('date missing'); d=dt.datetime.strptime(' '.join(m.groups()),'%B %d %Y').date()
+ if not m: raise SystemExit('date missing')
+ d=dt.datetime.strptime(' '.join(m.groups()),'%B %d %Y').date()
  node=soup.find(string=re.compile(r'Three-Month CORRA Futures'))
  table=node.find_parent().find_next('table') if node else None
  if table is None: raise SystemExit('CRA table missing')
@@ -44,12 +45,22 @@ def build(asof=None):
   seen.add(d)
   if not all(x in cs for x in cm.values()):continue
   rates={h:round(100-cs[x]['settlement'],6) for h,x in cm.items()}; obs.append((d,rates,rid,{h:cs[x] for h,x in cm.items()}))
- obs.sort(key=lambda x:x[0]); cur=([x for x in obs if x[0]==asof][-1] if asof else obs[-1]); prev=[x for x in obs if x[0]<cur[0]][-1]; week=[x for x in obs if x[0]<=cur[0]-dt.timedelta(days=5)][-1]
- def p(x):d,r,i,raw=x; return {'date':d.isoformat(),'market_review_id':i,**r,'raw':raw}
+ obs.sort(key=lambda x:x[0])
+ if not obs: raise SystemExit('no complete CRA observations')
+ matches=[x for x in obs if x[0]==asof] if asof else obs
+ if not matches: raise SystemExit(f'no observation for {asof}')
+ cur=matches[-1]; earlier=[x for x in obs if x[0]<cur[0]]
+ if not earlier: raise SystemExit('no prior CRA session')
+ prev=earlier[-1]; weekly=[x for x in earlier if x[0]<=cur[0]-dt.timedelta(days=5)]
+ if not weekly: raise SystemExit('no weekly CRA reference')
+ week=weekly[-1]
+ def p(x):
+  d,r,i,raw=x; return {'date':d.isoformat(),'market_review_id':i,**r,'raw':raw}
  a,b,w=p(cur),p(prev),p(week); d1={h:round((a[h]-b[h])*100,4) for h in cm}; dw={h:round((a[h]-w[h])*100,4) for h in cm}
  return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'CAD','status':'SOURCE_SNAPSHOT_ONLY','source':'Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)','source_url':BASE,'instrument':'Three-Month CORRA Futures (CRA)','quotation':'100 minus compounded CORRA','contract_mapping':cm,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'nearest complete official session on or before as_of minus 5 calendar days'}}
 def main():
- ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args(); o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n';
- if a.output:a.output.write_text(t)
+ ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args(); o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n'
+ if a.output:
+  a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(t)
  print(t,end='')
 if __name__=='__main__':main()
