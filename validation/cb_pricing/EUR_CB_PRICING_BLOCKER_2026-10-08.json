@@ -9,36 +9,18 @@
     "instrument": true,
     "product_page": true,
     "current_market_endpoint": true,
-    "official_daily_statistics_files": true
+    "official_daily_statistics_files": true,
+    "daily_statistics_column_definitions": true
   },
   "history_required": ["current", "T-1", "approximately T-5 business days"],
   "history_status": "BLOCKED_FREE_OFFICIAL_SETTLEMENT_HISTORY",
   "evidence": {
-    "daily_files_checked": [
-      "dailystat_20260922.xls",
-      "dailystat_20260928.xls",
-      "dailystat_20260929.xls"
-    ],
+    "daily_files_checked": ["dailystat_20260922.xls", "dailystat_20260928.xls", "dailystat_20260929.xls"],
     "fst3_present_all_dates": true,
-    "daily_statistics_columns": [
-      "Traded Contracts",
-      "Traded Contracts Flexible Products",
-      "Traded Contracts (month)",
-      "Traded Contracts Flexible Products (month)",
-      "Traded Contracts (year)",
-      "Traded Contracts Flexible Products (year)",
-      "Traded Contracts - avg (month)",
-      "Traded Contracts - avg (year)",
-      "P/C Ratio",
-      "Open Interest (prev Day)",
-      "Volume in EUR",
-      "Volume in EUR (month)",
-      "Volume in EUR (year)",
-      "Open Interest in EUR (prev Day)"
-    ],
+    "official_columns": ["Traded Contracts", "Traded Contracts Flexible Products", "Traded Contracts (month)", "Traded Contracts Flexible Products (month)", "Traded Contracts (year)", "Traded Contracts Flexible Products (year)", "Traded Contracts - avg (month)", "Traded Contracts - avg (year)", "P/C Ratio", "Open Interest (prev Day)", "Volume in EUR", "Volume in EUR (month)", "Volume in EUR (year)", "Open Interest in EUR (prev Day)"],
     "contains_contract_settlement_prices": false,
-    "historical_query_test": "Common date parameters against the public fullOrderBook endpoint were ignored and returned current/delayed data, not target-date history."
+    "public_full_order_book_historical_parameters": "Common date parameter variants were ignored and returned current/delayed data rather than target-date history."
   },
-  "decision": "Do not activate EUR OIS. Do not infer historical settlement prices from current order-book data, volume statistics, or realized compounded Euro STR. Keep WITHHELD until homogeneous official Eurex settlement history for the required contracts is obtained.",
+  "decision": "Keep EUR WITHHELD. The free official daily statistics prove FST3 activity but do not provide contract settlement prices needed for homogeneous 3M/6M/12M current, T-1 and T-5 reconstruction. Do not infer history from current order-book data, aggregate trading statistics, or realized compounded Euro STR.",
   "production_modified": false
 }
