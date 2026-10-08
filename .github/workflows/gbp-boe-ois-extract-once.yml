@@ -19,6 +19,8 @@ jobs:
             'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip' \
             -o /tmp/oisddata.zip
           unzip -l /tmp/oisddata.zip | tee /tmp/archive-list.txt
+      - name: Install parser dependencies
+        run: python3 -m pip install --disable-pip-version-check pandas openpyxl
       - name: Extract 2025-present OIS workbook and target dates
         run: |
           python3 - <<'PY'
@@ -38,17 +40,26 @@ jobs:
               path=os.path.join(out,name)
           xls=pd.ExcelFile(path)
           result={'workbook':name,'sheets':xls.sheet_names,'targets':{}}
+          targets={pd.Timestamp('2026-09-22'),pd.Timestamp('2026-09-28'),pd.Timestamp('2026-09-29')}
           for sheet in xls.sheet_names:
               df=pd.read_excel(path,sheet_name=sheet,header=None)
-              # locate target dates in any cell
               for idx,row in df.iterrows():
-                  vals=[str(v) for v in row.tolist()]
-                  joined=' | '.join(vals)
-                  if any(d in joined for d in ['2026-09-22','2026-09-28','2026-09-29','22/09/2026','28/09/2026','29/09/2026','22/09/26','28/09/26','29/09/26']):
-                      key=next((d for d in ['2026-09-22','2026-09-28','2026-09-29','22/09/2026','28/09/2026','29/09/2026','22/09/26','28/09/26','29/09/26'] if d in joined), f'row{idx}')
+                  hit=False
+                  for v in row.tolist():
+                      try:
+                          if pd.Timestamp(v).normalize() in targets:
+                              hit=True; break
+                      except Exception:
+                          pass
+                  if hit:
+                      vals=[]
+                      for v in row.tolist():
+                          if pd.isna(v): vals.append(None)
+                          elif isinstance(v,pd.Timestamp): vals.append(v.isoformat())
+                          else: vals.append(v.item() if hasattr(v,'item') else v)
                       result['targets'].setdefault(sheet,[]).append({'row':int(idx),'values':vals})
-          open('/tmp/boe_ois_extract.json','w').write(json.dumps(result,indent=2))
-          print(json.dumps(result,indent=2))
+          open('/tmp/boe_ois_extract.json','w').write(json.dumps(result,indent=2,default=str))
+          print(json.dumps(result,indent=2,default=str))
           PY
       - name: Upload extraction evidence
         uses: actions/upload-artifact@v4
