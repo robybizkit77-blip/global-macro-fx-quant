@@ -28,6 +28,9 @@ jobs:
       - name: Run deterministic JPY CPI parser contract
         run: python validation/test_jpy_statistics_bureau_cpi.py
 
+      - name: Audit current macro source registry
+        run: python validation/macro/check_macro_source_registry.py
+
       - name: Fetch official live Statistics Bureau CPI candidate
         run: |
           mkdir -p /tmp/gmfq-jpy-cpi/live
