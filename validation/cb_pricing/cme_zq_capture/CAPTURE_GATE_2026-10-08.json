@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-08",
+  "status": "WITHHELD",
+  "source": "CME Group",
+  "source_url": "https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf",
+  "evidence": "Oct 7 preliminary and Oct 6 final appear in CME PDF text. PDF screenshot instead showed July 21; source not validated.",
+  "missing": [
+    "matching original PDF bytes",
+    "T-5 verified CME final strip",
+    "3 same-basis final snapshots"
+  ],
+  "main_mutated": false,
+  "gh_pages_mutated": false
+}
