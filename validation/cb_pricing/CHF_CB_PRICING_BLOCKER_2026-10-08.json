@@ -1,0 +1,32 @@
+{
+  "currency": "CHF",
+  "status": "WITHHELD",
+  "as_of": "2026-10-08",
+  "instrument": "ICE Three Month SARON Index Futures",
+  "symbol": "SA3",
+  "exchange": "ICE Futures Europe",
+  "quote_convention": "100 - rate",
+  "validated": {
+    "instrument": true,
+    "contract_symbol": true,
+    "quarterly_delivery_structure": true,
+    "public_product_page": true,
+    "public_market_page": true,
+    "official_report_center": true
+  },
+  "history_required": ["2026-09-29 current basis", "2026-09-28 T-1", "approximately 2026-09-22 T-5 business days"],
+  "history_status": "BLOCKED_PUBLIC_OFFICIAL_DAILY_SETTLEMENT_HISTORY",
+  "evidence": {
+    "public_product_market_id": "6097635",
+    "public_product_payload_contains_contract_metadata": true,
+    "public_product_payload_contains_historical_target_dates": false,
+    "finalSettlement_field_is_contract_final_settlement_date_not_daily_price": true,
+    "official_report_center_states_daily_settlement_prices_available": true,
+    "official_report_center_states_end_of_day_csv_packages_available_by_subscription": true,
+    "homogeneous_public_daily_sa3_settlements_22_28_29_sep_obtained": false
+  },
+  "decision": "Do not activate CHF OIS. Do not substitute SIX spot SARON, realized compounded SARON, Eurex inactive FSR3 observations, or secondary vendor prices. Keep WITHHELD until homogeneous official ICE SA3 daily settlement history for the required dates/contracts is obtainable.",
+  "production_modified": false,
+  "main_modified": false,
+  "gh_pages_modified": false
+}
