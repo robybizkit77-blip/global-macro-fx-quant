@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "GBP",
+    "dimension": "inflation",
+    "macro_series_id": "UK_CPI_HEADLINE_YOY_history_value"
+  },
+  "authority": "UK Office for National Statistics",
+  "source": "ONS",
+  "official_transport_source": "Office for National Statistics",
+  "series_id": "D7G7",
+  "frequency": "M",
+  "transformation": "reported_yoy_rate",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 2.9,
+    "release_date": "2026-08-19",
+    "official_reference": "https://www.ons.gov.uk/releases/consumerpriceinflationukjuly2026"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 3.1,
+    "release_date": "2026-09-16",
+    "official_reference": "https://www.ons.gov.uk/releases/consumerpriceinflationukaugust2026"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/previousreleases",
+    "canonical_source_label_preserved": true,
+    "note": "July and August 2026 UK headline CPI were distinct official ONS monthly releases. CPI rose from 2.9 percent year over year in July to 3.1 percent in August. The bootstrap preserves the canonical ONS source label while independently validating the current official ONS D7G7/MM23 transport."
+  }
+}
