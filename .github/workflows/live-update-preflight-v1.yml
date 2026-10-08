@@ -9,6 +9,7 @@ on:
       - '.github/workflows/live-update-preflight-v1.yml'
       - 'validation/check_live_update_contract.py'
       - 'validation/check_cb_pricing_source_registry.py'
+      - 'validation/test_cb_pricing_source_registry_failclosed.py'
       - 'validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json'
       - 'validation/rebuild_live_data_runtime.py'
       - 'live_data/**'
@@ -32,6 +33,10 @@ jobs:
       - name: Verify CB pricing source registry and fail-closed WITHHELD state
         run: |
           python3 validation/check_cb_pricing_source_registry.py | tee /tmp/cb-pricing-source-registry.json
+
+      - name: Prove CB pricing registry fails closed under negative mutations
+        run: |
+          python3 validation/test_cb_pricing_source_registry_failclosed.py | tee /tmp/cb-pricing-failclosed-negative.json
 
       - name: Verify deterministic no-op runtime rebuild
         run: |
@@ -74,6 +79,7 @@ jobs:
           path: |
             /tmp/live-update-contract.json
             /tmp/cb-pricing-source-registry.json
+            /tmp/cb-pricing-failclosed-negative.json
             /tmp/live-update-runtime-roundtrip.json
 
       - name: Governance note
@@ -82,4 +88,5 @@ jobs:
           echo 'This workflow is validation-only and read-only.'
           echo 'It does not collect data, change live_data, rebuild production, promote main, publish gh-pages, or alter OOS T0.'
           echo 'CB pricing is fail-closed against the canonical source registry: WITHHELD currencies cannot become ACTIVE without an explicit registry methodology update in the same validation path.'
+          echo 'Negative mutation tests prove that WITHHELD activation, unauthorized source substitution, and missing 1W change data are rejected and that the runtime is restored byte-identically.'
           echo 'Engine Logic Audit and Staging Browser Audit run independently on validation-* and release-* pushes and must also be green before any future promotion.'
