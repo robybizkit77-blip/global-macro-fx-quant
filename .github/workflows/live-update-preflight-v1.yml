@@ -27,18 +27,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Verify frozen model contract and live-data integrity
+        shell: bash
         run: |
           python3 validation/check_live_update_contract.py | tee /tmp/live-update-contract.json
 
       - name: Verify CB pricing source registry and fail-closed WITHHELD state
+        shell: bash
         run: |
           python3 validation/check_cb_pricing_source_registry.py | tee /tmp/cb-pricing-source-registry.json
 
       - name: Prove CB pricing registry fails closed under negative mutations
+        shell: bash
         run: |
           python3 validation/test_cb_pricing_source_registry_failclosed.py | tee /tmp/cb-pricing-failclosed-negative.json
 
       - name: Verify deterministic no-op runtime rebuild
+        shell: bash
         run: |
           python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/live-update-runtime-roundtrip.json
 
@@ -54,6 +58,7 @@ jobs:
           echo 'READ_ONLY_PREFLIGHT_PASS'
 
       - name: Verify frozen OOS boundary
+        shell: bash
         run: |
           python3 - <<'PY'
           import json, pathlib
@@ -84,9 +89,11 @@ jobs:
 
       - name: Governance note
         if: always()
+        shell: bash
         run: |
           echo 'This workflow is validation-only and read-only.'
           echo 'It does not collect data, change live_data, rebuild production, promote main, publish gh-pages, or alter OOS T0.'
           echo 'CB pricing is fail-closed against the canonical source registry: WITHHELD currencies cannot become ACTIVE without an explicit registry methodology update in the same validation path.'
           echo 'Negative mutation tests prove that WITHHELD activation, unauthorized source substitution, and missing 1W change data are rejected and that the runtime is restored byte-identically.'
+          echo 'All piped validation commands run with bash pipefail semantics so checker failures cannot be masked by tee.'
           echo 'Engine Logic Audit and Staging Browser Audit run independently on validation-* and release-* pushes and must also be green before any future promotion.'
