@@ -18,65 +18,98 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: validation-cme-zq-capture-2026-10-08
-      - name: Download official CME CBOT futures reference archive
+      - name: Probe official CME settlements page and service
         shell: bash
         run: |
           set -euo pipefail
-          urls=(
-            'https://www.cmegroup.com/ftp/fprf/cmeg.cbt.fut.prf.20261002.xml.zip'
-            'https://www.cmegroup.com/ftp/pub/fprf/cmeg.cbt.fut.prf.20261002.xml.zip'
-            'https://www.cmegroup.com/ftp/fprf/cmeg.cbt.combo.prf.20261002.xml.zip'
-          )
+          page='https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html'
+          curl -fL -A 'Mozilla/5.0' "$page" -o /tmp/page.html
+          python3 - <<'PY'
+          import pathlib,re,json,subprocess
+          text=pathlib.Path('/tmp/page.html').read_text(encoding='utf-8',errors='replace')
+          # Discover product IDs from page context first; also include known CME settlements endpoint candidate 305.
+          ids=[]
+          for pat in [r'productId["\s:=]+(\d+)', r'productId%22%3A(\d+)', r'/Settlements/Futures/Settlements/(\d+)/']:
+              ids += re.findall(pat,text,re.I)
+          ids=list(dict.fromkeys(ids+['305']))
+          pathlib.Path('/tmp/product_ids.json').write_text(json.dumps(ids))
+          print('candidate_product_ids',ids)
+          # Save page snippets around ZQ / productId for provenance, no market values inferred.
+          snippets=[]
+          up=text.upper()
+          for key in ['ZQ','30 DAY FEDERAL','PRODUCTID','SETTLEMENTS/FUTURES']:
+              pos=0
+              while True:
+                  i=up.find(key,pos)
+                  if i<0: break
+                  snippets.append(text[max(0,i-500):min(len(text),i+1000)])
+                  pos=i+len(key)
+                  if len(snippets)>=30: break
+              if len(snippets)>=30: break
+          pathlib.Path('/tmp/page_snippets.json').write_text(json.dumps(snippets,indent=2))
+          PY
           ok=0
-          for url in "${urls[@]}"; do
-            echo "TRY $url"
-            if curl -fL --retry 2 --retry-delay 1 -A 'Mozilla/5.0' "$url" -o /tmp/cme.zip; then
-              echo "$url" >/tmp/source_url.txt
-              ok=1
-              break
-            fi
+          for id in $(python3 -c "import json; print(' '.join(json.load(open('/tmp/product_ids.json'))))"); do
+            for strategy in DEFAULT; do
+              url="https://www.cmegroup.com/CmeWS/mvc/Settlements/Futures/Settlements/${id}/FUT?strategy=${strategy}&tradeDate=10/02/2026"
+              echo "TRY $url"
+              code=$(curl -sS -L -A 'Mozilla/5.0' -H 'Accept: application/json,text/plain,*/*' -w '%{http_code}' "$url" -o "/tmp/settle_${id}.json" || true)
+              echo "HTTP $code size $(wc -c < /tmp/settle_${id}.json 2>/dev/null || echo 0)"
+              if [ "$code" = 200 ] && python3 - "/tmp/settle_${id}.json" <<'PY'
+          import sys,json
+          p=sys.argv[1]
+          try: x=json.load(open(p))
+          except Exception: raise SystemExit(1)
+          s=json.dumps(x).upper()
+          raise SystemExit(0 if ('DEC 26' in s or 'DEC26' in s or 'ZQ' in s) else 1)
+          PY
+              then
+                cp "/tmp/settle_${id}.json" /tmp/settlement.json
+                echo "$url" >/tmp/source_url.txt
+                ok=1
+                break 2
+              fi
+            done
           done
           test "$ok" = 1
-          unzip -o /tmp/cme.zip -d /tmp/cme
-          find /tmp/cme -maxdepth 2 -type f -printf '%p %s bytes\n'
-      - name: Extract ZQ evidence without guessing schema
+      - name: Parse exact Dec-26 Mar-27 Sep-27 settlements
         shell: bash
         run: |
           set -euo pipefail
-          xml=$(find /tmp/cme -type f | head -n1)
-          python3 - "$xml" <<'PY'
-          import sys, pathlib, json
-          p=pathlib.Path(sys.argv[1])
-          text=p.read_text(encoding='utf-8',errors='replace')
-          keys=['ZQ','30 DAY FED','FED FUND','FEDERAL FUND']
-          hits=[]; up=text.upper()
-          for key in keys:
-              start=0
-              while True:
-                  i=up.find(key,start)
-                  if i<0: break
-                  hits.append((i,key,text[max(0,i-1400):min(len(text),i+3200)]))
-                  start=i+len(key)
-          out=[]; last=-999999
-          for i,key,snip in sorted(hits):
-              if i-last>500:
-                  out.append({'offset':i,'key':key,'snippet':snip}); last=i
-              if len(out)>=100: break
-          src=pathlib.Path('/tmp/source_url.txt').read_text().strip()
-          dest=pathlib.Path('validation/cb_pricing/CME_ZQ_T5_RAW_EVIDENCE_2026-10-08.json')
-          dest.parent.mkdir(parents=True,exist_ok=True)
-          dest.write_text(json.dumps({'source':'CME Group official CBOT futures reference archive','source_url':src,'archive_date':'2026-10-02','match_count':len(hits),'snippets':out},indent=2),encoding='utf-8')
-          print('match_count',len(hits),'snippets',len(out))
-          if not hits:
-              raise SystemExit('No ZQ/Fed Funds markers found in official CME archive')
+          python3 - <<'PY'
+          import json,pathlib,re
+          raw=json.load(open('/tmp/settlement.json'))
+          # CME service normally returns settlements list; inspect recursively and accept only explicit contract labels + settle values.
+          rows=[]
+          def walk(x):
+              if isinstance(x,dict):
+                  txt=json.dumps(x,ensure_ascii=False)
+                  up=txt.upper()
+                  if any(k in up for k in ['DEC 26','DEC26','MAR 27','MAR27','SEP 27','SEP27']): rows.append(x)
+                  for v in x.values(): walk(v)
+              elif isinstance(x,list):
+                  for v in x: walk(v)
+          walk(raw)
+          # de-duplicate dicts by JSON representation
+          uniq=[]; seen=set()
+          for r in rows:
+              k=json.dumps(r,sort_keys=True)
+              if k not in seen: seen.add(k); uniq.append(r)
+          out={'source':'CME Group official Futures Settlements service','source_url':pathlib.Path('/tmp/source_url.txt').read_text().strip(),'trade_date':'2026-10-02','raw_matching_rows':uniq}
+          pathlib.Path('validation/cb_pricing/CME_ZQ_T5_SETTLEMENT_EVIDENCE_2026-10-08.json').write_text(json.dumps(out,indent=2,ensure_ascii=False),encoding='utf-8')
+          print(json.dumps(out,indent=2,ensure_ascii=False)[:12000])
+          labels=json.dumps(uniq).upper()
+          for lab in ['DEC 26','MAR 27','SEP 27']:
+              if lab not in labels and lab.replace(' ','') not in labels:
+                  raise SystemExit(f'missing exact contract {lab}')
           PY
-      - name: Commit diagnostic evidence only
+      - name: Commit official diagnostic evidence only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/cb_pricing/CME_ZQ_T5_RAW_EVIDENCE_2026-10-08.json
+          git add validation/cb_pricing/CME_ZQ_T5_SETTLEMENT_EVIDENCE_2026-10-08.json
           git diff --cached --quiet && exit 0
-          git commit -m 'Capture official CME ZQ T-5 archive evidence'
+          git commit -m 'Capture official CME ZQ T-5 settlement evidence'
           git push origin HEAD:validation-cme-zq-capture-2026-10-08
