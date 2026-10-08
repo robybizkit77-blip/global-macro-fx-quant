@@ -70,22 +70,41 @@ def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], di
     return entry, {"adapter": adapter, "transport": transport}, hits[0]["id"]
 
 
-def run_adapter(adapter: pathlib.Path, currency: str, dimension: str, fixture: pathlib.Path | None, work: pathlib.Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def adapter_command(adapter: pathlib.Path, currency: str, dimension: str, fixture: pathlib.Path | None, work: pathlib.Path) -> tuple[list[str], pathlib.Path, pathlib.Path]:
+    """Translate a registered target into its adapter's actual CLI contract.
+
+    Source adapters pre-date this bridge and do not share one CLI.  Keep that
+    difference here instead of teaching an official source adapter bridge-only
+    flags.  The dispatch is deliberately keyed by target, so an adapter cannot
+    accidentally be invoked for a dimension it does not implement.
+    """
     raw = work / "adapter-candidate.json"
     audit = work / "adapter-audit.json"
     cmd = [sys.executable, str(adapter)]
+    target = (currency, dimension)
     if adapter.name == "us_bls_core_macro.py":
         out_dir = work / "bls"
         cmd += ["--output-dir", str(out_dir)]
         if fixture:
             cmd += ["--fixture", str(fixture)]
-        subprocess.run(cmd, cwd=ROOT, check=True)
-        raw, audit = out_dir / f"{dimension}-candidate.json", out_dir / "source-audit.json"
+        return cmd, out_dir / f"{dimension}-candidate.json", out_dir / "source-audit.json"
+    # These official Japanese adapters each represent one fixed target and do
+    # not accept --dimension.  Passing the generic flag was the original
+    # bridge failure for JPY.labour.
+    if target == ("JPY", "labour") and adapter.name == "jpy_estat_unemployment.py":
+        cmd += ["--output", str(raw), "--audit-output", str(audit)]
+    elif target == ("JPY", "inflation") and adapter.name == "jpy_statistics_bureau_cpi.py":
+        cmd += ["--output", str(raw), "--audit-output", str(audit)]
     else:
         cmd += ["--dimension", dimension, "--output", str(raw), "--audit-output", str(audit)]
-        if fixture:
-            cmd += ["--fixture", str(fixture)]
-        subprocess.run(cmd, cwd=ROOT, check=True)
+    if fixture:
+        cmd += ["--fixture", str(fixture)]
+    return cmd, raw, audit
+
+
+def run_adapter(adapter: pathlib.Path, currency: str, dimension: str, fixture: pathlib.Path | None, work: pathlib.Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    cmd, raw, audit = adapter_command(adapter, currency, dimension, fixture, work)
+    subprocess.run(cmd, cwd=ROOT, check=True)
     if not raw.is_file() or not audit.is_file():
         raise ValueError("adapter did not produce both candidate and audit")
     candidate, adapter_audit = load(raw), load(audit)

@@ -65,6 +65,7 @@ jobs:
           FIXTURE_PATH: ${{ inputs.fixture_path }}
         run: |
           set -euo pipefail
+          mkdir -p /tmp/macro-adapter-pit
           args=(--currency "$CURRENCY" --dimension "$DIMENSION" --output /tmp/macro-adapter-pit/candidate.json --audit-output /tmp/macro-adapter-pit/audit.json)
           if [ -n "$FIXTURE_PATH" ]; then
             test -f "$FIXTURE_PATH"
