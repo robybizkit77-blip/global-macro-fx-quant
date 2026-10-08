@@ -73,7 +73,10 @@ concurrency:
 
 jobs:
   contract-self-test:
-    if: github.event_name == 'push'
+    # A reusable call inherits the caller's event name (including `push`).
+    # Its non-empty refresh_scope therefore distinguishes it from this
+    # workflow's own source-contract push self-test.
+    if: github.event_name == 'push' && inputs.refresh_scope == ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -97,7 +100,7 @@ jobs:
             /tmp/macro-pit-refresh-registry.json
 
   mark-batch-not-eligible:
-    if: github.event_name == 'workflow_dispatch' && inputs.refresh_scope == 'batch'
+    if: inputs.refresh_scope == 'batch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -131,7 +134,7 @@ jobs:
           if-no-files-found: error
 
   single-series-dry-run:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.refresh_scope == 'single_series'
+    if: inputs.refresh_scope == 'single_series'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
