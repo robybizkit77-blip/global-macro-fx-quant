@@ -1,0 +1,285 @@
+name: Macro Single-Series PIT Refresh V1
+
+# This is the only operational entry point for a future macro refresh. Source
+# contract workflows deliberately remain read-only: they can produce and check
+# candidates, but cannot certify an individual live refresh on their own.
+on:
+  push:
+    branches:
+      - 'feature/pit-anchor-refresh-wiring-*'
+    paths:
+      - '.github/workflows/macro-single-series-pit-refresh-v1.yml'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_anchor_contract.py'
+      - 'validation/test_macro_pit_anchor_contract.py'
+  workflow_dispatch:
+    inputs:
+      refresh_scope:
+        description: A single candidate is eligible; batch refreshes are evidence-only and never individually certified
+        required: true
+        default: single_series
+        type: choice
+        options: [single_series, batch]
+      currency:
+        description: Core currency code for a single-series refresh
+        required: true
+        default: JPY
+        type: choice
+        options: [USD, EUR, GBP, JPY, CHF, CAD, AUD, NZD]
+      dimension:
+        description: Core macro dimension for a single-series refresh
+        required: true
+        default: labour
+        type: choice
+        options: [inflation, labour]
+      macro_series_id:
+        description: Exact MACRO_SERIES id; required for individual PIT eligibility
+        required: false
+        default: JP_UNEMP_RATE_history_value
+        type: string
+      candidate_path:
+        description: Repository-relative, validated candidate JSON (required outside dry_run)
+        required: false
+        default: ''
+        type: string
+      dry_run:
+        description: Use a synthetic JPY labour observation on the ephemeral runner; never publish data
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-single-series-pit-refresh-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract-self-test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Re-run atomic positive and batch-rejection contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/test_macro_pit_anchor_contract.py | tee /tmp/macro-pit-refresh-selftest.json
+          python3 validation/macro/check_macro_source_registry.py | tee /tmp/macro-pit-refresh-registry.json
+      - name: Prove self-test did not modify live artifacts
+        shell: bash
+        run: git diff --exit-code -- live_data payload validation/macro
+      - name: Upload self-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-single-series-pit-refresh-selftest-${{ github.run_id }}
+          path: |
+            /tmp/macro-pit-refresh-selftest.json
+            /tmp/macro-pit-refresh-registry.json
+
+  mark-batch-not-eligible:
+    if: github.event_name == 'workflow_dispatch' && inputs.refresh_scope == 'batch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record explicit non-eligibility without touching live data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-single-series-pit
+          python3 - <<'PY' | tee /tmp/macro-single-series-pit/receipt.json
+          import datetime as dt, json
+          print(json.dumps({
+            'schema':'GMFQ_MACRO_PIT_REFRESH_RECEIPT_V1',
+            'status':'NOT_ELIGIBLE_FOR_INDIVIDUAL_PIT',
+            'reason':'refresh_scope=batch; individual PIT anchor was intentionally not attempted',
+            'registry_promotion':'NOT_ATTEMPTED',
+            'promotion_performed':False,
+            'live_data_published':False,
+            'gh_pages_published':False,
+            'automatic_publication':False,
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+          }, indent=2))
+          PY
+          git diff --exit-code -- live_data payload validation/macro
+      - name: Upload non-eligibility receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-pit-not-eligible-batch-${{ github.run_id }}
+          path: /tmp/macro-single-series-pit/receipt.json
+          if-no-files-found: error
+
+  single-series-dry-run:
+    if: github.event_name == 'workflow_dispatch' && inputs.refresh_scope == 'single_series'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Resolve one validated candidate
+        shell: bash
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          CURRENCY: ${{ inputs.currency }}
+          DIMENSION: ${{ inputs.dimension }}
+          MACRO_SERIES_ID: ${{ inputs.macro_series_id }}
+          CANDIDATE_PATH: ${{ inputs.candidate_path }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-single-series-pit
+          if [ "$DRY_RUN" = 'true' ]; then
+            test "$CURRENCY" = JPY
+            test "$DIMENSION" = labour
+            test "$MACRO_SERIES_ID" = JP_UNEMP_RATE_history_value
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          row=next(x for x in series['JPY'] if x['id']=='JP_UNEMP_RATE_history_value')
+          h=heat['currencies']['JPY']['labour']
+          candidate={
+            'currency':'JPY','dimension':'labour','macro_series_id':'JP_UNEMP_RATE_history_value',
+            'observation_date':'2099-12','value':float(row['last_value'])+0.001,
+            'source':h['source'],'series_id':h['series_id'],'frequency':h['frequency'],
+            'transformation':h['transformation'],'unit':row.get('unit'),
+          }
+          Path('/tmp/macro-single-series-pit/candidate.json').write_text(json.dumps(candidate,indent=2)+'\n')
+          PY
+          else
+            test -n "$CANDIDATE_PATH"
+            test -f "$CANDIDATE_PATH"
+            cp "$CANDIDATE_PATH" /tmp/macro-single-series-pit/candidate.json
+          fi
+          python3 - <<'PY'
+          import json, os
+          c=json.load(open('/tmp/macro-single-series-pit/candidate.json'))
+          expected={
+            'currency':os.environ['CURRENCY'], 'dimension':os.environ['DIMENSION'],
+            'macro_series_id':os.environ['MACRO_SERIES_ID'],
+          }
+          got={k:c.get(k) for k in expected}
+          if got != expected: raise SystemExit(f'candidate target mismatch: expected={expected} got={got}')
+          print(json.dumps({'status':'CANDIDATE_TARGET_PASS','target':got},indent=2))
+          PY
+          python3 validation/build_macro_candidate.py --candidate /tmp/macro-single-series-pit/candidate.json --output-dir /tmp/macro-single-series-pit/built | tee /tmp/macro-single-series-pit/builder.json
+          git diff --exit-code -- live_data payload validation/macro
+
+      - name: Classify no-op observations without manufacturing a PIT anchor
+        id: candidate-state
+        shell: bash
+        run: |
+          set -euo pipefail
+          if cmp -s /tmp/macro-single-series-pit/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json && cmp -s /tmp/macro-single-series-pit/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json; then
+            python3 - <<'PY' > /tmp/macro-single-series-pit/no-update.json
+          import datetime as dt, json
+          print(json.dumps({'schema':'GMFQ_MACRO_PIT_REFRESH_RECEIPT_V1','status':'NO_UPDATE','registry_promotion':'NOT_ATTEMPTED','promotion_performed':False,'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat()},indent=2))
+          PY
+            echo 'has_update=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'has_update=true' >> "$GITHUB_OUTPUT"
+
+      - name: Capture BEFORE, apply one candidate and capture AFTER
+        if: steps.candidate-state.outputs.has_update == 'true'
+        shell: bash
+        env:
+          CURRENCY: ${{ inputs.currency }}
+          DIMENSION: ${{ inputs.dimension }}
+          MACRO_SERIES_ID: ${{ inputs.macro_series_id }}
+        run: |
+          set -euo pipefail
+          common=(--evidence-dir /tmp/macro-single-series-pit/evidence --currency "$CURRENCY" --dimension "$DIMENSION" --macro-series-id "$MACRO_SERIES_ID")
+          python3 validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/macro-single-series-pit/before-capture.json
+          cp /tmp/macro-single-series-pit/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/macro-single-series-pit/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python3 validation/macro_pit_anchor_contract.py capture-after "${common[@]}" --allow-live-data-dirty | tee /tmp/macro-single-series-pit/after-capture.json
+          git diff --name-only > /tmp/macro-single-series-pit/after-capture-files.txt
+          python3 - <<'PY'
+          changed=set(open('/tmp/macro-single-series-pit/after-capture-files.txt').read().splitlines())
+          allowed={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json'}
+          if changed != allowed: raise SystemExit(f'AFTER capture scope violation: {sorted(changed)}')
+          print('AFTER_CAPTURE_SCOPE_PASS')
+          PY
+
+      - name: Replay the atomic PIT anchor before runtime rebuild
+        if: steps.candidate-state.outputs.has_update == 'true'
+        shell: bash
+        env:
+          CURRENCY: ${{ inputs.currency }}
+          DIMENSION: ${{ inputs.dimension }}
+          MACRO_SERIES_ID: ${{ inputs.macro_series_id }}
+        run: |
+          set -euo pipefail
+          python3 validation/macro_pit_anchor_contract.py verify --evidence-dir /tmp/macro-single-series-pit/evidence --currency "$CURRENCY" --dimension "$DIMENSION" --macro-series-id "$MACRO_SERIES_ID" --candidate /tmp/macro-single-series-pit/candidate.json --evidence-output /tmp/macro-single-series-pit/macro-pit-anchor-evidence.json | tee /tmp/macro-single-series-pit/verify.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-single-series-pit/macro-pit-anchor-evidence.json'))
+          assert d['schema']=='GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1', d
+          assert d['status']=='PASS', d
+          assert d['registry_promotion']=='NOT_ATTEMPTED', d
+          assert len(d['atomic_delta']['changed_rows'])==1, d
+          print('MACRO_PIT_ATOMIC_REPLAY_PASS')
+          PY
+
+      - name: Re-apply validated candidate through canonical runtime path
+        if: steps.candidate-state.outputs.has_update == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/macro-single-series-pit/evidence/before/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/macro-single-series-pit/evidence/before/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git diff --exit-code -- live_data payload
+          python3 validation/update_live_direct_section.py --section MACRO_THERMOMETER_DATA --replacement /tmp/macro-single-series-pit/built/MACRO_THERMOMETER_DATA.json --apply | tee /tmp/macro-single-series-pit/apply-heatmap.json
+          python3 validation/update_live_direct_section.py --section MACRO_SERIES --replacement /tmp/macro-single-series-pit/built/MACRO_SERIES.json --apply | tee /tmp/macro-single-series-pit/apply-series.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/macro-single-series-pit/manifest.json
+          python3 validation/check_live_update_contract.py | tee /tmp/macro-single-series-pit/live-contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/macro-single-series-pit/runtime-roundtrip.json
+          git diff --name-only > /tmp/macro-single-series-pit/runtime-candidate-files.txt
+          python3 - <<'PY'
+          changed=set(open('/tmp/macro-single-series-pit/runtime-candidate-files.txt').read().splitlines())
+          allowed={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt'}
+          if changed != allowed: raise SystemExit(f'candidate runtime scope violation: {sorted(changed)}')
+          print('MACRO_SINGLE_SERIES_RUNTIME_SCOPE_PASS')
+          PY
+
+      - name: Build no-publication receipt and restore the ephemeral runner
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee /tmp/macro-single-series-pit/receipt.json
+          import datetime as dt, json, pathlib, subprocess
+          root=pathlib.Path('/tmp/macro-single-series-pit')
+          evidence=root/'macro-pit-anchor-evidence.json'
+          no_update=root/'no-update.json'
+          status='FAILED_NO_PUBLICATION'
+          if evidence.exists() and json.loads(evidence.read_text()).get('status')=='PASS': status='PIT_ANCHOR_VALIDATED_NO_PUBLICATION'
+          elif no_update.exists(): status='NO_UPDATE'
+          print(json.dumps({
+            'schema':'GMFQ_MACRO_PIT_REFRESH_RECEIPT_V1','status':status,
+            'registry_promotion':'NOT_ATTEMPTED','promotion_performed':False,
+            'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+          },indent=2))
+          PY
+          git restore --source=HEAD --worktree -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt
+          git diff --exit-code -- live_data payload
+
+      - name: Upload PIT evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-single-series-pit-refresh-${{ github.run_id }}
+          path: /tmp/macro-single-series-pit/
+          if-no-files-found: warn
+          retention-days: 60
