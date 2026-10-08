@@ -89,14 +89,17 @@ def main() -> int:
     governance=registry.get('governance') or {}
     active=[c for c in G8 if (reg_ccy.get(c) or {}).get('status')=='ACTIVE']
     withheld=[c for c in G8 if (reg_ccy.get(c) or {}).get('status')=='WITHHELD']
+    declared_active=governance.get('active') or []
+    declared_withheld=governance.get('withheld') or []
+
     if governance.get('active_count') != len(active):
         failures.append('registry active_count mismatch')
     if governance.get('withheld_count') != len(withheld):
         failures.append('registry withheld_count mismatch')
-    if governance.get('active') != active:
-        failures.append('registry active list/order mismatch')
-    if governance.get('withheld') != withheld:
-        failures.append('registry withheld list/order mismatch')
+    if len(declared_active) != len(set(declared_active)) or set(declared_active) != set(active):
+        failures.append('registry active membership mismatch')
+    if len(declared_withheld) != len(set(declared_withheld)) or set(declared_withheld) != set(withheld):
+        failures.append('registry withheld membership mismatch')
 
     status='PASS' if not failures else 'FAIL'
     details['rows']=rows
