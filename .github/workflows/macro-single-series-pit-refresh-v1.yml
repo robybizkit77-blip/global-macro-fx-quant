@@ -51,6 +51,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # The contract's BEFORE snapshot intentionally requires a clean checkout.
+  # Python bytecode is incidental runner state, never refresh evidence.
+  PYTHONDONTWRITEBYTECODE: '1'
+
 concurrency:
   group: macro-single-series-pit-refresh-${{ github.ref }}
   cancel-in-progress: false
