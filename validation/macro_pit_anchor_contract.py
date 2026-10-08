@@ -95,7 +95,7 @@ def capture(args: argparse.Namespace) -> int:
     allowed_live_dirty = {SERIES_REL.as_posix(), HEAT_REL.as_posix()}
     allow_live_dirty = args.phase == "after" and args.allow_live_data_dirty
     if dirty and (not allow_live_dirty or not set(dirty).issubset(allowed_live_dirty)):
-        raise ValueError("capture requires a clean repository; AFTER may opt in only to dirty target live artifacts")
+        raise ValueError(f"capture requires a clean repository; AFTER may opt in only to dirty target live artifacts: {dirty}")
     evidence_dir = pathlib.Path(args.evidence_dir).resolve()
     series_out, heat_out, manifest_out = snapshot_paths(evidence_dir, args.phase)
     if manifest_out.exists() and not args.overwrite:
