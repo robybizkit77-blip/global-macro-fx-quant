@@ -7,22 +7,23 @@ OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'
 BASE='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{date}SFN.htm'
 MAP={'3m':'Dec 2026','6m':'Mar 2027','12m':'Sep 2027'}
 DATE_RE=re.compile(r'close of trade date\s+(\d{2}/\d{2}/\d{2})',re.I)
+PRODUCT_RE=re.compile(r'^[A-Z0-9]{2,3}\s+-\s+')
 def parse(html):
  soup=BeautifulSoup(html,'html.parser')
  txt=soup.get_text(' ',strip=True)
  m=DATE_RE.search(txt)
  if not m: raise SystemExit('ASX trade date missing')
  d=dt.datetime.strptime(m.group(1),'%d/%m/%y').date()
- table=None
- for t in soup.find_all('table'):
-  z=t.get_text(' ',strip=True)
-  if 'IB - 30 Day Interbank Cash Rate' in z:
-   table=t; break
- if table is None: raise SystemExit('ASX IB table missing')
- out={}
- for tr in table.find_all('tr'):
-  cells=[c.get_text(' ',strip=True) for c in tr.find_all(['th','td'])]
-  if len(cells)<6: continue
+ out={}; active=False
+ for tr in soup.find_all('tr'):
+  cells=[c.get_text(' ',strip=True) for c in tr.find_all(['th','td'],recursive=False)]
+  if not cells: continue
+  row=' '.join(cells)
+  if 'IB - 30 Day Interbank Cash Rate' in row:
+   active=True; continue
+  if active and PRODUCT_RE.match(row) and 'IB - 30 Day Interbank Cash Rate' not in row:
+   break
+  if not active or len(cells)<6: continue
   expiry=cells[0]
   if expiry not in MAP.values(): continue
   try: sett=float(cells[5].replace(',',''))
