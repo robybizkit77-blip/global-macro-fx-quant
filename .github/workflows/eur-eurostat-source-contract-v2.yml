@@ -11,6 +11,8 @@ on:
       - 'validation/fixtures/eur_eurostat_unemployment_contract.json'
       - 'validation/test_eur_eurostat_source.py'
       - 'validation/build_macro_candidate.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'validation/macro/check_macro_source_registry.py'
       - '.github/workflows/eur-eurostat-source-contract-v2.yml'
   workflow_dispatch:
 
@@ -67,6 +69,8 @@ jobs:
               out[dim]={'dataset':dataset,'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'prior_period':a['prior_period'],'prior_value':a['prior_value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
           print(json.dumps({'status':'PASS','source':'Eurostat','results':out,'live_data_modified':False,'dynamic_latest_observation':True},indent=2))
           PY
+      - name: Audit macro source registry
+        run: python validation/macro/check_macro_source_registry.py
       - name: Confirm repository live data remained untouched
         run: |
           sha256sum -c /tmp/eur-before.sha256
