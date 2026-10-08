@@ -5,6 +5,8 @@ on:
     branches:
       - validation-rates-daily-operational-2026-10-08
       - release-candidate-rates-daily-operational-2026-10-08
+      - validation-operational-retry-cadence-2026-10-08
+      - release-candidate-operational-retry-cadence-2026-10-08
     paths:
       - '.github/workflows/rates-daily-operational.yml'
       - 'validation/run_rates_audit.py'
@@ -13,27 +15,42 @@ on:
       - 'validation/build_rates_candidate_from_audit.py'
   workflow_dispatch:
   schedule:
-    - cron: '45 5 * * 1-5'
-    - cron: '45 6 * * 1-5'
+    # Europe/Rome retry cadence: 06:10, 06:40, 07:10 on working days.
+    - cron: '10 4 * * 1-5'
+    - cron: '10 5 * * 1-5'
+    - cron: '40 4 * * 1-5'
+    - cron: '40 5 * * 1-5'
+    - cron: '10 6 * * 1-5'
+
 permissions:
   contents: read
+
 concurrency:
   group: rates-daily-operational
   cancel-in-progress: false
+
 jobs:
   schedule-gate:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.gate.outputs.should_run }}
+      local_time: ${{ steps.gate.outputs.local_time }}
+      retry_key: ${{ steps.gate.outputs.retry_key }}
     steps:
       - id: gate
         shell: bash
         run: |
           set -euo pipefail
+          local_time="$(TZ=Europe/Rome date +'%Y-%m-%dT%H:%M:%S%z')"
+          local_date="$(TZ=Europe/Rome date +'%Y-%m-%d')"
           hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != "schedule" || "$hhmm" == "07:45" ]]; then should_run=true; else should_run=false; fi
+          allowed='06:10 06:40 07:10'
+          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then should_run=true; else should_run=false; fi
           echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
-          echo "event=${{ github.event_name }} rome_time=$hhmm should_run=$should_run"
+          echo "local_time=$local_time" >> "$GITHUB_OUTPUT"
+          echo "retry_key=rates-daily-green-$local_date" >> "$GITHUB_OUTPUT"
+          echo "event=${{ github.event_name }} local_time=$local_time should_run=$should_run"
+
   observe:
     needs: schedule-gate
     if: needs.schedule-gate.outputs.should_run == 'true'
@@ -41,12 +58,30 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore same-day successful marker
+        id: success-marker
+        if: github.event_name == 'schedule'
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/rates-daily-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
+
+      - name: Skip retry after earlier GREEN run
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit == 'true'
+        run: echo "Rates already GREEN today; later retry skipped."
+
       - uses: actions/setup-python@v5
+        if: steps.success-marker.outputs.cache-hit != 'true'
         with:
           python-version: '3.12'
+
       - name: Install parser dependencies
+        if: steps.success-marker.outputs.cache-hit != 'true'
         run: pip install openpyxl
+
       - name: Run unified official Rates audit and build candidate
+        if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -54,7 +89,9 @@ jobs:
           python validation/run_rates_audit.py > /tmp/rates-daily/audit.json
           python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-daily/audit.json --output /tmp/rates-daily/NATIVE_RATES_DATA.json | tee /tmp/rates-daily/candidate-summary.json
           git diff --exit-code -- live_data payload
+
       - name: Validate candidate safely when updates exist
+        if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -86,8 +123,9 @@ jobs:
           PY
           git checkout -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
           git diff --exit-code -- live_data payload
+
       - name: Build operational receipt
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -114,11 +152,26 @@ jobs:
           print(json.dumps(receipt,indent=2,ensure_ascii=False))
           if receipt['status']=='FAILED_NO_PUBLICATION': raise SystemExit('Rates daily operational failure')
           PY
+
       - name: Upload daily Rates evidence
-        if: always()
+        if: always() && steps.success-marker.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: rates-daily-operational-${{ github.run_id }}
           path: /tmp/rates-daily/
           if-no-files-found: error
           retention-days: 30
+
+      - name: Create same-day GREEN marker
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit != 'true' && success()
+        shell: bash
+        run: |
+          mkdir -p /tmp/rates-daily-success
+          printf '%s\n' "${{ needs.schedule-gate.outputs.local_time }}" > /tmp/rates-daily-success/green.txt
+
+      - name: Save same-day GREEN marker
+        if: github.event_name == 'schedule' && steps.success-marker.outputs.cache-hit != 'true' && success()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/rates-daily-success
+          key: ${{ needs.schedule-gate.outputs.retry_key }}
