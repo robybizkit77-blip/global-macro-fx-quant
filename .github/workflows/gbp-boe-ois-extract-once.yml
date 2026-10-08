@@ -1,0 +1,61 @@
+name: GBP BoE OIS Extract Once
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-gbp-2026-10-08
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official BoE daily OIS archive
+        run: |
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT validation' \
+            'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip' \
+            -o /tmp/oisddata.zip
+          unzip -l /tmp/oisddata.zip | tee /tmp/archive-list.txt
+      - name: Extract 2025-present OIS workbook and target dates
+        run: |
+          python3 - <<'PY'
+          import zipfile, re, os, json
+          import pandas as pd
+          z='/tmp/oisddata.zip'
+          out='/tmp/boe_ois'
+          os.makedirs(out, exist_ok=True)
+          with zipfile.ZipFile(z) as zz:
+              names=zz.namelist()
+              c=[n for n in names if re.search(r'OIS',n,re.I) and re.search(r'daily',n,re.I) and re.search(r'2025|present',n,re.I) and re.search(r'\.xlsx?$',n,re.I)]
+              if not c:
+                  c=[n for n in names if re.search(r'OIS',n,re.I) and re.search(r'daily',n,re.I) and re.search(r'\.xlsx?$',n,re.I)]
+              if not c: raise SystemExit('No OIS daily workbook found')
+              name=c[-1]
+              zz.extract(name,out)
+              path=os.path.join(out,name)
+          xls=pd.ExcelFile(path)
+          result={'workbook':name,'sheets':xls.sheet_names,'targets':{}}
+          for sheet in xls.sheet_names:
+              df=pd.read_excel(path,sheet_name=sheet,header=None)
+              # locate target dates in any cell
+              for idx,row in df.iterrows():
+                  vals=[str(v) for v in row.tolist()]
+                  joined=' | '.join(vals)
+                  if any(d in joined for d in ['2026-09-22','2026-09-28','2026-09-29','22/09/2026','28/09/2026','29/09/2026','22/09/26','28/09/26','29/09/26']):
+                      key=next((d for d in ['2026-09-22','2026-09-28','2026-09-29','22/09/2026','28/09/2026','29/09/2026','22/09/26','28/09/26','29/09/26'] if d in joined), f'row{idx}')
+                      result['targets'].setdefault(sheet,[]).append({'row':int(idx),'values':vals})
+          open('/tmp/boe_ois_extract.json','w').write(json.dumps(result,indent=2))
+          print(json.dumps(result,indent=2))
+          PY
+      - name: Upload extraction evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-boe-ois-extract
+          path: |
+            /tmp/archive-list.txt
+            /tmp/boe_ois_extract.json
+          if-no-files-found: error
+          retention-days: 30
