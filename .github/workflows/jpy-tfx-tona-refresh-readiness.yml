@@ -1,0 +1,115 @@
+name: JPY TFX TONA Refresh Readiness
+
+on:
+  push:
+    branches:
+      - validation-jpy-tona-refresh-readiness-2026-10-08
+      - release-candidate-jpy-cb-pricing-refresh-2026-10-08
+      - release-candidate-jpy-daily-ready-2026-10-08
+    paths:
+      - 'validation/cb_pricing/collect_jpy_tfx_tona.py'
+      - 'validation/cb_pricing/build_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
+      - '.github/workflows/jpy-tfx-tona-refresh-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install collector dependencies
+        run: python3 -m pip install --disable-pip-version-check requests
+      - name: Regression check against certified 2026-09-29 TFX observation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_jpy_tfx_tona.py --as-of 2026-09-29 --output /tmp/jpy-benchmark.json
+          python3 validation/cb_pricing/build_jpy_tfx_tona_candidate.py --snapshot /tmp/jpy-benchmark.json --output /tmp/jpy-benchmark-candidate.json
+          python3 - <<'PY'
+          import json,pathlib
+          s=json.loads(pathlib.Path('/tmp/jpy-benchmark.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/jpy-benchmark-candidate.json').read_text())
+          exp={'current':{'date':'2026-09-29','3m':1.555,'6m':1.755,'12m':2.119},'t_minus_1':{'date':'2026-09-28','3m':1.49,'6m':1.69,'12m':2.141},'weekly_reference':{'date':'2026-09-24','3m':1.49,'6m':1.69,'12m':2.069}}
+          for bucket,want in exp.items():
+            got=s['observations'][bucket]
+            if got['date']!=want['date']: raise SystemExit(f'{bucket} date mismatch {got}')
+            for k in ('3m','6m','12m'):
+              if abs(float(got[k])-want[k])>1e-9: raise SystemExit(f'{bucket} {k} mismatch {got[k]} != {want[k]}')
+          if s['contract_mapping']!={'3m':'26.12','6m':'27.03','12m':'27.09'}: raise SystemExit('contract mapping mismatch')
+          if c['status']!='READY_FOR_DRY_RUN': raise SystemExit('candidate not dry-run ready')
+          if c['horizons']['3m']['change_1d_bp']!=6.5 or c['horizons']['6m']['change_1d_bp']!=6.5 or c['horizons']['12m']['change_1d_bp']!=-2.2: raise SystemExit('1D changes mismatch')
+          if c['horizons']['3m']['change_1w_bp']!=6.5 or c['horizons']['6m']['change_1w_bp']!=6.5 or c['horizons']['12m']['change_1w_bp']!=5.0: raise SystemExit('1W changes mismatch')
+          print('JPY_TFX_CERTIFIED_REGRESSION_PASS')
+          PY
+      - name: Build latest official source snapshot and candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_jpy_tfx_tona.py --output /tmp/jpy-latest.json
+          python3 validation/cb_pricing/build_jpy_tfx_tona_candidate.py --snapshot /tmp/jpy-latest.json --output /tmp/jpy-latest-candidate.json
+      - name: Deterministic JPY-only dry-run apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp live_data/sections/OIS_DATA.json /tmp/OIS.before.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/NATIVE.before.json
+          cp payload/part-00.txt /tmp/part-00.before.txt
+          cp live_data/manifest.v2.json /tmp/manifest.before.json
+          python3 validation/cb_pricing/apply_jpy_tfx_tona_candidate.py --candidate /tmp/jpy-latest-candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/manifest-build.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/source-registry-check.json
+          python3 validation/check_live_update_contract.py >/tmp/live-contract-check.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/runtime-roundtrip.json
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          bo=json.loads(pathlib.Path('/tmp/OIS.before.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads(pathlib.Path('/tmp/NATIVE.before.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]; cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=['JPY'] or cn!=['JPY']: raise SystemExit(f'bad semantic scope OIS={co} NATIVE={cn}')
+          changed=subprocess.check_output(['git','diff','--name-only'],text=True).splitlines(); expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if sorted(changed)!=expected: raise SystemExit(f'bad file scope {changed}')
+          c=json.loads(pathlib.Path('/tmp/jpy-latest-candidate.json').read_text())
+          if ao['currencies']['JPY']['as_of']!=c['as_of']: raise SystemExit('as-of mismatch')
+          if ao['currencies']['JPY']['source_meta'].get('contract_mapping')!=c['contract_mapping']: raise SystemExit('structured contract mapping missing')
+          print(json.dumps({'status':'JPY_DRY_RUN_PASS','semantic_scope':co,'file_scope':expected,'as_of':c['as_of']},indent=2))
+          PY
+      - name: Prove second refresh can read structured contract mapping
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_jpy_tfx_tona.py --as-of 2026-09-29 --output /tmp/jpy-second-pass.json
+          python3 - <<'PY'
+          import json,pathlib
+          s=json.loads(pathlib.Path('/tmp/jpy-second-pass.json').read_text())
+          if s['contract_mapping']!={'3m':'26.12','6m':'27.03','12m':'27.09'}: raise SystemExit('second-pass mapping failed')
+          print('JPY_SECOND_REFRESH_MAPPING_PASS')
+          PY
+      - name: Restore checkout and prove no publication
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt || true
+          if ! git diff --quiet; then git status --short; exit 1; fi
+          echo JPY_DRY_RUN_RESTORED_NO_PUBLICATION
+      - name: Upload JPY readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-tfx-tona-refresh-readiness
+          path: |
+            /tmp/jpy-benchmark.json
+            /tmp/jpy-benchmark-candidate.json
+            /tmp/jpy-latest.json
+            /tmp/jpy-latest-candidate.json
+            /tmp/jpy-second-pass.json
+            /tmp/manifest-build.json
+            /tmp/source-registry-check.json
+            /tmp/live-contract-check.json
+            /tmp/runtime-roundtrip.json
+          if-no-files-found: error
+          retention-days: 30
