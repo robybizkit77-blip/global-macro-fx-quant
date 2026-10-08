@@ -1,0 +1,27 @@
+{
+  "status": "REQUEST_SUCCEEDED",
+  "responseTime": 1,
+  "message": [],
+  "Results": {
+    "series": [
+      {
+        "seriesID": "LNS14000000",
+        "data": [
+          {"year": "2026", "period": "M09", "periodName": "September", "value": "4.2"},
+          {"year": "2026", "period": "M08", "periodName": "August", "value": "4.1"},
+          {"year": "2026", "period": "M07", "periodName": "July", "value": "4.1"}
+        ]
+      },
+      {
+        "seriesID": "CUSR0000SA0",
+        "data": [
+          {"year": "2026", "period": "M08", "periodName": "August", "value": "330.880"},
+          {"year": "2026", "period": "M07", "periodName": "July", "value": "329.000"},
+          {"year": "2025", "period": "M08", "periodName": "August", "value": "320.000"},
+          {"year": "2025", "period": "M07", "periodName": "July", "value": "319.000"},
+          {"year": "2025", "period": "M13", "periodName": "Annual", "value": "319.500"}
+        ]
+      }
+    ]
+  }
+}
