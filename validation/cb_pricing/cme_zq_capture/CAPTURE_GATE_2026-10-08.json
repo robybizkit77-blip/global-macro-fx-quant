@@ -27,6 +27,11 @@
     "candidate_t5_file": "IR.20261002.csv",
     "archive_validated": true,
     "candidate_t5_content_validated": false,
+    "access_attempts": [
+      "Direct byte download from the official CME FTP-style HTTPS path failed in the current runtime.",
+      "Alternate official CME path without duplicated /pub segment was also inaccessible from the current runtime.",
+      "Web indexing confirms the file exists in the CME archive but does not expose the file rows needed for ZQ validation."
+    ],
     "note": "CME official public archive is confirmed. The remaining blocker is parsing/validating the ZQ rows for the same Dec-26 / Mar-27 / Sep-27 strip from the T-5-ish daily CSV in this environment. No values are inferred or substituted."
   },
   "missing": [
