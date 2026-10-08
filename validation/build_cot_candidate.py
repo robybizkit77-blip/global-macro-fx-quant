@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse, copy, json, pathlib, sys
+from datetime import date
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 CURRENT=ROOT/'live_data'/'sections'/'V250_COT_CHART_DATA.json'
@@ -39,6 +40,9 @@ def validate_series(cur:dict)->str:
         if any(len(s[k])!=n for k in FIELDS[1:]):
             raise ValueError(f'{c}: inconsistent series lengths')
         if s['dates']!=sorted(s['dates']): raise ValueError(f'{c}: dates not sorted')
+        reconstructed=pct_rank([int(v) for v in s['net']],int(s['net'][-1]))
+        if abs(reconstructed-float(s['percentile'][-1]))>1e-5:
+            raise ValueError(f'{c}: stored percentile {s["percentile"][-1]} != reconstructed {reconstructed}')
         dates.add(s['dates'][-1])
     if len(dates)!=1: raise ValueError('Current COT cross-currency latest date mismatch')
     return next(iter(dates))
@@ -66,6 +70,9 @@ def main()->int:
         if mismatches: raise SystemExit('same-date CFTC mismatch: '+json.dumps(mismatches))
         status='NO_UPDATE'
     else:
+        gap=(date.fromisoformat(official_date)-date.fromisoformat(current_date)).days
+        if gap<4 or gap>10:
+            raise SystemExit(f'CFTC release gap outside one-release window: {current_date} -> {official_date} ({gap} days)')
         for c in ORDER:
             s=out[c]; row=official[c]
             if official_date in s['dates']:
@@ -87,9 +94,8 @@ def main()->int:
         'status':status,'source':'CFTC Legacy Futures Only current reports','current_as_of':current_date,'official_as_of':official_date,
         'currencies':8,'window_weeks':WINDOW,'candidate_changed':out!=cur,
         'official':official,
-        'policy':{'price_confirmation':'WITHHELD','orphan_open_interest':'NOT_STORED','single_new_week_only':True}
+        'policy':{'price_confirmation':'WITHHELD','orphan_open_interest':'NOT_STORED','single_new_week_only':True,'percentile':'count_le_current_div_104'}
     }
-    print(json.dumps(result,indent=2,ensure_ascii=False))
-    return 0
+    print(json.dumps(result,indent=2,ensure_ascii=False)); return 0
 
 if __name__=='__main__': sys.exit(main())
