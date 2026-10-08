@@ -51,7 +51,10 @@ jobs:
           path: /tmp/macro-adapter-pit-selftest.json
 
   build-read-only-candidate:
-    if: github.event_name == 'workflow_dispatch'
+    # A branch push is an equivalent, fixture-only end-to-end gate.  This
+    # makes the bridge verifiable after each correction without requiring a
+    # separately authenticated manual dispatch.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       candidate_json: ${{ steps.candidate.outputs.candidate_json }}
@@ -60,9 +63,9 @@ jobs:
       - uses: actions/checkout@v4
       - id: candidate
         env:
-          CURRENCY: ${{ inputs.currency }}
-          DIMENSION: ${{ inputs.dimension }}
-          FIXTURE_PATH: ${{ inputs.fixture_path }}
+          CURRENCY: ${{ inputs.currency || 'JPY' }}
+          DIMENSION: ${{ inputs.dimension || 'labour' }}
+          FIXTURE_PATH: ${{ inputs.fixture_path || 'validation/fixtures/jpy_estat_unemployment_2026-08.json' }}
         run: |
           set -euo pipefail
           mkdir -p /tmp/macro-adapter-pit
@@ -97,8 +100,8 @@ jobs:
     uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
     with:
       refresh_scope: single_series
-      currency: ${{ inputs.currency }}
-      dimension: ${{ inputs.dimension }}
+      currency: ${{ inputs.currency || 'JPY' }}
+      dimension: ${{ inputs.dimension || 'labour' }}
       macro_series_id: ${{ needs.build-read-only-candidate.outputs.macro_series_id }}
       dry_run: false
       candidate_json: ${{ needs.build-read-only-candidate.outputs.candidate_json }}
