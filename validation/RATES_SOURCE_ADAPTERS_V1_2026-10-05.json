@@ -1,71 +1,18 @@
 {
   "schema": "GMFQ_RATES_SOURCE_ADAPTERS_V1",
   "created_at": "2026-10-05",
-  "updated_at": "2026-10-05",
-  "status": "SEVEN_OPERATIONAL__CHF_SOURCE_EXPORT_BLOCKED",
-  "policy": {
-    "same_basis_required": true,
-    "official_source_required": true,
-    "no_market_indication_fallback": true,
-    "withhold_on_parse_or_basis_failure": true,
-    "update_2y_10y_together": true
-  },
+  "updated_at": "2026-10-08",
+  "status": "SEVEN_OPERATIONAL__SIX_LIVE_FETCH__NZD_MANUAL_OFFICIAL_ASSERTION__CHF_SOURCE_EXPORT_BLOCKED",
+  "policy": {"same_basis_required":true,"official_source_required":true,"no_market_indication_fallback":true,"withhold_on_parse_or_basis_failure":true,"update_2y_10y_together":true},
   "currencies": {
-    "USD": {
-      "source": "U.S. Treasury Daily Par Yield Curve",
-      "authority": "U.S. Department of the Treasury",
-      "adapter_status": "OPERATIONAL",
-      "current_snapshot": "2026-10-02"
-    },
-    "EUR": {
-      "source": "ECB AAA Svensson spot curve",
-      "authority": "European Central Bank",
-      "adapter_status": "OPERATIONAL",
-      "current_snapshot": "2026-10-02"
-    },
-    "GBP": {
-      "source": "UK nominal government zero-coupon spot curve",
-      "authority": "Bank of England",
-      "adapter_status": "OPERATIONAL",
-      "current_snapshot": "2026-10-02"
-    },
-    "JPY": {
-      "source": "JGB Interest Rate",
-      "authority": "Japan Ministry of Finance",
-      "adapter_status": "OPERATIONAL",
-      "current_snapshot": "2026-10-02"
-    },
-    "CHF": {
-      "source": "Spot interest rates on Swiss Confederation bonds",
-      "authority": "Swiss National Bank",
-      "adapter_status": "BLOCKED_SOURCE_EXPORT",
-      "last_validated_snapshot": "2026-09-30",
-      "reason": "The previously validated SNB rendoblid API endpoint currently returns metadata without observations. Retain the last validated same-basis 2Y/10Y snapshot; do not mix the separately published current 10Y with another 2Y source."
-    },
-    "CAD": {
-      "source": "Selected benchmark Government of Canada bond yields",
-      "authority": "Bank of Canada",
-      "adapter_status": "OPERATIONAL",
-      "current_snapshot": "2026-10-02"
-    },
-    "AUD": {
-      "source": "F2 Capital Market Yields – Government Bonds – Daily",
-      "authority": "Reserve Bank of Australia",
-      "adapter_status": "OPERATIONAL_SOURCE_CADENCE",
-      "current_snapshot": "2026-09-30",
-      "reason": "Current by the official weekly F2 publication cadence."
-    },
-    "NZD": {
-      "source": "B2 Wholesale interest rates – government bond close",
-      "authority": "Reserve Bank of New Zealand",
-      "adapter_status": "OPERATIONAL_SOURCE_LAG",
-      "current_snapshot": "2026-10-01",
-      "reason": "Current for the official one-business-day publication lag in the 2026-10-02 release."
-    }
+    "USD":{"source":"U.S. Treasury Daily Par Yield Curve","authority":"U.S. Department of the Treasury","adapter_status":"OPERATIONAL","current_snapshot":"2026-10-02"},
+    "EUR":{"source":"ECB AAA Svensson spot curve","authority":"European Central Bank","adapter_status":"OPERATIONAL","current_snapshot":"2026-10-02"},
+    "GBP":{"source":"UK nominal government zero-coupon spot curve","authority":"Bank of England","adapter_status":"OPERATIONAL","current_snapshot":"2026-10-02"},
+    "JPY":{"source":"JGB Interest Rate","authority":"Japan Ministry of Finance","adapter_status":"OPERATIONAL","current_snapshot":"2026-10-02"},
+    "CHF":{"source":"Spot interest rates on Swiss Confederation bonds","authority":"Swiss National Bank","adapter_status":"BLOCKED_SOURCE_EXPORT","last_validated_snapshot":"2026-09-30","reason":"The previously validated SNB rendoblid API endpoint currently returns metadata without observations. Retain the last validated same-basis 2Y/10Y snapshot; do not mix the separately published current 10Y with another 2Y source."},
+    "CAD":{"source":"Selected benchmark Government of Canada bond yields","authority":"Bank of Canada","adapter_status":"OPERATIONAL","current_snapshot":"2026-10-02"},
+    "AUD":{"source":"F2 Capital Market Yields – Government Bonds – Daily","authority":"Reserve Bank of Australia","adapter_status":"OPERATIONAL_LIVE_FETCH","current_snapshot":"2026-09-30","series_2Y":"FCMYGBAG2D","series_10Y":"FCMYGBAG10D","source_url":"https://www.rba.gov.au/statistics/tables/csv/f2-data.csv","reason":"Official RBA F2 CSV is reachable from GitHub Actions. Parse same-day 2Y and 10Y by stable official series IDs. F2 publication cadence remains weekly even though observations are daily."},
+    "NZD":{"source":"B2 Wholesale interest rates – government bond close","authority":"Reserve Bank of New Zealand","adapter_status":"OPERATIONAL_MANUAL_OFFICIAL_VERIFIED__RUNNER_ACCESS_BLOCKED","current_snapshot":"2026-10-05","current_2Y":3.83,"current_10Y":5.04,"source_url":"https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx","reason":"Official RBNZ B2 public evidence verified 05 Oct 2026 government bond closing yields at 3.83% for 2Y and 5.04% for 10Y. Both the B2 page and canonical XLSX return HTTP 403 to GitHub-hosted runners, so retain explicit manual official verification and never substitute a secondary source."}
   },
-  "summary": {
-    "operational": ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "NZD"],
-    "blocked": ["CHF"],
-    "production_data_changes_required_now": []
-  }
+  "summary":{"operational":["USD","EUR","GBP","JPY","CAD","AUD","NZD"],"live_fetch":["USD","EUR","GBP","JPY","CAD","AUD"],"manual_official_assertion_due_runner_access":["NZD"],"blocked":["CHF"],"production_data_changes_required_now":[]}
 }
