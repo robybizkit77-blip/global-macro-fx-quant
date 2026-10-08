@@ -12,7 +12,7 @@ def parse(html):
  soup=BeautifulSoup(html,'html.parser')
  txt=soup.get_text(' ',strip=True)
  m=DATE_RE.search(txt)
- if not m: raise SystemExit('ASX trade date missing')
+ if not m: raise ValueError('ASX trade date missing')
  d=dt.datetime.strptime(m.group(1),'%d/%m/%y').date()
  out={}; active=False
  for tr in soup.find_all('tr'):
@@ -29,13 +29,13 @@ def parse(html):
   try: sett=float(cells[5].replace(',',''))
   except ValueError: continue
   out[expiry]={'settlement':sett,'settlement_change':cells[6] if len(cells)>6 else None,'raw_cells':cells}
- if not all(x in out for x in MAP.values()): raise SystemExit(f'ASX IB target rows missing: {out.keys()}')
+ if not all(x in out for x in MAP.values()): raise ValueError(f'ASX IB target rows missing: {out.keys()}')
  return d,out
 def get(day):
  url=BASE.format(date=day.strftime('%y%m%d'))
  r=requests.get(url,headers={'User-Agent':'Mozilla/5.0 GMFQ validation'},timeout=30)
  r.raise_for_status(); d,rows=parse(r.text)
- if d!=day: raise SystemExit(f'ASX date mismatch requested={day} parsed={d}')
+ if d!=day: raise ValueError(f'ASX date mismatch requested={day} parsed={d}')
  return d,rows,url
 def latest():
  today=dt.datetime.now(dt.timezone.utc).date()
