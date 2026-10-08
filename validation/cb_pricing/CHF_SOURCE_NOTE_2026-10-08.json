@@ -1,0 +1,13 @@
+{
+  "currency": "CHF",
+  "status": "RESEARCH_ONLY",
+  "as_of": "2026-10-08",
+  "primary_instrument": "ICE Futures Europe Three Month SARON Index Futures",
+  "symbol": "SA3",
+  "product_id": "72270612",
+  "quote_convention": "100 - rate",
+  "delivery_months": "March, June, September, December",
+  "benchmark": "SARON",
+  "decision": "Use ICE SA3 as primary CHF CB-pricing instrument. Do not activate until homogeneous official ICE daily history is validated for current, T-1 and approximately T-5 business days.",
+  "production_modified": false
+}
