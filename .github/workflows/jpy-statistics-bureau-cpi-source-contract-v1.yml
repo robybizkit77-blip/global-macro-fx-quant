@@ -8,6 +8,7 @@ on:
       - 'validation/sources/jpy_statistics_bureau_cpi.py'
       - 'validation/fixtures/jpy_statistics_bureau_cpi_fixture.html'
       - 'validation/test_jpy_statistics_bureau_cpi.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - '.github/workflows/jpy-statistics-bureau-cpi-source-contract-v1.yml'
   workflow_dispatch:
 
