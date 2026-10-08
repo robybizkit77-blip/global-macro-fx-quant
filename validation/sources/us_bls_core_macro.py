@@ -18,6 +18,17 @@ AUTHORITY = "U.S. Bureau of Labor Statistics"
 TRANSPORT = "BLS Public Data API v2"
 SOURCE_URL = "https://www.bls.gov/developers/"
 
+CANONICAL_CONTRACT = {
+    "labour": {
+        "macro_series_id": "US_UNRATE_history_value",
+        "heatmap_series_id": "UNRATE",
+    },
+    "inflation": {
+        "macro_series_id": "US_CPIAUCSL_history_value",
+        "heatmap_series_id": "CPIAUCSL",
+    },
+}
+
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -79,19 +90,23 @@ def yoy_from_index(observations: list[tuple[str, float]]) -> list[tuple[str, flo
 
 
 def resolve_contract(dimension: str) -> tuple[str, str, str, str, str]:
+    if dimension not in CANONICAL_CONTRACT:
+        raise ValueError(f"unsupported USD macro dimension: {dimension}")
     heat = load_json(HEATMAP_PATH)
     series = load_json(SERIES_PATH)
     h = heat["currencies"]["USD"][dimension]
+    expected = CANONICAL_CONTRACT[dimension]
     heat_series_id = str(h["series_id"])
-    hits = [r for r in series["USD"] if str(r.get("id")) == heat_series_id]
+    if heat_series_id != expected["heatmap_series_id"]:
+        raise ValueError(
+            f"USD {dimension} heatmap semantic id drift: expected={expected['heatmap_series_id']!r} actual={heat_series_id!r}"
+        )
+    macro_series_id = expected["macro_series_id"]
+    hits = [r for r in series["USD"] if str(r.get("id")) == macro_series_id]
     if len(hits) != 1:
-        token = "unemp" if dimension == "labour" else "cpi"
-        fallback = [r for r in series["USD"] if token in " ".join(str(r.get(k, "")) for k in ("id", "name", "title", "indicator", "label")).lower()]
-        if len(fallback) != 1:
-            raise ValueError(f"cannot resolve unique USD {dimension} MACRO_SERIES row; heatmap series_id={heat_series_id!r}")
-        macro_series_id = str(fallback[0]["id"])
-    else:
-        macro_series_id = str(hits[0]["id"])
+        raise ValueError(
+            f"USD {dimension} canonical MACRO_SERIES id drift: expected exactly one {macro_series_id!r}, got {len(hits)}"
+        )
     return (
         macro_series_id,
         heat_series_id,
@@ -164,6 +179,7 @@ def build(payload: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str,
         "transport": TRANSPORT,
         "api_url": API_URL,
         "bls_series": {"labour": LABOUR_BLS_SERIES, "inflation_index": INFLATION_BLS_SERIES},
+        "canonical_contract": CANONICAL_CONTRACT,
         "labour": {
             "latest_period": latest_lab[0], "latest_value": latest_lab[1],
             "prior_period": prior_lab[0], "prior_value": prior_lab[1],
