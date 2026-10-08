@@ -97,21 +97,31 @@ def main()->int:
     }
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('CAD')
 
-    # AUD/NZD are operational, but publication cadence/lag are part of the official contract.
-    # This V1 orchestrator records those checks explicitly rather than pretending they are live-fetched.
-    for c in ('AUD','NZD'):
-        meta=reg['currencies'][c]
-        expected=meta['current_snapshot']
-        state='NO_CHANGE' if str(rates[c]['date']) == expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
-        out['currencies'][c]={
-          'state':state,
-          'coverage_mode':'OFFICIAL_CADENCE_ASSERTION' if c=='AUD' else 'OFFICIAL_SOURCE_LAG_ASSERTION',
-          'authority':meta['authority'],
-          'official_contract_snapshot':expected,
-          'current':{'date':rates[c]['date'],'2Y':rates[c]['2Y'],'10Y':rates[c]['10Y']},
-          'reason':meta.get('reason')
-        }
-        if state != 'NO_CHANGE': failures.append(c)
+    # AUD: official RBA F2 CSV, same-day official 2Y/10Y pair by stable series IDs.
+    aud=load_module('rates_aud',VAL/'fetch_rates_aud.py')
+    a=aud.latest()
+    state=compare(rates['AUD'],a['date'],a['2Y'],a['10Y'])
+    out['currencies']['AUD']={
+      'state':state,'coverage_mode':'LIVE_FETCH','authority':a['authority'],
+      'official':{'date':a['date'],'2Y':a['2Y'],'10Y':a['10Y'],'series_2Y':a['series_2Y'],'series_10Y':a['series_10Y']},
+      'current':{'date':rates['AUD']['date'],'2Y':rates['AUD']['2Y'],'10Y':rates['AUD']['10Y']},
+      'publication_cadence':a['publication_cadence']
+    }
+    if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('AUD')
+
+    # NZD remains an official-source-lag assertion because the RBNZ B2 public page/XLSX
+    # returns HTTP 403 to GitHub-hosted runners. Never substitute a secondary source.
+    meta=reg['currencies']['NZD']
+    expected=meta['current_snapshot']
+    state='NO_CHANGE' if str(rates['NZD']['date']) == expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
+    out['currencies']['NZD']={
+      'state':state,'coverage_mode':'OFFICIAL_SOURCE_LAG_ASSERTION','authority':meta['authority'],
+      'official_contract_snapshot':expected,
+      'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},
+      'reason':meta.get('reason'),
+      'runner_access':'RBNZ B2 official page and canonical XLSX return HTTP 403 to GitHub-hosted runner; no secondary fallback permitted'
+    }
+    if state != 'NO_CHANGE': failures.append('NZD')
 
     # CHF is intentionally WITHHELD until the official SNB same-basis export works again.
     chf=reg['currencies']['CHF']
