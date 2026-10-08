@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - validation-cb-pricing-refresh-readiness-2026-10-08
+      - validation-cb-pricing-active-orchestrator-2026-10-08
       - release-candidate-gbp-cb-pricing-refresh-2026-10-08
       - release-candidate-gbp-daily-ready-2026-10-08
+      - release-candidate-cb-pricing-daily-operational-2026-10-08
     paths:
       - 'validation/cb_pricing/collect_gbp_boe_ois.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
@@ -24,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install parser dependencies
         run: python3 -m pip install --disable-pip-version-check pandas openpyxl
-      - name: Download official BoE daily OIS archive
+      - name: Download official BoE historical OIS archive
         run: |
           set -euo pipefail
           curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT validation' \
@@ -45,14 +47,29 @@ jobs:
             if got['date'] != want['date']: raise SystemExit(f'{bucket} date mismatch')
             for k in ('3m','6m','12m'):
               if abs(got[k]-want[k]) > 1e-12: raise SystemExit(f'{bucket} {k} mismatch')
+          if s.get('package_kind')!='ARCHIVE_HISTORY': raise SystemExit('historical regression did not use ARCHIVE_HISTORY')
           if c['schema']!='GMFQ_CB_PRICING_CANDIDATE_V1' or c['status']!='READY_FOR_DRY_RUN': raise SystemExit('candidate mismatch')
           print('GBP_CERTIFIED_REGRESSION_PASS')
           PY
-      - name: Build latest source snapshot and candidate
+      - name: Build and verify latest official daily snapshot and candidate
         run: |
           set -euo pipefail
           python3 validation/cb_pricing/collect_gbp_boe_ois.py --zip /tmp/oisddata.zip --output /tmp/gbp-latest.json
           python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py --snapshot /tmp/gbp-latest.json --output /tmp/gbp-latest-candidate.json
+          python3 - <<'PY'
+          import json, pathlib, datetime as dt
+          s=json.loads(pathlib.Path('/tmp/gbp-latest.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/gbp-latest-candidate.json').read_text())
+          if s.get('package_kind')!='LATEST_DAILY_WITH_ARCHIVE_BACKFILL': raise SystemExit(f"bad latest package kind {s.get('package_kind')}")
+          v=s.get('validation',{})
+          if v.get('latest_current_from_official_daily_package') is not True: raise SystemExit('latest current not proven from daily package')
+          if v.get('historical_backfill_same_official_series') is not True: raise SystemExit('archive backfill continuity not proven')
+          if not s.get('history_backfill_url') or not s.get('history_backfill_workbook'): raise SystemExit('missing archive backfill provenance')
+          if s['observations']['current']['date'] != s['as_of']: raise SystemExit('latest current/as-of mismatch')
+          if s['observations']['t_minus_5']['date'] >= s['as_of']: raise SystemExit('invalid T-5 date')
+          if c.get('as_of') != s.get('as_of') or c.get('status')!='READY_FOR_DRY_RUN': raise SystemExit('latest candidate mismatch')
+          print('GBP_LATEST_DAILY_WITH_ARCHIVE_BACKFILL_PASS',s['as_of'],s['observations']['t_minus_5']['date'])
+          PY
       - name: Deterministic GBP-only dry-run apply
         run: |
           set -euo pipefail
