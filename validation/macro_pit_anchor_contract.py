@@ -71,7 +71,10 @@ def protected_fingerprints() -> dict[str, str]:
 
 
 def dirty_paths() -> list[str]:
-    return [line[3:] for line in git("status", "--porcelain").splitlines() if line]
+    # Porcelain status uses two state columns followed by a separator, but a
+    # staged/unstaged combination may carry more than one separating space.
+    # Strip the remainder rather than slicing a presumed fixed separator.
+    return [line[2:].strip() for line in git("status", "--porcelain").splitlines() if line]
 
 
 def snapshot_paths(evidence_dir: pathlib.Path, phase: str) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
