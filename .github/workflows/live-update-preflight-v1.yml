@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/live-update-preflight-v1.yml'
       - 'validation/check_live_update_contract.py'
+      - 'validation/check_cb_pricing_source_registry.py'
+      - 'validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json'
       - 'validation/rebuild_live_data_runtime.py'
       - 'live_data/**'
       - 'payload/**'
@@ -26,6 +28,10 @@ jobs:
       - name: Verify frozen model contract and live-data integrity
         run: |
           python3 validation/check_live_update_contract.py | tee /tmp/live-update-contract.json
+
+      - name: Verify CB pricing source registry and fail-closed WITHHELD state
+        run: |
+          python3 validation/check_cb_pricing_source_registry.py | tee /tmp/cb-pricing-source-registry.json
 
       - name: Verify deterministic no-op runtime rebuild
         run: |
@@ -67,6 +73,7 @@ jobs:
           if-no-files-found: warn
           path: |
             /tmp/live-update-contract.json
+            /tmp/cb-pricing-source-registry.json
             /tmp/live-update-runtime-roundtrip.json
 
       - name: Governance note
@@ -74,4 +81,5 @@ jobs:
         run: |
           echo 'This workflow is validation-only and read-only.'
           echo 'It does not collect data, change live_data, rebuild production, promote main, publish gh-pages, or alter OOS T0.'
+          echo 'CB pricing is fail-closed against the canonical source registry: WITHHELD currencies cannot become ACTIVE without an explicit registry methodology update in the same validation path.'
           echo 'Engine Logic Audit and Staging Browser Audit run independently on validation-* and release-* pushes and must also be green before any future promotion.'
