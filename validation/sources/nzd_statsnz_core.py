@@ -14,9 +14,10 @@ SERIES = ROOT / "live_data/sections/MACRO_SERIES.json"
 HEAT = ROOT / "live_data/sections/MACRO_THERMOMETER_DATA.json"
 SOURCE = "Stats NZ"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)"}
+DISCOVERY_URL = "https://www.stats.govt.nz/"
 
-# Stable official indicator pages. These always expose the latest published
-# observation, so the adapter is not tied to a specific quarterly release URL.
+# Stable official detail pages retained as candidate provenance; the Stats NZ
+# homepage is used only to discover the latest published headline observation.
 INDICATOR_URLS = {
     "inflation": "https://www.stats.govt.nz/indicators/consumers-price-index-cpi/",
     "labour": "https://www.stats.govt.nz/indicators/unemployment-rate/",
@@ -70,7 +71,7 @@ def fetch_html_text(url: str) -> str:
         raw = response.read().decode("utf-8", errors="replace")
     text = html_text(raw)
     if len(text) < 200:
-        raise ValueError(f"Stats NZ indicator response unexpectedly short: {url}")
+        raise ValueError(f"Stats NZ response unexpectedly short: {url}")
     return text
 
 
@@ -79,43 +80,36 @@ def quarter_date(month_name: str, year: str) -> str:
     return f"{int(year):04d}-{month:02d}-01"
 
 
-def parse_indicator(dimension: str, text: str) -> tuple[str, float]:
+def parse_homepage_indicator(dimension: str, text: str) -> tuple[str, float]:
     if dimension == "inflation":
-        patterns = [
-            # Current Stats NZ CPI indicator card: Annual change +4.1% June 2026 year
-            r"Annual\s+change\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+year",
-            # Defensive fallback if wording changes to quarter.
-            r"Annual\s+change\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
-        ]
+        label = "Consumers price index"
+        suffix = "year"
     else:
-        patterns = [
-            # Current Stats NZ unemployment indicator card.
-            r"Unemployment\s+rate\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
-            # Tolerate a short label between title and value, but keep the match local.
-            r"Unemployment\s+rate.{0,120}?([0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
-        ]
+        label = "Unemployment rate"
+        suffix = "quarter"
 
-    hits: list[tuple[str, float]] = []
-    for pattern in patterns:
-        for match in re.finditer(pattern, text, re.I | re.S):
-            value = float(match.group(1))
-            date = quarter_date(match.group(2), match.group(3))
-            hits.append((date, value))
-        if hits:
-            break
+    # Stats NZ homepage headline cards are rendered as e.g.
+    # "Consumers price index +4.1% June 2026 year" and
+    # "Unemployment rate 5.6% June 2026 quarter".
+    pattern = (
+        re.escape(label)
+        + r"\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*"
+        + r"(March|June|September|December)\s+(20\d{2})\s+"
+        + suffix
+    )
+    matches = list(re.finditer(pattern, text, re.I | re.S))
+    if not matches:
+        raise ValueError(f"cannot parse latest Stats NZ {dimension} homepage indicator")
 
-    if not hits:
-        raise ValueError(f"cannot parse latest Stats NZ {dimension} indicator card")
-
-    # The card should resolve to one latest observation. Duplicate identical hits are fine.
-    unique = sorted(set(hits))
-    dates = {date for date, _ in unique}
-    if len(dates) != 1:
-        raise ValueError(f"ambiguous Stats NZ {dimension} indicator periods: {unique}")
-    values = {value for _, value in unique}
-    if len(values) != 1:
-        raise ValueError(f"ambiguous Stats NZ {dimension} indicator values: {unique}")
-    return unique[0]
+    hits = {
+        (quarter_date(match.group(2), match.group(3)), float(match.group(1)))
+        for match in matches
+    }
+    dates = {date for date, _ in hits}
+    values = {value for _, value in hits}
+    if len(dates) != 1 or len(values) != 1:
+        raise ValueError(f"ambiguous Stats NZ {dimension} homepage indicator: {sorted(hits)}")
+    return next(iter(hits))
 
 
 def contract(dimension: str) -> str:
@@ -141,10 +135,12 @@ def build(dimension: str, fixture: Path | None = None):
         payload = load(fixture)
         date = payload["observation_date"]
         value = float(payload["value"])
+        retrieval_url = source_url
         mode = "fixture"
     else:
-        text = fetch_html_text(source_url)
-        date, value = parse_indicator(dimension, text)
+        text = fetch_html_text(DISCOVERY_URL)
+        date, value = parse_homepage_indicator(dimension, text)
+        retrieval_url = DISCOVERY_URL
         mode = "live"
 
     candidate = {
@@ -165,7 +161,7 @@ def build(dimension: str, fixture: Path | None = None):
         "live_data_written": False,
         "mode": mode,
         "source_url": source_url,
-        "retrieval_url": source_url,
+        "retrieval_url": retrieval_url,
         "observation_date": date,
         "value": value,
         "upstream_indicator": cfg["indicator"],
