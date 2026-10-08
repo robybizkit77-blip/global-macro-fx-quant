@@ -1,0 +1,72 @@
+name: CME ZQ T5 Extract Once
+
+on:
+  push:
+    branches:
+      - validation-cme-zq-capture-2026-10-08
+    paths:
+      - .github/workflows/cme-zq-t5-extract-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-cme-zq-capture-2026-10-08
+      - name: Download official CME CBOT product reference archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://www.cmegroup.com/ftp/pub/fprf/cmeg.cbt.combo.prf.20261002.xml.zip'
+          curl -fL --retry 3 --retry-delay 2 -A 'Mozilla/5.0' "$url" -o /tmp/cme.zip
+          unzip -o /tmp/cme.zip -d /tmp/cme
+          find /tmp/cme -maxdepth 2 -type f -printf '%p %s bytes\n'
+      - name: Extract ZQ evidence without guessing schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          xml=$(find /tmp/cme -type f | head -n1)
+          python3 - "$xml" <<'PY'
+          import sys, pathlib, re, json
+          p=pathlib.Path(sys.argv[1])
+          text=p.read_text(encoding='utf-8',errors='replace')
+          keys=['ZQ','30 DAY FED','FED FUND','FEDERAL FUND']
+          hits=[]
+          up=text.upper()
+          for key in keys:
+              start=0
+              while True:
+                  i=up.find(key,start)
+                  if i<0: break
+                  hits.append((i,key,text[max(0,i-1200):min(len(text),i+2500)]))
+                  start=i+len(key)
+          # de-duplicate heavily overlapping hits
+          out=[]
+          last=-999999
+          for i,key,snip in sorted(hits):
+              if i-last>500:
+                  out.append({'offset':i,'key':key,'snippet':snip})
+                  last=i
+              if len(out)>=80: break
+          dest=pathlib.Path('validation/cb_pricing/CME_ZQ_T5_RAW_EVIDENCE_2026-10-08.json')
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          dest.write_text(json.dumps({'source':'CME Group official CBOT product reference archive','source_url':'https://www.cmegroup.com/ftp/pub/fprf/cmeg.cbt.combo.prf.20261002.xml.zip','archive_date':'2026-10-02','match_count':len(hits),'snippets':out},indent=2),encoding='utf-8')
+          print('match_count',len(hits),'snippets',len(out))
+          if not hits:
+              raise SystemExit('No ZQ/Fed Funds markers found in official CME archive')
+          PY
+      - name: Commit diagnostic evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/cb_pricing/CME_ZQ_T5_RAW_EVIDENCE_2026-10-08.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Capture official CME ZQ T-5 archive evidence'
+          git push origin HEAD:validation-cme-zq-capture-2026-10-08
