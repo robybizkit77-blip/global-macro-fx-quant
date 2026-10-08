@@ -23,6 +23,7 @@ CONFIG: dict[str, dict[str, Any]] = {
         "expected_heatmap_series_id": "D7G7",
         "expected_transformation": "reported_yoy_rate",
         "unit": "% YoY",
+        "macro_series_id": "UK_CPI_HEADLINE_YOY_history_value",
     },
     "labour": {
         "series_id": "MGSX",
@@ -59,7 +60,6 @@ def parse_month(row: dict[str, Any]) -> str:
     date = str(row.get("date", "")).strip()
     year = str(row.get("year", "")).strip()
     month = str(row.get("month", "")).strip().upper()
-
     if date:
         parts = date.replace("-", " ").split()
         if len(parts) >= 2 and parts[0].isdigit():
@@ -113,6 +113,12 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
     series = load_json(SERIES_PATH)
     rows = series["GBP"]
     by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id") is not None}
+    explicit = CONFIG[dimension].get("macro_series_id")
+    if explicit is not None:
+        if explicit not in by_id:
+            raise ValueError(f"GBP {dimension} canonical MACRO_SERIES id missing: {explicit!r}")
+        return str(explicit)
+
     candidates = [
         heat_series_id,
         f"UK_{heat_series_id}_history_value",
@@ -163,7 +169,6 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
     prior_period, prior_value = observations[-2]
     heat_series_id, frequency, transformation = resolve_heatmap_contract(dimension)
     macro_series_id = resolve_macro_series_id(dimension, heat_series_id)
-
     candidate = {
         "currency": "GBP",
         "dimension": dimension,
@@ -200,14 +205,12 @@ def main() -> int:
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--audit-output", type=Path)
     args = ap.parse_args()
-
     if args.fixture:
         payload = load_json(args.fixture)
         mode = "fixture"
     else:
         payload = fetch_payload(args.dimension)
         mode = "live"
-
     candidate, audit = build_candidate(args.dimension, payload)
     audit["mode"] = mode
     args.output.parent.mkdir(parents=True, exist_ok=True)
