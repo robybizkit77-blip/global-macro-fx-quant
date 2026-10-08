@@ -11,81 +11,50 @@ permissions:
   contents: write
 
 jobs:
-  build-apply-verify-promote-main:
+  sync-jpy-runtime-to-gh-pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: validation-cb-pricing-jpy-2026-10-08
+          ref: gh-pages
           fetch-depth: 0
 
-      - name: Build JPY candidates
-        run: python3 validation/build_jpy_tona_ois_candidate.py
+      - name: Fetch canonical main runtime
+        run: git fetch origin main
 
-      - name: Apply JPY candidates in runner workspace
-        run: |
-          python3 validation/apply_jpy_tona_ois_candidate.py \
-            --ois-candidate validation/JPY_TONA_OIS_DATA_CANDIDATE_2026-10-08.json \
-            --native-candidate validation/JPY_NATIVE_CB_DATA_CANDIDATE_2026-10-08.json
-
-      - name: Rebuild manifest v2
-        run: python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
-
-      - name: Verify live update contract
-        run: python3 validation/check_live_update_contract.py
-
-      - name: Verify deterministic runtime roundtrip
-        run: python3 validation/rebuild_live_data_runtime.py --verify-only
-
-      - name: Enforce JPY-only runtime scope
+      - name: Copy only canonical JPY runtime files from main
         shell: bash
         run: |
-          allowed='^(live_data/sections/OIS_DATA.json|live_data/sections/NATIVE_CB_DATA.json|payload/part-00.txt|live_data/manifest.v2.json|validation/JPY_TONA_OIS_DATA_CANDIDATE_2026-10-08.json|validation/JPY_NATIVE_CB_DATA_CANDIDATE_2026-10-08.json|validation/JPY_TONA_OIS_GATE_2026-10-08.json)$'
+          git show origin/main:live_data/sections/OIS_DATA.json > live_data/sections/OIS_DATA.json
+          git show origin/main:live_data/sections/NATIVE_CB_DATA.json > live_data/sections/NATIVE_CB_DATA.json
+          git show origin/main:live_data/manifest.v2.json > live_data/manifest.v2.json
+          git show origin/main:payload/part-00.txt > payload/part-00.txt
+
+          allowed='^(live_data/manifest.v2.json|live_data/sections/NATIVE_CB_DATA.json|live_data/sections/OIS_DATA.json|payload/part-00.txt)$'
           bad=$(git status --porcelain | sed -E 's/^...//' | grep -Ev "$allowed" || true)
           if [ -n "$bad" ]; then
-            echo 'Unexpected files changed:'
+            echo 'Unexpected gh-pages files changed:'
             echo "$bad"
             exit 1
           fi
-          echo 'JPY_ONLY_SCOPE_PASS'
 
-      - name: Save verified runtime files
-        shell: bash
-        run: |
-          mkdir -p /tmp/jpy-runtime/live_data/sections /tmp/jpy-runtime/live_data /tmp/jpy-runtime/payload
-          cp live_data/sections/OIS_DATA.json /tmp/jpy-runtime/live_data/sections/OIS_DATA.json
-          cp live_data/sections/NATIVE_CB_DATA.json /tmp/jpy-runtime/live_data/sections/NATIVE_CB_DATA.json
-          cp live_data/manifest.v2.json /tmp/jpy-runtime/live_data/manifest.v2.json
-          cp payload/part-00.txt /tmp/jpy-runtime/payload/part-00.txt
-          sha256sum /tmp/jpy-runtime/live_data/sections/OIS_DATA.json \
-                    /tmp/jpy-runtime/live_data/sections/NATIVE_CB_DATA.json \
-                    /tmp/jpy-runtime/live_data/manifest.v2.json \
-                    /tmp/jpy-runtime/payload/part-00.txt
-
-      - name: Promote only verified JPY runtime to main
-        shell: bash
-        run: |
-          git fetch origin main
-          git checkout -B main origin/main
-          cp /tmp/jpy-runtime/live_data/sections/OIS_DATA.json live_data/sections/OIS_DATA.json
-          cp /tmp/jpy-runtime/live_data/sections/NATIVE_CB_DATA.json live_data/sections/NATIVE_CB_DATA.json
-          cp /tmp/jpy-runtime/live_data/manifest.v2.json live_data/manifest.v2.json
-          cp /tmp/jpy-runtime/payload/part-00.txt payload/part-00.txt
-
-          expected=$(printf '%s\n' \
-            'live_data/manifest.v2.json' \
-            'live_data/sections/NATIVE_CB_DATA.json' \
-            'live_data/sections/OIS_DATA.json' \
-            'payload/part-00.txt' | sort)
-          actual=$(git diff --name-only | sort)
+          changed=$(git diff --name-only)
           echo 'Changed files:'
-          printf '%s\n' "$actual"
-          if [ "$actual" != "$expected" ]; then
-            echo 'Main promotion scope mismatch'
+          printf '%s\n' "$changed"
+          if ! printf '%s\n' "$changed" | grep -qx 'live_data/sections/OIS_DATA.json'; then
+            echo 'Expected JPY OIS runtime change missing'
             exit 1
           fi
 
+          for f in live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt; do
+            test "$(sha256sum "$f" | awk '{print $1}')" = "$(git show origin/main:"$f" | sha256sum | awk '{print $1}')"
+          done
+          echo 'GH_PAGES_RUNTIME_MATCHES_MAIN'
+
+      - name: Commit gh-pages runtime sync
+        shell: bash
+        run: |
           git add live_data/sections/OIS_DATA.json \
                   live_data/sections/NATIVE_CB_DATA.json \
                   live_data/manifest.v2.json \
@@ -93,15 +62,5 @@ jobs:
           git diff --cached --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Activate JPY TONA pricing from official TFX history'
-          git push origin HEAD:main
-
-      - name: Upload verified runtime candidate
-        uses: actions/upload-artifact@v4
-        with:
-          name: jpy-tona-runtime-candidate
-          path: |
-            /tmp/jpy-runtime/live_data/sections/OIS_DATA.json
-            /tmp/jpy-runtime/live_data/sections/NATIVE_CB_DATA.json
-            /tmp/jpy-runtime/payload/part-00.txt
-            /tmp/jpy-runtime/live_data/manifest.v2.json
+          git commit -m 'Publish JPY TONA pricing runtime'
+          git push origin HEAD:gh-pages
