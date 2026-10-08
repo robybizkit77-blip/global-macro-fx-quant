@@ -1,0 +1,29 @@
+{
+  "currency": "NZD",
+  "status": "WITHHELD",
+  "as_of": "2026-10-08",
+  "target_instrument": "NZD Overnight Indexed Swap (OCR-linked expectations)",
+  "validated": {
+    "nzd_ois_market_exists": true,
+    "rbnz_uses_ois_for_ocr_expectations": true,
+    "rbnz_public_b2_daily_series_available": true,
+    "rbnz_public_b2_contains_native_ois_curve": false
+  },
+  "public_b2_content": {
+    "ocr": true,
+    "overnight_interbank_cash_rate": true,
+    "bank_bill_yields": ["30d", "60d", "90d"],
+    "standard_swap_rates": ["1y", "2y", "3y", "4y", "5y", "7y", "10y", "15y"],
+    "standard_swap_floating_reference": "NZ 90-day bank bill rate"
+  },
+  "ois_public_history_status": "NOT_AVAILABLE_AS_NATIVE_PUBLIC_RBNZ_DAILY_SERIES",
+  "evidence": {
+    "rbnz_mps_market_ocr_expectations_measured_by_ois": true,
+    "rbnz_mps_ois_market_pricing_source": "Bloomberg",
+    "homogeneous_public_current_t1_t5_native_ois_obtained": false
+  },
+  "decision": "Do not activate NZD OIS. Do not substitute ASX/NZ bank bill futures, RBNZ B2 90-day bank bills, or standard NZ swap rates for native OCR-linked OIS pricing. Keep WITHHELD until homogeneous official or otherwise directly licensable/public NZD OIS observations for current, T-1 and approximately T-5 business days are available.",
+  "production_modified": false,
+  "main_modified": false,
+  "gh_pages_modified": false
+}
