@@ -123,13 +123,24 @@
       "currency": "JPY",
       "dimension": "inflation",
       "series_id": "JP_CPI_HEADLINE_YOY",
-      "source": "Statistics Bureau of Japan / e-Stat",
+      "source": "Statistics Bureau of Japan / CPI",
       "authority": "Statistics Bureau of Japan",
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/jpy_statistics_bureau_cpi.py",
+      "live_certification": {
+        "workflow": ".github/workflows/jpy-statistics-bureau-cpi-source-contract-v1.yml",
+        "run_id": 37815982586,
+        "head_sha": "8713386d0f295d721cfc37ac4e803a07bb687234",
+        "status": "SUCCESS",
+        "official_observation_date": "2026-08",
+        "official_value": 1.9,
+        "transport_url": "https://www.stat.go.jp/english/",
+        "read_only": true
+      }
     },
     "CHF.labour": {
       "currency": "CHF",
