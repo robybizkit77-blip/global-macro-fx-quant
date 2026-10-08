@@ -1,0 +1,245 @@
+name: CB Pricing Active Orchestrator
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-active-orchestrator-2026-10-08
+      - release-candidate-cb-pricing-active-orchestrator-2026-10-08
+    paths:
+      - '.github/workflows/cb-pricing-active-orchestrator.yml'
+      - 'validation/cb_pricing/collect_aud_asx_ib.py'
+      - 'validation/cb_pricing/build_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/collect_cad_mx_corra.py'
+      - 'validation/cb_pricing/build_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/collect_gbp_boe_ois.py'
+      - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/collect_jpy_tfx_tona.py'
+      - 'validation/cb_pricing/build_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install source parser dependencies
+        run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
+
+      - name: Preflight active coverage contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json')
+          d=json.loads(p.read_text())
+          want=['AUD','CAD','GBP','JPY']
+          if sorted(d['summary']['active_currencies'])!=want: raise SystemExit(f"active coverage mismatch {d['summary']['active_currencies']}")
+          if sorted(d['summary']['daily_ready'])!=want: raise SystemExit(f"daily-ready coverage mismatch {d['summary']['daily_ready']}")
+          if d['summary']['active_but_not_daily_ready']!=[]: raise SystemExit('active currency remains not DAILY_READY')
+          for c in want:
+            x=d['currencies'][c]
+            for k in ('source_collector_ready','candidate_builder_ready','dry_run_apply_certified'):
+              if x.get(k) is not True: raise SystemExit(f'{c} missing {k}')
+            if x.get('automatic_publication') is not False: raise SystemExit(f'{c} automatic publication must remain false')
+          print('ACTIVE_CB_COVERAGE_PREFLIGHT_PASS')
+          PY
+
+      - name: Download official BoE OIS archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT validation' \
+            'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip' \
+            -o /tmp/oisddata.zip
+
+      - name: Collect all four official source snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cb-orchestrator
+          python3 validation/cb_pricing/collect_aud_asx_ib.py --output /tmp/cb-orchestrator/AUD.snapshot.json
+          python3 validation/cb_pricing/collect_cad_mx_corra.py --output /tmp/cb-orchestrator/CAD.snapshot.json
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py --zip /tmp/oisddata.zip --output /tmp/cb-orchestrator/GBP.snapshot.json
+          python3 validation/cb_pricing/collect_jpy_tfx_tona.py --output /tmp/cb-orchestrator/JPY.snapshot.json
+
+      - name: Build all four candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/build_aud_asx_ib_candidate.py --snapshot /tmp/cb-orchestrator/AUD.snapshot.json --output /tmp/cb-orchestrator/AUD.candidate.json
+          python3 validation/cb_pricing/build_cad_mx_corra_candidate.py --snapshot /tmp/cb-orchestrator/CAD.snapshot.json --output /tmp/cb-orchestrator/CAD.candidate.json
+          python3 validation/cb_pricing/build_gbp_boe_ois_candidate.py --snapshot /tmp/cb-orchestrator/GBP.snapshot.json --output /tmp/cb-orchestrator/GBP.candidate.json
+          python3 validation/cb_pricing/build_jpy_tfx_tona_candidate.py --snapshot /tmp/cb-orchestrator/JPY.snapshot.json --output /tmp/cb-orchestrator/JPY.candidate.json
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path('/tmp/cb-orchestrator')
+          asofs={}
+          for c in ('AUD','CAD','GBP','JPY'):
+            s=json.loads((root/f'{c}.snapshot.json').read_text())
+            x=json.loads((root/f'{c}.candidate.json').read_text())
+            if s.get('currency')!=c or s.get('schema')!='GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1': raise SystemExit(f'{c} snapshot schema mismatch')
+            if x.get('currency')!=c or x.get('schema')!='GMFQ_CB_PRICING_CANDIDATE_V1' or x.get('status')!='READY_FOR_DRY_RUN': raise SystemExit(f'{c} candidate contract mismatch')
+            if x.get('as_of')!=s.get('as_of'): raise SystemExit(f'{c} as-of mismatch snapshot/candidate')
+            asofs[c]=x['as_of']
+          (root/'candidate-asofs.json').write_text(json.dumps(asofs,indent=2)+'\n')
+          print('ALL_FOUR_CANDIDATES_PASS',asofs)
+          PY
+
+      - name: Save canonical runtime baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp live_data/sections/OIS_DATA.json /tmp/cb-orchestrator/OIS.baseline.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/cb-orchestrator/NATIVE.baseline.json
+          cp payload/part-00.txt /tmp/cb-orchestrator/part-00.baseline.txt
+          cp live_data/manifest.v2.json /tmp/cb-orchestrator/manifest.baseline.json
+          git diff --quiet
+
+      - name: Dry-run AUD in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_aud_asx_ib_candidate.py --candidate /tmp/cb-orchestrator/AUD.candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/cb-orchestrator/AUD.manifest.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/cb-orchestrator/AUD.registry.json
+          python3 validation/check_live_update_contract.py >/tmp/cb-orchestrator/AUD.contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/cb-orchestrator/AUD.roundtrip.json
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          c='AUD'; root=pathlib.Path('/tmp/cb-orchestrator')
+          bo=json.loads((root/'OIS.baseline.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads((root/'NATIVE.baseline.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]; cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=[c] or cn!=[c]: raise SystemExit(f'{c} semantic scope failure {co} {cn}')
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          exp=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if changed!=exp: raise SystemExit(f'{c} file scope failure {changed}')
+          print(c,'ISOLATED_DRY_RUN_PASS')
+          PY
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt
+          git diff --quiet
+
+      - name: Dry-run CAD in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_cad_mx_corra_candidate.py --candidate /tmp/cb-orchestrator/CAD.candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/cb-orchestrator/CAD.manifest.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/cb-orchestrator/CAD.registry.json
+          python3 validation/check_live_update_contract.py >/tmp/cb-orchestrator/CAD.contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/cb-orchestrator/CAD.roundtrip.json
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          c='CAD'; root=pathlib.Path('/tmp/cb-orchestrator')
+          bo=json.loads((root/'OIS.baseline.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads((root/'NATIVE.baseline.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]; cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=[c] or cn!=[c]: raise SystemExit(f'{c} semantic scope failure {co} {cn}')
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          exp=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if changed!=exp: raise SystemExit(f'{c} file scope failure {changed}')
+          print(c,'ISOLATED_DRY_RUN_PASS')
+          PY
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt
+          git diff --quiet
+
+      - name: Dry-run GBP in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/cb-orchestrator/GBP.candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/cb-orchestrator/GBP.manifest.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/cb-orchestrator/GBP.registry.json
+          python3 validation/check_live_update_contract.py >/tmp/cb-orchestrator/GBP.contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/cb-orchestrator/GBP.roundtrip.json
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          c='GBP'; root=pathlib.Path('/tmp/cb-orchestrator')
+          bo=json.loads((root/'OIS.baseline.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads((root/'NATIVE.baseline.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]; cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=[c] or cn!=[c]: raise SystemExit(f'{c} semantic scope failure {co} {cn}')
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          exp=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if changed!=exp: raise SystemExit(f'{c} file scope failure {changed}')
+          print(c,'ISOLATED_DRY_RUN_PASS')
+          PY
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt
+          git diff --quiet
+
+      - name: Dry-run JPY in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_jpy_tfx_tona_candidate.py --candidate /tmp/cb-orchestrator/JPY.candidate.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/cb-orchestrator/JPY.manifest.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/cb-orchestrator/JPY.registry.json
+          python3 validation/check_live_update_contract.py >/tmp/cb-orchestrator/JPY.contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/cb-orchestrator/JPY.roundtrip.json
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          c='JPY'; root=pathlib.Path('/tmp/cb-orchestrator')
+          bo=json.loads((root/'OIS.baseline.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads((root/'NATIVE.baseline.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]; cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=[c] or cn!=[c]: raise SystemExit(f'{c} semantic scope failure {co} {cn}')
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          exp=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if changed!=exp: raise SystemExit(f'{c} file scope failure {changed}')
+          print(c,'ISOLATED_DRY_RUN_PASS')
+          PY
+          git checkout -- live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt
+          git diff --quiet
+
+      - name: Build consolidated no-publication receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,subprocess,datetime
+          root=pathlib.Path('/tmp/cb-orchestrator')
+          currencies={}
+          for c in ('AUD','CAD','GBP','JPY'):
+            s=json.loads((root/f'{c}.snapshot.json').read_text())
+            x=json.loads((root/f'{c}.candidate.json').read_text())
+            currencies[c]={
+              'status':'PASS',
+              'as_of':x['as_of'],
+              'source':x['source'],
+              'candidate_status':x['status'],
+              'isolated_semantic_scope':[c],
+              'runtime_publication':False
+            }
+          receipt={
+            'schema':'GMFQ_ACTIVE_CB_PRICING_ORCHESTRATOR_RECEIPT_V1',
+            'generated_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'status':'ALL_GREEN_NO_PUBLICATION',
+            'currencies':currencies,
+            'all_or_nothing_gate':True,
+            'live_data_published':False,
+            'gh_pages_published':False,
+            'working_tree_clean':subprocess.call(['git','diff','--quiet'])==0
+          }
+          if not receipt['working_tree_clean']: raise SystemExit('working tree not clean after orchestrated dry runs')
+          (root/'ORCHESTRATOR_RECEIPT.json').write_text(json.dumps(receipt,indent=2,ensure_ascii=False)+'\n')
+          print(json.dumps(receipt,indent=2,ensure_ascii=False))
+          PY
+
+      - name: Upload consolidated orchestrator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: active-cb-pricing-orchestrator-evidence
+          path: /tmp/cb-orchestrator/
+          if-no-files-found: error
+          retention-days: 30
