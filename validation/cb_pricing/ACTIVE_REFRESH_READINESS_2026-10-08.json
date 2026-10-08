@@ -6,9 +6,10 @@
   "summary": {
     "active_currencies": ["AUD", "CAD", "GBP", "JPY"],
     "source_collector_ready": ["GBP"],
+    "candidate_builder_ready": ["GBP"],
     "daily_ready": [],
     "active_but_not_daily_ready": ["AUD", "CAD", "GBP", "JPY"],
-    "key_distinction": "ACTIVE means current pricing was source-validated and promoted. SOURCE_COLLECTOR_READY means fresh official current/T-1/T-5 observations can be rebuilt reproducibly without runtime mutation. DAILY_READY additionally requires generic candidate build, fail-closed validation, deterministic runtime apply and a main-based dry-run promotion path."
+    "key_distinction": "ACTIVE means current pricing was source-validated and promoted. SOURCE_COLLECTOR_READY means fresh official current/T-1/T-5 observations can be rebuilt reproducibly without runtime mutation. CANDIDATE_BUILDER_READY additionally means those observations can be converted into a registry-authorized CB_PRICING_CANDIDATE_V1 without hard-coded market values. DAILY_READY still requires deterministic candidate-to-runtime dry-run apply, payload/manifest rebuild and preflight from a clean main base."
   },
   "currencies": {
     "AUD": {
@@ -30,19 +31,20 @@
       "next_required": "Build a current-date Market Review resolver plus contract parser with direct quarterly buckets and fail closed when current/T-1/T-5 homogeneous observations are incomplete."
     },
     "GBP": {
-      "status": "SOURCE_COLLECTOR_READY_NOT_FULL_DAILY_READY",
+      "status": "CANDIDATE_BUILDER_READY_NOT_FULL_DAILY_READY",
       "source": "Bank of England estimated sterling OIS forward curve",
       "validated_runtime": true,
       "canonical_refresh_code_on_main": false,
       "source_collector_ready": true,
+      "candidate_builder_ready": true,
       "collector": "validation/cb_pricing/collect_gbp_boe_ois.py",
-      "collector_validation_workflow": ".github/workflows/gbp-boe-ois-refresh-readiness.yml",
-      "collector_validated_sha": "75a0fd3ca1fc9fb5167bfc9bc974fde432ee54be",
-      "collector_validation_run_id": 37753069044,
-      "collector_validation_artifact_id": 11538985465,
+      "candidate_builder": "validation/cb_pricing/build_gbp_boe_ois_candidate.py",
+      "validation_workflow": ".github/workflows/gbp-boe-ois-refresh-readiness.yml",
+      "validated_sha": "0c8c8e66d21d36df2bdb40fce09fed38253e6000",
+      "validation_run_id": 37753786581,
       "regression_benchmark": {
         "as_of": "2026-09-29",
-        "status": "PASS_EXACT_CERTIFIED_VALUES"
+        "status": "PASS_EXACT_CERTIFIED_VALUES_AND_CANDIDATE"
       },
       "latest_source_snapshot": {
         "as_of": "2026-09-30",
@@ -52,9 +54,10 @@
         "change_1d_bp": {"3m": 0.7025, "6m": -0.4991, "12m": -0.2978},
         "change_1w_bp": {"3m": 0.7192, "6m": -4.2955, "12m": -9.2808}
       },
+      "builder_metadata_rule": "Policy rate and meeting path are inherited from currently validated canonical GBP runtime metadata; market rates and changes come only from the official BoE source snapshot; source must match the source registry.",
       "read_only_proven": true,
-      "blocker": "Source acquisition is now reusable and regression-certified, but generic candidate-to-runtime apply is not yet canonical on main.",
-      "next_required": "Build a generic GBP candidate/apply path driven only by the source snapshot; enforce GBP-only semantic delta, source-registry authorization, deterministic payload/manifest rebuild and preflight, with no automatic publication."
+      "blocker": "Collector and candidate builder are reusable and regression-certified, but deterministic candidate-to-runtime dry-run apply is not yet canonical on main.",
+      "next_required": "Build a GBP-only dry-run apply that starts from current main runtime, mutates only GBP OIS/NATIVE semantics in a temporary workspace, rebuilds payload/manifest deterministically, runs source-registry and live-update preflight, and refuses publication."
     },
     "JPY": {
       "status": "ACTIVE_NOT_DAILY_READY",
@@ -68,7 +71,7 @@
     }
   },
   "implementation_order": ["GBP", "JPY", "CAD", "AUD"],
-  "implementation_order_rationale": "GBP now has a regression-certified reusable official source collector, so the next task is generic candidate/apply. JPY already has a strong fail-closed builder pattern; CAD and AUD follow once their activation-time source retrieval is converted into reusable daily collectors.",
+  "implementation_order_rationale": "GBP now has a regression-certified reusable source collector and candidate builder. Its only remaining DAILY_READY requirement is deterministic fail-closed dry-run apply from clean main. JPY follows with the strongest existing one-shot apply pattern; CAD and AUD follow once source retrieval is generalized.",
   "promotion_rule": "Do not mark any ACTIVE currency DAILY_READY until a clean main-based dry run can produce a candidate from fresh official data, pass source registry and negative fail-closed checks, rebuild runtime deterministically, and demonstrate currency-only semantic delta without publishing automatically.",
   "gh_pages_modified": false
 }
