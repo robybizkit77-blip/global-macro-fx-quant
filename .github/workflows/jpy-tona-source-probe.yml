@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install parser dependencies
         run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4
-      - name: Probe official TFX historical form
+      - name: Probe official TFX historical form and CSV request
         shell: bash
         run: |
           set -euo pipefail
@@ -26,28 +26,59 @@ jobs:
           import json, requests
           from bs4 import BeautifulSoup
           from urllib.parse import urljoin
-          url='https://www.tfx.co.jp/en/historical/futures/'
-          r=requests.get(url,timeout=30,headers={'User-Agent':'GLOBAL-MACRO-FX-QUANT validation'})
-          r.raise_for_status()
+          page='https://www.tfx.co.jp/en/historical/futures/'
+          result='https://www.tfx.co.jp/historical/futures/result'
+          headers={'User-Agent':'GLOBAL-MACRO-FX-QUANT validation'}
+          s=requests.Session()
+          r=s.get(page,timeout=30,headers=headers); r.raise_for_status()
           soup=BeautifulSoup(r.text,'html.parser')
-          out=[]
+          forms=[]
           for i,form in enumerate(soup.find_all('form')):
             fields=[]
             for el in form.find_all(['input','select','button']):
               fields.append({'tag':el.name,'name':el.get('name'),'value':el.get('value'),'type':el.get('type'),'id':el.get('id')})
             text=' '.join(form.stripped_strings)
             if 'TONA' in text or 'Summary Data' in text or any('HistoricalData' in str(x.get('name')) for x in fields):
-              out.append({'index':i,'action':urljoin(url,form.get('action') or ''),'method':(form.get('method') or 'GET').upper(),'text':text[:1200],'fields':fields})
-          data={'page':url,'status_code':r.status_code,'forms':out}
-          open('/tmp/tfx-form-probe.json','w').write(json.dumps(data,indent=2,ensure_ascii=False))
-          print(json.dumps(data,indent=2,ensure_ascii=False))
-          if not out:
-            raise SystemExit('No relevant TFX historical form discovered')
+              forms.append({'index':i,'action':urljoin(page,form.get('action') or ''),'method':(form.get('method') or 'GET').upper(),'text':text[:1200],'fields':fields})
+          params=[
+            ('HistoricalFuturesData[submit_type]','csv'),
+            ('HistoricalFuturesData[period_start_type]','date'),
+            ('HistoricalFuturesData[period_start][year]','2026'),
+            ('HistoricalFuturesData[period_start][month]','9'),
+            ('HistoricalFuturesData[period_start][day]','22'),
+            ('HistoricalFuturesData[period_end_type]','date'),
+            ('HistoricalFuturesData[period_end][year]','2026'),
+            ('HistoricalFuturesData[period_end][month]','9'),
+            ('HistoricalFuturesData[period_end][day]','29'),
+            ('HistoricalFuturesData[product_type1][]','無担保コールオーバーナイト３ヵ月金利先物'),
+            ('HistoricalFuturesData[product_type2]','1'),
+            ('HistoricalFuturesData[get_preference][]','day_settlement_price'),
+          ]
+          q=s.get(result,params=params,timeout=30,headers=headers,allow_redirects=True)
+          q.raise_for_status()
+          body=q.content
+          open('/tmp/tfx-result.bin','wb').write(body)
+          info={
+            'page':page,'forms':forms,'request_url':q.url,'status_code':q.status_code,
+            'content_type':q.headers.get('content-type'),'content_disposition':q.headers.get('content-disposition'),
+            'bytes':len(body),'prefix_hex':body[:80].hex(),
+          }
+          try:
+            txt=body.decode('shift_jis')
+          except Exception:
+            txt=body.decode('utf-8','replace')
+          info['text_preview']=txt[:4000]
+          open('/tmp/tfx-form-probe.json','w').write(json.dumps(info,indent=2,ensure_ascii=False))
+          print(json.dumps(info,indent=2,ensure_ascii=False))
+          if len(body)<100:
+            raise SystemExit('TFX result unexpectedly small')
           PY
       - name: Upload probe evidence
         uses: actions/upload-artifact@v4
         with:
           name: jpy-tona-source-probe
-          path: /tmp/tfx-form-probe.json
+          path: |
+            /tmp/tfx-form-probe.json
+            /tmp/tfx-result.bin
           if-no-files-found: error
           retention-days: 7
