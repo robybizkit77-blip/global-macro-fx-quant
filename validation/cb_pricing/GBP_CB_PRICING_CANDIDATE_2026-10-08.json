@@ -1,0 +1,93 @@
+{
+  "schema": "GMFQ_CB_PRICING_CANDIDATE_V1",
+  "currency": "GBP",
+  "status": "READY_FOR_SEPARATE_PROMOTION",
+  "as_of": "2026-09-29",
+  "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+  "source_url": "https://www.bankofengland.co.uk/statistics/yield-curves",
+  "archive_url": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip",
+  "instrument": "UK instantaneous OIS forward curve based on SONIA",
+  "quotation": "annualised continuously-compounded forward rate, percent",
+  "policy_rate": 3.75,
+  "meeting_path": [
+    {
+      "date": "2026-11-05",
+      "label": "BoE MPC"
+    }
+  ],
+  "horizon_mapping": {
+    "3m": "BoE short-end forward curve · maturity 3 months",
+    "6m": "BoE short-end forward curve · maturity 6 months",
+    "12m": "BoE short-end forward curve · maturity 12 months"
+  },
+  "horizons": {
+    "3m": {
+      "rate": 4.0707067450601,
+      "change_1d_bp": 0.39829616065079065,
+      "change_1w_bp": 4.058922706871293,
+      "policy_delta_bp": 32.07067450601002
+    },
+    "6m": {
+      "rate": 4.438953403175621,
+      "change_1d_bp": 1.0397411169051907,
+      "change_1w_bp": 4.458705179000777,
+      "policy_delta_bp": 68.89534031756206
+    },
+    "12m": {
+      "rate": 4.865918782825779,
+      "change_1d_bp": 3.737762686630397,
+      "change_1w_bp": 6.53984947008821,
+      "policy_delta_bp": 111.59187828257791
+    }
+  },
+  "cuts_hikes_priced": {
+    "3m_bp": 32.07067450601002,
+    "6m_bp": 68.89534031756206,
+    "12m_bp": 111.59187828257791
+  },
+  "direction": "UP",
+  "change_direction_1d": "UP",
+  "change_direction_1w": "UP",
+  "observations": {
+    "2026-09-22": {
+      "3m": 4.030117517991387,
+      "6m": 4.394366351385613,
+      "12m": 4.800520288124897
+    },
+    "2026-09-28": {
+      "3m": 4.066723783453592,
+      "6m": 4.428555992006569,
+      "12m": 4.828541155959475
+    },
+    "2026-09-29": {
+      "3m": 4.0707067450601,
+      "6m": 4.438953403175621,
+      "12m": 4.865918782825779
+    }
+  },
+  "validation": {
+    "source_validated": true,
+    "asof_validated": true,
+    "meeting_path_validated": true,
+    "changes_validated": true,
+    "current_real": true,
+    "previous_real": true,
+    "week_real": true,
+    "tenor_headers_validated": true,
+    "no_interpolation": true,
+    "weekly_reference_note": "22 Sep 2026 is the homogeneous five-business-day reference for the 29 Sep observation."
+  },
+  "provenance": {
+    "official_archive_workbook": "OIS daily data_2025 to present.xlsx",
+    "official_sheet": "1. fwds, short end",
+    "header_rows": {
+      "months": "1, 2, 3, ... 6, ... 12",
+      "years": "1/12, 2/12, 0.25, ... 0.5, ... 1.0"
+    },
+    "extraction_workflow": "GBP BoE OIS Extract Once",
+    "extraction_run_id": 37738356909,
+    "extraction_head_sha": "188eee7506c756ba1bdb3f6ba088b40f71d9a64d",
+    "method": "Direct extraction from the Bank of England official daily OIS archive. 3M/6M/12M are exact short-end instantaneous forward-curve columns; no interpolation and no secondary market source.",
+    "methodology_note": "This is a Bank of England estimated SONIA OIS forward curve, not an exchange futures settlement series. It is used as the official public sterling policy-pricing curve and should retain this method label in UI/runtime."
+  }
+}
