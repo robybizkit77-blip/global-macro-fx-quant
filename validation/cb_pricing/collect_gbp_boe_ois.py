@@ -2,9 +2,14 @@
 """Read-only collector for official Bank of England sterling OIS curve packages.
 
 Supports both the historical archive package and the separate daily "Latest yield
-curve data" package. The economic series and parser are identical: exact 3M,
-6M and 12M columns from the BoE short-end SONIA/OIS forward curve, no
-interpolation. It never writes live_data or payload.
+curve data" package. Exact 3M, 6M and 12M columns are read from the BoE
+short-end SONIA/OIS forward curve with no interpolation.
+
+When no --as-of is supplied the collector is explicitly a latest-data operation.
+If a caller accidentally supplies the slower monthly archive ZIP, the collector
+switches to the official BoE latest package rather than silently returning stale
+archive data. Historical --as-of requests continue to use the supplied archive.
+It never writes live_data or payload.
 """
 from __future__ import annotations
 
@@ -14,14 +19,17 @@ import json
 import pathlib
 import re
 import tempfile
+import urllib.request
 import zipfile
 
 import pandas as pd
 
 SHEET = "1. fwds, short end"
+LATEST_URL = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
+ARCHIVE_URL = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
 WORKBOOK_PATTERNS = (
-    (re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I), "ARCHIVE_HISTORY", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"),
-    (re.compile(r"OIS daily data current month\.xlsx$", re.I), "LATEST_DAILY", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"),
+    (re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I), "ARCHIVE_HISTORY", ARCHIVE_URL),
+    (re.compile(r"OIS daily data current month\.xlsx$", re.I), "LATEST_DAILY", LATEST_URL),
 )
 TENORS = {"3m": 3, "6m": 6, "12m": 12}
 
@@ -35,6 +43,22 @@ def find_workbook(zf: zipfile.ZipFile):
     if len(matches) != 1:
         raise SystemExit(f"Expected exactly one supported BoE OIS workbook, found {matches}")
     return matches[0]
+
+
+def package_kind(zip_path: pathlib.Path):
+    with zipfile.ZipFile(zip_path) as zf:
+        return find_workbook(zf)[1]
+
+
+def download_latest(destination: pathlib.Path):
+    req = urllib.request.Request(LATEST_URL, headers={"User-Agent": "GLOBAL-MACRO-FX-QUANT daily observation"})
+    try:
+        with urllib.request.urlopen(req, timeout=45) as r, destination.open("wb") as f:
+            f.write(r.read())
+    except Exception as exc:
+        raise SystemExit(f"Official BoE latest package download failed: {exc}")
+    if package_kind(destination) != "LATEST_DAILY":
+        raise SystemExit("Official BoE latest package did not contain the expected current-month OIS workbook")
 
 
 def num(v):
@@ -96,7 +120,7 @@ def cell_date(v):
 def extract(zip_path: pathlib.Path, requested_as_of: str | None):
     with tempfile.TemporaryDirectory() as td:
         with zipfile.ZipFile(zip_path) as zf:
-            workbook_name, package_kind, package_url = find_workbook(zf)
+            workbook_name, pkg_kind, pkg_url = find_workbook(zf)
             zf.extract(workbook_name, td)
             workbook_path = pathlib.Path(td) / workbook_name
 
@@ -157,8 +181,8 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             "status": "SOURCE_SNAPSHOT_ONLY",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "source_url": "https://www.bankofengland.co.uk/statistics/yield-curves",
-            "official_archive": package_url,
-            "package_kind": package_kind,
+            "official_archive": pkg_url,
+            "package_kind": pkg_kind,
             "workbook": workbook_name,
             "sheet": SHEET,
             "instrument": "UK instantaneous OIS forward curve based on SONIA",
@@ -186,7 +210,17 @@ def main():
     ap.add_argument("--as-of", help="YYYY-MM-DD; omit for latest complete official observation")
     ap.add_argument("--output", type=pathlib.Path)
     args = ap.parse_args()
-    result = extract(args.zip, args.as_of)
+
+    use_path = args.zip
+    with tempfile.TemporaryDirectory() as td:
+        if not args.as_of and package_kind(args.zip) != "LATEST_DAILY":
+            use_path = pathlib.Path(td) / "boe-latest.zip"
+            download_latest(use_path)
+        result = extract(use_path, args.as_of)
+
+    if not args.as_of and result.get("package_kind") != "LATEST_DAILY":
+        raise SystemExit("Latest GBP collection did not use the official BoE LATEST_DAILY package")
+
     text = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
