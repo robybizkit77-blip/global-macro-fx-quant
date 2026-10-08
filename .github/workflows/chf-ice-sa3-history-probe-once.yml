@@ -1,0 +1,86 @@
+name: CHF ICE SA3 History Probe Once
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-chf-2026-10-08
+    paths:
+      - .github/workflows/chf-ice-sa3-history-probe-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-cb-pricing-chf-2026-10-08
+      - name: Inspect official ICE SA3 data page and scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ice validation/cb_pricing
+          page='https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data?marketId=6097635'
+          curl -fLsS --retry 2 -A 'Mozilla/5.0' "$page" -o /tmp/ice/page.html
+          python3 - <<'PY'
+          import pathlib,re,json,html
+          txt=pathlib.Path('/tmp/ice/page.html').read_text(errors='replace')
+          out={
+            'page_bytes':len(txt.encode()),
+            'market_id_present':'6097635' in txt,
+            'sa3_present':bool(re.search(r'\bSA3\b',txt,re.I)),
+            'urls':[],
+            'scripts':[],
+            'api_like':[]
+          }
+          for u in re.findall(r'https?://[^"\'<>\s]+',txt):
+              u=html.unescape(u)
+              if any(k in u.lower() for k in ['api','market','product','price','settle','chart','histor']):
+                  out['urls'].append(u[:500])
+          for s in re.findall(r'<script[^>]+src=["\']([^"\']+)',txt,re.I):
+              out['scripts'].append(html.unescape(s))
+          for pat in [r'[^"\']{0,120}(?:marketId|settlement|settle|historical|history|price|chart)[^"\']{0,220}']:
+              out['api_like'] += re.findall(pat,txt,re.I)
+          out['urls']=list(dict.fromkeys(out['urls']))[:100]
+          out['scripts']=list(dict.fromkeys(out['scripts']))[:100]
+          out['api_like']=list(dict.fromkeys(out['api_like']))[:100]
+          pathlib.Path('/tmp/ice/page_scan.json').write_text(json.dumps(out,indent=2))
+          print(json.dumps({k:(len(v) if isinstance(v,list) else v) for k,v in out.items()},indent=2))
+          PY
+          python3 - <<'PY'
+          import pathlib,json,subprocess,urllib.parse,re
+          out=json.loads(pathlib.Path('/tmp/ice/page_scan.json').read_text())
+          base='https://www.ice.com'
+          script_results=[]
+          for i,s in enumerate(out.get('scripts',[])[:40]):
+              if s.startswith('//'): u='https:'+s
+              elif s.startswith('/'): u=base+s
+              elif s.startswith('http'): u=s
+              else: continue
+              p=f'/tmp/ice/script_{i}.js'
+              try:
+                  subprocess.run(['curl','-fLsS','--retry','1','-A','Mozilla/5.0',u,'-o',p],check=True,timeout=30)
+              except Exception:
+                  continue
+              txt=pathlib.Path(p).read_text(errors='replace')
+              hits=[]
+              for m in re.finditer(r'(marketId|settlement|settle|historical|history|price|chart|productguide|api)',txt,re.I):
+                  hits.append(txt[max(0,m.start()-180):m.start()+320])
+                  if len(hits)>=30: break
+              if hits: script_results.append({'url':u,'hits':hits})
+          pathlib.Path('validation/cb_pricing/CHF_ICE_SA3_DATA_PAGE_PROBE_2026-10-08.json').write_text(json.dumps({'page_scan':out,'script_results':script_results},indent=2),encoding='utf-8')
+          print('scripts_with_hits',len(script_results))
+          PY
+      - name: Commit ICE endpoint evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/cb_pricing/CHF_ICE_SA3_DATA_PAGE_PROBE_2026-10-08.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Probe ICE SA3 pricing data endpoint'
+          git push origin HEAD:validation-cb-pricing-chf-2026-10-08
