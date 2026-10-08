@@ -3,12 +3,22 @@
   "status": "WITHHELD",
   "source": "CME Group",
   "source_url": "https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf",
-  "evidence": "Oct 7 preliminary and Oct 6 final appear in CME PDF text. PDF screenshot instead showed July 21; source not validated.",
+  "validated_current_snapshot": {
+    "bulletin_date": "2026-10-07",
+    "bulletin_number": 193,
+    "publication_status": "PRELIMINARY_OFFICIAL",
+    "horizons": {
+      "3m": {"contract": "DEC26", "settlement_price": 95.9350, "implied_rate": 4.0650, "change_1d_bp": -1.0},
+      "6m": {"contract": "MAR27", "settlement_price": 95.7250, "implied_rate": 4.2750, "change_1d_bp": -4.0},
+      "12m": {"contract": "SEP27", "settlement_price": 95.3800, "implied_rate": 4.6200, "change_1d_bp": -5.0}
+    }
+  },
+  "t1_reconstruction": "Derived directly from CME settlement price and official point-change field in the same bulletin; no secondary source or proxy used.",
   "missing": [
-    "matching original PDF bytes",
-    "T-5 verified CME final strip",
-    "3 same-basis final snapshots"
+    "verified same-basis CME T-5-ish settlement strip",
+    "change_1w_bp for 3m/6m/12m"
   ],
+  "activation_rule": "USD remains WITHHELD until current, T-1 and approximately T-5 business-day official CME ZQ snapshots are all available on a homogeneous basis.",
   "main_mutated": false,
   "gh_pages_mutated": false
 }
