@@ -1,0 +1,32 @@
+name: USD Macro Contract Probe Once
+
+on:
+  push:
+    branches:
+      - validation-macro-usd-bls-2026-10-08
+    paths:
+      - '.github/workflows/macro-usd-contract-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print canonical USD macro rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          print('USD_MACRO_SERIES_ROWS')
+          print(json.dumps(series['USD'], indent=2, ensure_ascii=False))
+          print('USD_HEATMAP')
+          print(json.dumps(heat['currencies']['USD'], indent=2, ensure_ascii=False))
+          PY
