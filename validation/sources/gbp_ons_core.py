@@ -134,9 +134,10 @@ def resolve_macro_series_id(dimension: str, heat_series_id: str) -> str:
         elif dimension == "labour" and ("mgsx" in text or "unemp" in text or "disoccup" in text):
             semantic.append(row)
     if len(semantic) != 1:
+        details = [(str(r.get("id")), str(r.get("label", ""))) for r in semantic]
         raise ValueError(
             f"cannot resolve unique GBP {dimension} MACRO_SERIES row; "
-            f"heatmap series_id={heat_series_id!r}; semantic_hits={len(semantic)}"
+            f"heatmap series_id={heat_series_id!r}; semantic_hits={details}"
         )
     return str(semantic[0]["id"])
 
