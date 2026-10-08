@@ -1,0 +1,215 @@
+name: Macro Safe Publication Gate V1
+
+on:
+  push:
+    branches:
+      - 'feature/macro-safe-publication-gate-*'
+    paths:
+      - 'validation/macro_safe_publication.py'
+      - 'validation/test_macro_safe_publication.py'
+      - '.github/workflows/macro-safe-publication-gate-v1.yml'
+  workflow_dispatch:
+    inputs:
+      self_test:
+        description: Run the synthetic JPY labour PIT -> publication proposal path
+        required: true
+        default: true
+        type: boolean
+  workflow_call:
+    inputs:
+      candidate_json:
+        required: true
+        type: string
+      pit_evidence_json:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  validator-self-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test fail-closed publication request validator
+        run: python3 validation/test_macro_safe_publication.py | tee /tmp/macro-safe-publication-selftest.json
+      - name: Prove self-test is read-only
+        run: git diff --exit-code -- live_data payload validation/macro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-safe-publication-selftest-${{ github.run_id }}
+          path: /tmp/macro-safe-publication-selftest.json
+          if-no-files-found: error
+
+  synthetic-pit:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.self_test == true)
+    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
+    with:
+      refresh_scope: single_series
+      currency: JPY
+      dimension: labour
+      macro_series_id: JP_UNEMP_RATE_history_value
+      dry_run: true
+      candidate_path: ''
+
+  build-proposal:
+    needs: [validator-self-test, synthetic-pit]
+    if: ${{ always() && needs.validator-self-test.result == 'success' && (needs.synthetic-pit.result == 'success' || github.event_name == 'workflow_call') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve candidate and PIT evidence
+        shell: bash
+        env:
+          CANDIDATE_JSON: ${{ inputs.candidate_json }}
+          PIT_EVIDENCE_JSON: ${{ inputs.pit_evidence_json }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-safe-publication/source /tmp/macro-safe-publication/proposal
+          if [ "${{ github.event_name }}" = 'workflow_call' ]; then
+            test -n "$CANDIDATE_JSON"
+            test -n "$PIT_EVIDENCE_JSON"
+            printf '%s\n' "$CANDIDATE_JSON" > /tmp/macro-safe-publication/source/candidate.json
+            printf '%s\n' "$PIT_EVIDENCE_JSON" > /tmp/macro-safe-publication/source/macro-pit-anchor-evidence.json
+          fi
+
+      - name: Download synthetic PIT evidence
+        if: github.event_name != 'workflow_call'
+        uses: actions/download-artifact@v4
+        with:
+          name: macro-single-series-pit-refresh-${{ github.run_id }}
+          path: /tmp/macro-safe-publication/source
+
+      - name: Validate PIT-backed publication request
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f /tmp/macro-safe-publication/source/candidate.json
+          test -f /tmp/macro-safe-publication/source/macro-pit-anchor-evidence.json
+          python3 validation/macro_safe_publication.py \
+            --candidate /tmp/macro-safe-publication/source/candidate.json \
+            --pit-evidence /tmp/macro-safe-publication/source/macro-pit-anchor-evidence.json \
+            --output /tmp/macro-safe-publication/publication-request.json \
+            | tee /tmp/macro-safe-publication/publication-request.stdout.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-safe-publication/publication-request.json'))
+          assert d['status']=='READY_FOR_RUNTIME_PROPOSAL', d
+          assert d['publication_policy']['automatic_publication'] is False, d
+          assert d['publication_policy']['commit_performed'] is False, d
+          assert d['publication_policy']['review_required'] is True, d
+          print('SAFE_PUBLICATION_REQUEST_PASS')
+          PY
+
+      - name: Rebuild candidate from canonical main state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/build_macro_candidate.py \
+            --candidate /tmp/macro-safe-publication/source/candidate.json \
+            --output-dir /tmp/macro-safe-publication/built \
+            | tee /tmp/macro-safe-publication/builder.json
+          git diff --exit-code -- live_data payload validation/macro
+
+      - name: Apply only to ephemeral checkout and verify runtime contract
+        id: runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          if cmp -s /tmp/macro-safe-publication/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json && \
+             cmp -s /tmp/macro-safe-publication/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json; then
+            echo 'has_update=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'has_update=true' >> "$GITHUB_OUTPUT"
+          python3 validation/update_live_direct_section.py --section MACRO_THERMOMETER_DATA --replacement /tmp/macro-safe-publication/built/MACRO_THERMOMETER_DATA.json --apply | tee /tmp/macro-safe-publication/apply-heatmap.json
+          python3 validation/update_live_direct_section.py --section MACRO_SERIES --replacement /tmp/macro-safe-publication/built/MACRO_SERIES.json --apply | tee /tmp/macro-safe-publication/apply-series.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/macro-safe-publication/manifest.json
+          python3 validation/check_live_update_contract.py | tee /tmp/macro-safe-publication/live-contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/macro-safe-publication/runtime-roundtrip.json
+
+      - name: Enforce exact publication diff scope and package proposal
+        if: steps.runtime.outputs.has_update == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only > /tmp/macro-safe-publication/changed-files.txt
+          python3 - <<'PY'
+          import hashlib, json, pathlib, shutil, subprocess
+          root=pathlib.Path('.')
+          out=pathlib.Path('/tmp/macro-safe-publication/proposal')
+          changed=set(pathlib.Path('/tmp/macro-safe-publication/changed-files.txt').read_text().splitlines())
+          heat=json.load(open('/tmp/macro-safe-publication/apply-heatmap.json'))
+          series=json.load(open('/tmp/macro-safe-publication/apply-series.json'))
+          expected={
+            'live_data/sections/MACRO_SERIES.json',
+            'live_data/sections/MACRO_THERMOMETER_DATA.json',
+            'live_data/manifest.v2.json',
+            f"payload/part-{int(heat['part']):02d}.txt",
+            f"payload/part-{int(series['part']):02d}.txt",
+          }
+          if changed != expected:
+            raise SystemExit(f'publication scope violation: changed={sorted(changed)} expected={sorted(expected)}')
+          hashes={}
+          for rel in sorted(changed):
+            src=root/rel; dst=out/'files'/rel
+            dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst)
+            hashes[rel]=hashlib.sha256(src.read_bytes()).hexdigest()
+          (out/'file-sha256.json').write_text(json.dumps(hashes,indent=2)+'\n')
+          subprocess.run(['git','diff','--binary','--','live_data','payload'],check=True,stdout=open(out/'proposal.patch','wb'))
+          print('SAFE_PUBLICATION_SCOPE_PASS')
+          PY
+
+      - name: Build review-required receipt and restore checkout
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import datetime as dt, json, pathlib, subprocess
+          root=pathlib.Path('/tmp/macro-safe-publication')
+          req=json.load(open(root/'publication-request.json')) if (root/'publication-request.json').exists() else {}
+          changed=(root/'changed-files.txt').read_text().splitlines() if (root/'changed-files.txt').exists() else []
+          status='READY_FOR_REVIEW' if (root/'proposal/proposal.patch').exists() else ('NO_UPDATE' if req.get('status')=='READY_FOR_RUNTIME_PROPOSAL' else 'FAILED_NO_PUBLICATION')
+          receipt={
+            'schema':'GMFQ_MACRO_SAFE_PUBLICATION_RECEIPT_V1',
+            'status':status,
+            'target':req.get('target'),
+            'base_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'changed_files':changed,
+            'automatic_publication':False,
+            'commit_performed':False,
+            'main_modified':False,
+            'gh_pages_published':False,
+            'review_required':status=='READY_FOR_REVIEW',
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+          }
+          (root/'proposal').mkdir(parents=True,exist_ok=True)
+          (root/'proposal/receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt,indent=2))
+          PY
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload validation/macro
+
+      - name: Upload safe publication proposal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-safe-publication-proposal-${{ github.run_id }}
+          path: /tmp/macro-safe-publication/
+          if-no-files-found: error
+          retention-days: 60
