@@ -224,7 +224,7 @@ def verify(args: argparse.Namespace) -> int:
     if after_meta.get("repository_state") not in {"CLEAN", "LIVE_DATA_ONLY_DIRTY"} or not set(after_meta.get("dirty_paths", [])).issubset(allowed_live_dirty):
         raise ValueError("AFTER capture repository state is not restricted to the two live artifacts")
     changed_rules = subprocess.run(
-        ["git", "diff", "--quiet", before_meta["git_head"], after_meta["git_head"], "--", *[str(p) for p in PROTECTED_PATHS],
+        ["git", "diff", "--quiet", before_meta["git_head"], after_meta["git_head"], "--", *[str(p) for p in PROTECTED_PATHS]],
         cwd=ROOT,
     ).returncode != 0
     if changed_rules:
