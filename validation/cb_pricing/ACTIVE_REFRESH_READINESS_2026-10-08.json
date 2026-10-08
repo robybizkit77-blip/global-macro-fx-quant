@@ -5,16 +5,49 @@
   "production_runtime_changed": false,
   "summary": {
     "active_currencies": ["AUD", "CAD", "GBP", "JPY"],
-    "source_collector_ready": ["GBP", "JPY"],
-    "candidate_builder_ready": ["GBP", "JPY"],
-    "dry_run_apply_certified": ["GBP", "JPY"],
-    "daily_ready": ["GBP", "JPY"],
-    "active_but_not_daily_ready": ["AUD", "CAD"],
-    "key_distinction": "GBP and JPY are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on main and were certified from clean main-based release candidates. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit."
+    "source_collector_ready": ["GBP", "JPY", "CAD"],
+    "candidate_builder_ready": ["GBP", "JPY", "CAD"],
+    "dry_run_apply_certified": ["GBP", "JPY", "CAD"],
+    "daily_ready": ["GBP", "JPY", "CAD"],
+    "active_but_not_daily_ready": ["AUD"],
+    "key_distinction": "GBP, JPY and CAD are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on main and were certified from clean main-based release candidates. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit."
   },
   "currencies": {
-    "AUD": {"status":"ACTIVE_NOT_DAILY_READY","source":"ASX 30 Day Interbank Cash Rate futures (IB)","validated_runtime":true,"canonical_refresh_code_on_main":false,"next_required":"Build reusable ASX collector/parser and deterministic candidate/apply path."},
-    "CAD": {"status":"ACTIVE_NOT_DAILY_READY","source":"Montréal Exchange Three-Month CORRA Futures (CRA)","validated_runtime":true,"canonical_refresh_code_on_main":false,"next_required":"Build reusable MX Market Review collector/parser and deterministic candidate/apply path."},
+    "AUD": {
+      "status": "ACTIVE_NOT_DAILY_READY",
+      "source": "ASX 30 Day Interbank Cash Rate futures (IB)",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": false,
+      "next_required": "Build reusable ASX collector/parser and deterministic candidate/apply path."
+    },
+    "CAD": {
+      "status": "DAILY_READY",
+      "source": "Montréal Exchange Three-Month CORRA Futures (CRA)",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": true,
+      "source_collector_ready": true,
+      "candidate_builder_ready": true,
+      "dry_run_apply_certified": true,
+      "automatic_publication": false,
+      "collector": "validation/cb_pricing/collect_cad_mx_corra.py",
+      "candidate_builder": "validation/cb_pricing/build_cad_mx_corra_candidate.py",
+      "apply": "validation/cb_pricing/apply_cad_mx_corra_candidate.py",
+      "validation_workflow": ".github/workflows/cad-mx-corra-refresh-readiness.yml",
+      "canonical_code_main_sha": "05b31444e08a1085871019882ae345874015ccba",
+      "clean_release_candidate_sha": "05b31444e08a1085871019882ae345874015ccba",
+      "clean_release_candidate_validation": {
+        "cad_readiness_run_id": 37761908178,
+        "engine_run_id": 37761908133,
+        "browser_run_id": 37761908506,
+        "status": "ALL_GREEN"
+      },
+      "contract_mapping": {"3m":"DE 26","6m":"MR 27","12m":"SE 27"},
+      "methodology": "Direct official Montréal Exchange CRA settlement prices transformed as 100 minus settlement; canonical quarterly contracts; no interpolation.",
+      "weekly_reference_rule": "Use the complete official MX session nearest to as_of minus 7 calendar days; ties prefer a session on or before the target date.",
+      "regression_benchmark": {"as_of":"2026-09-29","status":"PASS_EXACT_CERTIFIED_22_28_29_SEP_VALUES_IDS_AND_CHANGES"},
+      "guarantees": ["official Montréal Exchange Market Review source collection","direct CRA settlement prices, 100 minus settlement","canonical DE26/MR27/SE27 quarterly buckets","no interpolation","official T-1 session","true one-week reference nearest to as-of minus 7 calendar days","registry-authorized candidate","CAD-only OIS semantic delta","CAD-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","second refresh successfully reads structured contract mapping","checkout restored after dry run","no automatic publication"],
+      "next_required": "Operational use may collect and dry-run fresh CAD pricing from main. Any live runtime publication remains a separate explicit gated promotion."
+    },
     "GBP": {
       "status": "DAILY_READY",
       "source": "Bank of England estimated sterling OIS forward curve",
@@ -70,7 +103,7 @@
       "next_required": "Operational use may collect and dry-run fresh JPY pricing from main. Any live runtime publication remains a separate explicit gated promotion."
     }
   },
-  "implementation_order": ["CAD", "AUD"],
+  "implementation_order": ["AUD"],
   "promotion_rule": "DAILY_READY allows repeatable source collection and deterministic dry-run refresh from main. It never authorizes automatic live_data or gh-pages publication; live publication remains separately gated and explicit.",
   "gh_pages_modified": false
 }
