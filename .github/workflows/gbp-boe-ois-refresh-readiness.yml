@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - validation-cb-pricing-refresh-readiness-2026-10-08
+      - release-candidate-gbp-cb-pricing-refresh-2026-10-08
     paths:
       - 'validation/cb_pricing/collect_gbp_boe_ois.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
