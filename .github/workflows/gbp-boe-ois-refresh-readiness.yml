@@ -14,6 +14,7 @@ on:
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
       - '.github/workflows/gbp-boe-ois-refresh-readiness.yml'
+      - '.github/workflows/cb-pricing-daily-operational.yml'
   workflow_dispatch:
 
 permissions:
