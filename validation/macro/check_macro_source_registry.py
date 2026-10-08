@@ -147,7 +147,7 @@ def main() -> int:
             "latest_value": h.get("latest_value"),
         })
 
-    if replay_certified != ["JPY.labour"]:
+    if replay_certified != ["CHF.inflation", "JPY.labour"]:
         fail(f"unexpected replay certification set: {replay_certified}")
 
     out = {

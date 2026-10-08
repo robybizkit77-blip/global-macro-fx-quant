@@ -190,7 +190,8 @@
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
       "source_adapter_status": "READY",
-      "historical_replay_certified": false,
+      "historical_replay_certified": true,
+      "replay": "validation/replay_chf_inflation_macro_candidate.py",
       "adapter": "validation/sources/chf_snb_official_core.py",
       "workflow": ".github/workflows/chf-snb-source-contract-v1.yml"
     },

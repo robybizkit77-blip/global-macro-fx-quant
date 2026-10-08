@@ -1,0 +1,44 @@
+name: Macro CHF Inflation Replay V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-chf-inflation-replay-*'
+    paths:
+      - 'validation/replay_chf_inflation_macro_candidate.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/macro-chf-inflation-replay-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Replay approved CHF inflation refresh
+        run: python3 validation/replay_chf_inflation_macro_candidate.py | tee /tmp/chf-inflation-replay.json
+      - name: Verify exact and read-only replay contract
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/chf-inflation-replay.json'))
+          assert d['status']=='PASS', d
+          assert d['macro_series_exact_match'] is True, d
+          assert d['heatmap_exact_match'] is True, d
+          assert d['live_data_written'] is False, d
+          assert d['engine_rules_changed'] is False, d
+          print('CHF_INFLATION_REPLAY_EXACT_PARITY_PASS')
+          PY
+          git diff --quiet -- live_data payload
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-chf-inflation-replay-v1
+          path: /tmp/chf-inflation-replay.json
