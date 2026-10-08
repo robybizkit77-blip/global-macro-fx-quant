@@ -1,0 +1,124 @@
+name: Rates Daily Operational Observation
+
+on:
+  push:
+    branches:
+      - validation-rates-daily-operational-2026-10-08
+      - release-candidate-rates-daily-operational-2026-10-08
+    paths:
+      - '.github/workflows/rates-daily-operational.yml'
+      - 'validation/run_rates_audit.py'
+      - 'validation/fetch_rates_aud.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'validation/build_rates_candidate_from_audit.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '45 5 * * 1-5'
+    - cron: '45 6 * * 1-5'
+permissions:
+  contents: read
+concurrency:
+  group: rates-daily-operational
+  cancel-in-progress: false
+jobs:
+  schedule-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.gate.outputs.should_run }}
+    steps:
+      - id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          if [[ "${{ github.event_name }}" != "schedule" || "$hhmm" == "07:45" ]]; then should_run=true; else should_run=false; fi
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "event=${{ github.event_name }} rome_time=$hhmm should_run=$should_run"
+  observe:
+    needs: schedule-gate
+    if: needs.schedule-gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Run unified official Rates audit and build candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-daily
+          python validation/run_rates_audit.py > /tmp/rates-daily/audit.json
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-daily/audit.json --output /tmp/rates-daily/NATIVE_RATES_DATA.json | tee /tmp/rates-daily/candidate-summary.json
+          git diff --exit-code -- live_data payload
+      - name: Validate candidate safely when updates exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/rates-daily/candidate-summary.json'))['status'])")
+          if [ "$STATUS" = "NO_UPDATES" ]; then
+            cmp <(tr -d '\n' < /tmp/rates-daily/NATIVE_RATES_DATA.json) <(tr -d '\n' < live_data/sections/NATIVE_RATES_DATA.json)
+            echo NO_UPDATES_VALIDATED
+            exit 0
+          fi
+          test "$STATUS" = "CANDIDATE_READY"
+          cp live_data/sections/NATIVE_RATES_DATA.json /tmp/rates-daily/NATIVE.before.json
+          cp live_data/sections/RATES_AUDIT_METADATA.json /tmp/rates-daily/META.before.json
+          cp live_data/manifest.v2.json /tmp/rates-daily/manifest.before.json
+          cp payload/part-00.txt /tmp/rates-daily/part-00.before.txt
+          cp payload/part-15.txt /tmp/rates-daily/part-15.before.txt
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/rates-daily/NATIVE_RATES_DATA.json --apply
+          python validation/build_rates_audit_metadata.py --audit-date "$(date -u +%Y-%m-%d)" --output /tmp/rates-daily/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py --rates /tmp/rates-daily/RATES_AUDIT_METADATA.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/rates-daily/manifest-build.json
+          python validation/check_live_update_contract.py > /tmp/rates-daily/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-daily/runtime-roundtrip.json
+          git diff --name-only > /tmp/rates-daily/candidate-files.txt
+          python - <<'PY'
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-15.txt'}
+          changed=set(open('/tmp/rates-daily/candidate-files.txt').read().splitlines())
+          bad=sorted(changed-allowed)
+          if bad or not changed: raise SystemExit(f'candidate file scope invalid changed={sorted(changed)} bad={bad}')
+          print('RATES_CANDIDATE_DRY_RUN_SCOPE_PASS',sorted(changed))
+          PY
+          git checkout -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
+          git diff --exit-code -- live_data payload
+      - name: Build operational receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/rates-daily/audit.json
+          test -s /tmp/rates-daily/candidate-summary.json
+          python - <<'PY'
+          import datetime as dt, json, pathlib, subprocess
+          root=pathlib.Path('/tmp/rates-daily')
+          audit=json.loads((root/'audit.json').read_text()); cand=json.loads((root/'candidate-summary.json').read_text())
+          currencies={}
+          for c,x in audit['currencies'].items():
+              if x['coverage_mode']=='LIVE_FETCH': status='GREEN' if x['state'] in {'NO_CHANGE','UPDATE_AVAILABLE'} else 'FAILED'
+              elif c=='NZD': status='MANUAL_OFFICIAL_RUNNER_BLOCKED' if x['state']=='NO_CHANGE' else 'MANUAL_REVIEW_REQUIRED'
+              elif c=='CHF': status='WITHHELD'
+              else: status=x['state']
+              currencies[c]={'status':status,'audit_state':x['state'],'coverage_mode':x['coverage_mode'],'authority':x['authority']}
+              if 'official' in x: currencies[c]['official']=x['official']
+              currencies[c]['current']=x.get('current')
+          live=[c for c,x in currencies.items() if x['coverage_mode']=='LIVE_FETCH']
+          live_ok=all(currencies[c]['status']=='GREEN' for c in live)
+          receipt={'schema':'GMFQ_RATES_DAILY_RECEIPT_V1','generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'status':'OPERATIONAL_WITH_EXPECTED_EXCEPTIONS_NO_PUBLICATION' if live_ok else 'FAILED_NO_PUBLICATION','live_fetch_count':len(live),'currencies':currencies,'candidate_status':cand['status'],'candidate_changed_currencies':cand.get('changed_currencies',[]),'expected_exceptions':{'NZD':'official manual verification; RBNZ blocks GitHub runner','CHF':'WITHHELD until official same-basis SNB export works'},'promotion_performed':False,'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,'working_tree_clean':subprocess.call(['git','diff','--quiet','--','live_data','payload'])==0}
+          if not receipt['working_tree_clean']: receipt['status']='FAILED_NO_PUBLICATION'
+          (root/'DAILY_RECEIPT.json').write_text(json.dumps(receipt,indent=2,ensure_ascii=False)+'\n')
+          print(json.dumps(receipt,indent=2,ensure_ascii=False))
+          if receipt['status']=='FAILED_NO_PUBLICATION': raise SystemExit('Rates daily operational failure')
+          PY
+      - name: Upload daily Rates evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-daily-operational-${{ github.run_id }}
+          path: /tmp/rates-daily/
+          if-no-files-found: error
+          retention-days: 30
