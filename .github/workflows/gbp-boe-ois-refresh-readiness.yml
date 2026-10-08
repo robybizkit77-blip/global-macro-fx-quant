@@ -1,0 +1,89 @@
+name: GBP BoE OIS Refresh Readiness
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-refresh-readiness-2026-10-08
+    paths:
+      - 'validation/cb_pricing/collect_gbp_boe_ois.py'
+      - '.github/workflows/gbp-boe-ois-refresh-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install parser dependency
+        run: python3 -m pip install --disable-pip-version-check openpyxl
+      - name: Download official BoE daily OIS archive
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT validation' \
+            'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip' \
+            -o /tmp/oisddata.zip
+      - name: Regression check against certified 2026-09-29 observation
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py \
+            --zip /tmp/oisddata.zip \
+            --as-of 2026-09-29 \
+            --output /tmp/gbp-benchmark.json
+          python3 - <<'PY'
+          import json, pathlib
+          p=json.loads(pathlib.Path('/tmp/gbp-benchmark.json').read_text())
+          exp={
+            'current': {'date':'2026-09-29','3m':4.0707067450601,'6m':4.438953403175621,'12m':4.865918782825779},
+            't_minus_1': {'date':'2026-09-28','3m':4.066723783453592,'6m':4.428555992006569,'12m':4.828541155959475},
+            't_minus_5': {'date':'2026-09-22','3m':4.030117517991387,'6m':4.394366351385613,'12m':4.800520288124897},
+          }
+          for bucket,want in exp.items():
+            got=p['observations'][bucket]
+            if got['date'] != want['date']:
+              raise SystemExit(f'{bucket} date mismatch: {got["date"]} != {want["date"]}')
+            for k in ('3m','6m','12m'):
+              if abs(got[k]-want[k]) > 1e-12:
+                raise SystemExit(f'{bucket} {k} mismatch: {got[k]} != {want[k]}')
+          bp1={'3m':0.3983,'6m':1.0398,'12m':3.7378}
+          bpw={'3m':4.0589,'6m':4.4587,'12m':6.5398}
+          for k,v in bp1.items():
+            if abs(p['change_1d_bp'][k]-v) > 0.0001: raise SystemExit(f'1D {k} mismatch')
+          for k,v in bpw.items():
+            if abs(p['change_1w_bp'][k]-v) > 0.0001: raise SystemExit(f'1W {k} mismatch')
+          print('GBP_CERTIFIED_2026_09_29_REGRESSION_PASS')
+          PY
+      - name: Build latest read-only source snapshot
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_gbp_boe_ois.py \
+            --zip /tmp/oisddata.zip \
+            --output /tmp/gbp-latest.json
+          python3 - <<'PY'
+          import json, pathlib
+          p=json.loads(pathlib.Path('/tmp/gbp-latest.json').read_text())
+          if p['status'] != 'SOURCE_SNAPSHOT_ONLY': raise SystemExit('unexpected status')
+          if not p['validation']['runtime_mutated'] is False: raise SystemExit('runtime mutation flag invalid')
+          if not p['validation']['payload_mutated'] is False: raise SystemExit('payload mutation flag invalid')
+          print(json.dumps({'status':'PASS','as_of':p['as_of'],'observations':p['observations'],'change_1d_bp':p['change_1d_bp'],'change_1w_bp':p['change_1w_bp']},indent=2))
+          PY
+      - name: Prove repository remained read-only
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet; then
+            git status --short
+            git diff --stat
+            exit 1
+          fi
+          echo READ_ONLY_PASS
+      - name: Upload GBP source snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-boe-ois-refresh-readiness
+          path: |
+            /tmp/gbp-benchmark.json
+            /tmp/gbp-latest.json
+          if-no-files-found: error
+          retention-days: 30
