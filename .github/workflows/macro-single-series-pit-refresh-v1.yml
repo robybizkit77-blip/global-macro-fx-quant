@@ -47,6 +47,17 @@ on:
         required: true
         default: true
         type: boolean
+  workflow_call:
+    inputs:
+      refresh_scope: {required: true, type: string}
+      currency: {required: true, type: string}
+      dimension: {required: true, type: string}
+      macro_series_id: {required: true, type: string}
+      dry_run: {required: true, type: boolean}
+      candidate_path: {required: false, type: string, default: ''}
+      # An upstream read-only adapter job can pass its in-memory JSON here.
+      # It is materialized only on the ephemeral runner, never committed.
+      candidate_json: {required: false, type: string, default: ''}
 
 permissions:
   contents: read
@@ -120,7 +131,7 @@ jobs:
           if-no-files-found: error
 
   single-series-dry-run:
-    if: github.event_name == 'workflow_dispatch' && inputs.refresh_scope == 'single_series'
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.refresh_scope == 'single_series'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -138,6 +149,7 @@ jobs:
           DIMENSION: ${{ inputs.dimension }}
           MACRO_SERIES_ID: ${{ inputs.macro_series_id }}
           CANDIDATE_PATH: ${{ inputs.candidate_path }}
+          CANDIDATE_JSON: ${{ inputs.candidate_json }}
         run: |
           set -euo pipefail
           mkdir -p /tmp/macro-single-series-pit
@@ -161,9 +173,17 @@ jobs:
           Path('/tmp/macro-single-series-pit/candidate.json').write_text(json.dumps(candidate,indent=2)+'\n')
           PY
           else
-            test -n "$CANDIDATE_PATH"
-            test -f "$CANDIDATE_PATH"
-            cp "$CANDIDATE_PATH" /tmp/macro-single-series-pit/candidate.json
+            if [ -n "$CANDIDATE_JSON" ]; then
+              python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path('/tmp/macro-single-series-pit/candidate.json').write_text(os.environ['CANDIDATE_JSON'] + '\n', encoding='utf-8')
+          PY
+            else
+              test -n "$CANDIDATE_PATH"
+              test -f "$CANDIDATE_PATH"
+              cp "$CANDIDATE_PATH" /tmp/macro-single-series-pit/candidate.json
+            fi
           fi
           python3 - <<'PY'
           import json, os

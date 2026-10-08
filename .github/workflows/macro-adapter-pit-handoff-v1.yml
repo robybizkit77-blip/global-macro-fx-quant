@@ -1,0 +1,103 @@
+name: Macro Adapter to PIT Handoff V1
+
+# Builds a candidate exclusively on the ephemeral runner, then delegates the
+# atomic no-publication path to the existing single-series PIT workflow.
+on:
+  push:
+    branches: ['feature/macro-adapter-pit-handoff-*']
+    paths:
+      - 'validation/macro_adapter_pit_handoff.py'
+      - 'validation/test_macro_adapter_pit_handoff.py'
+      - '.github/workflows/macro-adapter-pit-handoff-v1.yml'
+      - '.github/workflows/macro-single-series-pit-refresh-v1.yml'
+  workflow_dispatch:
+    inputs:
+      currency:
+        required: true
+        default: JPY
+        type: choice
+        options: [USD, EUR, GBP, JPY, CHF, CAD, AUD, NZD]
+      dimension:
+        required: true
+        default: labour
+        type: choice
+        options: [inflation, labour]
+      fixture_path:
+        description: Repository-relative official-format fixture. Leave empty only for an adapter's real read-only fetch.
+        required: false
+        default: validation/fixtures/jpy_estat_unemployment_2026-08.json
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  bridge-self-test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -euo pipefail
+          python3 validation/test_macro_adapter_pit_handoff.py | tee /tmp/macro-adapter-pit-selftest.json
+          git diff --exit-code -- live_data payload validation/macro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-adapter-pit-selftest-${{ github.run_id }}
+          path: /tmp/macro-adapter-pit-selftest.json
+
+  build-read-only-candidate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      candidate_json: ${{ steps.candidate.outputs.candidate_json }}
+      macro_series_id: ${{ steps.candidate.outputs.macro_series_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: candidate
+        env:
+          CURRENCY: ${{ inputs.currency }}
+          DIMENSION: ${{ inputs.dimension }}
+          FIXTURE_PATH: ${{ inputs.fixture_path }}
+        run: |
+          set -euo pipefail
+          args=(--currency "$CURRENCY" --dimension "$DIMENSION" --output /tmp/macro-adapter-pit/candidate.json --audit-output /tmp/macro-adapter-pit/audit.json)
+          if [ -n "$FIXTURE_PATH" ]; then
+            test -f "$FIXTURE_PATH"
+            args+=(--fixture "$FIXTURE_PATH")
+          fi
+          python3 validation/macro_adapter_pit_handoff.py "${args[@]}" | tee /tmp/macro-adapter-pit/bridge.json
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          c=json.loads(Path('/tmp/macro-adapter-pit/candidate.json').read_text())
+          a=json.loads(Path('/tmp/macro-adapter-pit/audit.json').read_text())
+          assert a['status']=='PASS' and a['registry_promotion']=='NOT_ATTEMPTED', a
+          assert c['candidate_only'] is True and c['live_data_written'] is False, c
+          assert c['provenance']['adapter_mode'] in ('fixture','live'), c
+          out=Path(os.environ['GITHUB_OUTPUT'])
+          with out.open('a',encoding='utf-8') as f:
+              f.write('macro_series_id='+c['macro_series_id']+'\n')
+              f.write('candidate_json<<EOF\n'+json.dumps(c,separators=(',',':'))+'\nEOF\n')
+          PY
+          git diff --exit-code -- live_data payload validation/macro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-adapter-pit-candidate-${{ github.run_id }}
+          path: /tmp/macro-adapter-pit/
+
+  pit-no-publication:
+    needs: build-read-only-candidate
+    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
+    with:
+      refresh_scope: single_series
+      currency: ${{ inputs.currency }}
+      dimension: ${{ inputs.dimension }}
+      macro_series_id: ${{ needs.build-read-only-candidate.outputs.macro_series_id }}
+      dry_run: false
+      candidate_json: ${{ needs.build-read-only-candidate.outputs.candidate_json }}
