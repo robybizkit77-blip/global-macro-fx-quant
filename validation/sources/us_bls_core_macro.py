@@ -17,6 +17,7 @@ INFLATION_BLS_SERIES = "CUSR0000SA0"
 AUTHORITY = "U.S. Bureau of Labor Statistics"
 TRANSPORT = "BLS Public Data API v2"
 SOURCE_URL = "https://www.bls.gov/developers/"
+MISSING_VALUE_MARKERS = {"", "-", "--", ".", "NA", "N/A"}
 
 CANONICAL_CONTRACT = {
     "labour": {
@@ -59,9 +60,12 @@ def parse_series(payload: dict[str, Any], series_id: str) -> list[tuple[str, flo
             continue
         date = month_key(str(row.get("year", "")), period)
         raw = str(row.get("value", "")).strip().replace(",", "")
-        if not raw:
+        if raw.upper() in MISSING_VALUE_MARKERS:
             continue
-        value = float(raw)
+        try:
+            value = float(raw)
+        except ValueError as exc:
+            raise ValueError(f"unexpected non-numeric BLS value for {series_id} {date}: {raw!r}") from exc
         if not math.isfinite(value):
             raise ValueError(f"non-finite BLS value for {series_id} {date}")
         if date in obs and abs(obs[date] - value) > 1e-12:
