@@ -1,5 +1,6 @@
 name: GBP ONS Macro Live Certification
 
+# Re-certify the current adapter contract on every relevant source change.
 on:
   push:
     branches:
@@ -62,7 +63,7 @@ jobs:
               assert a['mode']=='live' and a['live_data_written'] is False, a
               assert s['status']=='PASS' and s['live_data_modified'] is False, s
               assert s['observation_date']==c['observation_date'], (s,c)
-              out[dim]={'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+              out[dim]={'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
           print(json.dumps({'status':'GBP_ONS_LIVE_CERTIFICATION_PASS','results':out,'live_data_modified':False}, indent=2))
           PY
       - name: Run generic macro self-test and registry audit
