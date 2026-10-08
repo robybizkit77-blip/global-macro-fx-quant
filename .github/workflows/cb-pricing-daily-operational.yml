@@ -1,0 +1,101 @@
+name: CB Pricing Daily Operational Observation
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-active-orchestrator-2026-10-08
+      - release-candidate-cb-pricing-daily-operational-2026-10-08
+    paths:
+      - '.github/workflows/cb-pricing-daily-operational.yml'
+      - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
+      - 'validation/cb_pricing/collect_aud_asx_ib.py'
+      - 'validation/cb_pricing/build_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/collect_cad_mx_corra.py'
+      - 'validation/cb_pricing/build_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/collect_gbp_boe_ois.py'
+      - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/collect_jpy_tfx_tona.py'
+      - 'validation/cb_pricing/build_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
+  workflow_dispatch:
+  schedule:
+    # Europe/Rome 07:30 across CET/CEST. A local-time guard below lets only one cron run.
+    - cron: '30 5 * * 1-5'
+    - cron: '30 6 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cb-pricing-daily-operational
+  cancel-in-progress: false
+
+jobs:
+  schedule-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.gate.outputs.should_run }}
+      local_time: ${{ steps.gate.outputs.local_time }}
+    steps:
+      - id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          local_time="$(TZ=Europe/Rome date +'%Y-%m-%dT%H:%M:%S%z')"
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          if [[ "${{ github.event_name }}" != "schedule" || "$hhmm" == "07:30" ]]; then
+            should_run=true
+          else
+            should_run=false
+          fi
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "local_time=$local_time" >> "$GITHUB_OUTPUT"
+          echo "event=${{ github.event_name }} local_time=$local_time should_run=$should_run"
+
+  observe:
+    needs: schedule-gate
+    if: needs.schedule-gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install source parser dependencies
+        run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
+
+      - name: Run all four daily source/candidate/dry-run paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash validation/cb_pricing/run_active_cb_pricing_daily.sh
+
+      - name: Upload daily operational evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cb-pricing-daily-operational-${{ github.run_id }}
+          path: /tmp/cb-pricing-daily/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce daily operational status
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/cb-pricing-daily/DAILY_RECEIPT.json
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('/tmp/cb-pricing-daily/DAILY_RECEIPT.json')
+          d=json.loads(p.read_text())
+          print(json.dumps(d,indent=2,ensure_ascii=False))
+          if d['status'] != 'ALL_GREEN_NO_PUBLICATION':
+              raise SystemExit(f"daily CB pricing status is {d['status']}")
+          if d.get('live_data_published') or d.get('gh_pages_published') or d.get('automatic_publication'):
+              raise SystemExit('publication safety contract violated')
+          print('CB_PRICING_DAILY_OPERATIONAL_GREEN_NO_PUBLICATION')
+          PY
