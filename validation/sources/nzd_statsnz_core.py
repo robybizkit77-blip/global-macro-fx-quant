@@ -16,8 +16,6 @@ SOURCE = "Stats NZ"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)"}
 DISCOVERY_URL = "https://www.stats.govt.nz/"
 
-# Stable official detail pages retained as candidate provenance; the Stats NZ
-# homepage is used only to discover the latest published headline observation.
 INDICATOR_URLS = {
     "inflation": "https://www.stats.govt.nz/indicators/consumers-price-index-cpi/",
     "labour": "https://www.stats.govt.nz/indicators/unemployment-rate/",
@@ -88,28 +86,38 @@ def parse_homepage_indicator(dimension: str, text: str) -> tuple[str, float]:
         label = "Unemployment rate"
         suffix = "quarter"
 
-    # Stats NZ homepage headline cards are rendered as e.g.
-    # "Consumers price index +4.1% June 2026 year" and
-    # "Unemployment rate 5.6% June 2026 quarter".
-    pattern = (
-        re.escape(label)
-        + r"\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*"
-        + r"(March|June|September|December)\s+(20\d{2})\s+"
-        + suffix
-    )
-    matches = list(re.finditer(pattern, text, re.I | re.S))
-    if not matches:
+    # Stats NZ may render the homepage KPI card as plain text or as hydration
+    # data with field names/punctuation between label, value and period. Keep
+    # the match local to the indicator label, then select only the latest date.
+    label_re = re.escape(label)
+    value_re = r"\+?(-?[0-9]+(?:\.[0-9]+)?)\s*(?:%|percent)"
+    period_re = r"(March|June|September|December)\s+(20\d{2})\s+" + suffix
+    patterns = [
+        label_re + r".{0,700}?" + value_re + r".{0,700}?" + period_re,
+        label_re + r".{0,700}?" + period_re + r".{0,700}?" + value_re,
+    ]
+
+    hits: list[tuple[str, float]] = []
+    for pattern_index, pattern in enumerate(patterns):
+        for match in re.finditer(pattern, text, re.I | re.S):
+            if pattern_index == 0:
+                value = float(match.group(1))
+                date = quarter_date(match.group(2), match.group(3))
+            else:
+                date = quarter_date(match.group(1), match.group(2))
+                value = float(match.group(3))
+            hits.append((date, value))
+
+    if not hits:
         raise ValueError(f"cannot parse latest Stats NZ {dimension} homepage indicator")
 
-    hits = {
-        (quarter_date(match.group(2), match.group(3)), float(match.group(1)))
-        for match in matches
-    }
-    dates = {date for date, _ in hits}
-    values = {value for _, value in hits}
-    if len(dates) != 1 or len(values) != 1:
-        raise ValueError(f"ambiguous Stats NZ {dimension} homepage indicator: {sorted(hits)}")
-    return next(iter(hits))
+    latest_date = max(date for date, _ in hits)
+    latest_values = {value for date, value in hits if date == latest_date}
+    if len(latest_values) != 1:
+        raise ValueError(
+            f"ambiguous Stats NZ {dimension} values for latest period {latest_date}: {sorted(latest_values)}"
+        )
+    return latest_date, next(iter(latest_values))
 
 
 def contract(dimension: str) -> str:
