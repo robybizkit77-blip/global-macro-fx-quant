@@ -1,0 +1,7 @@
+{
+  "description": "DETERMINISTIC CONTRACT FIXTURE - synthetic GBP CPI inputs, not an official downloaded payload",
+  "months": [
+    {"date": "2026 AUG", "value": "3.1", "year": "2026", "month": "August", "sourceDataset": "MM23"},
+    {"date": "2026 SEP", "value": "3.2", "year": "2026", "month": "September", "sourceDataset": "MM23"}
+  ]
+}
