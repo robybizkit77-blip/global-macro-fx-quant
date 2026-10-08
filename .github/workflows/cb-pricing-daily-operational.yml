@@ -23,7 +23,8 @@ on:
       - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
   workflow_dispatch:
   schedule:
-    # Europe/Rome 07:30 across CET/CEST. A local-time guard below lets only one cron run.
+    # Canonical operational cadence: Europe/Rome 07:30 across CET/CEST.
+    # The local-time gate below lets only one of these two UTC cron entries proceed.
     - cron: '30 5 * * 1-5'
     - cron: '30 6 * * 1-5'
 
