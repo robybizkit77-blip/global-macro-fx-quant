@@ -1,0 +1,66 @@
+name: USD ZQ T5 Official Page Probe Once
+
+on:
+  push:
+    branches:
+      - validation-cme-zq-capture-2026-10-08
+    paths:
+      - '.github/workflows/usd-zq-t5-official-page-probe-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe official CME 30-Day Fed Funds settlements page for 2026-10-02
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html?tradeDate=2026-10-02'
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/154.0.0.0 Safari/537.36'
+          mkdir -p /tmp/usd-zq-t5-probe
+          curl -L --fail-with-body --retry 2 --connect-timeout 20 --max-time 90 \
+            -A "$UA" \
+            -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+            -D /tmp/usd-zq-t5-probe/headers.txt \
+            -o /tmp/usd-zq-t5-probe/page.html \
+            "$URL" || true
+
+          python3 - <<'PY'
+          import json, pathlib, re
+          root=pathlib.Path('/tmp/usd-zq-t5-probe')
+          p=root/'page.html'
+          text=p.read_text(errors='replace') if p.exists() else ''
+          needles=['DEC 26','MAR 27','SEP 27','ZQZ6','ZQH7','ZQU7','settle','settlements']
+          hits={n:(n.lower() in text.lower()) for n in needles}
+          urls=sorted(set(re.findall(r'https?://[^"\'<> ]+', text)))
+          api_candidates=[u for u in urls if any(k in u.lower() for k in ['settlement','cmews','api'])][:50]
+          out={
+            'source':'CME Group official 30-Day Federal Funds Futures settlements page',
+            'trade_date':'2026-10-02',
+            'bytes':len(text.encode('utf-8')),
+            'hits':hits,
+            'api_candidates':api_candidates,
+            'success_contract_markers':hits['DEC 26'] and hits['MAR 27'] and hits['SEP 27'],
+          }
+          (root/'probe.json').write_text(json.dumps(out,indent=2))
+          print(json.dumps(out,indent=2))
+          PY
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usd-zq-t5-official-page-probe
+          if-no-files-found: warn
+          path: /tmp/usd-zq-t5-probe/
+
+      - name: Governance note
+        if: always()
+        run: |
+          echo 'Read-only official CME probe. No runtime/main/gh-pages mutation.'
