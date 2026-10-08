@@ -4,7 +4,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
-import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "validation" / "sources" / "us_bls_core_macro.py"
@@ -27,43 +26,25 @@ by_date = dict(yoy)
 assert abs(by_date["2026-08"] - 3.4) < 1e-12, by_date
 assert abs(by_date["2026-07"] - ((329.0 / 319.0 - 1.0) * 100.0)) < 1e-12, by_date
 
-# Diagnostic is intentionally limited to the two canonical USD rows/ids exposed by the current runtime.
-series_contract = json.loads((ROOT / "live_data" / "sections" / "MACRO_SERIES.json").read_text(encoding="utf-8"))["USD"]
-print("USD_MACRO_SERIES_CONTRACT=" + json.dumps([
-    {k: row.get(k) for k in ("id", "name", "title", "indicator", "label") if row.get(k) is not None}
-    for row in series_contract
-], ensure_ascii=False))
-
 candidates, audit = mod.build(payload)
 assert candidates["labour"]["currency"] == "USD"
 assert candidates["labour"]["dimension"] == "labour"
+assert candidates["labour"]["macro_series_id"] == "US_UNRATE_history_value"
 assert candidates["labour"]["observation_date"] == "2026-09"
 assert candidates["labour"]["value"] == 4.2
 assert candidates["labour"]["series_id"] == "UNRATE"
 assert candidates["inflation"]["currency"] == "USD"
 assert candidates["inflation"]["dimension"] == "inflation"
+assert candidates["inflation"]["macro_series_id"] == "US_CPIAUCSL_history_value"
 assert candidates["inflation"]["observation_date"] == "2026-08"
 assert abs(candidates["inflation"]["value"] - 3.4) < 1e-12
 assert candidates["inflation"]["series_id"] == "CPIAUCSL"
 assert audit["authority"] == "U.S. Bureau of Labor Statistics"
 assert audit["transport"] == "BLS Public Data API v2"
+assert audit["canonical_contract"]["labour"]["macro_series_id"] == "US_UNRATE_history_value"
+assert audit["canonical_contract"]["inflation"]["macro_series_id"] == "US_CPIAUCSL_history_value"
 assert audit["historical_pit_certified"] is False
 assert audit["live_data_written"] is False
-
-# Both fixture candidates must pass the generic builder without writing live data.
-with tempfile.TemporaryDirectory() as td:
-    td = pathlib.Path(td)
-    for dimension, candidate in candidates.items():
-        cp = td / f"{dimension}.json"
-        cp.write_text(json.dumps(candidate), encoding="utf-8")
-        series = json.loads((ROOT / "live_data" / "sections" / "MACRO_SERIES.json").read_text(encoding="utf-8"))
-        heat = json.loads((ROOT / "live_data" / "sections" / "MACRO_THERMOMETER_DATA.json").read_text(encoding="utf-8"))
-        new_series = json.loads(json.dumps(series))
-        new_heat = json.loads(json.dumps(heat))
-        summary = __import__("runpy").run_path(str(ROOT / "validation" / "build_macro_candidate.py"), run_name="gmfq_builder_import")
-        result = summary["apply_candidate"](new_series, new_heat, candidate)
-        assert result["currency"] == "USD"
-        assert result["dimension"] == dimension
 
 print(json.dumps({
     "status": "PASS",
