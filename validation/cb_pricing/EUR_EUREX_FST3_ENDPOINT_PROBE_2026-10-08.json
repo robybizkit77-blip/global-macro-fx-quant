@@ -1,0 +1,452 @@
+{
+  "source": "Eurex official public endpoints",
+  "product": "FST3",
+  "target_dates": [
+    "2026-09-22",
+    "2026-09-28",
+    "2026-09-29"
+  ],
+  "responses": {
+    "probe1.txt": {
+      "bytes": 98897,
+      "sha256": "c00be8f61cc401a4482b158577cabd5309e0cc41a7bc5ff3e3b86d3c27d68174",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">689</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">598</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        }
+      ]
+    },
+    "probe11.txt": {
+      "bytes": 98899,
+      "sha256": "c83e134a8f030ea4d5ba35b8c1b0591c199c90160c05084e63cfd88f971c7da7",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">831</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">770</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0650</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">537</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        }
+      ]
+    },
+    "probe12.txt": {
+      "bytes": 98895,
+      "sha256": "806f9817c8391382d27fe353eaf9b6e98fc202717ff60f6ada8f64f084f42775",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">13</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0650</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:5"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">11</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:7"
+        }
+      ]
+    },
+    "probe13.txt": {
+      "bytes": 98903,
+      "sha256": "5735dec12a86c43cea489909f34816774d8d6ec393736740814fb15d2f1000bc",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,348</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">8</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:73"
+        }
+      ]
+    },
+    "probe14.txt": {
+      "bytes": 98902,
+      "sha256": "ad7a4143749757951922948558100a7f9a4e2b98c7c1e1f1f50ae002154b1206",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,447</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">10</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:7"
+        }
+      ]
+    },
+    "probe15.txt": {
+      "bytes": 98903,
+      "sha256": "5735dec12a86c43cea489909f34816774d8d6ec393736740814fb15d2f1000bc",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,348</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">8</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:73"
+        }
+      ]
+    },
+    "probe16.txt": {
+      "bytes": 98903,
+      "sha256": "5735dec12a86c43cea489909f34816774d8d6ec393736740814fb15d2f1000bc",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,348</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">8</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8475</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:73"
+        }
+      ]
+    },
+    "probe17.txt": {
+      "bytes": 98901,
+      "sha256": "684cddb25b191d6931326749e345b09881571b6b5f3431c90809eff2607c5ee7",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,499</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,365</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe18.txt": {
+      "bytes": 98901,
+      "sha256": "684cddb25b191d6931326749e345b09881571b6b5f3431c90809eff2607c5ee7",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,499</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,365</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe19.txt": {
+      "bytes": 98901,
+      "sha256": "684cddb25b191d6931326749e345b09881571b6b5f3431c90809eff2607c5ee7",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">756</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,499</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,365</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe2.txt": {
+      "bytes": 99772,
+      "sha256": "151092969b63fe65e78f10909281f3de4fdde60c946e8446cc2051dbe50a9776",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">874</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">725</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0650</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">8</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8500</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:73"
+        }
+      ]
+    },
+    "probe20.txt": {
+      "bytes": 98894,
+      "sha256": "e9e16ae72976cb19891afa9211ef191efa670b67dc82cee28eb2f1f265650799",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">607</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">758</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">220</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        }
+      ]
+    },
+    "probe21.txt": {
+      "bytes": 98909,
+      "sha256": "b5d21710401f571c85a64196a14d3d09c47737e5aa8cf39b613e6508688967a2",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,110</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,222</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe22.txt": {
+      "bytes": 98894,
+      "sha256": "e9e16ae72976cb19891afa9211ef191efa670b67dc82cee28eb2f1f265650799",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">607</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">758</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">220</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        }
+      ]
+    },
+    "probe23.txt": {
+      "bytes": 98909,
+      "sha256": "b5d21710401f571c85a64196a14d3d09c47737e5aa8cf39b613e6508688967a2",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,110</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,222</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe24.txt": {
+      "bytes": 98909,
+      "sha256": "b5d21710401f571c85a64196a14d3d09c47737e5aa8cf39b613e6508688967a2",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,110</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,222</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe25.txt": {
+      "bytes": 98909,
+      "sha256": "b5d21710401f571c85a64196a14d3d09c47737e5aa8cf39b613e6508688967a2",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "Dec 2026",
+          "snippet": "D_NOTATION-3D561902339.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head455626326\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Dec 2026</span></td>\n            <td><span id=\"domhandler:36.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">757</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:37.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D455626326.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.3125</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:"
+        },
+        {
+          "key": "Mar 2027",
+          "snippet": "D_NOTATION-3D577090068.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">0</span></span></td>\n            <td><span>0</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head466456972\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Mar 2027</span></td>\n            <td><span id=\"domhandler:57.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,110</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:58.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D466456972.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">97.0625</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        },
+        {
+          "key": "Sep 2027",
+          "snippet": "ON-3D476937828.attr:TOTAL_VOLUME.wtkm:futures_futures_full_orderbook_15\">536</span></span></td>\n            <td><span>123,417</span></td>    \n        </tr>\n                                    <tr class=\"data headrow\" id=\"head487658971\">\n            <td class=\"first firstlink\"><div class=\"lastdomhandlerid217\">&nbsp;</div></td>\n            <td><span>Sep 2027</span></td>\n            <td><span id=\"domhandler:71.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:VOLUME_BID.valueFilter:formatVolumeBid.wtkm:futures_futures_full_orderbook_15\">1,222</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandler:72.consumer:VALUE-2CCLASS.comp:PREV.gt:green.eq:.lt:red.resetLt:.resetGt:.resetEq:ZERO.mdgObj:prices-2Fquote-3FVERSION-3D2-26CODE_SELECTOR_PREVIOUS_LAST-3DLATEST-26ID_TYPE_PERFORMANCE-3D7-26ID_GROUP_TYPE_PRICE-3D1-26ID_QUALITY_PRICE-3D5-26ID_NOTATION-3D487658971.attr:BID.valueFilter:formatBid4.wtkm:futures_futures_full_orderbook_15\">96.8450</span></td>\n            <td><span style=\"font-weight:bold\" id=\"domhandle"
+        }
+      ]
+    },
+    "probe3.txt": {
+      "bytes": 156951,
+      "sha256": "53b887567beff1852640a687b2dced5802a71ba135d96c1dbe8ef610c09103bd",
+      "contains_FST3": true,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "dateFrom",
+          "snippet": "/div>\n<div class=\"dbx-eurex-status-box__bottom-box\">\n<div class=\"dbx-eurex-status-box__details\">\n<p class=\"dbx-eurex-status-box__details-date\">\n</p>\n<p class=\"dbx-eurex-status-box__details-time\">\n</p>\n<hr class=\"dbx-eurex-status-box__details-separator\">\n<a href=\"https://www.eurex.com/ex-en/trade/production-newsboard/3486!search?query=Emergency&amp;dateFrom=&amp;dateTo=&amp;submit=Search\" class=\"dbx-link dbx-eurex-status-box__details-newsboard \">\nProduction newsboard\n</a>\n</div>\n</div>\n</div>\n<button type=\"button\" class=\"dbx-btn dbx-eurex-status-box__toggler\">\n</button>\n<div class=\"dbx-eurex-status-box__info-box\">\n<span class=\"dbx-eurex-status-box__info-box-icon\"></span>\n<p><div><p>The market status window is an indication regarding the current technical availability of the trading system. It indicates whether news board messages regarding current technical issues of the trading system have been published or will be published shortly.</p><p>Please find further information about incident handling in the Emergency Playbook published on the Eurex webpage under Support --&gt; Emergencies and safeguards. Detailed information about incident communication, market re-opening procedures and best practices for order and trade reconciliation "
+        },
+        {
+          "key": "dateTo",
+          "snippet": "ss=\"dbx-eurex-status-box__bottom-box\">\n<div class=\"dbx-eurex-status-box__details\">\n<p class=\"dbx-eurex-status-box__details-date\">\n</p>\n<p class=\"dbx-eurex-status-box__details-time\">\n</p>\n<hr class=\"dbx-eurex-status-box__details-separator\">\n<a href=\"https://www.eurex.com/ex-en/trade/production-newsboard/3486!search?query=Emergency&amp;dateFrom=&amp;dateTo=&amp;submit=Search\" class=\"dbx-link dbx-eurex-status-box__details-newsboard \">\nProduction newsboard\n</a>\n</div>\n</div>\n</div>\n<button type=\"button\" class=\"dbx-btn dbx-eurex-status-box__toggler\">\n</button>\n<div class=\"dbx-eurex-status-box__info-box\">\n<span class=\"dbx-eurex-status-box__info-box-icon\"></span>\n<p><div><p>The market status window is an indication regarding the current technical availability of the trading system. It indicates whether news board messages regarding current technical issues of the trading system have been published or will be published shortly.</p><p>Please find further information about incident handling in the Emergency Playbook published on the Eurex webpage under Support --&gt; Emergencies and safeguards. Detailed information about incident communication, market re-opening procedures and best practices for order and trade reconciliation can be found i"
+        }
+      ]
+    },
+    "probe4.txt": {
+      "bytes": 600122,
+      "sha256": "040f1f0ba46862feb25397486f78149c2c1a40ea047cb0df4760a185be64abf5",
+      "contains_FST3": false,
+      "contains_2026_09_22": false,
+      "contains_2026_09_28": false,
+      "contains_2026_09_29": false,
+      "snippets": [
+        {
+          "key": "settlement",
+          "snippet": "s(n.volume,e.totalVolume),n.openInt=s(n.openInt,e.openInterest),n.strikePrice=e.strikePrice,n.contractDate=s(n.contractDate,new Date(e.dateMaturity)),e.idMaturityInterval){case 1:n.contractType=U.M;break;case 2:n.contractType=U.W;break;case 3:n.contractType=U.D;break;case 4:n.contractType=U.F}n.versionNumber=e.versionNumber,n.dSettle=s(n.dSettle,e.settlementPrice)})()}catch(e){t.e(e)}finally{t.f()}Bp.setState(function(e){return z(j({},e),{callData:o,putData:i})})}},lh=function(e){switch(e){case\"monthly\":return U.M;case\"weekly\":return U.W;case\"daily\":return U.D;case\"mixe\":return U.F;default:return U.unknown}},uh=function(t,e){var n=gu.getState().futurePrices,r=n.find(function(e){return e&&e.id===t}),o=(r||(r={id:t,contractType:U.unknown},n.push(r)),null==(o=null==(o=e.lifeCycle)?void 0:o.maturity)?void 0:o.interval),i=new Date(null==(i=null==(i=e.lifeCycle)?void 0:i.maturity)?void 0:i.date);r.contractType=lh(o),r.dSettle=s(r.dSettle,e.settlement.price),i&&(r.contractDate=s(r.contractDate,new Date(i))),gu.setState(function(e){return z(j({},e),{futurePrices:n})})},sh=Fo.factsetVersion,ch=function(e,t){var n,r,o,i=2<arguments.length&&void 0!==arguments[2]&&arguments[2];void 0===e?(n='Data could not be retrieved from \"/api/'.concat(sh,"
+        },
+        {
+          "key": "settlement",
+          "snippet": "eturn U.unknown}},uh=function(t,e){var n=gu.getState().futurePrices,r=n.find(function(e){return e&&e.id===t}),o=(r||(r={id:t,contractType:U.unknown},n.push(r)),null==(o=null==(o=e.lifeCycle)?void 0:o.maturity)?void 0:o.interval),i=new Date(null==(i=null==(i=e.lifeCycle)?void 0:i.maturity)?void 0:i.date);r.contractType=lh(o),r.dSettle=s(r.dSettle,e.settlement.price),i&&(r.contractDate=s(r.contractDate,new Date(i))),gu.setState(function(e){return z(j({},e),{futurePrices:n})})},sh=Fo.factsetVersion,ch=function(e,t){var n,r,o,i=2<arguments.length&&void 0!==arguments[2]&&arguments[2];void 0===e?(n='Data could not be retrieved from \"/api/'.concat(sh,'/customer/prices/get\" because ids is undefined'),V.warn(n)):(n=Cs.exports.useMemo(function(){return i||\"F\"===t?void 0:\"/api/\".concat(sh,\"/prices/list\")},[i,t]),r=Cs.exports.useMemo(function(){return i||\"F\"===t?void 0:Gp},[i,t]),o=\"/api/\".concat(sh,\"/customer/prices/get\"),V.info(\"Fetch custom price:\",o),qp(\"GET\",o,e,\"F\"===t?Wp:Xp,n,r))},fh=function(e,t){var n,r,o=2<arguments.length&&void 0!==arguments[2]&&arguments[2];void 0===e?(n='Data could not be retrieved from \"/api/'.concat(sh,'/prices/bidAsk/get\" because ids is undefined'),V.warn(n)):(n=Cs.exports.useMemo(function(){return o||\"F\"===t?"
+        }
+      ]
+    }
+  },
+  "js_hints": [
+    "http://localhost:40980/blueprint/servlet",
+    "ajaxSettings.flatOptions||{};for(n in t)void 0!==t[n]&&((o[n]?e:r=r||{})[n]=t[n]);return r&&S.extend(!0,e,r),e}Xn.href=In.href,S.extend({active:0,lastModified:{},etag:{},ajaxSettings:{url:In.href,type:\"GET\",isLocal:/^(?:about|app|app-storage|.+-extension|file|res|widget):$/.test(In.protocol),global:!0,processData:!0,async:!0,contentType:\"application/x-www-form-urlencoded; charset=UTF-8\",accepts:{\"*\":Yn,text:\"text/plain\",html:\"text/html\",xml:\"application/xml, text/xml\",json:\"application/json, text/ja",
+    "ajaxSetup:function(e,t){return t?er(er(e,S.ajaxSettings),t):er(S.ajaxSettings,e)},ajaxPrefilter:Kn(Jn),ajaxTransport:Kn(Qn),ajax:function(e,t){\"object\"==typeof e&&(t=e,e=void 0);var u,s,c,n,f,d,p,r,h=S.ajaxSetup({},t=t||{}),g=h.context||h,v=h.context&&(g.nodeType||g.jquery)?S(g):S.event,m=S.Deferred(),y=S.Callbacks(\"once memory\"),b=h.statusCode||{},o={},i={},a=\"canceled\",w={readyState:0,getResponseHeader:function(e){var t;if(d){if(!n)for(n={};t=Wn.exec(c);)n[t[1].toLowerCase()+\" \"]=(n[t[1].toLowerCa",
+    "ajaxStart\"),h.type=h.type.toUpperCase(),h.hasContent=!Gn.test(h.type),s=h.url.replace(qn,\"\"),h.hasContent?h.data&&h.processData&&0===(h.contentType||\"\").indexOf(\"application/x-www-form-urlencoded\")&&(h.data=h.data.replace(Un,\"+\")):(e=h.url.slice(s.length),h.data&&(h.processData||\"string\"==typeof h.data)&&(s+=(Fn.test(s)?\"&\":\"?\")+h.data,delete h.data),!1===h.cache&&(s=s.replace(Bn,\"$1\"),e=(Fn.test(s)?\"&\":\"?\")+\"_=\"+An.guid+++e),h.url=s+e),h.ifModified&&(S.lastModified[s]&&w.setRequestHeader(\"If-Modifi",
+    "ajaxSend\",[w,h]),d)return w;h.async&&0<h.timeout&&(f=x.setTimeout(function(){w.abort(\"timeout\")},h.timeout));try{d=!1,u.send(o,l)}catch(e){if(d)throw e;l(-1,e)}}else l(-1,\"No Transport\")}return w;function l(e,t,n,r){var o,i,a,l=t;d||(d=!0,f&&x.clearTimeout(f),u=void 0,c=r||\"\",w.readyState=0<e?4:0,r=200<=e&&e<300||304===e,n&&(a=((e,t,n)=>{for(var r,o,i,a,l=e.contents,u=e.dataTypes;\"*\"===u[0];)u.shift(),void 0===r&&(r=e.mimeType||t.getResponseHeader(\"Content-Type\"));if(r)for(o in l)if(l[o]&&l[o].test(",
+    "ajaxSuccess\":\"ajaxError\",[w,h,r?o:i]),y.fireWith(g,[w,l]),p&&(v.trigger(\"ajaxComplete\",[w,h]),--S.active||S.event.trigger(\"ajaxStop\")))}},getJSON:function(e,t,n){return S.get(e,t,n,\"json\")},getScript:function(e,t){return S.get(e,void 0,t,\"script\")}}),S.each([\"get\",\"post\"],function(e,o){S[o]=function(e,t,n,r){return y(t)&&(r=r||n,n=t,t=void 0),S.ajax(S.extend({url:e,type:o,dataType:r,data:t,success:n},S.isPlainObject(e)&&e))}}),S.ajaxPrefilter(function(e){for(var t in e.headers)\"content-type\"===t.toL",
+    "ajax({url:e,type:\"GET\",dataType:\"script\",cache:!0,async:!1,global:!1,converters:{\"text script\":function(){}},dataFilter:function(e){S.globalEval(e,t,n)}})},S.fn.extend({wrapAll:function(e){return this[0]&&(y(e)&&(e=e.call(this[0])),e=S(e,this[0].ownerDocument).eq(0).clone(!0),this[0].parentNode&&e.insertBefore(this[0]),e.map(function(){for(var e=this;e.firstElementChild;)e=e.firstElementChild;return e}).append(this)),this},wrapInner:function(n){return y(n)?this.each(function(e){S(this).wrapInner(n.c",
+    "ajaxSettings.xhr=function(){try{return new x.XMLHttpRequest}catch(e){}};var tr={0:200,1223:204},nr=S.ajaxSettings.xhr(),rr=(g.cors=!!nr&&\"withCredentials\"in nr,g.ajax=nr=!!nr,S.ajaxTransport(function(o){var i,a;if(g.cors||nr&&!o.crossDomain)return{send:function(e,t){var n,r=o.xhr();if(r.open(o.type,o.url,o.async,o.username,o.password),o.xhrFields)for(n in o.xhrFields)r[n]=o.xhrFields[n];for(n in o.mimeType&&r.overrideMimeType&&r.overrideMimeType(o.mimeType),o.crossDomain||e[\"X-Requested-With\"]||(e[\"",
+    "ajaxPrefilter(function(e){e.crossDomain&&(e.contents.script=!1)}),S.ajaxSetup({accepts:{script:\"text/javascript, application/javascript, application/ecmascript, application/x-ecmascript\"},contents:{script:/\\b(?:java|ecma)script\\b/},converters:{\"text script\":function(e){return S.globalEval(e),e}}}),S.ajaxPrefilter(\"script\",function(e){void 0===e.cache&&(e.cache=!1),e.crossDomain&&(e.type=\"GET\")}),S.ajaxTransport(\"script\",function(n){var r,o;if(n.crossDomain||n.scriptAttrs)return{send:function(e,t){r=",
+    "ajaxSetup({jsonp:\"callback\",jsonpCallback:function(){var e=rr.pop()||S.expando+\"_\"+An.guid++;return this[e]=!0,e}}),S.ajaxPrefilter(\"json jsonp\",function(e,t,n){var r,o,i,a=!1!==e.jsonp&&(or.test(e.url)?\"url\":\"string\"==typeof e.data&&0===(e.contentType||\"\").indexOf(\"application/x-www-form-urlencoded\")&&or.test(e.data)&&\"data\");if(a||\"jsonp\"===e.dataTypes[0])return r=e.jsonpCallback=y(e.jsonpCallback)?e.jsonpCallback():e.jsonpCallback,a?e[a]=e[a].replace(or,\"$1\"+r):!1!==e.jsonp&&(e.url+=(Fn.test(e.ur",
+    "ajax({url:e,type:o||\"GET\",dataType:\"html\",data:t}).done(function(e){i=arguments,a.html(r?S(\"<div>\").append(S.parseHTML(e)).find(r):e)}).always(n&&function(e,t){a.each(function(){n.apply(this,i||[e.responseText,t,e])})}),this},S.expr.pseudos.animated=function(t){return S.grep(S.timers,function(e){return t===e.elem}).length},S.offset={setOffset:function(e,t,n){var r,o,i,a,l=S.css(e,\"position\"),u=S(e),s={};\"static\"===l&&(e.style.position=\"relative\"),i=u.offset(),r=S.css(e,\"top\"),a=S.css(e,\"left\"),l=(\"a",
+    "ajaxStart\",\"ajaxStop\",\"ajaxComplete\",\"ajaxError\",\"ajaxSuccess\",\"ajaxSend\"],function(e,t){S.fn[t]=function(e){return this.on(t,e)}}),S.fn.extend({bind:function(e,t,n){return this.on(e,null,t,n)},unbind:function(e,t){return this.off(e,null,t)},delegate:function(e,t,n,r){return this.on(t,e,n,r)},undelegate:function(e,t,n){return 1===arguments.length?this.off(e,\"**\"):this.off(t,e||\"**\",n)},hover:function(e,t){return this.on(\"mouseenter\",e).on(\"mouseleave\",t||e)}}),S.each(\"blur focus focusin focusout res"
+  ],
+  "queries": {
+    "probe11.txt": "date=2026-09-22",
+    "probe12.txt": "tradeDate=2026-09-22",
+    "probe13.txt": "businessDate=2026-09-22",
+    "probe14.txt": "asOfDate=2026-09-22",
+    "probe15.txt": "fromDate=2026-09-22&toDate=2026-09-22",
+    "probe16.txt": "date=2026-09-28",
+    "probe17.txt": "tradeDate=2026-09-28",
+    "probe18.txt": "businessDate=2026-09-28",
+    "probe19.txt": "asOfDate=2026-09-28",
+    "probe20.txt": "fromDate=2026-09-28&toDate=2026-09-28",
+    "probe21.txt": "date=2026-09-29",
+    "probe22.txt": "tradeDate=2026-09-29",
+    "probe23.txt": "businessDate=2026-09-29",
+    "probe24.txt": "asOfDate=2026-09-29",
+    "probe25.txt": "fromDate=2026-09-29&toDate=2026-09-29"
+  }
+}
