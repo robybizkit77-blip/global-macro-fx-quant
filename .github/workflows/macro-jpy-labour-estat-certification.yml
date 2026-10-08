@@ -1,0 +1,149 @@
+name: JPY Labour e-Stat Adapter Certification
+
+on:
+  push:
+    branches:
+      - validation-macro-jpy-labour-adapter-2026-10-08
+      - release-candidate-macro-jpy-labour-adapter-2026-10-08
+    paths:
+      - '.github/workflows/macro-jpy-labour-estat-certification.yml'
+      - 'validation/sources/jpy_estat_unemployment.py'
+      - 'validation/test_jpy_estat_source.py'
+      - 'validation/fixtures/jpy_estat_unemployment_2026-08.json'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/replay_jpy_macro_candidate.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'validation/macro/check_macro_source_registry.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E_STAT_APP_ID: ${{ secrets.E_STAT_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot runtime before source verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/jpy-labour-before.sha256
+
+      - name: Verify deterministic e-Stat fixture and candidate contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/test_jpy_estat_source.py | tee /tmp/jpy-estat-fixture-test.json
+
+      - name: Require repository e-Stat credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${E_STAT_APP_ID}" ]; then
+            echo 'E_STAT_APP_ID repository secret is not configured; JPY.labour cannot be certified READY.'
+            exit 1
+          fi
+
+      - name: Fetch official live Japan unemployment from e-Stat
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gmfq-jpy-estat-live
+          python3 validation/sources/jpy_estat_unemployment.py \
+            --output /tmp/gmfq-jpy-estat-live/candidate.json \
+            --audit-output /tmp/gmfq-jpy-estat-live/source-audit.json \
+            | tee /tmp/gmfq-jpy-estat-live/source-run.json
+
+      - name: Validate live source semantics against canonical registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-jpy-estat-live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gmfq-jpy-estat-live/source-audit.json').read_text())
+          r=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())['series']['JPY.labour']
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['JPY']['labour']
+          assert c['currency']=='JPY' and c['dimension']=='labour', c
+          assert c['source']==r['source']==h['source']=='Statistics Bureau of Japan / e-Stat', (c,r,h)
+          assert c['series_id']==r['series_id']==h['series_id']=='JP_UNEMP_RATE', (c,r,h)
+          assert c['frequency']==r['frequency']==h['frequency']=='M', (c,r,h)
+          assert c['transformation']==r['transformation']==h['transformation']=='level', (c,r,h)
+          assert c['unit']=='%', c
+          assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False, a
+          assert a['stats_data_id']=='0002060004', a
+          assert c['observation_date']==a['latest_period'], (c,a)
+          assert float(c['value'])==float(a['latest_value']), (c,a)
+          assert c['observation_date'] >= str(h['as_of'])[:7], (c,h)
+          assert 0.0 <= float(c['value']) <= 20.0, c
+          print(json.dumps({'status':'LIVE_SOURCE_SEMANTICS_PASS','observation_date':c['observation_date'],'value':c['value'],'prior_period':a['prior_period'],'prior_value':a['prior_value'],'stats_data_id':a['stats_data_id']},indent=2))
+          PY
+
+      - name: Pass live observation through canonical macro candidate builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-jpy-estat-live/candidate.json \
+            --output-dir /tmp/gmfq-jpy-estat-live/built \
+            | tee /tmp/gmfq-jpy-estat-live/builder-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gmfq-jpy-estat-live/candidate.json').read_text())
+          s=json.loads(Path('/tmp/gmfq-jpy-estat-live/built/summary.json').read_text())
+          assert s['status']=='PASS', s
+          assert s['live_data_modified'] is False, s
+          assert s['observation_date']==c['observation_date'], (s,c)
+          assert float(s['new_value'])==float(c['value']), (s,c)
+          print('JPY_LABOUR_LIVE_CANDIDATE_BUILDER_PASS')
+          PY
+
+      - name: Re-run certified JPY macro replay and registry audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/replay_jpy_macro_candidate.py | tee /tmp/gmfq-jpy-estat-live/jpy-replay.json
+          python3 validation/macro/check_macro_source_registry.py | tee /tmp/gmfq-jpy-estat-live/registry-audit.json
+          python3 - <<'PY'
+          import json
+          rep=json.load(open('/tmp/gmfq-jpy-estat-live/jpy-replay.json'))
+          reg=json.load(open('/tmp/gmfq-jpy-estat-live/registry-audit.json'))
+          assert rep['status']=='PASS' and rep['macro_series_exact_match'] is True and rep['heatmap_exact_match'] is True, rep
+          assert reg['status']=='PASS', reg
+          print('JPY_REPLAY_AND_REGISTRY_PASS')
+          PY
+
+      - name: Prove certification is read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c /tmp/jpy-labour-before.sha256
+          python3 validation/check_live_update_contract.py > /tmp/gmfq-jpy-estat-live/live-contract.json
+          git diff --exit-code -- live_data payload
+          echo JPY_LABOUR_ESTAT_CERTIFICATION_READ_ONLY_PASS
+
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-labour-estat-certification-${{ github.run_id }}
+          path: |
+            /tmp/jpy-estat-fixture-test.json
+            /tmp/gmfq-jpy-estat-live/
+          if-no-files-found: error
+          retention-days: 30

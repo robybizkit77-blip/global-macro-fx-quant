@@ -102,9 +102,22 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
+      "source_adapter_status": "READY",
       "historical_replay_certified": true,
-      "replay": "validation/replay_jpy_macro_candidate.py"
+      "replay": "validation/replay_jpy_macro_candidate.py",
+      "adapter": "validation/sources/jpy_estat_unemployment.py",
+      "live_certification": {
+        "workflow": ".github/workflows/macro-jpy-labour-estat-certification.yml",
+        "run_id": 37784047224,
+        "head_sha": "5837f1c67f2b070cabf243ac11974531e4e591ec",
+        "status": "SUCCESS",
+        "official_observation_date": "2026-08",
+        "official_value": 2.6,
+        "prior_observation_date": "2026-07",
+        "prior_value": 2.4,
+        "stats_data_id": "0002060004",
+        "read_only": true
+      }
     },
     "JPY.inflation": {
       "currency": "JPY",
