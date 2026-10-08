@@ -1,0 +1,15 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "DETERMINISTIC CONTRACT FIXTURE - synthetic EUR HICP inputs, not an official downloaded payload",
+  "id": ["freq", "unit", "coicop18", "geo", "time"],
+  "size": [1, 1, 1, 1, 2],
+  "dimension": {
+    "freq": {"category": {"index": {"M": 0}, "label": {"M": "Monthly"}}},
+    "unit": {"category": {"index": {"RCH_A": 0}, "label": {"RCH_A": "Annual rate of change"}}},
+    "coicop18": {"category": {"index": {"TOTAL": 0}, "label": {"TOTAL": "Total"}}},
+    "geo": {"category": {"index": {"EA": 0}, "label": {"EA": "Euro area evolutive composition"}}},
+    "time": {"category": {"index": {"2026-09": 0, "2026-10": 1}}}
+  },
+  "value": [3.8, 3.9]
+}

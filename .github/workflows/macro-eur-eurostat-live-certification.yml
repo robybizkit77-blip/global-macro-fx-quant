@@ -1,0 +1,87 @@
+name: EUR Eurostat Macro Live Certification
+
+on:
+  push:
+    branches:
+      - validation-macro-eur-certified-2026-10-08
+    paths:
+      - 'validation/sources/eur_eurostat_core.py'
+      - 'validation/fixtures/eur_eurostat_hicp_contract.json'
+      - 'validation/fixtures/eur_eurostat_unemployment_contract.json'
+      - 'validation/test_eur_eurostat_source.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/macro-eur-eurostat-live-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot runtime before source verification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/eur-macro-before.sha256
+      - name: Run deterministic Eurostat parser-builder contract
+        run: python validation/test_eur_eurostat_source.py
+      - name: Fetch and build official live Eurostat candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for D in inflation labour; do
+            mkdir -p "/tmp/gmfq-eur-eurostat-live/${D}"
+            python validation/sources/eur_eurostat_core.py \
+              --dimension "$D" \
+              --output "/tmp/gmfq-eur-eurostat-live/${D}/candidate.json" \
+              --audit-output "/tmp/gmfq-eur-eurostat-live/${D}/source-audit.json"
+            python validation/build_macro_candidate.py \
+              --candidate "/tmp/gmfq-eur-eurostat-live/${D}/candidate.json" \
+              --output-dir "/tmp/gmfq-eur-eurostat-live/${D}/built"
+          done
+      - name: Verify Eurostat provenance and canonical builder contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={
+            'inflation':('prc_hicp_minr','EA_HICP_HEADLINE_YOY','reported_yoy_rate'),
+            'labour':('une_rt_m','EA_UNEMP','level'),
+          }
+          out={}
+          for dim,(dataset,series_id,transformation) in expected.items():
+              root=Path('/tmp/gmfq-eur-eurostat-live')/dim
+              c=json.loads((root/'candidate.json').read_text())
+              a=json.loads((root/'source-audit.json').read_text())
+              s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='EUR' and c['dimension']==dim, c
+              assert c['source']=='Eurostat', c
+              assert c['series_id']==series_id, c
+              assert c['transformation']==transformation, c
+              assert a['dataset']==dataset and a['mode']=='live', a
+              assert a['live_data_written'] is False, a
+              assert s['status']=='PASS' and s['live_data_modified'] is False, s
+              assert s['observation_date']==c['observation_date'], (s,c)
+              assert abs(float(s['new_value'])-float(c['value'])) < 1e-10, (s,c)
+              out[dim]={'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+          print(json.dumps({'status':'EUR_EUROSTAT_LIVE_CERTIFICATION_PASS','results':out,'live_data_modified':False}, indent=2))
+          PY
+      - name: Run generic macro self-test and registry audit
+        run: |
+          python validation/build_macro_candidate.py --self-test
+          python validation/macro/check_macro_source_registry.py
+      - name: Prove certification is read-only
+        run: |
+          sha256sum -c /tmp/eur-macro-before.sha256
+          git diff --exit-code -- live_data payload
+      - name: Upload Eurostat verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-eurostat-live-macro-certification-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: /tmp/gmfq-eur-eurostat-live/

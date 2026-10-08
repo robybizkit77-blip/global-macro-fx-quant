@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "DETERMINISTIC CONTRACT FIXTURE - synthetic EUR unemployment inputs, not an official downloaded payload",
+  "id": ["freq", "s_adj", "age", "unit", "sex", "geo", "time"],
+  "size": [1, 1, 1, 1, 1, 1, 2],
+  "dimension": {
+    "freq": {"category": {"index": {"M": 0}, "label": {"M": "Monthly"}}},
+    "s_adj": {"category": {"index": {"SA": 0}, "label": {"SA": "Seasonally adjusted"}}},
+    "age": {"category": {"index": {"TOTAL": 0}, "label": {"TOTAL": "Total"}}},
+    "unit": {"category": {"index": {"PC_ACT": 0}, "label": {"PC_ACT": "Percentage of population in the labour force"}}},
+    "sex": {"category": {"index": {"T": 0}, "label": {"T": "Total"}}},
+    "geo": {"category": {"index": {"EA21": 0}, "label": {"EA21": "Euro area – 21 countries"}}},
+    "time": {"category": {"index": {"2026-08": 0, "2026-09": 1}}}
+  },
+  "value": [6.4, 6.5]
+}
