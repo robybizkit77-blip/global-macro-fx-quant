@@ -3,27 +3,32 @@ from __future__ import annotations
 import argparse,datetime as dt,json,pathlib,re,requests
 from bs4 import BeautifulSoup
 ROOT=pathlib.Path(__file__).resolve().parents[2]; OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; BASE='https://www.m-x.ca/en/trading/data/market-review'
+DATE_RE=re.compile(r'([A-Z][a-z]+) (\d{1,2}), (20\d{2})')
 def cmap():
  l=json.loads(OIS.read_text())['currencies']['CAD']; s=l.get('source_meta',{}).get('contract_mapping')
  if isinstance(s,dict) and all(s.get(k) for k in ('3m','6m','12m')): return {k:str(s[k]) for k in ('3m','6m','12m')}
  if 'Dec-26 / Mar-27 / Sep-27' not in l.get('source_meta',{}).get('horizon_mapping',''): raise SystemExit('bad CAD mapping')
  return {'3m':'DE 26','6m':'MR 27','12m':'SE 27'}
 def parse(html):
- soup=BeautifulSoup(html,'html.parser'); txt='\n'.join(soup.stripped_strings); m=re.search(r'([A-Z][a-z]+) (\d{1,2}), (20\d{2})',txt)
- if not m: raise SystemExit('date missing')
- d=dt.datetime.strptime(' '.join(m.groups()),'%B %d %Y').date()
- node=soup.find(string=re.compile(r'Three-Month CORRA Futures'))
- table=node.find_parent().find_next('table') if node else None
- if table is None: raise SystemExit('CRA table missing')
+ soup=BeautifulSoup(html,'html.parser')
+ d=None
+ for tag in soup.find_all(['h1','h2','h3','h4']):
+  m=DATE_RE.fullmatch(tag.get_text(' ',strip=True))
+  if m:
+   d=dt.datetime.strptime(' '.join(m.groups()),'%B %d %Y').date(); break
+ if d is None: raise SystemExit('Market Review heading date missing')
+ lines=[x.strip() for x in soup.stripped_strings]
+ try:start=next(i for i,x in enumerate(lines) if 'Three-Month CORRA Futures' in x)
+ except StopIteration:raise SystemExit('CRA heading missing')
+ end=len(lines)
+ for i in range(start+1,len(lines)):
+  if any(k in lines[i] for k in ('Two-Year Government of Canada Bond Futures','Five-Year Government of Canada Bond Futures')):
+   end=i; break
+ section=' '.join(lines[start:end])
+ pat=re.compile(r'\b(MR|JN|SE|DE)\s+(\d{2})\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([-0-9.]+)\s+([0-9,]+)\s+([0-9,]+)')
  out={}
- for tr in table.find_all('tr'):
-  c=[x.get_text(' ',strip=True) for x in tr.find_all(['th','td'])]
-  if not c or not re.fullmatch(r'(MR|JN|SE|DE)\s+\d{2}',c[0]): continue
-  nums=[]
-  for x in c[1:]:
-   try: nums.append(float(x.replace(',','')))
-   except: pass
-  if len(nums)>=4: out[c[0]]={'settlement':nums[3],'change':nums[4] if len(nums)>4 else None,'volume':int(nums[5]) if len(nums)>5 else None,'open_interest':int(nums[6]) if len(nums)>6 else None}
+ for m in pat.finditer(section):
+  code=f'{m.group(1)} {m.group(2)}'; out[code]={'settlement':float(m.group(6)),'change':float(m.group(7)),'volume':int(m.group(8).replace(',','')),'open_interest':int(m.group(9).replace(',',''))}
  if not out: raise SystemExit('CRA rows missing')
  return d,out
 def get(rid=None):
@@ -60,7 +65,6 @@ def build(asof=None):
  return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'CAD','status':'SOURCE_SNAPSHOT_ONLY','source':'Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)','source_url':BASE,'instrument':'Three-Month CORRA Futures (CRA)','quotation':'100 minus compounded CORRA','contract_mapping':cm,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'nearest complete official session on or before as_of minus 5 calendar days'}}
 def main():
  ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args(); o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n'
- if a.output:
-  a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(t)
+ if a.output:a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(t)
  print(t,end='')
 if __name__=='__main__':main()
