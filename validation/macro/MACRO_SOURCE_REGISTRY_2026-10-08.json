@@ -123,7 +123,7 @@
       "currency": "JPY",
       "dimension": "inflation",
       "series_id": "JP_CPI_HEADLINE_YOY",
-      "source": "Statistics Bureau of Japan / CPI",
+      "source": "Statistics Bureau of Japan / e-Stat",
       "authority": "Statistics Bureau of Japan",
       "frequency": "M",
       "transformation": "reported_yoy_rate",
