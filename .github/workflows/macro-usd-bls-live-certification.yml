@@ -1,0 +1,188 @@
+name: USD BLS Core Macro Live Certification
+
+on:
+  push:
+    branches:
+      - validation-macro-usd-bls-2026-10-08
+      - release-candidate-macro-usd-bls-2026-10-08
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - '.github/workflows/macro-usd-bls-live-certification.yml'
+      - 'validation/sources/us_bls_core_macro.py'
+      - 'validation/test_us_bls_core_macro.py'
+      - 'validation/fixtures/us_bls_core_macro_fixture.json'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'validation/macro/check_macro_source_registry.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot runtime before source verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/usd-macro-before.sha256
+
+      - name: Verify deterministic BLS fixture and adapter contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/test_us_bls_core_macro.py | tee /tmp/usd-bls-fixture-test.json
+
+      - name: Fetch official live USD labour and CPI from BLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gmfq-usd-bls-live
+          python3 validation/sources/us_bls_core_macro.py \
+            --output-dir /tmp/gmfq-usd-bls-live/source \
+            | tee /tmp/gmfq-usd-bls-live/source-run.json
+
+      - name: Validate official live source semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/gmfq-usd-bls-live/source')
+          lab=json.loads((root/'labour-candidate.json').read_text())
+          inf=json.loads((root/'inflation-candidate.json').read_text())
+          aud=json.loads((root/'source-audit.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['USD']
+          reg=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())['series']
+
+          assert aud['mode']=='live', aud
+          assert aud['authority']=='U.S. Bureau of Labor Statistics', aud
+          assert aud['transport']=='BLS Public Data API v2', aud
+          assert aud['bls_series']=={'labour':'LNS14000000','inflation_index':'CUSR0000SA0'}, aud
+          assert aud['candidate_only'] is True and aud['live_data_written'] is False, aud
+          assert aud['historical_pit_certified'] is False, aud
+
+          assert lab['currency']=='USD' and lab['dimension']=='labour', lab
+          assert lab['series_id']==reg['USD.labour']['series_id']==heat['labour']['series_id']=='UNRATE', (lab,reg['USD.labour'],heat['labour'])
+          assert lab['frequency']==heat['labour']['frequency']=='M', lab
+          assert lab['transformation']==heat['labour']['transformation']=='level', lab
+          assert lab['observation_date'] >= str(heat['labour']['as_of'])[:7], (lab,heat['labour'])
+          assert 0.0 <= float(lab['value']) <= 20.0, lab
+
+          assert inf['currency']=='USD' and inf['dimension']=='inflation', inf
+          assert inf['series_id']==reg['USD.inflation']['series_id']==heat['inflation']['series_id']=='CPIAUCSL', (inf,reg['USD.inflation'],heat['inflation'])
+          assert inf['frequency']==heat['inflation']['frequency']=='M', inf
+          assert inf['transformation']==heat['inflation']['transformation']=='yoy_pct_from_index', inf
+          assert inf['observation_date'] >= str(heat['inflation']['as_of'])[:7], (inf,heat['inflation'])
+          assert -10.0 <= float(inf['value']) <= 20.0, inf
+          assert inf['observation_date']==aud['inflation']['latest_period'], (inf,aud)
+          assert abs(float(inf['value'])-float(aud['inflation']['latest_value'])) < 1e-12, (inf,aud)
+
+          print(json.dumps({
+            'status':'USD_BLS_LIVE_SOURCE_SEMANTICS_PASS',
+            'labour':{'date':lab['observation_date'],'value':lab['value'],'bls_series':'LNS14000000'},
+            'inflation':{'date':inf['observation_date'],'value':inf['value'],'bls_series':'CUSR0000SA0'},
+            'historical_pit_certified':False
+          },indent=2))
+          PY
+
+      - name: Pass both live observations through canonical macro candidate builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          for D in labour inflation; do
+            python3 validation/build_macro_candidate.py \
+              --candidate "/tmp/gmfq-usd-bls-live/source/${D}-candidate.json" \
+              --output-dir "/tmp/gmfq-usd-bls-live/built-${D}" \
+              | tee "/tmp/gmfq-usd-bls-live/builder-${D}.json"
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for d in ('labour','inflation'):
+              c=json.loads(Path(f'/tmp/gmfq-usd-bls-live/source/{d}-candidate.json').read_text())
+              s=json.loads(Path(f'/tmp/gmfq-usd-bls-live/built-{d}/summary.json').read_text())
+              assert s['status']=='PASS' and s['live_data_modified'] is False, s
+              assert s['currency']=='USD' and s['dimension']==d, s
+              assert s['observation_date']==c['observation_date'], (s,c)
+              assert abs(float(s['new_value'])-float(c['value'])) < 1e-12, (s,c)
+          print('USD_BLS_BOTH_LIVE_CANDIDATES_BUILDER_PASS')
+          PY
+
+      - name: Run generic macro self-test and current registry audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/build_macro_candidate.py --self-test | tee /tmp/gmfq-usd-bls-live/macro-selftest.json
+          python3 validation/macro/check_macro_source_registry.py | tee /tmp/gmfq-usd-bls-live/registry-audit.json
+          python3 - <<'PY'
+          import json
+          st=json.load(open('/tmp/gmfq-usd-bls-live/macro-selftest.json'))
+          reg=json.load(open('/tmp/gmfq-usd-bls-live/registry-audit.json'))
+          assert st['status']=='PASS' and st['writes_live_data'] is False, st
+          assert reg['status']=='PASS' and reg['automatic_publication'] is False, reg
+          print('USD_BLS_GENERIC_MACRO_GATES_PASS')
+          PY
+
+      - name: Prove live certification is read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c /tmp/usd-macro-before.sha256
+          python3 validation/check_live_update_contract.py > /tmp/gmfq-usd-bls-live/live-contract.json
+          git diff --exit-code -- live_data payload
+          echo USD_BLS_LIVE_CERTIFICATION_READ_ONLY_PASS
+
+      - name: Build certification receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gmfq-usd-bls-live
+          python3 - <<'PY'
+          import datetime as dt, json
+          from pathlib import Path
+          root=Path('/tmp/gmfq-usd-bls-live')
+          source=root/'source'/'source-audit.json'
+          audit=json.loads(source.read_text()) if source.exists() else {}
+          receipt={
+            'schema':'GMFQ_USD_BLS_LIVE_CERTIFICATION_V1',
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+            'authority':'U.S. Bureau of Labor Statistics',
+            'transport':'BLS Public Data API v2',
+            'live_source_adapter_certified': source.exists(),
+            'historical_pit_certified':False,
+            'promotion_performed':False,
+            'live_data_published':False,
+            'gh_pages_published':False,
+            'automatic_publication':False,
+            'source_audit':audit,
+          }
+          (root/'CERTIFICATION_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt,indent=2))
+          PY
+
+      - name: Upload USD BLS certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usd-bls-live-macro-certification-${{ github.run_id }}
+          path: |
+            /tmp/usd-bls-fixture-test.json
+            /tmp/gmfq-usd-bls-live/
+          if-no-files-found: error
+          retention-days: 30
