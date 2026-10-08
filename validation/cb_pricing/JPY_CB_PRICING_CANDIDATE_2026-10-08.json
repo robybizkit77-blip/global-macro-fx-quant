@@ -1,0 +1,82 @@
+{
+  "schema_version": "GMFQ_CB_PRICING_CANDIDATE_V1",
+  "currency": "JPY",
+  "status": "READY_FOR_SEPARATE_PROMOTION",
+  "as_of": "2026-09-29",
+  "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+  "source_type": "OFFICIAL_PRIMARY",
+  "instrument": "Three-month TONA Futures",
+  "quotation": "100 minus compounded TONA",
+  "policy_rate": 1.25,
+  "meeting_path": [
+    {
+      "date": "2026-10-30",
+      "source": "Bank of Japan monetary policy meeting schedule",
+      "status": "mapped"
+    }
+  ],
+  "horizons": {
+    "3m": {
+      "contract": "Dec-26",
+      "rate": 1.555,
+      "change_1d_bp": 6.5,
+      "change_1w_bp": 6.5,
+      "policy_delta_bp": 30.5
+    },
+    "6m": {
+      "contract": "Mar-27",
+      "rate": 1.755,
+      "change_1d_bp": 6.5,
+      "change_1w_bp": 6.5,
+      "policy_delta_bp": 50.5
+    },
+    "12m": {
+      "contract": "Sep-27",
+      "rate": 2.119,
+      "change_1d_bp": -2.2,
+      "change_1w_bp": 5.0,
+      "policy_delta_bp": 86.9
+    }
+  },
+  "cuts_hikes_priced": {
+    "3m_bp": 30.5,
+    "6m_bp": 50.5,
+    "12m_bp": 86.9
+  },
+  "direction": "UP",
+  "change_direction_1d": "MIXED_FRONT_END_UP",
+  "change_direction_1w": "UP",
+  "validation": {
+    "source_validated": true,
+    "asof_validated": true,
+    "meeting_path_validated": true,
+    "changes_validated": true,
+    "current_real": true,
+    "previous_real": true,
+    "week_real": true,
+    "activation_blocker": null,
+    "method": "Matched official TFX Three-month TONA Futures observations; no interpolation and no synthetic curve.",
+    "weekly_reference_note": "1W uses the nearest validated prior official session, 2026-09-24, versus 2026-09-29; no missing point was invented or interpolated."
+  },
+  "provenance": {
+    "snapshots": {
+      "2026-09-24": {
+        "Dec26_rate": 1.490,
+        "Mar27_rate": 1.690,
+        "Sep27_rate": 2.069
+      },
+      "2026-09-28": {
+        "Dec26_rate": 1.490,
+        "Mar27_rate": 1.690,
+        "Sep27_rate": 2.141
+      },
+      "2026-09-29": {
+        "Dec26_rate": 1.555,
+        "Mar27_rate": 1.755,
+        "Sep27_rate": 2.119
+      }
+    }
+  },
+  "production_mutated": false,
+  "gh_pages_mutated": false
+}
