@@ -55,13 +55,13 @@ def build(asof=None):
  if not matches: raise SystemExit(f'no observation for {asof}')
  cur=matches[-1]; earlier=[x for x in obs if x[0]<cur[0]]
  if not earlier: raise SystemExit('no prior CRA session')
- prev=earlier[-1]; weekly=[x for x in earlier if x[0]<=cur[0]-dt.timedelta(days=5)]
- if not weekly: raise SystemExit('no weekly CRA reference')
- week=weekly[-1]
+ prev=earlier[-1]
+ weekly_target=cur[0]-dt.timedelta(days=7)
+ week=min(earlier,key=lambda x:(abs((x[0]-weekly_target).days),0 if x[0]<=weekly_target else 1,-x[0].toordinal()))
  def p(x):
   d,r,i,raw=x; return {'date':d.isoformat(),'market_review_id':i,**r,'raw':raw}
  a,b,w=p(cur),p(prev),p(week); d1={h:round((a[h]-b[h])*100,4) for h in cm}; dw={h:round((a[h]-w[h])*100,4) for h in cm}
- return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'CAD','status':'SOURCE_SNAPSHOT_ONLY','source':'Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)','source_url':BASE,'instrument':'Three-Month CORRA Futures (CRA)','quotation':'100 minus compounded CORRA','contract_mapping':cm,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'nearest complete official session on or before as_of minus 5 calendar days'}}
+ return {'schema':'GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1','currency':'CAD','status':'SOURCE_SNAPSHOT_ONLY','source':'Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)','source_url':BASE,'instrument':'Three-Month CORRA Futures (CRA)','quotation':'100 minus compounded CORRA','contract_mapping':cm,'as_of':a['date'],'observations':{'current':a,'t_minus_1':b,'weekly_reference':w},'change_1d_bp':d1,'change_1w_bp':dw,'validation':{'official_source':True,'direct_settlements':True,'no_interpolation':True,'homogeneous_contracts':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_rule':'complete official session nearest to as_of minus 7 calendar days; ties prefer on/before target'}}
 def main():
  ap=argparse.ArgumentParser(); ap.add_argument('--as-of'); ap.add_argument('--output',type=pathlib.Path); a=ap.parse_args(); o=build(dt.date.fromisoformat(a.as_of) if a.as_of else None); t=json.dumps(o,indent=2,ensure_ascii=False)+'\n'
  if a.output:
