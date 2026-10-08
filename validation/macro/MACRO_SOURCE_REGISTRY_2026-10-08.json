@@ -58,8 +58,16 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Eurostat",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/eur_eurostat_core.py",
+        "workflow": ".github/workflows/eur-eurostat-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "EUR.inflation": {
       "currency": "EUR",
@@ -70,8 +78,16 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "INTERMEDIARY_TRANSPORT",
-      "source_adapter_status": "NEEDS_OFFICIAL_DIRECT_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Eurostat",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/eur_eurostat_core.py",
+        "workflow": ".github/workflows/eur-eurostat-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "GBP.labour": {
       "currency": "GBP",
