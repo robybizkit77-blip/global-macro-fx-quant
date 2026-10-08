@@ -10,26 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch exact certified review and inspect CRA neighborhood
+      - name: Fetch exact certified review and print CRA row markup
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import requests,re,pathlib
+          import requests
           u='https://www.m-x.ca/en/trading/data/market-review?id=6192'
           r=requests.get(u,headers={'User-Agent':'Mozilla/5.0 GMFQ validation'},timeout=30); r.raise_for_status()
-          pathlib.Path('/tmp/mx6192.html').write_text(r.text,encoding='utf-8')
-          low=r.text.lower(); needles=['three-month corra','cra','de 26','mr 27','se 27','97.250','96.895','96.485']
-          out=[]
-          for n in needles:
-            i=low.find(n.lower())
-            out.append(f'NEEDLE {n!r} INDEX {i}')
-            if i>=0: out.append(r.text[max(0,i-1200):i+3500])
-          pathlib.Path('/tmp/mx6192-neighborhood.txt').write_text('\n\n=====\n'.join(out),encoding='utf-8')
-          print('\n'.join(x.splitlines()[0] for x in out if x))
+          low=r.text.lower()
+          for needle in ['de 26','mr 27','se 27']:
+            i=low.find(needle)
+            print('\n===== '+needle+' =====')
+            print(r.text[max(0,i-700):i+1400] if i>=0 else 'NOT FOUND')
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cad-mx-markup-probe
-          path: /tmp/mx6192-neighborhood.txt
-          retention-days: 7
