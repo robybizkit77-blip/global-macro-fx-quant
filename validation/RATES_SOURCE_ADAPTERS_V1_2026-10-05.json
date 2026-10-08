@@ -2,7 +2,7 @@
   "schema": "GMFQ_RATES_SOURCE_ADAPTERS_V1",
   "created_at": "2026-10-05",
   "updated_at": "2026-10-08",
-  "status": "SEVEN_OPERATIONAL__SIX_LIVE_FETCH__NZD_RUNNER_ASSERTION__CHF_SOURCE_EXPORT_BLOCKED",
+  "status": "SEVEN_OPERATIONAL__SIX_LIVE_FETCH__NZD_MANUAL_OFFICIAL_ASSERTION__CHF_SOURCE_EXPORT_BLOCKED",
   "policy": {
     "same_basis_required": true,
     "official_source_required": true,
@@ -61,16 +61,18 @@
     "NZD": {
       "source": "B2 Wholesale interest rates – government bond close",
       "authority": "Reserve Bank of New Zealand",
-      "adapter_status": "OPERATIONAL_SOURCE_LAG__RUNNER_ACCESS_BLOCKED",
-      "current_snapshot": "2026-10-01",
+      "adapter_status": "OPERATIONAL_MANUAL_OFFICIAL_VERIFIED__RUNNER_ACCESS_BLOCKED",
+      "current_snapshot": "2026-10-05",
+      "current_2Y": 3.83,
+      "current_10Y": 5.04,
       "source_url": "https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
-      "reason": "Official B2 uses one-business-day publication lag. The official RBNZ data-file index explicitly supports automated scraping, but both the B2 page and canonical XLSX currently return HTTP 403 to GitHub-hosted runners. Keep the validated official-source-lag assertion; never substitute a secondary source."
+      "reason": "Official RBNZ B2 public evidence verified 05 Oct 2026 government bond closing yields at 3.83% for 2Y and 5.04% for 10Y. Both the B2 page and canonical XLSX return HTTP 403 to GitHub-hosted runners, so retain explicit manual official verification and never substitute a secondary source."
     }
   },
   "summary": {
     "operational": ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "NZD"],
     "live_fetch": ["USD", "EUR", "GBP", "JPY", "CAD", "AUD"],
-    "official_assertion_due_runner_access": ["NZD"],
+    "manual_official_assertion_due_runner_access": ["NZD"],
     "blocked": ["CHF"],
     "production_data_changes_required_now": []
   }
