@@ -70,10 +70,8 @@ def protected_fingerprints() -> dict[str, str]:
     return out
 
 
-def clean_repository() -> bool:
-    # Evidence is intentionally external; a dirty checkout cannot establish a
-    # trustworthy anchor because rule changes might otherwise be uncommitted.
-    return git("status", "--porcelain") == ""
+def dirty_paths() -> list[str]:
+    return [line[3:] for line in git("status", "--porcelain").splitlines() if line]
 
 
 def snapshot_paths(evidence_dir: pathlib.Path, phase: str) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
@@ -93,8 +91,11 @@ def assert_snapshot_integrity(meta: dict, series_path: pathlib.Path, heat_path: 
 
 
 def capture(args: argparse.Namespace) -> int:
-    if not clean_repository():
-        raise ValueError("refusing capture from a dirty repository")
+    dirty = dirty_paths()
+    allowed_live_dirty = {SERIES_REL.as_posix(), HEAT_REL.as_posix()}
+    allow_live_dirty = args.phase == "after" and args.allow_live_data_dirty
+    if dirty and (not allow_live_dirty or not set(dirty).issubset(allowed_live_dirty)):
+        raise ValueError("capture requires a clean repository; AFTER may opt in only to dirty target live artifacts")
     evidence_dir = pathlib.Path(args.evidence_dir).resolve()
     series_out, heat_out, manifest_out = snapshot_paths(evidence_dir, args.phase)
     if manifest_out.exists() and not args.overwrite:
@@ -120,7 +121,8 @@ def capture(args: argparse.Namespace) -> int:
             HEAT_NAME: {"sha256": sha256_file(heat_out), "semantic_sha256": canonical_hash(load(heat_out))},
         },
         "protected_fingerprints": protected_fingerprints(),
-        "repository_clean": True,
+        "repository_state": "CLEAN" if not dirty else "LIVE_DATA_ONLY_DIRTY",
+        "dirty_paths": dirty,
     }
     dump(manifest_out, manifest)
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
@@ -216,8 +218,11 @@ def verify(args: argparse.Namespace) -> int:
         raise ValueError("command target differs from captured target")
     if before_meta.get("protected_fingerprints") != after_meta.get("protected_fingerprints"):
         raise ValueError("engine/source infrastructure fingerprint changed between snapshots")
-    if not before_meta.get("repository_clean") or not after_meta.get("repository_clean"):
-        raise ValueError("capture repository cleanliness not proven")
+    if before_meta.get("repository_state") != "CLEAN":
+        raise ValueError("BEFORE capture must originate from a clean repository")
+    allowed_live_dirty = {SERIES_REL.as_posix(), HEAT_REL.as_posix()}
+    if after_meta.get("repository_state") not in {"CLEAN", "LIVE_DATA_ONLY_DIRTY"} or not set(after_meta.get("dirty_paths", [])).issubset(allowed_live_dirty):
+        raise ValueError("AFTER capture repository state is not restricted to the two live artifacts")
     changed_rules = subprocess.run(
         ["git", "diff", "--quiet", before_meta["git_head"], after_meta["git_head"], "--", *[str(p) for p in PROTECTED_PATHS],
         cwd=ROOT,
@@ -275,6 +280,7 @@ def main() -> int:
         cp.add_argument("--currency", required=True)
         cp.add_argument("--dimension", required=True, choices=("inflation", "labour"))
         cp.add_argument("--macro-series-id", required=True)
+        cp.add_argument("--allow-live-data-dirty", action="store_true", help="AFTER only: permit uncommitted changes limited to the two captured live artifacts")
         cp.add_argument("--overwrite", action="store_true")
         cp.set_defaults(phase=phase, func=capture)
     vp = sub.add_parser("verify")
