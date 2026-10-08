@@ -49,7 +49,7 @@ jobs:
           mkdir -p /tmp/gbp-labour-pit
           python3 validation/sources/gbp_ons_core.py \
             --dimension labour \
-            --output /tmp/gbp-labour-pit/candidate.json \
+            --output /tmp/gbp-labour-pit/source-candidate.json \
             --audit-output /tmp/gbp-labour-pit/source-audit.json \
             | tee /tmp/gbp-labour-pit/source-run.json
 
@@ -57,7 +57,8 @@ jobs:
           import json
           from pathlib import Path
 
-          candidate = json.loads(Path('/tmp/gbp-labour-pit/candidate.json').read_text())
+          source_path = Path('/tmp/gbp-labour-pit/source-candidate.json')
+          candidate = json.loads(source_path.read_text())
           audit = json.loads(Path('/tmp/gbp-labour-pit/source-audit.json').read_text())
 
           expected = {
@@ -79,14 +80,50 @@ jobs:
               raise SystemExit(f'ONS adapter violated candidate-only contract: {audit}')
 
           series = json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          ids = [str(row.get('id')) for row in series['GBP'] if isinstance(row, dict)]
-          if candidate['macro_series_id'] not in ids:
-              raise SystemExit(f"resolved macro_series_id not present in GBP runtime: {candidate['macro_series_id']}")
+          rows = [row for row in series['GBP'] if isinstance(row, dict) and str(row.get('id')) == candidate['macro_series_id']]
+          if len(rows) != 1:
+              raise SystemExit(f"resolved macro_series_id is not unique in GBP runtime: {candidate['macro_series_id']}")
+          row = rows[0]
+          dates = row.get('dates')
+          if not isinstance(dates, list) or not dates:
+              raise SystemExit('GBP labour canonical series has no date history')
+
+          source_date = str(candidate['observation_date'])
+          if len(source_date) < 7 or source_date[4] != '-':
+              raise SystemExit(f'invalid monthly ONS observation date: {source_date!r}')
+          source_month = source_date[:7]
+          same_month = [str(d) for d in dates if str(d)[:7] == source_month]
+          if len(same_month) > 1:
+              raise SystemExit(f'duplicate canonical observations for GBP labour month {source_month}')
+          if same_month:
+              canonical_date = same_month[0]
+          else:
+              uses_day_precision = all(len(str(d)) >= 10 for d in dates)
+              canonical_date = f'{source_month}-01' if uses_day_precision else source_month
+
+          pit_candidate = dict(candidate)
+          pit_candidate['observation_date'] = canonical_date
+          Path('/tmp/gbp-labour-pit/pit-candidate.json').write_text(
+              json.dumps(pit_candidate, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+          )
+          Path('/tmp/gbp-labour-pit/date-normalization.json').write_text(
+              json.dumps({
+                  'status': 'MONTHLY_DATE_PRECISION_NORMALIZED',
+                  'source_observation_date': source_date,
+                  'canonical_observation_date': canonical_date,
+                  'economic_period': source_month,
+                  'same_economic_period': canonical_date[:7] == source_month,
+                  'source_candidate_preserved': True,
+              }, indent=2) + '\n', encoding='utf-8'
+          )
+          if canonical_date[:7] != source_month:
+              raise SystemExit('monthly precision normalization changed the economic period')
 
           print(json.dumps({
               'status': 'GBP_LABOUR_LIVE_CANDIDATE_PASS',
               'macro_series_id': candidate['macro_series_id'],
-              'observation_date': candidate['observation_date'],
+              'source_observation_date': source_date,
+              'canonical_observation_date': canonical_date,
               'value': candidate['value'],
               'source': candidate['source'],
               'series_id': candidate['series_id'],
@@ -94,14 +131,14 @@ jobs:
           PY
 
           python3 validation/build_macro_candidate.py \
-            --candidate /tmp/gbp-labour-pit/candidate.json \
+            --candidate /tmp/gbp-labour-pit/pit-candidate.json \
             --output-dir /tmp/gbp-labour-pit/built \
             | tee /tmp/gbp-labour-pit/builder.json
 
           git diff --exit-code -- live_data payload validation/macro
 
-          CANDIDATE_JSON="$(jq -c . /tmp/gbp-labour-pit/candidate.json)"
-          MACRO_SERIES_ID="$(jq -r .macro_series_id /tmp/gbp-labour-pit/candidate.json)"
+          CANDIDATE_JSON="$(jq -c . /tmp/gbp-labour-pit/pit-candidate.json)"
+          MACRO_SERIES_ID="$(jq -r .macro_series_id /tmp/gbp-labour-pit/pit-candidate.json)"
           echo "candidate_json=$CANDIDATE_JSON" >> "$GITHUB_OUTPUT"
           echo "macro_series_id=$MACRO_SERIES_ID" >> "$GITHUB_OUTPUT"
 
