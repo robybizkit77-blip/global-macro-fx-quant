@@ -204,6 +204,7 @@ jobs:
         run: |
           set -euo pipefail
           common=(--evidence-dir /tmp/macro-single-series-pit/evidence --currency "$CURRENCY" --dimension "$DIMENSION" --macro-series-id "$MACRO_SERIES_ID")
+          git status --short
           python3 validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/macro-single-series-pit/before-capture.json
           cp /tmp/macro-single-series-pit/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
           cp /tmp/macro-single-series-pit/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
