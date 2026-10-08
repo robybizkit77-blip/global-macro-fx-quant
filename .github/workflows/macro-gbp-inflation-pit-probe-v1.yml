@@ -1,0 +1,104 @@
+name: Macro GBP Inflation PIT Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-gbp-inflation-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-gbp-inflation-pit-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run official ONS inflation adapter read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-cpi-probe
+          python3 validation/sources/gbp_ons_core.py \
+            --dimension inflation \
+            --output /tmp/gbp-cpi-probe/candidate.json \
+            --audit-output /tmp/gbp-cpi-probe/source-audit.json \
+            | tee /tmp/gbp-cpi-probe/source-run.json
+
+      - name: Freeze canonical prior/current and official latest/prior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          candidate = json.loads(Path('/tmp/gbp-cpi-probe/candidate.json').read_text())
+          audit = json.loads(Path('/tmp/gbp-cpi-probe/source-audit.json').read_text())
+          series = json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat = json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+
+          target_id = 'UK_CPI_HEADLINE_YOY_history_value'
+          hits = [r for r in series['GBP'] if isinstance(r, dict) and r.get('id') == target_id]
+          assert len(hits) == 1, f'expected one canonical GBP CPI row, got {len(hits)}'
+          row = hits[0]
+          dates = row['dates']
+          values = row['values']
+          assert len(dates) == len(values) and len(dates) >= 2
+
+          hrow = heat['currencies']['GBP']['inflation']
+          assert candidate['currency'] == 'GBP'
+          assert candidate['dimension'] == 'inflation'
+          assert candidate['macro_series_id'] == target_id
+          assert audit['candidate_only'] is True
+          assert audit['live_data_written'] is False
+
+          out = {
+            'schema': 'GMFQ_GBP_INFLATION_PIT_PROBE_V1',
+            'canonical': {
+              'macro_series_id': target_id,
+              'previous': {'observation_date': str(dates[-2]), 'value': float(values[-2])},
+              'current': {'observation_date': str(dates[-1]), 'value': float(values[-1])},
+              'last_date': row.get('last_date'),
+              'last_value': row.get('last_value'),
+              'heatmap_as_of': hrow.get('as_of'),
+              'heatmap_latest_value': hrow.get('latest_value'),
+              'heatmap_source': hrow.get('source'),
+              'heatmap_series_id': hrow.get('series_id'),
+            },
+            'official_ons': {
+              'series_id': audit['upstream_series_id'],
+              'dataset': audit['dataset'],
+              'prior_period': audit['prior_period'],
+              'prior_value': audit['prior_value'],
+              'latest_period': audit['latest_period'],
+              'latest_value': audit['latest_value'],
+              'api_url': audit['api_url'],
+            },
+            'candidate': candidate,
+            'read_only': True,
+          }
+          Path('/tmp/gbp-cpi-probe/probe.json').write_text(json.dumps(out, indent=2) + '\n')
+          print(json.dumps(out, indent=2))
+          PY
+
+      - name: Enforce no canonical publication
+        run: git diff --exit-code -- live_data payload
+
+      - name: Upload probe evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-gbp-inflation-pit-probe-${{ github.run_id }}
+          path: /tmp/gbp-cpi-probe/
+          if-no-files-found: error
+          retention-days: 30
