@@ -1,0 +1,84 @@
+name: CHF SNB Macro Live Certification
+
+on:
+  push:
+    branches:
+      - validation-macro-eur-certified-2026-10-08
+    paths:
+      - 'validation/sources/chf_snb_official_core.py'
+      - 'validation/fixtures/chf_snb_cpi_contract.json'
+      - 'validation/fixtures/chf_snb_unemployment_contract.json'
+      - 'validation/test_chf_snb_source.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/macro-chf-snb-live-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot runtime before source verification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/chf-macro-before.sha256
+      - name: Run deterministic SNB parser-builder contract
+        run: python validation/test_chf_snb_source.py
+      - name: Fetch and build official live SNB candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for D in inflation labour; do
+            mkdir -p "/tmp/gmfq-chf-snb-live/${D}"
+            python validation/sources/chf_snb_official_core.py \
+              --dimension "$D" \
+              --output "/tmp/gmfq-chf-snb-live/${D}/candidate.json" \
+              --audit-output "/tmp/gmfq-chf-snb-live/${D}/source-audit.json"
+            python validation/build_macro_candidate.py \
+              --candidate "/tmp/gmfq-chf-snb-live/${D}/candidate.json" \
+              --output-dir "/tmp/gmfq-chf-snb-live/${D}/built"
+          done
+      - name: Verify SNB provenance and canonical builder contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={
+            'inflation':('CH_CPI_HEADLINE_YOY','CH_CPI_HEADLINE_YOY_history_value','plkopr'),
+            'labour':('CH_UNEMP_RATE','CH_UNEMP_RATE_history_value','amarbma'),
+          }
+          out={}
+          for dim,(series_id,macro_id,cube) in expected.items():
+              root=Path('/tmp/gmfq-chf-snb-live')/dim
+              c=json.loads((root/'candidate.json').read_text())
+              a=json.loads((root/'source-audit.json').read_text())
+              s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='CHF' and c['dimension']==dim, c
+              assert c['series_id']==series_id and c['macro_series_id']==macro_id, c
+              assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False, a
+              assert a['upstream_cube']==cube, a
+              assert s['status']=='PASS' and s['live_data_modified'] is False, s
+              assert s['observation_date']==c['observation_date'], (s,c)
+              out[dim]={'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action']}
+          print(json.dumps({'status':'CHF_SNB_LIVE_CERTIFICATION_PASS','results':out,'live_data_modified':False}, indent=2))
+          PY
+      - name: Run generic macro self-test and registry audit
+        run: |
+          python validation/build_macro_candidate.py --self-test
+          python validation/macro/check_macro_source_registry.py
+      - name: Prove certification is read-only
+        run: |
+          sha256sum -c /tmp/chf-macro-before.sha256
+          git diff --exit-code -- live_data payload
+      - name: Upload SNB verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-snb-live-macro-certification-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: /tmp/gmfq-chf-snb-live/
