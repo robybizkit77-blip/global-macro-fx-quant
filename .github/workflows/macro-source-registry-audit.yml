@@ -1,0 +1,103 @@
+name: Macro Source Registry Audit
+
+on:
+  push:
+    branches:
+      - validation-macro-source-registry-2026-10-08
+      - release-candidate-macro-source-registry-2026-10-08
+    paths:
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/replay_jpy_macro_candidate.py'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - '.github/workflows/macro-source-registry-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Snapshot tracked runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/macro-registry-before.sha256
+
+      - name: Audit canonical macro source registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/macro/check_macro_source_registry.py | tee /tmp/macro-source-registry-audit.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-source-registry-audit.json'))
+          assert d['status']=='PASS'
+          assert d['core_series']==16
+          assert d['candidate_layer_ready']==16
+          assert d['historical_replay_certified']==['JPY.labour']
+          assert d['automatic_publication'] is False
+          print('MACRO_SOURCE_REGISTRY_PASS')
+          PY
+
+      - name: Re-run generic macro candidate self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/build_macro_candidate.py --self-test | tee /tmp/macro-candidate-selftest.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-candidate-selftest.json'))
+          assert d['status']=='PASS'
+          assert d['mode']=='SELF_TEST_READ_ONLY'
+          assert d['writes_live_data'] is False
+          assert d['changes_engine_rules'] is False
+          print('GENERIC_MACRO_CANDIDATE_LAYER_PASS')
+          PY
+
+      - name: Re-run certified JPY labour replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/replay_jpy_macro_candidate.py | tee /tmp/jpy-macro-replay.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-macro-replay.json'))
+          assert d['status']=='PASS'
+          assert d['macro_series_exact_match'] is True
+          assert d['heatmap_exact_match'] is True
+          assert d['live_data_written'] is False
+          assert d['engine_rules_changed'] is False
+          print('JPY_LABOUR_REPLAY_CERTIFICATION_PASS')
+          PY
+
+      - name: Verify live update contract and read-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/check_live_update_contract.py | tee /tmp/live-contract-after-macro-registry.json
+          sha256sum -c /tmp/macro-registry-before.sha256
+          git diff --exit-code -- live_data payload
+          echo MACRO_REGISTRY_READ_ONLY_PASS
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-source-registry-audit-${{ github.run_id }}
+          path: |
+            /tmp/macro-source-registry-audit.json
+            /tmp/macro-candidate-selftest.json
+            /tmp/jpy-macro-replay.json
+            /tmp/live-contract-after-macro-registry.json
+          if-no-files-found: error
+          retention-days: 30
