@@ -8,37 +8,42 @@
     "source_collector_ready": ["GBP"],
     "candidate_builder_ready": ["GBP"],
     "dry_run_apply_certified": ["GBP"],
-    "daily_ready": [],
-    "active_but_not_daily_ready": ["AUD", "CAD", "GBP", "JPY"],
-    "key_distinction": "GBP now passes source collection, candidate build and deterministic GBP-only runtime dry-run apply. It becomes DAILY_READY only after the canonical refresh modules are promoted to main and pass the same gates there."
+    "daily_ready": ["GBP"],
+    "active_but_not_daily_ready": ["AUD", "CAD", "JPY"],
+    "key_distinction": "GBP is DAILY_READY: canonical collector, candidate builder and deterministic GBP-only dry-run apply are on main and were certified from a clean main-based release candidate. DAILY_READY does not mean automatic publication; runtime promotion remains gated and explicit."
   },
   "currencies": {
     "AUD": {"status":"ACTIVE_NOT_DAILY_READY","source":"ASX 30 Day Interbank Cash Rate futures (IB)","validated_runtime":true,"canonical_refresh_code_on_main":false,"next_required":"Build reusable ASX collector/parser and deterministic candidate/apply path."},
     "CAD": {"status":"ACTIVE_NOT_DAILY_READY","source":"Montréal Exchange Three-Month CORRA Futures (CRA)","validated_runtime":true,"canonical_refresh_code_on_main":false,"next_required":"Build reusable MX Market Review collector/parser and deterministic candidate/apply path."},
     "GBP": {
-      "status": "DRY_RUN_CERTIFIED_READY_FOR_MAIN",
+      "status": "DAILY_READY",
       "source": "Bank of England estimated sterling OIS forward curve",
       "validated_runtime": true,
-      "canonical_refresh_code_on_main": false,
+      "canonical_refresh_code_on_main": true,
       "source_collector_ready": true,
       "candidate_builder_ready": true,
       "dry_run_apply_certified": true,
+      "automatic_publication": false,
       "collector": "validation/cb_pricing/collect_gbp_boe_ois.py",
       "candidate_builder": "validation/cb_pricing/build_gbp_boe_ois_candidate.py",
       "apply": "validation/cb_pricing/apply_gbp_boe_ois_candidate.py",
       "validation_workflow": ".github/workflows/gbp-boe-ois-refresh-readiness.yml",
-      "validated_sha": "a950baa6d8024505a6698ff33a7608be657bf678",
-      "validation_run_id": 37754440502,
-      "engine_run_id": 37754440464,
-      "browser_run_id": 37754440522,
+      "canonical_code_main_sha": "19d93758754162dd2e3fb9687201206fd920cf13",
+      "clean_release_candidate_sha": "19d93758754162dd2e3fb9687201206fd920cf13",
+      "clean_release_candidate_validation": {
+        "gbp_readiness_run_id": 37755084807,
+        "engine_run_id": 37755084706,
+        "browser_run_id": 37755084758,
+        "status": "ALL_GREEN"
+      },
       "regression_benchmark": {"as_of":"2026-09-29","status":"PASS_EXACT_CERTIFIED_VALUES_AND_CANDIDATE"},
-      "latest_source_snapshot": {"as_of":"2026-09-30","h3m":4.077731829318755,"h6m":4.433962037055066,"h12m":4.86294098668028,"change_1d_bp":{"3m":0.7025,"6m":-0.4991,"12m":-0.2978},"change_1w_bp":{"3m":0.7192,"6m":-4.2955,"12m":-9.2808}},
-      "dry_run_guarantees": ["GBP-only semantic delta in OIS","GBP-only semantic delta in NATIVE_CB","exact four-file runtime scope","source-registry PASS","live-update contract PASS","runtime no-op roundtrip PASS","checkout restored after test","no publication"],
-      "next_required": "Promote only the canonical GBP collector/builder/apply/workflow/readiness files to a clean main-based release candidate; pass gates on that exact SHA; then mark GBP DAILY_READY."
+      "latest_dry_run_source_snapshot": {"as_of":"2026-09-30","h3m":4.077731829318755,"h6m":4.433962037055066,"h12m":4.86294098668028,"change_1d_bp":{"3m":0.7025,"6m":-0.4991,"12m":-0.2978},"change_1w_bp":{"3m":0.7192,"6m":-4.2955,"12m":-9.2808}},
+      "guarantees": ["official BoE source collection","exact 3M/6M/12M, no interpolation","homogeneous current/T-1/T-5 observations","registry-authorized candidate","GBP-only OIS semantic delta","GBP-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","checkout restored after dry run","no automatic publication"],
+      "next_required": "Operational use may collect and dry-run fresh GBP pricing from main. Any live runtime publication remains a separate explicit gated promotion."
     },
     "JPY": {"status":"ACTIVE_NOT_DAILY_READY","source":"Tokyo Financial Exchange Three-month TONA Futures","validated_runtime":true,"canonical_refresh_code_on_main":false,"next_required":"Separate source collection from dated one-shot builder/apply and parameterize all market values."}
   },
-  "implementation_order": ["GBP", "JPY", "CAD", "AUD"],
-  "promotion_rule": "DAILY_READY requires canonical refresh code on main plus a clean main-based dry run that passes source registry, deterministic payload/manifest rebuild, live contract and currency-only semantic scope checks without automatic publication.",
+  "implementation_order": ["JPY", "CAD", "AUD"],
+  "promotion_rule": "DAILY_READY allows repeatable source collection and deterministic dry-run refresh from main. It never authorizes automatic live_data or gh-pages publication; live publication remains separately gated and explicit.",
   "gh_pages_modified": false
 }
