@@ -64,7 +64,7 @@ jobs:
               assert c['currency']=='NZD' and c['dimension']==dim and c['source']=='Stats NZ',c
               assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False,a
               assert a['source_url'].startswith('https://www.stats.govt.nz/indicators/'),a
-              assert a['retrieval_url']==a['source_url'],a
+              assert a['retrieval_url']=='https://www.stats.govt.nz/',a
               assert a['dynamic_release_discovery'] is True,a
               assert a['upstream_indicator']==expected_indicator[dim],a
               assert s['status']=='PASS' and s['live_data_modified'] is False,s
@@ -78,6 +78,7 @@ jobs:
                   'value':c['value'],
                   'series_action':s['series_action'],
                   'storage_date':s.get('storage_date'),
+                  'source_url':a['source_url'],
                   'retrieval_url':a['retrieval_url'],
                   'upstream_indicator':a['upstream_indicator']
               }
