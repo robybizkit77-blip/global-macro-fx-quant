@@ -1,0 +1,41 @@
+{
+  "page_scan": {
+    "page_bytes": 78818,
+    "market_id_present": true,
+    "sa3_present": true,
+    "urls": [
+      "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract",
+      "http://schema.org/Product",
+      "https://www.x.com/ICE_Markets",
+      "https://www.youtube.com/@ICE_Markets",
+      "https://www.linkedin.com/company/icemarkets/",
+      "https://www.instagram.com/icemarkets/",
+      "https://mortgagetech.ice.com/solutions/closing-and-settlement-services"
+    ],
+    "scripts": [
+      "https://static.ice.com/cms/41.10.17/hydrate.js"
+    ],
+    "api_like": [
+      "Cash settled future based on the average Swiss Average Rate\nOvernight (SARON&amp;reg;) rate (published at COB, after 18:00 Zurich\ntime) on a three month Swiss Franc deposit.\n",
+      "marketId",
+      "Cash settled future based on the average Swiss Average Rate\\nOvernight (SARON&reg;) rate (published at COB, after 18:00 Zurich\\ntime) on a three month Swiss Franc deposit.\\n",
+      "/products/72270612/Three-Month-Saron-Index-Futures-Contract/data?marketId=6097635",
+      "finalSettlement",
+      "Minimum Price Fluctuation",
+      "Exchange Delivery Settlement Price",
+      "k applies a gradual time based pro-rata (GTBPR)\\nmatching algorithm with priority given to the first order at the\\nbest price subject to a minimum order size (collar) and limited to\\na maximum order size (cap).\\n",
+      "Cash settlement based on the Exchange Delivery Settlement Price.\\n",
+      "settlementMarket",
+      "https://mortgagetech.ice.com/solutions/closing-and-settlement-services",
+      "Settlement and closing"
+    ]
+  },
+  "script_results": [
+    {
+      "url": "https://static.ice.com/cms/41.10.17/hydrate.js",
+      "hits": [
+        "),FC(),MC(),LC(),jC(),BC()),ZE}var Pm={},Cm;function $C(){if(Cm)return Pm;Cm=1;var r=w(),e=_r(),t=Ur(),a=et(),n=Lt(),i=ve(),o=wa();return r({target:\"Promise\",stat:!0,forced:o},{allSettled:function(s){var v=this,f=a.f(v),c=f.resolve,l=f.reject,h=n(function(){var d=t(v.resolve),p=[],_=0,y=1;i(s,function(g){var E=_++,m=!1;y++,e(d,v,g).then(function(R){m||(m=!0,p[E]={status:\"fulfilled\",value:R},--y||c(p))},function(R){m||(m=!0,p[E]={status:\"rejected\",reason:R},--y||c(p))})}),--y||c(p)});return h.err"
+      ]
+    }
+  ]
+}
