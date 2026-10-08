@@ -1,0 +1,63 @@
+name: JPY TONA Build Verify Once
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-jpy-2026-10-08
+    paths:
+      - .github/workflows/jpy-tona-build-verify-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-apply-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-cb-pricing-jpy-2026-10-08
+
+      - name: Build JPY candidates
+        run: python3 validation/build_jpy_tona_ois_candidate.py
+
+      - name: Apply JPY candidates in runner workspace
+        run: |
+          python3 validation/apply_jpy_tona_ois_candidate.py \
+            --ois-candidate validation/JPY_TONA_OIS_DATA_CANDIDATE_2026-10-08.json \
+            --native-candidate validation/JPY_NATIVE_CB_DATA_CANDIDATE_2026-10-08.json
+
+      - name: Rebuild manifest v2
+        run: python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+
+      - name: Verify live update contract
+        run: python3 validation/check_live_update_contract.py
+
+      - name: Verify deterministic runtime roundtrip
+        run: python3 validation/rebuild_live_data_runtime.py --verify-only
+
+      - name: Enforce JPY-only runtime scope
+        shell: bash
+        run: |
+          allowed='^(live_data/sections/OIS_DATA.json|live_data/sections/NATIVE_CB_DATA.json|payload/part-00.txt|live_data/manifest.v2.json|validation/JPY_TONA_OIS_DATA_CANDIDATE_2026-10-08.json|validation/JPY_NATIVE_CB_DATA_CANDIDATE_2026-10-08.json|validation/JPY_TONA_OIS_GATE_2026-10-08.json)$'
+          bad=$(git status --porcelain | sed -E 's/^...//' | grep -Ev "$allowed" || true)
+          if [ -n "$bad" ]; then
+            echo 'Unexpected files changed:'
+            echo "$bad"
+            exit 1
+          fi
+          echo 'JPY_ONLY_SCOPE_PASS'
+
+      - name: Upload verified runtime candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-tona-runtime-candidate
+          path: |
+            live_data/sections/OIS_DATA.json
+            live_data/sections/NATIVE_CB_DATA.json
+            payload/part-00.txt
+            live_data/manifest.v2.json
+            validation/JPY_TONA_OIS_DATA_CANDIDATE_2026-10-08.json
+            validation/JPY_NATIVE_CB_DATA_CANDIDATE_2026-10-08.json
+            validation/JPY_TONA_OIS_GATE_2026-10-08.json
