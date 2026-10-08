@@ -1,0 +1,66 @@
+name: JPY CPI e-Stat Discovery
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - '.github/workflows/macro-jpy-cpi-estat-discovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      E_STAT_APP_ID: ${{ secrets.E_STAT_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official CPI 2025-base headline slice
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          app=os.environ.get('E_STAT_APP_ID','').strip(); assert app, 'E_STAT_APP_ID missing'
+          stats_id='0004052037'
+          # 2025-base e-Stat CPI: tab=3 Change over the year, cat01=0001 All items,
+          # area=00000 All Japan. Restrict to recent months to avoid the 127m-cell table.
+          q={'appId':app,'statsDataId':stats_id,'metaGetFlg':'Y','cntGetFlg':'N','lang':'E','limit':1000,
+             'cdTab':'3','cdCat01':'0001','cdArea':'00000','cdTimeFrom':'2026000101'}
+          params=urllib.parse.urlencode(q)
+          req=urllib.request.Request('https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData?'+params,headers={'User-Agent':'global-macro-fx-quant/1.0'})
+          with urllib.request.urlopen(req,timeout=45) as r: payload=json.load(r)
+          root=payload['GET_STATS_DATA']; result=root.get('RESULT',{})
+          assert str(result.get('STATUS','0')) in ('0','000'), result
+          stat=root['STATISTICAL_DATA']
+          objs=stat.get('CLASS_INF',{}).get('CLASS_OBJ',[])
+          if isinstance(objs,dict): objs=[objs]
+          maps={}; meta=[]
+          for obj in objs:
+              dim=str(obj.get('@id','')); classes=obj.get('CLASS',[])
+              if isinstance(classes,dict): classes=[classes]
+              maps[dim]={str(x.get('@code','')):str(x.get('@name','')) for x in classes}
+              meta.append({'id':dim,'name':obj.get('@name'),'values':list(maps[dim].items())[:30],'count':len(maps[dim])})
+          vals=stat.get('DATA_INF',{}).get('VALUE',[])
+          if isinstance(vals,dict): vals=[vals]
+          rows=[]
+          for v in vals:
+              attrs={k:x for k,x in v.items() if k.startswith('@')}
+              labels={k[1:]:maps.get(k[1:],{}).get(str(x),str(x)) for k,x in attrs.items()}
+              rows.append({'raw':v.get('$'),'attrs':attrs,'labels':labels})
+          rows.sort(key=lambda x:str(x['attrs'].get('@time','')))
+          out={'status':'PASS','stats_data_id':stats_id,'request_filters':{k:v for k,v in q.items() if k!='appId'},'table_title':stat.get('TABLE_INF',{}).get('TITLE'),'dimensions':meta,'rows_count':len(rows),'rows_tail':rows[-24:]}
+          assert rows, 'filtered official CPI slice returned no rows'
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          open('/tmp/jpy-cpi-estat-discovery.json','w').write(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jpy-cpi-estat-discovery
+          retention-days: 14
+          path: /tmp/jpy-cpi-estat-discovery.json

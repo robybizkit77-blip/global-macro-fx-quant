@@ -1,0 +1,6 @@
+{
+  "reference_period": "2026-08-01",
+  "unemployment_rate": 4.6,
+  "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/aug-2026",
+  "note": "Deterministic contract fixture matching official ABS August 2026 seasonally adjusted unemployment rate."
+}

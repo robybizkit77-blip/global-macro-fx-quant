@@ -1,0 +1,6 @@
+{
+  "observation_date": "2026-06-01",
+  "value": 4.1,
+  "source_url": "https://www.stats.govt.nz/information-releases/consumers-price-index-june-2026-quarter/",
+  "note": "Deterministic fixture matching official Stats NZ June 2026 headline CPI annual change."
+}

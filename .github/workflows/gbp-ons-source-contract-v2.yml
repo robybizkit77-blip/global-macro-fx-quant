@@ -1,0 +1,81 @@
+name: GBP ONS Source Contract V2
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - 'validation/sources/gbp_ons_core.py'
+      - 'validation/fixtures/gbp_ons_cpi_contract.json'
+      - 'validation/fixtures/gbp_ons_unemployment_contract.json'
+      - 'validation/test_gbp_ons_source.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/gbp-ons-source-contract-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot canonical live data before certification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/gbp-before.sha256
+      - name: Run deterministic ONS parser-builder contract
+        run: python validation/test_gbp_ons_source.py
+      - name: Fetch official live ONS inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-gbp/inflation
+          python validation/sources/gbp_ons_core.py --dimension inflation \
+            --output /tmp/gmfq-gbp/inflation/candidate.json \
+            --audit-output /tmp/gmfq-gbp/inflation/source-audit.json
+      - name: Pass live GBP inflation candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-gbp/inflation/candidate.json --output-dir /tmp/gmfq-gbp/inflation/built
+      - name: Fetch official live ONS labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-gbp/labour
+          python validation/sources/gbp_ons_core.py --dimension labour \
+            --output /tmp/gmfq-gbp/labour/candidate.json \
+            --audit-output /tmp/gmfq-gbp/labour/source-audit.json
+      - name: Pass live GBP labour candidate through canonical macro builder
+        run: python validation/build_macro_candidate.py --candidate /tmp/gmfq-gbp/labour/candidate.json --output-dir /tmp/gmfq-gbp/labour/built
+      - name: Verify ONS provenance freshness and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['GBP']
+          expected={'inflation':('D7G7','MM23','reported_yoy_rate'),'labour':('MGSX','LMS','level')}
+          out={}
+          for dim,(series_id,dataset,transformation) in expected.items():
+              root=Path('/tmp/gmfq-gbp')/dim
+              c=json.loads((root/'candidate.json').read_text()); a=json.loads((root/'source-audit.json').read_text()); s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='GBP' and c['dimension']==dim and c['source']=='Office for National Statistics',c
+              assert c['series_id']==series_id and c['transformation']==transformation and c['frequency']=='M',c
+              assert a['upstream_series_id']==series_id and a['dataset']==dataset and a['mode']=='live',a
+              assert a['candidate_only'] is True and a['live_data_written'] is False,a
+              assert a['api_url'].startswith('https://api.beta.ons.gov.uk/v1/data?'),a
+              assert s['status']=='PASS' and s['live_data_modified'] is False and s['observation_date']==c['observation_date'],(s,c)
+              current=str(heat[dim]['as_of'])[:10]
+              assert c['observation_date'] >= current,(c,current)
+              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'prior_period':a['prior_period'],'prior_value':a['prior_value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
+          print(json.dumps({'status':'PASS','source':'Office for National Statistics','results':out,'live_data_modified':False,'dynamic_latest_observation':True},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: |
+          sha256sum -c /tmp/gbp-before.sha256
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload ONS verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-ons-source-verification-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: /tmp/gmfq-gbp/

@@ -90,6 +90,48 @@ def find_series(rows: list[dict[str, Any]], series_id: str) -> dict[str, Any]:
     return hits[0]
 
 
+def monthly_key(date: Any) -> str:
+    text = str(date)
+    if len(text) < 7 or text[4] != "-":
+        raise ValueError(f"invalid monthly observation date: {text!r}")
+    return text[:7]
+
+
+def resolve_storage_date(dates: list[Any], obs_date: str, frequency: str) -> tuple[str, int | None]:
+    """Resolve source date precision against the canonical storage convention.
+
+    Monthly official sources commonly emit YYYY-MM while MACRO_SERIES stores
+    YYYY-MM-01.  Treat those as the same economic observation, preserving the
+    existing canonical date string on replacements and the established date
+    precision on appends.  This does not relax historical-revision safeguards.
+    """
+    if frequency != "M":
+        try:
+            return obs_date, dates.index(obs_date)
+        except ValueError:
+            return obs_date, None
+
+    obs_month = monthly_key(obs_date)
+    hits = [i for i, d in enumerate(dates) if monthly_key(d) == obs_month]
+    if len(hits) > 1:
+        raise ValueError(f"duplicate monthly observations in target series for {obs_month}")
+    if hits:
+        idx = hits[0]
+        return str(dates[idx]), idx
+
+    uses_day_precision = bool(dates) and all(len(str(d)) >= 10 for d in dates)
+    storage_date = f"{obs_month}-01" if uses_day_precision else obs_date
+    return storage_date, None
+
+
+def same_period(left: Any, right: Any, frequency: str) -> bool:
+    if left is None or right is None:
+        return False
+    if frequency == "M":
+        return monthly_key(left) == monthly_key(right)
+    return str(left) == str(right)
+
+
 def normalize_candidate(c: dict[str, Any]) -> dict[str, Any]:
     required = (
         "currency", "dimension", "macro_series_id", "observation_date", "value",
@@ -125,18 +167,19 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     if not isinstance(dates, list) or not isinstance(values, list) or len(dates) != len(values):
         raise ValueError("target MACRO_SERIES entry has invalid dates/values")
 
-    if obs_date in dates:
-        idx = dates.index(obs_date)
+    storage_date, match_idx = resolve_storage_date(dates, obs_date, str(c["frequency"]))
+    if match_idx is not None:
+        idx = match_idx
         old_value = float(values[idx])
         if idx != len(dates) - 1 and not c.get("allow_historical_revision", False):
             raise ValueError("historical revision blocked unless allow_historical_revision=true")
         values[idx] = value
         action = "REPLACE_EXISTING"
     else:
-        if dates and obs_date < str(dates[-1]):
+        if dates and storage_date < str(dates[-1]):
             raise ValueError("out-of-order observation blocked")
         old_value = None
-        dates.append(obs_date)
+        dates.append(storage_date)
         values.append(value)
         action = "APPEND_NEW"
 
@@ -164,7 +207,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     hist_values = [float(x) for x in hist]
     detail_key = "unemployment" if dimension == "labour" else "inflation"
     previous_as_of = heatmap["currencies"][currency].get("as_of_detail", {}).get(detail_key)
-    if previous_as_of == obs_date and hist_values:
+    if same_period(previous_as_of, obs_date, str(c["frequency"])) and hist_values:
         hist_values[-1] = value
     else:
         hist_values.append(value)
@@ -192,6 +235,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
         "dimension": dimension,
         "macro_series_id": c["macro_series_id"],
         "observation_date": obs_date,
+        "storage_date": storage_date,
         "old_value": old_value,
         "new_value": value,
         "series_action": action,
@@ -237,7 +281,32 @@ def synthetic_functional_test() -> dict[str, Any]:
         raise ValueError("synthetic heatmap mutation failed")
     if heatmap["currencies"]["JPY"]["as_of_detail"]["unemployment"] != "2026-02":
         raise ValueError("synthetic as_of propagation failed")
-    return result
+
+    precision_series = copy.deepcopy(series)
+    precision_heatmap = copy.deepcopy(heatmap)
+    precision_series["USD"][0]["dates"] = ["2026-01-01", "2026-02-01"]
+    precision_series["USD"][0]["values"] = [1.0, 2.0]
+    precision_series["USD"][0]["last_date"] = "2026-02-01"
+    precision_series["USD"][0]["last_value"] = 2.0
+    precision_heatmap["currencies"]["USD"]["inflation"]["history"] = [1.0, 2.0]
+    precision_heatmap["currencies"]["USD"]["inflation"]["as_of"] = "2026-02-01"
+    precision_heatmap["currencies"]["USD"]["as_of_detail"]["inflation"] = "2026-02-01"
+    precision_candidate = {
+        "currency": "USD", "dimension": "inflation", "macro_series_id": "USD_TEST",
+        "observation_date": "2026-02", "value": 2.1, "source": "SELF_TEST",
+        "series_id": "USD_INF", "frequency": "M", "transformation": "level"
+    }
+    precision_result = apply_candidate(precision_series, precision_heatmap, precision_candidate)
+    if precision_result["series_action"] != "REPLACE_EXISTING":
+        raise ValueError("monthly date precision normalization did not replace the existing month")
+    if precision_result["storage_date"] != "2026-02-01":
+        raise ValueError("monthly date precision normalization did not preserve canonical storage date")
+    if precision_series["USD"][0]["dates"] != ["2026-01-01", "2026-02-01"]:
+        raise ValueError("monthly date precision normalization duplicated a stored month")
+    if precision_heatmap["currencies"]["USD"]["inflation"]["history"] != [1.0, 2.1]:
+        raise ValueError("monthly date precision normalization duplicated heatmap history")
+
+    return {"append_case": result, "monthly_precision_case": precision_result}
 
 
 def self_test(series: dict[str, Any], heatmap: dict[str, Any]) -> dict[str, Any]:

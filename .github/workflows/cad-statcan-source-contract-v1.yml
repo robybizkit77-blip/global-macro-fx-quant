@@ -1,0 +1,85 @@
+name: CAD Statistics Canada Source Contract V1
+
+on:
+  push:
+    branches:
+      - validation-macro-g8-source-consolidation-2026-10-08
+    paths:
+      - 'validation/sources/cad_statcan_core.py'
+      - 'validation/fixtures/cad_statcan_cpi_contract.csv'
+      - 'validation/fixtures/cad_statcan_unemployment_contract.csv'
+      - 'validation/test_cad_statcan_source.py'
+      - 'validation/build_macro_candidate.py'
+      - '.github/workflows/cad-statcan-source-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot canonical live data before certification
+        run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/cad-before.sha256
+      - name: Run deterministic Statistics Canada parser-builder contract
+        run: python validation/test_cad_statcan_source.py
+      - name: Fetch official live Statistics Canada inflation candidate
+        run: |
+          mkdir -p /tmp/gmfq-cad-statcan-live/inflation
+          python validation/sources/cad_statcan_core.py --dimension inflation \
+            --output /tmp/gmfq-cad-statcan-live/inflation/candidate.json \
+            --audit-output /tmp/gmfq-cad-statcan-live/inflation/source-audit.json
+      - name: Pass live CAD inflation candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-cad-statcan-live/inflation/candidate.json \
+            --output-dir /tmp/gmfq-cad-statcan-live/inflation/built
+      - name: Fetch official live Statistics Canada labour candidate
+        run: |
+          mkdir -p /tmp/gmfq-cad-statcan-live/labour
+          python validation/sources/cad_statcan_core.py --dimension labour \
+            --output /tmp/gmfq-cad-statcan-live/labour/candidate.json \
+            --audit-output /tmp/gmfq-cad-statcan-live/labour/source-audit.json
+      - name: Pass live CAD labour candidate through canonical macro builder
+        run: |
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/gmfq-cad-statcan-live/labour/candidate.json \
+            --output-dir /tmp/gmfq-cad-statcan-live/labour/built
+      - name: Verify Statistics Canada provenance and read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out={}
+          for dim in ('inflation','labour'):
+              root=Path('/tmp/gmfq-cad-statcan-live')/dim
+              c=json.loads((root/'candidate.json').read_text())
+              a=json.loads((root/'source-audit.json').read_text())
+              s=json.loads((root/'built/summary.json').read_text())
+              assert c['currency']=='CAD' and c['dimension']==dim,c
+              assert c['source']=='Statistics Canada',c
+              assert a['mode']=='live' and a['live_data_written'] is False,a
+              assert s['status']=='PASS' and s['live_data_modified'] is False,s
+              assert s['observation_date']==c['observation_date'],(s,c)
+              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
+          print(json.dumps({'status':'PASS','source':'Statistics Canada','results':out,'live_data_modified':False},indent=2))
+          PY
+      - name: Confirm repository live data remained untouched
+        run: |
+          sha256sum -c /tmp/cad-before.sha256
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Upload Statistics Canada verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-statcan-source-verification-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            /tmp/gmfq-cad-statcan-live/

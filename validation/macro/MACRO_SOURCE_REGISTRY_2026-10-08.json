@@ -30,8 +30,10 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DERIVED_TRANSPORT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/us_bls_core_macro.py",
+      "workflow": ".github/workflows/macro-usd-bls-live-certification.yml"
     },
     "USD.inflation": {
       "currency": "USD",
@@ -42,8 +44,10 @@
       "frequency": "M",
       "transformation": "yoy_pct_from_index",
       "transport_class": "OFFICIAL_DERIVED_TRANSPORT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/us_bls_core_macro.py",
+      "workflow": ".github/workflows/macro-usd-bls-live-certification.yml"
     },
     "EUR.labour": {
       "currency": "EUR",
@@ -54,8 +58,16 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Eurostat",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/eur_eurostat_core.py",
+        "workflow": ".github/workflows/eur-eurostat-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "EUR.inflation": {
       "currency": "EUR",
@@ -66,8 +78,16 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "INTERMEDIARY_TRANSPORT",
-      "source_adapter_status": "NEEDS_OFFICIAL_DIRECT_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Eurostat",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/eur_eurostat_core.py",
+        "workflow": ".github/workflows/eur-eurostat-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "GBP.labour": {
       "currency": "GBP",
@@ -78,8 +98,10 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/gbp_ons_core.py",
+      "workflow": ".github/workflows/gbp-ons-source-contract-v2.yml"
     },
     "GBP.inflation": {
       "currency": "GBP",
@@ -90,8 +112,10 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/gbp_ons_core.py",
+      "workflow": ".github/workflows/gbp-ons-source-contract-v2.yml"
     },
     "JPY.labour": {
       "currency": "JPY",
@@ -128,8 +152,19 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/jpy_statistics_bureau_cpi.py",
+      "live_certification": {
+        "workflow": ".github/workflows/jpy-statistics-bureau-cpi-source-contract-v1.yml",
+        "run_id": 37816610458,
+        "head_sha": "b40c6c5c5984a9abba7c5d8522e4da9ed9f1890b",
+        "status": "SUCCESS",
+        "official_observation_date": "2026-08",
+        "official_value": 1.9,
+        "transport_url": "https://www.stat.go.jp/english/",
+        "read_only": true
+      }
     },
     "CHF.labour": {
       "currency": "CHF",
@@ -140,8 +175,10 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/chf_snb_official_core.py",
+      "workflow": ".github/workflows/chf-snb-source-contract-v1.yml"
     },
     "CHF.inflation": {
       "currency": "CHF",
@@ -152,8 +189,10 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/chf_snb_official_core.py",
+      "workflow": ".github/workflows/chf-snb-source-contract-v1.yml"
     },
     "CAD.labour": {
       "currency": "CAD",
@@ -164,8 +203,10 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/cad_statcan_core.py",
+      "workflow": ".github/workflows/cad-statcan-source-contract-v1.yml"
     },
     "CAD.inflation": {
       "currency": "CAD",
@@ -176,8 +217,10 @@
       "frequency": "M",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/cad_statcan_core.py",
+      "workflow": ".github/workflows/cad-statcan-source-contract-v1.yml"
     },
     "AUD.labour": {
       "currency": "AUD",
@@ -188,8 +231,10 @@
       "frequency": "M",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/aud_abs_core.py",
+      "workflow": ".github/workflows/aud-abs-source-contract-v2.yml"
     },
     "AUD.inflation": {
       "currency": "AUD",
@@ -200,8 +245,10 @@
       "frequency": "Q",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
-      "source_adapter_status": "NEEDS_SOURCE_ADAPTER",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "adapter": "validation/sources/aud_abs_core.py",
+      "workflow": ".github/workflows/aud-abs-source-contract-v2.yml"
     },
     "NZD.labour": {
       "currency": "NZD",
@@ -212,8 +259,16 @@
       "frequency": "Q",
       "transformation": "level",
       "transport_class": "SECONDARY_MIRROR",
-      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Stats NZ",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/nzd_statsnz_core.py",
+        "workflow": ".github/workflows/nzd-statsnz-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "NZD.inflation": {
       "currency": "NZD",
@@ -224,8 +279,16 @@
       "frequency": "Q",
       "transformation": "reported_yoy_rate",
       "transport_class": "SECONDARY_MIRROR",
-      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Stats NZ",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/nzd_statsnz_core.py",
+        "workflow": ".github/workflows/nzd-statsnz-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     }
   }
 }

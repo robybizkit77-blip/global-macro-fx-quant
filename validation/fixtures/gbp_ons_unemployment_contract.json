@@ -1,0 +1,7 @@
+{
+  "description": "DETERMINISTIC CONTRACT FIXTURE - synthetic GBP unemployment inputs, not an official downloaded payload",
+  "months": [
+    {"date": "2026 JUN", "value": "4.9", "label": "2026 MAY-JUL", "year": "2026", "month": "June", "sourceDataset": "LMS"},
+    {"date": "2026 JUL", "value": "5.0", "label": "2026 JUN-AUG", "year": "2026", "month": "July", "sourceDataset": "LMS"}
+  ]
+}
