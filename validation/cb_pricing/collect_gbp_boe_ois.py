@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Read-only collector for the official Bank of England sterling OIS archive.
 
-Input is the official oisddata.zip downloaded by the caller. The collector never
-writes live_data or payload. It extracts the exact 3M/6M/12M columns from the
-BoE '1. fwds, short end' sheet and emits current, T-1 and five-observation-back
-(T-5 business-session) snapshots.
+Uses the same pandas workbook reader that was used for the certified GBP
+activation extraction. It never writes live_data or payload.
 """
 from __future__ import annotations
 
@@ -16,20 +14,11 @@ import re
 import tempfile
 import zipfile
 
-from openpyxl import load_workbook
+import pandas as pd
 
 SHEET = "1. fwds, short end"
 WORKBOOK_RE = re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I)
 TENORS = {"3m": 3, "6m": 6, "12m": 12}
-YEAR_FRACTIONS = {3: 0.25, 6: 0.5, 12: 1.0}
-
-
-def as_date(v):
-    if isinstance(v, dt.datetime):
-        return v.date()
-    if isinstance(v, dt.date):
-        return v
-    return None
 
 
 def find_workbook(zf: zipfile.ZipFile) -> str:
@@ -39,59 +28,62 @@ def find_workbook(zf: zipfile.ZipFile) -> str:
     return matches[0]
 
 
-def number_token(v):
-    if isinstance(v, bool) or v is None:
+def num(v):
+    if pd.isna(v) or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    if isinstance(v, str):
-        s = v.strip().lower().replace(',', '.')
-        # Header cells can be plain numbers or labelled forms such as '3 months'.
-        m = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)\s*(?:m|month|months)?", s)
-        if m:
-            return float(m.group(1))
-        try:
-            return float(s)
-        except ValueError:
-            return None
-    return None
+    s = str(v).strip().lower().replace(",", ".")
+    m = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)\s*(?:m|month|months|y|year|years)?", s)
+    if m:
+        return float(m.group(1))
+    try:
+        return float(s)
+    except ValueError:
+        return None
 
 
-def row_mapping(row, targets, tol=1e-10):
-    mapping = {}
-    for c_idx, v in enumerate(row, start=1):
-        n = number_token(v)
-        if n is None:
-            continue
-        for key, target in targets.items():
-            if abs(n - target) <= tol:
-                mapping[key] = c_idx
-    return mapping
-
-
-def detect_tenor_columns(rows):
-    # The BoE workbook exposes both a month header (1..12) and a year-fraction
-    # header (1/12, 2/12, 0.25, ... 0.5, ... 1.0). Accept either exact form.
-    candidates = []
+def detect_tenor_columns(df: pd.DataFrame):
+    # Certified BoE extraction showed two usable header conventions:
+    # month labels 1..12 and year fractions 1/12..1.0.
     month_targets = {3: 3.0, 6: 6.0, 12: 12.0}
-    fraction_targets = YEAR_FRACTIONS
-    for r_idx, row in enumerate(rows[:30], start=1):
-        mm = row_mapping(row, month_targets)
-        if all(x in mm for x in (3, 6, 12)):
-            candidates.append((0, r_idx, mm, "months"))
-        ff = row_mapping(row, fraction_targets, tol=1e-8)
-        if all(x in ff for x in (3, 6, 12)):
-            candidates.append((1, r_idx, ff, "year_fractions"))
+    frac_targets = {3: 0.25, 6: 0.5, 12: 1.0}
+    candidates = []
+    for r_idx in range(min(30, len(df))):
+        row = df.iloc[r_idx].tolist()
+        for priority, targets, method in ((0, month_targets, "months"), (1, frac_targets, "year_fractions")):
+            mapping = {}
+            for c_idx, v in enumerate(row):
+                n = num(v)
+                if n is None:
+                    continue
+                for month, target in targets.items():
+                    if abs(n - target) <= 1e-8:
+                        mapping[month] = c_idx
+            if all(m in mapping for m in (3, 6, 12)):
+                candidates.append((priority, r_idx, mapping, method))
     if not candidates:
-        preview=[]
-        for i,row in enumerate(rows[:20],start=1):
-            vals=[v for v in row[:20] if v is not None]
+        preview = []
+        for i in range(min(15, len(df))):
+            vals = [str(v) for v in df.iloc[i].tolist() if not pd.isna(v)]
             if vals:
-                preview.append({"row":i,"values":[str(v) for v in vals[:12]]})
-        raise SystemExit("Could not detect exact 3M/6M/12M header columns; header preview="+json.dumps(preview))
+                preview.append({"row": i, "values": vals[:18]})
+        raise SystemExit("Could not detect exact 3M/6M/12M header columns; preview=" + json.dumps(preview))
     candidates.sort(key=lambda x: (x[0], x[1]))
-    _, r_idx, mapping, method = candidates[0]
-    return r_idx, mapping, method
+    _, row_idx, mapping, method = candidates[0]
+    return row_idx, mapping, method
+
+
+def cell_date(v):
+    if pd.isna(v):
+        return None
+    if isinstance(v, pd.Timestamp):
+        return v.date()
+    if isinstance(v, dt.datetime):
+        return v.date()
+    if isinstance(v, dt.date):
+        return v
+    return None
 
 
 def extract(zip_path: pathlib.Path, requested_as_of: str | None):
@@ -101,39 +93,32 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             zf.extract(workbook_name, td)
             workbook_path = pathlib.Path(td) / workbook_name
 
-        wb = load_workbook(workbook_path, read_only=True, data_only=True)
-        if SHEET not in wb.sheetnames:
+        xls = pd.ExcelFile(workbook_path)
+        if SHEET not in xls.sheet_names:
             raise SystemExit(f"Missing required sheet: {SHEET}")
-        ws = wb[SHEET]
-        rows = [tuple(r) for r in ws.iter_rows(values_only=True)]
-        header_row, month_cols, header_method = detect_tenor_columns(rows)
+        df = pd.read_excel(workbook_path, sheet_name=SHEET, header=None)
+        header_row, month_cols, header_method = detect_tenor_columns(df)
 
         observations = []
-        for excel_row, row in enumerate(rows[header_row:], start=header_row + 1):
-            date_col = None
+        for r_idx in range(header_row + 1, len(df)):
+            row = df.iloc[r_idx].tolist()
             obs_date = None
-            for c_idx, v in enumerate(row, start=1):
-                d = as_date(v)
+            for v in row:
+                d = cell_date(v)
                 if d is not None:
-                    date_col = c_idx
                     obs_date = d
                     break
             if obs_date is None:
                 continue
             vals = {}
-            good = True
             for key, month in TENORS.items():
-                c = month_cols[month]
-                if c > len(row):
-                    good = False
-                    break
-                v = row[c - 1]
-                if not isinstance(v, (int, float)) or isinstance(v, bool):
-                    good = False
+                v = row[month_cols[month]]
+                if pd.isna(v) or not isinstance(v, (int, float)):
+                    vals = {}
                     break
                 vals[key] = float(v)
-            if good:
-                observations.append({"date": obs_date, "excel_row": excel_row, "date_col": date_col, **vals})
+            if vals:
+                observations.append({"date": obs_date, **vals})
 
         if not observations:
             raise SystemExit("No complete dated 3M/6M/12M observations found")
@@ -150,9 +135,7 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
 
         if idx < 5:
             raise SystemExit("Insufficient prior official sessions for T-1/T-5")
-        cur = observations[idx]
-        prev = observations[idx - 1]
-        week = observations[idx - 5]
+        cur, prev, week = observations[idx], observations[idx - 1], observations[idx - 5]
 
         def clean(x):
             return {"date": x["date"].isoformat(), "3m": x["3m"], "6m": x["6m"], "12m": x["12m"]}
