@@ -71,8 +71,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x validation/cb_pricing/run_active_cb_pricing_daily.sh
-          validation/cb_pricing/run_active_cb_pricing_daily.sh
+          bash validation/cb_pricing/run_active_cb_pricing_daily.sh
 
       - name: Upload daily operational evidence
         if: always()
