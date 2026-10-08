@@ -1,105 +1,196 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, csv, html, io, json, re, urllib.request, zipfile
+
+import argparse
+import html
+import json
+import re
+import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[2]
-SERIES=ROOT/'live_data/sections/MACRO_SERIES.json'
-HEAT=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
-SOURCE='Stats NZ'
-HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)'}
-SOURCE_URLS={
- 'inflation':'https://www.stats.govt.nz/news/annual-inflation-at-4-1-percent-in-june-2026/',
- 'labour':'https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/',
+
+ROOT = Path(__file__).resolve().parents[2]
+SERIES = ROOT / "live_data/sections/MACRO_SERIES.json"
+HEAT = ROOT / "live_data/sections/MACRO_THERMOMETER_DATA.json"
+SOURCE = "Stats NZ"
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)"}
+
+# Stable official indicator pages. These always expose the latest published
+# observation, so the adapter is not tied to a specific quarterly release URL.
+INDICATOR_URLS = {
+    "inflation": "https://www.stats.govt.nz/indicators/consumers-price-index-cpi/",
+    "labour": "https://www.stats.govt.nz/indicators/unemployment-rate/",
 }
-RETRIEVAL_URLS={
- 'inflation':SOURCE_URLS['inflation'],
- 'labour':'https://www.stats.govt.nz/assets/Uploads/Labour-market-statistics/Labour-market-statistics-June-2026-quarter/Download-data/labour-market-statistics-june-2026-quarter.zip',
+
+CONFIG = {
+    "inflation": {
+        "series_id": "NZ_CPI_HEADLINE_YOY",
+        "macro_series_id": "NZ_CPI_HEADLINE_YOY_history_value",
+        "frequency": "Q",
+        "transformation": "reported_yoy_rate",
+        "unit": "% YoY",
+        "indicator": "consumers-price-index-cpi",
+    },
+    "labour": {
+        "series_id": "NZ_UNEMP_RATE",
+        "macro_series_id": "NZ_UNEMP_RATE_history_value",
+        "frequency": "Q",
+        "transformation": "level",
+        "unit": "%",
+        "indicator": "unemployment-rate",
+    },
 }
-LABOUR_ZIP_MEMBER='labour-market-statistics-june-2026/lms-jun26qtr-tables.csv'
-LABOUR_SERIES_ID='HLFQ.S1F3S'
-CONFIG={
- 'inflation':{'series_id':'NZ_CPI_HEADLINE_YOY','macro_series_id':'NZ_CPI_HEADLINE_YOY_history_value','frequency':'Q','transformation':'reported_yoy_rate','unit':'% YoY'},
- 'labour':{'series_id':'NZ_UNEMP_RATE','macro_series_id':'NZ_UNEMP_RATE_history_value','frequency':'Q','transformation':'level','unit':'%'},
-}
-MONTHS={'march':3,'june':6,'september':9,'december':12}
-class T(HTMLParser):
- def __init__(self): super().__init__(); self.p=[]
- def handle_data(self,d):
-  if d.strip(): self.p.append(d.strip())
-def html_text(raw):
- p=T();p.feed(raw);return re.sub(r'\s+',' ',html.unescape(' '.join(p.p))).strip()
-def load(p): return json.loads(p.read_text())
-def fetch_bytes(url):
- req=urllib.request.Request(url,headers=HEADERS)
- with urllib.request.urlopen(req,timeout=45) as r:return r.read()
-def fetch_html_text(url): return html_text(fetch_bytes(url).decode('utf-8',errors='replace'))
-def period(t):
- m=re.search(r'(March|June|September|December)\s+(20\d{2})\s+quarter',t,re.I)
- if not m: m=re.search(r'(March|June|September|December)\s+(20\d{2})',t,re.I)
- if not m: raise ValueError('cannot parse Stats NZ quarter')
- return int(m.group(2)),MONTHS[m.group(1).lower()]
-def parse_inflation_value(t):
- patterns=[r'Annual inflation at\s+([0-9]+(?:\.[0-9]+)?)\s+percent',r'CPI\)?\s+increased\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the 12 months',r'([0-9]+(?:\.[0-9]+)?)\s+percent increase follows']
- hits=[]
- for p in patterns: hits.extend(float(m.group(1)) for m in re.finditer(p,t,re.I|re.S))
- uniq=sorted(set(hits))
- if len(uniq)==1:return uniq[0]
- if not uniq:raise ValueError('cannot parse Stats NZ inflation value')
- raise ValueError(f'ambiguous Stats NZ inflation values: {uniq}')
-def fetch_labour_csv_value(url):
- raw=fetch_bytes(url)
- if not raw.startswith(b'PK'):
-  raise ValueError('Stats NZ labour retrieval did not return ZIP')
- z=zipfile.ZipFile(io.BytesIO(raw))
- if LABOUR_ZIP_MEMBER not in z.namelist():
-  raise ValueError(f'expected Stats NZ labour member missing: {LABOUR_ZIP_MEMBER}')
- text=z.read(LABOUR_ZIP_MEMBER).decode('utf-8-sig')
- rows=[]
- for row in csv.reader(io.StringIO(text)):
-  if not row or row[0].strip()!=LABOUR_SERIES_ID:
-   continue
-  if len(row)<10:
-   raise ValueError(f'malformed Stats NZ labour row: {row!r}')
-  period_code=row[1].strip(); raw_value=row[2].strip(); unit=row[4].strip(); survey=row[6].strip(); table=row[7].strip(); measure=row[8].strip(); sex=row[9].strip()
-  if unit!='Percent' or 'Household Labour Force Survey' not in survey or table!='Labour Force Status by Sex: Seasonally Adjusted' or measure!='Unemployment Rate' or sex!='Total Both Sexes':
-   raise ValueError(f'unexpected Stats NZ labour metadata for {period_code}: {row[:10]!r}')
-  m=re.fullmatch(r'(20\d{2})\.(03|06|09|12)',period_code)
-  if not m:
-   continue
-  rows.append((int(m.group(1)),int(m.group(2)),float(raw_value),period_code))
- if not rows:
-  raise ValueError(f'{LABOUR_SERIES_ID} not found in official Stats NZ labour ZIP')
- by_period={}
- for y,m,v,p in rows:
-  if (y,m) in by_period and abs(by_period[(y,m)]-v)>1e-12:
-   raise ValueError(f'conflicting Stats NZ labour values for {p}')
-  by_period[(y,m)]=v
- y,m=max(by_period)
- return y,m,by_period[(y,m)]
-def contract(dim):
- h=load(HEAT)['currencies']['NZD'][dim];c=CONFIG[dim]
- got=(h.get('series_id'),h.get('frequency'),h.get('transformation'));exp=(c['series_id'],c['frequency'],c['transformation'])
- if got!=exp: raise ValueError(f'NZD {dim} frozen contract changed: {got} != {exp}')
- rows=load(SERIES)['NZD'];hits=[r for r in rows if isinstance(r,dict) and r.get('id')==c['macro_series_id']]
- if len(hits)!=1: raise ValueError(f'NZD {dim} canonical target count={len(hits)}')
- return c['macro_series_id']
-def build(dim,fixture=None):
- c=CONFIG[dim];target=contract(dim)
- if fixture:
-  f=load(fixture);date=f['observation_date'];value=float(f['value']);source_url=f.get('source_url') or SOURCE_URLS[dim];retrieval_url=source_url;mode='fixture';upstream_series_id=LABOUR_SERIES_ID if dim=='labour' else None
- else:
-  source_url=SOURCE_URLS[dim];retrieval_url=RETRIEVAL_URLS[dim];mode='live';upstream_series_id=None
-  if dim=='labour':
-   y,m,value=fetch_labour_csv_value(retrieval_url);upstream_series_id=LABOUR_SERIES_ID
-  else:
-   t=fetch_html_text(retrieval_url);y,m=period(t);value=parse_inflation_value(t)
-  date=f'{y:04d}-{m:02d}-01'
- cand={'currency':'NZD','dimension':dim,'macro_series_id':target,'observation_date':date,'value':value,'source':SOURCE,'source_url':source_url,'series_id':c['series_id'],'frequency':c['frequency'],'transformation':c['transformation'],'unit':c['unit']}
- audit={'candidate_only':True,'live_data_written':False,'mode':mode,'source_url':source_url,'retrieval_url':retrieval_url,'observation_date':date,'value':value,'upstream_series_id':upstream_series_id}
- return cand,audit
-def main():
- ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);a=ap.parse_args();c,u=build(a.dimension,a.fixture);a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(c,indent=2)+'\n')
- if a.audit_output:a.audit_output.parent.mkdir(parents=True,exist_ok=True);a.audit_output.write_text(json.dumps(u,indent=2)+'\n')
- print(json.dumps({'status':'PASS','candidate':c,'audit':u},indent=2));return 0
-if __name__=='__main__':raise SystemExit(main())
+
+MONTHS = {"march": 3, "june": 6, "september": 9, "december": 12}
+
+
+class TextExtractor(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        if data.strip():
+            self.parts.append(data.strip())
+
+
+def html_text(raw: str) -> str:
+    parser = TextExtractor()
+    parser.feed(raw)
+    return re.sub(r"\s+", " ", html.unescape(" ".join(parser.parts))).strip()
+
+
+def load(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def fetch_html_text(url: str) -> str:
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=45) as response:
+        raw = response.read().decode("utf-8", errors="replace")
+    text = html_text(raw)
+    if len(text) < 200:
+        raise ValueError(f"Stats NZ indicator response unexpectedly short: {url}")
+    return text
+
+
+def quarter_date(month_name: str, year: str) -> str:
+    month = MONTHS[month_name.lower()]
+    return f"{int(year):04d}-{month:02d}-01"
+
+
+def parse_indicator(dimension: str, text: str) -> tuple[str, float]:
+    if dimension == "inflation":
+        patterns = [
+            # Current Stats NZ CPI indicator card: Annual change +4.1% June 2026 year
+            r"Annual\s+change\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+year",
+            # Defensive fallback if wording changes to quarter.
+            r"Annual\s+change\s*\+?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
+        ]
+    else:
+        patterns = [
+            # Current Stats NZ unemployment indicator card.
+            r"Unemployment\s+rate\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
+            # Tolerate a short label between title and value, but keep the match local.
+            r"Unemployment\s+rate.{0,120}?([0-9]+(?:\.[0-9]+)?)\s*%\s*(March|June|September|December)\s+(20\d{2})\s+quarter",
+        ]
+
+    hits: list[tuple[str, float]] = []
+    for pattern in patterns:
+        for match in re.finditer(pattern, text, re.I | re.S):
+            value = float(match.group(1))
+            date = quarter_date(match.group(2), match.group(3))
+            hits.append((date, value))
+        if hits:
+            break
+
+    if not hits:
+        raise ValueError(f"cannot parse latest Stats NZ {dimension} indicator card")
+
+    # The card should resolve to one latest observation. Duplicate identical hits are fine.
+    unique = sorted(set(hits))
+    dates = {date for date, _ in unique}
+    if len(dates) != 1:
+        raise ValueError(f"ambiguous Stats NZ {dimension} indicator periods: {unique}")
+    values = {value for _, value in unique}
+    if len(values) != 1:
+        raise ValueError(f"ambiguous Stats NZ {dimension} indicator values: {unique}")
+    return unique[0]
+
+
+def contract(dimension: str) -> str:
+    heat = load(HEAT)["currencies"]["NZD"][dimension]
+    cfg = CONFIG[dimension]
+    got = (heat.get("series_id"), heat.get("frequency"), heat.get("transformation"))
+    expected = (cfg["series_id"], cfg["frequency"], cfg["transformation"])
+    if got != expected:
+        raise ValueError(f"NZD {dimension} frozen contract changed: {got} != {expected}")
+    rows = load(SERIES)["NZD"]
+    hits = [row for row in rows if isinstance(row, dict) and row.get("id") == cfg["macro_series_id"]]
+    if len(hits) != 1:
+        raise ValueError(f"NZD {dimension} canonical target count={len(hits)}")
+    return cfg["macro_series_id"]
+
+
+def build(dimension: str, fixture: Path | None = None):
+    cfg = CONFIG[dimension]
+    target = contract(dimension)
+    source_url = INDICATOR_URLS[dimension]
+
+    if fixture:
+        payload = load(fixture)
+        date = payload["observation_date"]
+        value = float(payload["value"])
+        mode = "fixture"
+    else:
+        text = fetch_html_text(source_url)
+        date, value = parse_indicator(dimension, text)
+        mode = "live"
+
+    candidate = {
+        "currency": "NZD",
+        "dimension": dimension,
+        "macro_series_id": target,
+        "observation_date": date,
+        "value": value,
+        "source": SOURCE,
+        "source_url": source_url,
+        "series_id": cfg["series_id"],
+        "frequency": cfg["frequency"],
+        "transformation": cfg["transformation"],
+        "unit": cfg["unit"],
+    }
+    audit = {
+        "candidate_only": True,
+        "live_data_written": False,
+        "mode": mode,
+        "source_url": source_url,
+        "retrieval_url": source_url,
+        "observation_date": date,
+        "value": value,
+        "upstream_indicator": cfg["indicator"],
+        "dynamic_release_discovery": True,
+    }
+    return candidate, audit
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dimension", choices=CONFIG, required=True)
+    parser.add_argument("--fixture", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--audit-output", type=Path)
+    args = parser.parse_args()
+
+    candidate, audit = build(args.dimension, args.fixture)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(candidate, indent=2) + "\n", encoding="utf-8")
+    if args.audit_output:
+        args.audit_output.parent.mkdir(parents=True, exist_ok=True)
+        args.audit_output.write_text(json.dumps(audit, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": "PASS", "candidate": candidate, "audit": audit}, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
