@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import argparse,json,pathlib
+ROOT=pathlib.Path(__file__).resolve().parents[2]
+OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; NATIVE=ROOT/'live_data'/'sections'/'NATIVE_CB_DATA.json'; PAYLOAD=ROOT/'payload'/'part-00.txt'
+OM=b'window.__GMFQ_DATA.OIS_DATA='; NM=b'window.__GMFQ_DATA.NATIVE_CB_DATA='
+def extract(raw,marker):
+ p=raw.find(marker)
+ if p<0: raise SystemExit(f'missing marker {marker!r}')
+ s=p+len(marker); text=raw[s:].decode(); obj,n=json.JSONDecoder().raw_decode(text); e=s+len(text[:n].encode()); cur=e
+ while raw[cur:cur+1] in (b' ',b'\t',b'\r',b'\n'): cur+=1
+ if raw[cur:cur+1]!=b';': raise SystemExit('assignment semicolon missing')
+ return obj,s,e
+def replace(raw,marker,obj):
+ _,s,e=extract(raw,marker); enc=json.dumps(obj,ensure_ascii=False,separators=(',',':')).encode(); out=raw[:s]+enc+raw[e:]
+ if extract(out,marker)[0]!=obj: raise SystemExit('roundtrip mismatch')
+ return out
+def r4(x): return round(float(x),4)
+def r1(x): return round(float(x),1)
+def main():
+ ap=argparse.ArgumentParser(); ap.add_argument('--candidate',required=True,type=pathlib.Path); a=ap.parse_args(); c=json.loads(a.candidate.read_text())
+ if c.get('schema')!='GMFQ_CB_PRICING_CANDIDATE_V1' or c.get('currency')!='AUD' or c.get('status')!='READY_FOR_DRY_RUN': raise SystemExit('invalid AUD candidate')
+ if not all(c.get('validation',{}).get(k) is True for k in ('source_validated','asof_validated','meeting_path_validated','changes_validated','current_real','previous_real','week_real','source_registry_authorized')): raise SystemExit('candidate validation incomplete')
+ o=json.loads(OIS.read_text()); n=json.loads(NATIVE.read_text()); bo=json.loads(json.dumps(o)); bn=json.loads(json.dumps(n)); h=c['horizons']; cm=c['contract_mapping']
+ x=o['currencies']['AUD']; x.update({'status':'ACTIVE','as_of':c['as_of'],'source':c['source'],'source_url':c['source_url'],'source_meta':{'official_public':True,'paid':False,'subscription_required':False,'licensed_feed_required':False,'instrument':c['instrument'],'quotation':c['quotation'],'horizon_mapping':'Dec-26 / Mar-27 / Sep-27 direct ASX SFN settlement buckets; no interpolation','contract_mapping':cm},'policy_rate':c['policy_rate'],'meetings':c['meeting_path'],'horizons':{k:{'rate':r4(h[k]['rate']),'change_1d_bp':r1(h[k]['change_1d_bp']),'change_1w_bp':r1(h[k]['change_1w_bp']),'policy_delta_bp':r1(h[k]['policy_delta_bp'])} for k in ('3m','6m','12m')},'cuts_hikes_priced':{f'{k}_bp':r1(h[k]['policy_delta_bp']) for k in ('3m','6m','12m')},'direction':c['direction'],'change_direction_1d':c['change_direction_1d'],'change_direction_1w':c['change_direction_1w'],'validation':{k:v for k,v in c['validation'].items() if k not in ('runtime_mutated','payload_mutated','source_registry_authorized')},'provenance':{'method':c['provenance']['method'],'weekly_reference_rule':c['provenance']['weekly_reference_rule'],'observations':c['observations']}})
+ g=n['AUD']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}
+ g['pricing_tier']='COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY'; g['pricing_status']=f"ASX IB official settlements: Dec-26 {vals['3m']:.3f}%; Mar-27 {vals['6m']:.3f}%; Sep-27 {vals['12m']:.3f}%."; g['market_3m']=f"{vals['3m']:.3f}%"; g['market_6m']=f"{vals['6m']:.3f}%"; g['market_12m']=f"{vals['12m']:.3f}%"; g['market_pricing']={'as_of':c['as_of'],'instrument':'ASX 30 Day Interbank Cash Rate futures (IB)','quality':'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Direct official ASX SFN settlement buckets; 1D and 1W matched history validated.','source':c['source'],'source_url':c['source_url'],'note':f"No interpolation. Weekly reference {c['observations']['weekly_reference']['date']}; T-1 {c['observations']['t_minus_1']['date']}.",'freshness_status':'CURRENT_VALIDATED'}
+ co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
+ if co!=['AUD'] or cn!=['AUD']: raise SystemExit(f'non-AUD semantic delta OIS={co} NATIVE={cn}')
+ raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
+ if ro!=bo or rn!=bn: raise SystemExit('live sections and payload differ before apply')
+ OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':'))); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':'))); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))
+ print(json.dumps({'status':'PASS','scope':{'OIS':co,'NATIVE_CB':cn},'as_of':c['as_of'],'publication':False},indent=2))
+if __name__=='__main__': main()
