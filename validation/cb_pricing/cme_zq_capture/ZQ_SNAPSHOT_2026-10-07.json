@@ -1,0 +1,52 @@
+{
+  "schema_version": "GMFQ_CME_ZQ_SNAPSHOT_V1",
+  "currency": "USD",
+  "instrument": "CBOT 30-Day Federal Funds Futures (ZQ)",
+  "source": "CME Group Daily Information Bulletin",
+  "source_url": "https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf",
+  "bulletin_date": "2026-10-07",
+  "bulletin_number": 193,
+  "publication_status": "PRELIMINARY_OFFICIAL",
+  "quotation": "100 minus implied average effective federal funds rate",
+  "selected_horizons": {
+    "3m": {
+      "contract": "DEC26",
+      "settlement_price": 95.9350,
+      "implied_rate": 4.0650,
+      "price_change_vs_prior": 0.0100,
+      "derived_prior_settlement_price": 95.9250,
+      "derived_prior_implied_rate": 4.0750,
+      "change_1d_bp": -1.0
+    },
+    "6m": {
+      "contract": "MAR27",
+      "settlement_price": 95.7250,
+      "implied_rate": 4.2750,
+      "price_change_vs_prior": 0.0400,
+      "derived_prior_settlement_price": 95.6850,
+      "derived_prior_implied_rate": 4.3150,
+      "change_1d_bp": -4.0
+    },
+    "12m": {
+      "contract": "SEP27",
+      "settlement_price": 95.3800,
+      "implied_rate": 4.6200,
+      "price_change_vs_prior": 0.0500,
+      "derived_prior_settlement_price": 95.3300,
+      "derived_prior_implied_rate": 4.6700,
+      "change_1d_bp": -5.0
+    }
+  },
+  "validation": {
+    "source_primary": true,
+    "same_basis_current_t1": true,
+    "t5_available": false,
+    "change_1w_bp_ready": false,
+    "activation_blocker": "Missing verified same-basis CME T-5-ish settlement strip"
+  },
+  "promotion": {
+    "usd_ois_status": "WITHHELD",
+    "main_mutated": false,
+    "gh_pages_mutated": false
+  }
+}
