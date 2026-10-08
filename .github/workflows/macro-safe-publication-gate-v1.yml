@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - 'feature/macro-safe-publication-gate-*'
+      - 'feature/macro-final-apply-gate-*'
     paths:
       - 'validation/macro_safe_publication.py'
       - 'validation/test_macro_safe_publication.py'
+      - 'validation/macro_final_apply_gate.py'
+      - 'validation/test_macro_final_apply_gate.py'
       - '.github/workflows/macro-safe-publication-gate-v1.yml'
+      - '.github/workflows/macro-final-apply-gate-v1.yml'
   workflow_dispatch:
     inputs:
       self_test:
@@ -39,13 +43,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test fail-closed publication request validator
         run: python3 validation/test_macro_safe_publication.py | tee /tmp/macro-safe-publication-selftest.json
+      - name: Test final-apply verifier
+        run: python3 validation/test_macro_final_apply_gate.py | tee /tmp/macro-final-apply-selftest.json
       - name: Prove self-test is read-only
         run: git diff --exit-code -- live_data payload validation/macro
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: macro-safe-publication-selftest-${{ github.run_id }}
-          path: /tmp/macro-safe-publication-selftest.json
+          path: |
+            /tmp/macro-safe-publication-selftest.json
+            /tmp/macro-final-apply-selftest.json
           if-no-files-found: error
 
   synthetic-pit:
@@ -180,17 +188,28 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import datetime as dt, json, pathlib, subprocess
+          import datetime as dt, hashlib, json, pathlib, subprocess
           root=pathlib.Path('/tmp/macro-safe-publication')
           req=json.load(open(root/'publication-request.json')) if (root/'publication-request.json').exists() else {}
           changed=(root/'changed-files.txt').read_text().splitlines() if (root/'changed-files.txt').exists() else []
           status='READY_FOR_REVIEW' if (root/'proposal/proposal.patch').exists() else ('NO_UPDATE' if req.get('status')=='READY_FOR_RUNTIME_PROPOSAL' else 'FAILED_NO_PUBLICATION')
+          def digest(path):
+            p=pathlib.Path(path)
+            return hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
+          artifact_sha256={
+            'candidate_json':digest(root/'source/candidate.json'),
+            'pit_evidence_json':digest(root/'source/macro-pit-anchor-evidence.json'),
+            'publication_request_json':digest(root/'publication-request.json'),
+            'proposal_patch':digest(root/'proposal/proposal.patch'),
+            'file_sha256_json':digest(root/'proposal/file-sha256.json'),
+          }
           receipt={
             'schema':'GMFQ_MACRO_SAFE_PUBLICATION_RECEIPT_V1',
             'status':status,
             'target':req.get('target'),
             'base_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'changed_files':changed,
+            'artifact_sha256':artifact_sha256,
             'automatic_publication':False,
             'commit_performed':False,
             'main_modified':False,
