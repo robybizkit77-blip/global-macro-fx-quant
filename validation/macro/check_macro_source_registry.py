@@ -21,6 +21,7 @@ ALLOWED_ADAPTER_STATUS = {
     "WITHHELD_NON_OFFICIAL_TRANSPORT",
 }
 WEAK_TRANSPORT = {"SECONDARY_MIRROR", "INTERMEDIARY_TRANSPORT"}
+STRONG_ADAPTER_TRANSPORT = {"OFFICIAL_DIRECT", "OFFICIAL_DERIVED_TRANSPORT", "CERTIFIED_OFFICIAL_TRANSPORT"}
 
 
 def load(path: pathlib.Path):
@@ -29,6 +30,31 @@ def load(path: pathlib.Path):
 
 def fail(message: str) -> None:
     raise ValueError(message)
+
+
+def certified_adapter_contract(key: str, row: dict) -> tuple[str | None, dict | None]:
+    """Return the effective refresh transport without rewriting frozen runtime provenance."""
+    canonical_transport = row.get("transport_class")
+    certified = row.get("certified_adapter")
+    if certified is None:
+        return canonical_transport, None
+    if not isinstance(certified, dict):
+        fail(f"{key} certified_adapter must be an object")
+    required = ("source", "transport_class", "adapter", "workflow", "read_only")
+    missing = [field for field in required if field not in certified]
+    if missing:
+        fail(f"{key} certified_adapter missing fields: {missing}")
+    if certified.get("transport_class") not in STRONG_ADAPTER_TRANSPORT:
+        fail(f"{key} certified adapter transport is not strong: {certified.get('transport_class')}")
+    if certified.get("read_only") is not True:
+        fail(f"{key} certified adapter must be read-only")
+    adapter_path = ROOT / str(certified.get("adapter"))
+    workflow_path = ROOT / str(certified.get("workflow"))
+    if not adapter_path.exists():
+        fail(f"{key} certified adapter file missing: {adapter_path}")
+    if not workflow_path.exists():
+        fail(f"{key} certified workflow file missing: {workflow_path}")
+    return str(certified.get("transport_class")), certified
 
 
 def main() -> int:
@@ -81,13 +107,20 @@ def main() -> int:
         if not all(validation.get(x) is True for x in required_validation):
             fail(f"{key} heatmap validation not fully green: {validation}")
 
-        transport = r.get("transport_class")
-        if transport == "SECONDARY_MIRROR" and status != "WITHHELD_NON_OFFICIAL_TRANSPORT":
-            fail(f"{key} secondary mirror must be WITHHELD")
-        if transport == "INTERMEDIARY_TRANSPORT" and status == "READY":
-            fail(f"{key} intermediary transport cannot be READY")
-        if status == "READY" and transport in WEAK_TRANSPORT:
-            fail(f"{key} weak transport cannot be READY")
+        canonical_transport = r.get("transport_class")
+        effective_transport, certified = certified_adapter_contract(key, r)
+
+        # Frozen runtime provenance remains truthful. READY may only override a weak
+        # historical transport when a separate strong, read-only certified adapter exists.
+        if status == "READY":
+            if effective_transport in WEAK_TRANSPORT or effective_transport not in STRONG_ADAPTER_TRANSPORT:
+                fail(f"{key} READY requires a strong effective adapter transport: {effective_transport}")
+            if canonical_transport in WEAK_TRANSPORT and certified is None:
+                fail(f"{key} weak canonical transport requires separate certified_adapter before READY")
+        elif canonical_transport == "SECONDARY_MIRROR" and status != "WITHHELD_NON_OFFICIAL_TRANSPORT":
+            fail(f"{key} secondary mirror must remain WITHHELD until a certified adapter is READY")
+        elif canonical_transport == "INTERMEDIARY_TRANSPORT" and status == "READY":
+            fail(f"{key} intermediary transport cannot be READY without certified adapter")
 
         if currency not in macro or not isinstance(macro[currency], list) or not macro[currency]:
             fail(f"MACRO_SERIES coverage missing for {currency}")
@@ -98,7 +131,8 @@ def main() -> int:
         rows.append({
             "key": key,
             "authority": r.get("authority"),
-            "transport_class": transport,
+            "canonical_transport_class": canonical_transport,
+            "effective_adapter_transport_class": effective_transport,
             "source_adapter_status": status,
             "historical_replay_certified": bool(r.get("historical_replay_certified")),
             "heatmap_as_of": h.get("as_of"),
