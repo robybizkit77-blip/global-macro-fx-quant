@@ -1,0 +1,51 @@
+name: Rates AUD NZD Source Probe Once
+
+on:
+  push:
+    branches:
+      - validation-rates-aud-nzd-live-fetch-2026-10-08
+    paths:
+      - '.github/workflows/rates-aud-nzd-source-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official RBA F2 CSV and RBNZ B2 XLSX
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT rates validation' \
+            'https://www.rba.gov.au/statistics/tables/csv/f2-data.csv' -o /tmp/rba-f2.csv
+          curl -L --fail --retry 3 --user-agent 'GLOBAL-MACRO-FX-QUANT rates validation' \
+            'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx' -o /tmp/rbnz-b2.xlsx
+          echo '=== RBA F2 first 25 lines ==='
+          sed -n '1,25p' /tmp/rba-f2.csv
+      - name: Inspect RBNZ workbook structure
+        run: |
+          python3 -m pip install --disable-pip-version-check openpyxl
+          python3 - <<'PY'
+          import openpyxl, json
+          p='/tmp/rbnz-b2.xlsx'
+          wb=openpyxl.load_workbook(p, read_only=True, data_only=True)
+          print('SHEETS', wb.sheetnames)
+          for ws in wb.worksheets:
+              print('===',ws.title,'===')
+              for i,row in enumerate(ws.iter_rows(values_only=True), start=1):
+                  vals=[v for v in row]
+                  if any(v is not None for v in vals):
+                      print(i, json.dumps(vals[:20], default=str))
+                  if i>=25: break
+      - name: Upload probe inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-aud-nzd-source-probe
+          path: |
+            /tmp/rba-f2.csv
+            /tmp/rbnz-b2.xlsx
+          retention-days: 7
