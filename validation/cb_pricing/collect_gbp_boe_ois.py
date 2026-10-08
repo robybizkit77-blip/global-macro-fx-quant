@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Read-only collector for the official Bank of England sterling OIS archive.
+"""Read-only collector for official Bank of England sterling OIS curve packages.
 
-Uses the same pandas workbook reader that was used for the certified GBP
-activation extraction. It never writes live_data or payload.
+Supports both the historical archive package and the separate daily "Latest yield
+curve data" package. The economic series and parser are identical: exact 3M,
+6M and 12M columns from the BoE short-end SONIA/OIS forward curve, no
+interpolation. It never writes live_data or payload.
 """
 from __future__ import annotations
 
@@ -17,14 +19,21 @@ import zipfile
 import pandas as pd
 
 SHEET = "1. fwds, short end"
-WORKBOOK_RE = re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I)
+WORKBOOK_PATTERNS = (
+    (re.compile(r"OIS daily data_2025 to present\.xlsx$", re.I), "ARCHIVE_HISTORY", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"),
+    (re.compile(r"OIS daily data current month\.xlsx$", re.I), "LATEST_DAILY", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"),
+)
 TENORS = {"3m": 3, "6m": 6, "12m": 12}
 
 
-def find_workbook(zf: zipfile.ZipFile) -> str:
-    matches = [n for n in zf.namelist() if WORKBOOK_RE.search(n)]
+def find_workbook(zf: zipfile.ZipFile):
+    matches = []
+    for name in zf.namelist():
+        for pattern, package_kind, package_url in WORKBOOK_PATTERNS:
+            if pattern.search(name):
+                matches.append((name, package_kind, package_url))
     if len(matches) != 1:
-        raise SystemExit(f"Expected exactly one current BoE OIS workbook, found {matches}")
+        raise SystemExit(f"Expected exactly one supported BoE OIS workbook, found {matches}")
     return matches[0]
 
 
@@ -44,8 +53,6 @@ def num(v):
 
 
 def detect_tenor_columns(df: pd.DataFrame):
-    # Certified BoE extraction showed two usable header conventions:
-    # month labels 1..12 and year fractions 1/12..1.0.
     month_targets = {3: 3.0, 6: 6.0, 12: 12.0}
     frac_targets = {3: 0.25, 6: 0.5, 12: 1.0}
     candidates = []
@@ -89,7 +96,7 @@ def cell_date(v):
 def extract(zip_path: pathlib.Path, requested_as_of: str | None):
     with tempfile.TemporaryDirectory() as td:
         with zipfile.ZipFile(zip_path) as zf:
-            workbook_name = find_workbook(zf)
+            workbook_name, package_kind, package_url = find_workbook(zf)
             zf.extract(workbook_name, td)
             workbook_path = pathlib.Path(td) / workbook_name
 
@@ -128,7 +135,7 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             target = dt.date.fromisoformat(requested_as_of)
             matches = [i for i, x in enumerate(observations) if x["date"] == target]
             if not matches:
-                raise SystemExit(f"Requested as-of {target} not present in official archive")
+                raise SystemExit(f"Requested as-of {target} not present in official package")
             idx = matches[-1]
         else:
             idx = len(observations) - 1
@@ -150,7 +157,8 @@ def extract(zip_path: pathlib.Path, requested_as_of: str | None):
             "status": "SOURCE_SNAPSHOT_ONLY",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "source_url": "https://www.bankofengland.co.uk/statistics/yield-curves",
-            "official_archive": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip",
+            "official_archive": package_url,
+            "package_kind": package_kind,
             "workbook": workbook_name,
             "sheet": SHEET,
             "instrument": "UK instantaneous OIS forward curve based on SONIA",
