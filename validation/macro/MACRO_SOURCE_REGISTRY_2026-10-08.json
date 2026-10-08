@@ -259,8 +259,16 @@
       "frequency": "Q",
       "transformation": "level",
       "transport_class": "SECONDARY_MIRROR",
-      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Stats NZ",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/nzd_statsnz_core.py",
+        "workflow": ".github/workflows/nzd-statsnz-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     },
     "NZD.inflation": {
       "currency": "NZD",
@@ -271,8 +279,16 @@
       "frequency": "Q",
       "transformation": "reported_yoy_rate",
       "transport_class": "SECONDARY_MIRROR",
-      "source_adapter_status": "WITHHELD_NON_OFFICIAL_TRANSPORT",
-      "historical_replay_certified": false
+      "source_adapter_status": "READY",
+      "historical_replay_certified": false,
+      "certified_adapter": {
+        "source": "Stats NZ",
+        "transport_class": "OFFICIAL_DIRECT",
+        "adapter": "validation/sources/nzd_statsnz_core.py",
+        "workflow": ".github/workflows/nzd-statsnz-source-contract-v2.yml",
+        "dynamic_release_discovery": true,
+        "read_only": true
+      }
     }
   }
 }
