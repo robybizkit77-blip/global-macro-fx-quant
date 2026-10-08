@@ -1,0 +1,127 @@
+name: COT Weekly Operational Observation
+
+on:
+  push:
+    branches:
+      - validation-cot-weekly-operational-2026-10-08
+      - release-candidate-cot-weekly-operational-2026-10-08
+    paths:
+      - '.github/workflows/cot-weekly-operational.yml'
+      - 'validation/build_cot_candidate.py'
+      - 'validation/build_cot_stories.py'
+      - 'validation/verify_cftc_current_snapshot.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * 5'
+    - cron: '0 21 * * 5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cot-weekly-operational
+  cancel-in-progress: false
+
+jobs:
+  schedule-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.gate.outputs.should_run }}
+    steps:
+      - id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          dow="$(TZ=Europe/Rome date +'%u')"
+          if [[ "${{ github.event_name }}" != "schedule" || ( "$dow" == "5" && "$hhmm" == "22:00" ) ]]; then should_run=true; else should_run=false; fi
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+
+  observe:
+    needs: schedule-gate
+    if: needs.schedule-gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official CFTC candidate and derived stories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-weekly
+          python validation/build_cot_candidate.py --output /tmp/cot-weekly/V250_COT_CHART_DATA.json | tee /tmp/cot-weekly/candidate-summary.json
+          python validation/build_cot_stories.py --source /tmp/cot-weekly/V250_COT_CHART_DATA.json --output /tmp/cot-weekly/V247_COT_STORIES.json > /tmp/cot-weekly/stories-summary.json
+          git diff --exit-code -- live_data payload
+      - name: Dry-run direct plus derived COT runtime update
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/cot-weekly/candidate-summary.json'))['status'])")
+          test "$STATUS" = "NO_UPDATE" -o "$STATUS" = "CANDIDATE_READY"
+          cleanup() { git checkout -- live_data/sections/V250_COT_CHART_DATA.json live_data/sections/V247_COT_STORIES.json live_data/manifest.v2.json payload >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          if [ "$STATUS" = "NO_UPDATE" ]; then
+            python - <<'PY'
+          import json, pathlib
+          pairs=[
+            ('/tmp/cot-weekly/V250_COT_CHART_DATA.json','live_data/sections/V250_COT_CHART_DATA.json','V250'),
+            ('/tmp/cot-weekly/V247_COT_STORIES.json','live_data/sections/V247_COT_STORIES.json','V247'),
+          ]
+          for candidate,current,label in pairs:
+              a=json.loads(pathlib.Path(candidate).read_text()); b=json.loads(pathlib.Path(current).read_text())
+              if a!=b: raise SystemExit(f'{label}: NO_UPDATE candidate differs from live section')
+          print('COT_NO_UPDATE_SEMANTIC_IDENTITY_PASS')
+          PY
+            python validation/check_live_update_contract.py > /tmp/cot-weekly/live-contract.json
+            python validation/rebuild_live_data_runtime.py --verify-only > /tmp/cot-weekly/runtime-roundtrip.json
+            git diff --exit-code -- live_data payload
+            echo COT_NO_UPDATE_VALIDATE_ONLY_PASS
+          else
+            python validation/update_live_direct_section.py --section V250_COT_CHART_DATA --replacement /tmp/cot-weekly/V250_COT_CHART_DATA.json --apply > /tmp/cot-weekly/direct-apply.json
+            python validation/update_live_derived_sections.py --cot /tmp/cot-weekly/V247_COT_STORIES.json --apply > /tmp/cot-weekly/derived-apply.json
+            python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/cot-weekly/manifest-build.json
+            python validation/check_live_update_contract.py > /tmp/cot-weekly/live-contract.json
+            python validation/rebuild_live_data_runtime.py --verify-only > /tmp/cot-weekly/runtime-roundtrip.json
+            git diff --name-only > /tmp/cot-weekly/candidate-files.txt
+            python - <<'PY'
+          import pathlib
+          changed=set(pathlib.Path('/tmp/cot-weekly/candidate-files.txt').read_text().splitlines())
+          allowed={'live_data/sections/V250_COT_CHART_DATA.json','live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json'}
+          bad=[x for x in changed if not (x in allowed or x.startswith('payload/part-'))]
+          if bad: raise SystemExit(f'COT dry-run scope violation: {bad}')
+          need={'live_data/sections/V250_COT_CHART_DATA.json','live_data/sections/V247_COT_STORIES.json'}
+          if not need.issubset(changed): raise SystemExit(f'COT candidate missing expected sections: {sorted(changed)}')
+          print('COT_CANDIDATE_DRY_RUN_SCOPE_PASS',sorted(changed))
+          PY
+          fi
+          touch /tmp/cot-weekly/dryrun-pass
+          cleanup
+          trap - EXIT
+          git diff --exit-code -- live_data payload
+      - name: Build weekly operational receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/cot-weekly/candidate-summary.json
+          python - <<'PY'
+          import datetime as dt, json, pathlib, subprocess
+          root=pathlib.Path('/tmp/cot-weekly'); cand=json.loads((root/'candidate-summary.json').read_text())
+          ok=cand.get('status') in {'NO_UPDATE','CANDIDATE_READY'} and (root/'dryrun-pass').exists()
+          receipt={'schema':'GMFQ_COT_WEEKLY_RECEIPT_V1','generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'status':'OPERATIONAL_NO_PUBLICATION' if ok else 'FAILED_NO_PUBLICATION','source':'CFTC Legacy Futures Only current reports','current_as_of':cand.get('current_as_of'),'official_as_of':cand.get('official_as_of'),'candidate_status':cand.get('status'),'currencies':cand.get('currencies'),'window_weeks':cand.get('window_weeks'),'promotion_performed':False,'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,'working_tree_clean':subprocess.call(['git','diff','--quiet','--','live_data','payload'])==0}
+          if not receipt['working_tree_clean']: receipt['status']='FAILED_NO_PUBLICATION'
+          (root/'WEEKLY_RECEIPT.json').write_text(json.dumps(receipt,indent=2,ensure_ascii=False)+'\n')
+          print(json.dumps(receipt,indent=2,ensure_ascii=False))
+          if receipt['status']=='FAILED_NO_PUBLICATION': raise SystemExit('COT weekly operational failure')
+          PY
+      - name: Upload weekly COT evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-weekly-operational-${{ github.run_id }}
+          path: /tmp/cot-weekly/
+          if-no-files-found: error
+          retention-days: 60
