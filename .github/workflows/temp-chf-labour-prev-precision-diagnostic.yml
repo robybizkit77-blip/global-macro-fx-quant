@@ -1,0 +1,67 @@
+name: TEMP CHF Labour Previous Precision Diagnostic
+
+on:
+  push:
+    branches:
+      - validation-macro-chf-labour-pit-bootstrap-2026-10-09-v2
+    paths:
+      - '.github/workflows/temp-chf-labour-prev-precision-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Diagnose previous CHF labour precision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.build_macro_candidate import percentile, direction, acceleration, temperature_label
+
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=heat['currencies']['CHF']['labour']
+          s=next(x for x in series['CHF'] if x['id']=='CH_UNEMP_RATE_history_value')
+          vals=[float(x) for x in s['values']]
+          dates=s['dates']
+          hist=[float(x) for x in h['history']]
+          assert len(vals)>=2 and len(hist)>=2
+          current_exact=vals[-1]
+          previous_exact=vals[-2]
+          repaired=hist[:]
+          repaired[-2]=previous_exact
+          repaired[-1]=current_exact
+          expected={
+            'percentile': percentile(repaired,current_exact),
+            'direction': direction(repaired),
+            'acceleration': acceleration(repaired),
+          }
+          expected['temperature_label']=temperature_label(expected['percentile'],heat['thresholds'])
+          current={
+            'percentile': h['percentile'],
+            'temperature_score': h['temperature_score'],
+            'temperature_label': h['temperature_label'],
+            'direction': h['direction'],
+            'acceleration': h['acceleration'],
+          }
+          print(json.dumps({
+            'status':'PASS',
+            'series_tail_dates':dates[-3:],
+            'series_tail_values':vals[-3:],
+            'heat_tail_before':hist[-3:],
+            'previous_delta':previous_exact-hist[-2],
+            'current_fields':current,
+            'expected_after_exact_tail':expected,
+          },indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
