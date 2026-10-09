@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_AUD_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "AUD.labour",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "bd71bb47c7b5a6cf44d7c41b6882700cd09adb6d",
+  "validated_head_sha": "bbfdb332ba021a5bc102dcb4b567320dd4f63e99",
+  "full_archive_probe_run_id": 37947855930,
+  "engine_logic_audit_run_id": 37947855875,
+  "staging_browser_audit_run_id": 37947855814,
+  "artifact_id": 11624278864,
+  "artifact_digest": "sha256:a54b8e97e3bc22d062c0d3211d2a2faa9b0860d7914b382d7334c80d93da808a",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "months": 104,
+    "legacy_ausstats_months": 23,
+    "modern_abs_release_months": 81
+  },
+  "series_contract": {
+    "series_id": "AU_UNEMP_RATE",
+    "seasonal_adjustment": "seasonally adjusted"
+  },
+  "invariants": {
+    "all_months_present": true,
+    "unique_source_hash_per_month": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "rowset_sha256": "02edb2f338d1dbf9ed18bf6e6ea032d16bf4847d39c79a96a4c4e4c466b31865",
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "4/16"
+  }
+}
