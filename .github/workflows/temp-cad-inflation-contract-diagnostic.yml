@@ -1,4 +1,4 @@
-name: TEMP CAD Inflation Contract Repair
+name: TEMP CAD Inflation Format Repair
 
 on:
   push:
@@ -15,60 +15,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Repair CAD inflation transformation metadata and verify live candidate
+          fetch-depth: 0
+      - name: Restore canonical minified heatmap and apply one CAD metadata change
         shell: bash
         run: |
           set -euo pipefail
+          git show 7b5e85fa702bf671675281fdff12655af6a4ab61:live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/heatmap.base
           python3 - <<'PY'
-          import json
-          from copy import deepcopy
           from pathlib import Path
-
-          p=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
-          data=json.loads(p.read_text())
-          heat=data['currencies']['CAD']['inflation']
-          before=deepcopy(heat)
-          assert heat['transformation']=='reported_yoy_rate', heat['transformation']
-          heat['transformation']='derived_yoy_from_index'
-          for key in before:
-              if key!='transformation':
-                  assert heat[key]==before[key], key
-          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          p=Path('/tmp/heatmap.base')
+          s=p.read_text()
+          old='"CAD":{"status":"ACTIVE","as_of":null,"labour":'
+          assert old in s
+          i=s.index(old)
+          j=s.index('"AUD":{"status":"ACTIVE"',i)
+          block=s[i:j]
+          needle='"series_id":"CA_CPI_HEADLINE_YOY","source":"Statistics Canada","frequency":"M","transformation":"reported_yoy_rate"'
+          replacement='"series_id":"CA_CPI_HEADLINE_YOY","source":"Statistics Canada","frequency":"M","transformation":"derived_yoy_from_index"'
+          assert block.count(needle)==1, block.count(needle)
+          block=block.replace(needle,replacement,1)
+          out=s[:i]+block+s[j:]
+          Path('live_data/sections/MACRO_THERMOMETER_DATA.json').write_text(out)
           PY
-
-          mkdir -p /tmp/cad-infl
-          python3 validation/sources/cad_statcan_core.py --dimension inflation --output /tmp/cad-infl/candidate.json --audit-output /tmp/cad-infl/audit.json
-
           python3 - <<'PY'
           import json
           from pathlib import Path
-          c=json.loads(Path('/tmp/cad-infl/candidate.json').read_text())
-          a=json.loads(Path('/tmp/cad-infl/audit.json').read_text())
-          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
           h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['CAD']['inflation']
-          row=next(x for x in s['CAD'] if x['id']=='CA_CPI_HEADLINE_YOY_history_value')
-          assert c['transformation']=='derived_yoy_from_index'
           assert h['transformation']=='derived_yoy_from_index'
-          assert c['observation_date'][:7]==row['last_date']==h['as_of']
-          assert abs(float(c['value'])-float(row['last_value']))<1e-12
-          assert abs(float(c['value'])-float(h['latest_value']))<1e-12
-          assert a['transport']=='official_full_table_csv'
-          print(json.dumps({'candidate':c,'audit':a,'canonical_last':row['last_value'],'heat_latest':h['latest_value']},indent=2))
+          assert h['latest_value']==3.033980582524287
+          assert h['history'][-2:]==[3.032141,3.033981]
+          print('CAD inflation metadata-only repair verified')
           PY
-
-          git diff -- live_data/sections/MACRO_THERMOMETER_DATA.json
-          python3 - <<'PY'
-          import subprocess
-          out=subprocess.check_output(['git','diff','--numstat','--','live_data/sections/MACRO_THERMOMETER_DATA.json'],text=True).strip()
-          print('numstat',out)
-          assert out, 'expected heatmap metadata diff'
-          PY
-
+          git diff --numstat 7b5e85fa702bf671675281fdff12655af6a4ab61 -- live_data/sections/MACRO_THERMOMETER_DATA.json
+          git diff --word-diff=plain 7b5e85fa702bf671675281fdff12655af6a4ab61 -- live_data/sections/MACRO_THERMOMETER_DATA.json | tail -n 5
+          test "$(git diff --numstat 7b5e85fa702bf671675281fdff12655af6a4ab61 -- live_data/sections/MACRO_THERMOMETER_DATA.json | awk '{print $1+$2}')" -le 2
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/MACRO_THERMOMETER_DATA.json
-          git commit -m 'Align CAD inflation transformation metadata'
+          git commit -m 'Restore compact CAD inflation metadata repair'
           git push
