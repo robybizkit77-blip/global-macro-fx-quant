@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: macro-eur-inflation-pit-bootstrap-${{ github.ref }}
@@ -36,16 +36,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Run bootstrap and promotion fail-closed tests
         run: |
           python3 validation/test_macro_pit_historical_bootstrap.py
           python3 validation/test_macro_pit_registry_promotion.py
+
       - name: Verify current official Eurostat inflation candidate read-only
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/eur-inflation-bootstrap/live
-          python3 validation/sources/eur_eurostat_core.py --dimension inflation --output /tmp/eur-inflation-bootstrap/live/candidate.json --audit-output /tmp/eur-inflation-bootstrap/live/source-audit.json
+          python3 validation/sources/eur_eurostat_core.py \
+            --dimension inflation \
+            --output /tmp/eur-inflation-bootstrap/live/candidate.json \
+            --audit-output /tmp/eur-inflation-bootstrap/live/source-audit.json
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -62,19 +67,29 @@ jobs:
           assert a['candidate_only'] is True and a['live_data_written'] is False
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
       - name: Run historical PIT bootstrap replay
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/eur-inflation-bootstrap/replay
-          python3 validation/macro_pit_historical_bootstrap.py --anchor-manifest validation/macro/eur_inflation_historical_anchor_2026-09.json --evidence-output /tmp/eur-inflation-bootstrap/macro_pit_anchor_evidence.json --work-dir /tmp/eur-inflation-bootstrap/replay
-      - name: Verify and apply only EUR inflation certification
+          python3 validation/macro_pit_historical_bootstrap.py \
+            --anchor-manifest validation/macro/eur_inflation_historical_anchor_2026-09.json \
+            --evidence-output /tmp/eur-inflation-bootstrap/macro_pit_anchor_evidence.json \
+            --work-dir /tmp/eur-inflation-bootstrap/replay \
+            | tee /tmp/eur-inflation-bootstrap/bootstrap-run.json
+
+      - name: Verify review-only registry promotion or pinned certification
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/macro_pit_registry_promotion.py --evidence /tmp/eur-inflation-bootstrap/macro_pit_anchor_evidence.json --proposed-registry /tmp/eur-inflation-bootstrap/proposed-registry.json --receipt /tmp/eur-inflation-bootstrap/promotion-receipt.json
+          python3 validation/macro_pit_registry_promotion.py \
+            --evidence /tmp/eur-inflation-bootstrap/macro_pit_anchor_evidence.json \
+            --proposed-registry /tmp/eur-inflation-bootstrap/proposed-registry.json \
+            --receipt /tmp/eur-inflation-bootstrap/promotion-receipt.json \
+            | tee /tmp/eur-inflation-bootstrap/promotion-run.json
           python3 - <<'PY'
-          import json
+          import json, subprocess
           from pathlib import Path
           canonical=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())
           proposed=json.loads(Path('/tmp/eur-inflation-bootstrap/proposed-registry.json').read_text())
@@ -84,8 +99,14 @@ jobs:
           assert receipt['status']=='PASS' and receipt['target']==key
           assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
           assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
+          assert evidence['bootstrap_provenance']['before_state'].startswith('RECONSTRUCTED_')
           assert prow['historical_replay_certified'] is True
-          assert float(prow['historical_replay_evidence']['value'])==3.8
+          pref=prow['historical_replay_evidence']
+          assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert pref['official_release_pair_verified'] is True
+          assert pref['macro_series_id']==evidence['target']['macro_series_id']
+          assert pref['observation_date']==evidence['candidate']['observation_date']
+          assert float(pref['value'])==float(evidence['candidate']['value'])==3.8
           if row.get('historical_replay_certified') is not True:
               assert receipt['promotion_action']=='PROPOSAL_CREATED'
               c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
@@ -93,18 +114,21 @@ jobs:
               p2['series'][key].pop('historical_replay_certified',None)
               p2['series'][key].pop('historical_replay_evidence',None)
               assert c2==p2
-              Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').write_text(json.dumps(proposed,ensure_ascii=False,indent=2,sort_keys=True)+'\n')
           else:
               assert receipt['promotion_action'] in {'METADATA_ENRICHMENT_PROPOSED','ALREADY_CERTIFIED'}
+              existing=row['historical_replay_evidence']
+              assert existing['evidence_sha256']==pref['evidence_sha256']
+              assert existing['after_git_head']==pref['after_git_head']
+              subprocess.run(['git','merge-base','--is-ancestor',existing['after_git_head'],'HEAD'],check=True)
+              if receipt['promotion_action']=='ALREADY_CERTIFIED': assert proposed==canonical
           PY
-          if ! git diff --quiet -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json; then
-            test "$(git diff --name-only)" = 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
-            git commit -m 'Certify EUR inflation historical replay'
-            git push origin HEAD:validation-macro-eur-inflation-pit-bootstrap-2026-10-09
-          fi
+
+      - name: Enforce no canonical publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+
       - name: Upload bootstrap and promotion evidence
         if: always()
         uses: actions/upload-artifact@v4
