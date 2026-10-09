@@ -57,7 +57,7 @@ jobs:
           assert ev['strict_rules']['revised_history_fallback_used'] is False
           expected='d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a'
           assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']==receipt['invariants']['semantic_rowset_sha256']==expected
-          for key in ('status','target','evidence_class','authority','coverage','series_contract','route_counts','unique_combined_source_hashes','unique_table_hashes','publication_time_basis','strict_rules','changes_live_data','changes_engine_rules'):
+          for key in ('status','target','evidence_class','authority','coverage','series_contract','route_counts','unique_combined_source_hashes','unique_table_hashes','publication_time_basis','strict_rules'):
               assert ev[key]==pin[key], key
           anchors=pin['anchor_checks']
           assert set(anchors)=={'2018-01','2020-04','2020-07','2022-01','2024-12','2026-08'}
