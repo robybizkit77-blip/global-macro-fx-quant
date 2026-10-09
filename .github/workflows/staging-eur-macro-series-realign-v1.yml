@@ -9,92 +9,65 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  realign:
+  diagnose:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build official EUR labour candidate and prove atomic realignment
+      - name: Diagnose official EUR labour candidate against canonical runtime
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/eur-realign/live /tmp/eur-realign/out
+          mkdir -p /tmp/eur-realign/live
           python3 validation/sources/eur_eurostat_core.py \
             --dimension labour \
             --output /tmp/eur-realign/live/candidate.json \
-            --audit-output /tmp/eur-realign/live/source-audit.json \
-            | tee /tmp/eur-realign/live/source-run.json
+            --audit-output /tmp/eur-realign/live/source-audit.json >/tmp/eur-realign/live/source-run.json
           python3 - <<'PY'
           import copy, json
           from pathlib import Path
           from validation.build_macro_candidate import apply_candidate
 
-          sp=Path('live_data/sections/MACRO_SERIES.json')
-          hp=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
-          series=json.loads(sp.read_text())
-          heat=json.loads(hp.read_text())
-          before_series=copy.deepcopy(series)
-          before_heat=copy.deepcopy(heat)
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          before_series=copy.deepcopy(series); before_heat=copy.deepcopy(heat)
           c=json.loads(Path('/tmp/eur-realign/live/candidate.json').read_text())
           a=json.loads(Path('/tmp/eur-realign/live/source-audit.json').read_text())
-
-          assert c['currency']=='EUR' and c['dimension']=='labour'
-          assert c['macro_series_id']=='EA_UNEMP_history_value'
-          assert c['series_id']=='EA_UNEMP'
           assert c['observation_date'][:7]=='2026-08' and float(c['value'])==6.4
           assert a['prior_period'][:7]=='2026-07' and float(a['prior_value'])==6.4
-          assert a['candidate_only'] is True and a['live_data_written'] is False
+          result=apply_candidate(series,heat,c)
 
-          rows=[r for r in series['EUR'] if r.get('id')=='EA_UNEMP_history_value']
-          assert len(rows)==1
-          assert str(rows[0]['dates'][-1])[:7]=='2026-07' and float(rows[0]['values'][-1])==6.4
-          h=heat['currencies']['EUR']['labour']
-          assert str(h['as_of'])[:7]=='2026-08' and float(h['latest_value'])==6.4
-          assert str(heat['currencies']['EUR']['as_of_detail']['unemployment'])[:7]=='2026-08'
+          def walk(b,x,path=''):
+              out=[]
+              if type(b)!=type(x): return [(path,b,x)]
+              if isinstance(b,dict):
+                  for k in sorted(set(b)|set(x)):
+                      p=f'{path}/{k}'
+                      if k not in b: out.append((p,None,x[k]))
+                      elif k not in x: out.append((p,b[k],None))
+                      else: out.extend(walk(b[k],x[k],p))
+              elif isinstance(b,list):
+                  if b!=x: out.append((path,b,x))
+              elif b!=x: out.append((path,b,x))
+              return out
 
-          result=apply_candidate(series, heat, c)
+          heat_diff=walk(before_heat,heat)
+          series_diff=walk(before_series,series)
+          print(json.dumps({
+            'candidate':c,
+            'audit':a,
+            'result':result,
+            'heat_diff':[{'path':p,'before':b,'after':x} for p,b,x in heat_diff],
+            'series_diff':[{'path':p,'before':b,'after':x} for p,b,x in series_diff],
+          },ensure_ascii=False,indent=2))
           assert result['series_action']=='APPEND_NEW'
-          assert str(result['storage_date'])[:7]=='2026-08'
-          assert float(result['new_value'])==6.4
-
-          # Heatmap was already one release ahead; applying the official candidate
-          # must reproduce it byte-for-structure, not mutate or duplicate history.
-          assert heat==before_heat, 'official EUR labour candidate does not exactly reproduce existing heatmap'
-
-          # Only the target MACRO_SERIES row may change.
-          changed=[]
-          for cur in sorted(series):
-              b={r.get('id'):r for r in before_series[cur]}
-              x={r.get('id'):r for r in series[cur]}
-              for sid in sorted(set(b)|set(x)):
-                  if b.get(sid)!=x.get(sid): changed.append((cur,sid))
-          assert changed==[('EUR','EA_UNEMP_history_value')], changed
-          row=[r for r in series['EUR'] if r.get('id')=='EA_UNEMP_history_value'][0]
-          assert str(row['dates'][-1])[:7]=='2026-08' and float(row['values'][-1])==6.4
-          assert str(row['last_date'])[:7]=='2026-08' and float(row['last_value'])==6.4
-
-          Path('/tmp/eur-realign/out/MACRO_SERIES.json').write_text(json.dumps(series,ensure_ascii=False,separators=(',',':'))+'\n')
-          print(json.dumps({'status':'PASS','result':result,'changed_rows':changed,'heatmap_exact_existing':True},indent=2))
+          assert series_diff, 'expected EUR series append missing'
+          assert heat_diff, 'expected diagnostic heatmap divergence missing'
           PY
-      - name: Apply only proven MACRO_SERIES realignment on staging branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp /tmp/eur-realign/out/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
-          git diff --exit-code -- live_data/sections/MACRO_THERMOMETER_DATA.json
-          git diff --quiet -- live_data/sections/MACRO_SERIES.json && { echo 'expected MACRO_SERIES delta missing'; exit 1; }
-          git status --short
-          test "$(git diff --name-only | tr '\n' ' ')" = "live_data/sections/MACRO_SERIES.json "
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/MACRO_SERIES.json
-          git commit -m 'Realign EUR labour canonical macro series to official August release'
-          git push origin HEAD:${GITHUB_REF_NAME}
+          git diff --exit-code -- live_data payload
