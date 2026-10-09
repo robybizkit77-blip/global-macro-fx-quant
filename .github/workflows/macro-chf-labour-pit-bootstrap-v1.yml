@@ -1,0 +1,123 @@
+name: Macro CHF Labour PIT Bootstrap V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-chf-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-chf-labour-pit-bootstrap-v1.yml'
+      - 'validation/macro/chf_labour_historical_anchor_2026-08.json'
+      - 'validation/macro_pit_historical_bootstrap.py'
+      - 'validation/test_macro_pit_historical_bootstrap.py'
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/test_macro_pit_registry_promotion.py'
+      - 'validation/sources/chf_snb_official_core.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-chf-labour-pit-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  historical-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run bootstrap and promotion fail-closed tests
+        run: |
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/test_macro_pit_registry_promotion.py
+      - name: Verify current official SNB SECO labour candidate read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chf-labour-bootstrap/live
+          python3 validation/sources/chf_snb_official_core.py \
+            --dimension labour \
+            --output /tmp/chf-labour-bootstrap/live/candidate.json \
+            --audit-output /tmp/chf-labour-bootstrap/live/source-audit.json \
+            | tee /tmp/chf-labour-bootstrap/live/source-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/chf-labour-bootstrap/live/candidate.json').read_text())
+          a=json.loads(Path('/tmp/chf-labour-bootstrap/live/source-audit.json').read_text())
+          m=json.loads(Path('validation/macro/chf_labour_historical_anchor_2026-08.json').read_text())
+          assert c['currency']=='CHF' and c['dimension']=='labour'
+          assert c['series_id']==m['series_id']=='CH_UNEMP_RATE'
+          assert c['macro_series_id']==m['target']['macro_series_id']=='CH_UNEMP_RATE_history_value'
+          assert c['observation_date'][:7]==m['current']['observation_date'][:7]=='2026-08'
+          assert abs(float(c['value'])-float(m['current']['value'])) < 1e-12
+          assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
+          print(json.dumps({'status':'CURRENT_OFFICIAL_CHF_LABOUR_MATCH','candidate':c},indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Run historical PIT bootstrap replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chf-labour-bootstrap/replay
+          python3 validation/macro_pit_historical_bootstrap.py \
+            --anchor-manifest validation/macro/chf_labour_historical_anchor_2026-08.json \
+            --evidence-output /tmp/chf-labour-bootstrap/macro_pit_anchor_evidence.json \
+            --work-dir /tmp/chf-labour-bootstrap/replay \
+            | tee /tmp/chf-labour-bootstrap/bootstrap-run.json
+      - name: Verify review-only registry promotion proposal
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/macro_pit_registry_promotion.py \
+            --evidence /tmp/chf-labour-bootstrap/macro_pit_anchor_evidence.json \
+            --proposed-registry /tmp/chf-labour-bootstrap/proposed-registry.json \
+            --receipt /tmp/chf-labour-bootstrap/promotion-receipt.json \
+            | tee /tmp/chf-labour-bootstrap/promotion-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          canonical=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())
+          proposed=json.loads(Path('/tmp/chf-labour-bootstrap/proposed-registry.json').read_text())
+          receipt=json.loads(Path('/tmp/chf-labour-bootstrap/promotion-receipt.json').read_text())
+          evidence=json.loads(Path('/tmp/chf-labour-bootstrap/macro_pit_anchor_evidence.json').read_text())
+          key='CHF.labour'; row=canonical['series'][key]; prow=proposed['series'][key]
+          assert receipt['status']=='PASS' and receipt['target']==key
+          assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert receipt['promotion_action']=='PROPOSAL_CREATED'
+          assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
+          assert evidence['bootstrap_provenance']['before_state'].startswith('RECONSTRUCTED_')
+          assert prow['historical_replay_certified'] is True
+          pref=prow['historical_replay_evidence']
+          assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert pref['official_release_pair_verified'] is True
+          c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
+          c2['series'][key].pop('historical_replay_certified',None)
+          p2['series'][key].pop('historical_replay_certified',None)
+          p2['series'][key].pop('historical_replay_evidence',None)
+          assert c2==p2, 'promotion proposal changed fields outside CHF labour certification metadata'
+          print(json.dumps({'status':'CHF_LABOUR_CERTIFICATION_SCOPE_PASS','target':key},indent=2))
+          PY
+      - name: Enforce no canonical publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+      - name: Upload bootstrap and promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-chf-labour-pit-bootstrap-${{ github.run_id }}
+          path: /tmp/chf-labour-bootstrap/
+          if-no-files-found: error
+          retention-days: 90
