@@ -19,7 +19,11 @@ def quarters():
         yield y,m;m+=3
         if m>12:y+=1;m=3
 
-def modern_url(y,m):return f'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/{MON[m][0]}-{y}'
+def modern_urls(y,m):
+    base='https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia'
+    mon=MON[m][0]
+    return [f'{base}/{mon}-{y}',f'{base}/{mon}-quarter-{y}']
+
 def legacy_urls(y,m):
     token=MON[m][1]
     return [
@@ -52,7 +56,7 @@ def reported_yoy(text,y,m):
     for i,p in enumerate(pats):
         x=re.search(p,text,flags=re.I|re.S)
         if not x:continue
-        if i < 2:
+        if i<2:
             v=float(x.group(2));return -v if x.group(1).lower()=='fell' else v
         v=float(x.group(1))
         if i==4:return -v
@@ -73,14 +77,15 @@ def digest(rows,keys):
     return hashlib.sha256(json.dumps(canon,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
 
 def one(y,m):
-    ref=f'{y:04d}-{m:02d}';rel=modern_url(y,m)
-    try:
-        raw=fetch_bytes(rel);text=text_from_html(raw.decode('utf-8',errors='replace'))
-        if 'Consumer Price Index' not in text:raise ValueError('modern CPI identity missing')
-        rd,rt,tz=stamp(text);value=reported_yoy(text,y,m)
-        return {'reference_quarter':ref,'cpi_yoy':value,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':rel,'source_sha256':hashlib.sha256(raw).hexdigest(),'route':'MODERN_REPORTED_YOY','pit_status':'STRICT_FIRST_RELEASE'}
-    except (HTTPError,URLError,TimeoutError,ValueError):
-        pass
+    ref=f'{y:04d}-{m:02d}'
+    for rel in modern_urls(y,m):
+        try:
+            raw=fetch_bytes(rel);text=text_from_html(raw.decode('utf-8',errors='replace'))
+            if 'Consumer Price Index' not in text:continue
+            rd,rt,tz=stamp(text);value=reported_yoy(text,y,m)
+            return {'reference_quarter':ref,'cpi_yoy':value,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':rel,'source_sha256':hashlib.sha256(raw).hexdigest(),'route':'MODERN_REPORTED_YOY','pit_status':'STRICT_FIRST_RELEASE'}
+        except (HTTPError,URLError,TimeoutError,ValueError):
+            continue
     for url in legacy_urls(y,m):
         try:raw=fetch_bytes(url)
         except (HTTPError,URLError,TimeoutError):continue
