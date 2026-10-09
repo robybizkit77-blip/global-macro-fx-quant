@@ -90,15 +90,19 @@ def extract_labour(rows):
   age=norm(r.get('Age group'))
   stat=norm(r.get('Statistics'))
   data_type=norm(r.get('Data type'))
-  if 'unemployment rate' not in char:continue
-  if sex and 'both sexes' not in sex and 'total' not in sex:continue
-  if age and '15 years and over' not in age:continue
-  if stat and stat!='estimate':continue
-  if data_type and data_type!='seasonally adjusted':continue
+  if char!='unemployment rate':continue
+  if sex!='total - gender':continue
+  if age!='15 years and over':continue
+  if stat!='estimate':continue
+  if data_type!='seasonally adjusted':continue
   d=r.get('REF_DATE');v=r.get('VALUE')
   if not d or v in (None,''):continue
-  try:out[str(d)[:7]+'-01']=float(v)
-  except:pass
+  key=str(d)[:7]+'-01'
+  try:value=float(v)
+  except:continue
+  if key in out and abs(out[key]-value)>1e-12:
+   raise ValueError(f'conflicting StatCan labour observations for {key}: {out[key]} vs {value}')
+  out[key]=value
  dates=sorted(out)
  if len(dates)<2:raise ValueError(f'need >=2 monthly unemployment observations; got {len(dates)}')
  return [(d,out[d]) for d in dates]
