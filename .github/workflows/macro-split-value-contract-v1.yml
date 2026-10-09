@@ -1,4 +1,5 @@
 name: Macro Split Value Contract V1
+# Final exact-head validation trigger for split series/heatmap semantics.
 
 on:
   push:
