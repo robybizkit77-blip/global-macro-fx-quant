@@ -122,6 +122,8 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
             continue
         if re.search(r'All-items\s+excluding', txt, flags=re.I):
             continue
+        if re.search(r'All-items\s*\([^)]*=\s*100\)', txt, flags=re.I):
+            continue
         nums = [float(x.replace(',', '')) for x in re.findall(r'-?[0-9]+(?:\.[0-9]+)?', txt)]
         candidates.append((txt, nums))
     if len(candidates) != 1:
@@ -133,9 +135,6 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
         k = next(i for i, x in enumerate(nums) if 99.5 <= x <= 100.5)
     except StopIteration:
         raise ValueError(f'All-items row missing relative-importance field near 100: {txt}')
-    # Footnote anchors in archived HTML can surface as standalone small integers
-    # immediately after 100.00. The next three plausible CPI index values are,
-    # by the period-specific table contract: prior-year, prior-month, current.
     indexes = [x for x in nums[k+1:] if 80.0 <= x <= 250.0]
     if len(indexes) < 3:
         raise ValueError(f'All-items row missing three plausible CPI indexes: {txt}')
