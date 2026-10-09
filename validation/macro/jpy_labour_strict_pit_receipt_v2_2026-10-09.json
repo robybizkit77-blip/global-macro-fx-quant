@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_JPY_LABOUR_STRICT_PIT_RECEIPT_V2",
+  "target": "JPY.labour",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "d8119c358fd9a90519b11ee4be498ff15ace7648",
+  "validated_head_sha": "95395193d407f3b1a975e0443d6f59ed5bd94f03",
+  "materializer_run_id": 37939887981,
+  "engine_logic_audit_run_id": 37939888208,
+  "staging_browser_audit_run_id": 37939888033,
+  "artifact_id": 11620957412,
+  "artifact_digest": "sha256:535b276c4290e4aeb94f9ff7668d375aaa9bf891051d6c5fca281c689f2959e6",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "months": 104,
+    "legacy_statistics_bureau_months": 67,
+    "estat_period_specific_months": 37
+  },
+  "invariants": {
+    "all_months_present": true,
+    "unique_source_hash_per_month": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "3/16"
+  }
+}
