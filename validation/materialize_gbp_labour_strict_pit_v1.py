@@ -16,14 +16,16 @@ import json
 import re
 import time
 from datetime import date
+from urllib.error import HTTPError
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 BASE = 'https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket'
+EMPLOYMENT_BASE = 'https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk'
 UA = 'global-macro-fx-quant/strict-pit-gbp-labour-v1'
 MONTHS = ('January','February','March','April','May','June','July','August','September','October','November','December')
-FIELDS = ('reference_month','rolling_period','headline_unemployment_rate_pct','release_date','source_url','page_sha256','pit_status')
-SEMANTIC = ('reference_month','rolling_period','headline_unemployment_rate_pct','release_date','pit_status')
+FIELDS = ('reference_month','rolling_period','source_rolling_period','headline_unemployment_rate_pct','release_date','source_route','source_url','page_sha256','pit_status')
+SEMANTIC = ('reference_month','rolling_period','source_rolling_period','headline_unemployment_rate_pct','release_date','source_route','pit_status')
 
 
 def month_range(start: tuple[int, int], end: tuple[int, int]):
@@ -42,10 +44,29 @@ def rolling_period(y: int, m: int) -> str:
     return f'{MONTHS[sm - 1]} {sy} to {MONTHS[m - 1]} {y}'
 
 
+def page_period_variants(y: int, m: int) -> tuple[str, ...]:
+    canonical = rolling_period(y, m)
+    sy, _ = add_months(y, m, -2)
+    # ONS commonly prints a same-year window as "January to March 2023".
+    # Keep this explicitly mapped rather than accepting arbitrary contractions.
+    compact = f'{MONTHS[add_months(y, m, -2)[1] - 1]} to {MONTHS[m - 1]} {y}' if sy == y else canonical
+    return tuple(dict.fromkeys((canonical, compact)))
+
+
 def fetch(url: str) -> tuple[bytes, str]:
     req = Request(url, headers={'User-Agent': UA, 'Accept-Language': 'en-GB,en;q=0.9'})
-    with urlopen(req, timeout=45) as response:
-        return response.read(), response.geturl()
+    # The first full chain hit ONS's explicit 429 limit after seven pages.
+    # Retry only that same official URL, preserving fail-closed behaviour for
+    # any other HTTP status or an exhausted official rate-limit response.
+    for attempt in range(5):
+        try:
+            with urlopen(req, timeout=45) as response:
+                return response.read(), response.geturl()
+        except HTTPError as exc:
+            if exc.code != 429 or attempt == 4:
+                raise
+            time.sleep(2 ** attempt)
+    raise AssertionError('unreachable')
 
 
 def plain(raw: bytes) -> str:
@@ -61,7 +82,7 @@ def release_date(text: str) -> str:
     return date(int(found.group(3)), MONTHS.index(found.group(2)) + 1, int(found.group(1))).isoformat()
 
 
-def headline(text: str, period: str) -> float:
+def headline(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
     # Scope to the opening release summary.  The rest of an ONS bulletin
     # intentionally contains historical comparisons and must not be searched.
     start = text.find('Main points')
@@ -70,19 +91,58 @@ def headline(text: str, period: str) -> float:
     if start < 0:
         raise ValueError('ONS opening summary marker not found')
     section = text[start:start + 6000]
-    if period not in section:
-        raise ValueError(f'expected rolling period absent from ONS opening summary: {period}')
-    escaped = re.escape(period)
+    source_periods = [p for p in periods if p in section]
+    # July 2020 repeats the period in the overview without the rate.  Select
+    # its named Unemployment section only when its dedicated all-people first-
+    # release sentence exists, rather than widening the overview scan.
+    marker = 'Unemployment Unemployment measures'
+    us = text.find(marker, start)
+    ue = text.find('Economic inactivity', us + len(marker)) if us >= 0 else -1
+    if us >= 0 and ue > us:
+        unemployment_section = text[us:ue]
+        if any(re.search(rf'\bFor\s+{re.escape(p)}:\s+the estimated UK unemployment rate for all people was\s*[0-9]', unemployment_section, re.I) for p in periods):
+            section = unemployment_section
+            source_periods = [p for p in periods if p in section]
+    if len(source_periods) != 1:
+        raise ValueError(f'expected one mapped rolling-period wording in ONS opening summary: {periods}; found={source_periods}')
+    source_period = source_periods[0]
+    escaped = re.escape(source_period)
+    end_month = re.escape(source_period.rsplit(' to ', 1)[1])
     patterns = (
-        rf'\b(?:UK )?unemployment rate(?: for (?:people|all people)(?: aged 16(?: years)? and over)?)?\s+(?:for|in)\s+{escaped}\b[^.]{0,220}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
-        rf'\b(?:UK )?unemployment rate(?: for (?:people|all people)(?: aged 16(?: years)? and over)?)?\b[^.]{0,140}?\b{escaped}\b[^.]{0,180}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
-        rf'\b{escaped}\b[^.]{0,150}?\b(?:UK )?unemployment rate(?: for (?:people|all people))?\b[^.]{0,120}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # 2018-era bulletins state the exact period in the Main-points heading
+        # and then put the rate in a definition-bearing bullet immediately
+        # beneath it.  This route remains tied to that verified heading.
+        rf'\bMain points for\s+{escaped}\b.{{0,1400}}?\bunemployment rate\s*\([^)]{{0,240}}\)\s*was\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # July 2020's named Unemployment section has an explicit all-people
+        # first-release sentence for the exact rolling window.
+        rf'\bFor\s+{escaped}:\s+the estimated UK unemployment rate for all people was\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # December 2018 keeps the same first-release main-points structure but
+        # adds "estimated at" after the exact unemployment definition.
+        rf'\bMain points for\s+{escaped}\b.{{0,1400}}?\bunemployment rate\s*\([^)]{{0,240}}\)\s*was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # 2020-era overview wording identifies the rolling window by its final
+        # month; the complete three-month window above must still be present.
+        rf'\b(?:UK )?unemployment rate for the three months to\s+{end_month}\b[^.]{{0,180}}?\b(?:was estimated at|was|at)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # November 2020 uses "in the three months to" in the opening summary.
+        rf'\bUK unemployment rate in the three months to\s+{end_month}\b[^.]{{0,180}}?\bwas estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # The May 2021 companion bulletin puts the period and the UK headline
+        # in separate bullets inside the same explicitly bounded Main points.
+        r'\bUK unemployment rate was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        # May 2023-style summaries put a decimal quarterly change between the
+        # exact window and the level, so this is deliberately a separate route.
+        rf'\bunemployment rate for\s+{escaped}\b\s+(?:increased|decreased) by\s+[0-9]+(?:\.[0-9]+)?\s+percentage points[^.]{{0,100}}?\bto\s+([0-9]+(?:\.[0-9]+)?)\s*%',
+        # August 2026 places the rate before, rather than after, the period.
+        rf'\b(?:UK )?unemployment rate(?: for people aged 16 years and over)?\s+was estimated at\s+([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+{escaped}\b',
+        rf'\b(?:UK )?unemployment rate(?: for (?:people|all people)(?: aged 16(?: years)? and over)?)?\s+(?:for|in)\s+{escaped}\b[^.]{{0,220}}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        rf'\b(?:UK )?unemployment rate(?: for (?:people|all people)(?: aged 16(?: years)? and over)?)?\b[^.]{{0,140}}?\b{escaped}\b[^.]{{0,180}}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+        rf'\b{escaped}\b[^.]{{0,150}}?\b(?:UK )?unemployment rate(?: for (?:people|all people))?\b[^.]{{0,120}}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
     )
-    values = [float(m.group(1)) for pat in patterns for m in re.finditer(pat, section, flags=re.I)]
+    # Each route has the headline value as its final capture.  This avoids
+    # coupling extraction to optional descriptive captures in a route.
+    values = [float(m.groups()[-1]) for pat in patterns for m in re.finditer(pat, section, flags=re.I)]
     values = list(dict.fromkeys(values))
     if len(values) != 1:
-        raise ValueError(f'ambiguous or missing exact ONS unemployment headline for {period}: {values}')
-    return values[0]
+        raise ValueError(f'ambiguous or missing exact ONS unemployment headline for {source_period}: {values}')
+    return values[0], source_period
 
 
 def digest(rows, keys: tuple[str, ...]) -> str:
@@ -90,25 +150,33 @@ def digest(rows, keys: tuple[str, ...]) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def parse_release(raw: bytes, final_url: str, title_pattern: str, y: int, m: int, route: str) -> dict[str, object]:
+    text = plain(raw)
+    if not re.search(rf'\b{title_pattern}:\s*{MONTHS[add_months(y, m, 2)[1]-1]}\s+{add_months(y, m, 2)[0]}\b', text, re.I):
+        raise ValueError(f'ONS page identity mismatch for {title_pattern}')
+    period = rolling_period(y, m)
+    value, source_period = headline(text, page_period_variants(y, m))
+    return {'reference_month': f'{y:04d}-{m:02d}', 'rolling_period': period, 'source_rolling_period': source_period,
+            'headline_unemployment_rate_pct': value, 'release_date': release_date(text), 'source_route': route,
+            'source_url': final_url, 'page_sha256': hashlib.sha256(raw).hexdigest(), 'pit_status': 'STRICT_FIRST_RELEASE'}
+
+
 def one(y: int, m: int) -> dict[str, object]:
     # The bulletin name is the publication month, not the reference month.
     ry, rm = add_months(y, m, 2)
     slug = f'{MONTHS[rm - 1].lower()}{ry}'
     raw, final_url = fetch(f'{BASE}/{slug}')
-    text = plain(raw)
-    expected_title = f'{MONTHS[rm - 1]} {ry}'
-    if not re.search(rf'\b(?:UK labour market|Labour market overview, UK):\s*{re.escape(expected_title)}\b', text, re.I):
-        raise ValueError(f'ONS page identity mismatch for {slug}')
-    period = rolling_period(y, m)
-    return {
-        'reference_month': f'{y:04d}-{m:02d}',
-        'rolling_period': period,
-        'headline_unemployment_rate_pct': headline(text, period),
-        'release_date': release_date(text),
-        'source_url': final_url,
-        'page_sha256': hashlib.sha256(raw).hexdigest(),
-        'pit_status': 'STRICT_FIRST_RELEASE',
-    }
+    try:
+        return parse_release(raw, final_url, r'(?:UK labour market|Labour market overview, UK)', y, m, 'ONS_UK_LABOUR_MARKET_BULLETIN')
+    except ValueError as overview_error:
+        # The 2021 split-release layout delegates the exact labour headline to
+        # the immutable, same-day official Employment in the UK bulletin.
+        companion_raw, companion_url = fetch(f'{EMPLOYMENT_BASE}/{slug}')
+        row = parse_release(companion_raw, companion_url, 'Employment in the UK', y, m, 'ONS_EMPLOYMENT_IN_UK_COMPANION_BULLETIN')
+        overview_date = release_date(plain(raw))
+        if row['release_date'] != overview_date:
+            raise ValueError(f'ONS companion release-date mismatch ({overview_error!r}): {row["release_date"]}!={overview_date}')
+        return row
 
 
 def main() -> int:
@@ -122,7 +190,9 @@ def main() -> int:
         row = one(y, m)
         rows.append(row)
         print(f'[{i:03d}/{len(target)}] {row["reference_month"]} {row["rolling_period"]}={row["headline_unemployment_rate_pct"]} release={row["release_date"]}', flush=True)
-        time.sleep(0.03)
+        # ONS begins returning 429s under a rapid archival scan.  This is a
+        # transport throttle, not a fallback to another source or vintage.
+        time.sleep(1.25)
     if len(rows) != 102 or len({r['reference_month'] for r in rows}) != 102:
         raise ValueError('incomplete or duplicate GBP rolling-month coverage')
     if len({r['page_sha256'] for r in rows}) != 102:

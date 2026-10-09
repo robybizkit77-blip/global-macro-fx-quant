@@ -44,9 +44,9 @@ jobs:
           assert all(r['pit_status']=='STRICT_FIRST_RELEASE' and r['release_date'] and r['source_url'] and r['page_sha256'] for r in rows)
           assert len({r['page_sha256'] for r in rows})==102
           by={r['reference_month']:r for r in rows}
-          anchors={'2018-01':('November 2017 to January 2018','4.3','2018-03-21'),'2020-02':('December 2019 to February 2020','4.0','2020-04-21'),'2023-03':('January 2023 to March 2023','3.9','2023-05-16'),'2026-06':('April 2026 to June 2026','4.9','2026-08-18')}
+          anchors={'2018-01':('November 2017 to January 2018','November 2017 to January 2018','4.3','2018-03-21'),'2020-02':('December 2019 to February 2020','December 2019 to February 2020','4.0','2020-04-21'),'2023-03':('January 2023 to March 2023','January to March 2023','3.9','2023-05-16'),'2026-06':('April 2026 to June 2026','April to June 2026','4.9','2026-08-18')}
           for month, expected in anchors.items():
-              r=by[month]; assert (r['rolling_period'],r['headline_unemployment_rate_pct'],r['release_date'])==expected, (month,r)
+              r=by[month]; assert (r['rolling_period'],r['source_rolling_period'],r['headline_unemployment_rate_pct'],r['release_date'])==expected, (month,r)
           print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256'],'anchors':anchors},indent=2))
           PY
       - name: Enforce no repository writes
