@@ -57,7 +57,10 @@ def textify(raw: bytes) -> str:
 
 def candidate_dates(y: int, m: int):
     ry, rm = next_month(y, m)
-    preferred_days = [18,19,20,17,21,16,22,15,23,14,24,25,13,26]
+    # CPI is usually released around mid-month, but official schedules can move
+    # later (for example January 2019 was released on February 27). Search a
+    # bounded official release window through the 28th, fail-closed outside it.
+    preferred_days = [18,19,20,17,21,16,22,15,23,14,24,25,13,26,27,28]
     for d in preferred_days:
         try:
             yield date(ry, rm, d)
