@@ -240,9 +240,25 @@
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
       "source_adapter_status": "READY",
-      "historical_replay_certified": false,
+      "historical_replay_certified": true,
       "adapter": "validation/sources/chf_snb_official_core.py",
-      "workflow": ".github/workflows/chf-snb-source-contract-v1.yml"
+      "workflow": ".github/workflows/chf-snb-source-contract-v1.yml",
+      "historical_replay_evidence": {
+        "schema": "GMFQ_MACRO_PIT_CERTIFICATION_REF_V1",
+        "evidence_schema": "GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1",
+        "evidence_sha256": "d5f657f360d47f1365a118fccd3fcaaf22769a8770c4f3981c9f51891e2a3e8f",
+        "evidence_class": "RECONSTRUCTED_HISTORICAL_REPLAY",
+        "macro_series_id": "CH_UNEMP_RATE_history_value",
+        "observation_date": "2026-08",
+        "value": 3.13682671641221,
+        "before_git_head": "462bb2304eeb75b602a36150fb821e28065b9032",
+        "after_git_head": "462bb2304eeb75b602a36150fb821e28065b9032",
+        "promotion_mode": "EXPLICIT_REVIEW_REQUIRED",
+        "before_state": "RECONSTRUCTED_FROM_BOUNDED_CANONICAL_AFTER_AND_OFFICIAL_PRIOR_RELEASE",
+        "after_state": "CANONICAL_RUNTIME",
+        "official_release_pair_verified": true,
+        "manifest_sha256": "f7e456f49fbe87a7764692edd84363499d7a0c4f10318d0164e75bb2e329f9e8"
+      }
     },
     "CHF.inflation": {
       "currency": "CHF",
