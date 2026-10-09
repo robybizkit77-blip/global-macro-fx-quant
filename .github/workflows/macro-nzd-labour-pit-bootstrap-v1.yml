@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: macro-nzd-labour-pit-bootstrap-${{ github.ref }}
@@ -65,6 +65,7 @@ jobs:
           assert c['observation_date'][:7]==m['current']['observation_date'][:7]
           assert float(c['value'])==float(m['current']['value'])==5.6
           assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
+          print(json.dumps({'status':'CURRENT_OFFICIAL_NZD_LABOUR_MATCH','candidate':c}, indent=2))
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
 
@@ -76,7 +77,8 @@ jobs:
           python3 validation/macro_pit_historical_bootstrap.py \
             --anchor-manifest validation/macro/nzd_labour_historical_anchor_2026-06.json \
             --evidence-output /tmp/nzd-labour-bootstrap/macro_pit_anchor_evidence.json \
-            --work-dir /tmp/nzd-labour-bootstrap/replay
+            --work-dir /tmp/nzd-labour-bootstrap/replay \
+            | tee /tmp/nzd-labour-bootstrap/bootstrap-run.json
 
       - name: Verify review-only registry promotion or pinned certification
         shell: bash
@@ -85,7 +87,8 @@ jobs:
           python3 validation/macro_pit_registry_promotion.py \
             --evidence /tmp/nzd-labour-bootstrap/macro_pit_anchor_evidence.json \
             --proposed-registry /tmp/nzd-labour-bootstrap/proposed-registry.json \
-            --receipt /tmp/nzd-labour-bootstrap/promotion-receipt.json
+            --receipt /tmp/nzd-labour-bootstrap/promotion-receipt.json \
+            | tee /tmp/nzd-labour-bootstrap/promotion-run.json
           python3 - <<'PY'
           import json, subprocess
           from pathlib import Path
@@ -93,46 +96,51 @@ jobs:
           proposed=json.loads(Path('/tmp/nzd-labour-bootstrap/proposed-registry.json').read_text())
           receipt=json.loads(Path('/tmp/nzd-labour-bootstrap/promotion-receipt.json').read_text())
           evidence=json.loads(Path('/tmp/nzd-labour-bootstrap/macro_pit_anchor_evidence.json').read_text())
-          key='NZD.labour'; row=canonical['series'][key]; prow=proposed['series'][key]
-          assert receipt['status']=='PASS' and receipt['target']==key
+          key='NZD.labour'
+          row=canonical['series'][key]
+          prow=proposed['series'][key]
+          assert receipt['status']=='PASS'
+          assert receipt['target']==key
           assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
-          rec=evidence['bootstrap_provenance']['reconstruction']
-          assert rec['prior_revision_reconstructed']['before_value']==5.3
-          assert rec['prior_revision_reconstructed']['value']==5.4
+          assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
+          assert evidence['bootstrap_provenance']['before_state'].startswith('RECONSTRUCTED_')
+          reconstruction=evidence['bootstrap_provenance']['reconstruction']
+          assert reconstruction['prior_revision_reconstructed']['before_value']==5.3
+          assert reconstruction['prior_revision_reconstructed']['value']==5.4
           assert prow['historical_replay_certified'] is True
           pref=prow['historical_replay_evidence']
-          assert float(pref['value'])==5.6
+          assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert pref['official_release_pair_verified'] is True
+          assert pref['macro_series_id']==evidence['target']['macro_series_id']
+          assert pref['observation_date']==evidence['candidate']['observation_date']
+          assert float(pref['value'])==float(evidence['candidate']['value'])==5.6
           if row.get('historical_replay_certified') is not True:
               assert receipt['promotion_action']=='PROPOSAL_CREATED'
               c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
               c2['series'][key].pop('historical_replay_certified',None)
               p2['series'][key].pop('historical_replay_certified',None)
               p2['series'][key].pop('historical_replay_evidence',None)
-              assert c2==p2
+              assert c2==p2, 'promotion proposal changed fields outside NZD labour certification metadata'
           else:
               assert receipt['promotion_action'] in {'METADATA_ENRICHMENT_PROPOSED','ALREADY_CERTIFIED'}
               existing=row['historical_replay_evidence']
-              assert existing['evidence_sha256']==pref['evidence_sha256']
-              assert existing['after_git_head']==pref['after_git_head']
+              assert existing['macro_series_id']==pref['macro_series_id']
+              assert existing['observation_date']==pref['observation_date']
+              assert float(existing['value'])==float(pref['value'])
+              assert pref['evidence_sha256']==existing['evidence_sha256']
+              assert pref['before_git_head']==existing['before_git_head']
+              assert pref['after_git_head']==existing['after_git_head']
               subprocess.run(['git','merge-base','--is-ancestor',existing['after_git_head'],'HEAD'], check=True)
-              if receipt['promotion_action']=='ALREADY_CERTIFIED': assert proposed==canonical
+              if receipt['promotion_action']=='ALREADY_CERTIFIED':
+                  assert proposed==canonical
+          print(json.dumps({'status':'NZD_LABOUR_CERTIFICATION_SCOPE_PASS','target':key,'promotion_action':receipt['promotion_action'],'evidence_class':'RECONSTRUCTED_HISTORICAL_REPLAY'}, indent=2))
           PY
 
-      - name: Apply reviewed certification metadata once
+      - name: Enforce no canonical publication
         shell: bash
         run: |
           set -euo pipefail
-          action=$(python3 -c "import json; print(json.load(open('/tmp/nzd-labour-bootstrap/promotion-receipt.json'))['promotion_action'])")
-          if [ "$action" = "PROPOSAL_CREATED" ]; then
-            cp /tmp/nzd-labour-bootstrap/proposed-registry.json validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
-            git diff --check
-            test "$(git diff --name-only)" = 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
-            git commit -m 'Certify NZD labour historical replay'
-            git push origin HEAD:validation-macro-nzd-labour-pit-bootstrap-2026-10-09
-          fi
+          git diff --exit-code -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
 
       - name: Upload bootstrap and promotion evidence
         if: always()
