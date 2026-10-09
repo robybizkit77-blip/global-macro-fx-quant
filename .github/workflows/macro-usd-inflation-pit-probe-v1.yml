@@ -1,0 +1,54 @@
+name: Macro USD Inflation PIT Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-usd-inflation-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-usd-inflation-pit-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official BLS inflation and canonical runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-inflation-probe
+          python3 validation/sources/us_bls_core_macro.py --output-dir /tmp/usd-inflation-probe
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/usd-inflation-probe/inflation-candidate.json').read_text())
+          a=json.loads(Path('/tmp/usd-inflation-probe/source-audit.json').read_text())
+          ms=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          row=[r for r in ms['USD'] if r.get('id')==c['macro_series_id']][0]
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['USD']['inflation']
+          print(json.dumps({
+            'candidate':c,
+            'audit_inflation':a['inflation'],
+            'candidate_only':a['candidate_only'],
+            'live_data_written':a['live_data_written'],
+            'canonical_tail':list(zip(row['dates'][-6:],row['values'][-6:])),
+            'canonical_last_date':row.get('last_date'),
+            'canonical_last_value':row.get('last_value'),
+            'heatmap_tail':heat.get('history',[])[-6:],
+            'heatmap_latest_value':heat.get('latest_value'),
+            'heatmap_as_of':heat.get('as_of'),
+            'heatmap_series_id':heat.get('series_id'),
+            'heatmap_frequency':heat.get('frequency'),
+            'heatmap_transformation':heat.get('transformation')
+          },indent=2))
+          assert a['candidate_only'] is True and a['live_data_written'] is False
+          PY
+          git diff --exit-code -- live_data
