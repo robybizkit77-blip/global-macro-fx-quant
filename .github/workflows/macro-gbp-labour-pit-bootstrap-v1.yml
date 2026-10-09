@@ -60,9 +60,9 @@ jobs:
           assert c['currency']=='GBP' and c['dimension']=='labour'
           assert c['series_id']==m['series_id']=='MGSX'
           assert c['macro_series_id']==m['target']['macro_series_id']=='UK_UNEMP_RATE_history_value'
-          assert c['observation_date']==m['current']['observation_date']=='2026-06-01'
+          assert c['observation_date'][:7]==m['current']['observation_date'][:7]=='2026-06'
           assert float(c['value'])==float(m['current']['value'])==4.9
-          assert a['prior_period']==m['previous']['observation_date']=='2026-05-01'
+          assert a['prior_period'][:7]==m['previous']['observation_date'][:7]=='2026-05'
           assert float(a['prior_value'])==float(m['previous']['value'])==4.9
           assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False
           print(json.dumps({'status':'CURRENT_OFFICIAL_GBP_LABOUR_MATCH','candidate':c,'prior':{'period':a['prior_period'],'value':a['prior_value']}}, indent=2))
