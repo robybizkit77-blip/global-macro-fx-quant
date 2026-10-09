@@ -74,7 +74,10 @@ def token_for(dt: date) -> str:
 
 def article_url(dt: date) -> str:
     t = token_for(dt)
-    return f'https://www150.statcan.gc.ca/n1/daily-quotidien/{t}/dq{t}a-eng.htm'
+    # The Daily article suffix is normally "a", but the official CPI release can
+    # occasionally be another item on the same date (e.g. July 2020 was "b").
+    suffix = 'b' if dt == date(2020, 8, 19) else 'a'
+    return f'https://www150.statcan.gc.ca/n1/daily-quotidien/{t}/dq{t}{suffix}-eng.htm'
 
 
 def table_url(dt: date) -> str:
