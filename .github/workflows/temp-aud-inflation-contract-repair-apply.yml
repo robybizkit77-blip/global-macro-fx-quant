@@ -8,79 +8,36 @@ on:
       - '.github/workflows/temp-aud-inflation-contract-repair-apply.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair:
+  inspect:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Repair AUD quarterly date contract and canonical CPI value
+      - name: Inspect AUD inflation canonical contract
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          from pathlib import Path
-          p=Path('validation/sources/aud_abs_core.py')
-          s=p.read_text()
-          old='date = f"{qyear:04d}-{qmonth:02d}-01"'
-          new='date = f"{qyear:04d}-{qmonth:02d}"'
-          assert old in s, 'expected AUD quarterly date contract not found'
-          p.write_text(s.replace(old,new,1))
-          PY
-          mkdir -p /tmp/aud-repair/source /tmp/aud-repair/candidate
-          python3 validation/sources/aud_abs_core.py \
-            --dimension inflation \
-            --output /tmp/aud-repair/source/candidate.json \
-            --audit-output /tmp/aud-repair/source/audit.json
-          python3 - <<'PY'
           import json
           from pathlib import Path
-          c=json.loads(Path('/tmp/aud-repair/source/candidate.json').read_text())
-          a=json.loads(Path('/tmp/aud-repair/source/audit.json').read_text())
-          assert c['currency']=='AUD' and c['dimension']=='inflation'
-          assert c['series_id']=='AU_CPI_HEADLINE_Q_YOY'
-          assert c['macro_series_id']=='AU_CPI_HEADLINE_Q_YOY_history_value'
-          assert c['observation_date']=='2026-06'
-          assert abs(float(c['value'])-3.8) < 1e-12
-          assert c['transformation']=='reported_yoy_rate'
-          assert a['candidate_only'] is True and a['live_data_written'] is False
-          print(json.dumps({'status':'OFFICIAL_AUD_CPI_MATCH','candidate':c,'audit':a}, indent=2))
-          PY
-          python3 validation/build_macro_candidate.py \
-            --candidate /tmp/aud-repair/source/candidate.json \
-            --output-dir /tmp/aud-repair/candidate
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          s=json.loads(Path('/tmp/aud-repair/candidate/MACRO_SERIES.json').read_text())
-          h=json.loads(Path('/tmp/aud-repair/candidate/MACRO_THERMOMETER_DATA.json').read_text())
-          summary=json.loads(Path('/tmp/aud-repair/candidate/summary.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
           row=next(x for x in s['AUD'] if x.get('id')=='AU_CPI_HEADLINE_Q_YOY_history_value')
           heat=h['currencies']['AUD']['inflation']
-          assert summary['series_action']=='REPLACE_EXISTING'
-          assert abs(float(summary['old_value'])-3.9) < 1e-12
-          assert row['last_date']=='2026-06'
-          assert abs(float(row['last_value'])-3.8) < 1e-12
-          assert abs(float(row['values'][-1])-3.8) < 1e-12
-          assert heat['as_of']=='2026-06'
-          assert abs(float(heat['latest_value'])-3.8) < 1e-12
-          assert abs(float(heat['history'][-1])-3.8) < 1e-12
-          assert heat['source']=='Australian Bureau of Statistics'
-          assert heat['transformation']=='reported_yoy_rate'
-          print(json.dumps({'status':'AUD_CPI_REPAIR_CANDIDATE_PASS','summary':summary,'percentile':heat['percentile'],'direction':heat['direction'],'acceleration':heat['acceleration']}, indent=2))
+          print(json.dumps({
+            'id': row.get('id'),
+            'label': row.get('label'),
+            'unit': row.get('unit'),
+            'frequency': row.get('frequency'),
+            'source': row.get('source'),
+            'transformation': row.get('transformation'),
+            'dates_tail': row.get('dates', [])[-10:],
+            'values_tail': row.get('values', [])[-10:],
+            'last_date': row.get('last_date'),
+            'last_value': row.get('last_value'),
+            'thermometer': heat,
+          }, indent=2, ensure_ascii=False))
           PY
-          cp /tmp/aud-repair/candidate/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
-          cp /tmp/aud-repair/candidate/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
-          git diff --check
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/sources/aud_abs_core.py live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
-          git commit -m 'Repair AUD inflation quarterly date contract and June 2026 value'
-          git push origin HEAD:${GITHUB_REF_NAME}
