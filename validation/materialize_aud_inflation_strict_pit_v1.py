@@ -40,10 +40,11 @@ def stamp(text):
 def reported_yoy(text,y,m):
     full=MON[m][2]
     unit=r'(?:%|per cent)(?:\s+per cent)?'
+    period=rf'(?:{full}\s+{y}\s+quarter|{full}\s+quarter\s+{y})'
     pats=[
-      rf'Over the twelve months to the {full} {y} quarter[,]? the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}',
-      rf'(?:The\s+)?CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+(?:through the year|over the twelve months)\s+to the {full} {y} quarter',
-      rf'Annual inflation\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+in the {full} {y} quarter',
+      rf'Over the twelve months to the {period}[,]? the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}',
+      rf'(?:The\s+)?CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+(?:through the year|over the twelve months)\s+to the {period}',
+      rf'Annual inflation\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+in the {period}',
       rf'All groups CPI[^.\n]{{0,200}}?\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+for the year',
       rf'Annually[,]?\s+the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}',
     ]
