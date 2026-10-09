@@ -1,4 +1,5 @@
 name: Macro USD Labour Registry Format Cleanup V1
+# Trigger format-only cleanup after workflow registration.
 
 on:
   push:
