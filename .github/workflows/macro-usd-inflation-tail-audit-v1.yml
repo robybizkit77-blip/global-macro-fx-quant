@@ -1,0 +1,60 @@
+name: Macro USD Inflation Tail Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-usd-inflation-split-pit-*'
+    paths:
+      - '.github/workflows/macro-usd-inflation-tail-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare canonical raw CPI date-keyed YoY with heatmap tail
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          row=next(r for r in s['USD'] if r.get('id')=='US_CPIAUCSL_history_value')
+          dates=[str(x)[:7] for x in row['dates']]
+          vals=[float(x) for x in row['values']]
+          by=dict(zip(dates,vals))
+          yoy=[]
+          for d,v in zip(dates,vals):
+              y,m=map(int,d.split('-')); p=f'{y-1:04d}-{m:02d}'
+              if p in by:
+                  yoy.append((d,(v/by[p]-1.0)*100.0,v,by[p]))
+          heat=h['currencies']['USD']['inflation']
+          hist=[float(x) for x in heat['history']]
+          print(json.dumps({
+            'raw_tail':list(zip(dates[-20:],vals[-20:])),
+            'missing_2025_10':'2025-10' not in by,
+            'date_keyed_yoy_tail':yoy[-20:],
+            'heat_tail':hist[-20:],
+            'heat_len':len(hist),
+            'yoy_len':len(yoy),
+            'latest':heat['latest_value'],
+            'as_of':heat['as_of'],
+            'percentile':heat['percentile'],
+            'direction':heat['direction'],
+            'acceleration':heat['acceleration']
+          },indent=2))
+          assert row['last_date'][:7]=='2026-08' and float(row['last_value'])==334.131
+          assert '2025-10' not in by
+          assert abs(yoy[-2][1]-((332.813/322.169)-1)*100.0)<1e-12
+          assert abs(yoy[-1][1]-((334.131/323.291)-1)*100.0)<1e-12
+          PY
+          git diff --exit-code -- live_data
