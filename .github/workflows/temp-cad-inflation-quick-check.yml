@@ -1,0 +1,50 @@
+name: TEMP CAD Inflation Quick Check
+
+on:
+  push:
+    branches:
+      - validation-macro-cad-inflation-quick-check-2026-10-09
+    paths:
+      - '.github/workflows/temp-cad-inflation-quick-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare CAD inflation official candidate and canonical layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad-infl
+          python3 validation/sources/cad_statcan_core.py --dimension inflation --output /tmp/cad-infl/candidate.json --audit-output /tmp/cad-infl/audit.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/cad-infl/candidate.json').read_text())
+          a=json.loads(Path('/tmp/cad-infl/audit.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['CAD']['inflation']
+          row=next(x for x in s['CAD'] if x['id']=='CA_CPI_HEADLINE_YOY_history_value')
+          print(json.dumps({
+            'candidate':c,
+            'audit':a,
+            'series_len':len(row.get('values',[])),
+            'series_dates_tail':row.get('dates',[])[-5:],
+            'series_values_tail':row.get('values',[])[-5:],
+            'series_last_date':row.get('last_date'),
+            'series_last_value':row.get('last_value'),
+            'heat_as_of':h.get('as_of'),
+            'heat_latest_value':h.get('latest_value'),
+            'heat_history_tail':h.get('history',[])[-5:],
+            'heat_transformation':h.get('transformation'),
+            'heat_series_id':h.get('series_id'),
+          },indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
