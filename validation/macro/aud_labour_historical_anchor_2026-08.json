@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "AUD",
+    "dimension": "labour",
+    "macro_series_id": "AU_UNEMP_RATE_history_value"
+  },
+  "authority": "Australian Bureau of Statistics",
+  "source": "Australian Bureau of Statistics",
+  "official_transport_source": "Australian Bureau of Statistics",
+  "series_id": "AU_UNEMP_RATE",
+  "frequency": "M",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 4.5,
+    "release_date": "2026-08-20",
+    "official_reference": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/jul-2026"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 4.6,
+    "release_date": "2026-09-24",
+    "official_reference": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/aug-2026"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia",
+    "canonical_source_label_preserved": true,
+    "note": "ABS seasonally adjusted unemployment was reported at 4.5 percent for July 2026 in the 20 August 2026 release and at 4.6 percent for August 2026 in the 24 September 2026 release. The frozen GMFQ labour contract is the reported unemployment-rate level. The canonical runtime stores monthly observations as YYYY-MM, while the live adapter emits the first day of the reference month and the canonical builder normalizes that to monthly storage. The replay therefore anchors July 2026 at 4.5 and August 2026 at 4.6 without rewriting earlier history from current-vintage data."
+  }
+}
