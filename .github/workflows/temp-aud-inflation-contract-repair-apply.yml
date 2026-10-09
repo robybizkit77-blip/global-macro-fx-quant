@@ -8,54 +8,115 @@ on:
       - '.github/workflows/temp-aud-inflation-contract-repair-apply.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  apply:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Verify archived ABS Table 17 transition vintages
+        with:
+          fetch-depth: 0
+      - name: Apply bounded transition repair and prove scope
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import io, json, urllib.request, zipfile
-          import xml.etree.ElementTree as ET
-          from datetime import datetime,timedelta
-          from decimal import Decimal,ROUND_HALF_UP
+          import copy, json, math
+          from pathlib import Path
 
-          releases={
-            '2025-12':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/dec-2025/6401017.xlsx',
-            '2026-03':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/mar-2026/6401017.xlsx',
-            '2026-06':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026/6401017.xlsx',
+          sp=Path('live_data/sections/MACRO_SERIES.json')
+          hp=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
+          series=json.loads(sp.read_text())
+          heat=json.loads(hp.read_text())
+          before_series=copy.deepcopy(series)
+          before_heat=copy.deepcopy(heat)
+
+          row=next(x for x in series['AUD'] if x.get('id')=='AU_CPI_HEADLINE_Q_YOY_history_value')
+          expected_old={'2025-12':3.7,'2026-03':4.0,'2026-06':3.8}
+          corrected={'2025-12':3.6,'2026-03':4.1,'2026-06':3.9}
+          for period,old in expected_old.items():
+            hits=[i for i,d in enumerate(row['dates']) if str(d)==period]
+            assert len(hits)==1,(period,hits)
+            i=hits[0]
+            assert abs(float(row['values'][i])-old)<1e-12,(period,row['values'][i],old)
+            row['values'][i]=corrected[period]
+          assert row['dates'][-1]=='2026-06'
+          row['last_date']='2026-06'; row['last_value']=3.9
+
+          h=heat['currencies']['AUD']['inflation']
+          hist=[float(x) for x in h['history']]
+          assert 0 < len(hist) <= len(row['values'])
+          # The heatmap is a rolling tail of the canonical series. Prove that before mutating it.
+          old_row=next(x for x in before_series['AUD'] if x.get('id')=='AU_CPI_HEADLINE_Q_YOY_history_value')
+          expected_tail=[float(x) for x in old_row['values'][-len(hist):]]
+          assert all(abs(a-b)<1e-12 for a,b in zip(hist,expected_tail)), {
+              'history_len':len(hist),'series_len':len(old_row['values']),
+              'history_tail':hist[-6:],'series_tail':expected_tail[-6:]}
+          hist=[float(x) for x in row['values'][-len(hist):]]
+          h['history']=hist
+          h['latest_value']=3.9
+          h['as_of']='2026-06'
+          h['source']='Australian Bureau of Statistics'
+          h['frequency']='Q'
+          h['transformation']='reported_yoy_rate'
+          heat['currencies']['AUD'].setdefault('as_of_detail',{})['inflation']='2026-06'
+
+          below=sum(1 for x in hist if x < 3.9); equal=sum(1 for x in hist if x == 3.9)
+          pct=round(100.0*(below+0.5*equal)/len(hist),1)
+          h['percentile']=pct; h['temperature_score']=pct
+          label=None
+          for t in heat['thresholds']:
+            lo,hi=float(t['min']),float(t['max'])
+            if lo <= pct < hi or (pct==100.0 and hi==100.0): label=str(t['label']); break
+          assert label is not None
+          h['temperature_label']=label
+          d=hist[-1]-hist[-2]
+          h['direction']='SALE' if d>1e-12 else 'SCENDE' if d<-1e-12 else 'STABILE'
+          d1=hist[-2]-hist[-3]; d2=hist[-1]-hist[-2]; dd=d2-d1
+          h['acceleration']='ACCELERA' if dd>1e-12 else 'RALLENTA' if dd<-1e-12 else 'STABILE'
+          h['validation']={
+            'source':True,
+            'history':len(hist)>=int(heat.get('lookback_rule',{}).get('minimum_observations',24)),
+            'latest':True,
+            'transformation':True,
           }
-          NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships';ns={'m':NS,'r':RNS}
-          def parse(url):
-            z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(url,timeout=30).read()))
-            shared=[]
-            if 'xl/sharedStrings.xml' in z.namelist():
-              sr=ET.fromstring(z.read('xl/sharedStrings.xml'));shared=[''.join(t.text or '' for t in si.iter(f'{{{NS}}}t')) for si in sr.findall('m:si',ns)]
-            wb=ET.fromstring(z.read('xl/workbook.xml')); rr=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'));rels={e.attrib['Id']:e.attrib['Target'] for e in rr}
-            sh=next(x for x in wb.find('m:sheets',ns) if x.attrib['name']=='Data1');root=ET.fromstring(z.read('xl/'+rels[sh.attrib[f'{{{RNS}}}id']]))
-            obs=[]
-            for row in root.findall('.//m:sheetData/m:row',ns):
-              rn=row.attrib['r']; cells={}
-              for c in row.findall('m:c',ns):
-                ref=c.attrib.get('r','');v=c.find('m:v',ns);val=None if v is None else v.text
-                if c.attrib.get('t')=='s' and val is not None: val=shared[int(val)]
-                if val is not None: cells[ref]=val
-              try: obs.append((datetime(1899,12,30)+timedelta(days=int(Decimal(cells['A'+rn]))),Decimal(cells['J'+rn])))
-              except Exception: pass
-            obs.sort(); return obs
-          out={}
-          for period,url in releases.items():
-            y,m=map(int,period.split('-'));obs=parse(url);i=next(i for i,(dt,_) in enumerate(obs) if dt.year==y and dt.month==m)
-            dt,idx=obs[i];pdt,pidx=obs[i-4]; raw=(idx/pidx-Decimal('1'))*Decimal('100'); rounded=raw.quantize(Decimal('0.1'),rounding=ROUND_HALF_UP)
-            out[period]={'release_workbook':url,'current_index':float(idx),'t_minus_4_index':float(pidx),'raw_yoy':float(raw),'quarterly_yoy_1dp':float(rounded),'t_minus_4_period':f'{pdt.year:04d}-{pdt.month:02d}'}
-          print(json.dumps(out,indent=2))
-          assert out['2025-12']['quarterly_yoy_1dp']==3.6
-          assert out['2026-03']['quarterly_yoy_1dp']==4.1
-          assert out['2026-06']['quarterly_yoy_1dp']==3.9
+
+          # Fail closed: no currency except AUD may change; within AUD series only the CPI row may change.
+          for c in series:
+            if c!='AUD': assert series[c]==before_series[c],c
+          old_aud=[x for x in before_series['AUD'] if x.get('id')!='AU_CPI_HEADLINE_Q_YOY_history_value']
+          new_aud=[x for x in series['AUD'] if x.get('id')!='AU_CPI_HEADLINE_Q_YOY_history_value']
+          assert new_aud==old_aud
+          for c in heat['currencies']:
+            if c!='AUD': assert heat['currencies'][c]==before_heat['currencies'][c],c
+          for dim in heat['currencies']['AUD']:
+            if dim not in ('inflation','as_of_detail'):
+              assert heat['currencies']['AUD'][dim]==before_heat['currencies']['AUD'][dim],dim
+          old_detail=copy.deepcopy(before_heat['currencies']['AUD'].get('as_of_detail',{})); new_detail=heat['currencies']['AUD'].get('as_of_detail',{})
+          for k,v in old_detail.items():
+            if k!='inflation': assert new_detail.get(k)==v,(k,new_detail.get(k),v)
+
+          sp.write_text(json.dumps(series,ensure_ascii=False,separators=(',',':'))+'\n')
+          hp.write_text(json.dumps(heat,ensure_ascii=False,separators=(',',':'))+'\n')
+          print(json.dumps({
+            'status':'PASS','repaired':corrected,'history_len':len(hist),
+            'latest':h['latest_value'],'percentile':h['percentile'],
+            'temperature':h['temperature_label'],'direction':h['direction'],
+            'acceleration':h['acceleration']
+          },indent=2))
           PY
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'live_data/sections/MACRO_SERIES.json\nlive_data/sections/MACRO_THERMOMETER_DATA.json'
+      - name: Commit bounded repair to validation branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git commit -m 'Repair AUD quarterly CPI transition vintages'
+          git push origin HEAD:validation-macro-aud-inflation-contract-repair-2026-10-09
