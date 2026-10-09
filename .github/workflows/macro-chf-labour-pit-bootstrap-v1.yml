@@ -121,3 +121,5 @@ jobs:
           path: /tmp/chf-labour-bootstrap/
           if-no-files-found: error
           retention-days: 90
+
+# exact-head trigger after CHF labour precision repair
