@@ -123,11 +123,12 @@ def parse_headline_yoy(text: str, y: int, m: int) -> float | None:
     if headline:
         return float(headline.group(1))
 
-    # Last strict route: the opening sentence explicitly states the CPI YoY for
-    # that reference month. Preserve the sign implied by the release verb and
-    # tolerate typographic/non-ASCII separators in "year-over-year".
+    # Last strict route: match only the opening CPI YoY sentence for the exact
+    # reference month. The archive can inject punctuation/markup inside the CPI
+    # label and year-over-year separators, so tolerate those without scanning
+    # arbitrary percentages elsewhere in the article.
     prose = re.search(
-        rf'The Consumer Price Index\s*\(CPI\).{{0,120}}?(rose|increased|fell|declined|decreased)\s+([0-9]+(?:\.[0-9]+)?)\s*%\s+on a year.?over.?year basis in\s+{month}\b',
+        rf'Consumer Price Index.{{0,40}}?CPI.{{0,40}}?(rose|increased|fell|declined|decreased)\s+([0-9]+(?:\.[0-9]+)?)\s*%\s+on a year.{{0,3}}over.{{0,3}}year basis in\s+{month}\b',
         text,
         flags=re.I|re.S,
     )
