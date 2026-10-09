@@ -6,6 +6,8 @@ on:
       - 'validation-jpy-labour-strict-pit-v2-*'
     paths:
       - 'validation/materialize_jpy_labour_strict_pit_v2.py'
+      - 'validation/macro/jpy_labour_strict_pit_evidence_v2_2026-10-09.json'
+      - 'validation/macro/jpy_labour_strict_pit_receipt_v2_2026-10-09.json'
       - '.github/workflows/jpy-labour-strict-pit-materialize-v2.yml'
   workflow_dispatch:
 
@@ -29,13 +31,15 @@ jobs:
           python validation/materialize_jpy_labour_strict_pit_v2.py \
             --csv /tmp/jpy-labour-strict/JPY_LABOUR_LFS_STRICT_FIRST_RELEASE_2018_2026_08.csv \
             --evidence /tmp/jpy-labour-strict/JPY_LABOUR_STRICT_PIT_EVIDENCE_V2.json
-      - name: Verify artifact invariants
+      - name: Verify strict PIT invariants and pinned evidence contract
         run: |
           python - <<'PY'
           import csv,json
           from pathlib import Path
           p=Path('/tmp/jpy-labour-strict')
           ev=json.loads((p/'JPY_LABOUR_STRICT_PIT_EVIDENCE_V2.json').read_text())
+          pinned=json.loads(Path('validation/macro/jpy_labour_strict_pit_evidence_v2_2026-10-09.json').read_text())
+          receipt=json.loads(Path('validation/macro/jpy_labour_strict_pit_receipt_v2_2026-10-09.json').read_text())
           rows=list(csv.DictReader((p/'JPY_LABOUR_LFS_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
           assert ev['status']=='PASS'
           assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
@@ -46,10 +50,18 @@ jobs:
           assert all(r['release_time_jst']=='08:30' for r in rows)
           assert len({r['sha256'] for r in rows})==104
           assert ev['strict_rules']['revised_history_fallback_used'] is False
+          # Pinned evidence is intentionally stable: dynamic fields are not allowed to drift.
+          for key in ('status','target','evidence_class','coverage','strict_rules','missing','duplicates','duplicate_pdf_hashes','errors','route_transition','changes_live_data','changes_engine_rules'):
+              assert ev[key] == pinned[key], (key, ev[key], pinned[key])
+          assert receipt['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert receipt['coverage']['months']==104
+          assert receipt['invariants']['revised_history_fallback_used'] is False
+          assert receipt['invariants']['live_data_changed'] is False
+          assert receipt['invariants']['engine_rules_changed'] is False
           PY
       - name: Enforce no repository writes
         run: git diff --exit-code
-      - name: Upload strict PIT candidate evidence
+      - name: Upload reproducible strict PIT dataset and evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
