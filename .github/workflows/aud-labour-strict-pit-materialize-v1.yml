@@ -50,10 +50,11 @@ jobs:
           assert len({r['sha256'] for r in rows})==104
           assert all(r['release_date'] and r['release_time'] and r['timezone'] for r in rows)
           assert ev['strict_rules']['revised_history_fallback_used'] is False
-          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']=='733def09fafc713067b80aaa448a5936b77d72ddfc67135b6df083108772f920'
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']=='8ef97536738d4653b268a6582dca2d8384abcfb27aa3582e2b8ee1bd0f5dc33d'
           assert ev['route_counts']=={'AUSSTATS_MEDIA':23,'MODERN_RELEASE':81}
           assert pin['series_contract']['seasonal_adjustment']=='seasonally adjusted'
-          assert pin['strict_rules']['raw_page_hash_is_fetch_evidence_not_stable_identity'] is True
+          assert pin['strict_rules']['raw_page_hash_and_legacy_alias_are_fetch_evidence_not_stable_identity'] is True
+          assert pin['semantic_fingerprint_match_across_materializations'] is True
           PY
       - name: Enforce no repository writes
         run: git diff --exit-code
