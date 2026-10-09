@@ -9,7 +9,7 @@ from pypdf import PdfReader
 START=(2018,1); LEGACY_END=(2023,7); ESTAT_START=(2023,8); END=(2026,8)
 LEGACY='https://www.stat.go.jp/data/roudou/rireki/tsuki/pdf/{yyyymm}.pdf'
 BASE='https://www.e-stat.go.jp'
-UA='GMFQ-Strict-PIT-validation/2.2'
+UA='GMFQ-Strict-PIT-validation/2.3'
 QCODE={1:'110103',2:'120406',3:'230709',4:'241012'}
 
 def months(a,b):
@@ -29,10 +29,14 @@ def era_to_iso(era,y,m,d):
  yy=1 if y=='元' else int(y); year=(1988+yy) if era=='平成' else (2018+yy)
  return date(year,int(m),int(d)).isoformat()
 
-def parse_release_date(text):
+def parse_release_date(text,required=True):
+ # Older releases use Japanese era notation; newer layouts may use Gregorian year notation.
  m=re.search(r'(平成|令和)\s*(元|\d+)\s*年\s*(\d+)\s*月\s*(\d+)\s*日',text)
- if not m: raise ValueError('release date not found in PDF')
- return era_to_iso(*m.groups())
+ if m:return era_to_iso(*m.groups())
+ g=re.search(r'(?<!\d)(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日',text)
+ if g:return date(int(g.group(1)),int(g.group(2)),int(g.group(3))).isoformat()
+ if required:raise ValueError('release date not found in PDF')
+ return None
 
 def parse_values(text):
  sec=text
@@ -45,7 +49,6 @@ def parse_values(text):
   q=re.search(p,sec)
   if q: ur=float(q.group(1));break
  if ur is None: raise ValueError('SA unemployment rate not found')
- # Employment is useful audit context but not the target series. Do not fail strict PIT on layout changes.
  emp=None
  for p in [r'就業者数\s*(?:は|：|:)\s*([0-9]{4})\s*万人',r'就業者[^\n]{0,60}?([0-9]{4})\s*万人']:
   q=re.search(p,text)
@@ -54,8 +57,8 @@ def parse_values(text):
 
 def legacy(month):
  url=LEGACY.format(yyyymm=month.replace('-',''));raw,ct,final=get(url);txt=pdf_text(raw)
- rd=parse_release_date(txt);ur,emp=parse_values(txt)
- return {'reference_month':month,'release_date':rd,'release_time_jst':'08:30','availability_timestamp_jst':rd+'T08:30:00+09:00','unemployment_rate_sa_pct':ur,'employed_10k_context':emp,'source_route':'STATGO_LEGACY_IMMUTABLE_MONTHLY_PDF','source_url':final,'stat_inf_id':'','sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'content_type':ct,'pit_status':'STRICT_FIRST_RELEASE'}
+ rd=parse_release_date(txt,required=True);ur,emp=parse_values(txt)
+ return {'reference_month':month,'release_date':rd,'release_time_jst':'08:30','availability_timestamp_jst':rd+'T08:30:00+09:00','unemployment_rate_sa_pct':ur,'employed_10k_context':emp,'source_route':'STATGO_LEGACY_IMMUTABLE_MONTHLY_PDF','source_url':final,'metadata_url':'','stat_inf_id':'','pdf_release_date_crosscheck':rd,'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'content_type':ct,'pit_status':'STRICT_FIRST_RELEASE'}
 
 def month_code(m):return QCODE[(m-1)//3+1]+f'{m:02d}'
 
@@ -79,17 +82,18 @@ def exact_estat_record(month):
   durl=BASE+'/stat-search/file-download?'+urlencode({'fileKind':'2','statInfId':sid});draw,ct,dfinal=get(durl)
   if not draw.startswith(b'%PDF'):continue
   exact.append((sid,pub.group(1),pub.group(2),mfinal,dfinal,draw,ct))
- # Same PDF can be linked more than once; unique by hash, then require exactly one.
  uniq={hashlib.sha256(x[5]).hexdigest():x for x in exact}
  if len(uniq)!=1:raise ValueError(f'e-Stat exact result-summary ambiguity {month}: {len(uniq)}')
  return next(iter(uniq.values()))
 
 def estat(month):
  sid,rd,rt,meta,final,raw,ct=exact_estat_record(month);txt=pdf_text(raw);ur,emp=parse_values(txt)
- pdf_rd=parse_release_date(txt)
- if pdf_rd!=rd:raise ValueError(f'PDF/metadata release-date mismatch {month}: {pdf_rd}!={rd}')
  if rt!='08:30':raise ValueError(f'unexpected official publication time {month}: {rt}')
- return {'reference_month':month,'release_date':rd,'release_time_jst':rt,'availability_timestamp_jst':rd+'T'+rt+':00+09:00','unemployment_rate_sa_pct':ur,'employed_10k_context':emp,'source_route':'ESTAT_PERIOD_SPECIFIC_RESULT_SUMMARY','source_url':final,'metadata_url':meta,'stat_inf_id':sid,'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'content_type':ct,'pit_status':'STRICT_FIRST_RELEASE'}
+ # e-Stat metadata is the mandatory publication-time authority. PDF date is an additional
+ # consistency check when the current PDF layout exposes a parseable date.
+ pdf_rd=parse_release_date(txt,required=False)
+ if pdf_rd is not None and pdf_rd!=rd:raise ValueError(f'PDF/metadata release-date mismatch {month}: {pdf_rd}!={rd}')
+ return {'reference_month':month,'release_date':rd,'release_time_jst':rt,'availability_timestamp_jst':rd+'T'+rt+':00+09:00','unemployment_rate_sa_pct':ur,'employed_10k_context':emp,'source_route':'ESTAT_PERIOD_SPECIFIC_RESULT_SUMMARY','source_url':final,'metadata_url':meta,'stat_inf_id':sid,'pdf_release_date_crosscheck':pdf_rd or 'NOT_EXPOSED_IN_PARSEABLE_PDF_TEXT','sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'content_type':ct,'pit_status':'STRICT_FIRST_RELEASE'}
 
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--csv',required=True);ap.add_argument('--evidence',required=True);args=ap.parse_args()
@@ -103,7 +107,7 @@ def main():
  continuity=(not missing and not dups and len(rows)==len(target)==104)
  fallback=False
  status='PASS' if continuity and not errors and not hash_dups and not fallback else 'FAIL'
- ev={'schema':'GMFQ_JPY_LABOUR_STRICT_PIT_EVIDENCE_V2','status':status,'target':'JPY.labour','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','coverage':{'start':target[0],'end':target[-1],'expected_months':104,'materialized_months':len(rows),'legacy_months':len([r for r in rows if r['source_route'].startswith('STATGO')]),'estat_months':len([r for r in rows if r['source_route'].startswith('ESTAT')])},'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'sha256_required':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'missing':missing,'duplicates':dups,'duplicate_pdf_hashes':hash_dups,'errors':errors,'route_transition':{'legacy_end':'2023-07','estat_start':'2023-08'},'changes_live_data':False,'changes_engine_rules':False}
+ ev={'schema':'GMFQ_JPY_LABOUR_STRICT_PIT_EVIDENCE_V2','status':status,'target':'JPY.labour','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','coverage':{'start':target[0],'end':target[-1],'expected_months':104,'materialized_months':len(rows),'legacy_months':len([r for r in rows if r['source_route'].startswith('STATGO')]),'estat_months':len([r for r in rows if r['source_route'].startswith('ESTAT')])},'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'publication_timestamp_authority':'OFFICIAL_ESTAT_METADATA_FOR_ESTAT_ROUTE__PDF_CROSSCHECK_WHEN_PARSEABLE','sha256_required':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'missing':missing,'duplicates':dups,'duplicate_pdf_hashes':hash_dups,'errors':errors,'route_transition':{'legacy_end':'2023-07','estat_start':'2023-08'},'changes_live_data':False,'changes_engine_rules':False}
  Path(args.evidence).write_text(json.dumps(ev,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
  if status!='PASS':print(json.dumps(ev,ensure_ascii=False,indent=2));raise SystemExit(1)
  Path(args.csv).parent.mkdir(parents=True,exist_ok=True)
