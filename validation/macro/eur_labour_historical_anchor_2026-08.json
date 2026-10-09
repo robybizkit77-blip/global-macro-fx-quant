@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "EUR",
+    "dimension": "labour",
+    "macro_series_id": "EA_UNEMP_history_value"
+  },
+  "authority": "Eurostat",
+  "source": "Eurostat",
+  "official_transport_source": "Eurostat dissemination API",
+  "series_id": "EA_UNEMP",
+  "frequency": "M",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 6.4,
+    "release_date": "2026-09-01",
+    "official_reference": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/3-01092026-bp"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 6.4,
+    "release_date": "2026-10-01",
+    "official_reference": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/3-01102026-ap"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://ec.europa.eu/eurostat/news/euro-indicators",
+    "canonical_source_label_preserved": true,
+    "note": "Eurostat une_rt_m seasonally adjusted euro-area unemployment was 6.4 percent for July 2026 in the 1 September 2026 release and 6.4 percent for August 2026 in the 1 October 2026 release. The canonical runtime stores monthly observations as YYYY-MM while the official adapter emits month-start dates, so the anchor preserves canonical storage representation and comparisons are month-aware."
+  }
+}
