@@ -175,7 +175,7 @@ def build_live(dimension: str) -> tuple[dict[str, Any], dict[str, Any]]:
         release_url, qyear, qmonth = quarter_release_url(latest_year, latest_month)
         quarter_text = text_from_html(fetch_text(release_url))
         value = parse_quarter_cpi_yoy(quarter_text, qyear, qmonth)
-        date = f"{qyear:04d}-{qmonth:02d}-01"
+        date = f"{qyear:04d}-{qmonth:02d}"
         source_url = release_url
         audit_extra = {"latest_monthly_release": f"{latest_year:04d}-{latest_month:02d}-01", "quarter_selected": date}
     else:
