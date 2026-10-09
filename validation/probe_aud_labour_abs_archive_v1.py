@@ -38,24 +38,39 @@ def parse_release_timestamp(text,expected_ref):
 
 def seasonally_adjusted_rate(text,expected_ref):
     ey,em=map(int,expected_ref.split("-")); full=[k.title() for k,v in MONTHS.items() if v==em and len(k)>3][0]
-    pats=[
-      r"seasonally adjusted unemployment rate.{0,220}?\b(?:to|at)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",
-      r"unemployment rate.{0,220}?\b(?:remained steady at|remained at|was steady at|was unchanged at|increased to|decreased to|rose to|fell to|to|at)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",
-      rf"seasonally adjusted estimates for {full} {ey}:.{{0,700}}?Unemployment rate[^0-9]{{0,100}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
-      rf"In seasonally adjusted terms, in {full} {ey}:.{{0,800}}?unemployment rate[^0-9]{{0,100}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
-      rf"In {full} {ey}, the unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",
+    # 1) Explicit phrases that name the seasonally adjusted unemployment rate.
+    m=re.search(r"seasonally adjusted unemployment rate.{0,220}?\b(?:to|at|was)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",text,flags=re.I|re.S)
+    if m:return float(m.group(1))
+    # 2) Period-specific seasonally adjusted sections. These must run before any generic
+    # unemployment-rate fallback because ABS pages often present TREND first.
+    markers=[
+        f"In seasonally adjusted terms, in {full} {ey}",
+        f"Seasonally adjusted estimates for {full} {ey}",
+        "SEASONALLY ADJUSTED ESTIMATES",
+        "Key statistics - Seasonally adjusted",
+        "Seasonally Adjusted",
     ]
-    for p in pats:
-        m=re.search(p,text,flags=re.I|re.S)
-        if m:return float(m.group(1))
-    for marker in [f"Seasonally adjusted estimates for {full} {ey}",f"In seasonally adjusted terms, in {full} {ey}","Seasonally adjusted data","Seasonally adjusted"]:
+    for marker in markers:
         pos=text.lower().find(marker.lower())
         if pos>=0:
-            win=text[pos:pos+2200];m=re.search(r"Unemployment rate.{0,180}?\b(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",win,flags=re.I|re.S)
-            if m:return float(m.group(1))
-    snippets=[]
-    for m in list(re.finditer("unemployment",text,flags=re.I))[:8]: snippets.append(text[max(0,m.start()-100):m.start()+350])
-    raise ValueError(f"seasonally adjusted unemployment rate not found for {expected_ref}; snippets={snippets!r}")
+            win=text[pos:pos+2600]
+            for p in [
+                r"unemployment rate.{0,180}?\b(?:remained steady at|remained at|was steady at|was unchanged at|increased to|decreased to|rose to|fell to|to|at)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",
+                r"Unemployment rate\s*\(%\).{0,180}?([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)",
+                r"Unemployment rate.{0,120}?([0-9]+(?:\.[0-9]+)?)\s*%",
+            ]:
+                m=re.search(p,win,flags=re.I|re.S)
+                if m:
+                    # In table form group 2 is the current/reference-period value.
+                    return float(m.group(2) if m.lastindex and m.lastindex>=2 else m.group(1))
+    # 3) Narrow period-specific prose fallback.
+    for p in [
+        rf"In {full} {ey}, the unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",
+        rf"seasonally adjusted estimates for {full} {ey}:.{{0,900}}?Unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
+    ]:
+        m=re.search(p,text,flags=re.I|re.S)
+        if m:return float(m.group(1))
+    raise ValueError(f"seasonally adjusted unemployment rate not found for {expected_ref}")
 
 def probe(a):
     raw,ct,final=get(a["url"]);text=textify(raw)
