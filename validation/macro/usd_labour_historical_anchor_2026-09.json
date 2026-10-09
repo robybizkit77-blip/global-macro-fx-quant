@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "USD",
+    "dimension": "labour",
+    "macro_series_id": "US_UNRATE_history_value"
+  },
+  "authority": "U.S. Bureau of Labor Statistics",
+  "source": "FRED/BLS",
+  "official_transport_source": "U.S. Bureau of Labor Statistics / Public Data API v2",
+  "series_id": "UNRATE",
+  "frequency": "M",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-08-01",
+    "value": 4.1,
+    "release_date": "2026-09-04",
+    "official_reference": "https://www.bls.gov/news.release/archives/empsit_09042026.htm"
+  },
+  "current": {
+    "observation_date": "2026-09-01",
+    "value": 4.2,
+    "release_date": "2026-10-02",
+    "official_reference": "https://www.bls.gov/news.release/empsit.htm"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.bls.gov/bls/news-release/empsit.htm",
+    "canonical_source_label_preserved": true,
+    "note": "August and September 2026 U.S. unemployment rates are distinct official BLS Employment Situation releases. Observation dates use the canonical runtime monthly storage representation (first day of month); economic-period comparison remains monthly via the bootstrap period key."
+  }
+}
