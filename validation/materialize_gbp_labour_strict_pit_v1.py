@@ -174,7 +174,12 @@ def parse_october_2023_experimental_release(raw: bytes, final_url: str) -> dict[
         raise ValueError('ONS October 2023 experimental overview identity mismatch')
     if release_date(text) != '2023-10-24':
         raise ValueError('ONS October 2023 experimental overview release-date mismatch')
-    opening = text[text.find('Main points'):text.find('Latest indicators at a glance')]
+    contents_main_points = text.find('Main points')
+    main_points = text.find('Main points', contents_main_points + 1)
+    next_section = text.find('Latest indicators at a glance', main_points)
+    if main_points < 0 or next_section < 0:
+        raise ValueError('ONS October 2023 experimental overview summary bounds not found')
+    opening = text[main_points:next_section]
     if 'Unadjusted June to August LFS data are not published.' not in opening:
         raise ValueError('ONS October 2023 LFS-withheld disclosure not found')
     matches = re.findall(
