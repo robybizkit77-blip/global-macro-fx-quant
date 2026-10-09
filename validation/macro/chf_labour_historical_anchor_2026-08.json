@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "CHF",
+    "dimension": "labour",
+    "macro_series_id": "CH_UNEMP_RATE_history_value"
+  },
+  "authority": "SECO via Swiss National Bank data portal",
+  "source": "Swiss National Bank data portal / SECO",
+  "official_transport_source": "Swiss National Bank data portal",
+  "series_id": "CH_UNEMP_RATE",
+  "frequency": "M",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 3.13579541769569,
+    "release_date": "2026-08-06",
+    "official_reference": "https://www.seco.admin.ch/de/newnsb/niOazL9Cj1f0D5QgjBkD6"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 3.13682671641221,
+    "release_date": "2026-09-07",
+    "official_reference": "https://www.seco.admin.ch/it/newnsb/OfSdV0mM5gUa"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.seco.admin.ch/it/statistiche-mercato-lavoro-rapporti-basi-legali",
+    "canonical_source_label_preserved": true,
+    "note": "SECO official monthly releases establish the July and August 2026 release dates and report the seasonally adjusted unemployment rate rounded to 3.1 percent. The official SNB data portal cube amarbma, sourced from SECO, preserves the non-rounded seasonally adjusted series used by the canonical runtime. The replay therefore retains the exact official-transport values 3.13579541769569 and 3.13682671641221 while preserving canonical YYYY-MM storage."
+  }
+}
