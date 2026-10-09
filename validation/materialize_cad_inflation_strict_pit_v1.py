@@ -113,7 +113,6 @@ def parse_headline_yoy(text: str, y: int, m: int) -> float | None:
 
 def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
     s = raw.decode('utf-8', errors='replace')
-    # Period-specific Table 1 row: All-items | relative importance | prior-year same month | prior month | current month | m/m | y/y.
     row_hits = re.findall(r'<tr\b[^>]*>.*?</tr>', s, flags=re.I|re.S)
     candidates = []
     for row in row_hits:
@@ -121,7 +120,6 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
         txt = re.sub(r'\s+', ' ', txt).strip()
         if not re.search(r'\bAll-items\b', txt, flags=re.I):
             continue
-        # Exclude aggregates such as All-items excluding food/energy.
         if re.search(r'All-items\s+excluding', txt, flags=re.I):
             continue
         nums = [float(x.replace(',', '')) for x in re.findall(r'-?[0-9]+(?:\.[0-9]+)?', txt)]
@@ -129,14 +127,14 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
     if len(candidates) != 1:
         raise ValueError(f'expected one exact All-items row; got {len(candidates)}')
     txt, nums = candidates[0]
-    # Normal format from 2018 onward contains: 100.00, prior-year index, prior-month index, current index, m/m %, y/y %.
     if len(nums) < 6:
         raise ValueError(f'All-items row has too few numeric fields: {txt}')
-    # Find relative-importance 100.00 and take the next three index values.
+    # StatCan HTML may concatenate a footnote marker onto 100.00 (for example 100.002).
+    # Treat only the first value in the narrow 99.5-100.5 range as relative importance.
     try:
-        k = next(i for i, x in enumerate(nums) if abs(x - 100.0) < 1e-9)
+        k = next(i for i, x in enumerate(nums) if 99.5 <= x <= 100.5)
     except StopIteration:
-        raise ValueError(f'All-items row missing 100.00 relative importance: {txt}')
+        raise ValueError(f'All-items row missing relative-importance field near 100: {txt}')
     if k + 3 >= len(nums):
         raise ValueError(f'All-items row malformed after relative importance: {txt}')
     prior_year = nums[k+1]
@@ -174,7 +172,6 @@ def one(y: int, m: int):
         except (HTTPError, URLError, TimeoutError, ValueError):
             continue
         yoy = (current / prior - 1.0) * 100.0
-        # The release headline is rounded to one decimal; the canonical engine stores the index-derived full precision value.
         if abs(yoy - headline) > 0.055:
             raise ValueError(f'{ref} index-derived YoY {yoy} does not reconcile to reported headline {headline}')
         ah = hashlib.sha256(araw).hexdigest()
