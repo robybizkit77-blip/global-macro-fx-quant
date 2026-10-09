@@ -240,6 +240,31 @@ def parse_pinned_alternative_lfs_release(raw: bytes, final_url: str, y: int, m: 
     }
 
 
+def parse_february_2024_reweighted_companion(raw: bytes, final_url: str) -> dict[str, object]:
+    """Read the reintroduced LFS headline from its fixed same-day companion."""
+    text = plain(raw)
+    if not re.search(r'\bEmployment in the UK:\s*February\s+2024\b', text, re.I):
+        raise ValueError('ONS February 2024 reweighted companion identity mismatch')
+    if release_date(text) != '2024-02-13':
+        raise ValueError('ONS February 2024 reweighted companion release-date mismatch')
+    contents_main_points = text.find('Main points')
+    main_points = text.find('Main points', contents_main_points + 1)
+    next_section = text.find('Coronavirus (COVID-19) and measuring the labour market', main_points)
+    if main_points < 0 or next_section < 0:
+        raise ValueError('ONS February 2024 reweighted companion summary bounds not found')
+    opening = text[main_points:next_section]
+    values = list(dict.fromkeys(float(value) for value in re.findall(
+        r'UK unemployment rate\s*\(([0-9]+(?:\.[0-9]+)?)%\)\s+decreased in the latest quarter', opening, flags=re.I)))
+    if len(values) != 1 or 'October to December 2023' not in text:
+        raise ValueError(f'ambiguous or missing fixed ONS February 2024 reweighted unemployment headline: {values}')
+    return {
+        'reference_month': '2023-12', 'rolling_period': 'October to December 2023',
+        'source_rolling_period': 'October to December 2023', 'headline_unemployment_rate_pct': values[0],
+        'release_date': '2024-02-13', 'source_route': 'ONS_EMPLOYMENT_IN_UK_REWEIGHTED_COMPANION_BULLETIN',
+        'source_url': final_url, 'page_sha256': hashlib.sha256(raw).hexdigest(), 'pit_status': 'STRICT_FIRST_RELEASE',
+    }
+
+
 def one(y: int, m: int) -> dict[str, object]:
     # The bulletin name is the publication month, not the reference month.
     ry, rm = add_months(y, m, 2)
@@ -249,6 +274,11 @@ def one(y: int, m: int) -> dict[str, object]:
         return parse_october_2023_experimental_release(raw, final_url)
     if (y, m) in ALTERNATIVE_LFS_RELEASES:
         return parse_pinned_alternative_lfs_release(raw, final_url, y, m)
+    if (y, m) == (2023, 12):
+        if release_date(plain(raw)) != '2024-02-13':
+            raise ValueError('ONS February 2024 overview/companion release-date mismatch')
+        companion_raw, companion_url = fetch(f'{EMPLOYMENT_BASE}/{slug}')
+        return parse_february_2024_reweighted_companion(companion_raw, companion_url)
     try:
         return parse_release(raw, final_url, r'(?:UK labour market|Labour market overview, UK)', y, m, 'ONS_UK_LABOUR_MARKET_BULLETIN')
     except ValueError as overview_error:
