@@ -39,12 +39,13 @@ def stamp(text):
 
 def reported_yoy(text,y,m):
     full=MON[m][2]
+    unit=r'(?:%|per cent)(?:\s+per cent)?'
     pats=[
-      rf'Over the twelve months to the {full} {y} quarter[,]? the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)',
-      rf'(?:The\s+)?CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)\s+(?:through the year|over the twelve months)\s+to the {full} {y} quarter',
-      rf'Annual inflation\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)\s+in the {full} {y} quarter',
-      rf'All groups CPI[^.\n]{{0,200}}?\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)\s+for the year',
-      rf'Annually[,]?\s+the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)',
+      rf'Over the twelve months to the {full} {y} quarter[,]? the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}',
+      rf'(?:The\s+)?CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+(?:through the year|over the twelve months)\s+to the {full} {y} quarter',
+      rf'Annual inflation\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+in the {full} {y} quarter',
+      rf'All groups CPI[^.\n]{{0,200}}?\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}\s+for the year',
+      rf'Annually[,]?\s+the CPI\s+(rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s*{unit}',
     ]
     for p in pats:
         x=re.search(p,text,flags=re.I|re.S)
@@ -53,7 +54,6 @@ def reported_yoy(text,y,m):
     raise ValueError(f'explicit headline CPI YoY not found for {y}-{m:02d}')
 
 def legacy_2018_table_yoy(text):
-    # 2018 archived 6401.0 table places quarterly change first and annual change second.
     for p in [
       r'All groups CPI\s+(-?[0-9]+(?:\.[0-9]+)?)\s+(-?[0-9]+(?:\.[0-9]+)?)',
       r'All Groups CPI\s+(-?[0-9]+(?:\.[0-9]+)?)\s+(-?[0-9]+(?:\.[0-9]+)?)',
