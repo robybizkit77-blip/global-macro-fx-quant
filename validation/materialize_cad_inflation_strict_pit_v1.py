@@ -133,12 +133,13 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
         k = next(i for i, x in enumerate(nums) if 99.5 <= x <= 100.5)
     except StopIteration:
         raise ValueError(f'All-items row missing relative-importance field near 100: {txt}')
-    if k + 3 >= len(nums):
-        raise ValueError(f'All-items row malformed after relative importance: {txt}')
-    prior_year = nums[k+1]
-    current = nums[k+3]
-    if not (80.0 <= prior_year <= 250.0 and 80.0 <= current <= 250.0):
-        raise ValueError(f'implausible All-items index values prior={prior_year} current={current}')
+    # Footnote anchors in archived HTML can surface as standalone small integers
+    # immediately after 100.00. The next three plausible CPI index values are,
+    # by the period-specific table contract: prior-year, prior-month, current.
+    indexes = [x for x in nums[k+1:] if 80.0 <= x <= 250.0]
+    if len(indexes) < 3:
+        raise ValueError(f'All-items row missing three plausible CPI indexes: {txt}')
+    prior_year, _prior_month, current = indexes[:3]
     return current, prior_year
 
 
@@ -150,24 +151,29 @@ def digest(rows, keys):
 
 def one(y: int, m: int):
     ref = f'{y:04d}-{m:02d}'
+    diagnostics = []
     for dt in candidate_dates(y, m):
         aurl = article_url(dt)
         try:
             araw, _, afinal = get(aurl)
-        except (HTTPError, URLError, TimeoutError, ValueError):
+        except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+            diagnostics.append(f'{dt}:article_fetch:{type(exc).__name__}')
             continue
         article_text = textify(araw)
         if not valid_article(article_text, y, m):
+            diagnostics.append(f'{dt}:identity_miss')
             continue
         release_date = parse_release_date(article_text)
         headline = parse_headline_yoy(article_text, y, m)
         if release_date is None or headline is None:
+            diagnostics.append(f'{dt}:article_parse:release={release_date}:headline={headline}')
             continue
         turl = table_url(dt)
         try:
             traw, _, tfinal = get(turl)
             current, prior = parse_all_items_indexes(traw)
-        except (HTTPError, URLError, TimeoutError, ValueError):
+        except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+            diagnostics.append(f'{dt}:table:{type(exc).__name__}:{exc}')
             continue
         yoy = (current / prior - 1.0) * 100.0
         if abs(yoy - headline) > 0.055:
@@ -191,7 +197,7 @@ def one(y: int, m: int):
             'combined_sha256': combined,
             'pit_status': 'STRICT_FIRST_RELEASE',
         }
-    raise ValueError(f'no strict period-specific Statistics Canada CPI release/table source for {ref}')
+    raise ValueError(f'no strict period-specific Statistics Canada CPI release/table source for {ref}; diagnostics={diagnostics}')
 
 
 def main():
