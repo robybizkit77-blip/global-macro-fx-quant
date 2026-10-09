@@ -3,9 +3,14 @@ from __future__ import annotations
 
 import argparse
 import html
+import io
 import json
 import re
 import urllib.request
+import zipfile
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
@@ -56,10 +61,14 @@ def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def fetch_text(url: str) -> str:
+def fetch_bytes(url: str) -> bytes:
     req = urllib.request.Request(url, headers=HTTP_HEADERS)
     with urllib.request.urlopen(req, timeout=45) as resp:
-        return resp.read().decode("utf-8", errors="replace")
+        return resp.read()
+
+
+def fetch_text(url: str) -> str:
+    return fetch_bytes(url).decode("utf-8", errors="replace")
 
 
 def parse_reference_period(text: str) -> tuple[int, int]:
@@ -88,17 +97,93 @@ def quarter_release_url(latest_year: int, latest_month: int) -> tuple[str, int, 
     )
 
 
-def parse_quarter_cpi_yoy(text: str, year: int, month: int) -> float:
-    month_name = next(name for name, num in MONTHS.items() if num == month)
-    patterns = [
-        rf"In the 12 months to {month_name} {year}:.*?Consumer Price Index \(CPI\) rose\s+([0-9]+(?:\.[0-9]+)?)%",
-        rf"CPI annual inflation was\s+([0-9]+(?:\.[0-9]+)?)\s+per cent in the 12 months to {month_name} {year}",
-    ]
-    for pattern in patterns:
-        m = re.search(pattern, text, flags=re.I | re.S)
-        if m:
-            return float(m.group(1))
-    raise ValueError(f"cannot parse ABS CPI annual rate for {year}-{month:02d}")
+def quarter_table17_url(release_url: str) -> str:
+    return release_url.rstrip("/") + "/6401017.xlsx"
+
+
+def _xlsx_shared_strings(zf: zipfile.ZipFile, ns: str) -> list[str]:
+    path = "xl/sharedStrings.xml"
+    if path not in zf.namelist():
+        return []
+    root = ET.fromstring(zf.read(path))
+    return ["".join(t.text or "" for t in si.iter(f"{{{ns}}}t")) for si in root.findall(f"{{{ns}}}si")]
+
+
+def _xlsx_sheet_path(zf: zipfile.ZipFile, sheet_name: str, ns: str, rns: str) -> str:
+    workbook = ET.fromstring(zf.read("xl/workbook.xml"))
+    relroot = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+    rels = {e.attrib["Id"]: e.attrib["Target"] for e in relroot}
+    sheets = workbook.find(f"{{{ns}}}sheets")
+    if sheets is None:
+        raise ValueError("ABS workbook has no sheets")
+    for sheet in sheets:
+        if sheet.attrib.get("name") == sheet_name:
+            rid = sheet.attrib[f"{{{rns}}}id"]
+            target = rels[rid].lstrip("/")
+            return target if target.startswith("xl/") else "xl/" + target
+    raise ValueError(f"ABS workbook missing sheet {sheet_name!r}")
+
+
+def _xlsx_cell_value(cell: ET.Element, shared: list[str], ns: str) -> str | None:
+    typ = cell.attrib.get("t")
+    value = cell.find(f"{{{ns}}}v")
+    raw = None if value is None else value.text
+    if typ == "s" and raw is not None:
+        return shared[int(raw)]
+    if typ == "inlineStr":
+        return "".join(t.text or "" for t in cell.iter(f"{{{ns}}}t"))
+    return raw
+
+
+def parse_table17_quarterly_yoy(workbook_bytes: bytes, expected_year: int, expected_month: int) -> tuple[str, float, dict[str, Any]]:
+    """Derive official quarterly CPI YoY from ABS Table 17 Australia index levels.
+
+    Table 17 stores quarterly index levels and q/q changes. The Australia index is the
+    ninth index series (column J in Data1). YoY is therefore index[t]/index[t-4]-1.
+    This avoids mixing the post-Nov-2025 complete monthly CPI with the frozen Q contract.
+    """
+    ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    rns = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    with zipfile.ZipFile(io.BytesIO(workbook_bytes)) as zf:
+        shared = _xlsx_shared_strings(zf, ns)
+        sheet_path = _xlsx_sheet_path(zf, "Data1", ns, rns)
+        root = ET.fromstring(zf.read(sheet_path))
+        observations: list[tuple[datetime, Decimal]] = []
+        for row in root.findall(f".//{{{ns}}}sheetData/{{{ns}}}row"):
+            cells = {c.attrib.get("r", ""): _xlsx_cell_value(c, shared, ns) for c in row.findall(f"{{{ns}}}c")}
+            row_num = row.attrib.get("r", "")
+            a = cells.get(f"A{row_num}")
+            j = cells.get(f"J{row_num}")
+            if not a or not j:
+                continue
+            try:
+                dt = datetime(1899, 12, 30) + timedelta(days=int(Decimal(a)))
+                idx = Decimal(j)
+            except Exception:
+                continue
+            observations.append((dt, idx))
+    observations.sort(key=lambda x: x[0])
+    target_idx = next((i for i, (dt, _) in enumerate(observations) if dt.year == expected_year and dt.month == expected_month), None)
+    if target_idx is None:
+        raise ValueError(f"ABS Table 17 missing expected quarter {expected_year}-{expected_month:02d}")
+    if target_idx < 4:
+        raise ValueError("ABS Table 17 has insufficient history for YoY calculation")
+    dt, current = observations[target_idx]
+    prev_dt, previous = observations[target_idx - 4]
+    if prev_dt.year != expected_year - 1 or prev_dt.month != expected_month:
+        raise ValueError(f"ABS Table 17 t-4 mismatch: current={dt.date()} previous={prev_dt.date()}")
+    yoy_raw = (current / previous - Decimal("1")) * Decimal("100")
+    yoy = yoy_raw.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+    date = f"{expected_year:04d}-{expected_month:02d}"
+    audit = {
+        "table": "17",
+        "method": "quarterly_australia_index_t_over_t_minus_4",
+        "current_index": float(current),
+        "previous_year_index": float(previous),
+        "raw_yoy": float(yoy_raw),
+        "rounded_yoy": float(yoy),
+    }
+    return date, float(yoy), audit
 
 
 def parse_labour_unemployment(text: str, year: int, month: int) -> float:
@@ -173,11 +258,15 @@ def build_live(dimension: str) -> tuple[dict[str, Any], dict[str, Any]]:
         latest_text = text_from_html(fetch_text(CPI_LATEST_URL))
         latest_year, latest_month = parse_reference_period(latest_text)
         release_url, qyear, qmonth = quarter_release_url(latest_year, latest_month)
-        quarter_text = text_from_html(fetch_text(release_url))
-        value = parse_quarter_cpi_yoy(quarter_text, qyear, qmonth)
-        date = f"{qyear:04d}-{qmonth:02d}"
-        source_url = release_url
-        audit_extra = {"latest_monthly_release": f"{latest_year:04d}-{latest_month:02d}-01", "quarter_selected": date}
+        table_url = quarter_table17_url(release_url)
+        date, value, table_audit = parse_table17_quarterly_yoy(fetch_bytes(table_url), qyear, qmonth)
+        source_url = table_url
+        audit_extra = {
+            "latest_monthly_release": f"{latest_year:04d}-{latest_month:02d}",
+            "quarter_selected": date,
+            "quarter_release_url": release_url,
+            **table_audit,
+        }
     else:
         source_url = LABOUR_LATEST_URL
         labour_text = text_from_html(fetch_text(source_url))
