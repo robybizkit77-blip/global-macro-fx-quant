@@ -75,7 +75,7 @@ jobs:
             --evidence-output /tmp/chf-labour-bootstrap/macro_pit_anchor_evidence.json \
             --work-dir /tmp/chf-labour-bootstrap/replay \
             | tee /tmp/chf-labour-bootstrap/bootstrap-run.json
-      - name: Verify review-only registry promotion proposal
+      - name: Verify review-only registry promotion or pinned certification
         shell: bash
         run: |
           set -euo pipefail
@@ -85,28 +85,48 @@ jobs:
             --receipt /tmp/chf-labour-bootstrap/promotion-receipt.json \
             | tee /tmp/chf-labour-bootstrap/promotion-run.json
           python3 - <<'PY'
-          import json
+          import json, subprocess
           from pathlib import Path
           canonical=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())
           proposed=json.loads(Path('/tmp/chf-labour-bootstrap/proposed-registry.json').read_text())
           receipt=json.loads(Path('/tmp/chf-labour-bootstrap/promotion-receipt.json').read_text())
           evidence=json.loads(Path('/tmp/chf-labour-bootstrap/macro_pit_anchor_evidence.json').read_text())
-          key='CHF.labour'; prow=proposed['series'][key]
-          assert receipt['status']=='PASS' and receipt['target']==key
+          key='CHF.labour'
+          row=canonical['series'][key]
+          prow=proposed['series'][key]
+          assert receipt['status']=='PASS'
+          assert receipt['target']==key
           assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
-          assert receipt['promotion_action']=='PROPOSAL_CREATED'
           assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
           assert evidence['bootstrap_provenance']['before_state'].startswith('RECONSTRUCTED_')
           assert prow['historical_replay_certified'] is True
           pref=prow['historical_replay_evidence']
           assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
           assert pref['official_release_pair_verified'] is True
-          c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
-          c2['series'][key].pop('historical_replay_certified',None)
-          p2['series'][key].pop('historical_replay_certified',None)
-          p2['series'][key].pop('historical_replay_evidence',None)
-          assert c2==p2
-          print(json.dumps({'status':'CHF_LABOUR_CERTIFICATION_SCOPE_PASS','target':key},indent=2))
+          assert pref['macro_series_id']==evidence['target']['macro_series_id']
+          assert pref['observation_date']==evidence['candidate']['observation_date']
+          assert abs(float(pref['value'])-float(evidence['candidate']['value'])) < 1e-12
+          if row.get('historical_replay_certified') is not True:
+              assert receipt['promotion_action']=='PROPOSAL_CREATED'
+              c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
+              c2['series'][key].pop('historical_replay_certified',None)
+              p2['series'][key].pop('historical_replay_certified',None)
+              p2['series'][key].pop('historical_replay_evidence',None)
+              assert c2==p2, 'promotion proposal changed fields outside CHF labour certification metadata'
+          else:
+              assert receipt['promotion_action'] in {'METADATA_ENRICHMENT_PROPOSED','ALREADY_CERTIFIED'}
+              existing=row['historical_replay_evidence']
+              assert existing['macro_series_id']==pref['macro_series_id']
+              assert existing['observation_date']==pref['observation_date']
+              assert abs(float(existing['value'])-float(pref['value'])) < 1e-12
+              assert existing['evidence_sha256']=='d5f657f360d47f1365a118fccd3fcaaf22769a8770c4f3981c9f51891e2a3e8f'
+              assert existing['before_git_head']==existing['after_git_head']=='462bb2304eeb75b602a36150fb821e28065b9032'
+              assert existing['manifest_sha256']=='f7e456f49fbe87a7764692edd84363499d7a0c4f10318d0164e75bb2e329f9e8'
+              assert len(existing['evidence_sha256'])==64
+              subprocess.run(['git','merge-base','--is-ancestor',existing['after_git_head'],'HEAD'], check=True)
+              if receipt['promotion_action']=='ALREADY_CERTIFIED':
+                  assert proposed==canonical
+          print(json.dumps({'status':'CHF_LABOUR_CERTIFICATION_SCOPE_PASS','target':key,'promotion_action':receipt['promotion_action'],'evidence_class':'RECONSTRUCTED_HISTORICAL_REPLAY'},indent=2))
           PY
       - name: Enforce no canonical publication
         shell: bash
@@ -122,4 +142,4 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-# exact-head trigger after CHF labour precision repair
+# Final exact-head validation after reviewed registry promotion and cleanup.
