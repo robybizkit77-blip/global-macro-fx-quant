@@ -12,7 +12,7 @@ STATIC_CSV='https://www150.statcan.gc.ca/n1/en/tbl/csv'
 PRICE_PORTAL='https://www.statcan.gc.ca/en/subjects-start/prices_and_price_indexes'
 HTTP_HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)','Accept':'text/html,application/zip,application/octet-stream,*/*'}
 CONFIG={
- 'inflation':{'pid':'1810000402','download_pid':'18100004','unit':'% YoY','transformation':'reported_yoy_rate'},
+ 'inflation':{'pid':'1810000402','download_pid':'18100004','unit':'% YoY','transformation':'derived_yoy_from_index'},
  'labour':{'pid':'14100287','download_pid':'14100287','unit':'%','transformation':'level'},
 }
 MONTHS={m:i for i,m in enumerate(('January','February','March','April','May','June','July','August','September','October','November','December'),1)}
@@ -53,20 +53,33 @@ def download_csv(download_pid:str)->str:
 
 def rows_from_text(text:str):return list(csv.DictReader(io.StringIO(text)))
 
-def extract_fixture_inflation(rows):
+def extract_cpi_index(rows):
  out={}
  for r in rows:
   if norm(r.get('GEO') or r.get('Geography'))!='canada':continue
-  joined=' | '.join(norm(v) for v in r.values())
-  if 'all-items' not in joined and 'all items' not in joined:continue
-  if not any(token in joined for token in ('12-month','12 month','year-over-year','year over year')):continue
+  product=norm(r.get('Products and product groups') or r.get('Product'))
+  if product!='all-items':continue
+  uom=norm(r.get('UOM') or r.get('Unit of measure'))
+  if uom and '=100' not in uom:continue
   d=r.get('REF_DATE') or r.get('Reference period');v=r.get('VALUE') or r.get('Value')
   if not d or v in (None,''):continue
-  try:out[str(d)[:7]+'-01']=float(v)
+  try:out[str(d)[:7]]=float(v)
   except:pass
  dates=sorted(out)
- if len(dates)<2:raise ValueError(f'need >=2 fixture CPI YoY observations; got {len(dates)}')
+ if len(dates)<13:raise ValueError(f'need >=13 monthly CPI index observations; got {len(dates)}')
  return [(d,out[d]) for d in dates]
+
+def derive_cpi_yoy(index_obs):
+ idx={d:float(v) for d,v in index_obs};out=[]
+ for d in sorted(idx):
+  y,m=map(int,d.split('-'));prev=f'{y-1:04d}-{m:02d}'
+  if prev not in idx:continue
+  out.append((d+'-01',(idx[d]/idx[prev]-1.0)*100.0,idx[d],idx[prev]))
+ if len(out)<2:raise ValueError(f'need >=2 derived CPI YoY observations; got {len(out)}')
+ return out
+
+def extract_fixture_inflation(rows):
+ return [(d,v) for d,v,_,_ in derive_cpi_yoy(extract_cpi_index(rows))]
 
 def extract_labour(rows):
  out={}
@@ -105,10 +118,12 @@ def build_fixture_candidate(dim:str,text:str):
 
 def build_live_candidate(dim:str):
  cfg=CONFIG[dim]
+ text=download_csv(cfg['download_pid']);rows=rows_from_text(text)
  if dim=='inflation':
-  page=http_get_text(PRICE_PORTAL);latest,lv=extract_live_headline_cpi(page)
-  return make_candidate(dim,latest,lv,PRICE_PORTAL,{'transport':'official_key_indicator_html','reported_measure':'12-month change'})
- text=download_csv(cfg['download_pid']);obs=extract_labour(rows_from_text(text));latest,lv=obs[-1];prior,pv=obs[-2]
+  derived=derive_cpi_yoy(extract_cpi_index(rows));latest,lv,current_index,prior_year_index=derived[-1];prior,pv,_,_=derived[-2]
+  source_url=f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}'
+  return make_candidate(dim,latest,lv,source_url,{'transport':'official_full_table_csv','download_pid':cfg['download_pid'],'reported_measure':'derived from official All-items CPI index','current_index':current_index,'prior_year_index':prior_year_index},prior,pv)
+ obs=extract_labour(rows);latest,lv=obs[-1];prior,pv=obs[-2]
  return make_candidate(dim,latest,lv,f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}',{'transport':'official_full_table_csv','download_pid':cfg['download_pid']},prior,pv)
 
 def main():
