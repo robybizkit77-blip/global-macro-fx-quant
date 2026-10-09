@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "NZD",
+    "dimension": "inflation",
+    "macro_series_id": "NZ_CPI_HEADLINE_YOY_history_value"
+  },
+  "authority": "Stats NZ",
+  "source": "Stats NZ",
+  "official_transport_source": "Stats NZ",
+  "series_id": "NZ_CPI_HEADLINE_YOY",
+  "frequency": "Q",
+  "transformation": "reported_yoy_rate",
+  "previous": {
+    "observation_date": "2026-03",
+    "value": 3.1,
+    "release_date": "2026-04-21",
+    "official_reference": "https://www.stats.govt.nz/information-releases/consumers-price-index-march-2026-quarter/"
+  },
+  "current": {
+    "observation_date": "2026-06",
+    "value": 4.1,
+    "release_date": "2026-07-21",
+    "official_reference": "https://www.stats.govt.nz/information-releases/consumers-price-index-june-2026-quarter/"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.stats.govt.nz/topics/consumers-price-index/",
+    "canonical_source_label_preserved": true,
+    "note": "March and June 2026 New Zealand headline CPI were distinct official Stats NZ quarterly releases. Annual CPI was 3.1 percent in March 2026 and 4.1 percent in June 2026. The June release retained March at 3.1 percent, so the bounded canonical prior is consistent with the original published release pair."
+  }
+}
