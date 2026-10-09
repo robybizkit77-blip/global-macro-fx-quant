@@ -137,3 +137,5 @@ jobs:
           path: /tmp/eur-labour-bootstrap/
           if-no-files-found: error
           retention-days: 90
+
+# Final exact-head validation trigger after certification and cleanup.
