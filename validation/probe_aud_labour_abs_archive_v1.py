@@ -18,7 +18,7 @@ ANCHORS = [
         "reference_month": "2019-01",
         "era": "AUSSTATS_LEGACY",
         "url": "https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features3Jan%202019",
-        "expected_rate": None,
+        "expected_rate": 5.0,
     },
     {
         "reference_month": "2021-01",
@@ -72,40 +72,38 @@ def parse_reference_month(text, expected):
 
 
 def parse_release_timestamp(text, expected_ref):
-    # Modern release pages: Release date and time 16/02/2023 11:30am AEDT
     m = re.search(r"Release date and time\s+(\d{1,2}/\d{1,2}/\d{4})\s+(\d{1,2}:\d{2}\s*(?:am|pm))\s*([A-Z]{3,5})", text, flags=re.I)
     if m:
         return {"release_date": m.group(1), "release_time": re.sub(r"\s+", "", m.group(2)).lower(), "timezone": m.group(3).upper(), "source": "page_explicit"}
-    # Legacy AUSSTATS: Released at 11:30 AM (CANBERRA TIME) 21/02/2019
     m = re.search(r"Released at\s+(\d{1,2}:\d{2})\s*(AM|PM)\s*\(CANBERRA TIME\)\s*(\d{1,2}/\d{1,2}/\d{4})", text, flags=re.I)
     if m:
         return {"release_date": m.group(3), "release_time": m.group(1)+m.group(2).lower(), "timezone": "CANBERRA_TIME", "source": "page_explicit"}
-    # Legacy media release often carries an embargo timestamp/date.
-    m = re.search(r"(\d{1,2}\s+[A-Z][a-z]+\s+\d{4}).{0,120}?Embargo:\s*(\d{1,2}:\d{2})\s*(am|pm)\s*\(Canberra Time\)", text, flags=re.I | re.S)
+    m = re.search(r"(\d{1,2}\s+[A-Z][a-z]+\s+\d{4}).{0,160}?Embargo:\s*(\d{1,2}:\d{2})\s*(am|pm)\s*\(Canberra Time\)", text, flags=re.I | re.S)
     if m:
         return {"release_date": m.group(1), "release_time": m.group(2)+m.group(3).lower(), "timezone": "CANBERRA_TIME", "source": "page_explicit"}
-    return {"release_date": None, "release_time": None, "timezone": None, "source": "not_found"}
+    raise ValueError(f"explicit release timestamp not found for {expected_ref}")
 
 
 def seasonally_adjusted_rate(text, expected_ref):
     ey, em = map(int, expected_ref.split("-"))
     full = [k.title() for k, v in MONTHS.items() if v == em and len(k) > 3][0]
     pats = [
-        rf"seasonally adjusted unemployment rate (?:decreased|increased|remained|was|rose|fell)[^0-9]{{0,80}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)\s*per cent",
-        rf"seasonally adjusted estimates for {full} {ey}:.{{0,600}}?Unemployment rate[^0-9]{{0,80}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
-        rf"In seasonally adjusted terms, in {full} {ey}:.{{0,700}}?unemployment rate[^0-9]{{0,80}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
-        rf"In {full} {ey}, the unemployment rate[^0-9]{{0,100}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",
+        # Legacy AUSSTATS commentary/media releases. The clause can contain an intermediate
+        # movement (e.g. 'decreased by 0.1 percentage points') before the actual level.
+        r"seasonally adjusted unemployment rate.{0,220}?\b(?:to|at)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",
+        rf"seasonally adjusted estimates for {full} {ey}:.{{0,700}}?Unemployment rate[^0-9]{{0,100}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
+        rf"In seasonally adjusted terms, in {full} {ey}:.{{0,800}}?unemployment rate[^0-9]{{0,100}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
+        rf"In {full} {ey}, the unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",
     ]
     for p in pats:
         m = re.search(p, text, flags=re.I | re.S)
         if m:
             return float(m.group(1))
-    # Modern key-statistics/table fallback, tightly scoped after phrase 'Seasonally adjusted'.
-    for marker in [f"Seasonally adjusted estimates for {full} {ey}", f"In seasonally adjusted terms, in {full} {ey}", "Seasonally adjusted"]:
+    for marker in [f"Seasonally adjusted estimates for {full} {ey}", f"In seasonally adjusted terms, in {full} {ey}", "Seasonally adjusted data", "Seasonally adjusted"]:
         pos = text.lower().find(marker.lower())
         if pos >= 0:
-            win = text[pos:pos+1600]
-            m = re.search(r"Unemployment rate.{0,120}?([0-9]+(?:\.[0-9]+)?)\s*%", win, flags=re.I | re.S)
+            win = text[pos:pos+2200]
+            m = re.search(r"Unemployment rate.{0,180}?\b(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)", win, flags=re.I | re.S)
             if m:
                 return float(m.group(1))
     raise ValueError(f"seasonally adjusted unemployment rate not found for {expected_ref}")
@@ -120,7 +118,7 @@ def probe(a):
         raise ValueError("Labour Force identity not established")
     parse_reference_month(text, a["reference_month"])
     rate = seasonally_adjusted_rate(text, a["reference_month"])
-    if a["expected_rate"] is not None and abs(rate - float(a["expected_rate"])) > 1e-9:
+    if abs(rate - float(a["expected_rate"])) > 1e-9:
         raise ValueError(f"rate mismatch {a['reference_month']}: {rate} != {a['expected_rate']}")
     stamp = parse_release_timestamp(text, a["reference_month"])
     return {
