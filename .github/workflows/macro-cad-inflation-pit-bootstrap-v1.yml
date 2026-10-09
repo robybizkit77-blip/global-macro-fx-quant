@@ -154,3 +154,4 @@ jobs:
           retention-days: 90
 
 # Contract repair: CAD CPI is derived at full precision from official StatCan All-items index levels.
+# Final validation preserves the previously reviewed evidence reference without repinning it.
