@@ -1,0 +1,65 @@
+name: Macro AUD Labour PIT Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-aud-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-aud-labour-pit-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read canonical tail and ABS live labour candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud-labour-probe
+          python3 validation/sources/aud_abs_core.py \
+            --dimension labour \
+            --output /tmp/aud-labour-probe/candidate.json \
+            --audit-output /tmp/aud-labour-probe/audit.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          candidate=json.loads(Path('/tmp/aud-labour-probe/candidate.json').read_text())
+          audit=json.loads(Path('/tmp/aud-labour-probe/audit.json').read_text())
+          target=next(r for r in series['AUD'] if r.get('id')=='AU_UNEMP_RATE_history_value')
+          h=heat['currencies']['AUD']['labour']
+          obs=h.get('observations') or h.get('history') or []
+          print(json.dumps({
+            'status':'AUD_LABOUR_PIT_PROBE',
+            'candidate':candidate,
+            'audit':audit,
+            'canonical_series':{
+              'dates_tail':target.get('dates',[])[-8:],
+              'values_tail':target.get('values',[])[-8:],
+              'last_date':target.get('last_date'),
+              'last_value':target.get('last_value'),
+              'frequency':target.get('frequency'),
+              'unit':target.get('unit'),
+              'source_file':target.get('source_file')
+            },
+            'heatmap':{
+              'latest_value':h.get('latest_value'),
+              'as_of':h.get('as_of'),
+              'series_id':h.get('series_id'),
+              'frequency':h.get('frequency'),
+              'transformation':h.get('transformation'),
+              'source':h.get('source'),
+              'observations_tail':obs[-8:] if isinstance(obs,list) else obs
+            }
+          }, indent=2))
+          PY
