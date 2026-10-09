@@ -102,16 +102,36 @@ def parse_release_date(text: str) -> str | None:
 
 def parse_headline_yoy(text: str, y: int, m: int) -> float | None:
     month = MONTHS[m-1]
-    patterns = [
-        rf'Consumer Price Index\s+{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,80}}?\(12-month change\)',
-        rf'{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,80}}?\(12-month change\)',
-    ]
-    for p in patterns:
-        q = re.search(p, text, flags=re.I|re.S)
-        if q:
-            return float(q.group(1))
-    q = re.search(r'Consumer Price Index.{0,700}?(-?[0-9]+(?:\.[0-9]+)?)\s*%.{0,80}?\(12-month change\)', text, flags=re.I|re.S)
-    return float(q.group(1)) if q else None
+    # Fail closed on the actual release headline. Do not scan hundreds of
+    # characters after a generic "Consumer Price Index" token because later
+    # prose/tables contain many unrelated percentages (April 2020 exposed this).
+    headline = re.search(
+        rf'Consumer Price Index\s+{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,120}}?\(12-month change\)',
+        text,
+        flags=re.I|re.S,
+    )
+    if headline:
+        return float(headline.group(1))
+
+    # Some archived layouts separate the title from the headline block. Accept
+    # only an exact month/year headline immediately followed by the 12-month label.
+    headline = re.search(
+        rf'\b{month}\s+{y}\b\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,120}}?\(12-month change\)',
+        text,
+        flags=re.I|re.S,
+    )
+    if headline:
+        return float(headline.group(1))
+
+    # Last strict route: the opening sentence explicitly states the CPI YoY for
+    # that reference month. This is still first-release article text, not a
+    # generic percentage fallback.
+    prose = re.search(
+        rf'The Consumer Price Index\s*\(CPI\).{{0,120}}?(?:rose|increased|fell|declined|decreased)\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%\s+on a year-over-year basis in\s+{month}\b',
+        text,
+        flags=re.I|re.S,
+    )
+    return float(prose.group(1)) if prose else None
 
 
 def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
