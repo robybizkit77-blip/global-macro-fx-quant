@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "CAD",
+    "dimension": "inflation",
+    "macro_series_id": "CA_CPI_HEADLINE_YOY_history_value"
+  },
+  "authority": "Statistics Canada",
+  "source": "Statistics Canada",
+  "official_transport_source": "Statistics Canada",
+  "series_id": "CA_CPI_HEADLINE_YOY",
+  "frequency": "M",
+  "transformation": "reported_yoy_rate",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 3.0,
+    "release_date": "2026-08-17",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260817/dq260817a-eng.htm"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 3.0,
+    "release_date": "2026-09-14",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260914/dq260914a-eng.htm"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.statcan.gc.ca/en/subjects-start/prices_and_price_indexes/consumer_price_indexes",
+    "canonical_source_label_preserved": true,
+    "note": "July and August 2026 Canadian headline CPI were distinct official Statistics Canada monthly releases. Headline CPI was 3.0 percent year over year in both periods; the new economic observation is the period advance itself."
+  }
+}
