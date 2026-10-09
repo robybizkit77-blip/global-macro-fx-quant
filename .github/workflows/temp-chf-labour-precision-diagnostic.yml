@@ -1,0 +1,62 @@
+name: TEMP CHF Labour Precision Diagnostic
+
+on:
+  push:
+    branches:
+      - repair-chf-labour-heatmap-precision-2026-10-09
+    paths:
+      - '.github/workflows/temp-chf-labour-precision-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check exact precision repair impact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.build_macro_candidate import percentile, direction, acceleration
+
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=heat['currencies']['CHF']['labour']
+          s=next(x for x in series['CHF'] if x['id']=='CH_UNEMP_RATE_history_value')
+          exact=float(s['last_value'])
+          assert exact == 3.13682671641221
+          assert float(h['latest_value']) == exact
+          assert float(h['history'][-1]) == 3.136827
+          repaired=[float(x) for x in h['history']]
+          repaired[-1]=exact
+          expected={
+            'percentile': percentile(repaired, exact),
+            'direction': direction(repaired),
+            'acceleration': acceleration(repaired),
+          }
+          current={
+            'percentile': h['percentile'],
+            'direction': h['direction'],
+            'acceleration': h['acceleration'],
+          }
+          print(json.dumps({
+            'status':'PASS',
+            'series_last_value': exact,
+            'heat_latest_value': h['latest_value'],
+            'heat_history_last_before': h['history'][-1],
+            'heat_history_last_after': exact,
+            'current_derived': current,
+            'expected_derived_after_precision_repair': expected,
+            'derived_fields_unchanged': current == expected,
+          }, indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
