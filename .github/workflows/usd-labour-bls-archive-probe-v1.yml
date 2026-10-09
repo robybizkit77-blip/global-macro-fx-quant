@@ -1,0 +1,35 @@
+name: USD Labour BLS Archive Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-usd-labour-strict-pit-v1-*'
+    paths:
+      - 'validation/probe_usd_labour_bls_archive_v1.py'
+      - '.github/workflows/usd-labour-bls-archive-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official BLS Employment Situation archive
+        run: python validation/probe_usd_labour_bls_archive_v1.py | tee /tmp/usd-labour-bls-archive-probe.json
+      - name: Enforce read-only repository state
+        run: git diff --exit-code
+      - name: Upload route evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usd-labour-bls-archive-probe-${{ github.run_id }}
+          path: /tmp/usd-labour-bls-archive-probe.json
+          if-no-files-found: error
+          retention-days: 90
