@@ -6,7 +6,7 @@
     "macro_series_id": "NZ_CPI_HEADLINE_YOY_history_value"
   },
   "authority": "Stats NZ",
-  "source": "Stats NZ",
+  "source": "Stats NZ via Figure.NZ mirror",
   "official_transport_source": "Stats NZ",
   "series_id": "NZ_CPI_HEADLINE_YOY",
   "frequency": "Q",
@@ -30,6 +30,6 @@
     "official_release_pair_verified": true,
     "release_schedule_reference": "https://www.stats.govt.nz/topics/consumers-price-index/",
     "canonical_source_label_preserved": true,
-    "note": "March and June 2026 New Zealand headline CPI were distinct official Stats NZ quarterly releases. Annual CPI was 3.1 percent in March 2026 and 4.1 percent in June 2026. The June release retained March at 3.1 percent, so the bounded canonical prior is consistent with the original published release pair."
+    "note": "March and June 2026 New Zealand headline CPI were distinct official Stats NZ quarterly releases. Annual CPI was 3.1 percent in March 2026 and 4.1 percent in June 2026. The June release retained March at 3.1 percent, so the bounded canonical prior is consistent with the original published release pair. The historical replay preserves the canonical heatmap source label 'Stats NZ via Figure.NZ mirror'; authority and current official transport verification remain direct Stats NZ."
   }
 }
