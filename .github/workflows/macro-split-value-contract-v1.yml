@@ -1,0 +1,34 @@
+name: Macro Split Value Contract V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-split-series-heatmap-value-*'
+    paths:
+      - '.github/workflows/macro-split-value-contract-v1.yml'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_historical_bootstrap.py'
+      - 'validation/test_macro_pit_historical_bootstrap.py'
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/test_macro_pit_registry_promotion.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate backward-compatible split-value contract
+        run: |
+          set -euo pipefail
+          python3 validation/build_macro_candidate.py --self-test
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/test_macro_pit_registry_promotion.py
+          git diff --exit-code
