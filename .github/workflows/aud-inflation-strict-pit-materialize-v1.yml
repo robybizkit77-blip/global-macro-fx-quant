@@ -1,0 +1,43 @@
+name: AUD Inflation Strict PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-inflation-strict-pit-v1-*'
+    paths:
+      - 'validation/materialize_aud_inflation_strict_pit_v1.py'
+      - 'validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/aud_inflation_strict_pit_receipt_v1_2026-10-09.json'
+      - '.github/workflows/aud-inflation-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize official ABS quarterly CPI first-release vintages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud-inflation-strict
+          python validation/materialize_aud_inflation_strict_pit_v1.py \
+            --csv /tmp/aud-inflation-strict/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv \
+            --evidence /tmp/aud-inflation-strict/AUD_INFLATION_STRICT_PIT_EVIDENCE_V1.json
+      - name: Enforce read-only repository state
+        run: git diff --exit-code
+      - name: Upload strict PIT candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-inflation-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/aud-inflation-strict/
+          if-no-files-found: warn
+          retention-days: 90
