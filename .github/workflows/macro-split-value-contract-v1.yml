@@ -1,5 +1,5 @@
 name: Macro Split Value Contract V1
-# Final exact-head validation trigger for split series/heatmap semantics.
+# Final exact-head validation retry after stalled Engine runner; core tree unchanged.
 
 on:
   push:
