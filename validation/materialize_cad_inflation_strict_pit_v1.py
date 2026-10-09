@@ -170,16 +170,27 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
     if len(candidates) != 1:
         raise ValueError(f'expected one exact All-items row; got {len(candidates)}')
     txt, nums = candidates[0]
-    if len(nums) < 6:
+    if len(nums) < 5:
         raise ValueError(f'All-items row has too few numeric fields: {txt}')
-    try:
-        k = next(i for i, x in enumerate(nums) if 99.5 <= x <= 100.5)
-    except StopIteration:
-        raise ValueError(f'All-items row missing relative-importance field near 100: {txt}')
-    indexes = [x for x in nums[k+1:] if 80.0 <= x <= 250.0]
-    if len(indexes) < 3:
-        raise ValueError(f'All-items row missing three plausible CPI indexes: {txt}')
-    prior_year, _prior_month, current = indexes[:3]
+
+    # Historical Table 1 layouts include a relative-importance field near 100
+    # before the three CPI indexes. Preserve that route exactly when present.
+    rel_positions = [i for i, x in enumerate(nums) if 99.5 <= x <= 100.5]
+    if rel_positions:
+        k = rel_positions[0]
+        indexes = [x for x in nums[k+1:] if 80.0 <= x <= 250.0]
+        if len(indexes) < 3:
+            raise ValueError(f'All-items row missing three plausible CPI indexes after relative importance: {txt}')
+        prior_year, _prior_month, current = indexes[:3]
+        return current, prior_year
+
+    # Newer official Table 1 layouts omit relative importance and expose exactly
+    # prior-year index, prior-month index, current index, MoM %, YoY %. In that
+    # format the first three plausible CPI-level values are the required indexes.
+    indexes = [x for x in nums if 80.0 <= x <= 250.0]
+    if len(indexes) != 3:
+        raise ValueError(f'compact All-items row expected exactly three CPI indexes; got {len(indexes)}: {txt}')
+    prior_year, _prior_month, current = indexes
     return current, prior_year
 
 
