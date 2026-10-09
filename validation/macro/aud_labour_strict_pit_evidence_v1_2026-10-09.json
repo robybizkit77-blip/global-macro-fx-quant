@@ -1,0 +1,38 @@
+{
+  "schema": "GMFQ_AUD_LABOUR_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "AUD.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Australian Bureau of Statistics",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104,
+    "legacy_ausstats_months": 23,
+    "modern_abs_release_months": 81
+  },
+  "series_contract": {
+    "series_id": "AU_UNEMP_RATE",
+    "frequency": "M",
+    "transformation": "level",
+    "seasonal_adjustment": "seasonally adjusted"
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_timestamp_required": true,
+    "sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "unique_source_hashes": 104,
+  "rowset_sha256": "02edb2f338d1dbf9ed18bf6e6ea032d16bf4847d39c79a96a4c4e4c466b31865",
+  "values_sha256": "c0df7469bec3e71ca9f9cc4dc1e0467049e26c52b636b7dbbcab0485792cba87",
+  "source_hashes_sha256": "2102dbd0aa6fe9796ca55b98dbfdd1c09631a59c8117903caf8673b71632e843",
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
