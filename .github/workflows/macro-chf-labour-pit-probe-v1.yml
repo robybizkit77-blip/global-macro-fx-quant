@@ -1,0 +1,55 @@
+name: Macro CHF Labour PIT Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-chf-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-chf-labour-pit-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official SNB/SECO labour and canonical runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0,'.')
+          from validation.sources.chf_snb_official_core import CONFIG, fetch_json, api_url, select_series, build
+          c=CONFIG['labour']
+          ts=select_series(fetch_json(api_url(c['cube'])), c['series_label'])
+          vals=[]
+          for v in ts.get('values',[]):
+              d=v.get('date'); x=v.get('value')
+              if isinstance(d,str) and isinstance(x,(int,float)) and not isinstance(x,bool): vals.append((d,float(x)))
+          vals=sorted(vals)[-4:]
+          cand,audit=build('labour')
+          ms=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          row=[r for r in ms['CHF'] if r.get('id')=='CH_UNEMP_RATE_history_value'][0]
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['CHF']['labour']
+          out={
+            'official_tail': vals,
+            'candidate': cand,
+            'audit': audit,
+            'canonical_tail': list(zip(row['dates'][-4:],row['values'][-4:])),
+            'canonical_last_date': row.get('last_date'),
+            'canonical_last_value': row.get('last_value'),
+            'heatmap': heat
+          }
+          print(json.dumps(out,indent=2))
+          assert audit['candidate_only'] is True and audit['live_data_written'] is False
+          PY
+          git diff --exit-code -- live_data
