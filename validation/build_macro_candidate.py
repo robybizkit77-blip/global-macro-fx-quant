@@ -155,6 +155,24 @@ def normalize_candidate(c: dict[str, Any]) -> dict[str, Any]:
     out = dict(c)
     out["value"] = value
     out["series_value"] = series_value
+    prior_revision = c.get("prior_revision")
+    if prior_revision is not None:
+        if not isinstance(prior_revision, dict):
+            raise ValueError("prior_revision must be an object")
+        for key in ("observation_date", "before_value", "value"):
+            if prior_revision.get(key) in (None, ""):
+                raise ValueError(f"prior_revision missing {key}")
+        revision = dict(prior_revision)
+        if not isinstance(revision["observation_date"], str) or len(revision["observation_date"]) < 7:
+            raise ValueError("prior_revision observation_date must be YYYY-MM or YYYY-MM-DD")
+        revision["before_value"] = float(revision["before_value"])
+        revision["value"] = float(revision["value"])
+        revision["before_series_value"] = float(revision.get("before_series_value", revision["before_value"]))
+        revision["series_value"] = float(revision.get("series_value", revision["value"]))
+        for key in ("before_value", "value", "before_series_value", "series_value"):
+            if not math.isfinite(revision[key]):
+                raise ValueError(f"prior_revision {key} must be finite")
+        out["prior_revision"] = revision
     return out
 
 
@@ -171,6 +189,29 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     values = series_row.get("values")
     if not isinstance(dates, list) or not isinstance(values, list) or len(dates) != len(values):
         raise ValueError("target MACRO_SERIES entry has invalid dates/values")
+
+    prior_revision = c.get("prior_revision")
+    prior_revision_summary = None
+    if prior_revision is not None:
+        revision_date = str(prior_revision["observation_date"])
+        if same_period(revision_date, obs_date, str(c["frequency"])):
+            raise ValueError("prior_revision must precede the current observation")
+        revision_storage_date, revision_idx = resolve_storage_date(dates, revision_date, str(c["frequency"]))
+        if revision_idx is None or revision_idx != len(dates) - 1:
+            raise ValueError("prior_revision is allowed only for the immediately previous canonical period")
+        before_series_value = float(prior_revision["before_series_value"])
+        after_series_value = float(prior_revision["series_value"])
+        if abs(float(values[revision_idx]) - before_series_value) >= 1e-12:
+            raise ValueError("prior_revision series BEFORE value does not match the canonical input snapshot")
+        values[revision_idx] = after_series_value
+        prior_revision_summary = {
+            "observation_date": revision_date,
+            "storage_date": revision_storage_date,
+            "before_series_value": before_series_value,
+            "series_value": after_series_value,
+            "before_value": float(prior_revision["before_value"]),
+            "value": float(prior_revision["value"]),
+        }
 
     storage_date, match_idx = resolve_storage_date(dates, obs_date, str(c["frequency"]))
     if match_idx is not None:
@@ -213,6 +254,14 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     hist_values = [float(x) for x in hist]
     detail_key = "unemployment" if dimension == "labour" else "inflation"
     previous_as_of = heatmap["currencies"][currency].get("as_of_detail", {}).get(detail_key)
+    if prior_revision is not None:
+        if not hist_values or not same_period(previous_as_of, prior_revision["observation_date"], str(c["frequency"])):
+            raise ValueError("prior_revision heatmap period is not the immediately previous canonical period")
+        before_heat_value = float(prior_revision["before_value"])
+        after_heat_value = float(prior_revision["value"])
+        if abs(hist_values[-1] - before_heat_value) >= 1e-12:
+            raise ValueError("prior_revision heatmap BEFORE value does not match the canonical input snapshot")
+        hist_values[-1] = after_heat_value
     if same_period(previous_as_of, obs_date, str(c["frequency"])) and hist_values:
         hist_values[-1] = value
     else:
@@ -246,6 +295,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
         "new_value": series_value,
         "heatmap_value": value,
         "series_action": action,
+        "prior_revision": prior_revision_summary,
         "history_observations": len(hist_values),
         "percentile": pct,
         "temperature_label": hrow["temperature_label"],
