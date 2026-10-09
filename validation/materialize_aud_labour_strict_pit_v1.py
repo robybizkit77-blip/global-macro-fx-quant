@@ -9,6 +9,7 @@ MON3=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
 MONFULL=['January','February','March','April','May','June','July','August','September','October','November','December']
 START=(2018,1);END=(2026,8)
 ROW_KEYS=['reference_month','unemployment_rate_sa','release_date','release_time','timezone','source_url','sha256','era','pit_status']
+SEMANTIC_KEYS=['reference_month','unemployment_rate_sa','release_date','release_time','timezone','source_url','era','pit_status']
 
 def months():
     y,m=START
@@ -83,8 +84,8 @@ def one(y,m):
         return {'reference_month':ref,'unemployment_rate_sa':rate,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':url,'sha256':hashlib.sha256(raw).hexdigest(),'era':era,'pit_status':'STRICT_FIRST_RELEASE','content_type':ct,'bytes':len(raw),'final_url':final}
     raise ValueError(f'no strict period-specific ABS source for {ref}')
 
-def rowset_digest(rows):
-    canon=[{k:r[k] for k in ROW_KEYS} for r in rows]
+def digest(rows,keys):
+    canon=[{k:r[k] for k in keys} for r in rows]
     blob=json.dumps(canon,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
     return hashlib.sha256(blob).hexdigest()
 
@@ -100,7 +101,7 @@ def main():
         w=csv.DictWriter(f,fieldnames=ROW_KEYS,lineterminator='\n');w.writeheader();w.writerows({k:r[k] for k in ROW_KEYS} for r in rows)
     era_counts={}
     for r in rows:era_counts[r['era']]=era_counts.get(r['era'],0)+1
-    evidence={'schema':'GMFQ_AUD_LABOUR_STRICT_PIT_EVIDENCE_V1_RUNTIME','status':'PASS','target':'AUD.labour','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','authority':'Australian Bureau of Statistics','coverage':{'start':'2018-01','end':'2026-08','expected_months':104,'materialized_months':104},'series_contract':{'series_id':'AU_UNEMP_RATE','frequency':'M','transformation':'level','seasonal_adjustment':'seasonally adjusted'},'route_counts':era_counts,'unique_source_hashes':len(set(hashes)),'rowset_sha256':rowset_digest(rows),'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'sha256_required':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'generated_at_utc':datetime.now(timezone.utc).isoformat()}
+    evidence={'schema':'GMFQ_AUD_LABOUR_STRICT_PIT_EVIDENCE_V1_RUNTIME','status':'PASS','target':'AUD.labour','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','authority':'Australian Bureau of Statistics','coverage':{'start':'2018-01','end':'2026-08','expected_months':104,'materialized_months':104},'series_contract':{'series_id':'AU_UNEMP_RATE','frequency':'M','transformation':'level','seasonal_adjustment':'seasonally adjusted'},'route_counts':era_counts,'unique_source_hashes':len(set(hashes)),'semantic_rowset_sha256':digest(rows,SEMANTIC_KEYS),'raw_fetch_rowset_sha256':digest(rows,ROW_KEYS),'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'sha256_required':True,'raw_page_hash_is_fetch_evidence_not_stable_identity':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'generated_at_utc':datetime.now(timezone.utc).isoformat()}
     with open(args.evidence,'w',encoding='utf-8') as f:json.dump(evidence,f,indent=2);f.write('\n')
-    print(json.dumps({k:evidence[k] for k in ['status','coverage','route_counts','unique_source_hashes','rowset_sha256']},indent=2))
+    print(json.dumps({k:evidence[k] for k in ['status','coverage','route_counts','unique_source_hashes','semantic_rowset_sha256','raw_fetch_rowset_sha256']},indent=2))
 if __name__=='__main__':main()
