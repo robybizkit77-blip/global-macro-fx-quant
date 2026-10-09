@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "EUR",
+    "dimension": "labour",
+    "macro_series_id": "EA_UNEMP_history_value"
+  },
+  "authority": "Eurostat",
+  "source": "ECB LFSI transport; underlying source EUROSTAT",
+  "official_transport_source": "Eurostat",
+  "series_id": "EA_UNEMP",
+  "frequency": "M",
+  "transformation": "level",
+  "unit": "%",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 6.4,
+    "release_date": "2026-09-01",
+    "official_reference": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/3-01092026-bp"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 6.4,
+    "release_date": "2026-10-01",
+    "official_reference": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-01102026-ap"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "canonical_source_label_preserved": true,
+    "note": "Eurostat published euro-area seasonally adjusted unemployment at 6.4 percent for July 2026 on 1 September 2026 and 6.4 percent for August 2026 on 1 October 2026. The August release states July remained unchanged. Historical replay preserves the canonical heatmap source label while the current certified adapter verifies the official Eurostat une_rt_m dataset directly."
+  }
+}
