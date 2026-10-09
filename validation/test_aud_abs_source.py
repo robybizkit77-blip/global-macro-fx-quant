@@ -57,7 +57,7 @@ def check_dimension(dimension: str, root: Path) -> dict:
     assert summary["currency"] == "AUD" and summary["dimension"] == dimension, summary
     assert summary["observation_date"] == c["observation_date"], (summary, c)
     assert abs(float(summary["new_value"]) - float(c["value"])) < 1e-12, (summary, c)
-    expected_action = "REVISE_EXISTING" if dimension == "inflation" else "APPEND_NEW"
+    expected_action = "REPLACE_EXISTING" if dimension == "inflation" else "APPEND_NEW"
     assert summary["series_action"] == expected_action, summary
     if dimension == "inflation":
         assert abs(float(summary["old_value"]) - 3.8) < 1e-12, summary
