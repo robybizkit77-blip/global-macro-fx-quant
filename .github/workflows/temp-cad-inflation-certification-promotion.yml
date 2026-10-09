@@ -1,0 +1,46 @@
+name: TEMP CAD Inflation Certification Promotion
+
+on:
+  push:
+    branches:
+      - validation-macro-cad-inflation-contract-repair-2026-10-09
+    paths:
+      - '.github/workflows/temp-cad-inflation-certification-promotion.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pin reviewed CAD inflation replay evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
+          s=p.read_text()
+          old='''    "CAD.inflation": {\n      "currency": "CAD",\n      "dimension": "inflation",\n      "series_id": "CA_CPI_HEADLINE_YOY",\n      "source": "Statistics Canada",\n      "authority": "Statistics Canada",\n      "frequency": "M",\n      "transformation": "derived_yoy_from_index",\n      "transport_class": "OFFICIAL_DIRECT",\n      "source_adapter_status": "READY",\n      "historical_replay_certified": false,\n      "adapter": "validation/sources/cad_statcan_core.py",\n      "workflow": ".github/workflows/cad-statcan-source-contract-v1.yml"\n    },'''
+          new='''    "CAD.inflation": {\n      "currency": "CAD",\n      "dimension": "inflation",\n      "series_id": "CA_CPI_HEADLINE_YOY",\n      "source": "Statistics Canada",\n      "authority": "Statistics Canada",\n      "frequency": "M",\n      "transformation": "derived_yoy_from_index",\n      "transport_class": "OFFICIAL_DIRECT",\n      "source_adapter_status": "READY",\n      "historical_replay_certified": true,\n      "adapter": "validation/sources/cad_statcan_core.py",\n      "workflow": ".github/workflows/cad-statcan-source-contract-v1.yml",\n      "historical_replay_evidence": {\n        "schema": "GMFQ_MACRO_PIT_CERTIFICATION_REF_V1",\n        "evidence_schema": "GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1",\n        "evidence_sha256": "de1db86d67d2eb6e16026ed5d8ec803225672f1b0fe4c52abf0196143f5e9b93",\n        "evidence_class": "RECONSTRUCTED_HISTORICAL_REPLAY",\n        "macro_series_id": "CA_CPI_HEADLINE_YOY_history_value",\n        "observation_date": "2026-08",\n        "value": 3.033980582524287,\n        "before_git_head": "5b8077b2de0a96bd6136ff8a51a44d7c7c6856d9",\n        "after_git_head": "5b8077b2de0a96bd6136ff8a51a44d7c7c6856d9",\n        "promotion_mode": "EXPLICIT_REVIEW_REQUIRED",\n        "before_state": "RECONSTRUCTED_FROM_BOUNDED_CANONICAL_AFTER_AND_OFFICIAL_PRIOR_RELEASE",\n        "after_state": "CANONICAL_RUNTIME",\n        "official_release_pair_verified": true,\n        "manifest_sha256": "bdac8d89adac91b7e3054690e23d4db5423e76a29b52bf65cf8ec00d5db62b52"\n      }\n    },'''
+          assert s.count(old)==1, s.count(old)
+          out=s.replace(old,new,1)
+          p.write_text(out)
+          data=json.loads(out)
+          row=data['series']['CAD.inflation']
+          assert row['historical_replay_certified'] is True
+          e=row['historical_replay_evidence']
+          assert e['evidence_sha256']=='de1db86d67d2eb6e16026ed5d8ec803225672f1b0fe4c52abf0196143f5e9b93'
+          assert e['before_git_head']==e['after_git_head']=='5b8077b2de0a96bd6136ff8a51a44d7c7c6856d9'
+          assert e['manifest_sha256']=='bdac8d89adac91b7e3054690e23d4db5423e76a29b52bf65cf8ec00d5db62b52'
+          print(json.dumps({'target':'CAD.inflation','certified':True,'evidence':e},indent=2))
+          PY
+          git diff --numstat -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git commit -m 'Pin reviewed CAD inflation replay evidence'
+          git push
