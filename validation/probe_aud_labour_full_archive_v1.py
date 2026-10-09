@@ -64,13 +64,13 @@ def sa_rate(text,y,m):
 def candidates(y,m):
     mon=MON3[m-1]; full=MONFULL[m-1]
     out=[('MODERN_RELEASE',f'https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/{mon}-{y}')]
-    out += [
-      ('AUSSTATS_MEDIA',f'https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1{full[:3].title()}%20{y}'),
-      ('AUSSTATS_MEDIA',f'https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1{mon}%20{y}'),
-    ]
-    for n in range(1,7):
-        out.append(('AUSSTATS_MAIN',f'https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features{n}{full[:3].title()}%20{y}'))
-        out.append(('AUSSTATS_MAIN',f'https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features{n}{mon}%20{y}'))
+    # Legacy AUSSTATS accepted both abbreviated and full English month tokens depending on vintage.
+    for token in (full,full[:3].title(),mon):
+        out.append(('AUSSTATS_MEDIA',f'https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1{token}%20{y}'))
+    for n in range(1,12):
+        for token in (full,full[:3].title(),mon):
+            out.append(('AUSSTATS_MAIN',f'https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features{n}{token}%20{y}'))
+            out.append(('AUSSTATS_MAIN_PLUS',f'https://www.abs.gov.au/AUSSTATS/abs%40.nsf/Lookup/6202.0Main%2BFeatures{n}{token}%20{y}'))
     seen=set(); z=[]
     for a in out:
         if a[1] not in seen:seen.add(a[1]);z.append(a)
@@ -99,7 +99,7 @@ def main():
     rows=[]
     for i,(y,m) in enumerate(months(),1):
         r=one(y,m);rows.append(r);print(f"[{i:03d}/104] {r['reference_month']} {'OK '+str(r.get('unemployment_rate_sa')) if 'error' not in r else 'FAIL'}",flush=True)
-        time.sleep(0.05)
+        time.sleep(0.03)
     failures=[r for r in rows if 'error' in r]
     hashes=[r['sha256'] for r in rows if 'sha256' in r]
     out={'schema':'GMFQ_AUD_LABOUR_FULL_ARCHIVE_PROBE_V1','checked_at_utc':datetime.now(timezone.utc).isoformat(),'authority':'Australian Bureau of Statistics','route_class':'OFFICIAL_DIRECT_PERIOD_SPECIFIC_ARCHIVE','expected_months':104,'resolved_months':104-len(failures),'failure_count':len(failures),'unique_source_hashes':len(set(hashes)),'era_counts':{},'failures':failures,'rows':rows,'status':'PASS' if not failures else 'FAIL'}
