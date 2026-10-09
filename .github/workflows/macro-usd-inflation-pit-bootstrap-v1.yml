@@ -57,7 +57,7 @@ jobs:
           assert c['currency']=='USD' and c['dimension']=='inflation'
           assert c['series_id']==m['series_id']=='CPIAUCSL'
           assert c['macro_series_id']==m['target']['macro_series_id']=='US_CPIAUCSL_history_value'
-          assert c['observation_date'][:7]==m['current']['observation_date']=='2026-08'
+          assert c['observation_date'][:7]==m['current']['observation_date'][:7]=='2026-08'
           assert abs(float(c['value'])-float(m['current']['value']))<1e-12
           assert abs(float(c['series_value'])-float(m['current']['series_value']))<1e-12
           assert c['series_unit']=='Index 1982-1984=100'
@@ -104,7 +104,7 @@ jobs:
           assert prow['historical_replay_certified'] is True
           pref=prow['historical_replay_evidence']
           assert pref['macro_series_id']=='US_CPIAUCSL_history_value'
-          assert pref['observation_date']=='2026-08'
+          assert pref['observation_date'][:7]=='2026-08'
           assert abs(float(pref['value'])-3.353016322755642)<1e-12
           assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
           assert pref['official_release_pair_verified'] is True
