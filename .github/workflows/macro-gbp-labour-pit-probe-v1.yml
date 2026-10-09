@@ -1,0 +1,63 @@
+name: Macro GBP Labour PIT Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-gbp-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-gbp-labour-pit-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare official ONS labour pair with canonical runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-labour-probe
+          python3 validation/sources/gbp_ons_core.py \
+            --dimension labour \
+            --output /tmp/gbp-labour-probe/candidate.json \
+            --audit-output /tmp/gbp-labour-probe/audit.json \
+            | tee /tmp/gbp-labour-probe/source-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gbp-labour-probe/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gbp-labour-probe/audit.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          mid=c['macro_series_id']
+          row=next(x for x in s['GBP'] if x.get('id')==mid)
+          hist=row.get('history', row.get('data', row.get('values')))
+          heat=h['currencies']['GBP']['labour']
+          print(json.dumps({
+            'candidate': c,
+            'official_pair': a,
+            'macro_series_id': mid,
+            'canonical_tail': hist[-5:] if isinstance(hist,list) else hist,
+            'heatmap': heat
+          }, ensure_ascii=False, indent=2))
+          assert c['series_id']=='MGSX'
+          assert c['dimension']=='labour'
+          assert a['candidate_only'] is True and a['live_data_written'] is False
+          PY
+          git diff --exit-code -- live_data payload
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-gbp-labour-pit-probe-${{ github.run_id }}
+          path: /tmp/gbp-labour-probe/
+          if-no-files-found: error
+          retention-days: 30
