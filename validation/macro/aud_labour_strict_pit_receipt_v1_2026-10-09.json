@@ -26,7 +26,7 @@
     "unique_source_hash_per_month": true,
     "official_period_specific_artifacts_only": true,
     "official_publication_timestamp_required": true,
-    "rowset_sha256": "02edb2f338d1dbf9ed18bf6e6ea032d16bf4847d39c79a96a4c4e4c466b31865",
+    "rowset_sha256": "6949a9cb14074f4bcc6f45ae62d76f1a6770a0d2f053a5727307f922dcaabd7f",
     "revised_history_fallback_used": false,
     "temporary_probe_files_removed": true,
     "live_data_changed": false,
