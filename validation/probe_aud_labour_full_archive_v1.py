@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Full read-only archival discovery: 104 monthly AUD labour first-release candidates.
 import hashlib, html, json, re, time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
@@ -38,7 +39,6 @@ def stamp(text):
 
 def sa_rate(text,y,m):
     full=MONFULL[m-1]
-    # Direct, semantically labelled prose first.
     pats=[
       r'seasonally adjusted unemployment rate.{0,260}?\b(?:to|at|was|of)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)',
       rf'In seasonally adjusted terms, in {full} {y}.{{0,1000}}?unemployment rate.{{0,180}}?\b(?:to|at|was)?\s*([0-9]+(?:\.[0-9]+)?)\s*%',
@@ -47,7 +47,6 @@ def sa_rate(text,y,m):
     for p in pats:
         q=re.search(p,text,flags=re.I|re.S)
         if q:return float(q.group(1))
-    # Scope into seasonally adjusted section before looking for unemployment.
     markers=[f'In seasonally adjusted terms, in {full} {y}',f'Seasonally adjusted estimates for {full} {y}','SEASONALLY ADJUSTED ESTIMATES','Key statistics - Seasonally adjusted','Seasonally Adjusted']
     for marker in markers:
         pos=text.lower().find(marker.lower())
@@ -64,20 +63,14 @@ def sa_rate(text,y,m):
 
 def candidates(y,m):
     mon=MON3[m-1]; full=MONFULL[m-1]
-    out=[]
-    # Modern pages (available for late 2019 onward, harmless 404 before then).
-    out.append(('MODERN_RELEASE',f'https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/{mon}-{y}'))
-    # Legacy monthly media release is the preferred first-release source.
-    enc=full[:3].title() if False else None
+    out=[('MODERN_RELEASE',f'https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/{mon}-{y}')]
     out += [
       ('AUSSTATS_MEDIA',f'https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1{full[:3].title()}%20{y}'),
       ('AUSSTATS_MEDIA',f'https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1{mon}%20{y}'),
     ]
-    # Main Features pages changed ordinal over time; probe a small finite official path family.
     for n in range(1,7):
         out.append(('AUSSTATS_MAIN',f'https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features{n}{full[:3].title()}%20{y}'))
         out.append(('AUSSTATS_MAIN',f'https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features{n}{mon}%20{y}'))
-    # de-duplicate while preserving order
     seen=set(); z=[]
     for a in out:
         if a[1] not in seen:seen.add(a[1]);z.append(a)
