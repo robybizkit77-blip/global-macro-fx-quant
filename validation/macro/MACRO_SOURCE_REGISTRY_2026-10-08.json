@@ -296,7 +296,7 @@
       "source": "Statistics Canada",
       "authority": "Statistics Canada",
       "frequency": "M",
-      "transformation": "reported_yoy_rate",
+      "transformation": "derived_yoy_from_index",
       "transport_class": "OFFICIAL_DIRECT",
       "source_adapter_status": "READY",
       "historical_replay_certified": false,
