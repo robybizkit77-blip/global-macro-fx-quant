@@ -167,4 +167,4 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-# Exact-head validation trigger after registry promotion and temporary workflow cleanup.
+# Final exact-head validation trigger after temporary workflow cleanup.
