@@ -150,42 +150,19 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import re
           from pathlib import Path
           p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
           s=p.read_text()
-          replacements={
-'''    "currencies": [
-      "USD",
-      "EUR",
-      "GBP",
-      "JPY",
-      "CHF",
-      "CAD",
-      "AUD",
-      "NZD"
-    ],''':'    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],',
-'''    "dimensions": [
-      "inflation",
-      "labour"
-    ],''':'    "dimensions": ["inflation", "labour"],',
-'''    "supported_currencies": [
-      "USD",
-      "EUR",
-      "GBP",
-      "JPY",
-      "CHF",
-      "CAD",
-      "AUD",
-      "NZD"
-    ],''':'    "supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],',
-'''    "supported_dimensions": [
-      "inflation",
-      "labour"
-    ]''':'    "supported_dimensions": ["inflation", "labour"]'
-          }
-          for old,new in replacements.items():
-              assert s.count(old)==1
-              s=s.replace(old,new)
+          currency_pattern=r'"currencies":\s*\[\s*"USD",\s*"EUR",\s*"GBP",\s*"JPY",\s*"CHF",\s*"CAD",\s*"AUD",\s*"NZD"\s*\]'
+          supported_currency_pattern=r'"supported_currencies":\s*\[\s*"USD",\s*"EUR",\s*"GBP",\s*"JPY",\s*"CHF",\s*"CAD",\s*"AUD",\s*"NZD"\s*\]'
+          dimension_pattern=r'"dimensions":\s*\[\s*"inflation",\s*"labour"\s*\]'
+          supported_dimension_pattern=r'"supported_dimensions":\s*\[\s*"inflation",\s*"labour"\s*\]'
+          s,n1=re.subn(currency_pattern, '"currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]', s, count=1)
+          s,n2=re.subn(dimension_pattern, '"dimensions": ["inflation", "labour"]', s, count=1)
+          s,n3=re.subn(supported_currency_pattern, '"supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]', s, count=1)
+          s,n4=re.subn(supported_dimension_pattern, '"supported_dimensions": ["inflation", "labour"]', s, count=1)
+          assert (n1,n2,n3,n4)==(1,1,1,1), (n1,n2,n3,n4)
           p.write_text(s)
           PY
           python3 -m json.tool validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json >/dev/null
