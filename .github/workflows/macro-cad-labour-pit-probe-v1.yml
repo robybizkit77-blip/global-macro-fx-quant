@@ -6,6 +6,7 @@ on:
       - 'validation-macro-cad-labour-pit-bootstrap-*'
     paths:
       - '.github/workflows/macro-cad-labour-pit-probe-v1.yml'
+      - 'validation/sources/cad_statcan_core.py'
   workflow_dispatch:
 
 permissions:
@@ -51,5 +52,11 @@ jobs:
             'heatmap_transformation':heat.get('transformation')
           },indent=2))
           assert a['candidate_only'] is True and a['live_data_written'] is False
+          assert a['seasonal_adjustment']=='seasonally adjusted'
+          assert c['observation_date'][:7]=='2026-08' and float(c['value'])==6.4
+          assert a['prior_period'][:7]=='2026-07' and float(a['prior_value'])==6.4
+          assert row['last_date']=='2026-08' and float(row['last_value'])==6.4
+          assert heat['as_of']=='2026-08' and float(heat['latest_value'])==6.4
+          assert heat['series_id']=='CA_UNEMP_RATE' and heat['frequency']=='M' and heat['transformation']=='level'
           PY
           git diff --exit-code -- live_data
