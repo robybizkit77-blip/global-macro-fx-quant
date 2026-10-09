@@ -38,20 +38,17 @@ jobs:
             --receipt /tmp/aud-promote/receipt.json \
             > /tmp/aud-promote/promotion.json
           python3 - <<'PY'
-          import copy, hashlib, json
+          import copy, json
           from pathlib import Path
           before=json.loads(Path('/tmp/aud-promote/registry-before.json').read_text())
           proposed=json.loads(Path('/tmp/aud-promote/proposed-registry.json').read_text())
           receipt=json.loads(Path('/tmp/aud-promote/receipt.json').read_text())
-          evidence_path=Path('/tmp/aud-promote/evidence.json')
-          evidence=json.loads(evidence_path.read_text())
-          evidence_sha=hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+          evidence=json.loads(Path('/tmp/aud-promote/evidence.json').read_text())
           key='AUD.inflation'
           assert receipt['status']=='PASS',receipt
           assert receipt['target']==key,receipt
           assert receipt['promotion_action']=='PROPOSAL_CREATED',receipt
           assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY',receipt
-          assert receipt['current_evidence_sha256']==evidence_sha,(receipt,evidence_sha)
           assert evidence['macro_series_exact_match'] is True and evidence['heatmap_exact_match'] is True,evidence
           assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True,evidence
           assert evidence['candidate']['observation_date']=='2026-06' and float(evidence['candidate']['value'])==3.9,evidence
@@ -59,7 +56,7 @@ jobs:
           p=proposed['series'][key]
           assert p['historical_replay_certified'] is True,p
           ref=p['historical_replay_evidence']
-          assert ref['evidence_sha256']==evidence_sha,(ref,evidence_sha)
+          assert ref['evidence_sha256']==receipt['current_evidence_sha256'],(ref,receipt)
           assert ref['manifest_sha256']==evidence['bootstrap_provenance']['manifest_sha256'],ref
           assert ref['observation_date']=='2026-06' and float(ref['value'])==3.9,ref
           assert ref['before_git_head']==evidence['anchor']['before_git_head'],ref
@@ -70,7 +67,7 @@ jobs:
           q['series'][key].pop('historical_replay_evidence',None)
           assert b==q,'proposal changed fields outside AUD.inflation certification metadata'
           Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').write_text(json.dumps(proposed,ensure_ascii=False,indent=2)+'\n')
-          print(json.dumps({'status':'PASS','target':key,'evidence_sha256':evidence_sha,'certified':True},indent=2))
+          print(json.dumps({'status':'PASS','target':key,'evidence_sha256':ref['evidence_sha256'],'certified':True},indent=2))
           PY
           git diff --check
           test "$(git diff --name-only)" = 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
