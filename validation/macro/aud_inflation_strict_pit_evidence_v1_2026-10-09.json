@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_AUD_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "AUD.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Australian Bureau of Statistics",
+  "coverage": {
+    "start": "2018-03",
+    "end": "2026-06",
+    "expected_quarters": 34,
+    "materialized_quarters": 34
+  },
+  "series_contract": {
+    "series_id": "AU_CPI_HEADLINE_Q_YOY",
+    "frequency": "Q",
+    "transformation": "reported_yoy_rate",
+    "2018_derivation": "ABS archived 6401.0 table annual change column",
+    "2019_to_2025Q3_derivation": "ABS period-specific release reported headline YoY",
+    "2025Q4_plus_derivation": "ABS period-specific Table 17 Australia index t/t-4 to preserve frozen quarterly contract"
+  },
+  "route_counts": {
+    "LEGACY_2018_TABLE_YOY": 4,
+    "LEGACY_REPORTED_YOY": 2,
+    "MODERN_REPORTED_YOY": 25,
+    "TRANSITION_TABLE17_Q_YOY": 3
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_timestamp_required": true,
+    "raw_source_sha256_required_per_materialization": true,
+    "frozen_quarterly_contract_preserved_across_monthly_cpi_transition": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "unique_source_hashes_per_materialization": 34,
+  "semantic_rowset_sha256": "d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f",
+  "semantic_fingerprint_fields": [
+    "reference_quarter",
+    "cpi_yoy",
+    "release_date",
+    "release_time",
+    "timezone",
+    "pit_status"
+  ],
+  "known_transition_values": {
+    "2025-12": 3.6,
+    "2026-03": 4.1,
+    "2026-06": 3.9
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}

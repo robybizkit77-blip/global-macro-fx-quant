@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_AUD_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "AUD.inflation",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "40fcff98f0b2f4acedc765cd3532d6089fd74995",
+  "validated_head_sha": "e16acb536118b6b07499f02420c77cde5527aca3",
+  "materializer_run_id": 37956927900,
+  "artifact_id": 11627499603,
+  "artifact_digest": "sha256:f706a17c0d0527403e6adf50541e810eff5f0f094a663c28385ba156f3a2a1a3",
+  "coverage": {
+    "start": "2018-03",
+    "end": "2026-06",
+    "quarters": 34
+  },
+  "series_contract": {
+    "series_id": "AU_CPI_HEADLINE_Q_YOY",
+    "frequency": "Q"
+  },
+  "invariants": {
+    "all_quarters_present": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "semantic_rowset_sha256": "d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f",
+    "frozen_quarterly_contract_preserved_across_monthly_cpi_transition": true,
+    "transition_values_verified": true,
+    "permanent_gate_pins_known_transition_values": true,
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "5/16"
+  }
+}
