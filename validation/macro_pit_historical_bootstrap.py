@@ -114,6 +114,9 @@ def validate_manifest(manifest: dict[str, Any]) -> tuple[dict[str, Any], dict[st
         for key in ("observation_date", "value", "release_date", "official_reference"):
             require(point.get(key) not in (None, ""), f"{name} missing {key}")
         require(math.isfinite(float(point["value"])), f"{name} value is not finite")
+        if "series_value" in point:
+            require(math.isfinite(float(point["series_value"])), f"{name} series_value is not finite")
+    require(("series_value" in previous) == ("series_value" in current), "previous/current series_value contract must be symmetric")
     freq = str(manifest.get("frequency"))
     require(freq in {"M", "Q"}, "bootstrap supports M/Q core series only")
     require(period_key(previous["observation_date"], freq) < period_key(current["observation_date"], freq), "economic periods are not increasing")
@@ -135,10 +138,12 @@ def reconstruct_before(after_series: dict[str, Any], after_heat: dict[str, Any],
     require(isinstance(row, dict), f"target series not found: {c}.{sid}")
     dates, values = row.get("dates"), row.get("values")
     require(isinstance(dates, list) and isinstance(values, list) and len(dates) == len(values) and len(dates) >= 2, "target series history invalid")
+    current_series_value = float(current.get("series_value", current["value"]))
+    previous_series_value = float(previous.get("series_value", previous["value"]))
     require(period_key(dates[-1], freq) == period_key(current["observation_date"], freq), "canonical latest period differs from manifest current")
-    require(abs(float(values[-1]) - float(current["value"])) < 1e-12, "canonical latest value differs from manifest current")
+    require(abs(float(values[-1]) - current_series_value) < 1e-12, "canonical latest series value differs from manifest current")
     require(period_key(dates[-2], freq) == period_key(previous["observation_date"], freq), "penultimate canonical period differs from manifest previous")
-    require(abs(float(values[-2]) - float(previous["value"])) < 1e-12, "penultimate canonical value differs from manifest previous")
+    require(abs(float(values[-2]) - previous_series_value) < 1e-12, "penultimate canonical series value differs from manifest previous")
 
     removed_date, removed_value = dates.pop(), float(values.pop())
     row["last_date"], row["last_value"] = dates[-1], values[-1]
@@ -192,8 +197,12 @@ def candidate_from_manifest(manifest: dict[str, Any], after_series: dict[str, An
         "source": str(manifest["source"]), "series_id": str(manifest["series_id"]),
         "frequency": str(manifest["frequency"]), "transformation": str(manifest["transformation"]),
     }
+    if "series_value" in current:
+        candidate["series_value"] = float(current["series_value"])
     if row.get("unit") is not None:
-        candidate["unit"] = row["unit"]
+        candidate["series_unit"] = row["unit"]
+    if manifest.get("unit") is not None:
+        candidate["unit"] = manifest["unit"]
     return candidate
 
 

@@ -149,8 +149,12 @@ def normalize_candidate(c: dict[str, Any]) -> dict[str, Any]:
     value = float(c["value"])
     if not math.isfinite(value):
         raise ValueError("value must be finite")
+    series_value = float(c.get("series_value", value))
+    if not math.isfinite(series_value):
+        raise ValueError("series_value must be finite")
     out = dict(c)
     out["value"] = value
+    out["series_value"] = series_value
     return out
 
 
@@ -160,6 +164,7 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
     dimension = c["dimension"]
     obs_date = c["observation_date"]
     value = c["value"]
+    series_value = c["series_value"]
 
     series_row = find_series(series[currency], c["macro_series_id"])
     dates = series_row.get("dates")
@@ -173,20 +178,21 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
         old_value = float(values[idx])
         if idx != len(dates) - 1 and not c.get("allow_historical_revision", False):
             raise ValueError("historical revision blocked unless allow_historical_revision=true")
-        values[idx] = value
+        values[idx] = series_value
         action = "REPLACE_EXISTING"
     else:
         if dates and storage_date < str(dates[-1]):
             raise ValueError("out-of-order observation blocked")
         old_value = None
         dates.append(storage_date)
-        values.append(value)
+        values.append(series_value)
         action = "APPEND_NEW"
 
     series_row["last_date"] = dates[-1]
     series_row["last_value"] = values[-1]
-    if c.get("unit") is not None:
-        series_row["unit"] = c["unit"]
+    series_unit = c.get("series_unit", c.get("unit"))
+    if series_unit is not None:
+        series_row["unit"] = series_unit
     series_row["frequency"] = c["frequency"]
 
     hrow = heatmap["currencies"][currency][dimension]
@@ -237,7 +243,8 @@ def apply_candidate(series: dict[str, Any], heatmap: dict[str, Any], cand: dict[
         "observation_date": obs_date,
         "storage_date": storage_date,
         "old_value": old_value,
-        "new_value": value,
+        "new_value": series_value,
+        "heatmap_value": value,
         "series_action": action,
         "history_observations": len(hist_values),
         "percentile": pct,
@@ -306,7 +313,39 @@ def synthetic_functional_test() -> dict[str, Any]:
     if precision_heatmap["currencies"]["USD"]["inflation"]["history"] != [1.0, 2.1]:
         raise ValueError("monthly date precision normalization duplicated heatmap history")
 
-    return {"append_case": result, "monthly_precision_case": precision_result}
+    split_series = copy.deepcopy(series)
+    split_heatmap = copy.deepcopy(heatmap)
+    split_series["USD"][0].update({
+        "dates": ["2025-08-01", "2026-07-01"],
+        "values": [323.291, 332.813],
+        "last_date": "2026-07-01",
+        "last_value": 332.813,
+        "unit": "Index 1982-1984=100",
+        "frequency": "M",
+    })
+    split_heatmap["currencies"]["USD"]["inflation"].update({
+        "history": [3.303856050706311],
+        "latest_value": 3.303856050706311,
+        "as_of": "2026-07-01",
+        "series_id": "USD_INF",
+    })
+    split_heatmap["currencies"]["USD"]["as_of_detail"]["inflation"] = "2026-07-01"
+    split_candidate = {
+        "currency": "USD", "dimension": "inflation", "macro_series_id": "USD_TEST",
+        "observation_date": "2026-08", "value": 3.353016322755642,
+        "series_value": 334.131, "source": "SELF_TEST", "series_id": "USD_INF",
+        "frequency": "M", "transformation": "yoy_pct_from_index", "unit": "% YoY",
+        "series_unit": "Index 1982-1984=100",
+    }
+    split_result = apply_candidate(split_series, split_heatmap, split_candidate)
+    if split_series["USD"][0]["last_value"] != 334.131:
+        raise ValueError("split-value contract did not preserve raw series value")
+    if split_series["USD"][0]["unit"] != "Index 1982-1984=100":
+        raise ValueError("split-value contract did not preserve raw series unit")
+    if split_heatmap["currencies"]["USD"]["inflation"]["latest_value"] != 3.353016322755642:
+        raise ValueError("split-value contract did not apply transformed heatmap value")
+
+    return {"append_case": result, "monthly_precision_case": precision_result, "split_value_case": split_result}
 
 
 def self_test(series: dict[str, Any], heatmap: dict[str, Any]) -> dict[str, Any]:

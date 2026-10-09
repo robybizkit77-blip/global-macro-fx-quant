@@ -95,7 +95,7 @@ def main():
 
     bad = copy.deepcopy(manifest)
     bad["previous"]["value"] = 2.0
-    expect_failure(lambda: reconstruct_before(series, heat, bad), "penultimate canonical value differs")
+    expect_failure(lambda: reconstruct_before(series, heat, bad), "penultimate canonical series value differs")
 
     bad = copy.deepcopy(manifest)
     bad["current"]["observation_date"] = "2026-09"
@@ -108,6 +108,27 @@ def main():
     bad_heat = copy.deepcopy(heat)
     bad_heat["currencies"]["JPY"]["inflation"]["history"][-1] = 2.1
     expect_failure(lambda: reconstruct_before(series, bad_heat, manifest), "heatmap history tail differs")
+
+    split_manifest = copy.deepcopy(manifest)
+    split_manifest["transformation"] = "yoy_pct_from_index"
+    split_manifest["unit"] = "% YoY"
+    split_manifest["previous"].update({"observation_date": "2026-07", "value": 3.303856050706311, "series_value": 332.813})
+    split_manifest["current"].update({"observation_date": "2026-08", "value": 3.353016322755642, "series_value": 334.131})
+    split_series, split_heat = after_state()
+    split_series["JPY"][0].update({
+        "dates": ["2026-05", "2026-06", "2026-07", "2026-08"],
+        "values": [333.979, 332.568, 332.813, 334.131],
+        "last_date": "2026-08", "last_value": 334.131,
+        "unit": "Index 1982-1984=100",
+    })
+    split_heat["currencies"]["JPY"]["inflation"].update({
+        "transformation": "yoy_pct_from_index",
+        "latest_value": 3.353016322755642,
+        "history": [4.270033, 3.72653, 3.303856050706311, 3.353016322755642],
+    })
+    split_before_series, split_before_heat, _ = reconstruct_before(split_series, split_heat, split_manifest)
+    assert split_before_series["JPY"][0]["last_value"] == 332.813
+    assert split_before_heat["currencies"]["JPY"]["inflation"]["latest_value"] == 3.303856050706311
 
     print("GMFQ_MACRO_PIT_HISTORICAL_BOOTSTRAP_TESTS_PASS")
 
