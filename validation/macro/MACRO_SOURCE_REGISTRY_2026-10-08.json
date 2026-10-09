@@ -2,40 +2,16 @@
   "schema": "GMFQ_MACRO_SOURCE_REGISTRY_V1",
   "as_of": "2026-10-08",
   "scope": {
-    "currencies": [
-      "USD",
-      "EUR",
-      "GBP",
-      "JPY",
-      "CHF",
-      "CAD",
-      "AUD",
-      "NZD"
-    ],
-    "dimensions": [
-      "inflation",
-      "labour"
-    ],
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "dimensions": ["inflation", "labour"],
     "core_series_count": 16
   },
   "candidate_layer": {
     "builder": "validation/build_macro_candidate.py",
     "status": "READY",
     "writes_live_data": false,
-    "supported_currencies": [
-      "USD",
-      "EUR",
-      "GBP",
-      "JPY",
-      "CHF",
-      "CAD",
-      "AUD",
-      "NZD"
-    ],
-    "supported_dimensions": [
-      "inflation",
-      "labour"
-    ]
+    "supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "supported_dimensions": ["inflation", "labour"]
   },
   "rules": {
     "ready_requires_official_authority": true,
