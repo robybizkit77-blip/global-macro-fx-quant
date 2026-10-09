@@ -1,4 +1,5 @@
 name: Macro GBP Labour PIT Probe V1
+# Trigger compatibility probe on registered workflow.
 
 on:
   push:
