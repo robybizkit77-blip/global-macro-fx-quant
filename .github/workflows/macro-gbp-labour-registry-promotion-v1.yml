@@ -1,4 +1,5 @@
 name: Macro GBP Labour Registry Promotion V1
+# Trigger reviewed promotion on registered workflow.
 
 on:
   push:
