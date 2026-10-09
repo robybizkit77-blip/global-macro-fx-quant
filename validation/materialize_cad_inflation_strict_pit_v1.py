@@ -72,17 +72,23 @@ def token_for(dt: date) -> str:
     return dt.strftime('%y%m%d')
 
 
+def release_suffix(dt: date) -> str:
+    # The CPI release is normally the "a" item in The Daily, but the official
+    # archive can assign another suffix on the same publication date. Keep this
+    # mapping explicit and fail-closed; July 2020 is the documented "b" case.
+    return 'b' if dt == date(2020, 8, 19) else 'a'
+
+
 def article_url(dt: date) -> str:
     t = token_for(dt)
-    # The Daily article suffix is normally "a", but the official CPI release can
-    # occasionally be another item on the same date (e.g. July 2020 was "b").
-    suffix = 'b' if dt == date(2020, 8, 19) else 'a'
+    suffix = release_suffix(dt)
     return f'https://www150.statcan.gc.ca/n1/daily-quotidien/{t}/dq{t}{suffix}-eng.htm'
 
 
 def table_url(dt: date) -> str:
     t = token_for(dt)
-    return f'https://www150.statcan.gc.ca/n1/daily-quotidien/{t}/t001a-eng.htm'
+    suffix = release_suffix(dt)
+    return f'https://www150.statcan.gc.ca/n1/daily-quotidien/{t}/t001{suffix}-eng.htm'
 
 
 def valid_article(text: str, y: int, m: int) -> bool:
