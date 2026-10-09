@@ -1,0 +1,93 @@
+name: Macro GBP Labour Registry Promotion V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-gbp-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-gbp-labour-registry-promotion-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+      - name: Patch only GBP labour reviewed certification metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
+          text=p.read_text()
+          data=json.loads(text)
+          key='GBP.labour'
+          row=data['series'][key]
+          assert row.get('historical_replay_certified') is False
+          expected={
+            'adapter':'validation/sources/gbp_ons_core.py',
+            'authority':'UK Office for National Statistics',
+            'currency':'GBP','dimension':'labour','frequency':'M',
+            'series_id':'MGSX','source':'ONS','source_adapter_status':'READY',
+            'transformation':'level','transport_class':'OFFICIAL_DIRECT',
+            'workflow':'.github/workflows/gbp-ons-source-contract-v2.yml'
+          }
+          for k,v in expected.items(): assert row.get(k)==v, (k,row.get(k),v)
+          newrow=dict(row)
+          newrow['historical_replay_certified']=True
+          newrow['historical_replay_evidence']={
+            'schema':'GMFQ_MACRO_PIT_CERTIFICATION_REF_V1',
+            'evidence_schema':'GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1',
+            'evidence_sha256':'17b65508d68c0c004554ec4593a1dd79fa15ba4f63cda854dd8adb25db57b4a0',
+            'evidence_class':'RECONSTRUCTED_HISTORICAL_REPLAY',
+            'macro_series_id':'UK_UNEMP_RATE_history_value',
+            'observation_date':'2026-06',
+            'value':4.9,
+            'before_git_head':'602f4bd01b71c871c824388ca86751e11af9b72a',
+            'after_git_head':'602f4bd01b71c871c824388ca86751e11af9b72a',
+            'promotion_mode':'EXPLICIT_REVIEW_REQUIRED',
+            'before_state':'RECONSTRUCTED_FROM_BOUNDED_CANONICAL_AFTER_AND_OFFICIAL_PRIOR_RELEASE',
+            'after_state':'CANONICAL_RUNTIME',
+            'official_release_pair_verified':True,
+            'manifest_sha256':'79bb4f25dff7010a57e035456f03873f3ffe92be6c3854ac0b4b0461dab958bc'
+          }
+          marker='"GBP.labour": '
+          m=text.index(marker)
+          obj_start=text.index('{',m)
+          dec=json.JSONDecoder(); old_obj,end=dec.raw_decode(text[obj_start:])
+          assert old_obj==row
+          obj_end=obj_start+end
+          line_start=text.rfind('\n',0,m)+1
+          indent=text[line_start:m]
+          dumped=json.dumps(newrow,indent=2,ensure_ascii=False)
+          lines=dumped.splitlines()
+          replacement=lines[0]+'\n'+'\n'.join(indent+line for line in lines[1:])
+          newtext=text[:obj_start]+replacement+text[obj_end:]
+          p.write_text(newtext)
+          check=json.loads(newtext)
+          assert check['series'][key]==newrow
+          before=json.loads(text); after=check
+          before['series'][key]=newrow
+          assert before==after, 'registry changed outside GBP.labour'
+          PY
+          python3 -m json.tool validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json >/dev/null
+          git diff --exit-code -- live_data payload
+          git diff -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+      - name: Commit reviewed promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git commit -m 'Promote reviewed GBP labour historical replay certification'
+          git push origin HEAD:${GITHUB_REF_NAME}
