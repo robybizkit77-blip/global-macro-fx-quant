@@ -1,0 +1,30 @@
+name: Revision Aware Replay Final Check
+
+on:
+  push:
+    branches:
+      - 'feature/macro-revision-aware-replay-2026-10-09'
+    paths:
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro_pit_historical_bootstrap.py'
+      - 'validation/test_macro_pit_historical_bootstrap.py'
+      - '.github/workflows/revision-aware-replay-final-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run revision-aware replay tests
+        run: |
+          set -euo pipefail
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/build_macro_candidate.py --self-test > /tmp/builder-self-test.json
+          git diff --check
