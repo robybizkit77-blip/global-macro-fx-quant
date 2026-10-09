@@ -31,7 +31,7 @@ jobs:
           python validation/materialize_aud_labour_strict_pit_v1.py \
             --csv /tmp/aud-labour-strict/AUD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv \
             --evidence /tmp/aud-labour-strict/AUD_LABOUR_STRICT_PIT_EVIDENCE_V1.json
-      - name: Verify strict PIT invariants and pinned evidence contract
+      - name: Verify strict PIT invariants and pinned semantic contract
         shell: bash
         run: |
           set -euo pipefail
@@ -50,9 +50,10 @@ jobs:
           assert len({r['sha256'] for r in rows})==104
           assert all(r['release_date'] and r['release_time'] and r['timezone'] for r in rows)
           assert ev['strict_rules']['revised_history_fallback_used'] is False
-          assert ev['rowset_sha256']==pin['rowset_sha256']=='02edb2f338d1dbf9ed18bf6e6ea032d16bf4847d39c79a96a4c4e4c466b31865'
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']=='733def09fafc713067b80aaa448a5936b77d72ddfc67135b6df083108772f920'
           assert ev['route_counts']=={'AUSSTATS_MEDIA':23,'MODERN_RELEASE':81}
           assert pin['series_contract']['seasonal_adjustment']=='seasonally adjusted'
+          assert pin['strict_rules']['raw_page_hash_is_fetch_evidence_not_stable_identity'] is True
           PY
       - name: Enforce no repository writes
         run: git diff --exit-code
