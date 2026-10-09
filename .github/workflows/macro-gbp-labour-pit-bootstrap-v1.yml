@@ -1,5 +1,5 @@
 name: Macro GBP Labour PIT Bootstrap V1
-# Trigger bootstrap after workflow registration.
+# Final exact-head validation trigger after reviewed promotion and temporary-probe cleanup.
 
 on:
   push:
