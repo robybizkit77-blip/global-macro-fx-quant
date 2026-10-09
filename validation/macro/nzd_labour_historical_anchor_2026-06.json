@@ -1,0 +1,40 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "NZD",
+    "dimension": "labour",
+    "macro_series_id": "NZ_UNEMP_RATE_history_value"
+  },
+  "authority": "Stats NZ",
+  "source": "Stats NZ via Figure.NZ mirror",
+  "official_transport_source": "Stats NZ",
+  "series_id": "NZ_UNEMP_RATE",
+  "frequency": "Q",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-03",
+    "value": 5.3,
+    "release_date": "2026-05-06",
+    "official_reference": "https://www.stats.govt.nz/information-releases/labour-market-statistics-march-2026-quarter/"
+  },
+  "prior_revision": {
+    "observation_date": "2026-03",
+    "before_value": 5.3,
+    "value": 5.4
+  },
+  "current": {
+    "observation_date": "2026-06",
+    "value": 5.6,
+    "release_date": "2026-08-05",
+    "official_reference": "https://www.stats.govt.nz/information-releases/labour-market-statistics-june-2026-quarter/"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST_AND_RESTORE_PRIOR_VINTAGE",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.stats.govt.nz/indicators/unemployment-rate/",
+    "canonical_source_label_preserved": true,
+    "note": "Stats NZ published the March 2026 quarter unemployment rate at 5.3 percent on 6 May 2026. In the 5 August 2026 June-quarter release, March was shown revised to 5.4 percent and June at 5.6 percent. The replay therefore reconstructs the true prior vintage 5.3, applies the bounded prior-period revision to 5.4, then appends June 5.6."
+  }
+}
