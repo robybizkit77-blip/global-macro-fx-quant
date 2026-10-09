@@ -4,6 +4,7 @@
   "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
   "base_main_sha": "bd71bb47c7b5a6cf44d7c41b6882700cd09adb6d",
   "validated_head_sha": "bbfdb332ba021a5bc102dcb4b567320dd4f63e99",
+  "temporary_probe_cleanup_head_sha": "eaeb4d2a1a9cc6c8f6dd904fd6168f064ba1f600",
   "full_archive_probe_run_id": 37947855930,
   "engine_logic_audit_run_id": 37947855875,
   "staging_browser_audit_run_id": 37947855814,
@@ -27,6 +28,7 @@
     "official_publication_timestamp_required": true,
     "rowset_sha256": "02edb2f338d1dbf9ed18bf6e6ea032d16bf4847d39c79a96a4c4e4c466b31865",
     "revised_history_fallback_used": false,
+    "temporary_probe_files_removed": true,
     "live_data_changed": false,
     "engine_rules_changed": false
   },
