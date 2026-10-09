@@ -156,11 +156,14 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
     for row in row_hits:
         txt = html.unescape(re.sub(r'<[^>]+>', ' ', row))
         txt = re.sub(r'\s+', ' ', txt).strip()
-        if not re.search(r'\bAll-items\b', txt, flags=re.I):
+        # Statistics Canada has used both "All-items" and "All items" in the
+        # first-release Table 1 archive. Treat only those two label forms as the
+        # exact headline aggregate; keep excluding/core and legacy-base rows out.
+        if not re.search(r'\bAll[- ]items\b', txt, flags=re.I):
             continue
-        if re.search(r'All-items\s+excluding', txt, flags=re.I):
+        if re.search(r'All[- ]items\s+excluding', txt, flags=re.I):
             continue
-        if re.search(r'All-items\s*\([^)]*=\s*100\)', txt, flags=re.I):
+        if re.search(r'All[- ]items\s*\([^)]*=\s*100\)', txt, flags=re.I):
             continue
         nums = [float(x.replace(',', '')) for x in re.findall(r'-?[0-9]+(?:\.[0-9]+)?', txt)]
         candidates.append((txt, nums))
