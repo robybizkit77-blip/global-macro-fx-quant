@@ -5,6 +5,7 @@ This wrapper preserves the existing collector unchanged and only adds exact,
 period-specific first-release wording verified on official ONS releases for:
 - reference month 2024-01 (November 2023 to January 2024), release 12 Mar 2024
 - reference month 2024-02 (December 2023 to February 2024), release 16 Apr 2024
+- reference month 2024-03 (January to March 2024), release 14 May 2024
 """
 from __future__ import annotations
 
@@ -15,6 +16,8 @@ import materialize_gbp_labour_strict_pit_v1 as base
 _ORIGINAL_HEADLINE = base.headline
 _MARCH_TARGET = 'November 2023 to January 2024'
 _APRIL_TARGET = 'December 2023 to February 2024'
+_MAY_CANONICAL = 'January 2024 to March 2024'
+_MAY_COMPACT = 'January to March 2024'
 
 
 def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
@@ -62,6 +65,35 @@ def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> t
             if len(values) != 1:
                 raise ValueError(f'ambiguous or missing fixed ONS April 2024 companion unemployment headline: {values}')
             return values[0], _APRIL_TARGET
+
+    if _MAY_CANONICAL in periods and _MAY_COMPACT in periods:
+        if re.search(r'\bLabour market overview, UK:\s*May\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-05-14':
+                raise ValueError('ONS May 2024 overview release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*'
+                r'([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+January to March 2024\b',
+                text,
+                flags=re.I,
+            )
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS May 2024 overview unemployment headline: {values}')
+            return values[0], _MAY_COMPACT
+
+        if re.search(r'\bEmployment in the UK:\s*May\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-05-14':
+                raise ValueError('ONS May 2024 companion release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate for January to March 2024\s*\('
+                r'([0-9]+(?:\.[0-9]+)?)%\)\s+is above estimates of a year ago',
+                text,
+                flags=re.I,
+            )
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS May 2024 companion unemployment headline: {values}')
+            return values[0], _MAY_COMPACT
 
     return _ORIGINAL_HEADLINE(text, periods)
 
