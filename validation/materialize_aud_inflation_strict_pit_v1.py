@@ -6,7 +6,7 @@ from urllib.error import HTTPError,URLError
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from validation.sources.aud_abs_core import fetch_bytes,text_from_html
+from validation.sources.aud_abs_core import fetch_bytes,text_from_html,parse_table17_quarterly_yoy
 
 MON={3:('mar','Mar','March'),6:('jun','Jun','June'),9:('sep','Sep','September'),12:('dec','Dec','December')}
 START=(2018,3);END=(2026,6)
@@ -80,10 +80,16 @@ def one(y,m):
     ref=f'{y:04d}-{m:02d}'
     for rel in modern_urls(y,m):
         try:
-            raw=fetch_bytes(rel);text=text_from_html(raw.decode('utf-8',errors='replace'))
+            page_raw=fetch_bytes(rel);text=text_from_html(page_raw.decode('utf-8',errors='replace'))
             if 'Consumer Price Index' not in text:continue
-            rd,rt,tz=stamp(text);value=reported_yoy(text,y,m)
-            return {'reference_quarter':ref,'cpi_yoy':value,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':rel,'source_sha256':hashlib.sha256(raw).hexdigest(),'route':'MODERN_REPORTED_YOY','pit_status':'STRICT_FIRST_RELEASE'}
+            rd,rt,tz=stamp(text)
+            if (y,m)>=(2025,12):
+                table_url=rel+'/6401017.xlsx';wb=fetch_bytes(table_url)
+                date,value,_=parse_table17_quarterly_yoy(wb,y,m)
+                if date!=ref:raise ValueError('Table 17 quarter identity mismatch')
+                return {'reference_quarter':ref,'cpi_yoy':value,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':table_url,'source_sha256':hashlib.sha256(wb).hexdigest(),'route':'TRANSITION_TABLE17_Q_YOY','pit_status':'STRICT_FIRST_RELEASE'}
+            value=reported_yoy(text,y,m)
+            return {'reference_quarter':ref,'cpi_yoy':value,'release_date':rd,'release_time':rt,'timezone':tz,'source_url':rel,'source_sha256':hashlib.sha256(page_raw).hexdigest(),'route':'MODERN_REPORTED_YOY','pit_status':'STRICT_FIRST_RELEASE'}
         except (HTTPError,URLError,TimeoutError,ValueError):
             continue
     for url in legacy_urls(y,m):
@@ -106,10 +112,12 @@ def main():
         r=one(y,m);rows.append(r);print(f'[{i:02d}/34] {r["reference_quarter"]} {r["cpi_yoy"]} {r["route"]}',flush=True);time.sleep(.03)
     assert len(rows)==34 and rows[0]['reference_quarter']=='2018-03' and rows[-1]['reference_quarter']=='2026-06'
     assert len({r['source_sha256'] for r in rows})==34
+    known={r['reference_quarter']:r['cpi_yoy'] for r in rows}
+    assert known['2025-12']==3.6 and known['2026-03']==4.1 and known['2026-06']==3.9
     with open(a.csv,'w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=ROW_KEYS,lineterminator='\n');w.writeheader();w.writerows(rows)
     rc={}
     for r in rows:rc[r['route']]=rc.get(r['route'],0)+1
-    ev={'schema':'GMFQ_AUD_INFLATION_STRICT_PIT_EVIDENCE_V1_RUNTIME','status':'PASS','target':'AUD.inflation','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','authority':'Australian Bureau of Statistics','coverage':{'start':'2018-03','end':'2026-06','expected_quarters':34,'materialized_quarters':34},'series_contract':{'series_id':'AU_CPI_HEADLINE_Q_YOY','frequency':'Q','transformation':'reported_yoy_rate','2019_plus_derivation':'ABS period-specific release reported headline YoY','2018_derivation':'ABS archived 6401.0 table annual change column'},'route_counts':rc,'unique_source_hashes':34,'semantic_rowset_sha256':digest(rows,SEMANTIC_KEYS),'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'generated_at_utc':datetime.now(timezone.utc).isoformat()}
+    ev={'schema':'GMFQ_AUD_INFLATION_STRICT_PIT_EVIDENCE_V1_RUNTIME','status':'PASS','target':'AUD.inflation','evidence_class':'STRICT_DIRECT_ARCHIVAL_PIT','authority':'Australian Bureau of Statistics','coverage':{'start':'2018-03','end':'2026-06','expected_quarters':34,'materialized_quarters':34},'series_contract':{'series_id':'AU_CPI_HEADLINE_Q_YOY','frequency':'Q','transformation':'reported_yoy_rate','2019_to_2025Q3_derivation':'ABS period-specific release reported headline YoY','2018_derivation':'ABS archived 6401.0 table annual change column','2025Q4_plus_derivation':'ABS period-specific Table 17 Australia index t/t-4 to preserve frozen quarterly contract'},'route_counts':rc,'unique_source_hashes':34,'semantic_rowset_sha256':digest(rows,SEMANTIC_KEYS),'strict_rules':{'official_publisher_only':True,'period_specific_release_artifact_required':True,'publication_timestamp_required':True,'frozen_quarterly_contract_preserved_across_monthly_cpi_transition':True,'current_revised_history_forbidden':True,'revised_history_fallback_used':False},'generated_at_utc':datetime.now(timezone.utc).isoformat()}
     Path(a.evidence).write_text(json.dumps(ev,indent=2)+'\n',encoding='utf-8');print(json.dumps(ev,indent=2))
 if __name__=='__main__':main()
