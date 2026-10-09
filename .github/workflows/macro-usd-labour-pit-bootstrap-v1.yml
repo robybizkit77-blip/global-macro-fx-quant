@@ -1,5 +1,5 @@
 name: Macro USD Labour PIT Bootstrap V1
-# Temporary format-cleanup execution on the already validated USD labour path.
+# Final exact-head validation trigger after reviewed promotion, cleanup, and registry-format normalization.
 
 on:
   push:
@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: macro-usd-labour-pit-bootstrap-${{ github.ref }}
@@ -143,32 +143,3 @@ jobs:
           path: /tmp/usd-labour-bootstrap/
           if-no-files-found: error
           retention-days: 90
-
-      - name: Restore canonical registry formatting and push format-only commit
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
-          s=p.read_text()
-          currency_pattern=r'"currencies":\s*\[\s*"USD",\s*"EUR",\s*"GBP",\s*"JPY",\s*"CHF",\s*"CAD",\s*"AUD",\s*"NZD"\s*\]'
-          supported_currency_pattern=r'"supported_currencies":\s*\[\s*"USD",\s*"EUR",\s*"GBP",\s*"JPY",\s*"CHF",\s*"CAD",\s*"AUD",\s*"NZD"\s*\]'
-          dimension_pattern=r'"dimensions":\s*\[\s*"inflation",\s*"labour"\s*\]'
-          supported_dimension_pattern=r'"supported_dimensions":\s*\[\s*"inflation",\s*"labour"\s*\]'
-          s,n1=re.subn(currency_pattern, '"currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]', s, count=1)
-          s,n2=re.subn(dimension_pattern, '"dimensions": ["inflation", "labour"]', s, count=1)
-          s,n3=re.subn(supported_currency_pattern, '"supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]', s, count=1)
-          s,n4=re.subn(supported_dimension_pattern, '"supported_dimensions": ["inflation", "labour"]', s, count=1)
-          assert (n1,n2,n3,n4)==(1,1,1,1), (n1,n2,n3,n4)
-          p.write_text(s)
-          PY
-          python3 -m json.tool validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json >/dev/null
-          git diff --exit-code -- live_data payload
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
-          git commit -m 'Restore canonical registry formatting after USD labour promotion'
-          git push origin HEAD:${GITHUB_REF_NAME}
