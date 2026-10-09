@@ -1,0 +1,43 @@
+name: TEMP Revision Aware Replay Apply
+
+on:
+  push:
+    branches:
+      - 'feature/macro-revision-aware-replay-2026-10-09'
+    paths:
+      - '.github/workflows/temp-revision-aware-replay-apply.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply bounded revision-aware replay patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/temp_add_revision_replay_support.py
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/build_macro_candidate.py --self-test > /tmp/revision-aware-builder-self-test.json
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'validation/build_macro_candidate.py\nvalidation/macro_pit_historical_bootstrap.py\nvalidation/test_macro_pit_historical_bootstrap.py'
+      - name: Commit permanent revision-aware replay support
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/build_macro_candidate.py validation/macro_pit_historical_bootstrap.py validation/test_macro_pit_historical_bootstrap.py
+          git commit -m 'Support bounded prior revisions in macro PIT replay'
+          git push origin HEAD:feature/macro-revision-aware-replay-2026-10-09
