@@ -1,0 +1,36 @@
+{
+  "schema": "GMFQ_CAD_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "CAD.inflation",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "81c828bf67a4328ffc43334b72538a501e5819d4",
+  "validated_source_sha": "72e1b72d502dce328041413f01d0d77fea8be306",
+  "materializer_run_id": 37976278850,
+  "engine_logic_audit_run_id": 37976278936,
+  "staging_browser_audit_run_id": 37976278991,
+  "artifact_id": 11639347271,
+  "artifact_digest": "sha256:4362b894f75ae4e90b5db43e8a824b8038301bcbbaf34752b2df9bb34256b35c",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "months": 104
+  },
+  "invariants": {
+    "all_months_present": true,
+    "strict_first_release_only": true,
+    "unique_combined_source_hash_per_month": true,
+    "unique_table_hash_per_month": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "release_time": "08:30",
+    "timezone": "Eastern Time",
+    "semantic_rowset_sha256": "d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a",
+    "semantic_fields_verified_across_independent_materializations": true,
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "7/16"
+  }
+}

@@ -31,7 +31,7 @@ jobs:
           python validation/materialize_cad_inflation_strict_pit_v1.py \
             --csv /tmp/cad-inflation-strict/CAD_CPI_STRICT_FIRST_RELEASE_2018_2026_08.csv \
             --evidence /tmp/cad-inflation-strict/CAD_INFLATION_STRICT_PIT_EVIDENCE_V1.json
-      - name: Verify strict PIT invariants
+      - name: Verify strict PIT invariants and pinned certification contract
         shell: bash
         run: |
           set -euo pipefail
@@ -40,6 +40,8 @@ jobs:
           from pathlib import Path
           p=Path('/tmp/cad-inflation-strict')
           ev=json.loads((p/'CAD_INFLATION_STRICT_PIT_EVIDENCE_V1.json').read_text())
+          pin=json.loads(Path('validation/macro/cad_inflation_strict_pit_evidence_v1_2026-10-09.json').read_text())
+          receipt=json.loads(Path('validation/macro/cad_inflation_strict_pit_receipt_v1_2026-10-09.json').read_text())
           rows=list(csv.DictReader((p/'CAD_CPI_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
           assert ev['status']=='PASS'
           assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
@@ -53,6 +55,26 @@ jobs:
           assert ev['route_counts']=={'STATCAN_THE_DAILY_PLUS_TABLE1':104}
           assert ev['strict_rules']['full_precision_derived_from_release_table_indexes'] is True
           assert ev['strict_rules']['revised_history_fallback_used'] is False
+          expected='d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a'
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']==receipt['invariants']['semantic_rowset_sha256']==expected
+          for key in ('status','target','evidence_class','authority','coverage','series_contract','route_counts','unique_combined_source_hashes','unique_table_hashes','publication_time_basis','strict_rules','missing','duplicates','errors','changes_live_data','changes_engine_rules'):
+              assert ev[key]==pin[key], key
+          anchors=pin['anchor_checks']
+          assert set(anchors)=={'2018-01','2020-04','2020-07','2022-01','2024-12','2026-08'}
+          by_month={r['reference_month']:r for r in rows}
+          for month, anchor in anchors.items():
+              row=by_month[month]
+              assert float(row['cpi_index_current'])==anchor['current'], month
+              assert float(row['cpi_index_prior_year'])==anchor['prior_year'], month
+              assert float(row['cpi_yoy_full_precision'])==anchor['yoy'], month
+              assert row['release_date']==anchor['release_date'], month
+          assert pin['source_validation']['base_main_sha']=='81c828bf67a4328ffc43334b72538a501e5819d4'
+          assert pin['source_validation']['validated_source_sha']=='72e1b72d502dce328041413f01d0d77fea8be306'
+          assert pin['source_validation']['artifact_id']==receipt['artifact_id']==11639347271
+          assert pin['source_validation']['artifact_digest']==receipt['artifact_digest']=='sha256:4362b894f75ae4e90b5db43e8a824b8038301bcbbaf34752b2df9bb34256b35c'
+          assert receipt['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert receipt['coverage']['months']==104
+          assert receipt['promotion_effect_if_merged']['strict_direct_archival_pit']=='7/16'
           PY
       - name: Enforce no repository writes
         run: git diff --exit-code

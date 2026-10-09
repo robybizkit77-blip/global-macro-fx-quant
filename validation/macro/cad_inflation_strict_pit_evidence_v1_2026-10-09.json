@@ -1,0 +1,77 @@
+{
+  "schema": "GMFQ_CAD_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "CAD.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Statistics Canada",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "series_contract": {
+    "series_id": "CA_CPI_HEADLINE_YOY",
+    "frequency": "M",
+    "transformation": "derived_yoy_from_index",
+    "seasonal_adjustment": "not seasonally adjusted",
+    "unit": "% YoY"
+  },
+  "route_counts": {
+    "STATCAN_THE_DAILY_PLUS_TABLE1": 104
+  },
+  "unique_combined_source_hashes": 104,
+  "unique_table_hashes": 104,
+  "semantic_rowset_sha256": "d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a",
+  "semantic_fingerprint_serialization": "canonical JSON; reference_month, CPI indexes, full-precision YoY, reported headline, release timestamp, PIT status",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "cpi_index_current",
+    "cpi_index_prior_year",
+    "cpi_yoy_full_precision",
+    "headline_yoy_reported",
+    "release_date",
+    "release_time",
+    "timezone",
+    "pit_status"
+  ],
+  "anchor_checks": {
+    "2018-01": {"current": 131.7, "prior_year": 129.5, "yoy": 1.698841698841691, "release_date": "2018-02-23"},
+    "2020-04": {"current": 135.7, "prior_year": 136.0, "yoy": -0.22058823529412797, "release_date": "2020-05-20"},
+    "2020-07": {"current": 137.2, "prior_year": 137.0, "yoy": 0.14598540145984717, "release_date": "2020-08-19"},
+    "2022-01": {"current": 145.3, "prior_year": 138.2, "yoy": 5.137481910274988, "release_date": "2022-02-16"},
+    "2024-12": {"current": 161.2, "prior_year": 158.3, "yoy": 1.831964624131377, "release_date": "2025-01-21"},
+    "2026-08": {"current": 169.8, "prior_year": 164.8, "yoy": 3.033980582524265, "release_date": "2026-09-14"}
+  },
+  "publication_time_basis": {
+    "release_vehicle": "The Daily",
+    "time": "08:30",
+    "timezone": "Eastern Time",
+    "official_policy_url": "https://www150.statcan.gc.ca/n1/dai-quo/info3-eng.htm"
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "period_specific_table_required": true,
+    "publication_timestamp_required": true,
+    "article_and_table_sha256_required": true,
+    "headline_rounding_reconciliation_required": true,
+    "full_precision_derived_from_release_table_indexes": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "source_validation": {
+    "base_main_sha": "81c828bf67a4328ffc43334b72538a501e5819d4",
+    "validated_source_sha": "72e1b72d502dce328041413f01d0d77fea8be306",
+    "materializer_run_id": 37976278850,
+    "artifact_id": 11639347271,
+    "artifact_digest": "sha256:4362b894f75ae4e90b5db43e8a824b8038301bcbbaf34752b2df9bb34256b35c",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
