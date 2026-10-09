@@ -1,0 +1,77 @@
+name: Macro USD Labour Registry Promotion V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-usd-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-usd-labour-registry-promotion-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote-reviewed-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Apply only reviewed USD labour certification metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
+          data=json.loads(p.read_text())
+          key='USD.labour'
+          row=data['series'][key]
+          assert row.get('historical_replay_certified') is False
+          before=json.loads(json.dumps(data))
+          row['historical_replay_certified']=True
+          row['historical_replay_evidence']={
+            'schema':'GMFQ_MACRO_PIT_CERTIFICATION_REF_V1',
+            'evidence_schema':'GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1',
+            'evidence_sha256':'d5478a62072d5903f539213b62cbfc7ac5c1ecd09f221351c48845ed6aef2804',
+            'evidence_class':'RECONSTRUCTED_HISTORICAL_REPLAY',
+            'macro_series_id':'US_UNRATE_history_value',
+            'observation_date':'2026-09-01',
+            'value':4.2,
+            'before_git_head':'5875056aa48782776993989b90cb94475d3e3fcc',
+            'after_git_head':'5875056aa48782776993989b90cb94475d3e3fcc',
+            'promotion_mode':'EXPLICIT_REVIEW_REQUIRED',
+            'before_state':'RECONSTRUCTED_FROM_BOUNDED_CANONICAL_AFTER_AND_OFFICIAL_PRIOR_RELEASE',
+            'after_state':'CANONICAL_RUNTIME',
+            'official_release_pair_verified':True,
+            'manifest_sha256':'4b889e228deffa5114b139ba43bb220bd2edf42931aef074b1fb2ac20b0fe953'
+          }
+          # Prove only target certification metadata changed semantically.
+          after=json.loads(json.dumps(data))
+          b=before['series'][key]; a=after['series'][key]
+          b.pop('historical_replay_certified',None)
+          a.pop('historical_replay_certified',None)
+          a.pop('historical_replay_evidence',None)
+          assert b==a
+          before['series'].pop(key); after['series'].pop(key)
+          assert before==after
+          p.write_text(json.dumps(data, indent=2, ensure_ascii=False)+'\n')
+          PY
+          python3 -m json.tool validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json >/dev/null
+          git diff -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git diff --exit-code -- live_data payload
+
+      - name: Commit reviewed registry promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git commit -m 'Promote reviewed USD labour historical replay evidence'
+          git push origin HEAD:${GITHUB_REF_NAME}
