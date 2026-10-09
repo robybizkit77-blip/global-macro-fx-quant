@@ -12,13 +12,13 @@
   "frequency": "M",
   "transformation": "level",
   "previous": {
-    "observation_date": "2026-05-01",
+    "observation_date": "2026-05",
     "value": 4.9,
     "release_date": "2026-07-21",
     "official_reference": "https://www.ons.gov.uk/releases/uklabourmarketjuly2026"
   },
   "current": {
-    "observation_date": "2026-06-01",
+    "observation_date": "2026-06",
     "value": 4.9,
     "release_date": "2026-08-18",
     "official_reference": "https://www.ons.gov.uk/releases/uklabourmarketaugust2026"
@@ -30,6 +30,6 @@
     "official_release_pair_verified": true,
     "release_schedule_reference": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket/previousreleases",
     "canonical_source_label_preserved": true,
-    "note": "ONS MGSX unemployment is a rolling three-month unemployment-rate series published monthly. The March-May 2026 estimate was released 21 July 2026 and the April-June 2026 estimate was released 18 August 2026. Both published rates were 4.9 percent; the economic observation period still advanced by one month, so replay validity depends on exact period-aware reconstruction rather than a value change."
+    "note": "ONS MGSX unemployment is a rolling three-month unemployment-rate series published monthly. The March-May 2026 estimate was released 21 July 2026 and the April-June 2026 estimate was released 18 August 2026. Both published rates were 4.9 percent; the canonical runtime stores monthly observations as YYYY-MM, so the anchor preserves that storage representation while official source comparisons are month-aware."
   }
 }
