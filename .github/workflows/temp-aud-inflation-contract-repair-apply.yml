@@ -16,60 +16,46 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Audit canonical AUD quarterly CPI against ABS Table 17
+      - name: Verify archived ABS Table 17 transition vintages
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, io, urllib.request, zipfile
+          import io, json, urllib.request, zipfile
           import xml.etree.ElementTree as ET
-          from datetime import datetime, timedelta
-          from decimal import Decimal, ROUND_HALF_UP
-          from pathlib import Path
+          from datetime import datetime,timedelta
+          from decimal import Decimal,ROUND_HALF_UP
 
-          url='https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026/6401017.xlsx'
-          data=urllib.request.urlopen(url,timeout=30).read()
-          NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main'; RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
-          z=zipfile.ZipFile(io.BytesIO(data)); ns={'m':NS,'r':RNS}
-          shared=[]
-          if 'xl/sharedStrings.xml' in z.namelist():
-            sr=ET.fromstring(z.read('xl/sharedStrings.xml'))
-            shared=[''.join(t.text or '' for t in si.iter(f'{{{NS}}}t')) for si in sr.findall('m:si',ns)]
-          wb=ET.fromstring(z.read('xl/workbook.xml')); rr=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
-          rels={e.attrib['Id']:e.attrib['Target'] for e in rr}
-          sh=next(x for x in wb.find('m:sheets',ns) if x.attrib['name']=='Data1')
-          target=rels[sh.attrib[f'{{{RNS}}}id']]
-          root=ET.fromstring(z.read('xl/'+target))
-          obs=[]
-          for row in root.findall('.//m:sheetData/m:row',ns):
-            rn=row.attrib['r']; cells={}
-            for c in row.findall('m:c',ns):
-              ref=c.attrib.get('r',''); typ=c.attrib.get('t'); v=c.find('m:v',ns); val=None if v is None else v.text
-              if typ=='s' and val is not None: val=shared[int(val)]
-              if val is not None: cells[ref]=val
-            a,j=cells.get('A'+rn),cells.get('J'+rn)
-            if not a or not j: continue
-            try:
-              dt=datetime(1899,12,30)+timedelta(days=int(Decimal(a))); idx=Decimal(j)
-            except Exception: continue
-            obs.append((dt,idx))
-          obs.sort()
-          official={}
-          for i,(dt,idx) in enumerate(obs):
-            if i<4: continue
-            pdt,pidx=obs[i-4]
-            if pdt.month!=dt.month or pdt.year!=dt.year-1: continue
-            yoy=((idx/pidx)-Decimal('1'))*Decimal('100')
-            official[f'{dt.year:04d}-{dt.month:02d}']=float(yoy.quantize(Decimal('0.1'),rounding=ROUND_HALF_UP))
-
-          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          row=next(x for x in s['AUD'] if x.get('id')=='AU_CPI_HEADLINE_Q_YOY_history_value')
-          mismatches=[]; matches=0
-          for d,v in zip(row['dates'],row['values']):
-            q=d[:7]
-            if q not in official: continue
-            ov=official[q]
-            if abs(float(v)-ov)>1e-12: mismatches.append({'period':q,'canonical':v,'abs_table17':ov})
-            else: matches+=1
-          print(json.dumps({'canonical_count':len(row['dates']),'comparable_count':matches+len(mismatches),'matches':matches,'mismatch_count':len(mismatches),'mismatches':mismatches,'official_tail':{k:official[k] for k in sorted(official)[-12:]}},indent=2))
+          releases={
+            '2025-12':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/dec-2025/6401017.xlsx',
+            '2026-03':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/mar-2026/6401017.xlsx',
+            '2026-06':'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026/6401017.xlsx',
+          }
+          NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships';ns={'m':NS,'r':RNS}
+          def parse(url):
+            z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(url,timeout=30).read()))
+            shared=[]
+            if 'xl/sharedStrings.xml' in z.namelist():
+              sr=ET.fromstring(z.read('xl/sharedStrings.xml'));shared=[''.join(t.text or '' for t in si.iter(f'{{{NS}}}t')) for si in sr.findall('m:si',ns)]
+            wb=ET.fromstring(z.read('xl/workbook.xml')); rr=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'));rels={e.attrib['Id']:e.attrib['Target'] for e in rr}
+            sh=next(x for x in wb.find('m:sheets',ns) if x.attrib['name']=='Data1');root=ET.fromstring(z.read('xl/'+rels[sh.attrib[f'{{{RNS}}}id']]))
+            obs=[]
+            for row in root.findall('.//m:sheetData/m:row',ns):
+              rn=row.attrib['r']; cells={}
+              for c in row.findall('m:c',ns):
+                ref=c.attrib.get('r','');v=c.find('m:v',ns);val=None if v is None else v.text
+                if c.attrib.get('t')=='s' and val is not None: val=shared[int(val)]
+                if val is not None: cells[ref]=val
+              try: obs.append((datetime(1899,12,30)+timedelta(days=int(Decimal(cells['A'+rn]))),Decimal(cells['J'+rn])))
+              except Exception: pass
+            obs.sort(); return obs
+          out={}
+          for period,url in releases.items():
+            y,m=map(int,period.split('-'));obs=parse(url);i=next(i for i,(dt,_) in enumerate(obs) if dt.year==y and dt.month==m)
+            dt,idx=obs[i];pdt,pidx=obs[i-4]; raw=(idx/pidx-Decimal('1'))*Decimal('100'); rounded=raw.quantize(Decimal('0.1'),rounding=ROUND_HALF_UP)
+            out[period]={'release_workbook':url,'current_index':float(idx),'t_minus_4_index':float(pidx),'raw_yoy':float(raw),'quarterly_yoy_1dp':float(rounded),'t_minus_4_period':f'{pdt.year:04d}-{pdt.month:02d}'}
+          print(json.dumps(out,indent=2))
+          assert out['2025-12']['quarterly_yoy_1dp']==3.6
+          assert out['2026-03']['quarterly_yoy_1dp']==4.1
+          assert out['2026-06']['quarterly_yoy_1dp']==3.9
           PY
