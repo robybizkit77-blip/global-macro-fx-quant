@@ -1,0 +1,111 @@
+name: TEMP AUD Labour Bounded Repair
+
+on:
+  push:
+    branches:
+      - 'validation-macro-aud-labour-pit-bootstrap-2026-10-09'
+    paths:
+      - '.github/workflows/temp-aud-labour-bounded-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair July and append August with bounded scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import copy, json
+          from pathlib import Path
+
+          sp=Path('live_data/sections/MACRO_SERIES.json')
+          hp=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
+          series=json.loads(sp.read_text())
+          heat=json.loads(hp.read_text())
+          before_series=copy.deepcopy(series)
+          before_heat=copy.deepcopy(heat)
+
+          row=next(x for x in series['AUD'] if x.get('id')=='AU_UNEMP_RATE_history_value')
+          assert row['dates'][-1]=='2026-07', row['dates'][-3:]
+          assert abs(float(row['values'][-1])-4.4618247)<1e-9, row['values'][-1]
+          assert row.get('last_date')=='2026-07'
+          assert abs(float(row.get('last_value'))-4.4618247)<1e-9
+          row['values'][-1]=4.5
+          row['dates'].append('2026-08')
+          row['values'].append(4.6)
+          row['last_date']='2026-08'
+          row['last_value']=4.6
+
+          h=heat['currencies']['AUD']['labour']
+          hist=[float(x) for x in h['history']]
+          assert abs(hist[-1]-4.6)<1e-12, hist[-3:]
+          assert abs(hist[-2]-4.461825)<1e-6, hist[-3:]
+          # Before repair the heatmap already had the August point; verify the preceding
+          # rolling tail corresponds to the canonical series before touching it.
+          oldrow=next(x for x in before_series['AUD'] if x.get('id')=='AU_UNEMP_RATE_history_value')
+          prev=hist[:-1]
+          expected=[float(x) for x in oldrow['values'][-len(prev):]]
+          assert len(prev)==len(expected)
+          assert all(abs(a-b)<1e-5 for a,b in zip(prev,expected)), {'history_tail':prev[-6:],'series_tail':expected[-6:]}
+          hist[-2]=4.5
+          h['history']=hist
+          h['latest_value']=4.6
+          h['as_of']='2026-08'
+          h['source']='Australian Bureau of Statistics'
+          h['frequency']='M'
+          h['transformation']='level'
+          heat['currencies']['AUD'].setdefault('as_of_detail',{})['labour']='2026-08'
+
+          below=sum(1 for x in hist if x < 4.6); equal=sum(1 for x in hist if x == 4.6)
+          pct=round(100.0*(below+0.5*equal)/len(hist),1)
+          h['percentile']=pct; h['temperature_score']=pct
+          label=None
+          for t in heat['thresholds']:
+            lo,hi=float(t['min']),float(t['max'])
+            if lo <= pct < hi or (pct==100.0 and hi==100.0): label=str(t['label']); break
+          assert label is not None
+          h['temperature_label']=label
+          d=hist[-1]-hist[-2]
+          h['direction']='SALE' if d>1e-12 else 'SCENDE' if d<-1e-12 else 'STABILE'
+          d1=hist[-2]-hist[-3]; d2=hist[-1]-hist[-2]; dd=d2-d1
+          h['acceleration']='ACCELERA' if dd>1e-12 else 'RALLENTA' if dd<-1e-12 else 'STABILE'
+          h['validation']={
+            'source':True,
+            'history':len(hist)>=int(heat.get('lookback_rule',{}).get('minimum_observations',24)),
+            'latest':True,
+            'transformation':True,
+          }
+
+          for c in series:
+            if c!='AUD': assert series[c]==before_series[c],c
+          assert [x for x in series['AUD'] if x.get('id')!='AU_UNEMP_RATE_history_value']==[x for x in before_series['AUD'] if x.get('id')!='AU_UNEMP_RATE_history_value']
+          for c in heat['currencies']:
+            if c!='AUD': assert heat['currencies'][c]==before_heat['currencies'][c],c
+          for dim in heat['currencies']['AUD']:
+            if dim not in ('labour','as_of_detail'):
+              assert heat['currencies']['AUD'][dim]==before_heat['currencies']['AUD'][dim],dim
+
+          sp.write_text(json.dumps(series,ensure_ascii=False,separators=(',',':'))+'\n')
+          hp.write_text(json.dumps(heat,ensure_ascii=False,separators=(',',':'))+'\n')
+          print(json.dumps({'status':'PASS','july':4.5,'august':4.6,'percentile':pct,'temperature':label,'direction':h['direction'],'acceleration':h['acceleration']},indent=2))
+          PY
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          test "$changed" = $'live_data/sections/MACRO_SERIES.json\nlive_data/sections/MACRO_THERMOMETER_DATA.json'
+      - name: Commit bounded repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git commit -m 'Repair AUD labour July and append August release'
+          git push origin HEAD:validation-macro-aud-labour-pit-bootstrap-2026-10-09
