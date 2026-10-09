@@ -28,7 +28,8 @@
     "revised_history_fallback_used": false
   },
   "unique_source_hashes_per_materialization": 104,
-  "semantic_rowset_sha256": "8ef97536738d4653b268a6582dca2d8384abcfb27aa3582e2b8ee1bd0f5dc33d",
+  "semantic_rowset_sha256": "b0f91883c118d15bffdb594d646786bd14d279090d7aafea1fad0f0c11faf436",
+  "semantic_fingerprint_serialization": "canonical JSON; unemployment_rate_sa numeric",
   "semantic_fingerprint_fields": [
     "reference_month",
     "unemployment_rate_sa",
@@ -37,8 +38,8 @@
     "timezone",
     "pit_status"
   ],
-  "independent_materializations_compared": 2,
-  "semantic_fingerprint_match_across_materializations": true,
+  "independent_materializations_compared": 3,
+  "semantic_fields_match_across_materializations": true,
   "missing": [],
   "duplicates": [],
   "errors": [],
