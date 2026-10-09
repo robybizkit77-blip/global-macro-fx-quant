@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_CAD_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "CAD.labour",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "b42413973479f4b94c63ebdcd4adb6b38f93fe7b",
+  "validated_head_sha": "f802f15ab3f14941b925224ef3227f5b5bfa52cc",
+  "full_archive_probe_run_id": 37963733788,
+  "artifact_id": 11632028728,
+  "artifact_digest": "sha256:9c4c0e28d6922954b3a55aea582c721d39a1199644636c0f929be39ce0562d92",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "months": 104
+  },
+  "series_contract": {
+    "series_id": "CA_UNEMP_RATE",
+    "seasonal_adjustment": "seasonally adjusted"
+  },
+  "invariants": {
+    "all_months_present": true,
+    "unique_source_hash_per_materialization": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "canada_headline_required": true,
+    "generic_narrative_or_provincial_fallback_forbidden": true,
+    "semantic_rowset_sha256": "77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a",
+    "semantic_fingerprint_serialization": "canonical JSON; unemployment_rate_sa numeric",
+    "semantic_fields_verified_across_independent_materializations": true,
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "6/16"
+  }
+}
