@@ -200,6 +200,46 @@ def parse_october_2023_experimental_release(raw: bytes, final_url: str) -> dict[
     }
 
 
+ALTERNATIVE_LFS_RELEASES = {
+    # These are the three subsequent period-specific overview releases for
+    # which ONS withheld the conventional LFS headline and published only its
+    # same-day administrative-data alternative.  Each wording is pinned here
+    # after checking the official release, rather than accepted generically.
+    (2023, 9): ('November 2023', '2023-11-14', 'July to September 2023',
+                r'These alternative estimates for July to September 2023 show that;.*?'
+                r'the UK unemployment rate was largely unchanged on the quarter at\s+([0-9]+(?:\.[0-9]+)?)\s*%'),
+    (2023, 10): ('December 2023', '2023-12-12', 'August to October 2023',
+                 r'These alternative estimates for August to October 2023 show that:.*?'
+                 r'the UK unemployment rate \(for those aged 16 years and over\) was largely unchanged on the quarter at\s+([0-9]+(?:\.[0-9]+)?)\s*%'),
+    (2023, 11): ('January 2024', '2024-01-16', 'September to November 2023',
+                 r'These alternative estimates for September to November 2023 show that:.*?'
+                 r'the UK unemployment rate \(for those aged 16 years and over\) was largely unchanged on the quarter at\s+([0-9]+(?:\.[0-9]+)?)\s*%'),
+}
+
+
+def parse_pinned_alternative_lfs_release(raw: bytes, final_url: str, y: int, m: int) -> dict[str, object]:
+    title, published, period, pattern = ALTERNATIVE_LFS_RELEASES[(y, m)]
+    text = plain(raw)
+    if not re.search(rf'\bLabour market overview, UK:\s*{re.escape(title)}\b', text, re.I):
+        raise ValueError(f'ONS {title} alternative overview identity mismatch')
+    if release_date(text) != published:
+        raise ValueError(f'ONS {title} alternative overview release-date mismatch')
+    contents_main_points = text.find('Main points')
+    main_points = text.find('Main points', contents_main_points + 1)
+    next_section = text.find('Latest indicators at a glance', main_points)
+    if main_points < 0 or next_section < 0:
+        raise ValueError(f'ONS {title} alternative overview summary bounds not found')
+    values = list(dict.fromkeys(float(value) for value in re.findall(pattern, text[main_points:next_section], flags=re.I | re.S)))
+    if len(values) != 1:
+        raise ValueError(f'ambiguous or missing pinned ONS {title} alternative unemployment headline: {values}')
+    return {
+        'reference_month': f'{y:04d}-{m:02d}', 'rolling_period': period, 'source_rolling_period': period,
+        'headline_unemployment_rate_pct': values[0], 'release_date': published,
+        'source_route': 'ONS_UK_LABOUR_MARKET_ALTERNATIVE_LFS_OVERVIEW_BULLETIN',
+        'source_url': final_url, 'page_sha256': hashlib.sha256(raw).hexdigest(), 'pit_status': 'STRICT_FIRST_RELEASE',
+    }
+
+
 def one(y: int, m: int) -> dict[str, object]:
     # The bulletin name is the publication month, not the reference month.
     ry, rm = add_months(y, m, 2)
@@ -207,6 +247,8 @@ def one(y: int, m: int) -> dict[str, object]:
     raw, final_url = fetch(f'{BASE}/{slug}')
     if (y, m) == (2023, 8):
         return parse_october_2023_experimental_release(raw, final_url)
+    if (y, m) in ALTERNATIVE_LFS_RELEASES:
+        return parse_pinned_alternative_lfs_release(raw, final_url, y, m)
     try:
         return parse_release(raw, final_url, r'(?:UK labour market|Labour market overview, UK)', y, m, 'ONS_UK_LABOUR_MARKET_BULLETIN')
     except ValueError as overview_error:
