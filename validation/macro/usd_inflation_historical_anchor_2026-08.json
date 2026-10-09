@@ -1,0 +1,38 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "USD",
+    "dimension": "inflation",
+    "macro_series_id": "US_CPIAUCSL_history_value"
+  },
+  "authority": "U.S. Bureau of Labor Statistics",
+  "source": "FRED/BLS",
+  "official_transport_source": "BLS Public Data API v2, CUSR0000SA0",
+  "series_id": "CPIAUCSL",
+  "frequency": "M",
+  "transformation": "yoy_pct_from_index",
+  "unit": "% YoY",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 3.303856050706311,
+    "series_value": 332.813,
+    "release_date": "2026-08-12",
+    "official_reference": "https://www.bls.gov/news.release/archives/cpi_08122026.htm"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 3.353016322755642,
+    "series_value": 334.131,
+    "release_date": "2026-09-11",
+    "official_reference": "https://www.bls.gov/news.release/archives/cpi_09112026.htm"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST_WITH_SPLIT_RAW_INDEX_AND_HEATMAP_YOY",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.bls.gov/schedule/2026/home.htm",
+    "canonical_source_label_preserved": true,
+    "note": "The canonical USD CPI series stores the seasonally adjusted BLS CUSR0000SA0 index, while the macro heatmap stores YoY percent derived by exact month key. July 2026 CPI was released August 12, 2026 and August 2026 CPI was released September 11, 2026. The replay therefore carries both the raw series_value and the transformed heatmap value and must reproduce both canonical layers exactly."
+  }
+}
