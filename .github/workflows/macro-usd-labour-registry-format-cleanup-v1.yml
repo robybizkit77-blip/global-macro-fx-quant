@@ -1,0 +1,77 @@
+name: Macro USD Labour Registry Format Cleanup V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-usd-labour-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-usd-labour-registry-format-cleanup-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+      - name: Restore canonical compact registry arrays only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
+          s=p.read_text()
+          replacements={
+'''    "currencies": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ],''':'    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],',
+'''    "dimensions": [
+      "inflation",
+      "labour"
+    ],''':'    "dimensions": ["inflation", "labour"],',
+'''    "supported_currencies": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ],''':'    "supported_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],',
+'''    "supported_dimensions": [
+      "inflation",
+      "labour"
+    ]''':'    "supported_dimensions": ["inflation", "labour"]'
+          }
+          for old,new in replacements.items():
+              assert s.count(old)==1, f'expected exactly one canonicalization target: {old[:40]}'
+              s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          python3 -m json.tool validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json >/dev/null
+          git diff -- validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git diff --exit-code -- live_data payload
+      - name: Commit format-only cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+          git commit -m 'Restore canonical registry formatting after USD labour promotion'
+          git push origin HEAD:${GITHUB_REF_NAME}
