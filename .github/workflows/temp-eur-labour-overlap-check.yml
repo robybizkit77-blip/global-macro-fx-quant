@@ -1,4 +1,4 @@
-name: TEMP EUR Labour Overlap Check
+name: TEMP EUR Labour Full History Check
 
 on:
   push:
@@ -18,41 +18,47 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Compare EUR labour canonical histories
+      - name: Verify entire 120-month EUR labour heatmap history against live Eurostat
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/eur-labour
-          python3 validation/sources/eur_eurostat_core.py --dimension labour --output /tmp/eur-labour/candidate.json --audit-output /tmp/eur-labour/audit.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          c=json.loads(Path('/tmp/eur-labour/candidate.json').read_text())
-          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['EUR']['labour']
-          row=next(x for x in s['EUR'] if x['id']=='EA_UNEMP_history_value')
-          sv=[float(x) for x in row['values']]
-          hv=[float(x) for x in h.get('history',[])]
-          overlap=min(len(sv),max(0,len(hv)-1))
-          tail_s=sv[-overlap:] if overlap else []
-          tail_h=hv[-(overlap+1):-1] if overlap else []
-          diffs=[abs(a-b) for a,b in zip(tail_s,tail_h)]
+          from validation.sources.eur_eurostat_core import fetch_payload, extract_series, CONFIG
+
+          payload=fetch_payload('labour')
+          official=extract_series(payload,CONFIG['labour']['filters'])
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['EUR']['labour']
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          row=next(x for x in series['EUR'] if x['id']=='EA_UNEMP_history_value')
+
+          hv=[float(x) for x in heat['history']]
+          off_dates=[d[:7] for d,v in official]
+          off_vals=[float(v) for d,v in official]
+          assert len(hv)==120
+          assert len(off_vals)>=120
+          official_tail=off_vals[-120:]
+          official_dates=off_dates[-120:]
+          diffs=[abs(a-b) for a,b in zip(official_tail,hv)]
+          material=[(official_dates[i],official_tail[i],hv[i],d) for i,d in enumerate(diffs) if d>1e-12]
           print(json.dumps({
-            'candidate':c,
-            'series_len':len(sv),
-            'heat_history_len':len(hv),
-            'overlap_prior_len':overlap,
-            'prior_max_abs_diff':max(diffs) if diffs else None,
-            'prior_material_mismatch_count_gt_1e-5':sum(1 for d in diffs if d>1e-5),
-            'prior_precision_only_count_le_1e-5':sum(1 for d in diffs if 0<d<=1e-5),
-            'series_first_date':row['dates'][0],
-            'series_last_date':row.get('last_date'),
-            'series_last_value':row.get('last_value'),
-            'heat_as_of':h.get('as_of'),
-            'heat_latest_value':h.get('latest_value'),
-            'series_tail':sv[-5:],
-            'heat_prior_tail':tail_h[-5:],
-            'heat_tail':hv[-5:],
+            'status':'PASS',
+            'official_observations':len(off_vals),
+            'official_tail_first_date':official_dates[0],
+            'official_tail_last_date':official_dates[-1],
+            'heat_len':len(hv),
+            'heat_as_of':heat['as_of'],
+            'exact_match_count':sum(1 for d in diffs if d==0),
+            'mismatch_count':len(material),
+            'max_abs_diff':max(diffs),
+            'first_mismatches':material[:10],
+            'macro_series_len':len(row['values']),
+            'macro_series_first_date':row['dates'][0],
+            'macro_series_last_date':row['dates'][-1],
           },indent=2))
+          assert not material, f'Eurostat full 120m history differs from heatmap at {len(material)} observations'
+          assert official_dates[-1]=='2026-08'
+          assert official_tail[-1]==6.4
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
