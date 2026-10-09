@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - validation-macro-g8-source-consolidation-2026-10-08
+      - validation-macro-aud-inflation-contract-repair-2026-10-09
     paths:
       - 'validation/sources/aud_abs_core.py'
       - 'validation/fixtures/aud_abs_cpi_contract.json'
       - 'validation/fixtures/aud_abs_unemployment_contract.json'
+      - 'validation/test_aud_abs_source.py'
       - 'validation/build_macro_candidate.py'
       - '.github/workflows/aud-abs-source-contract-v2.yml'
   workflow_dispatch:
@@ -26,6 +28,8 @@ jobs:
           python-version: '3.12'
       - name: Snapshot canonical live data before certification
         run: sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/aud-before.sha256
+      - name: Run AUD adapter unit contract
+        run: python validation/test_aud_abs_source.py
       - name: Verify deterministic ABS fixtures through canonical builder
         run: |
           set -euo pipefail
@@ -43,7 +47,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          expected={'inflation':('AU_CPI_HEADLINE_Q_YOY','2026-06-01',3.8,'Q','reported_yoy_rate'),'labour':('AU_UNEMP_RATE','2026-08-01',4.6,'M','level')}
+          expected={'inflation':('AU_CPI_HEADLINE_Q_YOY','2026-06',3.9,'Q','reported_yoy_rate'),'labour':('AU_UNEMP_RATE','2026-08-01',4.6,'M','level')}
           for dim,e in expected.items():
               root=Path('/tmp/gmfq-aud-abs-fixture')/dim
               c=json.loads((root/'candidate.json').read_text()); a=json.loads((root/'source-audit.json').read_text()); s=json.loads((root/'built/summary.json').read_text())
@@ -83,11 +87,13 @@ jobs:
               assert a['mode']=='live' and a['candidate_only'] is True and a['live_data_written'] is False,a
               assert s['status']=='PASS' and s['live_data_modified'] is False,s
               assert s['observation_date']==c['observation_date'],(s,c)
-              current=str(heat[dim]['as_of'])[:10]
+              current=str(heat[dim]['as_of'])[:7 if dim=='inflation' else 10]
               assert c['observation_date'] >= current,(c,current)
-              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'storage_date':s.get('storage_date')}
+              out[dim]={'series_id':c['series_id'],'macro_series_id':c['macro_series_id'],'observation_date':c['observation_date'],'value':c['value'],'series_action':s['series_action'],'storage_date':s.get('storage_date'),'source_url':c['source_url']}
           assert out['inflation']['series_id']=='AU_CPI_HEADLINE_Q_YOY',out
           assert out['labour']['series_id']=='AU_UNEMP_RATE',out
+          assert out['inflation']['observation_date']=='2026-06',out
+          assert abs(float(out['inflation']['value'])-3.9)<1e-12,out
           print(json.dumps({'status':'PASS','source':'Australian Bureau of Statistics','results':out,'live_data_modified':False},indent=2))
           PY
       - name: Confirm repository live data remained untouched

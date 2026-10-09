@@ -44,7 +44,7 @@ def check_dimension(dimension: str, root: Path) -> dict:
         assert c["macro_series_id"] == "AU_CPI_HEADLINE_Q_YOY_history_value", c
         assert c["series_id"] == "AU_CPI_HEADLINE_Q_YOY", c
         assert c["frequency"] == "Q" and c["transformation"] == "reported_yoy_rate", c
-        assert c["observation_date"] == "2026-06-01" and abs(float(c["value"]) - 3.8) < 1e-12, c
+        assert c["observation_date"] == "2026-06" and abs(float(c["value"]) - 3.9) < 1e-12, c
     else:
         assert c["macro_series_id"] == "AU_UNEMP_RATE_history_value", c
         assert c["series_id"] == "AU_UNEMP_RATE", c
@@ -57,9 +57,10 @@ def check_dimension(dimension: str, root: Path) -> dict:
     assert summary["currency"] == "AUD" and summary["dimension"] == dimension, summary
     assert summary["observation_date"] == c["observation_date"], (summary, c)
     assert abs(float(summary["new_value"]) - float(c["value"])) < 1e-12, (summary, c)
-    assert summary["series_action"] == "APPEND_NEW", summary
+    expected_action = "REPLACE_EXISTING" if dimension == "inflation" else "APPEND_NEW"
+    assert summary["series_action"] == expected_action, summary
     if dimension == "inflation":
-        assert summary["old_value"] is None, summary
+        assert abs(float(summary["old_value"]) - 3.8) < 1e-12, summary
     return {"dimension": dimension, "observation_date": c["observation_date"], "value": c["value"], "series_action": summary["series_action"]}
 
 

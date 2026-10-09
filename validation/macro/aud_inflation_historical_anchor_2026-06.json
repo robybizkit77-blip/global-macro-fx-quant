@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "AUD",
+    "dimension": "inflation",
+    "macro_series_id": "AU_CPI_HEADLINE_Q_YOY_history_value"
+  },
+  "authority": "Australian Bureau of Statistics",
+  "source": "Australian Bureau of Statistics",
+  "official_transport_source": "Australian Bureau of Statistics",
+  "series_id": "AU_CPI_HEADLINE_Q_YOY",
+  "frequency": "Q",
+  "transformation": "reported_yoy_rate",
+  "previous": {
+    "observation_date": "2026-03",
+    "value": 4.1,
+    "release_date": "2026-04-29",
+    "official_reference": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/mar-2026/6401017.xlsx"
+  },
+  "current": {
+    "observation_date": "2026-06",
+    "value": 3.9,
+    "release_date": "2026-07-29",
+    "official_reference": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026/6401017.xlsx"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia",
+    "canonical_source_label_preserved": true,
+    "note": "ABS moved the headline publication to complete monthly CPI from November 2025, while the GMFQ frozen series contract remains quarterly. Archived release-specific Table 17 workbooks prove the quarterly Australia index YoY values independently: March 2026 = 4.1 percent and June 2026 = 3.9 percent, computed as quarterly index t divided by t-4 minus one and rounded to one decimal. The replay intentionally uses the quarterly Table 17 metric and must not substitute the monthly headline annual rate."
+  }
+}
