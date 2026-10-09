@@ -1,0 +1,119 @@
+name: Macro Remaining Batch Audit V1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build all remaining official candidates read-only
+        shell: bash
+        run: |
+          set -u
+          mkdir -p /tmp/macro-batch
+          run_candidate() {
+            key="$1"; script="$2"; dim="$3"
+            echo "===== CANDIDATE $key ====="
+            set +e
+            python3 "$script" --dimension "$dim" --output "/tmp/macro-batch/${key}.json" --audit-output "/tmp/macro-batch/${key}.audit.json"
+            rc=$?
+            set -e
+            echo "RC=$rc"
+            if [ -f "/tmp/macro-batch/${key}.json" ]; then cat "/tmp/macro-batch/${key}.json"; fi
+            echo
+          }
+          set -e
+          run_candidate USD_inflation validation/sources/us_bls_core_macro.py inflation
+          run_candidate EUR_labour validation/sources/eur_eurostat_core.py labour
+          run_candidate EUR_inflation validation/sources/eur_eurostat_core.py inflation
+          run_candidate CHF_labour validation/sources/chf_snb_official_core.py labour
+          run_candidate CAD_labour validation/sources/cad_statcan_core.py labour
+          run_candidate CAD_inflation validation/sources/cad_statcan_core.py inflation
+          run_candidate AUD_labour validation/sources/aud_abs_core.py labour
+          run_candidate AUD_inflation validation/sources/aud_abs_core.py inflation
+          run_candidate NZD_labour validation/sources/nzd_statsnz_core.py labour
+
+      - name: Compare candidates with canonical runtime
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root=Path('/tmp/macro-batch')
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+
+          targets=['USD_inflation','EUR_labour','EUR_inflation','CHF_labour','CAD_labour','CAD_inflation','AUD_labour','AUD_inflation','NZD_labour']
+
+          def find_series(currency, sid):
+            for row in series.get(currency, []):
+              if row.get('id')==sid:
+                return row
+            return None
+
+          def walk(obj, path=''):
+            if isinstance(obj, dict):
+              yield path, obj
+              for k,v in obj.items():
+                yield from walk(v, f'{path}.{k}' if path else k)
+            elif isinstance(obj, list):
+              for i,v in enumerate(obj):
+                yield from walk(v, f'{path}[{i}]')
+
+          for key in targets:
+            p=root/f'{key}.json'
+            print(f'===== AUDIT {key} =====')
+            if not p.exists():
+              print('CLASS=ADAPTER_FAILED')
+              continue
+            c=json.loads(p.read_text())
+            cur=c.get('currency')
+            dim=c.get('dimension')
+            msid=c.get('macro_series_id')
+            row=find_series(cur, msid)
+            print('candidate_period=', c.get('observation_date'))
+            print('candidate_value=', c.get('value'))
+            print('candidate_prior_period=', c.get('prior_observation_date'))
+            print('candidate_prior_value=', c.get('prior_value'))
+            print('macro_series_id=', msid)
+            if row:
+              print('series_last_date=', row.get('last_date') or (row.get('dates') or [None])[-1])
+              print('series_last_value=', row.get('last_value') if 'last_value' in row else (row.get('values') or [None])[-1])
+              print('series_len=', len(row.get('values') or []))
+            else:
+              print('series_missing=True')
+
+            hits=[]
+            for path,d in walk(heat):
+              text=' '.join(str(d.get(k,'')) for k in ('currency','dimension','metric','series_id','id','label','macro_series_id')).lower()
+              if cur and cur.lower() in text and dim and dim.lower() in text:
+                if any(k in d for k in ('latest_value','history','last_value','value')):
+                  hits.append((path,d))
+            if not hits:
+              node=(heat.get('currencies') or {}).get(cur,{}).get(dim)
+              if isinstance(node,dict): hits=[(f'currencies.{cur}.{dim}',node)]
+            print('heat_hits=', len(hits))
+            for path,d in hits[:3]:
+              hist=d.get('history')
+              print('heat_path=',path)
+              print('heat_latest_period=', d.get('as_of') or d.get('latest_date') or d.get('observation_date') or d.get('date'))
+              print('heat_latest_value=', d.get('latest_value') if 'latest_value' in d else d.get('last_value'))
+              if isinstance(hist,list):
+                print('heat_history_len=',len(hist))
+                if hist: print('heat_history_last=',hist[-1])
+            print()
+          PY
+
+      - name: Confirm audit is read-only
+        run: git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
