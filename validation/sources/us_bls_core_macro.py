@@ -140,6 +140,7 @@ def build(payload: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str,
     labour = parse_series(payload, LABOUR_BLS_SERIES)
     cpi_index = parse_series(payload, INFLATION_BLS_SERIES)
     cpi_yoy = yoy_from_index(cpi_index)
+    cpi_index_by_date = dict(cpi_index)
     if len(labour) < 2:
         raise ValueError("need at least two unemployment observations")
 
@@ -170,6 +171,8 @@ def build(payload: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str,
             "macro_series_id": inf_macro_id,
             "observation_date": latest_inf[0],
             "value": latest_inf[1],
+            "series_value": cpi_index_by_date[latest_inf[0]],
+            "series_unit": "Index 1982-1984=100",
             "source": inf_source,
             "source_url": SOURCE_URL,
             "series_id": inf_heat_id,
@@ -192,7 +195,9 @@ def build(payload: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str,
             "latest_period": latest_inf[0], "latest_value": latest_inf[1],
             "prior_period": prior_inf[0] if prior_inf else None,
             "prior_value": prior_inf[1] if prior_inf else None,
-            "calculation": "100 * (CUSR0000SA0_t / CUSR0000SA0_t-12 - 1)",
+            "latest_index": cpi_index_by_date[latest_inf[0]],
+            "prior_year_index": cpi_index_by_date[f"{int(latest_inf[0][:4])-1:04d}-{latest_inf[0][5:7]}"],
+            "calculation": "100 * (CUSR0000SA0_t / CUSR0000SA0_same_month_prior_year - 1)",
         },
         "candidate_only": True,
         "live_data_written": False,

@@ -1,0 +1,141 @@
+name: Macro USD Inflation PIT Bootstrap V1
+# Final exact-head validation after certification and temporary workflow cleanup.
+
+on:
+  push:
+    branches:
+      - 'validation-macro-usd-inflation-split-pit-*'
+    paths:
+      - '.github/workflows/macro-usd-inflation-pit-bootstrap-v1.yml'
+      - 'validation/macro_pit_historical_bootstrap.py'
+      - 'validation/test_macro_pit_historical_bootstrap.py'
+      - 'validation/macro_pit_registry_promotion.py'
+      - 'validation/test_macro_pit_registry_promotion.py'
+      - 'validation/macro/usd_inflation_historical_anchor_2026-08.json'
+      - 'validation/sources/us_bls_core_macro.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-usd-inflation-pit-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  historical-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run bootstrap and promotion fail-closed tests
+        run: |
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/test_macro_pit_registry_promotion.py
+      - name: Verify current official BLS inflation split candidate read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-inflation-bootstrap/live
+          python3 validation/sources/us_bls_core_macro.py \
+            --output-dir /tmp/usd-inflation-bootstrap/live \
+            | tee /tmp/usd-inflation-bootstrap/live/source-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/usd-inflation-bootstrap/live/inflation-candidate.json').read_text())
+          a=json.loads(Path('/tmp/usd-inflation-bootstrap/live/source-audit.json').read_text())
+          m=json.loads(Path('validation/macro/usd_inflation_historical_anchor_2026-08.json').read_text())
+          assert c['currency']=='USD' and c['dimension']=='inflation'
+          assert c['series_id']==m['series_id']=='CPIAUCSL'
+          assert c['macro_series_id']==m['target']['macro_series_id']=='US_CPIAUCSL_history_value'
+          assert c['observation_date'][:7]==m['current']['observation_date'][:7]=='2026-08'
+          assert abs(float(c['value'])-float(m['current']['value']))<1e-12
+          assert abs(float(c['series_value'])-float(m['current']['series_value']))<1e-12
+          assert c['series_unit']=='Index 1982-1984=100'
+          assert c['frequency']==m['frequency']=='M'
+          assert c['transformation']==m['transformation']=='yoy_pct_from_index'
+          assert a['candidate_only'] is True and a['live_data_written'] is False
+          assert a['inflation']['latest_period'][:7]=='2026-08'
+          assert abs(float(a['inflation']['latest_index'])-334.131)<1e-12
+          assert abs(float(a['inflation']['prior_year_index'])-323.291)<1e-12
+          print(json.dumps({'status':'CURRENT_OFFICIAL_USD_INFLATION_SPLIT_MATCH','candidate':c},indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+      - name: Run historical PIT bootstrap replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-inflation-bootstrap/replay
+          python3 validation/macro_pit_historical_bootstrap.py \
+            --anchor-manifest validation/macro/usd_inflation_historical_anchor_2026-08.json \
+            --evidence-output /tmp/usd-inflation-bootstrap/macro_pit_anchor_evidence.json \
+            --work-dir /tmp/usd-inflation-bootstrap/replay \
+            | tee /tmp/usd-inflation-bootstrap/bootstrap-run.json
+      - name: Verify review-only registry promotion or pinned certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/macro_pit_registry_promotion.py \
+            --evidence /tmp/usd-inflation-bootstrap/macro_pit_anchor_evidence.json \
+            --proposed-registry /tmp/usd-inflation-bootstrap/proposed-registry.json \
+            --receipt /tmp/usd-inflation-bootstrap/promotion-receipt.json \
+            | tee /tmp/usd-inflation-bootstrap/promotion-run.json
+          python3 - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          canonical=json.loads(Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json').read_text())
+          proposed=json.loads(Path('/tmp/usd-inflation-bootstrap/proposed-registry.json').read_text())
+          receipt=json.loads(Path('/tmp/usd-inflation-bootstrap/promotion-receipt.json').read_text())
+          evidence=json.loads(Path('/tmp/usd-inflation-bootstrap/macro_pit_anchor_evidence.json').read_text())
+          key='USD.inflation'; row=canonical['series'][key]; prow=proposed['series'][key]
+          assert receipt['status']=='PASS' and receipt['target']==key
+          assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert evidence['macro_series_exact_match'] is True and evidence['heatmap_exact_match'] is True
+          assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
+          assert prow['historical_replay_certified'] is True
+          pref=prow['historical_replay_evidence']
+          assert pref['macro_series_id']=='US_CPIAUCSL_history_value'
+          assert pref['observation_date'][:7]=='2026-08'
+          assert abs(float(pref['value'])-3.353016322755642)<1e-12
+          assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
+          assert pref['official_release_pair_verified'] is True
+          if row.get('historical_replay_certified') is not True:
+              assert receipt['promotion_action']=='PROPOSAL_CREATED'
+              c2=json.loads(json.dumps(canonical)); p2=json.loads(json.dumps(proposed))
+              c2['series'][key].pop('historical_replay_certified',None)
+              p2['series'][key].pop('historical_replay_certified',None)
+              p2['series'][key].pop('historical_replay_evidence',None)
+              assert c2==p2,'proposal changed fields outside USD inflation certification metadata'
+          else:
+              assert receipt['promotion_action'] in {'METADATA_ENRICHMENT_PROPOSED','ALREADY_CERTIFIED'}
+              existing=row['historical_replay_evidence']
+              assert pref['evidence_sha256']==existing['evidence_sha256']
+              assert pref['before_git_head']==existing['before_git_head']
+              assert pref['after_git_head']==existing['after_git_head']
+              subprocess.run(['git','merge-base','--is-ancestor',existing['after_git_head'],'HEAD'],check=True)
+              if receipt['promotion_action']=='ALREADY_CERTIFIED': assert proposed==canonical
+          print(json.dumps({'status':'USD_INFLATION_CERTIFICATION_SCOPE_PASS','target':key,'promotion_action':receipt['promotion_action']},indent=2))
+          PY
+      - name: Enforce no canonical publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json
+      - name: Upload bootstrap and promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-usd-inflation-pit-bootstrap-${{ github.run_id }}
+          path: /tmp/usd-inflation-bootstrap/
+          if-no-files-found: error
+          retention-days: 90
