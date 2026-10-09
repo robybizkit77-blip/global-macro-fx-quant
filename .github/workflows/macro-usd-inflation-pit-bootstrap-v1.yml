@@ -1,4 +1,5 @@
 name: Macro USD Inflation PIT Bootstrap V1
+# Final exact-head validation after certification and temporary workflow cleanup.
 
 on:
   push:
