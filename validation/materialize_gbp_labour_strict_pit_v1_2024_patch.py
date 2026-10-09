@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Narrow strict-PIT patch for the March 2024 ONS GBP labour wording.
+"""Narrow strict-PIT patches for verified 2024 ONS GBP labour wording.
 
-This wrapper preserves the existing collector unchanged and only adds the
-period-specific first-release wording verified on the official ONS March 2024
-overview for reference month 2024-01 (November 2023 to January 2024).
+This wrapper preserves the existing collector unchanged and only adds exact,
+period-specific first-release wording verified on official ONS releases for:
+- reference month 2024-01 (November 2023 to January 2024), release 12 Mar 2024
+- reference month 2024-02 (December 2023 to February 2024), release 16 Apr 2024
 """
 from __future__ import annotations
 
@@ -12,18 +13,16 @@ import re
 import materialize_gbp_labour_strict_pit_v1 as base
 
 _ORIGINAL_HEADLINE = base.headline
-_TARGET_PERIOD = 'November 2023 to January 2024'
+_MARCH_TARGET = 'November 2023 to January 2024'
+_APRIL_TARGET = 'December 2023 to February 2024'
 
 
-def _headline_with_march_2024(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
-    if _TARGET_PERIOD in periods:
+def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
+    if _MARCH_TARGET in periods:
         if not re.search(r'\bLabour market overview, UK:\s*March\s+2024\b', text, re.I):
             return _ORIGINAL_HEADLINE(text, periods)
         if base.release_date(text) != '2024-03-12':
             raise ValueError('ONS March 2024 overview release-date mismatch')
-        # Exact first-release sentence verified on the official period-specific
-        # overview. Keep this deliberately narrow rather than widening the
-        # generic unemployment regex used for the full archive.
         matches = re.findall(
             r'\bThe UK unemployment rate \(for those aged 16 years and over\) was estimated at\s*'
             r'([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+November 2023 to January 2024\b',
@@ -33,11 +32,41 @@ def _headline_with_march_2024(text: str, periods: tuple[str, ...]) -> tuple[floa
         values = list(dict.fromkeys(float(v) for v in matches))
         if len(values) != 1:
             raise ValueError(f'ambiguous or missing fixed ONS March 2024 unemployment headline: {values}')
-        return values[0], _TARGET_PERIOD
+        return values[0], _MARCH_TARGET
+
+    if _APRIL_TARGET in periods:
+        if re.search(r'\bLabour market overview, UK:\s*April\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-04-16':
+                raise ValueError('ONS April 2024 overview release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate \(for those aged 16 years and over\) was estimated at\s*'
+                r'([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+December 2023 to February 2024\b',
+                text,
+                flags=re.I,
+            )
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS April 2024 overview unemployment headline: {values}')
+            return values[0], _APRIL_TARGET
+
+        if re.search(r'\bEmployment in the UK:\s*April\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-04-16':
+                raise ValueError('ONS April 2024 companion release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate for December 2023 to February 2024\s*\('
+                r'([0-9]+(?:\.[0-9]+)?)%\)\s+is above estimates a year ago',
+                text,
+                flags=re.I,
+            )
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS April 2024 companion unemployment headline: {values}')
+            return values[0], _APRIL_TARGET
+
     return _ORIGINAL_HEADLINE(text, periods)
 
 
-base.headline = _headline_with_march_2024
+base.headline = _headline_with_verified_2024_cases
 
 if __name__ == '__main__':
     raise SystemExit(base.main())
