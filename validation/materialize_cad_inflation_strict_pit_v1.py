@@ -100,14 +100,14 @@ def parse_release_date(text: str) -> str | None:
 def parse_headline_yoy(text: str, y: int, m: int) -> float | None:
     month = MONTHS[m-1]
     patterns = [
-        rf'Consumer Price Index\s+{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*\(12-month change\)',
-        rf'{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*\(12-month change\)',
+        rf'Consumer Price Index\s+{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,80}}?\(12-month change\)',
+        rf'{month}\s+{y}\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%.{{0,80}}?\(12-month change\)',
     ]
     for p in patterns:
         q = re.search(p, text, flags=re.I|re.S)
         if q:
             return float(q.group(1))
-    q = re.search(r'Consumer Price Index.{0,600}?(-?[0-9]+(?:\.[0-9]+)?)\s*%\s*\(12-month change\)', text, flags=re.I|re.S)
+    q = re.search(r'Consumer Price Index.{0,700}?(-?[0-9]+(?:\.[0-9]+)?)\s*%.{0,80}?\(12-month change\)', text, flags=re.I|re.S)
     return float(q.group(1)) if q else None
 
 
@@ -129,8 +129,6 @@ def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
     txt, nums = candidates[0]
     if len(nums) < 6:
         raise ValueError(f'All-items row has too few numeric fields: {txt}')
-    # StatCan HTML may concatenate a footnote marker onto 100.00 (for example 100.002).
-    # Treat only the first value in the narrow 99.5-100.5 range as relative importance.
     try:
         k = next(i for i, x in enumerate(nums) if 99.5 <= x <= 100.5)
     except StopIteration:
