@@ -32,19 +32,30 @@ jobs:
           s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
           h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['AUD']['labour']
           row=next(x for x in s['AUD'] if x['id']=='AU_UNEMP_RATE_history_value')
+          sv=[float(x) for x in row['values']]
+          hv=[float(x) for x in h.get('history',[])]
+          overlap=min(len(sv), max(0,len(hv)-1))
+          tail_h=hv[-(overlap+1):-1] if overlap else []
+          tail_s=sv[-overlap:] if overlap else []
+          diffs=[abs(a-b) for a,b in zip(tail_s,tail_h)]
+          material=sum(1 for d in diffs if d>1e-5)
+          precision_only=sum(1 for d in diffs if 0<d<=1e-5)
           print(json.dumps({
             'candidate': c,
-            'series_tail_dates': row['dates'][-4:],
-            'series_tail_values': row['values'][-4:],
-            'series_last_date': row.get('last_date'),
-            'series_last_value': row.get('last_value'),
-            'heat_as_of': h.get('as_of'),
-            'heat_latest_value': h.get('latest_value'),
-            'heat_history_tail': h.get('history',[])[-4:],
-            'heat_percentile': h.get('percentile'),
-            'heat_direction': h.get('direction'),
-            'heat_acceleration': h.get('acceleration'),
-            'heat_source': h.get('source'),
+            'series_len':len(sv),
+            'heat_history_len':len(hv),
+            'overlap_prior_len':overlap,
+            'prior_max_abs_diff':max(diffs) if diffs else None,
+            'prior_material_mismatch_count_gt_1e-5':material,
+            'prior_precision_only_count_le_1e-5':precision_only,
+            'series_first_date':row['dates'][0],
+            'series_last_date':row.get('last_date'),
+            'series_last_value':row.get('last_value'),
+            'heat_as_of':h.get('as_of'),
+            'heat_latest_value':h.get('latest_value'),
+            'series_tail_values':sv[-5:],
+            'heat_prior_tail':tail_h[-5:],
+            'heat_tail':hv[-5:],
           },indent=2))
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
