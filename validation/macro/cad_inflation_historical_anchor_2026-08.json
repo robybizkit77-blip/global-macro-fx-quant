@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "CAD",
+    "dimension": "inflation",
+    "macro_series_id": "CA_CPI_HEADLINE_YOY_history_value"
+  },
+  "authority": "Statistics Canada",
+  "source": "Statistics Canada",
+  "official_transport_source": "Statistics Canada",
+  "series_id": "CA_CPI_HEADLINE_YOY",
+  "frequency": "M",
+  "transformation": "derived_yoy_from_index",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 3.032140691328089,
+    "release_date": "2026-08-17",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260817/dq260817a-eng.htm"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 3.033980582524287,
+    "release_date": "2026-09-14",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260914/dq260914a-eng.htm"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www150.statcan.gc.ca/n1/release-diffusion/2026-eng.pdf",
+    "canonical_source_label_preserved": true,
+    "note": "July and August 2026 Canadian CPI were distinct official Statistics Canada releases on 2026-08-17 and 2026-09-14. The canonical series is not the rounded published 12-month rate: it is derived at full precision from the official All-items CPI index in table 18-10-0004-01. July uses 169.9 / 164.9 and August uses 169.8 / 164.8, preserving the existing canonical values while making the transformation contract explicit as derived_yoy_from_index. The official releases publish both the underlying index table and the rounded 3.0 percent year-over-year headline."
+  }
+}
