@@ -1,0 +1,33 @@
+{
+  "schema": "GMFQ_JPY_LABOUR_STRICT_PIT_EVIDENCE_V2",
+  "status": "PASS",
+  "target": "JPY.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104,
+    "legacy_months": 67,
+    "estat_months": 37
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_timestamp_required": true,
+    "publication_timestamp_authority": "OFFICIAL_ESTAT_METADATA_FOR_ESTAT_ROUTE__PDF_CROSSCHECK_WHEN_PARSEABLE",
+    "sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "missing": [],
+  "duplicates": [],
+  "duplicate_pdf_hashes": false,
+  "errors": [],
+  "route_transition": {
+    "legacy_end": "2023-07",
+    "estat_start": "2023-08"
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
