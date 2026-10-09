@@ -1,0 +1,50 @@
+name: TEMP AUD Labour Quick Check
+
+on:
+  push:
+    branches:
+      - validation-macro-aud-labour-quick-check-2026-10-09
+    paths:
+      - '.github/workflows/temp-aud-labour-quick-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare official AUD labour candidate with canonical layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud-labour
+          python3 validation/sources/aud_abs_core.py --dimension labour --output /tmp/aud-labour/candidate.json --audit-output /tmp/aud-labour/audit.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/aud-labour/candidate.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['AUD']['labour']
+          row=next(x for x in s['AUD'] if x['id']=='AU_UNEMP_RATE_history_value')
+          print(json.dumps({
+            'candidate': c,
+            'series_tail_dates': row['dates'][-4:],
+            'series_tail_values': row['values'][-4:],
+            'series_last_date': row.get('last_date'),
+            'series_last_value': row.get('last_value'),
+            'heat_as_of': h.get('as_of'),
+            'heat_latest_value': h.get('latest_value'),
+            'heat_history_tail': h.get('history',[])[-4:],
+            'heat_percentile': h.get('percentile'),
+            'heat_direction': h.get('direction'),
+            'heat_acceleration': h.get('acceleration'),
+            'heat_source': h.get('source'),
+          },indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
