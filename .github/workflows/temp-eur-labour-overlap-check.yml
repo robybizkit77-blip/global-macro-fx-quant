@@ -1,0 +1,58 @@
+name: TEMP EUR Labour Overlap Check
+
+on:
+  push:
+    branches:
+      - validation-macro-eur-labour-overlap-check-2026-10-09
+    paths:
+      - '.github/workflows/temp-eur-labour-overlap-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare EUR labour canonical histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/eur-labour
+          python3 validation/sources/eur_eurostat_core.py --dimension labour --output /tmp/eur-labour/candidate.json --audit-output /tmp/eur-labour/audit.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/eur-labour/candidate.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['EUR']['labour']
+          row=next(x for x in s['EUR'] if x['id']=='EA_UNEMP_history_value')
+          sv=[float(x) for x in row['values']]
+          hv=[float(x) for x in h.get('history',[])]
+          overlap=min(len(sv),max(0,len(hv)-1))
+          tail_s=sv[-overlap:] if overlap else []
+          tail_h=hv[-(overlap+1):-1] if overlap else []
+          diffs=[abs(a-b) for a,b in zip(tail_s,tail_h)]
+          print(json.dumps({
+            'candidate':c,
+            'series_len':len(sv),
+            'heat_history_len':len(hv),
+            'overlap_prior_len':overlap,
+            'prior_max_abs_diff':max(diffs) if diffs else None,
+            'prior_material_mismatch_count_gt_1e-5':sum(1 for d in diffs if d>1e-5),
+            'prior_precision_only_count_le_1e-5':sum(1 for d in diffs if 0<d<=1e-5),
+            'series_first_date':row['dates'][0],
+            'series_last_date':row.get('last_date'),
+            'series_last_value':row.get('last_value'),
+            'heat_as_of':h.get('as_of'),
+            'heat_latest_value':h.get('latest_value'),
+            'series_tail':sv[-5:],
+            'heat_prior_tail':tail_h[-5:],
+            'heat_tail':hv[-5:],
+          },indent=2))
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
