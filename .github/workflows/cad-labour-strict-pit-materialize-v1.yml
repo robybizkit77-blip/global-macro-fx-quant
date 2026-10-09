@@ -1,0 +1,65 @@
+name: CAD Labour Strict PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - 'validation-cad-labour-strict-pit-v1-*'
+    paths:
+      - 'validation/materialize_cad_labour_strict_pit_v1.py'
+      - 'validation/macro/cad_labour_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/cad_labour_strict_pit_receipt_v1_2026-10-09.json'
+      - '.github/workflows/cad-labour-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize all 104 CAD labour first-release months read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad-labour-strict
+          python validation/materialize_cad_labour_strict_pit_v1.py \
+            --csv /tmp/cad-labour-strict/CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv \
+            --evidence /tmp/cad-labour-strict/CAD_LABOUR_STRICT_PIT_EVIDENCE_V1.json
+      - name: Verify strict PIT invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path('/tmp/cad-labour-strict')
+          ev=json.loads((p/'CAD_LABOUR_STRICT_PIT_EVIDENCE_V1.json').read_text())
+          rows=list(csv.DictReader((p/'CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
+          assert ev['status']=='PASS'
+          assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
+          assert ev['target']=='CAD.labour'
+          assert len(rows)==104
+          assert rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-08'
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' for r in rows)
+          assert len({r['sha256'] for r in rows})==104
+          assert all(r['release_date'] and r['release_time']=='08:30' and r['timezone']=='Eastern Time' for r in rows)
+          assert ev['route_counts']=={'STATCAN_THE_DAILY':104}
+          assert ev['strict_rules']['revised_history_fallback_used'] is False
+          assert ev['series_contract']['seasonal_adjustment']=='seasonally adjusted'
+          PY
+      - name: Enforce no repository writes
+        run: git diff --exit-code
+      - name: Upload reproducible strict PIT dataset and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-labour-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/cad-labour-strict/
+          if-no-files-found: error
+          retention-days: 90
