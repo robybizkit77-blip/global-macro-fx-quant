@@ -31,6 +31,32 @@ jobs:
           python validation/materialize_aud_inflation_strict_pit_v1.py \
             --csv /tmp/aud-inflation-strict/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv \
             --evidence /tmp/aud-inflation-strict/AUD_INFLATION_STRICT_PIT_EVIDENCE_V1.json
+      - name: Verify strict PIT invariants and pinned contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path('/tmp/aud-inflation-strict')
+          ev=json.loads((p/'AUD_INFLATION_STRICT_PIT_EVIDENCE_V1.json').read_text())
+          pin=json.loads(Path('validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json').read_text())
+          rows=list(csv.DictReader((p/'AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv').open()))
+          assert ev['status']=='PASS'
+          assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
+          assert len(rows)==34
+          assert rows[0]['reference_quarter']=='2018-03' and rows[-1]['reference_quarter']=='2026-06'
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' for r in rows)
+          assert len({r['source_sha256'] for r in rows})==34
+          assert all(r['release_date'] and r['release_time'] and r['timezone'] for r in rows)
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']=='d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f'
+          vals={r['reference_quarter']:float(r['cpi_yoy']) for r in rows}
+          expected={'2019-03':1.3,'2019-09':1.7,'2019-12':1.8,'2020-03':2.2,'2020-06':-0.3,'2025-12':3.6,'2026-03':4.1,'2026-06':3.9}
+          assert all(abs(vals[k]-v)<1e-12 for k,v in expected.items())
+          assert ev['route_counts']=={'LEGACY_2018_TABLE_YOY':4,'LEGACY_REPORTED_YOY':2,'MODERN_REPORTED_YOY':25,'TRANSITION_TABLE17_Q_YOY':3}
+          assert ev['strict_rules']['frozen_quarterly_contract_preserved_across_monthly_cpi_transition'] is True
+          assert ev['strict_rules']['revised_history_fallback_used'] is False
+          PY
       - name: Enforce read-only repository state
         run: git diff --exit-code
       - name: Upload strict PIT candidate
@@ -39,5 +65,5 @@ jobs:
         with:
           name: aud-inflation-strict-pit-v1-${{ github.run_id }}
           path: /tmp/aud-inflation-strict/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 90
