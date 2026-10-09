@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 UA = "Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)"
 ANCHORS = [
     {"reference_month":"2018-01","era":"AUSSTATS_LEGACY","url":"https://www.abs.gov.au/ausstats/abs%40.nsf/lookup/6202.0Media%20Release1Jan%202018","expected_rate":5.5},
-    {"reference_month":"2019-01","era":"AUSSTATS_LEGACY","url":"https://www.abs.gov.au/ausstats/abs%40.nsf/Lookup/6202.0Main%20Features3Jan%202019","expected_rate":5.0},
+    {"reference_month":"2019-01","era":"AUSSTATS_LEGACY","url":"https://www.abs.gov.au/AUSSTATS/abs%40.nsf/allprimarymainfeatures/07CEA6535DD9AF86CA2583C30023D7C1","expected_rate":5.0},
     {"reference_month":"2021-01","era":"MODERN_RELEASE","url":"https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/jan-2021","expected_rate":6.4},
     {"reference_month":"2023-01","era":"MODERN_RELEASE","url":"https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/jan-2023","expected_rate":3.7},
     {"reference_month":"2026-08","era":"MODERN_RELEASE","url":"https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/aug-2026","expected_rate":4.6},
@@ -38,36 +38,21 @@ def parse_release_timestamp(text,expected_ref):
 
 def seasonally_adjusted_rate(text,expected_ref):
     ey,em=map(int,expected_ref.split("-")); full=[k.title() for k,v in MONTHS.items() if v==em and len(k)>3][0]
-    # 1) Explicit phrases that name the seasonally adjusted unemployment rate.
     m=re.search(r"seasonally adjusted unemployment rate.{0,220}?\b(?:to|at|was)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",text,flags=re.I|re.S)
     if m:return float(m.group(1))
-    # 2) Period-specific seasonally adjusted sections. These must run before any generic
-    # unemployment-rate fallback because ABS pages often present TREND first.
-    markers=[
-        f"In seasonally adjusted terms, in {full} {ey}",
-        f"Seasonally adjusted estimates for {full} {ey}",
-        "SEASONALLY ADJUSTED ESTIMATES",
-        "Key statistics - Seasonally adjusted",
-        "Seasonally Adjusted",
-    ]
+    markers=[f"In seasonally adjusted terms, in {full} {ey}",f"Seasonally adjusted estimates for {full} {ey}","SEASONALLY ADJUSTED ESTIMATES","Key statistics - Seasonally adjusted","Seasonally Adjusted"]
     for marker in markers:
         pos=text.lower().find(marker.lower())
         if pos>=0:
-            win=text[pos:pos+2600]
+            win=text[pos:pos+3200]
             for p in [
                 r"unemployment rate.{0,180}?\b(?:remained steady at|remained at|was steady at|was unchanged at|increased to|decreased to|rose to|fell to|to|at)\s*([0-9]+(?:\.[0-9]+)?)\s*(?:%|per cent)",
-                r"Unemployment rate\s*\(%\).{0,180}?([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)",
+                r"Unemployment rate\s*\(%\).{0,240}?([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)",
                 r"Unemployment rate.{0,120}?([0-9]+(?:\.[0-9]+)?)\s*%",
             ]:
                 m=re.search(p,win,flags=re.I|re.S)
-                if m:
-                    # In table form group 2 is the current/reference-period value.
-                    return float(m.group(2) if m.lastindex and m.lastindex>=2 else m.group(1))
-    # 3) Narrow period-specific prose fallback.
-    for p in [
-        rf"In {full} {ey}, the unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",
-        rf"seasonally adjusted estimates for {full} {ey}:.{{0,900}}?Unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%",
-    ]:
+                if m:return float(m.group(2) if m.lastindex and m.lastindex>=2 else m.group(1))
+    for p in [rf"In {full} {ey}, the unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)% in seasonally adjusted terms",rf"seasonally adjusted estimates for {full} {ey}:.{{0,900}}?Unemployment rate[^0-9]{{0,120}}(?:to|at)?\s*([0-9]+(?:\.[0-9]+)?)%"]:
         m=re.search(p,text,flags=re.I|re.S)
         if m:return float(m.group(1))
     raise ValueError(f"seasonally adjusted unemployment rate not found for {expected_ref}")
