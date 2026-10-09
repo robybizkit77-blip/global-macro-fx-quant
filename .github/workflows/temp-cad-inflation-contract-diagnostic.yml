@@ -1,4 +1,4 @@
-name: TEMP CAD Inflation Contract Diagnostic
+name: TEMP CAD Inflation Contract Repair
 
 on:
   push:
@@ -8,59 +8,67 @@ on:
       - '.github/workflows/temp-cad-inflation-contract-diagnostic.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  check:
+  repair:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Inspect CAD CPI contract and recompute official-index YoY
+      - name: Repair CAD inflation transformation metadata and verify live candidate
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json
+          from copy import deepcopy
           from pathlib import Path
-          from validation.sources.cad_statcan_core import download_csv, rows_from_text
 
-          rows=rows_from_text(download_csv('18100004'))
-          idx={}
-          for r in rows:
-              if str(r.get('GEO','')).strip()!='Canada':
-                  continue
-              if str(r.get('Products and product groups','')).strip()!='All-items':
-                  continue
-              if str(r.get('UOM','')).strip()!='2002=100':
-                  continue
-              d=str(r.get('REF_DATE',''))[:7]
-              v=r.get('VALUE')
-              if d and v not in (None,''):
-                  idx[d]=float(v)
-          def yoy(period):
-              y,m=map(int,period.split('-'))
-              prev=f'{y-1:04d}-{m:02d}'
-              return (idx[period]/idx[prev]-1.0)*100.0
-
-          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          row=next(x for x in series['CAD'] if x['id']=='CA_CPI_HEADLINE_YOY_history_value')
-          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['CAD']['inflation']
-          out={
-              'series_keys': sorted(row.keys()),
-              'series_metadata': {k:row.get(k) for k in row.keys() if k not in ('dates','values')},
-              'heat_metadata': {k:v for k,v in heat.items() if k!='history'},
-              'official_index_tail': {p:idx[p] for p in sorted(idx)[-15:]},
-              'derived_jul': yoy('2026-07'),
-              'derived_aug': yoy('2026-08'),
-              'canonical_jul': row['values'][-2],
-              'canonical_aug': row['values'][-1],
-              'exact_jul': abs(yoy('2026-07')-float(row['values'][-2]))<1e-12,
-              'exact_aug': abs(yoy('2026-08')-float(row['values'][-1]))<1e-12,
-          }
-          print(json.dumps(out,ensure_ascii=False,indent=2))
-          assert out['exact_jul'] and out['exact_aug']
+          p=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
+          data=json.loads(p.read_text())
+          heat=data['currencies']['CAD']['inflation']
+          before=deepcopy(heat)
+          assert heat['transformation']=='reported_yoy_rate', heat['transformation']
+          heat['transformation']='derived_yoy_from_index'
+          for key in before:
+              if key!='transformation':
+                  assert heat[key]==before[key], key
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
           PY
-          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+
+          mkdir -p /tmp/cad-infl
+          python3 validation/sources/cad_statcan_core.py --dimension inflation --output /tmp/cad-infl/candidate.json --audit-output /tmp/cad-infl/audit.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/cad-infl/candidate.json').read_text())
+          a=json.loads(Path('/tmp/cad-infl/audit.json').read_text())
+          s=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          h=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())['currencies']['CAD']['inflation']
+          row=next(x for x in s['CAD'] if x['id']=='CA_CPI_HEADLINE_YOY_history_value')
+          assert c['transformation']=='derived_yoy_from_index'
+          assert h['transformation']=='derived_yoy_from_index'
+          assert c['observation_date'][:7]==row['last_date']==h['as_of']
+          assert abs(float(c['value'])-float(row['last_value']))<1e-12
+          assert abs(float(c['value'])-float(h['latest_value']))<1e-12
+          assert a['transport']=='official_full_table_csv'
+          print(json.dumps({'candidate':c,'audit':a,'canonical_last':row['last_value'],'heat_latest':h['latest_value']},indent=2))
+          PY
+
+          git diff -- live_data/sections/MACRO_THERMOMETER_DATA.json
+          python3 - <<'PY'
+          import subprocess
+          out=subprocess.check_output(['git','diff','--numstat','--','live_data/sections/MACRO_THERMOMETER_DATA.json'],text=True).strip()
+          print('numstat',out)
+          assert out, 'expected heatmap metadata diff'
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_THERMOMETER_DATA.json
+          git commit -m 'Align CAD inflation transformation metadata'
+          git push
