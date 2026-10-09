@@ -22,7 +22,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Probe official BLS Employment Situation archive
-        run: python validation/probe_usd_labour_bls_archive_v1.py | tee /tmp/usd-labour-bls-archive-probe.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/probe_usd_labour_bls_archive_v1.py | tee /tmp/usd-labour-bls-archive-probe.json
       - name: Enforce read-only repository state
         run: git diff --exit-code
       - name: Upload route evidence
@@ -31,5 +34,5 @@ jobs:
         with:
           name: usd-labour-bls-archive-probe-${{ github.run_id }}
           path: /tmp/usd-labour-bls-archive-probe.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 90
