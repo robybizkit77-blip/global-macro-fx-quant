@@ -1,0 +1,227 @@
+name: TEMP Macro Split Series Heatmap Value Apply
+
+on:
+  push:
+    branches:
+      - 'feature/macro-split-series-heatmap-value-2026-10-09'
+    paths:
+      - '.github/workflows/temp-macro-split-series-heatmap-value-apply.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch split raw-series vs transformed-heatmap contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p=Path(path); s=p.read_text()
+              n=s.count(old)
+              assert n==1,(path,n,old[:120])
+              p.write_text(s.replace(old,new,1))
+
+          p='validation/build_macro_candidate.py'
+          replace_once(p,
+'''    value = float(c["value"])
+    if not math.isfinite(value):
+        raise ValueError("value must be finite")
+    out = dict(c)
+    out["value"] = value
+    return out
+''',
+'''    value = float(c["value"])
+    if not math.isfinite(value):
+        raise ValueError("value must be finite")
+    series_value = float(c.get("series_value", value))
+    if not math.isfinite(series_value):
+        raise ValueError("series_value must be finite")
+    out = dict(c)
+    out["value"] = value
+    out["series_value"] = series_value
+    return out
+''')
+          replace_once(p,
+'''    obs_date = c["observation_date"]
+    value = c["value"]
+
+    series_row = find_series(series[currency], c["macro_series_id"])
+''',
+'''    obs_date = c["observation_date"]
+    value = c["value"]
+    series_value = c["series_value"]
+
+    series_row = find_series(series[currency], c["macro_series_id"])
+''')
+          replace_once(p,'        values[idx] = value\n','        values[idx] = series_value\n')
+          replace_once(p,'        values.append(value)\n','        values.append(series_value)\n')
+          replace_once(p,
+'''    if c.get("unit") is not None:
+        series_row["unit"] = c["unit"]
+''',
+'''    series_unit = c.get("series_unit", c.get("unit"))
+    if series_unit is not None:
+        series_row["unit"] = series_unit
+''')
+          replace_once(p,
+'''        "old_value": old_value,
+        "new_value": value,
+        "series_action": action,
+''',
+'''        "old_value": old_value,
+        "new_value": series_value,
+        "heatmap_value": value,
+        "series_action": action,
+''')
+          replace_once(p,
+'''    if precision_heatmap["currencies"]["USD"]["inflation"]["history"] != [1.0, 2.1]:
+        raise ValueError("monthly date precision normalization duplicated heatmap history")
+
+    return {"append_case": result, "monthly_precision_case": precision_result}
+''',
+'''    if precision_heatmap["currencies"]["USD"]["inflation"]["history"] != [1.0, 2.1]:
+        raise ValueError("monthly date precision normalization duplicated heatmap history")
+
+    split_series = copy.deepcopy(series)
+    split_heatmap = copy.deepcopy(heatmap)
+    split_series["USD"][0].update({
+        "dates": ["2025-08-01", "2026-07-01"],
+        "values": [323.291, 332.813],
+        "last_date": "2026-07-01",
+        "last_value": 332.813,
+        "unit": "Index 1982-1984=100",
+        "frequency": "M",
+    })
+    split_heatmap["currencies"]["USD"]["inflation"].update({
+        "history": [3.303856050706311],
+        "latest_value": 3.303856050706311,
+        "as_of": "2026-07-01",
+        "series_id": "USD_INF",
+    })
+    split_heatmap["currencies"]["USD"]["as_of_detail"]["inflation"] = "2026-07-01"
+    split_candidate = {
+        "currency": "USD", "dimension": "inflation", "macro_series_id": "USD_TEST",
+        "observation_date": "2026-08", "value": 3.353016322755642,
+        "series_value": 334.131, "source": "SELF_TEST", "series_id": "USD_INF",
+        "frequency": "M", "transformation": "yoy_pct_from_index", "unit": "% YoY",
+        "series_unit": "Index 1982-1984=100",
+    }
+    split_result = apply_candidate(split_series, split_heatmap, split_candidate)
+    if split_series["USD"][0]["last_value"] != 334.131:
+        raise ValueError("split-value contract did not preserve raw series value")
+    if split_series["USD"][0]["unit"] != "Index 1982-1984=100":
+        raise ValueError("split-value contract did not preserve raw series unit")
+    if split_heatmap["currencies"]["USD"]["inflation"]["latest_value"] != 3.353016322755642:
+        raise ValueError("split-value contract did not apply transformed heatmap value")
+
+    return {"append_case": result, "monthly_precision_case": precision_result, "split_value_case": split_result}
+''')
+
+          p='validation/macro_pit_historical_bootstrap.py'
+          replace_once(p,
+'''    for point, name in ((previous, "previous"), (current, "current")):
+        for key in ("observation_date", "value", "release_date", "official_reference"):
+            require(point.get(key) not in (None, ""), f"{name} missing {key}")
+        require(math.isfinite(float(point["value"])), f"{name} value is not finite")
+''',
+'''    for point, name in ((previous, "previous"), (current, "current")):
+        for key in ("observation_date", "value", "release_date", "official_reference"):
+            require(point.get(key) not in (None, ""), f"{name} missing {key}")
+        require(math.isfinite(float(point["value"])), f"{name} value is not finite")
+        if "series_value" in point:
+            require(math.isfinite(float(point["series_value"])), f"{name} series_value is not finite")
+    require(("series_value" in previous) == ("series_value" in current), "previous/current series_value contract must be symmetric")
+''')
+          replace_once(p,
+'''    require(period_key(dates[-1], freq) == period_key(current["observation_date"], freq), "canonical latest period differs from manifest current")
+    require(abs(float(values[-1]) - float(current["value"])) < 1e-12, "canonical latest value differs from manifest current")
+    require(period_key(dates[-2], freq) == period_key(previous["observation_date"], freq), "penultimate canonical period differs from manifest previous")
+    require(abs(float(values[-2]) - float(previous["value"])) < 1e-12, "penultimate canonical value differs from manifest previous")
+''',
+'''    current_series_value = float(current.get("series_value", current["value"]))
+    previous_series_value = float(previous.get("series_value", previous["value"]))
+    require(period_key(dates[-1], freq) == period_key(current["observation_date"], freq), "canonical latest period differs from manifest current")
+    require(abs(float(values[-1]) - current_series_value) < 1e-12, "canonical latest series value differs from manifest current")
+    require(period_key(dates[-2], freq) == period_key(previous["observation_date"], freq), "penultimate canonical period differs from manifest previous")
+    require(abs(float(values[-2]) - previous_series_value) < 1e-12, "penultimate canonical series value differs from manifest previous")
+''')
+          replace_once(p,
+'''    if row.get("unit") is not None:
+        candidate["unit"] = row["unit"]
+    return candidate
+''',
+'''    if "series_value" in current:
+        candidate["series_value"] = float(current["series_value"])
+    if row.get("unit") is not None:
+        candidate["series_unit"] = row["unit"]
+    if manifest.get("unit") is not None:
+        candidate["unit"] = manifest["unit"]
+    return candidate
+''')
+
+          p='validation/test_macro_pit_historical_bootstrap.py'
+          replace_once(p,
+'''    bad_heat = copy.deepcopy(heat)
+    bad_heat["currencies"]["JPY"]["inflation"]["history"][-1] = 2.1
+    expect_failure(lambda: reconstruct_before(series, bad_heat, manifest), "heatmap history tail differs")
+
+    print("GMFQ_MACRO_PIT_HISTORICAL_BOOTSTRAP_TESTS_PASS")
+''',
+'''    bad_heat = copy.deepcopy(heat)
+    bad_heat["currencies"]["JPY"]["inflation"]["history"][-1] = 2.1
+    expect_failure(lambda: reconstruct_before(series, bad_heat, manifest), "heatmap history tail differs")
+
+    split_manifest = copy.deepcopy(manifest)
+    split_manifest["target"] = {"currency": "JPY", "dimension": "inflation", "macro_series_id": "JP_CPI"}
+    split_manifest["transformation"] = "yoy_pct_from_index"
+    split_manifest["unit"] = "% YoY"
+    split_manifest["previous"].update({"observation_date": "2026-07", "value": 3.303856050706311, "series_value": 332.813})
+    split_manifest["current"].update({"observation_date": "2026-08", "value": 3.353016322755642, "series_value": 334.131})
+    split_series, split_heat = after_state()
+    split_series["JPY"][0].update({
+        "dates": ["2026-05", "2026-06", "2026-07", "2026-08"],
+        "values": [333.979, 332.568, 332.813, 334.131],
+        "last_date": "2026-08", "last_value": 334.131,
+        "unit": "Index 1982-1984=100",
+    })
+    split_heat["currencies"]["JPY"]["inflation"].update({
+        "transformation": "yoy_pct_from_index",
+        "latest_value": 3.353016322755642,
+        "history": [4.270033, 3.72653, 3.303856050706311, 3.353016322755642],
+    })
+    split_before_series, split_before_heat, _ = reconstruct_before(split_series, split_heat, split_manifest)
+    assert split_before_series["JPY"][0]["last_value"] == 332.813
+    assert split_before_heat["currencies"]["JPY"]["inflation"]["latest_value"] == 3.303856050706311
+
+    print("GMFQ_MACRO_PIT_HISTORICAL_BOOTSTRAP_TESTS_PASS")
+''')
+          PY
+          python3 validation/build_macro_candidate.py --self-test >/tmp/builder-self-test.json
+          python3 validation/test_macro_pit_historical_bootstrap.py
+          python3 validation/test_macro_pit_registry_promotion.py
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'validation/build_macro_candidate.py\nvalidation/macro_pit_historical_bootstrap.py\nvalidation/test_macro_pit_historical_bootstrap.py'
+      - name: Commit split-value support
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/build_macro_candidate.py validation/macro_pit_historical_bootstrap.py validation/test_macro_pit_historical_bootstrap.py
+          git commit -m 'Support split macro series and heatmap values'
+          git push origin HEAD:feature/macro-split-series-heatmap-value-2026-10-09
