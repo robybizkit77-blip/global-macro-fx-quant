@@ -124,14 +124,19 @@ def parse_headline_yoy(text: str, y: int, m: int) -> float | None:
         return float(headline.group(1))
 
     # Last strict route: the opening sentence explicitly states the CPI YoY for
-    # that reference month. This is still first-release article text, not a
-    # generic percentage fallback.
+    # that reference month. Preserve the sign implied by the release verb and
+    # tolerate typographic/non-ASCII separators in "year-over-year".
     prose = re.search(
-        rf'The Consumer Price Index\s*\(CPI\).{{0,120}}?(?:rose|increased|fell|declined|decreased)\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%\s+on a year-over-year basis in\s+{month}\b',
+        rf'The Consumer Price Index\s*\(CPI\).{{0,120}}?(rose|increased|fell|declined|decreased)\s+([0-9]+(?:\.[0-9]+)?)\s*%\s+on a year.?over.?year basis in\s+{month}\b',
         text,
         flags=re.I|re.S,
     )
-    return float(prose.group(1)) if prose else None
+    if prose:
+        value = float(prose.group(2))
+        if prose.group(1).lower() in {'fell', 'declined', 'decreased'}:
+            value = -value
+        return value
+    return None
 
 
 def parse_all_items_indexes(raw: bytes) -> tuple[float, float]:
