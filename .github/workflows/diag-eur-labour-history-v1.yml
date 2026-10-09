@@ -1,0 +1,88 @@
+name: Diagnostic EUR Labour History V1
+
+on:
+  push:
+    paths:
+      - '.github/workflows/diag-eur-labour-history-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compare EUR labour histories
+        run: |
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+
+          series_doc = json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat_doc = json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+
+          eur_series = series_doc['EUR']
+          candidates=[]
+          for row in eur_series:
+              blob=' '.join(str(row.get(k,'')) for k in ('id','label','category','source_file')).lower()
+              if 'unemp' in blob or 'disoccup' in blob or 'labour' in blob:
+                  candidates.append(row)
+          print('SERIES_CANDIDATES=',[(r.get('id'),r.get('label'),r.get('category'),len(r.get('dates',[])),r.get('last_date'),r.get('last_value')) for r in candidates])
+          if len(candidates)!=1:
+              raise SystemExit(f'expected 1 EUR labour series, got {len(candidates)}')
+          s=candidates[0]
+          s_hist=list(zip(s['dates'],s['values']))
+
+          found=[]
+          def walk(x,path='root'):
+              if isinstance(x,dict):
+                  blob=' '.join(str(x.get(k,'')) for k in ('id','label','category','name','title')).lower()
+                  if ('unemp' in blob or 'disoccup' in blob or 'labour' in blob) and isinstance(x.get('history'),list):
+                      found.append((path,x))
+                  for k,v in x.items(): walk(v,f'{path}.{k}')
+              elif isinstance(x,list):
+                  for i,v in enumerate(x): walk(v,f'{path}[{i}]')
+          walk(heat_doc.get('EUR',heat_doc),'EUR')
+          print('HEAT_CANDIDATE_PATHS=',[p for p,_ in found])
+          if len(found)!=1:
+              raise SystemExit(f'expected 1 EUR labour heat node, got {len(found)}')
+          hp,h=found[0]
+          hh=h['history']
+          if hh and isinstance(hh[0],dict):
+              h_hist=[(str(x.get('date') or x.get('period') or x.get('time')),x.get('value')) for x in hh]
+          else:
+              dates=h.get('history_dates') or h.get('dates') or []
+              h_hist=list(zip(dates,hh)) if dates and len(dates)==len(hh) else [(None,v) for v in hh]
+
+          print('SERIES_LEN=',len(s_hist),'FIRST3=',s_hist[:3],'LAST3=',s_hist[-3:])
+          print('HEAT_LEN=',len(h_hist),'FIRST3=',h_hist[:3],'LAST3=',h_hist[-3:])
+          print('HEAT_META=',{k:h.get(k) for k in ('latest_value','latest_period','as_of','percentile','direction','speed','acceleration','turning_point') if k in h})
+
+          sm={d:v for d,v in s_hist if d is not None}
+          hm={d:v for d,v in h_hist if d is not None}
+          common=sorted(set(sm)&set(hm))
+          mism=[]
+          for d in common:
+              a,b=sm[d],hm[d]
+              try: same=math.isclose(float(a),float(b),rel_tol=0,abs_tol=1e-12)
+              except Exception: same=(a==b)
+              if not same: mism.append((d,a,b))
+          print('COMMON_DATES=',len(common),'DATE_MISMATCHES=',len(mism),'FIRST_MISMATCHES=',mism[:10])
+          print('ONLY_SERIES_DATES=',sorted(set(sm)-set(hm)))
+          print('ONLY_HEAT_DATES=',sorted(set(hm)-set(sm)))
+
+          def pct(vals):
+              xs=[float(v) for v in vals if v is not None and math.isfinite(float(v))]
+              cur=xs[-1]; below=sum(x<cur for x in xs); equal=sum(x==cur for x in xs)
+              return round(100*(below+0.5*equal)/len(xs),1),below,equal,len(xs)
+          vals=[v for _,v in s_hist]
+          print('SERIES_PCT=',pct(vals))
+          print('SERIES_PLUS_AUG_PCT=',pct(vals+[6.4]))
+          print('SERIES_PLUS_AUG_LAST120_PCT=',pct((vals+[6.4])[-120:]))
+          if h_hist: print('HEAT_PCT=',pct([v for _,v in h_hist]))
+          PY
