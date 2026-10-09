@@ -23,35 +23,20 @@ jobs:
           import json, math
           from pathlib import Path
 
-          series_doc = json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
-          heat_doc = json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          series_doc=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat_doc=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
 
-          eur_series = series_doc['EUR']
           candidates=[]
-          for row in eur_series:
+          for row in series_doc['EUR']:
               blob=' '.join(str(row.get(k,'')) for k in ('id','label','category','source_file')).lower()
               if 'unemp' in blob or 'disoccup' in blob or 'labour' in blob:
                   candidates.append(row)
           print('SERIES_CANDIDATES=',[(r.get('id'),r.get('label'),r.get('category'),len(r.get('dates',[])),r.get('last_date'),r.get('last_value')) for r in candidates])
-          if len(candidates)!=1:
-              raise SystemExit(f'expected 1 EUR labour series, got {len(candidates)}')
+          if len(candidates)!=1: raise SystemExit(f'expected 1 EUR labour series, got {len(candidates)}')
           s=candidates[0]
           s_hist=list(zip(s['dates'],s['values']))
 
-          found=[]
-          def walk(x,path='root'):
-              if isinstance(x,dict):
-                  blob=' '.join(str(x.get(k,'')) for k in ('id','label','category','name','title')).lower()
-                  if ('unemp' in blob or 'disoccup' in blob or 'labour' in blob) and isinstance(x.get('history'),list):
-                      found.append((path,x))
-                  for k,v in x.items(): walk(v,f'{path}.{k}')
-              elif isinstance(x,list):
-                  for i,v in enumerate(x): walk(v,f'{path}[{i}]')
-          walk(heat_doc.get('EUR',heat_doc),'EUR')
-          print('HEAT_CANDIDATE_PATHS=',[p for p,_ in found])
-          if len(found)!=1:
-              raise SystemExit(f'expected 1 EUR labour heat node, got {len(found)}')
-          hp,h=found[0]
+          h=heat_doc['currencies']['EUR']['labour']
           hh=h['history']
           if hh and isinstance(hh[0],dict):
               h_hist=[(str(x.get('date') or x.get('period') or x.get('time')),x.get('value')) for x in hh]
@@ -61,7 +46,8 @@ jobs:
 
           print('SERIES_LEN=',len(s_hist),'FIRST3=',s_hist[:3],'LAST3=',s_hist[-3:])
           print('HEAT_LEN=',len(h_hist),'FIRST3=',h_hist[:3],'LAST3=',h_hist[-3:])
-          print('HEAT_META=',{k:h.get(k) for k in ('latest_value','latest_period','as_of','percentile','direction','speed','acceleration','turning_point') if k in h})
+          print('HEAT_KEYS=',sorted(h.keys()))
+          print('HEAT_META=',{k:h.get(k) for k in ('latest_value','latest_period','as_of','percentile','direction','speed','acceleration','turning_point','source') if k in h})
 
           sm={d:v for d,v in s_hist if d is not None}
           hm={d:v for d,v in h_hist if d is not None}
