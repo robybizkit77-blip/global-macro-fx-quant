@@ -1,0 +1,79 @@
+name: CAD Labour Strict PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - 'validation-cad-labour-strict-pit-v1-*'
+    paths:
+      - 'validation/materialize_cad_labour_strict_pit_v1.py'
+      - 'validation/macro/cad_labour_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/cad_labour_strict_pit_receipt_v1_2026-10-09.json'
+      - '.github/workflows/cad-labour-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize all 104 CAD labour first-release months read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad-labour-strict
+          python validation/materialize_cad_labour_strict_pit_v1.py \
+            --csv /tmp/cad-labour-strict/CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv \
+            --evidence /tmp/cad-labour-strict/CAD_LABOUR_STRICT_PIT_EVIDENCE_V1.json
+      - name: Verify strict PIT invariants and pinned semantic contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path('/tmp/cad-labour-strict')
+          ev=json.loads((p/'CAD_LABOUR_STRICT_PIT_EVIDENCE_V1.json').read_text())
+          pin=json.loads(Path('validation/macro/cad_labour_strict_pit_evidence_v1_2026-10-09.json').read_text())
+          receipt=json.loads(Path('validation/macro/cad_labour_strict_pit_receipt_v1_2026-10-09.json').read_text())
+          rows=list(csv.DictReader((p/'CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
+          assert ev['status']=='PASS'
+          assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
+          assert ev['target']==pin['target']==receipt['target']=='CAD.labour'
+          assert len(rows)==104
+          assert rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-08'
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' for r in rows)
+          assert len({r['sha256'] for r in rows})==104
+          assert all(r['release_date'] and r['release_time']=='08:30' and r['timezone']=='Eastern Time' for r in rows)
+          assert ev['route_counts']=={'STATCAN_THE_DAILY':104}
+          assert ev['strict_rules']['revised_history_fallback_used'] is False
+          assert ev['strict_rules']['canada_headline_required'] is True
+          assert ev['strict_rules']['generic_narrative_or_provincial_fallback_forbidden'] is True
+          assert ev['series_contract']['seasonal_adjustment']=='seasonally adjusted'
+          expected='77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a'
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']==receipt['invariants']['semantic_rowset_sha256']==expected
+          by_ref={r['reference_month']:float(r['unemployment_rate_sa']) for r in rows}
+          anchors={'2018-01':5.9,'2020-04':13.0,'2022-01':6.5,'2024-12':6.7,'2026-08':6.4}
+          assert by_ref|{} and all(by_ref[k]==v for k,v in anchors.items())
+          assert pin['anchor_checks']==anchors
+          assert pin['semantic_fields_match_across_materializations'] is True
+          assert receipt['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert receipt['base_main_sha']=='b42413973479f4b94c63ebdcd4adb6b38f93fe7b'
+          assert receipt['promotion_effect_if_merged']['strict_direct_archival_pit']=='6/16'
+          PY
+      - name: Enforce no repository writes
+        run: git diff --exit-code
+      - name: Upload reproducible strict PIT dataset and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-labour-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/cad-labour-strict/
+          if-no-files-found: error
+          retention-days: 90
