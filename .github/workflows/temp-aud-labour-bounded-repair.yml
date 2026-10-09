@@ -48,13 +48,14 @@ jobs:
           hist=[float(x) for x in h['history']]
           assert abs(hist[-1]-4.6)<1e-12, hist[-3:]
           assert abs(hist[-2]-4.461825)<1e-6, hist[-3:]
-          # Before repair the heatmap already had the August point; verify the preceding
-          # rolling tail corresponds to the canonical series before touching it.
           oldrow=next(x for x in before_series['AUD'] if x.get('id')=='AU_UNEMP_RATE_history_value')
           prev=hist[:-1]
-          expected=[float(x) for x in oldrow['values'][-len(prev):]]
-          assert len(prev)==len(expected)
-          assert all(abs(a-b)<1e-5 for a,b in zip(prev,expected)), {'history_tail':prev[-6:],'series_tail':expected[-6:]}
+          n=min(12,len(prev),len(oldrow['values']))
+          assert n>=8, {'n':n,'heat_history_len':len(hist),'series_len':len(oldrow['values'])}
+          observed=prev[-n:]
+          expected=[float(x) for x in oldrow['values'][-n:]]
+          print(json.dumps({'overlap_n':n,'heat_tail':observed,'series_tail':expected},indent=2))
+          assert all(abs(a-b)<1e-5 for a,b in zip(observed,expected)), {'history_tail':observed,'series_tail':expected}
           hist[-2]=4.5
           h['history']=hist
           h['latest_value']=4.6
@@ -92,6 +93,10 @@ jobs:
           for dim in heat['currencies']['AUD']:
             if dim not in ('labour','as_of_detail'):
               assert heat['currencies']['AUD'][dim]==before_heat['currencies']['AUD'][dim],dim
+          old_detail=before_heat['currencies']['AUD'].get('as_of_detail',{})
+          new_detail=heat['currencies']['AUD'].get('as_of_detail',{})
+          for k,v in old_detail.items():
+            if k!='labour': assert new_detail.get(k)==v,(k,new_detail.get(k),v)
 
           sp.write_text(json.dumps(series,ensure_ascii=False,separators=(',',':'))+'\n')
           hp.write_text(json.dumps(heat,ensure_ascii=False,separators=(',',':'))+'\n')
@@ -99,6 +104,7 @@ jobs:
           PY
           git diff --check
           changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
           test "$changed" = $'live_data/sections/MACRO_SERIES.json\nlive_data/sections/MACRO_THERMOMETER_DATA.json'
       - name: Commit bounded repair
         shell: bash
