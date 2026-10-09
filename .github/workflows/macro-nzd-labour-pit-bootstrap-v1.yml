@@ -104,8 +104,9 @@ jobs:
           assert receipt['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
           assert evidence['bootstrap_provenance']['official_release_pair_verified'] is True
           assert evidence['bootstrap_provenance']['before_state'].startswith('RECONSTRUCTED_')
-          assert evidence['reconstruction']['prior_revision_reconstructed']['before_value']==5.3
-          assert evidence['reconstruction']['prior_revision_reconstructed']['value']==5.4
+          reconstruction=evidence['bootstrap_provenance']['reconstruction']
+          assert reconstruction['prior_revision_reconstructed']['before_value']==5.3
+          assert reconstruction['prior_revision_reconstructed']['value']==5.4
           assert prow['historical_replay_certified'] is True
           pref=prow['historical_replay_evidence']
           assert pref['evidence_class']=='RECONSTRUCTED_HISTORICAL_REPLAY'
