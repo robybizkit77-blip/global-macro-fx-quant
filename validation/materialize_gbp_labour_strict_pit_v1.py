@@ -161,11 +161,47 @@ def parse_release(raw: bytes, final_url: str, title_pattern: str, y: int, m: int
             'source_url': final_url, 'page_sha256': hashlib.sha256(raw).hexdigest(), 'pit_status': 'STRICT_FIRST_RELEASE'}
 
 
+def parse_october_2023_experimental_release(raw: bytes, final_url: str) -> dict[str, object]:
+    """Read the single ONS release whose LFS headline was withheld.
+
+    The 24 October 2023 overview explicitly says unadjusted June--August LFS
+    data were not published, then supplies the same-release experimental
+    unemployment estimate.  This is deliberately a one-release route: it is
+    not a relaxed headline parser or a fallback to any revised series.
+    """
+    text = plain(raw)
+    if not re.search(r'\bLabour market overview, UK:\s*October\s+2023\b', text, re.I):
+        raise ValueError('ONS October 2023 experimental overview identity mismatch')
+    if release_date(text) != '2023-10-24':
+        raise ValueError('ONS October 2023 experimental overview release-date mismatch')
+    opening = text[text.find('Main points'):text.find('Latest indicators at a glance')]
+    if 'Unadjusted June to August LFS data are not published.' not in opening:
+        raise ValueError('ONS October 2023 LFS-withheld disclosure not found')
+    matches = re.findall(
+        r'\bExperimental estimates for June to August 2023 show a\s+[0-9]+(?:\.[0-9]+)?\s+'
+        r'percentage point (?:increase|decrease) in the UK unemployment rate to\s+'
+        r'([0-9]+(?:\.[0-9]+)?)\s*%',
+        opening,
+        flags=re.I,
+    )
+    values = list(dict.fromkeys(float(value) for value in matches))
+    if len(values) != 1:
+        raise ValueError(f'ambiguous or missing fixed ONS October 2023 experimental unemployment headline: {values}')
+    return {
+        'reference_month': '2023-08', 'rolling_period': 'June to August 2023',
+        'source_rolling_period': 'June to August 2023', 'headline_unemployment_rate_pct': values[0],
+        'release_date': '2023-10-24', 'source_route': 'ONS_UK_LABOUR_MARKET_EXPERIMENTAL_OVERVIEW_BULLETIN',
+        'source_url': final_url, 'page_sha256': hashlib.sha256(raw).hexdigest(), 'pit_status': 'STRICT_FIRST_RELEASE',
+    }
+
+
 def one(y: int, m: int) -> dict[str, object]:
     # The bulletin name is the publication month, not the reference month.
     ry, rm = add_months(y, m, 2)
     slug = f'{MONTHS[rm - 1].lower()}{ry}'
     raw, final_url = fetch(f'{BASE}/{slug}')
+    if (y, m) == (2023, 8):
+        return parse_october_2023_experimental_release(raw, final_url)
     try:
         return parse_release(raw, final_url, r'(?:UK labour market|Labour market overview, UK)', y, m, 'ONS_UK_LABOUR_MARKET_BULLETIN')
     except ValueError as overview_error:
@@ -207,7 +243,7 @@ def main() -> int:
         'authority': 'UK Office for National Statistics',
         'coverage': {'start': '2018-01', 'end': '2026-06', 'expected_months': 102, 'materialized_months': len(rows)},
         'series_contract': {'series_id': 'MGSX', 'frequency': 'M', 'transformation': 'level', 'unit': '%', 'storage_month': 'final month of rolling three-month window'},
-        'route_counts': {'ONS_PERIOD_SPECIFIC_UK_LABOUR_MARKET_BULLETIN': len(rows)},
+        'route_counts': {route: sum(row['source_route'] == route for row in rows) for route in sorted({row['source_route'] for row in rows})},
         'unique_page_hashes': len({r['page_sha256'] for r in rows}),
         'semantic_rowset_sha256': digest(rows, SEMANTIC), 'raw_fetch_rowset_sha256': digest(rows, FIELDS),
         'strict_rules': {'official_publisher_only': True, 'period_specific_release_artifact_required': True, 'publication_date_required': True, 'url_and_sha256_required': True, 'current_revised_history_forbidden': True, 'revised_history_fallback_used': False},
