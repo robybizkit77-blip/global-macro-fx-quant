@@ -1,0 +1,50 @@
+name: TEMP CAD Inflation Tail Precision Repair
+
+on:
+  push:
+    branches:
+      - validation-macro-cad-inflation-contract-repair-2026-10-09
+    paths:
+      - '.github/workflows/temp-cad-inflation-tail-precision-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair only CAD inflation heatmap tail precision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('live_data/sections/MACRO_THERMOMETER_DATA.json')
+          s=p.read_text()
+          start=s.index('"CAD":{"status":"ACTIVE"')
+          end=s.index('"AUD":{"status":"ACTIVE"',start)
+          block=s[start:end]
+          needle='2.798054,3.032141,3.033981],"percentile":72.1'
+          repl='2.798054,3.032140691328089,3.033980582524287],"percentile":72.1'
+          assert block.count(needle)==1, block.count(needle)
+          block2=block.replace(needle,repl,1)
+          p.write_text(s[:start]+block2+s[end:])
+
+          data=json.loads(p.read_text())
+          h=data['currencies']['CAD']['inflation']
+          assert h['history'][-2:]==[3.032140691328089,3.033980582524287]
+          assert h['latest_value']==3.033980582524287
+          assert h['percentile']==72.1 and h['temperature_score']==72.1
+          assert h['temperature_label']=='CALDO' and h['direction']=='SALE' and h['acceleration']=='RALLENTA'
+          assert h['transformation']=='derived_yoy_from_index'
+          print('CAD inflation tail precision repair verified')
+          PY
+          git diff --numstat -- live_data/sections/MACRO_THERMOMETER_DATA.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/MACRO_THERMOMETER_DATA.json
+          git commit -m 'Align CAD inflation heatmap tail precision'
+          git push
