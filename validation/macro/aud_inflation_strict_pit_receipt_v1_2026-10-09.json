@@ -23,6 +23,7 @@
     "semantic_rowset_sha256": "d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f",
     "frozen_quarterly_contract_preserved_across_monthly_cpi_transition": true,
     "transition_values_verified": true,
+    "permanent_gate_pins_known_transition_values": true,
     "revised_history_fallback_used": false,
     "live_data_changed": false,
     "engine_rules_changed": false
