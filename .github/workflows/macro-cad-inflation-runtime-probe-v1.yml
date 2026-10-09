@@ -1,0 +1,55 @@
+name: Macro CAD Inflation Runtime Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-macro-cad-inflation-pit-bootstrap-*'
+    paths:
+      - '.github/workflows/macro-cad-inflation-runtime-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Print canonical CAD inflation tails
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          series=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          target=next(r for r in series['CAD'] if r.get('id')=='CA_CPI_HEADLINE_YOY_history_value')
+          h=heat['currencies']['CAD']['inflation']
+          obs=h.get('observations') or h.get('history') or []
+          print(json.dumps({
+            'status':'CAD_INFLATION_CANONICAL_PROBE',
+            'series':{
+              'id':target.get('id'),
+              'dates_tail':target.get('dates',[])[-5:],
+              'values_tail':target.get('values',[])[-5:],
+              'last_date':target.get('last_date'),
+              'last_value':target.get('last_value'),
+              'unit':target.get('unit'),
+              'frequency':target.get('frequency'),
+              'source_file':target.get('source_file')
+            },
+            'heatmap':{
+              'series_id':h.get('series_id'),
+              'frequency':h.get('frequency'),
+              'transformation':h.get('transformation'),
+              'source':h.get('source'),
+              'value':h.get('value'),
+              'observation_date':h.get('observation_date'),
+              'observations_tail':obs[-5:] if isinstance(obs,list) else obs
+            }
+          }, indent=2))
+          PY
