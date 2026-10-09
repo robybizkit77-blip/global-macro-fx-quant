@@ -1,0 +1,40 @@
+{
+  "schema": "GMFQ_AUD_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "AUD.labour",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "bd71bb47c7b5a6cf44d7c41b6882700cd09adb6d",
+  "validated_head_sha": "bbfdb332ba021a5bc102dcb4b567320dd4f63e99",
+  "temporary_probe_cleanup_head_sha": "eaeb4d2a1a9cc6c8f6dd904fd6168f064ba1f600",
+  "full_archive_probe_run_id": 37947855930,
+  "artifact_id": 11624278864,
+  "artifact_digest": "sha256:a54b8e97e3bc22d062c0d3211d2a2faa9b0860d7914b382d7334c80d93da808a",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "months": 104,
+    "legacy_ausstats_months": 23,
+    "modern_abs_release_months": 81
+  },
+  "series_contract": {
+    "series_id": "AU_UNEMP_RATE",
+    "seasonal_adjustment": "seasonally adjusted"
+  },
+  "invariants": {
+    "all_months_present": true,
+    "unique_source_hash_per_materialization": true,
+    "official_period_specific_artifacts_only": true,
+    "official_publication_timestamp_required": true,
+    "semantic_rowset_sha256": "b0f91883c118d15bffdb594d646786bd14d279090d7aafea1fad0f0c11faf436",
+    "semantic_fingerprint_serialization": "canonical JSON; unemployment_rate_sa numeric",
+    "semantic_fields_verified_across_three_independent_materializations": true,
+    "raw_page_hash_and_legacy_alias_are_fetch_evidence_not_stable_identity": true,
+    "revised_history_fallback_used": false,
+    "temporary_probe_files_removed": true,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "4/16"
+  }
+}

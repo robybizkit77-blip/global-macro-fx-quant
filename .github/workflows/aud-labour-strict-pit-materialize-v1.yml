@@ -1,0 +1,68 @@
+name: AUD Labour Strict PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-labour-strict-pit-v1-*'
+    paths:
+      - 'validation/materialize_aud_labour_strict_pit_v1.py'
+      - 'validation/macro/aud_labour_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/aud_labour_strict_pit_receipt_v1_2026-10-09.json'
+      - '.github/workflows/aud-labour-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize all 104 AUD labour first-release months read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud-labour-strict
+          python validation/materialize_aud_labour_strict_pit_v1.py \
+            --csv /tmp/aud-labour-strict/AUD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv \
+            --evidence /tmp/aud-labour-strict/AUD_LABOUR_STRICT_PIT_EVIDENCE_V1.json
+      - name: Verify strict PIT invariants and pinned semantic contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path('/tmp/aud-labour-strict')
+          ev=json.loads((p/'AUD_LABOUR_STRICT_PIT_EVIDENCE_V1.json').read_text())
+          pin=json.loads(Path('validation/macro/aud_labour_strict_pit_evidence_v1_2026-10-09.json').read_text())
+          rows=list(csv.DictReader((p/'AUD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
+          assert ev['status']=='PASS'
+          assert ev['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
+          assert len(rows)==104
+          assert rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-08'
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' for r in rows)
+          assert len({r['sha256'] for r in rows})==104
+          assert all(r['release_date'] and r['release_time'] and r['timezone'] for r in rows)
+          assert ev['strict_rules']['revised_history_fallback_used'] is False
+          assert ev['semantic_rowset_sha256']==pin['semantic_rowset_sha256']=='b0f91883c118d15bffdb594d646786bd14d279090d7aafea1fad0f0c11faf436'
+          assert ev['route_counts']=={'AUSSTATS_MEDIA':23,'MODERN_RELEASE':81}
+          assert pin['series_contract']['seasonal_adjustment']=='seasonally adjusted'
+          assert pin['strict_rules']['raw_page_hash_and_legacy_alias_are_fetch_evidence_not_stable_identity'] is True
+          assert pin['semantic_fields_match_across_materializations'] is True
+          PY
+      - name: Enforce no repository writes
+        run: git diff --exit-code
+      - name: Upload reproducible strict PIT dataset and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-labour-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/aud-labour-strict/
+          if-no-files-found: error
+          retention-days: 90
