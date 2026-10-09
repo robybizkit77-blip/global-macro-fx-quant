@@ -1,0 +1,60 @@
+{
+  "schema": "GMFQ_CAD_LABOUR_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "CAD.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Statistics Canada",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "series_contract": {
+    "series_id": "CA_UNEMP_RATE",
+    "frequency": "M",
+    "transformation": "level",
+    "seasonal_adjustment": "seasonally adjusted"
+  },
+  "anchor_checks": {
+    "2018-01": 5.9,
+    "2020-04": 13.0,
+    "2022-01": 6.5,
+    "2024-12": 6.7,
+    "2026-08": 6.4
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_timestamp_required": true,
+    "sha256_required_per_fetch": true,
+    "canada_headline_required": true,
+    "generic_narrative_or_provincial_fallback_forbidden": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "publication_time_basis": {
+    "release_vehicle": "The Daily",
+    "time": "08:30",
+    "timezone": "Eastern Time",
+    "official_policy_url": "https://www150.statcan.gc.ca/n1/dai-quo/info3-eng.htm"
+  },
+  "unique_source_hashes_per_materialization": 104,
+  "semantic_rowset_sha256": "77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a",
+  "semantic_fingerprint_serialization": "canonical JSON; unemployment_rate_sa numeric",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "unemployment_rate_sa",
+    "release_date",
+    "release_time",
+    "timezone",
+    "pit_status"
+  ],
+  "independent_materializations_compared": 2,
+  "semantic_fields_match_across_materializations": true,
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
