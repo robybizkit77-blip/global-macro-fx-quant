@@ -22,6 +22,13 @@ ROW_KEYS = [
     'source_url','sha256','route','pit_status'
 ]
 SEMANTIC_KEYS = ['reference_month','unemployment_rate_sa','release_date','release_time','timezone','pit_status']
+ANCHORS = {
+    '2018-01': 5.9,
+    '2020-04': 13.0,
+    '2022-01': 6.5,
+    '2024-12': 6.7,
+    '2026-08': 6.4,
+}
 
 
 def months():
@@ -59,8 +66,6 @@ def candidate_dates(y: int, m: int):
     preferred = []
     for d in fridays:
         preferred.extend([d, d-1])
-    # Labour Force Survey is normally released on the first or second Friday.
-    # Keep a bounded fail-closed fallback across the first 12 calendar days for holiday shifts.
     fallback = list(range(1, 13))
     seen = set()
     for d in preferred + fallback:
@@ -93,36 +98,40 @@ def parse_release_date(text: str) -> str | None:
     if q:
         return q.group(1)
     q = re.search(r'Released:\s*([A-Z][a-z]+)\s+(\d{1,2}),\s*(20\d{2})', text)
-    if q:
-        mm = MONTHS.index(q.group(1)) + 1 if q.group(1) in MONTHS else None
-        if mm:
-            return f'{int(q.group(3)):04d}-{mm:02d}-{int(q.group(2)):02d}'
+    if q and q.group(1) in MONTHS:
+        mm = MONTHS.index(q.group(1)) + 1
+        return f'{int(q.group(3)):04d}-{mm:02d}-{int(q.group(2)):02d}'
     return None
 
 
 def unemployment_rate(text: str, y: int, m: int) -> float | None:
     month = MONTHS[m-1]
-    patterns = [
-        rf'Unemployment rate\s*[—-]\s*Canada\s*{month}\s+{y}\s*([0-9]+(?:\.[0-9]+)?)\s*%',
-        rf'Unemployment rate\s*[—-]\s*Canada.*?{month}\s+{y}.*?([0-9]+(?:\.[0-9]+)?)\s*%',
-        rf'unemployment rate\s+(?:was|remained|rose to|increased to|fell to|declined to)\s*([0-9]+(?:\.[0-9]+)?)\s*%.*?{month}\s+{y}',
-        rf'{month}\s+{y}.*?unemployment rate\s+(?:was|remained|rose to|increased to|fell to|declined to)\s*([0-9]+(?:\.[0-9]+)?)\s*%'
-    ]
-    for p in patterns:
-        q = re.search(p, text, flags=re.I|re.S)
-        if q:
-            v = float(q.group(1))
-            if 2.0 <= v <= 20.0:
-                return v
-    # Narrow fallback around the first official Canada unemployment headline.
-    pos = re.search(r'Unemployment rate\s*[—-]\s*Canada', text, flags=re.I)
-    if pos:
-        win = text[pos.start():pos.start()+450]
-        vals = [float(x) for x in re.findall(r'([0-9]+(?:\.[0-9]+)?)\s*%', win)]
-        vals = [x for x in vals if 2.0 <= x <= 20.0]
-        if vals:
-            return vals[0]
-    return None
+    # The first national headline has a stable semantic order across archived
+    # Daily pages: "Unemployment rate — Canada" -> value -> reference month.
+    headline = re.search(
+        rf'Unemployment rate\s*[—-]\s*Canada\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*{month}\s+{y}\b',
+        text,
+        flags=re.I|re.S,
+    )
+    if headline:
+        v = float(headline.group(1))
+        if 2.0 <= v <= 20.0:
+            return v
+
+    # Fail closed: only inspect a short window that begins exactly at the
+    # Canada headline and require the requested reference month before taking
+    # a percentage. Never search generic narrative/provincial unemployment text.
+    pos = re.search(r'Unemployment rate\s*[—-]\s*Canada\b', text, flags=re.I)
+    if not pos:
+        return None
+    win = text[pos.start():pos.start()+300]
+    if re.search(rf'\b{month}\s+{y}\b', win, flags=re.I) is None:
+        return None
+    q = re.search(r'Canada\s*([0-9]+(?:\.[0-9]+)?)\s*%', win, flags=re.I|re.S)
+    if not q:
+        return None
+    v = float(q.group(1))
+    return v if 2.0 <= v <= 20.0 else None
 
 
 def one(y: int, m: int):
@@ -140,7 +149,6 @@ def one(y: int, m: int):
         release_date = parse_release_date(text)
         if rate is None or release_date is None:
             continue
-        # Statistics Canada states that The Daily is released at 8:30 a.m. Eastern time each working day.
         return {
             'reference_month': ref,
             'unemployment_rate_sa': rate,
@@ -179,11 +187,14 @@ def main():
         time.sleep(0.02)
 
     hashes = [r['sha256'] for r in rows]
+    by_ref = {r['reference_month']: float(r['unemployment_rate_sa']) for r in rows}
     assert expected == 104
     assert len(rows) == expected
     assert rows[0]['reference_month'] == '2018-01' and rows[-1]['reference_month'] == '2026-08'
     assert len(set(hashes)) == expected
     assert all(r['pit_status'] == 'STRICT_FIRST_RELEASE' for r in rows)
+    for ref, expected_value in ANCHORS.items():
+        assert by_ref[ref] == expected_value, f'anchor mismatch {ref}: {by_ref[ref]} != {expected_value}'
 
     with open(args.csv, 'w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, fieldnames=ROW_KEYS, lineterminator='\n')
@@ -203,6 +214,7 @@ def main():
             'transformation': 'level',
             'seasonal_adjustment': 'seasonally adjusted'
         },
+        'anchor_checks': ANCHORS,
         'route_counts': {'STATCAN_THE_DAILY': len(rows)},
         'unique_source_hashes': len(set(hashes)),
         'semantic_rowset_sha256': digest(rows, SEMANTIC_KEYS),
@@ -218,6 +230,8 @@ def main():
             'period_specific_release_artifact_required': True,
             'publication_timestamp_required': True,
             'sha256_required': True,
+            'canada_headline_required': True,
+            'generic_narrative_or_provincial_fallback_forbidden': True,
             'current_revised_history_forbidden': True,
             'revised_history_fallback_used': False
         },
@@ -227,7 +241,7 @@ def main():
         json.dump(evidence, f, indent=2)
         f.write('\n')
 
-    print(json.dumps({k:evidence[k] for k in ['status','coverage','route_counts','unique_source_hashes','semantic_rowset_sha256','raw_fetch_rowset_sha256']}, indent=2))
+    print(json.dumps({k:evidence[k] for k in ['status','coverage','anchor_checks','route_counts','unique_source_hashes','semantic_rowset_sha256','raw_fetch_rowset_sha256']}, indent=2))
 
 
 if __name__ == '__main__':
