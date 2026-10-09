@@ -1,5 +1,5 @@
 name: Macro CAD Labour PIT Bootstrap V1
-# Post-reconciliation final exact-head validation.
+# Final exact-head validation after certification review and temporary workflow cleanup.
 
 on:
   push:
