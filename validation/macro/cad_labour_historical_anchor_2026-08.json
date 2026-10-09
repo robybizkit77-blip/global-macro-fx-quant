@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_HISTORICAL_BOOTSTRAP_ANCHOR_V1",
+  "target": {
+    "currency": "CAD",
+    "dimension": "labour",
+    "macro_series_id": "CA_UNEMP_RATE_history_value"
+  },
+  "authority": "Statistics Canada",
+  "source": "Statistics Canada",
+  "official_transport_source": "Statistics Canada",
+  "series_id": "CA_UNEMP_RATE",
+  "frequency": "M",
+  "transformation": "level",
+  "previous": {
+    "observation_date": "2026-07",
+    "value": 6.4,
+    "release_date": "2026-08-07",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260807/dq260807a-eng.htm"
+  },
+  "current": {
+    "observation_date": "2026-08",
+    "value": 6.4,
+    "release_date": "2026-09-04",
+    "official_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260904/dq260904a-eng.htm"
+  },
+  "provenance": {
+    "before_snapshot_kind": "RECONSTRUCTED",
+    "after_snapshot_kind": "CANONICAL",
+    "reconstruction_method": "CANONICAL_AFTER_REMOVE_LATEST",
+    "official_release_pair_verified": true,
+    "release_schedule_reference": "https://www150.statcan.gc.ca/n1/daily-quotidien/260904/dq260904a-eng.htm",
+    "canonical_source_label_preserved": true,
+    "note": "Statistics Canada Labour Force Survey table 14-10-0287-01 reports the seasonally adjusted Canada unemployment rate for total gender, age 15 years and over. July 2026 was 6.4 percent and August 2026 remained 6.4 percent. The source adapter explicitly filters Data type = Seasonally adjusted so trend-cycle or other table variants cannot overwrite the headline series."
+  }
+}

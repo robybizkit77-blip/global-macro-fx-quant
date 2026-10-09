@@ -85,11 +85,16 @@ def extract_labour(rows):
  out={}
  for r in rows:
   if norm(r.get('GEO') or r.get('Geography'))!='canada':continue
-  char=norm(r.get('Labour force characteristics'));sex=norm(r.get('Gender') or r.get('Sex'));age=norm(r.get('Age group'));stat=norm(r.get('Statistics'))
+  char=norm(r.get('Labour force characteristics'))
+  sex=norm(r.get('Gender') or r.get('Sex'))
+  age=norm(r.get('Age group'))
+  stat=norm(r.get('Statistics'))
+  data_type=norm(r.get('Data type'))
   if 'unemployment rate' not in char:continue
   if sex and 'both sexes' not in sex and 'total' not in sex:continue
   if age and '15 years and over' not in age:continue
   if stat and stat!='estimate':continue
+  if data_type and data_type!='seasonally adjusted':continue
   d=r.get('REF_DATE');v=r.get('VALUE')
   if not d or v in (None,''):continue
   try:out[str(d)[:7]+'-01']=float(v)
@@ -114,7 +119,9 @@ def make_candidate(dim:str,latest:str,lv:float,source_url:str,audit_extra:dict[s
 
 def build_fixture_candidate(dim:str,text:str):
  rows=rows_from_text(text);obs=extract_fixture_inflation(rows) if dim=='inflation' else extract_labour(rows);latest,lv=obs[-1];prior,pv=obs[-2];cfg=CONFIG[dim]
- return make_candidate(dim,latest,lv,f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}',{'transport':'deterministic_fixture'},prior,pv)
+ extra={'transport':'deterministic_fixture'}
+ if dim=='labour':extra['seasonal_adjustment']='seasonally adjusted'
+ return make_candidate(dim,latest,lv,f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}',extra,prior,pv)
 
 def build_live_candidate(dim:str):
  cfg=CONFIG[dim]
@@ -124,7 +131,7 @@ def build_live_candidate(dim:str):
   source_url=f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}'
   return make_candidate(dim,latest,lv,source_url,{'transport':'official_full_table_csv','download_pid':cfg['download_pid'],'reported_measure':'derived from official All-items CPI index','current_index':current_index,'prior_year_index':prior_year_index},prior,pv)
  obs=extract_labour(rows);latest,lv=obs[-1];prior,pv=obs[-2]
- return make_candidate(dim,latest,lv,f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}',{'transport':'official_full_table_csv','download_pid':cfg['download_pid']},prior,pv)
+ return make_candidate(dim,latest,lv,f'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid={cfg["pid"]}',{'transport':'official_full_table_csv','download_pid':cfg['download_pid'],'seasonal_adjustment':'seasonally adjusted'},prior,pv)
 
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);args=ap.parse_args()
