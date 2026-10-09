@@ -119,6 +119,19 @@ def validate_manifest(manifest: dict[str, Any]) -> tuple[dict[str, Any], dict[st
     require(("series_value" in previous) == ("series_value" in current), "previous/current series_value contract must be symmetric")
     freq = str(manifest.get("frequency"))
     require(freq in {"M", "Q"}, "bootstrap supports M/Q core series only")
+    prior_revision = manifest.get("prior_revision")
+    if prior_revision is not None:
+        require(isinstance(prior_revision, dict), "prior_revision must be an object")
+        for key in ("observation_date", "before_value", "value"):
+            require(prior_revision.get(key) not in (None, ""), f"prior_revision missing {key}")
+        for key in ("before_value", "value", "before_series_value", "series_value"):
+            if key in prior_revision:
+                require(math.isfinite(float(prior_revision[key])), f"prior_revision {key} is not finite")
+        require(period_key(prior_revision["observation_date"], freq) == period_key(previous["observation_date"], freq), "prior_revision must target manifest previous period")
+        require(abs(float(prior_revision["before_value"]) - float(previous["value"])) < 1e-12, "prior_revision before_value must equal previous official value")
+        previous_series_value = float(previous.get("series_value", previous["value"]))
+        revision_before_series = float(prior_revision.get("before_series_value", prior_revision["before_value"]))
+        require(abs(revision_before_series - previous_series_value) < 1e-12, "prior_revision before_series_value must equal previous official series value")
     require(period_key(previous["observation_date"], freq) < period_key(current["observation_date"], freq), "economic periods are not increasing")
     require(str(previous["release_date"]) < str(current["release_date"]), "release dates are not increasing")
     provenance = manifest.get("provenance")
@@ -140,12 +153,16 @@ def reconstruct_before(after_series: dict[str, Any], after_heat: dict[str, Any],
     require(isinstance(dates, list) and isinstance(values, list) and len(dates) == len(values) and len(dates) >= 2, "target series history invalid")
     current_series_value = float(current.get("series_value", current["value"]))
     previous_series_value = float(previous.get("series_value", previous["value"]))
+    prior_revision = manifest.get("prior_revision")
+    canonical_previous_series_value = float(prior_revision.get("series_value", prior_revision["value"])) if prior_revision is not None else previous_series_value
     require(period_key(dates[-1], freq) == period_key(current["observation_date"], freq), "canonical latest period differs from manifest current")
     require(abs(float(values[-1]) - current_series_value) < 1e-12, "canonical latest series value differs from manifest current")
     require(period_key(dates[-2], freq) == period_key(previous["observation_date"], freq), "penultimate canonical period differs from manifest previous")
-    require(abs(float(values[-2]) - previous_series_value) < 1e-12, "penultimate canonical series value differs from manifest previous")
+    require(abs(float(values[-2]) - canonical_previous_series_value) < 1e-12, "penultimate canonical series value differs from manifest previous/revision AFTER")
 
     removed_date, removed_value = dates.pop(), float(values.pop())
+    if prior_revision is not None:
+        values[-1] = float(prior_revision.get("before_series_value", prior_revision["before_value"]))
     row["last_date"], row["last_value"] = dates[-1], values[-1]
 
     hrow = heat.get("currencies", {}).get(c, {}).get(d)
@@ -161,6 +178,10 @@ def reconstruct_before(after_series: dict[str, Any], after_heat: dict[str, Any],
     hist_values = [float(x) for x in hist]
     require(abs(hist_values[-1] - float(current["value"])) < 1e-12, "heatmap history tail differs from current")
     hist_values.pop()
+    canonical_previous_heat_value = float(prior_revision["value"]) if prior_revision is not None else float(previous["value"])
+    require(abs(hist_values[-1] - canonical_previous_heat_value) < 1e-12, "reconstructed heatmap tail differs from previous/revision AFTER value")
+    if prior_revision is not None:
+        hist_values[-1] = float(prior_revision["before_value"])
     require(abs(hist_values[-1] - float(previous["value"])) < 1e-12, "reconstructed heatmap tail differs from previous official value")
 
     # The BEFORE state is intentionally reconstructed from the bounded canonical
@@ -184,6 +205,7 @@ def reconstruct_before(after_series: dict[str, Any], after_heat: dict[str, Any],
         "removed_value": removed_value,
         "reconstructed_previous_period": row["last_date"],
         "reconstructed_previous_value": row["last_value"],
+        "prior_revision_reconstructed": copy.deepcopy(prior_revision),
         "before_history_observations": len(hist_values),
     }
 
@@ -199,6 +221,15 @@ def candidate_from_manifest(manifest: dict[str, Any], after_series: dict[str, An
     }
     if "series_value" in current:
         candidate["series_value"] = float(current["series_value"])
+    prior_revision = manifest.get("prior_revision")
+    if prior_revision is not None:
+        candidate["prior_revision"] = {
+            "observation_date": str(prior_revision["observation_date"]),
+            "before_value": float(prior_revision["before_value"]),
+            "value": float(prior_revision["value"]),
+            "before_series_value": float(prior_revision.get("before_series_value", prior_revision["before_value"])),
+            "series_value": float(prior_revision.get("series_value", prior_revision["value"])),
+        }
     if row.get("unit") is not None:
         candidate["series_unit"] = row["unit"]
     if manifest.get("unit") is not None:

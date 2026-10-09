@@ -8,7 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "validation"))
 
-from macro_pit_historical_bootstrap import reconstruct_before, validate_manifest
+from macro_pit_historical_bootstrap import candidate_from_manifest, reconstruct_before, validate_manifest
+from build_macro_candidate import apply_candidate
 
 
 def base_manifest():
@@ -129,6 +130,44 @@ def main():
     split_before_series, split_before_heat, _ = reconstruct_before(split_series, split_heat, split_manifest)
     assert split_before_series["JPY"][0]["last_value"] == 332.813
     assert split_before_heat["currencies"]["JPY"]["inflation"]["latest_value"] == 3.303856050706311
+
+    revision_manifest = copy.deepcopy(manifest)
+    revision_manifest["previous"].update({"observation_date": "2026-07", "value": 1.9})
+    revision_manifest["current"].update({"observation_date": "2026-08", "value": 2.2})
+    revision_manifest["prior_revision"] = {
+        "observation_date": "2026-07",
+        "before_value": 1.9,
+        "value": 2.0,
+    }
+    revision_series, revision_heat = after_state()
+    revision_series["JPY"][0].update({
+        "values": [3.5, 3.3, 2.0, 2.2],
+        "last_value": 2.2,
+    })
+    revision_heat["currencies"]["JPY"]["inflation"].update({
+        "latest_value": 2.2,
+        "history": [3.5, 3.3, 2.0, 2.2],
+    })
+    revision_before_series, revision_before_heat, revision_meta = reconstruct_before(revision_series, revision_heat, revision_manifest)
+    assert revision_before_series["JPY"][0]["values"][-1] == 1.9
+    assert revision_before_series["JPY"][0]["last_value"] == 1.9
+    assert revision_before_heat["currencies"]["JPY"]["inflation"]["history"][-1] == 1.9
+    assert revision_before_heat["currencies"]["JPY"]["inflation"]["latest_value"] == 1.9
+    assert revision_meta["prior_revision_reconstructed"]["value"] == 2.0
+    revision_candidate = candidate_from_manifest(revision_manifest, revision_series)
+    assert revision_candidate["prior_revision"]["before_value"] == 1.9
+    assert revision_candidate["prior_revision"]["value"] == 2.0
+    replay_series = copy.deepcopy(revision_before_series)
+    replay_heat = copy.deepcopy(revision_before_heat)
+    result = apply_candidate(replay_series, replay_heat, revision_candidate)
+    assert result["prior_revision"]["before_value"] == 1.9
+    assert result["prior_revision"]["value"] == 2.0
+    assert replay_series["JPY"][0]["values"][-2:] == [2.0, 2.2]
+    assert replay_heat["currencies"]["JPY"]["inflation"]["history"][-2:] == [2.0, 2.2]
+
+    bad_revision = copy.deepcopy(revision_manifest)
+    bad_revision["prior_revision"]["observation_date"] = "2026-06"
+    expect_failure(lambda: validate_manifest(bad_revision), "prior_revision must target manifest previous period")
 
     print("GMFQ_MACRO_PIT_HISTORICAL_BOOTSTRAP_TESTS_PASS")
 
