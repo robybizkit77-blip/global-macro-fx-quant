@@ -64,15 +64,20 @@ def release_date(text:str)->str:
 def headline(text:str,y:int,m:int)->float:
     month=MONTHS[m-1].capitalize(); period=f'{month} {y}'
     pats=[
-        rf'The Consumer Prices Index \(CPI\) 12-month inflation rate was ([0-9]+(?:\.[0-9]+)?)% in {re.escape(period)}',
-        rf'The Consumer Prices Index \(CPI\) 12-month rate was ([0-9]+(?:\.[0-9]+)?)% in {re.escape(period)}',
-        rf'The Consumer Prices Index \(CPI\) rose by ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',
-        rf'The Consumer Prices Index \(CPI\) fell by ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',
+        (rf'The Consumer Prices Index \(CPI\) 12-month inflation rate was ([0-9]+(?:\.[0-9]+)?)% in {re.escape(period)}',1),
+        (rf'The Consumer Prices Index \(CPI\) 12-month rate was ([0-9]+(?:\.[0-9]+)?)% in {re.escape(period)}',1),
+        (rf'The Consumer Prices Index \(CPI\) rose by ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',1),
+        (rf'The Consumer Prices Index \(CPI\) fell by ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',-1),
     ]
+    if (y,m)==(2021,1):
+        pats.extend([
+            (rf'The Consumer Prices Index \(CPI\) rose ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',1),
+            (rf'The Consumer Prices Index \(CPI\) fell ([0-9]+(?:\.[0-9]+)?)% in the 12 months to {re.escape(period)}',-1),
+        ])
     vals=[]
-    for i,p in enumerate(pats):
+    for p,sign in pats:
         for x in re.finditer(p,text,flags=re.I):
-            v=float(x.group(1)); vals.append(-v if i==3 else v)
+            vals.append(sign*float(x.group(1)))
     uniq=[]
     for v in vals:
         if all(abs(v-u)>1e-12 for u in uniq):uniq.append(v)
@@ -101,7 +106,7 @@ def main()->int:
     assert len(rows)==104 and rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-08'
     assert len({r['page_sha256'] for r in rows})==104
     by={r['reference_month']:r for r in rows}
-    anchors={'2018-01':(3.0,'2018-02-13'),'2020-01':(1.8,'2020-02-19'),'2026-08':(3.1,'2026-09-16')}
+    anchors={'2018-01':(3.0,'2018-02-13'),'2020-01':(1.8,'2020-02-19'),'2021-01':(0.7,'2021-02-17'),'2026-08':(3.1,'2026-09-16')}
     for k,(v,d) in anchors.items():
         assert abs(by[k]['headline_cpi_yoy_pct']-v)<1e-12 and by[k]['release_date']==d,(k,by[k])
     Path(a.csv).parent.mkdir(parents=True,exist_ok=True)
