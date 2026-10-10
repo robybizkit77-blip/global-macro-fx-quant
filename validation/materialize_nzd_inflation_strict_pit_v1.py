@@ -82,6 +82,7 @@ def headline_yoy(page: str, year: int, month: int) -> float:
         # 2018-era release templates summarise the two rates in this exact
         # labelled line (eg ``annual: 1.1 percent``), rather than prose.
         rf"Inflation rates? for (?:the )?{re.escape(period)}.*?annual(?:\s+change)?\s*(?:(?:was\s*)?:\s*|was\s+|:\s*|\s+)([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"annual inflation rate for (?:the )?{re.escape(period)}\s+was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent.*?{re.escape(period)}",
         rf"{re.escape(period)}.*?annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
     )
