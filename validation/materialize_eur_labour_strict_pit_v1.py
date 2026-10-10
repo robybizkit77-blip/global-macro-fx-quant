@@ -64,6 +64,12 @@ RESOLVED_RELEASES = {
     (2020, 4): ("2020-06-03", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-03062020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
     (2020, 5): ("2020-07-02", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-02072020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
     (2020, 6): ("2020-07-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30072020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 7): ("2020-09-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01092020-bp", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2020, 8): ("2020-10-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01102020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 9): ("2020-10-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30102020-cp", "EUROSTAT_UNEMPLOYMENT_LEGACY_CP"),
+    (2020, 10): ("2020-12-02", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-02122020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 11): ("2021-01-08", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-08012021-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 12): ("2021-02-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01022021-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
 }
 
 
