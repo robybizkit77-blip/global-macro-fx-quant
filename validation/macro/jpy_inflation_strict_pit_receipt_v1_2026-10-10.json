@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_JPY_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "JPY.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "1f6406139a4a00f6e6196e7df97251194da72d13",
+  "validated_source_sha": "9c19c140f719e0cd9e331dda81516e447178e485",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "unique_source_hashes": 104,
+  "semantic_rowset_sha256": "6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8",
+  "materializer_run_id": 38082623311,
+  "engine_logic_audit_run_id": 38082623297,
+  "staging_browser_audit_run_id": 38082623318,
+  "artifact_id": 11680868760,
+  "artifact_name": "jpy-inflation-strict-pit-v1-38082623311",
+  "artifact_digest": "sha256:e4c44e0a497bf343059cd26592068bde1a26ed97d5cac3bacd67137dba69b13c",
+  "artifact_expires_at": "2026-11-09T20:20:07Z",
+  "checks": {
+    "official_period_specific_statistics_bureau_estat_releases_only": true,
+    "publication_timestamp_from_exact_archive_metadata": true,
+    "source_hash_uniqueness": true,
+    "double_replay_semantic_match": true,
+    "no_current_revised_history": true,
+    "no_revised_history_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "anchors_verified": {
+    "2018-01": {
+      "rate": 1.4,
+      "release_date": "2018-02-23"
+    },
+    "2026-07": {
+      "rate": 1.9,
+      "release_date": "2026-08-21"
+    },
+    "2026-08": {
+      "rate": 1.9,
+      "release_date": "2026-09-18"
+    }
+  },
+  "route_transitions_verified": [
+    "2015_BASE through 2021-06",
+    "2020_BASE from 2021-07 through 2026-06",
+    "2025_BASE from 2026-07 through 2026-08"
+  ],
+  "exception_verified": {
+    "2019-03": "ESTAT_METADATA_EXACT_ARCHIVE for the exact e-Stat statInfId; archived PDF remains the value source"
+  }
+}

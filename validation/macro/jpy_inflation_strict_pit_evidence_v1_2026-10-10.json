@@ -1,0 +1,109 @@
+{
+  "schema": "GMFQ_JPY_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "JPY.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Statistics Bureau of Japan / e-Stat",
+  "source": "e-Stat period-specific national CPI result-summary PDFs",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "series_contract": {
+    "series_id": "JP_CPI_HEADLINE_YOY",
+    "macro_series_id": "JP_CPI_HEADLINE_YOY_history_value",
+    "frequency": "M",
+    "transformation": "reported_yoy_rate",
+    "unit": "% YoY",
+    "first_release_semantics": "OFFICIAL_PERIOD_SPECIFIC_RELEASE"
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_timestamp_required": true,
+    "publication_timestamp_authority": "OFFICIAL_ESTAT_METADATA_EXACT_ARCHIVE__PDF_CROSSCHECK_WHEN_PARSEABLE",
+    "sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "route_transitions": {
+    "base_2015": {
+      "start": "2018-01",
+      "end": "2021-06"
+    },
+    "base_2020": {
+      "start": "2021-07",
+      "end": "2026-06"
+    },
+    "base_2025": {
+      "start": "2026-07",
+      "end": "2026-08"
+    }
+  },
+  "release_date_basis_counts": {
+    "PDF_AND_ESTAT_METADATA": 103,
+    "ESTAT_METADATA_EXACT_ARCHIVE": 1
+  },
+  "anchors": {
+    "2018-01": {
+      "rate": 1.4,
+      "release_date": "2018-02-23",
+      "release_time_jst": "08:30",
+      "route": "2015_BASE",
+      "stat_inf_id": "000031673550",
+      "source_sha256": "0a9c93729376eb105b4486f900b1c9f8ecc5763d4cdd2bf14a67f6f8e5cdd4a2"
+    },
+    "2026-07": {
+      "rate": 1.9,
+      "release_date": "2026-08-21",
+      "release_time_jst": "08:30",
+      "route": "2025_BASE",
+      "stat_inf_id": "000040491312",
+      "source_sha256": "05408f53918795ce4ea79344cb735cf81a96ec2e3f15e9b48e640e331776dc2c"
+    },
+    "2026-08": {
+      "rate": 1.9,
+      "release_date": "2026-09-18",
+      "release_time_jst": "08:30",
+      "route": "2025_BASE",
+      "stat_inf_id": "000040501408",
+      "source_sha256": "c16cac0b97c6a802b64d08ecabb50ef51520f9bde07295c0acdce1229ea06749"
+    }
+  },
+  "exceptions": {
+    "2019-03": {
+      "rate": 0.5,
+      "release_date": "2019-04-19",
+      "release_time_jst": "08:30",
+      "route": "2015_BASE",
+      "release_date_basis": "ESTAT_METADATA_EXACT_ARCHIVE",
+      "stat_inf_id": "000031819496",
+      "source_sha256": "49d6dc19745cd11f8aec77e32ea3b094db61e96dfaba8ab4acb8eb1abcecd48c"
+    }
+  },
+  "unique_source_hashes": 104,
+  "network_capture_count": 104,
+  "replay_count": 2,
+  "replay_equal": true,
+  "current_revised_history_used": false,
+  "revised_fallback_used": false,
+  "semantic_rowset_sha256": "6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8",
+  "source_validation": {
+    "base_main_sha": "1f6406139a4a00f6e6196e7df97251194da72d13",
+    "validated_source_sha": "9c19c140f719e0cd9e331dda81516e447178e485",
+    "materializer_run_id": 38082623311,
+    "engine_logic_audit_run_id": 38082623297,
+    "staging_browser_audit_run_id": 38082623318,
+    "artifact_id": 11680868760,
+    "artifact_digest": "sha256:e4c44e0a497bf343059cd26592068bde1a26ed97d5cac3bacd67137dba69b13c",
+    "independent_replays_compared": 2,
+    "semantic_fields_match_across_replays": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
