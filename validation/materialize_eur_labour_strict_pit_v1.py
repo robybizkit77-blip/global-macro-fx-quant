@@ -63,6 +63,7 @@ RESOLVED_RELEASES = {
     (2019, 12): ("2020-01-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30012020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
     (2020, 1): ("2020-03-03", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-03032020-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
     (2020, 2): ("2020-04-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01042020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 3): ("2020-04-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30042020-cp", "EUROSTAT_UNEMPLOYMENT_LEGACY_CP"),
 }
 
 
