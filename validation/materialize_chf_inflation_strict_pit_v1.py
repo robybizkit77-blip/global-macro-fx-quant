@@ -65,7 +65,7 @@ def headline_yoy(text: str, year: int, month: int) -> float:
     # the match to its explicit same-month comparison and require one value.
     month_name = MONTHS[month - 1]
     patterns = (
-        rf"Inflation\s+was\s+([+\-]?\s*\d+(?:\.\d+)?)%\s+compared\s+with\s+the\s+same\s+month\s+of\s+the\s+previous\s+year",
+        rf"Inflation\s+was\s+([+\-]?\s*\d+(?:\.\d+)?)%[\.,]?\s+compared\s+with\s+the\s+same\s+month\s+of\s+the\s+previous\s+year",
         rf"In\s+comparison\s+with\s+the\s+same\s+month\s+of\s+the\s+previous\s+year,\s+inflation\s+stood\s+at\s+([+\-]?\s*\d+(?:\.\d+)?)%",
         rf"(?:CPI|consumer prices).*?{month_name}\s+{year}.*?([+\-]?\s*\d+(?:\.\d+)?)%\s+compared\s+with\s+{month_name}\s+{year - 1}",
     )
