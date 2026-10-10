@@ -120,7 +120,11 @@ def parse(raw: bytes, year: int, month: int) -> tuple[float, str]:
 
 
 def semantic_hash(rows: list[dict]) -> str:
-    fields = ("observation_date", "value", "release_date", "source_url", "source_sha256")
+    # Stats NZ serves request-varying markup around the immutable release
+    # content.  Keep each raw-capture digest in its evidence row and verify it
+    # during replay, but do not let transport-byte volatility change the
+    # semantic identity of an otherwise identical first-release rowset.
+    fields = ("observation_date", "value", "release_date", "source_url")
     payload = [{key: row[key] for key in fields} for row in rows]
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
