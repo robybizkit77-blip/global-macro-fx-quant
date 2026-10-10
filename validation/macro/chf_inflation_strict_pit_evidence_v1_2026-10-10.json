@@ -1,0 +1,86 @@
+{
+  "schema": "GMFQ_CHF_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "CHF.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Swiss Federal Statistical Office (SFSO)",
+  "source": "SFSO DAM period-specific CPI press-release PDFs",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-09",
+    "expected_months": 105,
+    "materialized_months": 105
+  },
+  "series_contract": {
+    "series_id": "CH_CPI_HEADLINE_YOY",
+    "macro_series_id": "CH_CPI_HEADLINE_YOY_history_value",
+    "frequency": "M",
+    "transformation": "reported_yoy_rate",
+    "unit": "% YoY",
+    "first_release_semantics": "OFFICIAL_PERIOD_SPECIFIC_RELEASE"
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "official_embargo_timestamp_required": true,
+    "sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "anchors": {
+    "2018-01": {
+      "rate": 0.7,
+      "release_date": "2018-02-12",
+      "release_time_utc": "08:15:00",
+      "asset_id": 4402535,
+      "source_sha256": "549f971ca8117aeac7b14839fd440d6b626cb8f2075ec1dd3ecfc9f9cec53ab3"
+    },
+    "2026-07": {
+      "rate": 0.4,
+      "release_date": "2026-08-03",
+      "release_time_utc": "06:30:00",
+      "asset_id": 36753719,
+      "source_sha256": "03c03189f2c7baf3551f977efd13598de03e8acd2983499207890af9afabccea"
+    },
+    "2026-09": {
+      "rate": 1.0,
+      "release_date": "2026-10-01",
+      "release_time_utc": "06:30:00",
+      "asset_id": 36870831,
+      "source_sha256": "2117d093c13a00f4f938b4943a68f6345537c3f5aef6385cd7c6f5e45f2a30eb"
+    }
+  },
+  "exceptions": {
+    "2026-05": {
+      "rate": 0.6,
+      "release_date": "2026-06-04",
+      "release_time_utc": "06:30:00",
+      "asset_id": 36667258,
+      "metadata_exception": "Official EN metadata title is exactly 'Swiss Consumer Price Index in Mai 2026'; the immutable official asset identity is pinned rather than broadening multilingual title matching",
+      "source_sha256": "fca5145d0bafbdc3c9816bfb3f715baaa3f44a819dc271832808e50ef95b0c76"
+    }
+  },
+  "unique_source_hashes": 105,
+  "network_capture_count": 105,
+  "replay_count": 2,
+  "replay_equal": true,
+  "current_revised_history_used": false,
+  "revised_fallback_used": false,
+  "semantic_rowset_sha256": "70d79230bad25f9c99b71fc5971c52d25219e942c187688f9c6f7e841a2a0b73",
+  "source_validation": {
+    "base_main_sha": "1ae783426d1045bd6063833fbe93b35aa3958c61",
+    "validated_source_sha": "e0b5548c7a557de6c2f5b3c10b576e61cbea9093",
+    "materializer_run_id": 38085842478,
+    "engine_logic_audit_run_id": 38085842499,
+    "staging_browser_audit_run_id": 38085842439,
+    "artifact_id": 11681952627,
+    "artifact_digest": "sha256:3808d1fcbebc0a2029d48ed9074ce74706fc9bf7664a787a69ed71a314fdf701",
+    "independent_replays_compared": 2,
+    "semantic_fields_match_across_replays": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
