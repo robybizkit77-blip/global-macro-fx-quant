@@ -144,7 +144,11 @@ def throttle() -> None:
 
 def fetch(url: str):
     req = urllib.request.Request(
-        url, headers={"User-Agent": "global-macro-fx-quant/1.0 strict-pit"}
+        url,
+        headers={
+            "User-Agent": "global-macro-fx-quant/1.0 strict-pit",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
     )
     for attempt in range(8):
         throttle()
@@ -187,7 +191,8 @@ def parse_period(text: str, y: int, m: int):
     pats = [
         rf"euro area\s*\((EA\d+)\)\s*seasonally[- ]adjusted unemployment rate was\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*in\s*{re.escape(month)}\s*{y}",
         rf"euro area\s*\((EA\d+)\)\s*seasonally[- ]adjusted unemployment rate was\s*([0-9]+(?:\.[0-9]+)?)%\s*in\s*{re.escape(month)}\s*{y}",
-        rf"In\s*{re.escape(month)}\s*{y},?\s*the euro area seasonally adjusted unemployment rate was\s*([0-9]+(?:\.[0-9]+)?)%",
+        rf"In\s*{re.escape(month)}\s*{y},?\s*the euro area seasonally[- ]adjusted unemployment rate was\s*([0-9]+(?:\.[0-9]+)?)%",
+        rf"the euro area seasonally[- ]adjusted unemployment rate was\s*([0-9]+(?:\.[0-9]+)?)%\s*in\s*{re.escape(month)}\s*{y}",
     ]
     hits = []
     for i, p in enumerate(pats):
