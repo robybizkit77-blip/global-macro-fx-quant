@@ -1,0 +1,33 @@
+{
+  "schema": "GMFQ_GBP_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "GBP.labour",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "ef9c8aaa6bfd216d7fedb7f86d5d1dccb6649998",
+  "validated_source_sha": "99228f00096564febb30dc7097266750f63d30f6",
+  "materializer_run_id": 38040356890,
+  "engine_logic_audit_run_id": 38040356930,
+  "staging_browser_audit_run_id": 38040356963,
+  "artifact_id": 11665467830,
+  "artifact_digest": "sha256:d4887d9c92547e7afc0e658d40d2b86fcf4e46ab4f21cece5d0c6972b62a0fb4",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-06",
+    "months": 102
+  },
+  "invariants": {
+    "all_months_present": true,
+    "strict_first_release_only": true,
+    "unique_page_hash_per_month": true,
+    "official_period_specific_artifacts_only": true,
+    "publication_date_required": true,
+    "semantic_rowset_sha256": "7f5faef5cdf86e36249ce79cf42639f6ab7c23740eb50c799b10a6f88dfa577f",
+    "semantic_fields_verified_across_independent_materializations": true,
+    "revised_history_fallback_used": false,
+    "live_data_changed": false,
+    "engine_rules_changed": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "8/16"
+  }
+}
