@@ -8,6 +8,7 @@ period-specific first-release wording verified on official ONS releases for:
 - reference month 2024-03 (January to March 2024), release 14 May 2024
 - reference month 2024-04 (February to April 2024), release 11 Jun 2024
 - reference month 2024-05 (March to May 2024), release 18 Jul 2024
+- reference month 2024-06 (April to June 2024), release 13 Aug 2024
 """
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ _MAY_CANONICAL = 'January 2024 to March 2024'
 _MAY_COMPACT = 'January to March 2024'
 _JUNE_TARGET = 'February to April 2024'
 _JULY_TARGET = 'March to May 2024'
+_AUGUST_TARGET = 'April to June 2024'
 
 
 def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
@@ -123,6 +125,28 @@ def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> t
             if len(values) != 1:
                 raise ValueError(f'ambiguous or missing fixed ONS July 2024 companion unemployment headline: {values}')
             return values[0], _JULY_TARGET
+
+    if _AUGUST_TARGET in periods:
+        if re.search(r'\bLabour market overview, UK:\s*August\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-08-13':
+                raise ValueError('ONS August 2024 overview release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*'
+                r'([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+April to June 2024\b', text, flags=re.I)
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS August 2024 overview unemployment headline: {values}')
+            return values[0], _AUGUST_TARGET
+        if re.search(r'\bEmployment in the UK:\s*August\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-08-13':
+                raise ValueError('ONS August 2024 companion release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate for April to June 2024\s*\('
+                r'([0-9]+(?:\.[0-9]+)?)%\)\s+is below estimates of a year ago', text, flags=re.I)
+            values = list(dict.fromkeys(float(v) for v in matches))
+            if len(values) != 1:
+                raise ValueError(f'ambiguous or missing fixed ONS August 2024 companion unemployment headline: {values}')
+            return values[0], _AUGUST_TARGET
 
     return _ORIGINAL_HEADLINE(text, periods)
 
