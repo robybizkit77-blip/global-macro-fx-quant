@@ -16,6 +16,7 @@ import re
 import time
 from datetime import date
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
 
@@ -32,9 +33,9 @@ MONTHS_DE = (
     "Juli", "August", "September", "Oktober", "November", "Dezember",
 )
 MONTH_NUMBER = {name: i + 1 for i, name in enumerate(MONTHS_DE)}
-ARCHIVE_ROOT = (
-    BASE + "/seco/de/home/Publikationen_Dienstleistungen/Publikationen_und_Formulare/"
-    "Arbeit/Arbeitslosenversicherung/Die_Lage_auf_dem_Arbeitsmarkt"
+DAM_ROOT = (
+    BASE + "/dam/seco/de/dokumente/Publikationen_Dienstleistungen/Publikationen_Formulare/"
+    "Arbeit/Arbeitslosenversicherung/Die%20Lage%20auf%20dem%20Arbeitsmarkt"
 )
 
 
@@ -65,14 +66,18 @@ def parse_release_date(text: str) -> str:
         r"Veröffentlicht am\s+(\d{1,2})\.\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})",
         r"(?:Bern|Neuchâtel|Neuenburg),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})",
         r"(?:Pressedokumentation|Mediendokumentation),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})",
+        r"\b(\d{1,2})\.\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})\b",
     )
     m = re.search(patterns[0], text)
     if m:
         return date(int(m.group(3)), MONTH_NUMBER[m.group(2)], int(m.group(1))).isoformat()
-    for pattern in patterns[1:]:
+    for pattern in patterns[1:3]:
         m = re.search(pattern, text)
         if m:
             return date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
+    m = re.search(patterns[3], text[:1200])
+    if m:
+        return date(int(m.group(3)), MONTH_NUMBER[m.group(2)], int(m.group(1))).isoformat()
     raise ValueError("SECO release date missing")
 
 
@@ -99,65 +104,55 @@ def discover_newnsb(year: int, month: int) -> dict | None:
         raise ValueError(f"SECO newnsb release ambiguity {year:04d}-{month:02d}: {candidates}")
     if not candidates:
         return None
-    return {"kind": "html", "url": candidates[0], "release_date_hint": None,
+    return {"kind": "html", "url": candidates[0],
             "source_route": "SECO_PERIOD_SPECIFIC_NEWNSB_RELEASE"}
 
 
-def discover_annual_archive(year: int, month: int) -> dict:
-    archive_url = f"{ARCHIVE_ROOT}/Lage_Arbeitsmarkt_{year}.html"
-    raw, final_archive_url = fetch(archive_url)
-    soup = BeautifulSoup(raw, "html.parser")
+def direct_pdf_candidates(year: int, month: int) -> list[str]:
+    yy = year % 100
+    mm = f"{month:02d}"
     month_name = MONTHS_DE[month - 1]
-    detail_hits = []
-    for a in soup.find_all("a", href=True):
-        label = re.sub(r"\s+", " ", " ".join(a.stripped_strings))
-        if "Lage auf dem Arbeitsmarkt" in label and month_name in label and str(year) in label:
-            detail_hits.append(urljoin(final_archive_url, a["href"]))
-    detail_hits = list(dict.fromkeys(detail_hits))
-    if len(detail_hits) != 1:
-        raise ValueError(f"SECO annual archive detail ambiguity {year:04d}-{month:02d}: {detail_hits}")
+    folders = [
+        f"Lage_arbeitsmarkt_{year}",
+        f"Arbeitsmarkt_{year}",
+        f"arbeitsmarkt_{year}",
+        f"lage_arbeitsmarkt_{year}",
+    ]
+    files = [
+        f"Publikation_{month_name}_{year}.pdf.download.pdf/PRESSEDOK{yy:02d}{mm}_D.pdf",
+        f"alz_{mm}_{yy:02d}.pdf.download.pdf/PRESSEDOK{yy:02d}{mm}_D.pdf",
+        f"ALZ_{mm}_{yy:02d}.pdf.download.pdf/PRESSEDOK{yy:02d}{mm}_D.pdf",
+        f"ALZ_PRESSEDOK_{yy:02d}{mm}.pdf.download.pdf/PRESSEDOK{yy:02d}{mm}_D.pdf",
+        f"pressedok_alz_{mm}_{yy:02d}.pdf.download.pdf/pressedok_alz_{mm}_{yy:02d}_de.pdf",
+        f"alz_{mm}_{year}.pdf.download.pdf/PRESSEDOK{yy:02d}{mm}_D.pdf",
+    ]
+    return [f"{DAM_ROOT}/{folder}/{file_name}" for folder in folders for file_name in files]
 
-    # Bind the release date to the exact monthly heading on the official annual archive page.
-    heading = None
-    for tag in soup.find_all(["h2", "h3", "h4"]):
-        txt = re.sub(r"\s+", " ", " ".join(tag.stripped_strings))
-        if "Lage auf dem Arbeitsmarkt" in txt and month_name in txt and str(year) in txt:
-            heading = tag
-            break
-    if heading is None:
-        raise ValueError(f"SECO annual archive heading missing {year:04d}-{month:02d}")
-    release_date_hint = None
-    node = heading.find_next()
-    for _ in range(8):
-        if node is None:
-            break
-        txt = re.sub(r"\s+", " ", " ".join(node.stripped_strings)) if hasattr(node, "stripped_strings") else ""
-        m = re.search(r"(?:Pressedokumentation|Mediendokumentation),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})", txt)
-        if m:
-            release_date_hint = date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
-            break
-        node = node.find_next()
-    if release_date_hint is None:
-        raise ValueError(f"SECO annual archive release date missing {year:04d}-{month:02d}")
 
-    detail_raw, detail_final = fetch(detail_hits[0])
-    detail_soup = BeautifulSoup(detail_raw, "html.parser")
-    pdfs = []
-    for a in detail_soup.find_all("a", href=True):
-        href = urljoin(detail_final, a["href"])
-        low = href.lower()
-        if ".pdf" in low and ("dam/seco/" in low or ".pdf.download.pdf" in low):
-            pdfs.append(href)
-    pdfs = list(dict.fromkeys(pdfs))
-    if len(pdfs) != 1:
-        raise ValueError(f"SECO annual archive PDF ambiguity {year:04d}-{month:02d}: {pdfs}")
-    return {"kind": "pdf", "url": pdfs[0], "release_date_hint": release_date_hint,
-            "source_route": "SECO_PERIOD_SPECIFIC_ANNUAL_ARCHIVE_PDF"}
+def discover_direct_pdf(year: int, month: int) -> dict:
+    hits: list[tuple[str, str]] = []
+    for candidate in direct_pdf_candidates(year, month):
+        try:
+            raw, final_url = fetch(candidate)
+        except HTTPError as exc:
+            if exc.code == 404:
+                continue
+            raise
+        if not raw.startswith(b"%PDF"):
+            continue
+        hits.append((final_url, hashlib.sha256(raw).hexdigest()))
+    if not hits:
+        raise ValueError(f"SECO direct PDF discovery failed {year:04d}-{month:02d}")
+    hashes = {sha for _, sha in hits}
+    if len(hashes) != 1:
+        raise ValueError(f"SECO direct PDF ambiguity {year:04d}-{month:02d}: {hits}")
+    return {"kind": "pdf", "url": hits[0][0],
+            "source_route": "SECO_PERIOD_SPECIFIC_DIRECT_PDF"}
 
 
 def discover_release(year: int, month: int) -> dict:
     modern = discover_newnsb(year, month)
-    return modern if modern is not None else discover_annual_archive(year, month)
+    return modern if modern is not None else discover_direct_pdf(year, month)
 
 
 def pdf_text(raw: bytes) -> str:
@@ -186,10 +181,9 @@ def materialize_row(year: int, month: int) -> dict:
     raw, final_url = fetch(source["url"])
     if source["kind"] == "pdf":
         text = pdf_text(raw)
-        release_date = source["release_date_hint"]
     else:
         text = BeautifulSoup(raw, "html.parser").get_text(" ", strip=True)
-        release_date = parse_release_date(text)
+    release_date = parse_release_date(text)
     value = parse_rate(text, year, month)
     start, end = release_window(year, month)
     if not (start <= release_date <= end):
