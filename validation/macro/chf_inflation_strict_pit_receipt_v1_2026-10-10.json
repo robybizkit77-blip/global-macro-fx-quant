@@ -1,0 +1,53 @@
+{
+  "schema": "GMFQ_CHF_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "CHF.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "1ae783426d1045bd6063833fbe93b35aa3958c61",
+  "validated_source_sha": "e0b5548c7a557de6c2f5b3c10b576e61cbea9093",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-09",
+    "expected_months": 105,
+    "materialized_months": 105
+  },
+  "unique_source_hashes": 105,
+  "semantic_rowset_sha256": "70d79230bad25f9c99b71fc5971c52d25219e942c187688f9c6f7e841a2a0b73",
+  "materializer_run_id": 38085842478,
+  "engine_logic_audit_run_id": 38085842499,
+  "staging_browser_audit_run_id": 38085842439,
+  "artifact_id": 11681952627,
+  "artifact_name": "chf-inflation-strict-pit-v1-38085842478",
+  "artifact_digest": "sha256:3808d1fcbebc0a2029d48ed9074ce74706fc9bf7664a787a69ed71a314fdf701",
+  "artifact_expires_at": "2027-01-08T20:58:43Z",
+  "checks": {
+    "official_period_specific_sfso_releases_only": true,
+    "official_embargo_timestamp_required": true,
+    "source_hash_uniqueness": true,
+    "double_replay_semantic_match": true,
+    "no_current_revised_history": true,
+    "no_revised_history_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "anchors_verified": {
+    "2018-01": {
+      "rate": 0.7,
+      "release_date": "2018-02-12"
+    },
+    "2026-07": {
+      "rate": 0.4,
+      "release_date": "2026-08-03"
+    },
+    "2026-09": {
+      "rate": 1.0,
+      "release_date": "2026-10-01"
+    }
+  },
+  "exception_verified": {
+    "2026-05": "Pinned official SFSO DAM asset 36667258 because the EN metadata title is exactly 'Swiss Consumer Price Index in Mai 2026'; no broad multilingual matcher or revised-history fallback is used"
+  }
+}
