@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_EUR_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "EUR.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "6d2bcc5f7750b29d0b562ac16b683a8ffc77d614",
+  "validated_source_sha": "53f4b8f6477d0a8d49dc85a3529cb169e748cd9f",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "unique_page_hashes": 104,
+  "semantic_rowset_sha256": "b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9",
+  "materializer_run_id": 38076288187,
+  "engine_logic_audit_run_id": 38076288221,
+  "staging_browser_audit_run_id": 38076288153,
+  "artifact_id": 11678794954,
+  "artifact_digest": "sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677",
+  "checks": {
+    "official_period_specific_eurostat_releases_only": true,
+    "double_replay_semantic_match": true,
+    "no_revised_history_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "11/16"
+  }
+}
