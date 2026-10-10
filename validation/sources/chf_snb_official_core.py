@@ -69,8 +69,8 @@ def build(dim,fixture=None):
   f=load(fixture);date=f['observation_date'];raw=float(f.get('raw_value',f['value']));value=float(f['value']);mode='fixture';source_url=f.get('source_url') or url
  else:
   ts=select_series(fetch_json(url),c['series_label']);ym,raw=latest_value(ts);date=ym+'-01';mode='live';source_url=url
-  value=round(raw,1) if dim=='inflation' else raw
- norm='round_to_1_decimal_reported_rate' if dim=='inflation' else 'none'
+  value=round(raw,1)
+ norm='round_to_1_decimal_official_reported_rate'
  cand={'currency':'CHF','dimension':dim,'macro_series_id':target,'observation_date':date,'value':value,'source':c['source'],'source_url':source_url,'series_id':c['series_id'],'frequency':c['frequency'],'transformation':c['transformation'],'unit':c['unit']}
  audit={'candidate_only':True,'live_data_written':False,'mode':mode,'source_url':source_url,'retrieval_url':url,'upstream_cube':c['cube'],'upstream_series_label':c['series_label'],'observation_date':date,'raw_value':raw,'value':value,'normalization':norm}
  return cand,audit
