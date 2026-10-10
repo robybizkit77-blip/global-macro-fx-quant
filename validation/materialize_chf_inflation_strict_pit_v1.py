@@ -99,7 +99,11 @@ def release_asset(year: int, month: int) -> dict:
         # explicit identity rule rather than loosening title matching.
         title_matches_period = f"{MONTHS[month - 1]} {year}" in super_title
         title_matches_annual_december = month == 12 and f"December and annual inflation {year}" in super_title
-        if not (title_matches_period or title_matches_annual_december) or len(masters) != 1:
+        # The EN metadata of just this immutable release carries the German
+        # spelling "Mai".  Pin its official asset identity rather than permit
+        # a broad multilingual title match.
+        title_matches_known_metadata_exception = (year, month) == (2026, 5) and super_title == "Swiss Consumer Price Index in Mai 2026" and item.get("ids", {}).get("damId") == 36667258
+        if not (title_matches_period or title_matches_annual_december or title_matches_known_metadata_exception) or len(masters) != 1:
             continue
         if item.get("description", {}).get("language") != "EN":
             continue
