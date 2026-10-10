@@ -1,0 +1,65 @@
+{
+  "schema": "GMFQ_GBP_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "GBP.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "UK Office for National Statistics",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "series_contract": {
+    "series_id": "D7G7",
+    "frequency": "M",
+    "transformation": "reported_yoy_rate",
+    "unit": "% YoY"
+  },
+  "route_counts": {
+    "ONS_CONSUMER_PRICE_INFLATION_BULLETIN": 104
+  },
+  "unique_page_hashes": 104,
+  "semantic_rowset_sha256": "a21890a6abca07c18180b94487b3440e9a7c390f203c9223d2fd639fcb1ff715",
+  "semantic_fingerprint_serialization": "canonical JSON; reference month, headline CPI YoY rate, release date, source route, PIT status",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "headline_cpi_yoy_pct",
+    "release_date",
+    "source_route",
+    "pit_status"
+  ],
+  "anchor_checks": {
+    "2018-01": {"rate": 3.0, "release_date": "2018-02-13"},
+    "2020-01": {"rate": 1.8, "release_date": "2020-02-19"},
+    "2021-01": {"rate": 0.7, "release_date": "2021-02-17"},
+    "2022-10": {"rate": 11.1, "release_date": "2022-11-16"},
+    "2023-10": {"rate": 4.6, "release_date": "2023-11-15"},
+    "2026-07": {"rate": 2.9, "release_date": "2026-08-19"},
+    "2026-08": {"rate": 3.1, "release_date": "2026-09-16"}
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_date_required": true,
+    "url_and_sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "source_validation": {
+    "base_main_sha": "cd9a6ca3ba5e57793a49d60361196b2698b48b30",
+    "validated_source_sha": "5ef3b6ba0bc525b77999571116a1d049a04da65c",
+    "materializer_run_id": 38044919651,
+    "engine_logic_audit_run_id": 38044919699,
+    "staging_browser_audit_run_id": 38044919741,
+    "artifact_id": 11667538364,
+    "artifact_digest": "sha256:0130cadcbb0369e2cae178778aea1f0ed81f8ff608bf89b07dd7703f3cbd90a5",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
