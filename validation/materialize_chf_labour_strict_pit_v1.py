@@ -16,7 +16,7 @@ import re
 import time
 from datetime import date
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
 
@@ -37,6 +37,7 @@ DAM_ROOT = (
     BASE + "/dam/seco/de/dokumente/Publikationen_Dienstleistungen/Publikationen_Formulare/"
     "Arbeit/Arbeitslosenversicherung/Die%20Lage%20auf%20dem%20Arbeitsmarkt"
 )
+TRANSIENT_HTTP = {429, 500, 502, 503, 504}
 
 
 def months():
@@ -46,11 +47,31 @@ def months():
         year, month = (year + 1, 1) if month == 12 else (year, month + 1)
 
 
-def fetch(url: str) -> tuple[bytes, str]:
-    req = Request(url, headers={"User-Agent": UA, "Accept-Language": "de"})
-    with urlopen(req, timeout=60) as response:
-        raw = response.read()
-        return raw, response.geturl()
+def fetch(url: str, attempts: int = 5) -> tuple[bytes, str]:
+    last_exc: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        req = Request(
+            url,
+            headers={
+                "User-Agent": UA,
+                "Accept-Language": "de",
+                "Accept": "text/html,application/pdf;q=0.9,*/*;q=0.8",
+            },
+        )
+        try:
+            with urlopen(req, timeout=60) as response:
+                raw = response.read()
+                return raw, response.geturl()
+        except HTTPError as exc:
+            last_exc = exc
+            if exc.code not in TRANSIENT_HTTP or attempt == attempts:
+                raise
+        except URLError as exc:
+            last_exc = exc
+            if attempt == attempts:
+                raise
+        time.sleep(min(2 ** (attempt - 1), 8))
+    raise RuntimeError(f"SECO fetch exhausted retries for {url}: {last_exc}")
 
 
 def release_window(year: int, month: int) -> tuple[str, str]:
@@ -131,17 +152,25 @@ def direct_pdf_candidates(year: int, month: int) -> list[str]:
 
 def discover_direct_pdf(year: int, month: int) -> dict:
     hits: list[tuple[str, str]] = []
+    transient_failures: list[tuple[str, int]] = []
     for candidate in direct_pdf_candidates(year, month):
         try:
             raw, final_url = fetch(candidate)
         except HTTPError as exc:
             if exc.code == 404:
                 continue
+            if exc.code in TRANSIENT_HTTP:
+                transient_failures.append((candidate, exc.code))
+                continue
             raise
         if not raw.startswith(b"%PDF"):
             continue
         hits.append((final_url, hashlib.sha256(raw).hexdigest()))
     if not hits:
+        if transient_failures:
+            raise RuntimeError(
+                f"SECO direct PDF transport unresolved {year:04d}-{month:02d}: {transient_failures}"
+            )
         raise ValueError(f"SECO direct PDF discovery failed {year:04d}-{month:02d}")
     hashes = {sha for _, sha in hits}
     if len(hashes) != 1:
