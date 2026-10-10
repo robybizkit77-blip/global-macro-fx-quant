@@ -46,13 +46,23 @@ def urls_for(d:date):
     ]
 
 def fetch(url:str):
-    req=urllib.request.Request(url,headers={'User-Agent':'global-macro-fx-quant/1.0 strict-pit'})
-    try:
-        with urllib.request.urlopen(req,timeout=25) as r:
-            raw=r.read(); final=r.geturl(); return raw,final
-    except urllib.error.HTTPError as e:
-        if e.code in (404,410): return None
-        raise
+    # Transport-only resilience: retry HTTP 429 on the exact same official URL.
+    # Do not broaden routes, dates, or sources after throttling.
+    delays=(1.0,2.0,4.0,8.0,12.0)
+    for attempt in range(len(delays)+1):
+        req=urllib.request.Request(url,headers={'User-Agent':'global-macro-fx-quant/1.0 strict-pit'})
+        try:
+            with urllib.request.urlopen(req,timeout=25) as r:
+                raw=r.read(); final=r.geturl(); return raw,final
+        except urllib.error.HTTPError as e:
+            if e.code in (404,410): return None
+            if e.code==429 and attempt < len(delays):
+                retry_after=e.headers.get('Retry-After') if e.headers else None
+                try: delay=max(delays[attempt],float(retry_after)) if retry_after else delays[attempt]
+                except (TypeError,ValueError): delay=delays[attempt]
+                time.sleep(delay)
+                continue
+            raise
 
 def parse_period(text:str,y:int,m:int):
     month=MONTHS[m-1].capitalize(); period=f'{month} {y}'
@@ -94,7 +104,7 @@ def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--csv',required=True); ap.add_argument('--evidence',required=True); a=ap.parse_args()
     rows=[]; total=105
     for i,(y,m) in enumerate(months(),1):
-        r=one(y,m); rows.append(r); print(f'[{i:03d}/{total}] {r["reference_month"]} HICP_FLASH={r["headline_hicp_yoy_pct"]} release={r["release_date"]}',flush=True); time.sleep(.02)
+        r=one(y,m); rows.append(r); print(f'[{i:03d}/{total}] {r["reference_month"]} HICP_FLASH={r["headline_hicp_yoy_pct"]} release={r["release_date"]}',flush=True); time.sleep(.10)
     assert len(rows)==105 and rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-09'
     assert len({r['page_sha256'] for r in rows})==105
     by={r['reference_month']:r for r in rows}
