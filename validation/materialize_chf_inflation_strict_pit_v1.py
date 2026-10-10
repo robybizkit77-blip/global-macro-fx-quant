@@ -101,6 +101,8 @@ def release_asset(year: int, month: int) -> dict:
         title_matches_annual_december = month == 12 and f"December and annual inflation {year}" in super_title
         if not (title_matches_period or title_matches_annual_december) or len(masters) != 1:
             continue
+        if item.get("description", {}).get("language") != "EN":
+            continue
         if item.get("bfs", {}).get("articleModel", {}).get("code") != "MM":
             continue
         candidates.append((item, masters[0], embargo))
