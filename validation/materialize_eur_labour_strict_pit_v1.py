@@ -33,9 +33,9 @@ SEMANTIC_KEYS = [
 MIN_REQUEST_INTERVAL_SECONDS = 1.0
 _LAST_REQUEST_AT = 0.0
 
-# Exact official period-specific Eurostat URLs already captured successfully in
-# prior strict-PIT runs. Reusing them avoids rediscovery traffic only; every run
-# still fetches the official publisher artifact and re-hashes/re-parses it.
+# Exact official period-specific Eurostat URLs already captured or independently
+# verified. These entries avoid rediscovery traffic only: every run still fetches,
+# re-hashes and re-parses the official publisher artifact.
 RESOLVED_RELEASES = {
     (2018, 1): ("2018-03-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01032018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
     (2018, 2): ("2018-04-04", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-04042018-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
@@ -60,6 +60,9 @@ RESOLVED_RELEASES = {
     (2019, 9): ("2019-10-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31102019-CP", "EUROSTAT_UNEMPLOYMENT_LEGACY_CP"),
     (2019, 10): ("2019-11-29", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-29112019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
     (2019, 11): ("2020-01-09", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-09012020-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2019, 12): ("2020-01-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30012020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2020, 1): ("2020-03-03", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-03032020-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2020, 2): ("2020-04-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01042020-ap", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
 }
 
 
@@ -119,14 +122,14 @@ def urls_for(d: date):
     key = d.strftime("%d%m%Y")
     if d.year <= 2024:
         return [
-            (f"EUROSTAT_UNEMPLOYMENT_LEGACY_{suffix}",
+            (f"EUROSTAT_UNEMPLOYMENT_LEGACY_{suffix.upper()}",
              f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-{key}-{suffix}")
-            for suffix in ("AP", "BP", "CP")
+            for suffix in ("ap", "bp", "cp")
         ]
     return [
-        (f"EUROSTAT_UNEMPLOYMENT_WEB_{suffix}",
-         f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-{key}-{suffix.lower()}")
-        for suffix in ("AP", "BP", "CP")
+        (f"EUROSTAT_UNEMPLOYMENT_WEB_{suffix.upper()}",
+         f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-{key}-{suffix}")
+        for suffix in ("ap", "bp", "cp")
     ]
 
 
@@ -159,8 +162,7 @@ def fetch(url: str):
                     delay = min(120.0, 15.0 * (2 ** attempt))
                 print(
                     f"[transport] Eurostat 429; retry same URL in {delay:.0f}s "
-                    f"attempt={attempt + 1}/8",
-                    flush=True,
+                    f"attempt={attempt + 1}/8", flush=True,
                 )
                 time.sleep(delay)
                 continue
@@ -170,8 +172,7 @@ def fetch(url: str):
                 delay = min(120.0, 10.0 * (2 ** attempt))
                 print(
                     f"[transport] Eurostat transient {type(e).__name__}; retry same URL "
-                    f"in {delay:.0f}s attempt={attempt + 1}/8",
-                    flush=True,
+                    f"in {delay:.0f}s attempt={attempt + 1}/8", flush=True,
                 )
                 time.sleep(delay)
                 continue
@@ -191,10 +192,7 @@ def parse_period(text: str, y: int, m: int):
     hits = []
     for i, p in enumerate(pats):
         for x in re.finditer(p, text, re.I):
-            if i < 2:
-                hits.append((x.group(1).upper(), float(x.group(2))))
-            else:
-                hits.append(("EA_CURRENT_RELEASE", float(x.group(1))))
+            hits.append((x.group(1).upper(), float(x.group(2))) if i < 2 else ("EA_CURRENT_RELEASE", float(x.group(1))))
     uniq = []
     for g, v in hits:
         if (g, v) not in uniq:
@@ -225,14 +223,10 @@ def capture_one(y: int, m: int, raw_dir: Path) -> dict:
         filename = f"{ref}.html"
         (raw_dir / filename).write_bytes(raw)
         return {
-            "reference_month": ref,
-            "release_date": release_date,
-            "source_url": final,
-            "source_route": route,
-            "raw_file": filename,
+            "reference_month": ref, "release_date": release_date,
+            "source_url": final, "source_route": route, "raw_file": filename,
             "page_sha256": hashlib.sha256(raw).hexdigest(),
-            "capture_parse_geo": geo,
-            "capture_parse_value": value,
+            "capture_parse_geo": geo, "capture_parse_value": value,
         }
     for d in candidate_dates(y, m):
         for route, url in urls_for(d):
@@ -247,14 +241,10 @@ def capture_one(y: int, m: int, raw_dir: Path) -> dict:
             filename = f"{ref}.html"
             (raw_dir / filename).write_bytes(raw)
             return {
-                "reference_month": ref,
-                "release_date": d.isoformat(),
-                "source_url": final,
-                "source_route": route,
-                "raw_file": filename,
+                "reference_month": ref, "release_date": d.isoformat(),
+                "source_url": final, "source_route": route, "raw_file": filename,
                 "page_sha256": hashlib.sha256(raw).hexdigest(),
-                "capture_parse_geo": geo,
-                "capture_parse_value": value,
+                "capture_parse_geo": geo, "capture_parse_value": value,
             }
     raise ValueError(f"no official Eurostat unemployment first release found for {ref}")
 
@@ -266,14 +256,11 @@ def capture(raw_dir: Path) -> int:
     for i, (y, m) in enumerate(months(), 1):
         rec = capture_one(y, m, raw_dir)
         manifest.append(rec)
-        (raw_dir / "manifest.json").write_text(
-            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-        )
+        (raw_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         print(
             f"[capture {i:03d}/{total}] {rec['reference_month']} "
             f"UNEMP={rec['capture_parse_value']} geo={rec['capture_parse_geo']} "
-            f"release={rec['release_date']}",
-            flush=True,
+            f"release={rec['release_date']}", flush=True,
         )
     assert len(manifest) == 104
     return 0
@@ -291,14 +278,10 @@ def replay_row(rec: dict, raw_dir: Path) -> dict:
         raise ValueError(f"replay parser did not recover unemployment headline for {ref}")
     geo, value = parsed
     return {
-        "reference_month": ref,
-        "unemployment_rate_pct": value,
-        "release_date": rec["release_date"],
-        "release_geo_vintage": geo,
-        "source_url": rec["source_url"],
-        "page_sha256": sha,
-        "source_route": rec["source_route"],
-        "pit_status": "STRICT_FIRST_RELEASE",
+        "reference_month": ref, "unemployment_rate_pct": value,
+        "release_date": rec["release_date"], "release_geo_vintage": geo,
+        "source_url": rec["source_url"], "page_sha256": sha,
+        "source_route": rec["source_route"], "pit_status": "STRICT_FIRST_RELEASE",
     }
 
 
@@ -315,20 +298,13 @@ def write_outputs(csv_path: Path, evidence_path: Path, rows: list[dict]) -> None
         w = csv.DictWriter(f, fieldnames=ROW_KEYS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
-
     ev = {
         "schema": "GMFQ_EUR_LABOUR_STRICT_PIT_EVIDENCE_V1_RUNTIME",
-        "status": "PASS",
-        "target": "EUR.labour",
-        "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
-        "authority": "Eurostat",
-        "coverage": {
-            "start": "2018-01", "end": "2026-08",
-            "expected_months": 104, "materialized_months": len(rows),
-        },
+        "status": "PASS", "target": "EUR.labour",
+        "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT", "authority": "Eurostat",
+        "coverage": {"start": "2018-01", "end": "2026-08", "expected_months": 104, "materialized_months": len(rows)},
         "series_contract": {
-            "series_id": "EA_UNEMP", "frequency": "M",
-            "transformation": "level", "unit": "%",
+            "series_id": "EA_UNEMP", "frequency": "M", "transformation": "level", "unit": "%",
             "first_release_semantics": "MONTHLY_UNEMPLOYMENT_HEADLINE_AS_PUBLISHED",
             "geography_semantics": "CONTEMPORANEOUS_EURO_AREA_COMPOSITION_AS_PUBLISHED",
         },
@@ -336,12 +312,9 @@ def write_outputs(csv_path: Path, evidence_path: Path, rows: list[dict]) -> None
         "semantic_rowset_sha256": digest(rows),
         "semantic_fingerprint_fields": SEMANTIC_KEYS,
         "strict_rules": {
-            "official_publisher_only": True,
-            "period_specific_release_artifact_required": True,
-            "publication_date_required": True,
-            "url_and_sha256_required": True,
-            "current_revised_history_forbidden": True,
-            "revised_history_fallback_used": False,
+            "official_publisher_only": True, "period_specific_release_artifact_required": True,
+            "publication_date_required": True, "url_and_sha256_required": True,
+            "current_revised_history_forbidden": True, "revised_history_fallback_used": False,
             "network_capture_once_replay_twice": True,
         },
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -350,8 +323,7 @@ def write_outputs(csv_path: Path, evidence_path: Path, rows: list[dict]) -> None
 
 
 def replay(raw_dir: Path, csv_path: Path, evidence_path: Path) -> int:
-    manifest_path = raw_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = json.loads((raw_dir / "manifest.json").read_text(encoding="utf-8"))
     if len(manifest) != 104:
         raise ValueError(f"expected 104 captured releases, got {len(manifest)}")
     rows = [replay_row(rec, raw_dir) for rec in manifest]
@@ -376,15 +348,12 @@ def replay(raw_dir: Path, csv_path: Path, evidence_path: Path) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="mode", required=True)
-
     cap = sub.add_parser("capture")
     cap.add_argument("--raw-dir", type=Path, required=True)
-
     rep = sub.add_parser("replay")
     rep.add_argument("--raw-dir", type=Path, required=True)
     rep.add_argument("--csv", type=Path, required=True)
     rep.add_argument("--evidence", type=Path, required=True)
-
     args = ap.parse_args()
     if args.mode == "capture":
         return capture(args.raw_dir)
