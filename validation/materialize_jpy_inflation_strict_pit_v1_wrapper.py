@@ -29,7 +29,7 @@ def parse_headline_yoy_with_official_narrative_fallback(text: str) -> float:
         if len(matches) != 1:
             raise original_error
 
-        return float(matches[0].group(2))
+        return float(matches[0].group(1))
 
 
 base.parse_headline_yoy = parse_headline_yoy_with_official_narrative_fallback
