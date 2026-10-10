@@ -5,7 +5,6 @@ on:
     branches: ['validation-gbp-labour-strict-pit-v1-*']
     paths:
       - 'validation/materialize_gbp_labour_strict_pit_v1.py'
-      - 'validation/materialize_gbp_labour_strict_pit_v1_2024_patch.py'
       - '.github/workflows/gbp-labour-strict-pit-materialize-v1.yml'
   workflow_dispatch:
 
@@ -26,8 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/gbp-labour-strict/{a,b}
-          python validation/materialize_gbp_labour_strict_pit_v1_2024_patch.py --csv /tmp/gbp-labour-strict/a/GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_06.csv --evidence /tmp/gbp-labour-strict/a/evidence.json
-          python validation/materialize_gbp_labour_strict_pit_v1_2024_patch.py --csv /tmp/gbp-labour-strict/b/GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_06.csv --evidence /tmp/gbp-labour-strict/b/evidence.json
+          python validation/materialize_gbp_labour_strict_pit_v1.py --csv /tmp/gbp-labour-strict/a/GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_06.csv --evidence /tmp/gbp-labour-strict/a/evidence.json
+          python validation/materialize_gbp_labour_strict_pit_v1.py --csv /tmp/gbp-labour-strict/b/GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_06.csv --evidence /tmp/gbp-labour-strict/b/evidence.json
       - name: Enforce semantic equivalence and strict direct PIT invariants
         shell: bash
         run: |
