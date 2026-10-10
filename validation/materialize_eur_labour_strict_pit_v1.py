@@ -5,6 +5,7 @@ import argparse
 import csv
 import hashlib
 import html
+import http.client
 import json
 import re
 import time
@@ -31,6 +32,35 @@ SEMANTIC_KEYS = [
 ]
 MIN_REQUEST_INTERVAL_SECONDS = 1.0
 _LAST_REQUEST_AT = 0.0
+
+# Exact official period-specific Eurostat URLs already captured successfully in
+# prior strict-PIT runs. Reusing them avoids rediscovery traffic only; every run
+# still fetches the official publisher artifact and re-hashes/re-parses it.
+RESOLVED_RELEASES = {
+    (2018, 1): ("2018-03-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01032018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 2): ("2018-04-04", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-04042018-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2018, 3): ("2018-05-02", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-02052018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 4): ("2018-05-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31052018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 5): ("2018-07-02", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-02072018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 6): ("2018-07-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31072018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 7): ("2018-08-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31082018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 8): ("2018-10-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01102018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 9): ("2018-10-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31102018-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2018, 10): ("2018-11-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30112018-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2018, 11): ("2019-01-09", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-09012019-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2018, 12): ("2019-01-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31012019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 1): ("2019-03-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01032019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 2): ("2019-04-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01042019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 3): ("2019-04-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30042019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 4): ("2019-06-04", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-04062019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 5): ("2019-07-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01072019-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2019, 6): ("2019-07-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31072019-CP", "EUROSTAT_UNEMPLOYMENT_LEGACY_CP"),
+    (2019, 7): ("2019-08-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30082019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 8): ("2019-09-30", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-30092019-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+    (2019, 9): ("2019-10-31", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-31102019-CP", "EUROSTAT_UNEMPLOYMENT_LEGACY_CP"),
+    (2019, 10): ("2019-11-29", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-29112019-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
+    (2019, 11): ("2020-01-09", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-09012020-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
+}
 
 
 class Text(HTMLParser):
@@ -87,17 +117,17 @@ def candidate_dates(y: int, m: int):
 
 def urls_for(d: date):
     key = d.strftime("%d%m%Y")
-    legacy, modern = [], []
-    for suffix in ("AP", "BP", "CP"):
-        legacy.append((
-            f"EUROSTAT_UNEMPLOYMENT_LEGACY_{suffix}",
-            f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-{key}-{suffix}",
-        ))
-        modern.append((
-            f"EUROSTAT_UNEMPLOYMENT_WEB_{suffix}",
-            f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-{key}-{suffix.lower()}",
-        ))
-    return legacy + modern if d.year <= 2024 else modern + legacy
+    if d.year <= 2024:
+        return [
+            (f"EUROSTAT_UNEMPLOYMENT_LEGACY_{suffix}",
+             f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-{key}-{suffix}")
+            for suffix in ("AP", "BP", "CP")
+        ]
+    return [
+        (f"EUROSTAT_UNEMPLOYMENT_WEB_{suffix}",
+         f"https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-{key}-{suffix.lower()}")
+        for suffix in ("AP", "BP", "CP")
+    ]
 
 
 def throttle() -> None:
@@ -130,6 +160,17 @@ def fetch(url: str):
                 print(
                     f"[transport] Eurostat 429; retry same URL in {delay:.0f}s "
                     f"attempt={attempt + 1}/8",
+                    flush=True,
+                )
+                time.sleep(delay)
+                continue
+            raise
+        except (http.client.RemoteDisconnected, urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            if attempt < 7:
+                delay = min(120.0, 10.0 * (2 ** attempt))
+                print(
+                    f"[transport] Eurostat transient {type(e).__name__}; retry same URL "
+                    f"in {delay:.0f}s attempt={attempt + 1}/8",
                     flush=True,
                 )
                 time.sleep(delay)
@@ -170,6 +211,29 @@ def parse_period(text: str, y: int, m: int):
 
 def capture_one(y: int, m: int, raw_dir: Path) -> dict:
     ref = f"{y:04d}-{m:02d}"
+    resolved = RESOLVED_RELEASES.get((y, m))
+    if resolved:
+        release_date, url, route = resolved
+        got = fetch(url)
+        if got is None:
+            raise ValueError(f"resolved official Eurostat unemployment release missing for {ref}: {url}")
+        raw, final = got
+        parsed = parse_period(text_from_html(raw), y, m)
+        if parsed is None:
+            raise ValueError(f"resolved official Eurostat release failed semantic parse for {ref}: {url}")
+        geo, value = parsed
+        filename = f"{ref}.html"
+        (raw_dir / filename).write_bytes(raw)
+        return {
+            "reference_month": ref,
+            "release_date": release_date,
+            "source_url": final,
+            "source_route": route,
+            "raw_file": filename,
+            "page_sha256": hashlib.sha256(raw).hexdigest(),
+            "capture_parse_geo": geo,
+            "capture_parse_value": value,
+        }
     for d in candidate_dates(y, m):
         for route, url in urls_for(d):
             got = fetch(url)
