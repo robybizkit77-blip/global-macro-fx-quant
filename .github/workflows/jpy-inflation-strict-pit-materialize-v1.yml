@@ -1,0 +1,62 @@
+name: JPY Inflation Strict PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - validation-jpy-inflation-strict-pit-v1-2026-10-10
+    paths:
+      - validation/materialize_jpy_inflation_strict_pit_v1.py
+      - validation/materialize_jpy_inflation_strict_pit_v1_wrapper.py
+      - .github/workflows/jpy-inflation-strict-pit-materialize-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF parser
+        run: python -m pip install --disable-pip-version-check pypdf==5.9.0
+      - name: Capture official Statistics Bureau archived CPI releases once
+        run: |
+          mkdir -p validation/runtime
+          python validation/materialize_jpy_inflation_strict_pit_v1_wrapper.py \
+            --output validation/runtime/jpy_inflation_strict_pit_evidence_v1_runtime.json
+      - name: Validate strict PIT invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/runtime/jpy_inflation_strict_pit_evidence_v1_runtime.json')
+          d=json.loads(p.read_text())
+          assert d['schema']=='GMFQ_JPY_INFLATION_STRICT_PIT_EVIDENCE_V1_RUNTIME'
+          assert d['evidence_class']=='STRICT_DIRECT_ARCHIVAL_PIT'
+          assert d['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected':104,'observed':104}
+          assert d['unique_source_hashes']==104
+          assert d['network_capture_count']==104
+          assert d['replay_count']==2
+          assert d['replay_equal'] is True
+          assert d['current_revised_history_used'] is False
+          assert d['revised_fallback_used'] is False
+          assert len(d['rows'])==104
+          print('STRICT PIT invariants PASS')
+          PY
+      - name: Assert no live writes
+        run: git diff --exit-code -- live_data
+      - name: Upload strict PIT evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpy-inflation-strict-pit-v1-${{ github.run_id }}
+          path: validation/runtime/jpy_inflation_strict_pit_evidence_v1_runtime.json
+          if-no-files-found: error
+          retention-days: 30
