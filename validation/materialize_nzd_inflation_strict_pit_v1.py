@@ -51,14 +51,18 @@ def text_of(raw: bytes) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
-def release_date(page: str) -> str:
+def release_date(page: str, label: str) -> str:
     # Prefer schema.org publication date, which Stats NZ attaches to the exact
     # information-release page.  The visible English date is the narrow
     # fallback and is required to agree when present.
     iso = re.findall(r'"datePublished"\s*:\s*"(20\d{2}-\d{2}-\d{2})(?:T[^"]*)?"', page)
     iso = list(dict.fromkeys(iso))
-    visible = re.findall(r'(?<!\d)([0-3]?\d\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+20\d{2})(?!\d)', page, re.I)
-    visible_dates = list(dict.fromkeys(datetime.strptime(x, "%d %B %Y").date().isoformat() for x in visible))
+    date_pattern = r'([0-3]?\d\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+20\d{2})'
+    # Archive pages contain related-release and download dates.  The first
+    # visible date after this page's exact H1/title is the publication date;
+    # do not treat unrelated dates elsewhere in the same HTML as ambiguity.
+    anchored = re.search(re.escape(label) + r".{0,12000}?" + date_pattern, page, re.I)
+    visible_dates = [] if not anchored else [datetime.strptime(anchored.group(1), "%d %B %Y").date().isoformat()]
     if len(iso) == 1:
         if visible_dates and set(visible_dates) != {iso[0]}:
             raise ValueError(f"Stats NZ publication date conflict: schema={iso}, visible={visible_dates}")
@@ -96,7 +100,7 @@ def parse(raw: bytes, year: int, month: int) -> tuple[float, str]:
     if label.lower() not in page.lower():
         raise ValueError(f"Stats NZ period identity absent: {label}")
     value = headline_yoy(page, year, month)
-    published = release_date(page)
+    published = release_date(page, label)
     if date.fromisoformat(published) <= date(year, month, 1):
         raise ValueError(f"Stats NZ implausible chronology for {year:04d}-{month:02d}: {published}")
     return value, published
