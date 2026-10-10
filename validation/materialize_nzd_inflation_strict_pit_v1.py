@@ -75,6 +75,9 @@ def headline_yoy(page: str, year: int, month: int) -> float:
     # be selected.  A negative rate is explicit in the source wording.
     patterns = (
         rf"CPI (?:increased|rose|fell)\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the 12 months to the {re.escape(period)}",
+        # 2018-era release templates summarise the two rates in this exact
+        # labelled line (eg ``annual: 1.1 percent``), rather than prose.
+        rf"Inflation rates for (?:the )?{re.escape(period)}.*?annual(?:\s+change)?\s*(?:was\s*)?:\s*([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent.*?{re.escape(period)}",
         rf"{re.escape(period)}.*?annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
     )
