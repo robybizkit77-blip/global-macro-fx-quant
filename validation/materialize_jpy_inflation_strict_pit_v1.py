@@ -183,7 +183,16 @@ def exact_estat_record(y: int, m: int) -> dict[str, Any]:
         if period is not None and period != (y, m):
             continue
         value = parse_headline_yoy(text)
-        pdf_date = parse_release_date(text)
+        try:
+            pdf_date = parse_release_date(text)
+            release_date_basis = "PDF_AND_ESTAT_METADATA"
+        except ValueError:
+            # Some official archived PDFs have a broken embedded font on page 1.
+            # In that case, use only the publication timestamp attached by e-Stat
+            # to this exact month-specific statInfId/PDF record. Candidate
+            # uniqueness remains enforced by the archived PDF SHA below.
+            pdf_date = pub.group(1)
+            release_date_basis = "ESTAT_METADATA_EXACT_ARCHIVE"
         if pdf_date != pub.group(1):
             raise ValueError(f"PDF/metadata release-date mismatch {y:04d}-{m:02d}: {pdf_date}!={pub.group(1)}")
         candidates.append({
@@ -191,6 +200,7 @@ def exact_estat_record(y: int, m: int) -> dict[str, Any]:
             "stat_inf_id": sid,
             "release_date": pub.group(1),
             "release_time_jst": pub.group(2),
+            "release_date_basis": release_date_basis,
             "metadata_url": mfinal,
             "source_url": dfinal,
             "content_type": ct,
@@ -224,10 +234,13 @@ def replay(captured: list[dict[str, Any]]) -> list[dict[str, Any]]:
         period = parse_period(text)
         if period is not None and period != (y, m):
             raise ValueError(f"replay period mismatch {item['observation_date']}: {period}")
-        rd = parse_release_date(text)
-        if rd != item["release_date"]:
-            raise ValueError(f"replay release-date mismatch {item['observation_date']}: {rd}!={item['release_date']}")
-        out.append({k: item[k] for k in ("observation_date", "value", "release_date", "release_time_jst", "availability_timestamp_jst", "route", "stat_inf_id", "metadata_url", "source_url", "source_sha256")})
+        if item["release_date_basis"] == "PDF_AND_ESTAT_METADATA":
+            rd = parse_release_date(text)
+            if rd != item["release_date"]:
+                raise ValueError(f"replay release-date mismatch {item['observation_date']}: {rd}!={item['release_date']}")
+        elif item["release_date_basis"] != "ESTAT_METADATA_EXACT_ARCHIVE":
+            raise ValueError(f"replay unknown release-date basis {item['observation_date']}: {item['release_date_basis']}")
+        out.append({k: item[k] for k in ("observation_date", "value", "release_date", "release_time_jst", "availability_timestamp_jst", "release_date_basis", "route", "stat_inf_id", "metadata_url", "source_url", "source_sha256")})
         if parse_headline_yoy(text) != item["value"]:
             raise ValueError(f"replay value mismatch {item['observation_date']}")
         if hashlib.sha256(raw).hexdigest() != item["source_sha256"]:
@@ -256,6 +269,7 @@ def main() -> int:
             "release_date": rec["release_date"],
             "release_time_jst": rec["release_time_jst"],
             "availability_timestamp_jst": rec["release_date"] + "T" + rec["release_time_jst"] + ":00+09:00",
+            "release_date_basis": rec["release_date_basis"],
             "route": rec["route"],
             "stat_inf_id": rec["stat_inf_id"],
             "metadata_url": rec["metadata_url"],
@@ -264,7 +278,7 @@ def main() -> int:
         }
         rows.append(row)
         captured.append({**row, "source_hex": rec["raw"].hex()})
-        print(f"[capture {idx:03d}/{EXPECTED_MONTHS}] {obs} CPI_YOY={row['value']} release={row['release_date']} route={row['route']} sha={digest[:12]}", flush=True)
+        print(f"[capture {idx:03d}/{EXPECTED_MONTHS}] {obs} CPI_YOY={row['value']} release={row['release_date']} basis={row['release_date_basis']} route={row['route']} sha={digest[:12]}", flush=True)
         time.sleep(MIN_REQUEST_INTERVAL_SECONDS)
 
     if len({r["source_sha256"] for r in rows}) != EXPECTED_MONTHS:
@@ -300,6 +314,10 @@ def main() -> int:
         "replay_equal": True,
         "current_revised_history_used": False,
         "revised_fallback_used": False,
+        "release_date_basis_counts": {
+            "PDF_AND_ESTAT_METADATA": sum(r["release_date_basis"] == "PDF_AND_ESTAT_METADATA" for r in rows),
+            "ESTAT_METADATA_EXACT_ARCHIVE": sum(r["release_date_basis"] == "ESTAT_METADATA_EXACT_ARCHIVE" for r in rows),
+        },
         "route_transitions": {"2015_base_end": "2021-06", "2020_base_start": "2021-07", "2020_base_end": "2026-06", "2025_base_start": "2026-07"},
         "semantic_rowset_sha256": sh,
         "anchors": {
@@ -311,7 +329,7 @@ def main() -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"status": "PASS", "coverage": evidence["coverage"], "unique_source_hashes": evidence["unique_source_hashes"], "semantic_rowset_sha256": sh, "replay_equal": True}, ensure_ascii=False, indent=2))
+    print(json.dumps({"status": "PASS", "coverage": evidence["coverage"], "unique_source_hashes": evidence["unique_source_hashes"], "semantic_rowset_sha256": sh, "replay_equal": True, "release_date_basis_counts": evidence["release_date_basis_counts"]}, ensure_ascii=False, indent=2))
     return 0
 
 
