@@ -53,9 +53,14 @@ def candidate_dates(y:int,m:int):
 
 def urls_for(d:date):
     key=d.strftime('%d%m%Y')
-    legacy=('EUROSTAT_EURO_INDICATORS_LEGACY',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-{key}-AP')
-    modern=('EUROSTAT_EURO_INDICATORS_WEB',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-{key}-ap')
-    return [legacy,modern] if d.year<=2024 else [modern,legacy]
+    # Eurostat historical euro-indicator flash releases use both AP and BP
+    # product-code suffixes. Both are official period-specific artifacts.
+    legacy=[]
+    modern=[]
+    for suffix in ('AP','BP'):
+        legacy.append((f'EUROSTAT_EURO_INDICATORS_LEGACY_{suffix}',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-{key}-{suffix}'))
+        modern.append((f'EUROSTAT_EURO_INDICATORS_WEB_{suffix}',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-{key}-{suffix.lower()}'))
+    return legacy+modern if d.year<=2024 else modern+legacy
 
 def throttle():
     global _LAST_REQUEST_AT
