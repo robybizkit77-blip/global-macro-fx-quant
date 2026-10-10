@@ -88,6 +88,11 @@ def headline_yoy(page: str, year: int, month: int) -> float:
         rf"From the {MONTHS[month].capitalize()} {year - 1} quarter to the {re.escape(period)}, the CPI inflation rate (?:rose|increased|fell|was)\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"In the {re.escape(period)} compared with the {MONTHS[month].capitalize()} {year - 1} quarter, the CPI inflation rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"For the 12 months to the {re.escape(period)}, the CPI inflation rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        # December 2024's official release states the all-groups annual rate
+        # in its dedicated annual-change key fact rather than an "inflation
+        # rate" sentence.  Preserve its full CPI + 12-month + period wording
+        # so this cannot select a component or international comparison.
+        rf"Within the ([0-9]+(?:\.[0-9]+)?)\s+percent (?:increase|decrease) in the CPI in the 12 months to the {re.escape(period)}",
         rf"([0-9]+(?:\.[0-9]+)?)\s+percent annually in the {re.escape(period)}, compared with the {MONTHS[month].capitalize()} {year - 1} quarter",
         rf"Inflation was (?:up|down)\s+[0-9]+(?:\.[0-9]+)?\s+percent in the {MONTHS[month].capitalize()} {year} quarter, and (?:up|down)\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {MONTHS[month].capitalize()} {year} year",
         rf"annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent.*?{re.escape(period)}",
