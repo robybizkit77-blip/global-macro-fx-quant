@@ -80,7 +80,10 @@ def headline_yoy(text: str, year: int, month: int) -> float:
 
 def release_asset(year: int, month: int) -> dict:
     start, end = month_window(year, month)
-    query = urlencode({"title": "%Swiss%Consumer%Price%Index%", "embargoFrom": start, "embargoTo": end, "limit": 100})
+    # Use the official CPI thematic code, not a title search: the 2026 FSO
+    # catalogue renamed some English release titles while retaining the same
+    # archived press-release identity and publisher metadata.
+    query = urlencode({"prodima": "900086", "embargoFrom": start, "embargoTo": end, "limit": 100})
     raw, content_type, final = fetch(f"{BASE}/assets?{query}")
     if "json" not in content_type.lower():
         raise ValueError(f"SFSO asset catalogue non-JSON response for {year:04d}-{month:02d}")
