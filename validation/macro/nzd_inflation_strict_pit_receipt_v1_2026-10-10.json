@@ -1,0 +1,53 @@
+{
+  "schema": "GMFQ_NZD_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "NZD.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "6a56bc15e92e36309fce510424c8085757b1eba5",
+  "validated_source_sha": "382b2676a49b00afe327aa301032da5efa992e02",
+  "coverage": {
+    "start": "2018-03",
+    "end": "2026-06",
+    "expected_quarters": 34,
+    "materialized_quarters": 34
+  },
+  "unique_source_hashes": 34,
+  "semantic_rowset_sha256": "d3cc0dc83bbb46abb0f25173e53b19eb5b49c3d44e8e7dc0a62a8533d998f5d3",
+  "materializer_run_id": 38091730301,
+  "engine_logic_audit_run_id": 38091730303,
+  "staging_browser_audit_run_id": 38091730330,
+  "artifact_id": 11684277043,
+  "artifact_name": "nzd-inflation-strict-pit-v1-38091730301",
+  "artifact_digest": "sha256:bca926fe53bdc884d589e48c1b3027ecfd079894cca7e620ec14e2c5a1260f7f",
+  "artifact_expires_at": "2027-01-08T22:31:16Z",
+  "checks": {
+    "official_period_specific_stats_nz_releases_only": true,
+    "source_hash_uniqueness": true,
+    "double_replay_semantic_match": true,
+    "raw_source_hashes_verified_per_replay": true,
+    "no_current_revised_history": true,
+    "no_revised_history_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "anchors_verified": {
+    "2018-03": {
+      "rate": 1.1,
+      "release_date": "2018-04-19"
+    },
+    "2024-12": {
+      "rate": 2.2,
+      "release_date": "2025-01-22"
+    },
+    "2026-06": {
+      "rate": 4.1,
+      "release_date": "2026-07-21"
+    }
+  },
+  "exception_verified": {
+    "2024-12": "Pinned narrow official annual-change wording: 'Within the 2.2 percent increase in the CPI in the 12 months to the December 2024 quarter'; no generic matcher or revised-history fallback is used"
+  }
+}
