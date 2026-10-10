@@ -88,7 +88,7 @@ def candidate_dates(y: int, m: int):
 def urls_for(d: date):
     key = d.strftime("%d%m%Y")
     legacy, modern = [], []
-    for suffix in ("AP", "BP"):
+    for suffix in ("AP", "BP", "CP"):
         legacy.append((
             f"EUROSTAT_UNEMPLOYMENT_LEGACY_{suffix}",
             f"https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-{key}-{suffix}",
