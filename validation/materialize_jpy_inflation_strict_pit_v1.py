@@ -70,7 +70,10 @@ def get(url: str) -> tuple[bytes, str, str]:
 def pdf_text(raw: bytes) -> str:
     reader = PdfReader(io.BytesIO(raw))
     chunks = [(p.extract_text() or "") for p in reader.pages[:4]]
-    text = "\n".join(chunks).replace("\u3000", " ").replace("−", "-").replace("－", "-")
+    text = "\n".join(chunks)
+    text = text.replace("\u3000", " ").replace("−", "-").replace("－", "-").replace("％", "%")
+    text = text.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
+    text = re.sub(r"(?<=\d)[ \t]+(?=\d)", "", text)
     return re.sub(r"[ \t]+", " ", text)
 
 
@@ -86,11 +89,10 @@ def parse_release_date(text: str) -> str:
     g = re.search(r"(?<!\d)(20\d{2})\s*年\s*(1[0-2]|0?[1-9])\s*月\s*([0-3]?\d)\s*日", text)
     if g:
         return f"{int(g.group(1)):04d}-{int(g.group(2)):02d}-{int(g.group(3)):02d}"
-    e = re.search(r"(平成|令和)\s*([0-9０-９]+|元)\s*年\s*([0-9０-９]{1,2})\s*月\s*([0-9０-９]{1,2})\s*日", text)
+    e = re.search(r"(平成|令和)\s*([0-9]+|元)\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日", text)
     if e:
-        trans = str.maketrans("０１２３４５６７８９", "0123456789")
-        ey = 1 if e.group(2) == "元" else int(e.group(2).translate(trans))
-        return f"{era_year(e.group(1), ey):04d}-{int(e.group(3).translate(trans)):02d}-{int(e.group(4).translate(trans)):02d}"
+        ey = 1 if e.group(2) == "元" else int(e.group(2))
+        return f"{era_year(e.group(1), ey):04d}-{int(e.group(3)):02d}-{int(e.group(4)):02d}"
     raise ValueError("cannot parse release date from CPI PDF")
 
 
@@ -117,11 +119,10 @@ def parse_period(text: str) -> tuple[int, int] | None:
     g = re.search(r"全国(20\d{2})年.*?([0-9]{1,2})月分", compact)
     if g:
         return int(g.group(1)), int(g.group(2))
-    e = re.search(r"全国.*?(平成|令和)([0-9０-９]+|元)年.*?([0-9０-９]{1,2})月分", compact)
+    e = re.search(r"全国.*?(平成|令和)([0-9]+|元)年.*?([0-9]{1,2})月分", compact)
     if e:
-        trans = str.maketrans("０１２３４５６７８９", "0123456789")
-        ey = 1 if e.group(2) == "元" else int(e.group(2).translate(trans))
-        return era_year(e.group(1), ey), int(e.group(3).translate(trans))
+        ey = 1 if e.group(2) == "元" else int(e.group(2))
+        return era_year(e.group(1), ey), int(e.group(3))
     return None
 
 
@@ -166,7 +167,7 @@ def exact_estat_record(y: int, m: int) -> dict[str, Any]:
         mraw, _, mfinal = get(meta_url)
         meta = html.unescape(mraw.decode("utf-8", "replace"))
         plain = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", meta))
-        if "消費者物価指数" not in plain or "結果の概要（全国）" not in plain:
+        if "消費者物価指数" not in plain or ("結果の概要（全国）" not in plain and "結果の概要(全国)" not in plain):
             continue
         if not re.search(rf"調査年月\s*{y}年\s*{m}月", plain):
             continue
