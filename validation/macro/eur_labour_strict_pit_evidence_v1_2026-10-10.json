@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_EUR_LABOUR_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "EUR.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Eurostat",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "materialized_months": 104
+  },
+  "series_contract": {
+    "series_id": "EA_UNEMP",
+    "frequency": "M",
+    "transformation": "level",
+    "unit": "%",
+    "first_release_semantics": "MONTHLY_UNEMPLOYMENT_HEADLINE_AS_PUBLISHED",
+    "geography_semantics": "CONTEMPORANEOUS_EURO_AREA_COMPOSITION_AS_PUBLISHED"
+  },
+  "unique_page_hashes": 104,
+  "semantic_rowset_sha256": "b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9",
+  "semantic_fingerprint_serialization": "canonical JSON; reference month, unemployment rate, release date, release geography vintage, source route, PIT status",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "unemployment_rate_pct",
+    "release_date",
+    "release_geo_vintage",
+    "source_route",
+    "pit_status"
+  ],
+  "anchor_checks": {
+    "2018-01": {"rate": 8.6, "release_date": "2018-03-01"},
+    "2026-07": {"rate": 6.4, "release_date": "2026-09-01"},
+    "2026-08": {"rate": 6.4, "release_date": "2026-10-01"}
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_date_required": true,
+    "url_and_sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false,
+    "network_capture_once_replay_twice": true
+  },
+  "source_validation": {
+    "base_main_sha": "6d2bcc5f7750b29d0b562ac16b683a8ffc77d614",
+    "validated_source_sha": "53f4b8f6477d0a8d49dc85a3529cb169e748cd9f",
+    "materializer_run_id": 38076288187,
+    "engine_logic_audit_run_id": 38076288221,
+    "staging_browser_audit_run_id": 38076288153,
+    "artifact_id": 11678794954,
+    "artifact_digest": "sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677",
+    "captured_releases": 104,
+    "independent_replays_compared": 2,
+    "semantic_fields_match_across_replays": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
