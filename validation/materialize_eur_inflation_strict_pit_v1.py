@@ -14,9 +14,8 @@ SEMANTIC_KEYS=['reference_month','headline_hicp_yoy_pct','release_date','source_
 MIN_REQUEST_INTERVAL_SECONDS=1.25
 _LAST_REQUEST_AT=0.0
 
-# Official release URLs already resolved by successful strict-PIT materializations.
-# Reusing the exact official period-specific URLs avoids re-discovering dates/suffixes
-# and materially reduces Eurostat throttling without weakening the source contract.
+# Official period-specific Eurostat releases already resolved by successful
+# strict-PIT materializations. Reuse avoids date/suffix rediscovery and 429s.
 RESOLVED_RELEASES={
 (2018,1):('2018-01-31','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-31012018-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
 (2018,2):('2018-02-28','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-28022018-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
@@ -44,19 +43,14 @@ RESOLVED_RELEASES={
 (2020,1):('2020-01-31','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-31012020-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
 (2020,2):('2020-03-03','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-03032020-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
 (2020,3):('2020-03-31','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-31032020-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
+(2020,5):('2020-05-29','https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-29052020-AP','EUROSTAT_EURO_INDICATORS_LEGACY_AP'),
 }
 
 # Narrow immutable archival exceptions where the official product page is not
 # reliably resolvable by the runner but the period-specific first-release PDF is.
 SPECIAL_RELEASES={
-    (2018,4): {
-        'release_date':'2018-05-03','headline_hicp_yoy_pct':1.2,
-        'source_url':'https://ec.europa.eu/eurostat/documents/2995521/8869609/2-03052018-BP-EN.pdf/bfc9d63f-f717-4c48-b074-526c59e8de02',
-        'source_route':'EUROSTAT_IMMUTABLE_RELEASE_PDF_BP'},
-    (2020,4): {
-        'release_date':'2020-04-30','headline_hicp_yoy_pct':0.4,
-        'source_url':'https://ec.europa.eu/eurostat/documents/2995521/10294696/2-30042020-AP-EN.pdf/695df4c4-1a67-bf92-3a0f-69534046cbfe',
-        'source_route':'EUROSTAT_IMMUTABLE_RELEASE_PDF_AP'},
+    (2018,4): {'release_date':'2018-05-03','headline_hicp_yoy_pct':1.2,'source_url':'https://ec.europa.eu/eurostat/documents/2995521/8869609/2-03052018-BP-EN.pdf/bfc9d63f-f717-4c48-b074-526c59e8de02','source_route':'EUROSTAT_IMMUTABLE_RELEASE_PDF_BP'},
+    (2020,4): {'release_date':'2020-04-30','headline_hicp_yoy_pct':0.4,'source_url':'https://ec.europa.eu/eurostat/documents/2995521/10294696/2-30042020-AP-EN.pdf/695df4c4-1a67-bf92-3a0f-69534046cbfe','source_route':'EUROSTAT_IMMUTABLE_RELEASE_PDF_AP'},
 }
 
 class Text(HTMLParser):
@@ -180,8 +174,12 @@ def main():
     assert len(rows)==105 and rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-09'
     assert len({r['page_sha256'] for r in rows})==105
     by={r['reference_month']:r for r in rows}
-    anchors={'2018-01':(1.3,'2018-01-31'),'2018-04':(1.2,'2018-05-03'),'2020-01':(1.4,'2020-01-31'),'2020-04':(0.4,'2020-04-30'),'2026-08':(3.3,'2026-09-01'),'2026-09':(3.8,'2026-10-02')}
+    anchors={'2018-01':(1.3,'2018-01-31'),'2018-04':(1.2,'2018-05-03'),'2020-01':(1.4,'2020-01-31'),'2020-04':(0.4,'2020-04-30'),'2020-05':(0.1,'2020-05-29'),'2026-08':(3.3,'2026-09-01'),'2026-09':(3.8,'2026-10-02')}
     for k,(v,d) in anchors.items():assert abs(by[k]['headline_hicp_yoy_pct']-v)<1e-12 and by[k]['release_date']==d,(k,by[k])
-    write_progress(a.csv,a.evidence,rows,'PASS'); ev=json.loads(Path(a.evidence).read_text(encoding='utf-8')); ev['anchor_checks']={k:{'rate':v,'release_date':d} for k,(v,d) in anchors.items()}; ev['manual_semantic_checks']={'2018-04':'Official Eurostat flash-estimate PDF 78/2018, 3 May 2018: 1.2%.','2020-04':'Official Eurostat flash-estimate PDF 73/2020, 30 April 2020: 0.4%; final May release was 0.3%, therefore final-release fallback is forbidden.'}; Path(a.evidence).write_text(json.dumps(ev,indent=2)+'\n',encoding='utf-8'); print(json.dumps(ev,indent=2)); return 0
+    write_progress(a.csv,a.evidence,rows,'PASS')
+    ev=json.loads(Path(a.evidence).read_text(encoding='utf-8'))
+    ev['anchor_checks']={k:{'rate':v,'release_date':d} for k,(v,d) in anchors.items()}
+    ev['manual_semantic_checks']={'2018-04':'Official Eurostat flash-estimate PDF 78/2018, 3 May 2018: 1.2%.','2020-04':'Official Eurostat flash-estimate PDF 73/2020, 30 April 2020: 0.4%; final May release was 0.3%, therefore final-release fallback is forbidden.','2020-05':'Official Eurostat flash estimate 86/2020, 29 May 2020: euro area annual inflation expected 0.1% in May 2020.'}
+    Path(a.evidence).write_text(json.dumps(ev,indent=2)+'\n',encoding='utf-8'); print(json.dumps(ev,indent=2)); return 0
 
 if __name__=='__main__':raise SystemExit(main())
