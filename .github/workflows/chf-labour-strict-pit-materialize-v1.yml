@@ -1,0 +1,58 @@
+name: CHF Labour Strict PIT Materialize V1
+
+on:
+  push:
+    branches: ['validation-chf-labour-strict-pit-v1-*']
+    paths:
+      - 'validation/materialize_chf_labour_strict_pit_v1.py'
+      - 'validation/sources/chf_snb_official_core.py'
+      - '.github/workflows/chf-labour-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-twice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check beautifulsoup4==4.14.2
+      - name: Independently materialize SECO first-release chain twice
+        run: |
+          mkdir -p /tmp/chf-labour-strict/{a,b}
+          python validation/materialize_chf_labour_strict_pit_v1.py --output /tmp/chf-labour-strict/a/evidence.json
+          python validation/materialize_chf_labour_strict_pit_v1.py --output /tmp/chf-labour-strict/b/evidence.json
+      - name: Enforce strict direct PIT invariants and equivalence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/chf-labour-strict')
+          a=json.loads((root/'a/evidence.json').read_text()); b=json.loads((root/'b/evidence.json').read_text())
+          assert a['status']==b['status']=='PASS'
+          assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']
+          assert a['coverage']==b['coverage']=={'start':'2018-01','end':'2026-09','expected_months':105,'materialized_months':105}
+          assert a['unique_source_hashes']==b['unique_source_hashes']==105
+          assert len(a['rows'])==len(b['rows'])==105
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' and r['release_date'] and r['source_url'] and r['source_sha256'] for r in a['rows'])
+          assert all(r['reported_precision_decimals']==1 for r in a['rows'])
+          assert a['current_revised_history_used'] is False and a['revised_fallback_used'] is False
+          anchors={r['reference_month']:r for r in a['rows']}
+          assert anchors['2026-07']['unemployment_rate_sa_pct']==3.1 and anchors['2026-07']['release_date']=='2026-08-06'
+          assert anchors['2026-08']['unemployment_rate_sa_pct']==3.1 and anchors['2026-08']['release_date']=='2026-09-07'
+          assert anchors['2026-09']['unemployment_rate_sa_pct']==3.1 and anchors['2026-09']['release_date']=='2026-10-06'
+          print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256']},indent=2))
+          PY
+      - name: Assert no live-data or engine writes
+        run: git diff --exit-code -- live_data validation/build_macro_candidate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chf-labour-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/chf-labour-strict/
+          if-no-files-found: error
+          retention-days: 90
