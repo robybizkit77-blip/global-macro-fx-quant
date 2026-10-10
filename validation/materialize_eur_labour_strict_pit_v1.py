@@ -33,9 +33,6 @@ SEMANTIC_KEYS = [
 MIN_REQUEST_INTERVAL_SECONDS = 1.0
 _LAST_REQUEST_AT = 0.0
 
-# Exact official period-specific Eurostat URLs already captured or independently
-# verified. These entries avoid rediscovery traffic only: every run still fetches,
-# re-hashes and re-parses the official publisher artifact.
 RESOLVED_RELEASES = {
     (2018, 1): ("2018-03-01", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-01032018-AP", "EUROSTAT_UNEMPLOYMENT_LEGACY_AP"),
     (2018, 2): ("2018-04-04", "https://ec.europa.eu/eurostat/web/products-euro-indicators/-/3-04042018-BP", "EUROSTAT_UNEMPLOYMENT_LEGACY_BP"),
@@ -213,6 +210,26 @@ def parse_period(text: str, y: int, m: int):
     return geo, next(iter(vals))
 
 
+def parse_resolved_release(text: str, y: int, m: int):
+    parsed = parse_period(text, y, m)
+    if parsed is not None:
+        return parsed
+    title_hits = [
+        float(x.group(1))
+        for x in re.finditer(
+            r"euro area unemployment at\s*([0-9]+(?:\.[0-9]+)?)\s*%",
+            text,
+            re.I,
+        )
+    ]
+    uniq = sorted(set(title_hits))
+    if len(uniq) == 1:
+        return "EA_CURRENT_RELEASE", uniq[0]
+    if len(uniq) > 1:
+        raise ValueError(f"ambiguous resolved-release title values: {uniq}")
+    return None
+
+
 def capture_one(y: int, m: int, raw_dir: Path) -> dict:
     ref = f"{y:04d}-{m:02d}"
     resolved = RESOLVED_RELEASES.get((y, m))
@@ -222,7 +239,7 @@ def capture_one(y: int, m: int, raw_dir: Path) -> dict:
         if got is None:
             raise ValueError(f"resolved official Eurostat unemployment release missing for {ref}: {url}")
         raw, final = got
-        parsed = parse_period(text_from_html(raw), y, m)
+        parsed = parse_resolved_release(text_from_html(raw), y, m)
         if parsed is None:
             raise ValueError(f"resolved official Eurostat release failed semantic parse for {ref}: {url}")
         geo, value = parsed
@@ -279,7 +296,11 @@ def replay_row(rec: dict, raw_dir: Path) -> dict:
     sha = hashlib.sha256(raw).hexdigest()
     if sha != rec["page_sha256"]:
         raise ValueError(f"raw sha mismatch for {ref}: {sha} != {rec['page_sha256']}")
-    parsed = parse_period(text_from_html(raw), y, m)
+    text = text_from_html(raw)
+    if (y, m) in RESOLVED_RELEASES:
+        parsed = parse_resolved_release(text, y, m)
+    else:
+        parsed = parse_period(text, y, m)
     if parsed is None:
         raise ValueError(f"replay parser did not recover unemployment headline for {ref}")
     geo, value = parsed
