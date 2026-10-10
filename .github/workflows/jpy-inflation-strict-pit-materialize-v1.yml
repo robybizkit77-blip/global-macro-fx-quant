@@ -6,6 +6,7 @@ on:
       - validation-jpy-inflation-strict-pit-v1-2026-10-10
     paths:
       - validation/materialize_jpy_inflation_strict_pit_v1.py
+      - validation/materialize_jpy_inflation_strict_pit_v1_wrapper.py
       - .github/workflows/jpy-inflation-strict-pit-materialize-v1.yml
   workflow_dispatch:
 
@@ -28,7 +29,7 @@ jobs:
       - name: Capture official Statistics Bureau archived CPI releases once
         run: |
           mkdir -p validation/runtime
-          python validation/materialize_jpy_inflation_strict_pit_v1.py \
+          python validation/materialize_jpy_inflation_strict_pit_v1_wrapper.py \
             --output validation/runtime/jpy_inflation_strict_pit_evidence_v1_runtime.json
       - name: Validate strict PIT invariants
         run: |
