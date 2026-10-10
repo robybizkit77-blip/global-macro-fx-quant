@@ -1,0 +1,52 @@
+name: NZD Inflation Strict PIT Materialize V1
+
+on:
+  push:
+    branches: ['validation-nzd-inflation-strict-pit-v1-*']
+    paths:
+      - 'validation/materialize_nzd_inflation_strict_pit_v1.py'
+      - '.github/workflows/nzd-inflation-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-twice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independently materialize Stats NZ first-release CPI chain twice
+        run: |
+          mkdir -p /tmp/nzd-inflation-strict/{a,b}
+          python validation/materialize_nzd_inflation_strict_pit_v1.py --output /tmp/nzd-inflation-strict/a/evidence.json
+          python validation/materialize_nzd_inflation_strict_pit_v1.py --output /tmp/nzd-inflation-strict/b/evidence.json
+      - name: Enforce strict direct PIT invariants and equivalence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/nzd-inflation-strict')
+          a=json.loads((root/'a/evidence.json').read_text()); b=json.loads((root/'b/evidence.json').read_text())
+          assert a['status']==b['status']=='PASS'
+          assert a['verdict']==b['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']
+          assert a['coverage']==b['coverage']=={'start':'2018-03','end':'2026-06','expected_quarters':34,'materialized_quarters':34}
+          assert a['unique_source_hashes']==b['unique_source_hashes']==34
+          assert a['replay_count']==b['replay_count']==2 and a['replay_equal'] is b['replay_equal'] is True
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' and r['release_date'] and r['source_url'] and r['source_sha256'] for r in a['rows'])
+          assert a['current_revised_history_used'] is False and a['revised_fallback_used'] is False
+          print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256']},indent=2))
+          PY
+      - name: Assert no live-data or engine writes
+        run: git diff --exit-code -- live_data validation/build_macro_candidate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nzd-inflation-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/nzd-inflation-strict/
+          if-no-files-found: error
+          retention-days: 90
