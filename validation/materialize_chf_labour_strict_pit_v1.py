@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Materialise Swiss seasonally-adjusted unemployment-rate first releases.
 
-Strict PIT rule: use only period-specific SECO monthly press releases.  The
-published rate is one decimal; current SNB history is deliberately forbidden
-because seasonal-adjustment history can be revised and exposes extra precision
-that was not published in the contemporaneous release.
+Strict PIT rule: use only period-specific SECO monthly release artifacts. The
+published seasonally-adjusted rate is one decimal. Current SNB history is
+forbidden because seasonal-adjustment history can be revised and exposes extra
+precision that was not published contemporaneously.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import re
 import time
@@ -19,6 +20,7 @@ from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup
+from pypdf import PdfReader
 
 START = (2018, 1)
 END = (2026, 9)
@@ -30,6 +32,10 @@ MONTHS_DE = (
     "Juli", "August", "September", "Oktober", "November", "Dezember",
 )
 MONTH_NUMBER = {name: i + 1 for i, name in enumerate(MONTHS_DE)}
+ARCHIVE_ROOT = (
+    BASE + "/seco/de/home/Publikationen_Dienstleistungen/Publikationen_und_Formulare/"
+    "Arbeit/Arbeitslosenversicherung/Die_Lage_auf_dem_Arbeitsmarkt"
+)
 
 
 def months():
@@ -54,10 +60,27 @@ def release_window(year: int, month: int) -> tuple[str, str]:
     return f"{y:04d}-{m:02d}-01", f"{y:04d}-{m:02d}-15"
 
 
-def discover_release(year: int, month: int) -> str:
+def parse_release_date(text: str) -> str:
+    patterns = (
+        r"Veröffentlicht am\s+(\d{1,2})\.\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})",
+        r"(?:Bern|Neuchâtel|Neuenburg),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})",
+        r"(?:Pressedokumentation|Mediendokumentation),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})",
+    )
+    m = re.search(patterns[0], text)
+    if m:
+        return date(int(m.group(3)), MONTH_NUMBER[m.group(2)], int(m.group(1))).isoformat()
+    for pattern in patterns[1:]:
+        m = re.search(pattern, text)
+        if m:
+            return date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
+    raise ValueError("SECO release date missing")
+
+
+def discover_newnsb(year: int, month: int) -> dict | None:
     start, end = release_window(year, month)
     query = urlencode({"from": start, "to": end, "organization": "703", "topic": ""})
-    raw, _ = fetch(f"{BASE}/de/overview/nsb?{query}")
+    index_url = f"{BASE}/de/overview/nsb?{query}"
+    raw, _ = fetch(index_url)
     soup = BeautifulSoup(raw, "html.parser")
     month_name = MONTHS_DE[month - 1]
     candidates: list[str] = []
@@ -66,39 +89,91 @@ def discover_release(year: int, month: int) -> str:
         if "/newnsb/" not in href:
             continue
         context = " ".join(a.stripped_strings)
-        if not context:
-            parent = a.parent
-            context = " ".join(parent.stripped_strings) if parent else ""
+        if not context and a.parent:
+            context = " ".join(a.parent.stripped_strings)
         context = re.sub(r"\s+", " ", context)
         if "Lage auf dem Arbeitsmarkt" in context and month_name in context and str(year) in context:
             candidates.append(urljoin(BASE, href))
     candidates = list(dict.fromkeys(candidates))
-    if len(candidates) != 1:
-        raise ValueError(f"SECO release discovery ambiguity {year:04d}-{month:02d}: {candidates}")
-    return candidates[0]
+    if len(candidates) > 1:
+        raise ValueError(f"SECO newnsb release ambiguity {year:04d}-{month:02d}: {candidates}")
+    if not candidates:
+        return None
+    return {"kind": "html", "url": candidates[0], "release_date_hint": None,
+            "source_route": "SECO_PERIOD_SPECIFIC_NEWNSB_RELEASE"}
 
 
-def parse_release_date(text: str) -> str:
-    patterns = (
-        r"Veröffentlicht am\s+(\d{1,2})\.\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})",
-        r"(?:Bern|Neuchâtel|Neuenburg),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})",
-    )
-    m = re.search(patterns[0], text)
-    if m:
-        d, mon, y = int(m.group(1)), MONTH_NUMBER[m.group(2)], int(m.group(3))
-        return date(y, mon, d).isoformat()
-    m = re.search(patterns[1], text)
-    if m:
-        return date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
-    raise ValueError("SECO release date missing")
+def discover_annual_archive(year: int, month: int) -> dict:
+    archive_url = f"{ARCHIVE_ROOT}/Lage_Arbeitsmarkt_{year}.html"
+    raw, final_archive_url = fetch(archive_url)
+    soup = BeautifulSoup(raw, "html.parser")
+    month_name = MONTHS_DE[month - 1]
+    detail_hits = []
+    for a in soup.find_all("a", href=True):
+        label = re.sub(r"\s+", " ", " ".join(a.stripped_strings))
+        if "Lage auf dem Arbeitsmarkt" in label and month_name in label and str(year) in label:
+            detail_hits.append(urljoin(final_archive_url, a["href"]))
+    detail_hits = list(dict.fromkeys(detail_hits))
+    if len(detail_hits) != 1:
+        raise ValueError(f"SECO annual archive detail ambiguity {year:04d}-{month:02d}: {detail_hits}")
+
+    # Bind the release date to the exact monthly heading on the official annual archive page.
+    heading = None
+    for tag in soup.find_all(["h2", "h3", "h4"]):
+        txt = re.sub(r"\s+", " ", " ".join(tag.stripped_strings))
+        if "Lage auf dem Arbeitsmarkt" in txt and month_name in txt and str(year) in txt:
+            heading = tag
+            break
+    if heading is None:
+        raise ValueError(f"SECO annual archive heading missing {year:04d}-{month:02d}")
+    release_date_hint = None
+    node = heading.find_next()
+    for _ in range(8):
+        if node is None:
+            break
+        txt = re.sub(r"\s+", " ", " ".join(node.stripped_strings)) if hasattr(node, "stripped_strings") else ""
+        m = re.search(r"(?:Pressedokumentation|Mediendokumentation),\s*(\d{1,2})\.(\d{1,2})\.(20\d{2})", txt)
+        if m:
+            release_date_hint = date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
+            break
+        node = node.find_next()
+    if release_date_hint is None:
+        raise ValueError(f"SECO annual archive release date missing {year:04d}-{month:02d}")
+
+    detail_raw, detail_final = fetch(detail_hits[0])
+    detail_soup = BeautifulSoup(detail_raw, "html.parser")
+    pdfs = []
+    for a in detail_soup.find_all("a", href=True):
+        href = urljoin(detail_final, a["href"])
+        low = href.lower()
+        if ".pdf" in low and ("dam/seco/" in low or ".pdf.download.pdf" in low):
+            pdfs.append(href)
+    pdfs = list(dict.fromkeys(pdfs))
+    if len(pdfs) != 1:
+        raise ValueError(f"SECO annual archive PDF ambiguity {year:04d}-{month:02d}: {pdfs}")
+    return {"kind": "pdf", "url": pdfs[0], "release_date_hint": release_date_hint,
+            "source_route": "SECO_PERIOD_SPECIFIC_ANNUAL_ARCHIVE_PDF"}
+
+
+def discover_release(year: int, month: int) -> dict:
+    modern = discover_newnsb(year, month)
+    return modern if modern is not None else discover_annual_archive(year, month)
+
+
+def pdf_text(raw: bytes) -> str:
+    reader = PdfReader(io.BytesIO(raw))
+    return "\n".join((page.extract_text() or "") for page in reader.pages)
 
 
 def parse_rate(text: str, year: int, month: int) -> float:
     compact = re.sub(r"\s+", " ", text).replace("’", "'")
     hits: list[float] = []
-    for m in re.finditer(r"saisonbereinigte\s+Arbeitslosenquote", compact, re.I):
-        window = compact[m.start():m.start() + 420]
-        for v in re.findall(r"(?:auf|bei|betrug|belief sich auf|lag bei)\s+([0-9]+,[0-9])\s*%", window, re.I):
+    patterns = (
+        r"saisonbereinigte\s+Arbeitslosenquote.{0,420}?(?:auf|bei|betrug|belief sich auf|lag bei)\s+([0-9]+[,.][0-9])\s*%",
+        r"Arbeitslosenquote\s+auf\s+saisonbereinigter\s+Basis.{0,420}?(?:auf|bei|betrug|belief sich auf|lag bei|einen Wert von)\s+([0-9]+[,.][0-9])\s*%",
+    )
+    for pattern in patterns:
+        for v in re.findall(pattern, compact, re.I):
             hits.append(float(v.replace(",", ".")))
     values = list(dict.fromkeys(hits))
     if len(values) != 1:
@@ -107,11 +182,15 @@ def parse_rate(text: str, year: int, month: int) -> float:
 
 
 def materialize_row(year: int, month: int) -> dict:
-    release_url = discover_release(year, month)
-    raw, final_url = fetch(release_url)
-    text = BeautifulSoup(raw, "html.parser").get_text(" ", strip=True)
+    source = discover_release(year, month)
+    raw, final_url = fetch(source["url"])
+    if source["kind"] == "pdf":
+        text = pdf_text(raw)
+        release_date = source["release_date_hint"]
+    else:
+        text = BeautifulSoup(raw, "html.parser").get_text(" ", strip=True)
+        release_date = parse_release_date(text)
     value = parse_rate(text, year, month)
-    release_date = parse_release_date(text)
     start, end = release_window(year, month)
     if not (start <= release_date <= end):
         raise ValueError(f"SECO release date outside bounded window {year:04d}-{month:02d}: {release_date}")
@@ -120,7 +199,7 @@ def materialize_row(year: int, month: int) -> dict:
         "unemployment_rate_sa_pct": value,
         "release_date": release_date,
         "reported_precision_decimals": 1,
-        "source_route": "SECO_PERIOD_SPECIFIC_MONTHLY_PRESS_RELEASE",
+        "source_route": source["source_route"],
         "source_url": final_url,
         "source_sha256": hashlib.sha256(raw).hexdigest(),
         "pit_status": "STRICT_FIRST_RELEASE",
@@ -138,7 +217,7 @@ def materialize() -> dict:
     for index, (year, month) in enumerate(months(), 1):
         row = materialize_row(year, month)
         rows.append(row)
-        print(f"[{index:03d}/{EXPECTED_MONTHS}] {row['reference_month']}={row['unemployment_rate_sa_pct']:.1f} release={row['release_date']}", flush=True)
+        print(f"[{index:03d}/{EXPECTED_MONTHS}] {row['reference_month']}={row['unemployment_rate_sa_pct']:.1f} release={row['release_date']} route={row['source_route']}", flush=True)
         time.sleep(0.12)
     if len(rows) != EXPECTED_MONTHS or len({r["reference_month"] for r in rows}) != EXPECTED_MONTHS:
         raise ValueError("incomplete or duplicate CHF labour coverage")
@@ -150,7 +229,7 @@ def materialize() -> dict:
         "target": "CHF.labour",
         "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
         "authority": "State Secretariat for Economic Affairs (SECO)",
-        "source": "SECO period-specific monthly labour-market press releases",
+        "source": "SECO period-specific monthly labour-market first-release artifacts",
         "coverage": {"start": "2018-01", "end": "2026-09", "expected_months": EXPECTED_MONTHS, "materialized_months": len(rows)},
         "series_contract": {
             "series_id": "CH_UNEMP_RATE",
@@ -170,6 +249,7 @@ def materialize() -> dict:
         "unique_source_hashes": len({r["source_sha256"] for r in rows}),
         "network_capture_count": len(rows),
         "semantic_rowset_sha256": digest(rows),
+        "source_route_counts": {route: sum(r["source_route"] == route for r in rows) for route in sorted({r["source_route"] for r in rows})},
         "rows": rows,
         "current_revised_history_used": False,
         "revised_fallback_used": False,
