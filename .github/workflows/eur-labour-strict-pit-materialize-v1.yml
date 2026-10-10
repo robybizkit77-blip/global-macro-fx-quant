@@ -1,0 +1,60 @@
+name: EUR Labour Strict PIT Materialize V1
+
+on:
+  push:
+    branches: ['validation-eur-labour-strict-pit-v1-*']
+    paths:
+      - 'validation/materialize_eur_labour_strict_pit_v1.py'
+      - '.github/workflows/eur-labour-strict-pit-materialize-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-twice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independently materialize Eurostat first-release unemployment chain twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/eur-labour-strict/{a,b}
+          python validation/materialize_eur_labour_strict_pit_v1.py --csv /tmp/eur-labour-strict/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv --evidence /tmp/eur-labour-strict/a/evidence.json
+          python validation/materialize_eur_labour_strict_pit_v1.py --csv /tmp/eur-labour-strict/b/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv --evidence /tmp/eur-labour-strict/b/evidence.json
+      - name: Enforce semantic equivalence and strict direct PIT invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          root=Path('/tmp/eur-labour-strict')
+          a=json.loads((root/'a/evidence.json').read_text()); b=json.loads((root/'b/evidence.json').read_text())
+          assert a['status']==b['status']=='PASS'
+          assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']
+          assert a['coverage']==b['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'materialized_months':104}
+          rows=list(csv.DictReader((root/'a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv').open()))
+          assert len(rows)==104 and rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-08'
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' and r['release_date'] and r['release_geo_vintage'] and r['source_url'] and r['page_sha256'] for r in rows)
+          by={r['reference_month']:r for r in rows}
+          anchors={'2018-01':('8.6','2018-03-01'),'2026-07':('6.4','2026-09-01'),'2026-08':('6.4','2026-10-01')}
+          for month,expected in anchors.items():
+              r=by[month]; assert (r['unemployment_rate_pct'],r['release_date'])==expected,(month,r)
+          print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256'],'anchors':anchors},indent=2))
+          PY
+      - name: Enforce no repository writes
+        run: git diff --exit-code
+      - name: Upload source evidence and reproducible datasets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-labour-strict-pit-v1-${{ github.run_id }}
+          path: /tmp/eur-labour-strict/
+          if-no-files-found: error
+          retention-days: 90
