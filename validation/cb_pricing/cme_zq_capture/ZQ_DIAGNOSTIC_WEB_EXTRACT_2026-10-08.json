@@ -1,0 +1,139 @@
+{
+  "schema_version": "GMFQ_CME_ZQ_WEB_EXTRACT_DIAGNOSTIC_V1",
+  "instrument": "CBOT 30-Day Federal Funds Futures (ZQ)",
+  "currency": "USD",
+  "source": "CME Group Daily Information Bulletin PG10",
+  "source_url": "https://www.cmegroup.com/daily_bulletin/current/Section10_Interest_Rate_Futures_Continued.pdf",
+  "source_page": 1,
+  "trade_date": "2026-10-08",
+  "bulletin_number": 194,
+  "publication_status": "FINAL",
+  "extraction_method": "CME official PDF textual web extraction; not raw PDF byte capture",
+  "as_of": "2026-10-08",
+  "captured_on": "2026-10-10",
+  "contracts": [
+    {
+      "contract": "OCT26",
+      "settlement_price": 96.115,
+      "implied_average_effr_pct": 3.885,
+      "official_point_change": 0
+    },
+    {
+      "contract": "NOV26",
+      "settlement_price": 96.075,
+      "implied_average_effr_pct": 3.925,
+      "official_point_change": 0
+    },
+    {
+      "contract": "DEC26",
+      "settlement_price": 95.935,
+      "implied_average_effr_pct": 4.065,
+      "official_point_change": 0
+    },
+    {
+      "contract": "JAN27",
+      "settlement_price": 95.87,
+      "implied_average_effr_pct": 4.13,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "FEB27",
+      "settlement_price": 95.79,
+      "implied_average_effr_pct": 4.21,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "MAR27",
+      "settlement_price": 95.715,
+      "implied_average_effr_pct": 4.285,
+      "official_point_change": -0.01
+    },
+    {
+      "contract": "APR27",
+      "settlement_price": 95.615,
+      "implied_average_effr_pct": 4.385,
+      "official_point_change": -0.015
+    },
+    {
+      "contract": "MAY27",
+      "settlement_price": 95.535,
+      "implied_average_effr_pct": 4.465,
+      "official_point_change": -0.01
+    },
+    {
+      "contract": "JUN27",
+      "settlement_price": 95.465,
+      "implied_average_effr_pct": 4.535,
+      "official_point_change": -0.01
+    },
+    {
+      "contract": "JUL27",
+      "settlement_price": 95.43,
+      "implied_average_effr_pct": 4.57,
+      "official_point_change": -0.01
+    },
+    {
+      "contract": "AUG27",
+      "settlement_price": 95.4,
+      "implied_average_effr_pct": 4.6,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "SEP27",
+      "settlement_price": 95.375,
+      "implied_average_effr_pct": 4.625,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "OCT27",
+      "settlement_price": 95.355,
+      "implied_average_effr_pct": 4.645,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "NOV27",
+      "settlement_price": 95.345,
+      "implied_average_effr_pct": 4.655,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "DEC27",
+      "settlement_price": 95.35,
+      "implied_average_effr_pct": 4.65,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "JAN28",
+      "settlement_price": 95.345,
+      "implied_average_effr_pct": 4.655,
+      "official_point_change": -0.005
+    },
+    {
+      "contract": "FEB28",
+      "settlement_price": 95.35,
+      "implied_average_effr_pct": 4.65,
+      "official_point_change": -0.005
+    }
+  ],
+  "reference_quarterly_contracts_not_exact_ois_tenors": {
+    "3m": "DEC26",
+    "6m": "MAR27",
+    "12m": "SEP27"
+  },
+  "validation": {
+    "official_source_url": true,
+    "source_pdf_sha256": null,
+    "raw_pdf_archived": false,
+    "web_text_vs_pdf_screenshot_consistent": false,
+    "certified_snapshot": false,
+    "homogeneous_history_complete": false,
+    "t5_official_rows_verified": false,
+    "notes": "The official PDF web text showed 2026-10-08 FINAL bulletin #194, but its screenshot rendered a different historical bulletin. Source bytes could not be fetched independently; preserve this diagnostic separately and exclude it from the certified history and USD OIS activation."
+  },
+  "promotion": {
+    "usd_ois": "WITHHELD",
+    "candidate_ready": false,
+    "main_mutated": false,
+    "gh_pages_mutated": false
+  }
+}
