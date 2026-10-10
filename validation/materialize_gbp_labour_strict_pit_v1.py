@@ -2,7 +2,7 @@
 """Materialise ONS first-release UK unemployment bulletins, fail closed.
 
 The ONS MGSX runtime series stores the final month of the rolling three-month
-LFS estimate.  This collector deliberately reads the immutable monthly
+LFS estimate. This collector deliberately reads the immutable monthly
 statistical-bulletin page for each release; it never uses the current ONS time
 series API, whose history can be revised.
 """
@@ -82,8 +82,58 @@ def release_date(text: str) -> str:
     return date(int(found.group(3)), MONTHS.index(found.group(2)) + 1, int(found.group(1))).isoformat()
 
 
+# ONS changed the opening-summary sentence shape repeatedly from March to
+# October 2024. These are deliberately pinned release-by-release rather than
+# widening the generic parser. Each rule is tied to the official publication
+# date and exact rolling-window wording that was verified during strict PIT
+# materialisation.
+VERIFIED_2024_OVERVIEW_HEADLINES = {
+    '2024-03-12': (
+        'November 2023 to January 2024',
+        r'\bThe UK unemployment rate \(for those aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+November 2023 to January 2024\b',
+    ),
+    '2024-04-16': (
+        'December 2023 to February 2024',
+        r'\bThe UK unemployment rate \(for those aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+December 2023 to February 2024\b',
+    ),
+    '2024-05-14': (
+        'January to March 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+January to March 2024\b',
+    ),
+    '2024-06-11': (
+        'February to April 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+February to April 2024\b',
+    ),
+    '2024-07-18': (
+        'March to May 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+March to May 2024\b',
+    ),
+    '2024-08-13': (
+        'April to June 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+April to June 2024\b',
+    ),
+    '2024-09-10': (
+        'May to July 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+May to July 2024\b',
+    ),
+    '2024-10-15': (
+        'June to August 2024',
+        r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+June to August 2024\b',
+    ),
+}
+
+
 def headline(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
-    # Scope to the opening release summary.  The rest of an ONS bulletin
+    published = release_date(text)
+    fixed = VERIFIED_2024_OVERVIEW_HEADLINES.get(published)
+    if fixed and fixed[0] in periods:
+        source_period, pattern = fixed
+        values = list(dict.fromkeys(float(value) for value in re.findall(pattern, text, flags=re.I)))
+        if len(values) != 1:
+            raise ValueError(f'ambiguous or missing pinned ONS {published} unemployment headline: {values}')
+        return values[0], source_period
+
+    # Scope to the opening release summary. The rest of an ONS bulletin
     # intentionally contains historical comparisons and must not be searched.
     start = text.find('Main points')
     if start < 0:
@@ -92,7 +142,7 @@ def headline(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
         raise ValueError('ONS opening summary marker not found')
     section = text[start:start + 6000]
     source_periods = [p for p in periods if p in section]
-    # July 2020 repeats the period in the overview without the rate.  Select
+    # July 2020 repeats the period in the overview without the rate. Select
     # its named Unemployment section only when its dedicated all-people first-
     # release sentence exists, rather than widening the overview scan.
     marker = 'Unemployment Unemployment measures'
@@ -111,7 +161,7 @@ def headline(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
     patterns = (
         # 2018-era bulletins state the exact period in the Main-points heading
         # and then put the rate in a definition-bearing bullet immediately
-        # beneath it.  This route remains tied to that verified heading.
+        # beneath it. This route remains tied to that verified heading.
         rf'\bMain points for\s+{escaped}\b.{{0,1400}}?\bunemployment rate\s*\([^)]{{0,240}}\)\s*was\s*([0-9]+(?:\.[0-9]+)?)\s*%',
         # July 2020's named Unemployment section has an explicit all-people
         # first-release sentence for the exact rolling window.
@@ -136,8 +186,6 @@ def headline(text: str, periods: tuple[str, ...]) -> tuple[float, str]:
         rf'\b(?:UK )?unemployment rate(?: for (?:people|all people)(?: aged 16(?: years)? and over)?)?\b[^.]{{0,140}}?\b{escaped}\b[^.]{{0,180}}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
         rf'\b{escaped}\b[^.]{{0,150}}?\b(?:UK )?unemployment rate(?: for (?:people|all people))?\b[^.]{{0,120}}?\b(?:was|at|to)\s*([0-9]+(?:\.[0-9]+)?)\s*%',
     )
-    # Each route has the headline value as its final capture.  This avoids
-    # coupling extraction to optional descriptive captures in a route.
     values = [float(m.groups()[-1]) for pat in patterns for m in re.finditer(pat, section, flags=re.I)]
     values = list(dict.fromkeys(values))
     if len(values) != 1:
@@ -166,7 +214,7 @@ def parse_october_2023_experimental_release(raw: bytes, final_url: str) -> dict[
 
     The 24 October 2023 overview explicitly says unadjusted June--August LFS
     data were not published, then supplies the same-release experimental
-    unemployment estimate.  This is deliberately a one-release route: it is
+    unemployment estimate. This is deliberately a one-release route: it is
     not a relaxed headline parser or a fallback to any revised series.
     """
     text = plain(raw)
@@ -201,10 +249,6 @@ def parse_october_2023_experimental_release(raw: bytes, final_url: str) -> dict[
 
 
 ALTERNATIVE_LFS_RELEASES = {
-    # These are the three subsequent period-specific overview releases for
-    # which ONS withheld the conventional LFS headline and published only its
-    # same-day administrative-data alternative.  Each wording is pinned here
-    # after checking the official release, rather than accepted generically.
     (2023, 9): ('November 2023', '2023-11-14', 'July to September 2023',
                 r'These alternative estimates for July to September 2023 show that;.*?'
                 r'the UK unemployment rate was largely unchanged on the quarter at\s+([0-9]+(?:\.[0-9]+)?)\s*%'),
@@ -266,7 +310,6 @@ def parse_february_2024_reweighted_companion(raw: bytes, final_url: str) -> dict
 
 
 def one(y: int, m: int) -> dict[str, object]:
-    # The bulletin name is the publication month, not the reference month.
     ry, rm = add_months(y, m, 2)
     slug = f'{MONTHS[rm - 1].lower()}{ry}'
     raw, final_url = fetch(f'{BASE}/{slug}')
@@ -282,8 +325,6 @@ def one(y: int, m: int) -> dict[str, object]:
     try:
         return parse_release(raw, final_url, r'(?:UK labour market|Labour market overview, UK)', y, m, 'ONS_UK_LABOUR_MARKET_BULLETIN')
     except ValueError as overview_error:
-        # The 2021 split-release layout delegates the exact labour headline to
-        # the immutable, same-day official Employment in the UK bulletin.
         companion_raw, companion_url = fetch(f'{EMPLOYMENT_BASE}/{slug}')
         row = parse_release(companion_raw, companion_url, 'Employment in the UK', y, m, 'ONS_EMPLOYMENT_IN_UK_COMPANION_BULLETIN')
         overview_date = release_date(plain(raw))
@@ -303,8 +344,6 @@ def main() -> int:
         row = one(y, m)
         rows.append(row)
         print(f'[{i:03d}/{len(target)}] {row["reference_month"]} {row["rolling_period"]}={row["headline_unemployment_rate_pct"]} release={row["release_date"]}', flush=True)
-        # ONS begins returning 429s under a rapid archival scan.  This is a
-        # transport throttle, not a fallback to another source or vintage.
         time.sleep(1.25)
     if len(rows) != 102 or len({r['reference_month'] for r in rows}) != 102:
         raise ValueError('incomplete or duplicate GBP rolling-month coverage')
