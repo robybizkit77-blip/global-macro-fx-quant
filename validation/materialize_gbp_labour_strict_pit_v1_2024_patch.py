@@ -10,6 +10,7 @@ period-specific first-release wording verified on official ONS releases for:
 - reference month 2024-05 (March to May 2024), release 18 Jul 2024
 - reference month 2024-06 (April to June 2024), release 13 Aug 2024
 - reference month 2024-07 (May to July 2024), release 10 Sep 2024
+- reference month 2024-08 (June to August 2024), release 15 Oct 2024
 """
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ _JUNE_TARGET = 'February to April 2024'
 _JULY_TARGET = 'March to May 2024'
 _AUGUST_TARGET = 'April to June 2024'
 _SEPTEMBER_TARGET = 'May to July 2024'
+_OCTOBER_TARGET = 'June to August 2024'
 
 
 def _unique_value(matches: list[str], label: str) -> float:
@@ -139,6 +141,21 @@ def _headline_with_verified_2024_cases(text: str, periods: tuple[str, ...]) -> t
                 r'\bThe UK unemployment rate for May to July 2024\s*\('
                 r'([0-9]+(?:\.[0-9]+)?)%\)\s+is below estimates of a year ago', text, flags=re.I)
             return _unique_value(matches, 'September 2024 companion'), _SEPTEMBER_TARGET
+
+    if _OCTOBER_TARGET in periods:
+        if re.search(r'\bLabour market overview, UK:\s*October\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-10-15':
+                raise ValueError('ONS October 2024 overview release-date mismatch')
+            matches = re.findall(
+                r'\bThe UK unemployment rate \(for people aged 16 years and over\) was estimated at\s*'
+                r'([0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+June to August 2024\b', text, flags=re.I)
+            return _unique_value(matches, 'October 2024 overview'), _OCTOBER_TARGET
+        if re.search(r'\bEmployment in the UK:\s*October\s+2024\b', text, re.I):
+            if base.release_date(text) != '2024-10-15':
+                raise ValueError('ONS October 2024 companion release-date mismatch')
+            matches = re.findall(
+                r'\bthe UK unemployment rate decreased to\s*([0-9]+(?:\.[0-9]+)?)%\b', text, flags=re.I)
+            return _unique_value(matches, 'October 2024 companion'), _OCTOBER_TARGET
 
     return _ORIGINAL_HEADLINE(text, periods)
 
