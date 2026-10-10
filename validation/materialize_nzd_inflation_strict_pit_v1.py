@@ -88,6 +88,7 @@ def headline_yoy(page: str, year: int, month: int) -> float:
         rf"From the {MONTHS[month].capitalize()} {year - 1} quarter to the {re.escape(period)}, the CPI inflation rate (?:rose|increased|fell|was)\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"In the {re.escape(period)} compared with the {MONTHS[month].capitalize()} {year - 1} quarter, the CPI inflation rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"For the 12 months to the {re.escape(period)}, the CPI inflation rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"([0-9]+(?:\.[0-9]+)?)\s+percent annually in the {re.escape(period)}, compared with the {MONTHS[month].capitalize()} {year - 1} quarter",
         rf"Inflation was (?:up|down)\s+[0-9]+(?:\.[0-9]+)?\s+percent in the {MONTHS[month].capitalize()} {year} quarter, and (?:up|down)\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {MONTHS[month].capitalize()} {year} year",
         rf"annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent.*?{re.escape(period)}",
         rf"{re.escape(period)}.*?annual inflation (?:was|is)\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
