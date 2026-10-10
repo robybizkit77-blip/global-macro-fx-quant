@@ -1,0 +1,76 @@
+{
+  "schema": "GMFQ_EUR_INFLATION_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "EUR.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "Eurostat",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-09",
+    "expected_months": 105,
+    "materialized_months": 105
+  },
+  "series_contract": {
+    "series_id": "EA_HICP_HEADLINE_YOY",
+    "frequency": "M",
+    "transformation": "reported_yoy_rate",
+    "unit": "% YoY",
+    "first_release_semantics": "FLASH_ESTIMATE"
+  },
+  "route_counts": {
+    "EUROSTAT_EURO_INDICATORS_LEGACY_AP": 74,
+    "EUROSTAT_EURO_INDICATORS_WEB_AP": 22,
+    "EUROSTAT_IMMUTABLE_RELEASE_PDF_AP": 5,
+    "EUROSTAT_EURO_INDICATORS_LEGACY_BP": 3,
+    "EUROSTAT_IMMUTABLE_RELEASE_PDF_BP": 1
+  },
+  "unique_page_hashes": 105,
+  "semantic_rowset_sha256": "fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1",
+  "semantic_fingerprint_serialization": "canonical JSON; reference month, headline HICP YoY rate, release date, source route, PIT status",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "headline_hicp_yoy_pct",
+    "release_date",
+    "source_route",
+    "pit_status"
+  ],
+  "anchor_checks": {
+    "2018-01": {"rate": 1.3, "release_date": "2018-01-31"},
+    "2018-04": {"rate": 1.2, "release_date": "2018-05-03"},
+    "2020-04": {"rate": 0.4, "release_date": "2020-04-30"},
+    "2020-05": {"rate": 0.1, "release_date": "2020-05-29"},
+    "2020-06": {"rate": 0.3, "release_date": "2020-06-30"},
+    "2020-07": {"rate": 0.4, "release_date": "2020-07-31"},
+    "2020-08": {"rate": -0.2, "release_date": "2020-09-01"},
+    "2022-10": {"rate": 10.7, "release_date": "2022-10-31"},
+    "2023-10": {"rate": 2.9, "release_date": "2023-10-31"},
+    "2026-08": {"rate": 3.3, "release_date": "2026-09-01"},
+    "2026-09": {"rate": 3.8, "release_date": "2026-10-02"}
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_date_required": true,
+    "url_and_sha256_required": true,
+    "first_market_information_is_flash_estimate": true,
+    "current_revised_history_forbidden": true,
+    "final_release_fallback_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "source_validation": {
+    "base_main_sha": "65d5d60eccb3eef9db49da6b933ea3fb423ce13e",
+    "validated_source_sha": "b4e50044cbfe6dae27451b68d69508283559ac35",
+    "materializer_run_id": 38063873303,
+    "engine_logic_audit_run_id": 38063873297,
+    "staging_browser_audit_run_id": 38063873338,
+    "artifact_id": 11674452706,
+    "artifact_digest": "sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}

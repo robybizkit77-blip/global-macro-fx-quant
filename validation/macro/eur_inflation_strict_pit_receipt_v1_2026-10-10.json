@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_EUR_INFLATION_STRICT_PIT_RECEIPT_V1",
+  "target": "EUR.inflation",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "65d5d60eccb3eef9db49da6b933ea3fb423ce13e",
+  "validated_source_sha": "b4e50044cbfe6dae27451b68d69508283559ac35",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-09",
+    "expected_months": 105,
+    "materialized_months": 105
+  },
+  "unique_page_hashes": 105,
+  "semantic_rowset_sha256": "fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1",
+  "materializer_run_id": 38063873303,
+  "engine_logic_audit_run_id": 38063873297,
+  "staging_browser_audit_run_id": 38063873338,
+  "artifact_id": 11674452706,
+  "artifact_digest": "sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d",
+  "checks": {
+    "official_period_specific_eurostat_releases_only": true,
+    "first_market_information_is_flash_estimate": true,
+    "double_materialization_semantic_match": true,
+    "no_revised_history_fallback": true,
+    "no_final_release_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "promotion_effect_if_merged": {
+    "historical_replay": "16/16",
+    "strict_direct_archival_pit": "10/16"
+  }
+}
