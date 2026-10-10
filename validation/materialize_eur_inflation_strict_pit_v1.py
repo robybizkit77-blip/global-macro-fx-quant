@@ -27,50 +27,64 @@ def months():
         yield y,m; m+=1
         if m==13:y+=1;m=1
 
+def last_weekday_of_month(y:int,m:int)->date:
+    nxt=date(y+1,1,1) if m==12 else date(y,m+1,1)
+    d=nxt-timedelta(days=1)
+    while d.weekday()>=5: d-=timedelta(days=1)
+    return d
+
 def candidate_dates(y:int,m:int):
-    # Eurostat flash estimate is issued at/around month-end. Search a deliberately
-    # narrow official window only; fail closed if no unique period-specific release exists.
-    if m==12: nxt=date(y+1,1,1)
-    else: nxt=date(y,m+1,1)
-    start=nxt-timedelta(days=7); end=nxt+timedelta(days=7)
-    d=start
-    while d<=end:
-        if d.weekday()<5: yield d
+    # Eurostat states flash estimates are normally published on the last working day
+    # of the reference month or shortly thereafter. Search that official timetable
+    # in probability order to avoid brute-force probing/rate limiting.
+    anchor=last_weekday_of_month(y,m)
+    ordered=[]
+    # last working day first, then next five working days
+    d=anchor
+    ordered.append(d)
+    while len(ordered)<6:
         d+=timedelta(days=1)
+        if d.weekday()<5: ordered.append(d)
+    # rare early publication: up to three prior working days, only after normal window
+    d=anchor
+    while len(ordered)<9:
+        d-=timedelta(days=1)
+        if d.weekday()<5: ordered.append(d)
+    yield from ordered
 
 def urls_for(d:date):
     key=d.strftime('%d%m%Y')
-    return [
-      ('EUROSTAT_EURO_INDICATORS_WEB',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-{key}-ap'),
-      ('EUROSTAT_EURO_INDICATORS_LEGACY',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-{key}-AP'),
-    ]
+    legacy=('EUROSTAT_EURO_INDICATORS_LEGACY',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/-/2-{key}-AP')
+    modern=('EUROSTAT_EURO_INDICATORS_WEB',f'https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-{key}-ap')
+    # Historical products resolve most directly through the legacy product route;
+    # newer releases use the /w/ route. Both remain first-party Eurostat URLs.
+    return [legacy,modern] if d.year<=2024 else [modern,legacy]
 
 def fetch(url:str):
-    # Transport-only resilience: retry HTTP 429 on the exact same official URL.
-    # Do not broaden routes, dates, or sources after throttling.
-    delays=(1.0,2.0,4.0,8.0,12.0)
-    for attempt in range(len(delays)+1):
-        req=urllib.request.Request(url,headers={'User-Agent':'global-macro-fx-quant/1.0 strict-pit'})
+    req=urllib.request.Request(url,headers={'User-Agent':'global-macro-fx-quant/1.0 strict-pit'})
+    for attempt in range(6):
         try:
             with urllib.request.urlopen(req,timeout=25) as r:
                 raw=r.read(); final=r.geturl(); return raw,final
         except urllib.error.HTTPError as e:
             if e.code in (404,410): return None
-            if e.code==429 and attempt < len(delays):
+            if e.code==429 and attempt<5:
                 retry_after=e.headers.get('Retry-After') if e.headers else None
-                try: delay=max(delays[attempt],float(retry_after)) if retry_after else delays[attempt]
-                except (TypeError,ValueError): delay=delays[attempt]
-                time.sleep(delay)
-                continue
+                try: delay=max(2.0,float(retry_after)) if retry_after else 2.0*(attempt+1)
+                except (TypeError,ValueError): delay=2.0*(attempt+1)
+                time.sleep(delay); continue
             raise
 
 def parse_period(text:str,y:int,m:int):
     month=MONTHS[m-1].capitalize(); period=f'{month} {y}'
     if re.search(rf'Flash estimate\s*[-–]\s*{re.escape(period)}',text,re.I) is None:
-        return None
+        # Some product pages omit the explicit heading but retain the canonical flash sentence.
+        if re.search(rf'expected to be\s+[-0-9.]+\s*%\s+in\s+{re.escape(month)}(?:\s+{y})?',text,re.I) is None:
+            return None
     pats=[
       rf'Euro area annual inflation is expected to be\s+(-?[0-9]+(?:\.[0-9]+)?)\s*%\s+in\s+{re.escape(month)}',
       rf'Euro area annual inflation\s+is expected to be\s+(-?[0-9]+(?:\.[0-9]+)?)%\s+in\s+{re.escape(month)}',
+      rf'In\s+{re.escape(month)}\s+{y}[^.]*?Euro area annual inflation is expected to be\s+(-?[0-9]+(?:\.[0-9]+)?)%'
     ]
     vals=[]
     for p in pats:
@@ -86,6 +100,7 @@ def one(y:int,m:int):
     for d in candidate_dates(y,m):
         for route,url in urls_for(d):
             got=fetch(url)
+            time.sleep(.35)
             if got is None: continue
             raw,final=got; text=text_from_html(raw); value=parse_period(text,y,m)
             if value is None: continue
@@ -104,7 +119,7 @@ def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--csv',required=True); ap.add_argument('--evidence',required=True); a=ap.parse_args()
     rows=[]; total=105
     for i,(y,m) in enumerate(months(),1):
-        r=one(y,m); rows.append(r); print(f'[{i:03d}/{total}] {r["reference_month"]} HICP_FLASH={r["headline_hicp_yoy_pct"]} release={r["release_date"]}',flush=True); time.sleep(.10)
+        r=one(y,m); rows.append(r); print(f'[{i:03d}/{total}] {r["reference_month"]} HICP_FLASH={r["headline_hicp_yoy_pct"]} release={r["release_date"]}',flush=True); time.sleep(.20)
     assert len(rows)==105 and rows[0]['reference_month']=='2018-01' and rows[-1]['reference_month']=='2026-09'
     assert len({r['page_sha256'] for r in rows})==105
     by={r['reference_month']:r for r in rows}
