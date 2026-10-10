@@ -20,13 +20,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Independently materialize Eurostat first-release unemployment chain twice
+      - name: Capture official Eurostat first-release unemployment artifacts once
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/eur-labour-strict/{a,b}
-          python validation/materialize_eur_labour_strict_pit_v1.py --csv /tmp/eur-labour-strict/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv --evidence /tmp/eur-labour-strict/a/evidence.json
-          python validation/materialize_eur_labour_strict_pit_v1.py --csv /tmp/eur-labour-strict/b/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv --evidence /tmp/eur-labour-strict/b/evidence.json
+          mkdir -p /tmp/eur-labour-strict/{raw,a,b}
+          python validation/materialize_eur_labour_strict_pit_v1.py capture \
+            --raw-dir /tmp/eur-labour-strict/raw
+      - name: Replay deterministic parser twice from identical captured bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/materialize_eur_labour_strict_pit_v1.py replay \
+            --raw-dir /tmp/eur-labour-strict/raw \
+            --csv /tmp/eur-labour-strict/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv \
+            --evidence /tmp/eur-labour-strict/a/evidence.json
+          python validation/materialize_eur_labour_strict_pit_v1.py replay \
+            --raw-dir /tmp/eur-labour-strict/raw \
+            --csv /tmp/eur-labour-strict/b/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv \
+            --evidence /tmp/eur-labour-strict/b/evidence.json
       - name: Enforce semantic equivalence and strict direct PIT invariants
         shell: bash
         run: |
@@ -35,7 +47,8 @@ jobs:
           import csv,json
           from pathlib import Path
           root=Path('/tmp/eur-labour-strict')
-          a=json.loads((root/'a/evidence.json').read_text()); b=json.loads((root/'b/evidence.json').read_text())
+          a=json.loads((root/'a/evidence.json').read_text())
+          b=json.loads((root/'b/evidence.json').read_text())
           assert a['status']==b['status']=='PASS'
           assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']
           assert a['coverage']==b['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'materialized_months':104}
@@ -45,8 +58,12 @@ jobs:
           by={r['reference_month']:r for r in rows}
           anchors={'2018-01':('8.6','2018-03-01'),'2026-07':('6.4','2026-09-01'),'2026-08':('6.4','2026-10-01')}
           for month,expected in anchors.items():
-              r=by[month]; assert (r['unemployment_rate_pct'],r['release_date'])==expected,(month,r)
-          print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256'],'anchors':anchors},indent=2))
+              r=by[month]
+              assert (r['unemployment_rate_pct'],r['release_date'])==expected,(month,r)
+          manifest=json.loads((root/'raw/manifest.json').read_text())
+          assert len(manifest)==104
+          assert len({x['page_sha256'] for x in manifest})==104
+          print(json.dumps({'status':'PASS','semantic_rowset_sha256':a['semantic_rowset_sha256'],'captured_releases':len(manifest),'anchors':anchors},indent=2))
           PY
       - name: Enforce no repository writes
         run: git diff --exit-code
