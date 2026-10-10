@@ -92,7 +92,11 @@ def release_asset(year: int, month: int) -> dict:
         embargo = item.get("bfs", {}).get("embargo", "")
         links = item.get("links", [])
         masters = [link.get("href") for link in links if link.get("rel") == "master" and link.get("format") == "pdf"]
-        if f"{MONTHS[month - 1]} {year}" not in super_title or len(masters) != 1:
+        # December releases also carry the annual-inflation label; retain an
+        # explicit identity rule rather than loosening title matching.
+        title_matches_period = f"{MONTHS[month - 1]} {year}" in super_title
+        title_matches_annual_december = month == 12 and f"December and annual inflation {year}" in super_title
+        if not (title_matches_period or title_matches_annual_december) or len(masters) != 1:
             continue
         if item.get("bfs", {}).get("articleModel", {}).get("code") != "MM":
             continue
