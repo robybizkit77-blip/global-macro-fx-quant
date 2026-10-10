@@ -1,0 +1,75 @@
+{
+  "schema": "GMFQ_GBP_LABOUR_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "GBP.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "authority": "UK Office for National Statistics",
+  "coverage": {
+    "start": "2018-01",
+    "end": "2026-06",
+    "expected_months": 102,
+    "materialized_months": 102
+  },
+  "series_contract": {
+    "series_id": "MGSX",
+    "frequency": "M",
+    "transformation": "level",
+    "unit": "%",
+    "storage_month": "final month of rolling three-month window"
+  },
+  "route_counts": {
+    "ONS_EMPLOYMENT_IN_UK_COMPANION_BULLETIN": 11,
+    "ONS_EMPLOYMENT_IN_UK_REWEIGHTED_COMPANION_BULLETIN": 1,
+    "ONS_UK_LABOUR_MARKET_ALTERNATIVE_LFS_OVERVIEW_BULLETIN": 3,
+    "ONS_UK_LABOUR_MARKET_BULLETIN": 86,
+    "ONS_UK_LABOUR_MARKET_EXPERIMENTAL_OVERVIEW_BULLETIN": 1
+  },
+  "unique_page_hashes": 102,
+  "semantic_rowset_sha256": "7f5faef5cdf86e36249ce79cf42639f6ab7c23740eb50c799b10a6f88dfa577f",
+  "semantic_fingerprint_serialization": "canonical JSON; reference month, rolling period, source rolling period, headline unemployment rate, release date, source route, PIT status",
+  "semantic_fingerprint_fields": [
+    "reference_month",
+    "rolling_period",
+    "source_rolling_period",
+    "headline_unemployment_rate_pct",
+    "release_date",
+    "source_route",
+    "pit_status"
+  ],
+  "anchor_checks": {
+    "2018-01": {"source_period": "November 2017 to January 2018", "rate": 4.3, "release_date": "2018-03-21"},
+    "2020-02": {"source_period": "December 2019 to February 2020", "rate": 4.0, "release_date": "2020-04-21"},
+    "2023-03": {"source_period": "January to March 2023", "rate": 3.9, "release_date": "2023-05-16"},
+    "2023-08": {"source_period": "June to August 2023", "rate": 4.2, "release_date": "2023-10-24", "route": "ONS_UK_LABOUR_MARKET_EXPERIMENTAL_OVERVIEW_BULLETIN"},
+    "2023-09": {"source_period": "July to September 2023", "rate": 4.2, "release_date": "2023-11-14", "route": "ONS_UK_LABOUR_MARKET_ALTERNATIVE_LFS_OVERVIEW_BULLETIN"},
+    "2023-10": {"source_period": "August to October 2023", "rate": 4.2, "release_date": "2023-12-12", "route": "ONS_UK_LABOUR_MARKET_ALTERNATIVE_LFS_OVERVIEW_BULLETIN"},
+    "2023-11": {"source_period": "September to November 2023", "rate": 4.2, "release_date": "2024-01-16", "route": "ONS_UK_LABOUR_MARKET_ALTERNATIVE_LFS_OVERVIEW_BULLETIN"},
+    "2023-12": {"source_period": "October to December 2023", "rate": 3.8, "release_date": "2024-02-13", "route": "ONS_EMPLOYMENT_IN_UK_REWEIGHTED_COMPANION_BULLETIN"},
+    "2024-08": {"source_period": "June to August 2024", "rate": 4.0, "release_date": "2024-10-15"},
+    "2026-06": {"source_period": "April to June 2026", "rate": 4.9, "release_date": "2026-08-18"}
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "publication_date_required": true,
+    "url_and_sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "source_validation": {
+    "base_main_sha": "ef9c8aaa6bfd216d7fedb7f86d5d1dccb6649998",
+    "validated_source_sha": "99228f00096564febb30dc7097266750f63d30f6",
+    "materializer_run_id": 38040356890,
+    "engine_logic_audit_run_id": 38040356930,
+    "staging_browser_audit_run_id": 38040356963,
+    "artifact_id": 11665467830,
+    "artifact_digest": "sha256:d4887d9c92547e7afc0e658d40d2b86fcf4e46ab4f21cece5d0c6972b62a0fb4",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "changes_live_data": false,
+  "changes_engine_rules": false
+}
