@@ -1,0 +1,59 @@
+name: G4USD Alignment Contract Conformance V1
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-contract-conformance-v1-2026-10-11
+  pull_request:
+    paths:
+      - validation/g4usd_front_end_macro_cb_alignment_v1.py
+      - .github/workflows/g4usd-alignment-contract-conformance-v1.yml
+permissions:
+  contents: read
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen contract semantics without real performance data
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, math
+          p='validation/g4usd_front_end_macro_cb_alignment_v1.py'
+          spec=importlib.util.spec_from_file_location('m',p)
+          m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+
+          # PIT change semantics: latest and previous eligible RELEASE values.
+          rows=[('2020-01-10',2.0),('2020-02-10',2.4),('2020-03-10',2.1)]
+          d,cur,prev=m.change_pair(rows,'2020-02-29')
+          assert abs(d-0.4)<1e-12 and cur==2.4 and prev==2.0
+          d,cur,prev=m.change_pair(rows,'2020-03-09')
+          assert abs(d-0.4)<1e-12 and cur==2.4 and prev==2.0
+
+          # Frozen state definitions: both agree / one agrees / neither agrees.
+          assert m.classify(0.10,0.2,0.3)=='ALIGNED'
+          assert m.classify(0.10,0.2,-0.3)=='MIXED'
+          assert m.classify(0.10,-0.2,-0.3)=='CONTRADICTORY'
+          assert m.classify(0.10,None,0.3)=='UNAVAILABLE'
+          assert m.classify(0.0,0.2,0.3)=='MIXED'
+
+          # Pooled panel return MUST equal-weight currencies within month.
+          obs=[
+            {'asof_date':'2020-01-31','strategy_return':0.01,'prediction':1.0,'target_return':0.01},
+            {'asof_date':'2020-01-31','strategy_return':0.03,'prediction':1.0,'target_return':0.03},
+            {'asof_date':'2020-02-29','strategy_return':-0.02,'prediction':-1.0,'target_return':0.02},
+          ]
+          pr=m.panel_returns(obs)
+          assert pr==[('2020-01-31',0.02),('2020-02-29',-0.02)]
+          s=m.summarize(obs,panel=True)
+          assert s['months']==2 and s['n']==3
+          assert abs(s['total_log_return'])<1e-12
+
+          # Direction convention inherited from parent: zero prediction is positive.
+          assert m.hit([{'prediction':0.0,'target_return':0.01}])==1.0
+          print('CONTRACT_CONFORMANCE_PASS')
+          PY
+          git diff --exit-code
