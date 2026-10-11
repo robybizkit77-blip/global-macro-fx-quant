@@ -1,0 +1,59 @@
+name: CAD CB Pricing Temporal PIT Discovery v1
+
+on:
+  push:
+    branches:
+      - 'validation-cad-cb-pricing-temporal-pit-discovery-v1-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install discovery dependencies
+        run: pip install requests beautifulsoup4
+      - name: Independently probe MX CRA archive twice
+        run: |
+          mkdir -p /tmp/cad-cb-pricing-pit/a /tmp/cad-cb-pricing-pit/b
+          python validation/cb_pricing/discover_cad_mx_corra_temporal_pit_v1.py --output /tmp/cad-cb-pricing-pit/a/discovery.json
+          python validation/cb_pricing/discover_cad_mx_corra_temporal_pit_v1.py --output /tmp/cad-cb-pricing-pit/b/discovery.json
+      - name: Enforce reproducibility and fail-closed discovery invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/cad-cb-pricing-pit/a/discovery.json').read_text())
+          b=json.loads(Path('/tmp/cad-cb-pricing-pit/b/discovery.json').read_text())
+          assert a['schema']=='GMFQ_CAD_CB_PRICING_TEMPORAL_PIT_DISCOVERY_V1'
+          assert b['schema']==a['schema']
+          assert a['semantic_discovery_sha256']==b['semantic_discovery_sha256'], 'semantic discovery mismatch'
+          assert a['by_year']==b['by_year'], 'coverage mismatch'
+          assert a['expected_anchors']==36
+          assert a['anchors_found']==b['anchors_found']
+          assert a['anchors_mapping_ok']==b['anchors_mapping_ok']
+          assert a['changes_live_data'] is False and a['changes_engine_rules'] is False
+          assert b['changes_live_data'] is False and b['changes_engine_rules'] is False
+          if a['status']!='PASS':
+              raise SystemExit('CAD MX CRA archive is not yet certifiable across the discovery anchors; fail closed')
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html
+          if git status --porcelain | grep -E '(^| )live_data/|(^| )index\.html$'; then
+            echo 'production mutation detected'
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cad-cb-pricing-temporal-pit-discovery-v1-${{ github.run_id }}
+          path: /tmp/cad-cb-pricing-pit
+          retention-days: 90
