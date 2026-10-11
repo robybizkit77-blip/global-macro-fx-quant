@@ -1,0 +1,69 @@
+name: COT 2018-2019 Shutdown Updated-Date Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-cot-legacy-full-history-discovery-v1-2026-10-11
+    paths:
+      - 'validation/discover_cot_2018_2019_shutdown_updated_dates_v1.py'
+      - '.github/workflows/cot-2018-2019-shutdown-updated-date-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Probe shutdown-era CFTC pages twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-shutdown/a /tmp/cot-shutdown/b
+          python validation/discover_cot_2018_2019_shutdown_updated_dates_v1.py --output /tmp/cot-shutdown/a/discovery.json
+          python validation/discover_cot_2018_2019_shutdown_updated_dates_v1.py --output /tmp/cot-shutdown/b/discovery.json
+
+      - name: Compare normalized discovery semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/cot-shutdown/a/discovery.json'))
+          b=json.load(open('/tmp/cot-shutdown/b/discovery.json'))
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert a['agreed_updated_dates']==b['agreed_updated_dates']
+          assert a['errors']==b['errors']
+          assert a['invariants']['updated_date_not_yet_certified_as_first_publication'] is True
+          assert a['invariants']['historical_backtest_certified'] is False
+          assert a['invariants']['production_write'] is False
+          print(json.dumps({
+            'status':a['status'],
+            'agreement_count':len(a['agreed_updated_dates']),
+            'requested_count':len(a['report_dates']),
+            'semantic_sha256':a['semantic_sha256'],
+            'agreed_updated_dates':a['agreed_updated_dates'],
+            'errors':a['errors'],
+          },indent=2))
+          PY
+
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-shutdown-updated-date-discovery-${{ github.run_id }}
+          path: /tmp/cot-shutdown/
+          retention-days: 90
