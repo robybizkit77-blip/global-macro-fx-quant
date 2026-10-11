@@ -1,0 +1,61 @@
+name: USD Inflation ALFRED Availability Anchor V1
+
+on:
+  push:
+    branches:
+      - 'validation-usd-inflation-alfred-availability-anchor-v1-*'
+    paths:
+      - 'validation/macro/discover_usd_inflation_alfred_availability_anchor_v1.py'
+      - '.github/workflows/usd-inflation-alfred-availability-anchor-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe known BLS release anchors twice
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-alfred-anchor/a /tmp/usd-alfred-anchor/b
+          python validation/macro/discover_usd_inflation_alfred_availability_anchor_v1.py --output /tmp/usd-alfred-anchor/a/discovery.json
+          python validation/macro/discover_usd_inflation_alfred_availability_anchor_v1.py --output /tmp/usd-alfred-anchor/b/discovery.json
+      - name: Enforce exact release-date transition and reproducibility
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/usd-alfred-anchor/a/discovery.json'))
+          b=json.load(open('/tmp/usd-alfred-anchor/b/discovery.json'))
+          assert a['status']=='DISCOVERY_PASS' and b['status']=='DISCOVERY_PASS'
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert len(a['tests'])==4 and len(b['tests'])==4
+          def econ_probe(p): return {k:v for k,v in p.items() if k!='http_sha256'}
+          def econ_test(t): return {**t,'before_release_probe':econ_probe(t['before_release_probe']),'release_date_probe':econ_probe(t['release_date_probe'])}
+          assert [econ_test(t) for t in a['tests']]==[econ_test(t) for t in b['tests']]
+          for t in a['tests']:
+              assert t['pass'] is True
+              assert t['before_release_probe']['present'] is False
+              assert t['release_date_probe']['present'] is True
+              assert len(t['before_release_probe']['http_sha256'])==64
+              assert len(t['release_date_probe']['http_sha256'])==64
+          assert a['errors']==[] and b['errors']==[]
+          assert a['production_write'] is False
+          print({'status':'PASS','anchors':[(t['observation_date'],t['release_date']) for t in a['tests']],'semantic_sha256':a['semantic_sha256']})
+          PY
+      - name: Assert no repository writes
+        run: git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: usd-inflation-alfred-availability-anchor-${{ github.run_id }}
+          path: /tmp/usd-alfred-anchor/
+          if-no-files-found: warn
+          retention-days: 90
