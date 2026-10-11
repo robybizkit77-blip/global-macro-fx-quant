@@ -100,7 +100,9 @@ def anchors():
 
 
 def semantic_hash(rows):
-    payload = [{k:r[k] for k in ('anchor','trade_date','mapping','source_sha256')} for r in rows]
+    # Semantic reproducibility must compare parsed economics, not transport bytes.
+    # Raw source SHA256 remains captured per row as independent provenance evidence.
+    payload = [{k:r[k] for k in ('anchor','trade_date','mapping')} for r in rows]
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',',':')).encode()).hexdigest()
 
 
