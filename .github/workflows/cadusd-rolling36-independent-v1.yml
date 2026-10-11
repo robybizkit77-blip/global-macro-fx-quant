@@ -1,0 +1,89 @@
+name: CADUSD Rolling36 Independent Validation V1
+
+on:
+  push:
+    branches:
+      - 'validation-cadusd-rolling36-independent-v1-*'
+    paths:
+      - 'validation/cadusd_rolling36_independent_v1.py'
+      - '.github/workflows/cadusd-rolling36-independent-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  CAD_INF_ARTIFACT_ID: '11641550951'
+  CAD_INF_ARTIFACT_DIGEST: 'sha256:5e13a63835d854488a66e00376264719bb64f1037de5cecf1a58480cd6d55724'
+  CAD_LAB_ARTIFACT_ID: '11631614900'
+  CAD_LAB_ARTIFACT_DIGEST: 'sha256:c8a1b611ff0030ff1196a5576bfe1832bbf3f42538559a73451a8364278b0f89'
+  RATES_STORE_SHA: '0f4f45190fa5d5e010650026a30a0f981373ec34'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download certified CAD macro artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad/inf /tmp/cad/lab
+          python - <<'PY'
+          import json,os,subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid,dig in [(os.environ['CAD_INF_ARTIFACT_ID'],os.environ['CAD_INF_ARTIFACT_DIGEST']),(os.environ['CAD_LAB_ARTIFACT_ID'],os.environ['CAD_LAB_ARTIFACT_DIGEST'])]:
+              m=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True)); assert not m['expired']; assert m.get('digest')==dig,(m.get('digest'),dig)
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${CAD_INF_ARTIFACT_ID}/zip" > /tmp/cad/inf.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${CAD_LAB_ARTIFACT_ID}/zip" > /tmp/cad/lab.zip
+          unzip -q /tmp/cad/inf.zip -d /tmp/cad/inf
+          unzip -q /tmp/cad/lab.zip -d /tmp/cad/lab
+          find /tmp/cad -maxdepth 3 -type f -print
+      - name: Borrow exact frozen CAD and USD rates histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          git checkout FETCH_HEAD -- validation/rates_pit_rowsets/cad_rates_2y_10y_temporal_pit_v1.csv validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv
+          cp validation/rates_pit_rowsets/cad_rates_2y_10y_temporal_pit_v1.csv /tmp/cad/rates/cad.csv
+          cp validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv /tmp/cad/rates/usd.csv
+          git reset --hard "$GITHUB_SHA"; git clean -fd
+      - name: Download official ECB CAD and USD reference rates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.CAD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/cad/cad_ecb.csv
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/cad/usd_ecb.csv
+          test -s /tmp/cad/cad_ecb.csv; test -s /tmp/cad/usd_ecb.csv
+      - name: Run frozen independent validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          INF=$(find /tmp/cad/inf -type f -name 'CAD_CPI_STRICT_FIRST_RELEASE_2018_2026_08.csv' | head -1)
+          LAB=$(find /tmp/cad/lab -type f -name 'CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv' | head -1)
+          test -n "$INF"; test -n "$LAB"
+          python validation/cadusd_rolling36_independent_v1.py --inflation-csv "$INF" --labour-csv "$LAB" --cad-rates /tmp/cad/rates/cad.csv --usd-rates /tmp/cad/rates/usd.csv --cad-ecb /tmp/cad/cad_ecb.csv --usd-ecb /tmp/cad/usd_ecb.csv --output /tmp/cad/result.json
+          python validation/cadusd_rolling36_independent_v1.py --inflation-csv "$INF" --labour-csv "$LAB" --cad-rates /tmp/cad/rates/cad.csv --usd-rates /tmp/cad/rates/usd.csv --cad-ecb /tmp/cad/cad_ecb.csv --usd-ecb /tmp/cad/usd_ecb.csv --output /tmp/cad/result-b.json >/dev/null
+          cmp /tmp/cad/result.json /tmp/cad/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cad/result.json')); assert r['status']=='INDEPENDENT_VALIDATION_COMPLETE'; assert r['scope']['snapshot_count']==102; assert r['scope']['oos_predictions_per_model']==65; assert r['method']['rolling_window_months_fixed']==36; assert r['method']['window_search_on_cad'] is False; assert r['method']['hyperparameter_tuning_on_cad'] is False; assert r['policy']['production_signal_authorized'] is False
+          print(json.dumps({'comparison':r['comparison'],'models':r['models']},indent=2,sort_keys=True))
+          PY
+      - name: Assert repository clean
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadusd-rolling36-independent-${{ github.run_id }}
+          path: /tmp/cad/result.json
+          retention-days: 90
