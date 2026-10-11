@@ -71,7 +71,7 @@ def main()->int:
             })
         except Exception as exc:
             errors.append({'reference_month':probe['reference_month'],'url':probe['url'],'error':repr(exc)})
-            break
+            continue
     status='DISCOVERY_PASS' if not errors and len(rows)==len(PROBES) and all(r['is_pdf'] and r['bytes']>10000 for r in rows) else 'DISCOVERY_FAIL'
     out={
         'schema':'GMFQ_CHF_LABOUR_SECOALV_ROUTE_DISCOVERY_V1',
@@ -81,6 +81,7 @@ def main()->int:
         'probes':rows,
         'errors':errors,
         'invariants':{
+            'all_probes_attempted_even_after_failure':True,
             'official_domain_only':True,
             'period_specific_artifacts':True,
             'production_write':False,
