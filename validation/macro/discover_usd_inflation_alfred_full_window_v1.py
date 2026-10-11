@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse,csv,hashlib,io,json,pathlib,time,urllib.parse,urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date,timedelta
 
 BASE='https://alfred.stlouisfed.org/graph/alfredgraph.csv'
@@ -11,28 +12,22 @@ UA='GLOBAL-MACRO-FX-QUANT USD inflation ALFRED temporal discovery v1'
 
 def bounded_window(vintage:str)->tuple[str,str]:
     end=date.fromisoformat(vintage)
-    # Discovery needs only enough history to prove a PIT vintage is usable and
-    # to support a YoY calculation.  Two years avoids downloading the entire
-    # CPI history from 1947 for every probe.
+    # Two years is sufficient for discovery and for a 12-month YoY check while
+    # avoiding a full-history download for every historical vintage.
     start=end-timedelta(days=730)
     return start.isoformat(),end.isoformat()
 
 
 def fetch(vintage:str):
     start,end=bounded_window(vintage)
-    params={
-        'id':SERIES,
-        'vintage_date':vintage,
-        'cosd':start,
-        'coed':end,
-    }
+    params={'id':SERIES,'vintage_date':vintage,'cosd':start,'coed':end}
     url=BASE+'?'+urllib.parse.urlencode(params)
     last_error=None
     raw=None
     for attempt in range(1,4):
         try:
             req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,*/*;q=0.8'})
-            with urllib.request.urlopen(req,timeout=35) as r:
+            with urllib.request.urlopen(req,timeout=25) as r:
                 raw=r.read()
             break
         except Exception as exc:
@@ -70,9 +65,17 @@ def fetch(vintage:str):
     }
 
 
+def probe_all()->list[dict]:
+    # Independent vintages are I/O-bound and may be slow at the ALFRED graph
+    # endpoint. Parallel probing shortens discovery without changing semantics.
+    with ThreadPoolExecutor(max_workers=len(VINTAGES)) as pool:
+        probes=list(pool.map(fetch,VINTAGES))
+    return sorted(probes,key=lambda x:x['vintage_date'])
+
+
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--output',required=True,type=pathlib.Path); a=ap.parse_args()
-    probes=[fetch(v) for v in VINTAGES]
+    probes=probe_all()
     out={
       'schema':'GMFQ_USD_INFLATION_ALFRED_FULL_WINDOW_DISCOVERY_V1',
       'status':'DISCOVERY_PASS',
@@ -82,6 +85,7 @@ def main():
       'probes':probes,
       'invariants':{
         'single_vintage_per_request':True,'bounded_observation_window':True,
+        'parallel_transport_only_semantics_unchanged':True,
         'no_future_observation_dates':True,'production_write':False,
         'changes_live_data':False,'changes_engine_rules':False
       }
