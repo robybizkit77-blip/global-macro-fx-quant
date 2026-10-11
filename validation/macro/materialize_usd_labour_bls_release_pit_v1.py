@@ -103,7 +103,7 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     prefix=text[:min(len(text),12000)]
     ur=None
     patterns=[
-      r'unemployment rate[^.]{0,120}?(?:at|to)\s+(\d+(?:\.\d+)?)\s*percent',
+      r'unemployment rate.{0,140}?(?:at|to)\s+(\d+(?:\.\d+)?)\s*percent',
       r'unemployment rate\s+(?:was|is|remained|held)\s+(\d+(?:\.\d+)?)\s*percent',
     ]
     for p in patterns:
