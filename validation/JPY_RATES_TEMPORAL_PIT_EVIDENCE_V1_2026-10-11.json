@@ -1,0 +1,64 @@
+{
+  "schema": "GMFQ_JPY_RATES_TEMPORAL_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "JPY.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "authority": "Japan Ministry of Finance",
+  "source": "JGB Interest Rate historical + current official CSVs",
+  "source_endpoints": {
+    "historical": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv",
+    "current": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv",
+    "release_policy": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/qa.htm"
+  },
+  "coverage": {
+    "start_date": "2018-01-04",
+    "end_date": "2026-10-06",
+    "observations": 2136
+  },
+  "series_contract": {
+    "currency": "JPY",
+    "tenors": ["2Y", "10Y"],
+    "basis": "official_same_basis_jgb_constant_maturity_interest_rate_csv",
+    "same_observation_date_required": true,
+    "same_source_family_required": true
+  },
+  "temporal_contract": {
+    "official_release_time_verified": true,
+    "official_release_time": "09:30 JST on the next business day",
+    "same_day_use_allowed": false,
+    "eligibility": "decision_timestamp > next_official_business_day 09:30 JST",
+    "release_date_method": "next official MOF observation date used as conservative next-business-day proxy",
+    "intraday_same_day_use": "FORBIDDEN"
+  },
+  "validation": {
+    "base_main_sha": "3d66a79ee9fe161c300d4aff7984b978ffee56fc",
+    "validated_source_sha": "3b35b390e0264d96f3b0611487df629908d6dd8b",
+    "materializer_run_id": 38126032711,
+    "engine_logic_audit_run_id": 38126032513,
+    "staging_browser_audit_run_id": 38126032540,
+    "artifact_id": 11697156816,
+    "artifact_name": "jpy-rates-temporal-pit-v1-38126032711",
+    "artifact_digest": "sha256:760bf4e5299aa27bfa7be71dee4cb889a7b56afcebe2a22908d678d9828cbbff",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "source_hashes": {
+    "historical_jgbcme_all": "ffeb33ecaf557f4e443b9aebc0a2d66550dbd3d9648dcf6a61dd552fc5d7ccdd",
+    "current_jgbcme": "59344f7942d4fdf2d1fe10ad0a117794a707e3c08b9092c30e4772b3d02aff49"
+  },
+  "semantic_rowset_sha256": "9cb636b4d4b982184e44096b38c7082c84407f441d36b1ba4395d229bcdf79b3",
+  "invariants": {
+    "official_source_only": true,
+    "same_basis_2y_10y": true,
+    "duplicate_observation_dates": false,
+    "monotonic_observation_order": true,
+    "official_file_overlap_value_conflict": false,
+    "secondary_source_fallback_used": false,
+    "release_time_policy_verified": true,
+    "same_day_lookahead_prevented": true,
+    "two_materializations_semantically_identical": true
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}
