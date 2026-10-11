@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_COT_FLOW_FX_PRICE_SOURCE_CONTRACT_V1",
+  "as_of": "2026-10-11",
+  "status": "PREDECLARED_NO_COT_EDGE_RESULTS_OBSERVED",
+  "source": {
+    "publisher": "Board of Governors of the Federal Reserve System (US)",
+    "release": "H.10 Foreign Exchange Rates",
+    "delivery": "FRED daily series",
+    "frequency": "Daily",
+    "price_type": "Noon buying rates in New York City for cable transfers payable in foreign currencies",
+    "role": "Historical FX target/return labels only; never used as a predictor feature in this experiment"
+  },
+  "series": {
+    "EUR": {"fred_id":"DEXUSEU","native_units":"USD per EUR","transform_to_local_currency_vs_usd":"identity"},
+    "GBP": {"fred_id":"DEXUSUK","native_units":"USD per GBP","transform_to_local_currency_vs_usd":"identity"},
+    "JPY": {"fred_id":"DEXJPUS","native_units":"JPY per USD","transform_to_local_currency_vs_usd":"reciprocal"},
+    "CHF": {"fred_id":"DEXSZUS","native_units":"CHF per USD","transform_to_local_currency_vs_usd":"reciprocal"},
+    "AUD": {"fred_id":"DEXUSAL","native_units":"USD per AUD","transform_to_local_currency_vs_usd":"identity"},
+    "NZD": {"fred_id":"DEXUSNZ","native_units":"USD per NZD","transform_to_local_currency_vs_usd":"identity"},
+    "CAD": {"fred_id":"DEXCAUS","native_units":"CAD per USD","transform_to_local_currency_vs_usd":"reciprocal"}
+  },
+  "orientation_invariant": "After transformation, an increase in every series means local currency appreciation versus USD.",
+  "date_scope": {
+    "minimum_required_start": "2018-01-01",
+    "end": "latest_available_at_execution",
+    "future_return_rows_without_five_subsequent_nonmissing_daily_observations": "WITHHOLD_OBSERVATION"
+  },
+  "missing_value_policy": {
+    "fred_dot_values": "missing",
+    "no_forward_fill": true,
+    "entry": "first nonmissing observation on or after research_available_from",
+    "exit": "fifth subsequent nonmissing daily observation after entry",
+    "calendar_day_interpolation": false
+  },
+  "revision_policy": {
+    "historical_h10_corrections_allowed_for_target_labels": true,
+    "rationale": "This source supplies realized return labels, not information available to the trading signal; finalized corrected historical prices do not determine COT signal direction.",
+    "predictor_revision_use": false
+  },
+  "readiness_gate": {
+    "all_seven_series_required": true,
+    "each_series_first_nonmissing_on_or_before": "2018-01-03",
+    "each_series_minimum_nonmissing_observations_2018_onward": 2000,
+    "positive_values_only": true,
+    "orientation_transform_must_be_explicit": true,
+    "minimum_latest_common_nonmissing_date": "2026-09-01"
+  },
+  "governance": {
+    "no_alternative_price_source_after_edge_results": true,
+    "no_source_blending": true,
+    "no_price_interpolation": true,
+    "no_production_signal_authorization": true,
+    "no_sizing_authorization": true
+  }
+}
