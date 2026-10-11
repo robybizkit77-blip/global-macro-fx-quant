@@ -1,0 +1,38 @@
+{
+  "schema": "GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_STATUS_V1",
+  "status": "WITHHELD_INPUT_BLOCKER",
+  "as_of": "2026-10-11",
+  "research_contract": "validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_CONTRACT_V1_2026-10-11.json",
+  "frozen_parent_test": {
+    "pull_request": 122,
+    "head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5",
+    "oos_observations": 256,
+    "baseline_panel_sharpe": 0.30119374143958916,
+    "reconstruction_verified": true
+  },
+  "blocked_input": {
+    "target": "USD.inflation",
+    "required_role": "relative inflation pressure versus USD for ALIGNED/MIXED/CONTRADICTORY classification",
+    "canonical_status": "WITHHELD",
+    "blocker_code": "OFFICIAL_INITIAL_RELEASE_TRANSPORT_NOT_AVAILABLE_WITH_CURRENT_RUNNER_CONFIGURATION",
+    "reason": "The canonical USD CPI series can be revised through seasonal adjustment. Current revised history cannot be used as historical first-release information without look-ahead leakage.",
+    "canonical_status_source": "validation-usd-inflation-strict-pit-status-v1-2026-10-11:validation/macro/usd_inflation_strict_pit_status_v1_2026-10-11.json"
+  },
+  "prohibited_actions": [
+    "Do not run or interpret conditional performance using current revised USD CPI history.",
+    "Do not substitute observation dates for release dates.",
+    "Do not change the predeclared state definitions or gates to bypass the blocker.",
+    "Do not drop EUR or any other currency.",
+    "Do not change alpha, training window, thresholds, or model specification from PR #122."
+  ],
+  "reopen_conditions": [
+    "USD inflation full-window PIT is certified with exact first-release availability semantics compatible with the canonical series contract.",
+    "The certified input is available deterministically to the validation runner."
+  ],
+  "performance_result_authorized": false,
+  "edge_verdict": "NOT_TESTED",
+  "production_signal_authorized": false,
+  "sizing_authorized": false,
+  "changes_main": false,
+  "changes_gh_pages": false
+}

@@ -1,0 +1,85 @@
+name: G4USD Front-End Macro CB Alignment V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-front-end-macro-cb-alignment-contract-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PR122_SHA: 0d9e2128680bddcb917767389cad97937b7c48f5
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Reconstruct frozen PR122 OOS observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/alignment/pr122 /tmp/alignment/rates /tmp/alignment/fx
+          git show "$PR122_SHA:validation/g4usd_relative_front_end_panel_v1.py" > /tmp/alignment/pr122/model.py
+          RATES_STORE_SHA=0f4f45190fa5d5e010650026a30a0f981373ec34
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git show FETCH_HEAD:"validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" > "/tmp/alignment/rates/${c}.csv"
+          done
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata" \
+              -o "/tmp/alignment/fx/${c}.csv"
+          done
+          python validation/g4usd_frozen_oos_export_v1.py \
+            --model /tmp/alignment/pr122/model.py \
+            --eur-rates /tmp/alignment/rates/eur.csv --jpy-rates /tmp/alignment/rates/jpy.csv \
+            --cad-rates /tmp/alignment/rates/cad.csv --aud-rates /tmp/alignment/rates/aud.csv --usd-rates /tmp/alignment/rates/usd.csv \
+            --usd-ecb /tmp/alignment/fx/USD.csv --jpy-ecb /tmp/alignment/fx/JPY.csv --cad-ecb /tmp/alignment/fx/CAD.csv --aud-ecb /tmp/alignment/fx/AUD.csv \
+            --output /tmp/alignment/frozen_oos.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/alignment/frozen_oos.json'))
+          assert r['frozen_from_pr']==122
+          assert r['frozen_head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          assert len(r['observations'])==256
+          assert abs(r['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          PY
+      - name: Enforce research input eligibility fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_STATUS_V1_2026-10-11.json').read_text())
+          assert s['status']=='WITHHELD_INPUT_BLOCKER'
+          assert s['blocked_input']['target']=='USD.inflation'
+          assert s['edge_verdict']=='NOT_TESTED'
+          assert s['performance_result_authorized'] is False
+          assert s['production_signal_authorized'] is False
+          assert s['sizing_authorized'] is False
+          print(json.dumps({
+            'status':s['status'],
+            'edge_verdict':s['edge_verdict'],
+            'blocked_input':s['blocked_input']['target'],
+            'blocker_code':s['blocked_input']['blocker_code'],
+            'baseline_panel_sharpe':s['frozen_parent_test']['baseline_panel_sharpe'],
+            'frozen_oos_observations':s['frozen_parent_test']['oos_observations']
+          },indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-front-end-macro-cb-alignment-withheld-${{ github.run_id }}
+          path: |
+            /tmp/alignment/frozen_oos.json
+            validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_CONTRACT_V1_2026-10-11.json
+            validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_STATUS_V1_2026-10-11.json
+          retention-days: 90

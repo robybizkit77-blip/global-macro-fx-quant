@@ -1,0 +1,96 @@
+{
+  "schema": "GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_CONTRACT_V1",
+  "status": "PREDECLARED_NO_RESULTS_OBSERVED",
+  "date": "2026-10-11",
+  "stacked_on": {
+    "pull_request": 122,
+    "branch": "validation-g4usd-relative-front-end-panel-v1-2026-10-11",
+    "head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5"
+  },
+  "research_question": "Does the information content of relative 2Y front-end repricing improve when the repricing direction is aligned with point-in-time macro pressure consistent with the local-vs-US central-bank reaction function?",
+  "scope": {
+    "currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "base_currency": "USD",
+    "frequency": "monthly",
+    "eur_must_remain_included": true,
+    "production_signal_authorized": false
+  },
+  "frozen_parent_model": {
+    "model": "PRIMARY_REL_2Y_REPRICE",
+    "source_pr": 122,
+    "feature": "monthly change in local-minus-USD 2Y yield differential",
+    "ridge_alpha": 10.0,
+    "minimum_training_months": 36,
+    "training_only_standardization": true,
+    "same_rule_all_currencies": true,
+    "refit_for_alignment_test": false,
+    "parameter_changes_after_parent_results": false,
+    "rule": "Reuse the exact parent-model OOS predictions and returns. Alignment is a post-prediction diagnostic stratification only."
+  },
+  "alignment_definition": {
+    "type": "MACRO_IMPLIED_CB_REACTION_ALIGNMENT",
+    "note": "This first conditional test does not claim to reconstruct historical central-bank communication. It asks whether inflation/labour pressure, known point-in-time, supports the direction of front-end repricing expected from a central-bank reaction function.",
+    "inputs": {
+      "inflation": "strict/reconstructed certified point-in-time headline inflation history available at the decision snapshot",
+      "labour": "strict/reconstructed certified point-in-time unemployment/labour history available at the decision snapshot",
+      "rates": "certified temporal-PIT local and USD 2Y rates used in PR #122"
+    },
+    "relative_macro_components": {
+      "inflation_pressure": "sign(change in local inflation known at t minus change in USD inflation known at t)",
+      "labour_pressure": "sign(-(change in local unemployment known at t minus change in USD unemployment known at t))",
+      "front_end_repricing": "sign(change in local-minus-USD 2Y differential at t)"
+    },
+    "state_rules": {
+      "ALIGNED": "both inflation_pressure and labour_pressure have the same non-zero sign as front_end_repricing",
+      "MIXED": "exactly one of inflation_pressure or labour_pressure has the same non-zero sign as front_end_repricing, or one macro component is zero while the other agrees",
+      "CONTRADICTORY": "neither macro component supports front_end_repricing and at least one component has the opposite non-zero sign",
+      "UNAVAILABLE": "required point-in-time macro inputs are missing; observation is excluded from state performance but counted in coverage diagnostics"
+    },
+    "threshold_tuning": false,
+    "zscore_thresholds": false,
+    "currency_specific_rules": false,
+    "post_result_reclassification": false
+  },
+  "predeclared_evaluation": {
+    "primary": "Performance of the frozen PR #122 OOS strategy conditional on ALIGNED observations",
+    "comparators": [
+      "same frozen OOS strategy on MIXED observations",
+      "same frozen OOS strategy on CONTRADICTORY observations",
+      "unfiltered PR #122 panel result"
+    ],
+    "metrics": [
+      "annualized Sharpe",
+      "directional accuracy",
+      "total diagnostic return",
+      "max drawdown",
+      "observation count",
+      "per-currency Sharpe"
+    ],
+    "minimum_coverage": {
+      "aligned_observations_per_currency": 12,
+      "pooled_aligned_observations": 60
+    }
+  },
+  "predeclared_conditional_edge_gate": {
+    "all_conditions_required": true,
+    "minimum_aligned_panel_sharpe": 0.5,
+    "minimum_aligned_minus_unfiltered_sharpe": 0.2,
+    "minimum_aligned_minus_contradictory_sharpe": 0.3,
+    "minimum_positive_currency_sharpes_in_aligned_bucket": 3,
+    "minimum_aligned_pooled_directional_accuracy": 0.52,
+    "minimum_coverage_must_pass": true
+  },
+  "anti_overfit_policy": {
+    "do_not_change_parent_alpha": true,
+    "do_not_change_parent_windows": true,
+    "do_not_drop_eur": true,
+    "do_not_search_alternative_alignment_thresholds": true,
+    "do_not_merge_states_after_results": true,
+    "do_not_promote_if_gate_fails": true,
+    "negative_results_must_remain_visible": true
+  },
+  "interpretation_policy": {
+    "if_gate_passes": "Evidence for a conditional information layer, not authorization for production sizing or trading.",
+    "if_gate_fails": "Treat relative 2Y repricing as contextual information only; do not tune the alignment definition to rescue the result."
+  }
+}
