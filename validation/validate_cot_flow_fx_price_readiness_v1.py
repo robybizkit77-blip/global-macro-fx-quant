@@ -1,50 +1,65 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
-import io
+import concurrent.futures
 import json
 import math
 import pathlib
-import urllib.parse
 import urllib.request
-from datetime import date
+from datetime import date, datetime
+from html.parser import HTMLParser
 
 CONTRACT = pathlib.Path('validation/COT_FLOW_FX_PRICE_SOURCE_CONTRACT_V1_2026-10-11.json')
-START = '2018-01-01'
+START = date(2018,1,1)
 
-def fetch_all(series_ids: list[str]):
-    params=urllib.parse.urlencode({'id':','.join(series_ids),'cosd':START}, safe=',')
-    url='https://fred.stlouisfed.org/graph/fredgraph.csv?'+params
+class TableParser(HTMLParser):
+    def __init__(self):
+        super().__init__(); self.in_tr=False; self.in_td=False; self.cell=[]; self.row=[]; self.rows=[]
+    def handle_starttag(self, tag, attrs):
+        if tag.lower()=='tr': self.in_tr=True; self.row=[]
+        elif tag.lower()=='td' and self.in_tr: self.in_td=True; self.cell=[]
+    def handle_data(self, data):
+        if self.in_td: self.cell.append(data)
+    def handle_endtag(self, tag):
+        t=tag.lower()
+        if t=='td' and self.in_td:
+            self.row.append(' '.join(''.join(self.cell).split())); self.in_td=False
+        elif t=='tr' and self.in_tr:
+            if self.row: self.rows.append(self.row)
+            self.in_tr=False
+
+def parse_h10_html(raw:str):
+    p=TableParser(); p.feed(raw)
+    rows=[]
+    for r in p.rows:
+        if len(r)<2: continue
+        ds=r[0].strip().upper(); vs=r[1].strip().upper()
+        try: d=datetime.strptime(ds,'%d-%b-%y').date()
+        except ValueError: continue
+        if d<START or vs in {'ND','NA','N/A',''}: continue
+        try: v=float(vs.replace(',',''))
+        except ValueError: continue
+        if math.isfinite(v): rows.append((d,v))
+    rows.sort(key=lambda x:x[0])
+    return rows
+
+def fetch_one(item):
+    ccy,spec=item
+    url=spec['board_history_url']
     req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-COT-PIT-Research/1.0'})
-    with urllib.request.urlopen(req,timeout=60) as r:
-        raw=r.read().decode('utf-8')
-    reader=csv.DictReader(io.StringIO(raw))
-    assert reader.fieldnames and len(reader.fieldnames)==len(series_ids)+1, reader.fieldnames
-    date_field=reader.fieldnames[0]
-    out={sid:[] for sid in series_ids}
-    for rec in reader:
-        ds=(rec.get(date_field) or '').strip()
-        if not ds: continue
-        d=date.fromisoformat(ds)
-        for sid in series_ids:
-            vs=(rec.get(sid) or '').strip()
-            if not vs or vs in {'.','NA','NaN'}: continue
-            try: v=float(vs)
-            except ValueError: continue
-            if math.isfinite(v): out[sid].append((d,v))
-    return url,out
+    with urllib.request.urlopen(req,timeout=45) as r:
+        raw=r.read().decode('utf-8',errors='replace')
+    return ccy,url,parse_h10_html(raw)
 
 def main():
     c=json.loads(CONTRACT.read_text())
     gate=c['readiness_gate']
-    ids=[spec['fred_id'] for spec in c['series'].values()]
-    url,data=fetch_all(ids)
-    diagnostics={}
-    latest=[]
-    all_pass=True
+    diagnostics={}; latest=[]; all_pass=True
+    data={}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=7) as ex:
+        for ccy,url,rows in ex.map(fetch_one,c['series'].items()): data[ccy]=(url,rows)
     for ccy,spec in c['series'].items():
-        rows=data[spec['fred_id']]
+        url,rows=data[ccy]
         values=[v for _,v in rows]
         first=rows[0][0] if rows else None
         last=rows[-1][0] if rows else None
@@ -57,12 +72,11 @@ def main():
           'transformed_positive': bool(transformed) and min(transformed)>0,
           'explicit_transform': spec['transform_to_local_currency_vs_usd'] in {'identity','reciprocal'},
         }
-        ok=all(checks.values())
-        all_pass &= ok
+        ok=all(checks.values()); all_pass &= ok
         if last: latest.append(last)
         diagnostics[ccy]={
-          'fred_id':spec['fred_id'],
-          'transport_url':url,
+          'fred_id_identity':spec['fred_id'],
+          'board_history_url':url,
           'transform':spec['transform_to_local_currency_vs_usd'],
           'nonmissing_count':len(rows),
           'first_nonmissing':first.isoformat() if first else None,
@@ -78,7 +92,7 @@ def main():
       'status':'READY_FOR_RESULT_BLIND_EDGE_EXECUTION' if all_pass else 'BLOCKED_FX_PRICE_READINESS',
       'contract_schema':c['schema'],
       'series_count':len(c['series']),
-      'transport':'single FRED multi-series CSV request',
+      'transport':'parallel direct Federal Reserve H.10 country historical pages',
       'common_latest_nonmissing_date':common_latest.isoformat() if common_latest else None,
       'common_latest_gate_pass':common_pass,
       'diagnostics':diagnostics,
@@ -86,8 +100,8 @@ def main():
       'production_signal_authorized':False,
       'sizing_authorized':False,
     }
-    pathlib.Path('/tmp/cot-fx-price-readiness').mkdir(parents=True,exist_ok=True)
-    pathlib.Path('/tmp/cot-fx-price-readiness/receipt.json').write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
+    outdir=pathlib.Path('/tmp/cot-fx-price-readiness'); outdir.mkdir(parents=True,exist_ok=True)
+    (outdir/'receipt.json').write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
     print(json.dumps(out,indent=2,sort_keys=True))
     if not all_pass: raise SystemExit(2)
 
