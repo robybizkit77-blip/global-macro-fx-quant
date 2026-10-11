@@ -66,6 +66,22 @@ def next_month(k:str)->str:
     if m==13: y+=1; m=1
     return f'{y:04d}-{m:02d}'
 
+def parse_next_reference(label:str,current_ref:str)->str:
+    label=' '.join(label.split())
+    expected=next_month(current_ref)
+    if re.fullmatch(r'[A-Za-z]+\s+\d{4}',label):
+        parsed=month_key(label)
+    elif re.fullmatch(r'[A-Za-z]+',label):
+        expected_month=datetime.strptime(expected,'%Y-%m').strftime('%B')
+        if label.lower()!=expected_month.lower():
+            raise ValueError(f'next reference month label {label} inconsistent with expected {expected}')
+        parsed=expected
+    else:
+        raise ValueError(f'unrecognized next reference label {label!r}')
+    if parsed!=expected:
+        raise ValueError(f'non-consecutive next reference after {current_ref}: {parsed}')
+    return parsed
+
 def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_missing_next:bool=False)->dict:
     text=plain(raw)
     title=re.search(r'THE EMPLOYMENT SITUATION\s+[-–—]{1,2}\s+([A-Za-z]+\s+\d{4})',text,re.I)
@@ -75,8 +91,10 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     ref=month_key(title.group(1))
     if ref!=expected_ref: raise ValueError(f'expected reference {expected_ref}, got {ref}')
 
+    # Older Employment Situation releases place a USDL release code between
+    # "embargoed until" and the 8:30 timestamp. Permit only that bounded token.
     emb=re.search(
-      r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
+      r'embargoed until(?:\s+USDL-\d{2}-\d+)?\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
       r'(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+)?'
       r'([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
     if not emb: raise ValueError(f'embargo timestamp not found for {ref}')
@@ -84,13 +102,13 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     if embargo_date!=expected_release_date:
         raise ValueError(f'archive URL date {expected_release_date} != embargo date {embargo_date}')
 
-    # First-published U-3 headline value. Keep the extraction tightly anchored to
-    # "unemployment rate" and the first narrative occurrence before detailed tables.
+    # First-published U-3 headline value. Keep extraction tightly anchored to
+    # the first narrative occurrence before detailed tables.
     prefix=text[:min(len(text),12000)]
     ur=None
     patterns=[
-      r'unemployment rate(?:\s+was|\s+is|\s+remained|\s+held|\s+changed little)?(?:\s+at|\s+was)?\s*(\d+(?:\.\d+)?)\s*percent',
-      r'unemployment rate[^.]{0,100}?at\s+(\d+(?:\.\d+)?)\s*percent',
+      r'unemployment rate[^.]{0,120}?at\s+(\d+(?:\.\d+)?)\s*percent',
+      r'unemployment rate\s+(?:was|is|remained|held)\s+(\d+(?:\.\d+)?)\s*percent',
     ]
     for p in patterns:
         m=re.search(p,prefix,re.I)
@@ -99,11 +117,15 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     if ur is None: raise ValueError(f'headline unemployment rate not found for {ref}')
     if not (2.0 <= ur <= 15.0): raise ValueError(f'implausible unemployment rate {ur} for {ref}')
 
+    # Historical releases often omit the YEAR in the next reference label
+    # (e.g. "for February"). The label is accepted only when its month equals
+    # the mechanically consecutive reference month. Newer releases may include
+    # Month Year and may use "news release ... published" wording.
     next_patterns=[
-      r'The Employment Situation for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
-      r'The Employment Situation for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
-      r'The Employment Situation news release for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be published on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
-      r'The Employment Situation news release for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be published on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation news release for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation news release for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
     ]
     nxt=None
     for p in next_patterns:
@@ -111,6 +133,7 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
         if nxt: break
     if not nxt and not allow_missing_next:
         raise ValueError(f'next-release statement not found for {ref}')
+    next_ref=parse_next_reference(nxt.group(1),ref) if nxt else None
 
     return {
       'reference_month':ref,
@@ -121,7 +144,7 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
       'availability_status':'AVAILABLE_STRICT_PIT',
       'unemployment_rate':ur,
       'official_series_id':'LNS14000000',
-      'next_reference_month':month_key(nxt.group(1)) if nxt else None,
+      'next_reference_month':next_ref,
       'next_release_date':iso_date(nxt.group(2)) if nxt else None,
     }
 
@@ -149,9 +172,6 @@ def main():
             if current_ref==TARGET_END: break
 
             if has_gap:
-                # BLS states household survey data were not collected for Oct 2025
-                # and will not be collected retroactively. U-3 therefore does not
-                # exist for this reference month and must remain unavailable.
                 missing={
                   'reference_month':special['missing_reference_month'],
                   'release_date':None,'release_time':None,
@@ -169,8 +189,7 @@ def main():
                 current_ref=special['resume_reference_month']; current_date=special['resume_release_date']
                 time.sleep(0.15); continue
 
-            if row['next_reference_month']!=next_month(current_ref):
-                raise ValueError(f'non-consecutive next reference after {current_ref}: {row["next_reference_month"]}')
+            # parse_next_reference already enforces exact consecutiveness.
             current_ref=row['next_reference_month']; current_date=row['next_release_date']
             time.sleep(0.15)
     except Exception as exc:
