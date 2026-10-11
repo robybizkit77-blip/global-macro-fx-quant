@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_USD_RATES_TEMPORAL_PIT_RECEIPT_V1",
+  "target": "USD.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "verdict": "TEMPORAL_PIT_CERTIFIABLE",
+  "base_main_sha": "ee3453c3b00fcb5d43d2826dfe4fd6b634dc1aa8",
+  "validated_source_sha": "8c8d6542a0fa0953c71295db02dde14ee86c16d0",
+  "coverage": {
+    "start_year": 2018,
+    "end_date": "2026-10-06",
+    "observations": 2191
+  },
+  "semantic_rowset_sha256": "d2e763818122430cc59c0ae208704f14532f47f34bf75706d2ca86b63fbdd5e0",
+  "materializer_run_id": 38124202119,
+  "engine_logic_audit_run_id": 38124202055,
+  "staging_browser_audit_run_id": 38124202084,
+  "artifact_id": 11695909548,
+  "artifact_name": "usd-rates-temporal-pit-v1-38124202119",
+  "artifact_digest": "sha256:9e53dc54ea79dca08afc9ce45b32c2183350d5b06bb42f7f6def6acd85181016",
+  "artifact_expires_at": "2027-01-09T08:16:04Z",
+  "checks": {
+    "official_treasury_xml_only": true,
+    "same_basis_2y_10y": true,
+    "double_materialization_semantic_match": true,
+    "same_day_use_forbidden_without_verified_timestamp": true,
+    "decision_date_must_be_strictly_after_observation_date": true,
+    "secondary_source_fallback_used": false,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "temporal_policy": {
+    "verified_publication_timestamp": false,
+    "conservative_daily_rule": "D observation is eligible only for a decision point after D.",
+    "intraday_rule": "Same-day use is forbidden unless a source-specific official publication/settlement timestamp is independently verified."
+  }
+}

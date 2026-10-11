@@ -1,0 +1,135 @@
+{
+  "schema": "GMFQ_RATES_TEMPORAL_PIT_CONTRACT_V1",
+  "created_at": "2026-10-11",
+  "base_main_sha": "ee3453c3b00fcb5d43d2826dfe4fd6b634dc1aa8",
+  "scope": {
+    "layer": "RATES_2Y_10Y",
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "instruments": ["2Y", "10Y"],
+    "market_pricing_ois_futures_in_scope": false,
+    "note": "OIS/futures policy-pricing is a separate temporal-PIT phase because contract-month/meeting mapping and exchange settlement availability require different semantics."
+  },
+  "purpose": "Define fail-closed temporal availability rules for historical 2Y/10Y rates so a backtest can only see observations that were actually knowable at the decision point.",
+  "canonical_rules": {
+    "official_source_required": true,
+    "same_basis_required": true,
+    "same_observation_date_required_for_2y_10y": true,
+    "update_2y_10y_together": true,
+    "no_cross_source_tenor_mix": true,
+    "no_secondary_market_fallback": true,
+    "no_future_observation_date": true,
+    "exact_publication_timestamp_preferred": true,
+    "date_only_availability_rule": "If an official observation has a date but no independently verified publication timestamp, it is NOT eligible for a decision on the same date. It becomes eligible only at the next decision point after that observation date.",
+    "intraday_rule": "A same-day observation may be used intraday only when an official publication/settlement timestamp is captured and decision_timestamp is strictly after that timestamp.",
+    "daily_backtest_default": "For daily backtests, use the latest eligible official same-basis 2Y/10Y pair strictly known before the decision point. Without verified same-day timestamp, D data may first affect D+1 decisions.",
+    "stale_data_rule": "Stale but previously validated data may be carried forward with an explicit stale/withheld flag; it must never be silently replaced by a different source or tenor basis.",
+    "revision_rule": "Historical market-yield observations are treated as market observations, not macro vintages. Any later correction by the official publisher must retain correction provenance; backtests must not silently backfill a corrected value into an earlier decision snapshot unless the correction timestamp is also represented.",
+    "fail_closed": true
+  },
+  "source_readiness": {
+    "USD": {
+      "authority": "U.S. Department of the Treasury",
+      "source": "U.S. Treasury Daily Par Yield Curve",
+      "current_adapter_status": "OPERATIONAL",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER"
+    },
+    "EUR": {
+      "authority": "European Central Bank",
+      "source": "ECB AAA Svensson spot curve",
+      "current_adapter_status": "OPERATIONAL",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER"
+    },
+    "GBP": {
+      "authority": "Bank of England",
+      "source": "UK nominal government zero-coupon spot curve",
+      "current_adapter_status": "OPERATIONAL",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER"
+    },
+    "JPY": {
+      "authority": "Japan Ministry of Finance",
+      "source": "JGB Interest Rate",
+      "current_adapter_status": "OPERATIONAL",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER"
+    },
+    "CHF": {
+      "authority": "Swiss National Bank",
+      "source": "Spot interest rates on Swiss Confederation bonds",
+      "current_adapter_status": "BLOCKED_SOURCE_EXPORT",
+      "temporal_pit_status": "BLOCKED",
+      "rule": "Do not mix separately published 10Y with another 2Y source; preserve last validated same-basis pair until official export is restored."
+    },
+    "CAD": {
+      "authority": "Bank of Canada",
+      "source": "Selected benchmark Government of Canada bond yields",
+      "current_adapter_status": "OPERATIONAL",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER"
+    },
+    "AUD": {
+      "authority": "Reserve Bank of Australia",
+      "source": "F2 Capital Market Yields – Government Bonds – Daily",
+      "series_2Y": "FCMYGBAG2D",
+      "series_10Y": "FCMYGBAG10D",
+      "current_adapter_status": "OPERATIONAL_LIVE_FETCH",
+      "temporal_pit_status": "READY_FOR_HISTORICAL_MATERIALIZER",
+      "cadence_note": "Observations are daily; official F2 publication cadence is weekly. Availability must follow publication availability, not observation date alone."
+    },
+    "NZD": {
+      "authority": "Reserve Bank of New Zealand",
+      "source": "B2 Wholesale interest rates – government bond close",
+      "current_adapter_status": "OPERATIONAL_MANUAL_OFFICIAL_VERIFIED__RUNNER_ACCESS_BLOCKED",
+      "temporal_pit_status": "NEEDS_ARCHIVE_TRANSPORT_OR_MANUAL_CERTIFIED_MATERIALIZATION",
+      "rule": "Do not substitute a secondary source when GitHub-hosted runners receive HTTP 403 from the official B2 endpoints."
+    }
+  },
+  "historical_materialization_contract": {
+    "required_fields": [
+      "currency",
+      "observation_date",
+      "yield_2y",
+      "yield_10y",
+      "source_authority",
+      "source_url_or_series_id",
+      "source_basis",
+      "source_sha256_or_official_record_id",
+      "publication_timestamp_if_verified",
+      "availability_rule",
+      "first_eligible_decision_point"
+    ],
+    "required_invariants": [
+      "2Y and 10Y share the same official source family and observation date",
+      "no duplicate currency/observation_date rows",
+      "observations are monotonically ordered",
+      "decision snapshots never include a row whose first_eligible_decision_point is after the snapshot decision point",
+      "source identity is retained for every row",
+      "stale carry-forward is explicit",
+      "no live_data writes during materialization",
+      "two independent materializations produce the same semantic rowset"
+    ],
+    "semantic_rowset_fields": [
+      "currency",
+      "observation_date",
+      "yield_2y",
+      "yield_10y",
+      "source_basis",
+      "first_eligible_decision_point"
+    ]
+  },
+  "execution_order": [
+    "USD",
+    "EUR",
+    "GBP",
+    "JPY",
+    "CAD",
+    "AUD",
+    "NZD",
+    "CHF"
+  ],
+  "next_target": {
+    "currency": "USD",
+    "reason": "Official U.S. Treasury daily par-yield history is direct, same-basis and the cleanest first implementation of the rates temporal-PIT materializer.",
+    "deliverable": "Read-only historical 2Y/10Y materializer plus double-replay evidence; no production apply."
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}
