@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_CAD_RATES_TEMPORAL_PIT_RECEIPT_V1",
+  "target": "CAD.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "verdict": "TEMPORAL_PIT_CERTIFIABLE",
+  "base_main_sha": "eb5b8d357c003b83aa5fb9e598227ef3d68ef422",
+  "validated_source_sha": "b3de18ed15ad9ac30e98cd4b18d08a0afeed3576",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-10-06",
+    "observations": 2186
+  },
+  "semantic_rowset_sha256": "ab271ce33a31ae41c37dc1f7d19043cbe1941e31edef7f048682265657ad9c5d",
+  "materializer_run_id": 38128036912,
+  "engine_logic_audit_run_id": 38128036934,
+  "staging_browser_audit_run_id": 38128036945,
+  "artifact_id": 11698400061,
+  "artifact_name": "cad-rates-temporal-pit-v1-38128036912",
+  "artifact_digest": "sha256:152fd875fc276f699c4b460b49b6379746076c8a84c6fd97e1c2202e0e5a9ddb",
+  "artifact_expires_at": "2027-01-09T09:20:45Z",
+  "checks": {
+    "official_bank_of_canada_valet_only": true,
+    "same_basis_2y_10y": true,
+    "double_materialization_semantic_match": true,
+    "same_day_use_forbidden_without_verified_timestamp": true,
+    "decision_date_must_be_strictly_after_observation_date": true,
+    "secondary_source_fallback_used": false,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "temporal_policy": {
+    "verified_publication_timestamp": false,
+    "conservative_daily_rule": "D observation is eligible only for a decision point after D.",
+    "intraday_rule": "Same-day use is forbidden unless a source-specific official publication timestamp is independently verified."
+  }
+}
