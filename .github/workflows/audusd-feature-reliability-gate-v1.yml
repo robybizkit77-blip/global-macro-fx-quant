@@ -1,0 +1,85 @@
+name: AUDUSD Feature Reliability Gate V1
+on:
+  push:
+    branches: [validation-audusd-feature-reliability-gate-v1-2026-10-11]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      AUD_INF_ARTIFACT_ID: '11627754549'
+      AUD_INF_ARTIFACT_DIGEST: 'sha256:3c2452f6467de5def4f908163e174b7df64155fa5e50fe6ac450ca2a0e39b0be'
+      AUD_LAB_ARTIFACT_ID: '11627616775'
+      AUD_LAB_ARTIFACT_DIGEST: 'sha256:3baf79e4a6c992b7122652efda035835ecd27782a9ed055d56acffcbf663ac06'
+      RATES_STORE_SHA: '0f4f45190fa5d5e010650026a30a0f981373ec34'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download certified AUD macro artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud/inf /tmp/aud/lab
+          python - <<'PY'
+          import json,os,subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid,dig in [(os.environ['AUD_INF_ARTIFACT_ID'],os.environ['AUD_INF_ARTIFACT_DIGEST']),(os.environ['AUD_LAB_ARTIFACT_ID'],os.environ['AUD_LAB_ARTIFACT_DIGEST'])]:
+              m=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert not m['expired']; assert m.get('digest')==dig,(m.get('digest'),dig)
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUD_INF_ARTIFACT_ID}/zip" > /tmp/aud/inf.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUD_LAB_ARTIFACT_ID}/zip" > /tmp/aud/lab.zip
+          unzip -q /tmp/aud/inf.zip -d /tmp/aud/inf
+          unzip -q /tmp/aud/lab.zip -d /tmp/aud/lab
+      - name: Borrow exact frozen AUD and USD rates histories
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aud/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          git checkout FETCH_HEAD -- validation/rates_pit_rowsets/aud_rates_2y_10y_temporal_pit_v1.csv validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv
+          cp validation/rates_pit_rowsets/aud_rates_2y_10y_temporal_pit_v1.csv /tmp/aud/rates/aud.csv
+          cp validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv /tmp/aud/rates/usd.csv
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+      - name: Download official ECB AUD and USD reference rates
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.AUD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/aud/aud_ecb.csv
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/aud/usd_ecb.csv
+          test -s /tmp/aud/aud_ecb.csv; test -s /tmp/aud/usd_ecb.csv
+      - name: Run frozen untouched holdout validation twice
+        run: |
+          set -euo pipefail
+          INF=$(find /tmp/aud/inf -type f -name 'AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv' | head -1)
+          LAB=$(find /tmp/aud/lab -type f -name 'AUD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv' | head -1)
+          test -n "$INF"; test -n "$LAB"
+          python validation/audusd_feature_reliability_gate_v1.py --inflation-csv "$INF" --labour-csv "$LAB" --aud-rates /tmp/aud/rates/aud.csv --usd-rates /tmp/aud/rates/usd.csv --aud-ecb /tmp/aud/aud_ecb.csv --usd-ecb /tmp/aud/usd_ecb.csv --output /tmp/aud/result.json
+          python validation/audusd_feature_reliability_gate_v1.py --inflation-csv "$INF" --labour-csv "$LAB" --aud-rates /tmp/aud/rates/aud.csv --usd-rates /tmp/aud/rates/usd.csv --aud-ecb /tmp/aud/aud_ecb.csv --usd-ecb /tmp/aud/usd_ecb.csv --output /tmp/aud/result-b.json >/dev/null
+          cmp /tmp/aud/result.json /tmp/aud/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/aud/result.json'))
+          assert r['status']=='UNTOUCHED_HOLDOUT_COMPLETE'
+          assert r['scope']['first_eligible_decision_date']=='2018-05-10'
+          assert r['scope']['snapshot_count']==100 and r['scope']['oos_predictions_per_model']==63
+          assert r['scope']['two_early_grid_points_withheld_for_unavailable_strict_pit_cpi'] is True
+          assert r['scope']['holdout_currency_not_used_to_define_gate'] is True
+          assert r['method']['reliability_window_months_fixed']==36 and r['method']['aud_parameter_tuning'] is False
+          assert r['method']['gate_uses_current_or_future_outcome'] is False
+          assert r['policy']['production_signal_authorized'] is False
+          print(json.dumps({'gate_telemetry':r['gate_telemetry'],'comparison':r['comparison'],'models':r['models']},indent=2,sort_keys=True))
+          PY
+      - name: Assert repository clean
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audusd-feature-reliability-gate-${{ github.run_id }}
+          path: /tmp/aud/result.json
+          retention-days: 90
