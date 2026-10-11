@@ -3,12 +3,17 @@ from __future__ import annotations
 import argparse, hashlib, json, pathlib, re, urllib.error, urllib.request
 
 PROBES = [
-    ("2018-03", "20180411"),
-    ("2020-01", "20200213"),
-    ("2024-01", "20240213"),
+    ("2018-03", "2018-04-11"),
+    ("2020-01", "2020-02-13"),
+    ("2024-01", "2024-02-13"),
 ]
 BASE = "https://www.bls.gov/news.release/archives/cpi_{date}.{ext}"
 UA = "Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; research validation)"
+
+
+def archive_stamp(iso_date: str) -> str:
+    year, month, day = iso_date.split("-")
+    return f"{month}{day}{year}"
 
 
 def fetch(url: str) -> dict:
@@ -54,12 +59,14 @@ def main() -> int:
 
     rows = []
     for reference_month, release_date in PROBES:
+        stamp = archive_stamp(release_date)
         variants = []
         for ext in ("htm", "txt"):
-            variants.append(fetch(BASE.format(date=release_date, ext=ext)))
+            variants.append(fetch(BASE.format(date=stamp, ext=ext)))
         rows.append({
             "reference_month": reference_month,
-            "release_date": f"{release_date[:4]}-{release_date[4:6]}-{release_date[6:]}",
+            "release_date": release_date,
+            "archive_stamp": stamp,
             "variants": variants,
             "any_official_archive_readable": any(v.get("ok") for v in variants),
         })
