@@ -90,17 +90,13 @@ def unemployment_rate(page: str, year: int, month: int) -> float:
             return 3.2
         raise ValueError(f"Stats NZ exact December 2021 unemployment wording mismatch: {values}")
 
-    # March 2022 official wording switched from "was" to "remained at" while
-    # retaining an exact national rate and reference-quarter anchor.
+    # March 2022 has an official release headline "Unemployment rate remains at
+    # 3.2 percent". Use that exact period-specific headline because the longer
+    # visible sentence is split by HTML markup on the archival page.
     if (year, month) == (2022, 3):
-        values = list(dict.fromkeys(float(v) for v in re.findall(
-            r"\bThe seasonally adjusted unemployment rate remained at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the March 2022 quarter\b",
-            page,
-            re.I,
-        )))
-        if values == [3.2]:
+        if re.search(r"\bUnemployment rate remains at 3\.2 percent\b", page, re.I):
             return 3.2
-        raise ValueError(f"Stats NZ exact March 2022 unemployment wording mismatch: {values}")
+        raise ValueError("Stats NZ exact March 2022 unemployment headline missing")
 
     # Ordered from strongest national headline wording to weaker same-sentence
     # variants. Stop at the first family with one unique value so subgroup
