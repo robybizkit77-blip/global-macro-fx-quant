@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_CAD_CB_PRICING_TEMPORAL_PIT_STATUS_V1",
+  "created_at": "2026-10-11",
+  "currency": "CAD",
+  "layer": "Central Banks / Market Pricing",
+  "status": "WITHHELD",
+  "production_status": "UNCHANGED",
+  "historical_goal": "Homogeneous point-in-time reconstruction of 3M/6M/12M central-bank market pricing across the project historical window without look-ahead or benchmark substitution.",
+  "authorized_current_source": {
+    "authority": "Montreal Exchange",
+    "instrument": "Three-Month CORRA Futures (CRA)",
+    "method": "Direct official settlement prices transformed as 100 minus compounded CORRA",
+    "current_runtime_readiness": "DAILY_READY"
+  },
+  "blocker": {
+    "type": "STRUCTURAL_BENCHMARK_AND_INSTRUMENT_BREAK",
+    "summary": "A homogeneous CRA history cannot cover the full historical window because CAD short-rate futures transitioned from BAX/CDOR to CRA/CORRA in 2024.",
+    "official_evidence": {
+      "authority": "Montreal Exchange",
+      "notice": "Advisory Notice A24-010",
+      "notice_date": "2024-04-02",
+      "event_date": "2024-04-26",
+      "event": "BAX contracts expiring after June 2024 were converted into equivalent Three-Month CORRA Futures (CRA) contracts after market close.",
+      "context": "The conversion was part of the transition away from CDOR ahead of cessation on 2024-06-28."
+    },
+    "implication": "Using BAX/CDOR before the transition and CRA/CORRA afterwards would introduce a benchmark and instrument-family regime change. Under the current Temporal PIT contract this cannot be silently treated as one homogeneous historical series."
+  },
+  "contract_rules_applied": {
+    "homogeneous_basis_required": true,
+    "same_instrument_family_required_for_current_and_references": true,
+    "no_proxy_substitution_without_methodology_reclassification": true,
+    "no_secondary_price_fallback": true,
+    "no_lookahead": true,
+    "fail_closed": true
+  },
+  "decision": {
+    "historical_cb_pricing": "WITHHELD",
+    "live_cb_pricing": "UNCHANGED_AND_ALLOWED",
+    "bax_predecessor_backfill": "FORBIDDEN_UNDER_CURRENT_CONTRACT",
+    "mixed_bax_cra_series": "NOT_CERTIFIED",
+    "next_safe_option": "Only revisit if a separately versioned methodology explicitly models the BAX/CDOR to CRA/CORRA regime transition and validates comparability; do not weaken the current homogeneous PIT contract."
+  },
+  "discovery_context": {
+    "read_only_mx_cra_discovery_branch": "validation-cad-cb-pricing-temporal-pit-discovery-v1-2026-10-11",
+    "discovery_run_id": 38131791067,
+    "note": "The archive discovery was started before the structural benchmark-transition evidence was confirmed. Its completion is not required to establish the full-window homogeneous-series blocker."
+  },
+  "safety": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false,
+    "changes_dashboard_payload": false,
+    "changes_gh_pages": false,
+    "production_write": false
+  }
+}
