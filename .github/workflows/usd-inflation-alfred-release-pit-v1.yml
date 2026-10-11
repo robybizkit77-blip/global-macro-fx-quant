@@ -1,0 +1,55 @@
+name: USD Inflation ALFRED Release PIT V1
+on:
+  push:
+    branches:
+      - validation-usd-cpi-release-archive-transport-v1-2026-10-11
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  strict-pit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build certified BLS release calendar
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-cpi-strict-pit
+          python validation/macro/materialize_usd_cpi_bls_release_chain_v1.py \
+            --output /tmp/usd-cpi-strict-pit/release-calendar.json
+      - name: Materialize strict PIT twice
+        run: |
+          set -euo pipefail
+          python validation/macro/materialize_usd_inflation_alfred_release_pit_v1.py \
+            --release-calendar /tmp/usd-cpi-strict-pit/release-calendar.json \
+            --output /tmp/usd-cpi-strict-pit/pit-a.json
+          python validation/macro/materialize_usd_inflation_alfred_release_pit_v1.py \
+            --release-calendar /tmp/usd-cpi-strict-pit/release-calendar.json \
+            --output /tmp/usd-cpi-strict-pit/pit-b.json
+      - name: Enforce deterministic semantic identity
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/usd-cpi-strict-pit/pit-a.json'))
+          b=json.load(open('/tmp/usd-cpi-strict-pit/pit-b.json'))
+          assert a['status']=='CERTIFIABLE_STRICT_PIT'
+          assert b['status']=='CERTIFIABLE_STRICT_PIT'
+          assert a['coverage']=={'start':'2018-01','end':'2026-08','expected_rows':104,'observed_rows':104}
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert len(a['rows'])==104 and len(b['rows'])==104
+          for r in a['rows']:
+              assert r['release_day_ref_present'] is True
+              assert r['day_before_ref_present'] is False
+              assert r['vintage_date']==r['release_date']
+          print('STRICT_PIT_PASS',a['semantic_sha256'])
+          PY
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        with:
+          name: usd-inflation-alfred-release-pit-${{ github.run_id }}
+          path: /tmp/usd-cpi-strict-pit/
+          retention-days: 90
