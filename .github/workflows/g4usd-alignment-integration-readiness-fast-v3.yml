@@ -18,6 +18,9 @@ env:
   EUR_INF_SEMANTIC_SHA: fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1
   EUR_LAB_SEMANTIC_SHA: b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9
   JPY_INF_SEMANTIC_SHA: 6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8
+  CAD_INF_SEMANTIC_SHA: d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a
+  CAD_LAB_SEMANTIC_SHA: 77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a
+  AUD_INF_SEMANTIC_SHA: d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f
 
 jobs:
   readiness-fast:
@@ -100,7 +103,7 @@ jobs:
           assert len(list(csv.DictReader(open('/tmp/readiness/eur-lab/out/source.csv'))))==104
           PY
 
-      - name: Download canonical certified JPY inflation artifact
+      - name: Download certified JPY inflation artifact
         uses: actions/download-artifact@v4
         with:
           name: jpy-inflation-strict-pit-v1-38082623311
@@ -108,57 +111,98 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: robybizkit77-blip/global-macro-fx-quant
           run-id: 38082623311
-      - name: Verify certified JPY inflation artifact and materialize labour
+      - name: Download certified JPY labour artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jpy-labour-strict-pit-v2-37939887981
+          path: /tmp/readiness/jpy-lab-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 37939887981
+      - name: Verify and stage certified JPY inputs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/readiness/jpy-inf /tmp/readiness/jpy-lab
           cp /tmp/readiness/jpy-inf-artifact/jpy_inflation_strict_pit_evidence_v1_runtime.json /tmp/readiness/jpy-inf/evidence.json
+          cp /tmp/readiness/jpy-lab-artifact/JPY_LABOUR_LFS_STRICT_FIRST_RELEASE_2018_2026_08.csv /tmp/readiness/jpy-lab/source.csv
+          cp /tmp/readiness/jpy-lab-artifact/JPY_LABOUR_STRICT_PIT_EVIDENCE_V2.json /tmp/readiness/jpy-lab/evidence.json
           python - <<'PY'
-          import json,os
-          a=json.load(open('/tmp/readiness/jpy-inf/evidence.json'))
+          import csv,json,os
+          a=json.load(open('/tmp/readiness/jpy-inf/evidence.json')); b=json.load(open('/tmp/readiness/jpy-lab/evidence.json'))
           assert a['schema']=='GMFQ_JPY_INFLATION_STRICT_PIT_EVIDENCE_V1_RUNTIME'
           assert a['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
           assert a['semantic_rowset_sha256']==os.environ['JPY_INF_SEMANTIC_SHA']
           assert a['coverage']=={'start':'2018-01','end':'2026-08','expected':104,'observed':104}
           assert len(a['rows'])==104
-          PY
-          python validation/g4usd_readiness_json_rows_to_csv_v1.py --mode JPY_INFLATION --input /tmp/readiness/jpy-inf/evidence.json --output /tmp/readiness/jpy-inf/source.csv
-          python validation/materialize_jpy_labour_strict_pit_v2.py --csv /tmp/readiness/jpy-lab/source.csv --evidence /tmp/readiness/jpy-lab/evidence.json
-          python - <<'PY'
-          import csv,json
-          b=json.load(open('/tmp/readiness/jpy-lab/evidence.json'))
           assert b['status']=='PASS'
-          assert len(list(csv.DictReader(open('/tmp/readiness/jpy-inf/source.csv'))))==104
+          assert b['coverage']['expected_months']==104 and b['coverage']['materialized_months']==104
           assert len(list(csv.DictReader(open('/tmp/readiness/jpy-lab/source.csv'))))==104
           PY
+          python validation/g4usd_readiness_json_rows_to_csv_v1.py --mode JPY_INFLATION --input /tmp/readiness/jpy-inf/evidence.json --output /tmp/readiness/jpy-inf/source.csv
+          python - <<'PY'
+          import csv
+          assert len(list(csv.DictReader(open('/tmp/readiness/jpy-inf/source.csv'))))==104
+          PY
 
-      - name: Materialize certified CAD inputs
+      - name: Download certified CAD inflation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cad-inflation-strict-pit-v1-37976278850
+          path: /tmp/readiness/cad-inf-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 37976278850
+      - name: Download certified CAD labour artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cad-labour-strict-pit-v1-37963733788
+          path: /tmp/readiness/cad-lab-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 37963733788
+      - name: Verify and stage certified CAD inputs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/readiness/cad-inf /tmp/readiness/cad-lab
-          python validation/materialize_cad_inflation_strict_pit_v1.py --csv /tmp/readiness/cad-inf/source.csv --evidence /tmp/readiness/cad-inf/evidence.json
-          python validation/materialize_cad_labour_strict_pit_v1.py --csv /tmp/readiness/cad-lab/source.csv --evidence /tmp/readiness/cad-lab/evidence.json
+          cp /tmp/readiness/cad-inf-artifact/CAD_CPI_STRICT_FIRST_RELEASE_2018_2026_08.csv /tmp/readiness/cad-inf/source.csv
+          cp /tmp/readiness/cad-inf-artifact/CAD_INFLATION_STRICT_PIT_EVIDENCE_V1.json /tmp/readiness/cad-inf/evidence.json
+          cp /tmp/readiness/cad-lab-artifact/CAD_LABOUR_UNEMPLOYMENT_STRICT_FIRST_RELEASE_2018_2026_08.csv /tmp/readiness/cad-lab/source.csv
+          cp /tmp/readiness/cad-lab-artifact/CAD_LABOUR_STRICT_PIT_EVIDENCE_V1.json /tmp/readiness/cad-lab/evidence.json
           python - <<'PY'
-          import csv,json
+          import csv,json,os
           a=json.load(open('/tmp/readiness/cad-inf/evidence.json')); b=json.load(open('/tmp/readiness/cad-lab/evidence.json'))
           assert a['status']=='PASS' and b['status']=='PASS'
+          assert a['semantic_rowset_sha256']==os.environ['CAD_INF_SEMANTIC_SHA']
+          assert b['semantic_rowset_sha256']==os.environ['CAD_LAB_SEMANTIC_SHA']
+          assert a['coverage']['materialized_months']==104 and b['coverage']['materialized_months']==104
           assert len(list(csv.DictReader(open('/tmp/readiness/cad-inf/source.csv'))))==104
           assert len(list(csv.DictReader(open('/tmp/readiness/cad-lab/source.csv'))))==104
           PY
 
-      - name: Materialize certified AUD inputs
+      - name: Download certified AUD inflation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: aud-inflation-strict-pit-v1-37956927900
+          path: /tmp/readiness/aud-inf-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 37956927900
+      - name: Verify certified AUD inflation and materialize labour
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/readiness/aud-inf /tmp/readiness/aud-lab
-          python validation/materialize_aud_inflation_strict_pit_v1.py --csv /tmp/readiness/aud-inf/source.csv --evidence /tmp/readiness/aud-inf/evidence.json
+          cp /tmp/readiness/aud-inf-artifact/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv /tmp/readiness/aud-inf/source.csv
+          cp /tmp/readiness/aud-inf-artifact/AUD_INFLATION_STRICT_PIT_EVIDENCE_V1.json /tmp/readiness/aud-inf/evidence.json
           python validation/materialize_aud_labour_strict_pit_v1.py --csv /tmp/readiness/aud-lab/source.csv --evidence /tmp/readiness/aud-lab/evidence.json
           python - <<'PY'
-          import csv,json
+          import csv,json,os
           a=json.load(open('/tmp/readiness/aud-inf/evidence.json')); b=json.load(open('/tmp/readiness/aud-lab/evidence.json'))
           assert a['status']=='PASS' and b['status']=='PASS'
+          assert a['semantic_rowset_sha256']==os.environ['AUD_INF_SEMANTIC_SHA']
+          assert a['coverage']['materialized_quarters']==34
           assert len(list(csv.DictReader(open('/tmp/readiness/aud-inf/source.csv'))))==34
           assert len(list(csv.DictReader(open('/tmp/readiness/aud-lab/source.csv'))))==104
           PY
@@ -231,7 +275,23 @@ jobs:
               assert unavailable==0
             streams[name]={'rows':len(rows),'unavailable_rows':unavailable,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
           parent=json.load(open('/tmp/readiness/frozen_oos.json'))
-          receipt={'schema':'GMFQ_G4USD_ALIGNMENT_INTEGRATION_READINESS_V3','status':'READY_FOR_ONE_SHOT_TEST','frozen_parent':{'pr':122,'head_sha':parent['frozen_head_sha'],'oos_observations':len(parent['observations']),'baseline_panel_sharpe':parent['baseline_panel_sharpe']},'input_streams':streams,'pinned_usd_semantic_hashes':{'inflation':'2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485','labour':'4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51'},'pinned_eur_semantic_hashes':{'inflation':'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1','labour':'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'},'pinned_jpy_semantic_hashes':{'inflation':'6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8'},'performance_authorized':False,'alignment_result_computed':False,'alignment_engine_invoked':False,'ready_for_one_shot_test':True,'production_signal_authorized':False,'sizing_authorized':False}
+          receipt={
+            'schema':'GMFQ_G4USD_ALIGNMENT_INTEGRATION_READINESS_V3',
+            'status':'READY_FOR_ONE_SHOT_TEST',
+            'frozen_parent':{'pr':122,'head_sha':parent['frozen_head_sha'],'oos_observations':len(parent['observations']),'baseline_panel_sharpe':parent['baseline_panel_sharpe']},
+            'input_streams':streams,
+            'pinned_usd_semantic_hashes':{'inflation':'2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485','labour':'4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51'},
+            'pinned_eur_semantic_hashes':{'inflation':'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1','labour':'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'},
+            'pinned_jpy_semantic_hashes':{'inflation':'6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8'},
+            'pinned_cad_semantic_hashes':{'inflation':'d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a','labour':'77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a'},
+            'pinned_aud_semantic_hashes':{'inflation':'d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f'},
+            'performance_authorized':False,
+            'alignment_result_computed':False,
+            'alignment_engine_invoked':False,
+            'ready_for_one_shot_test':True,
+            'production_signal_authorized':False,
+            'sizing_authorized':False
+          }
           pathlib.Path('/tmp/readiness/readiness-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
           PY
           test ! -e /tmp/readiness/alignment-result.json
