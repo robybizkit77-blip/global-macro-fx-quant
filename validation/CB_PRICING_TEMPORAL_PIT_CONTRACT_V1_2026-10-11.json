@@ -1,0 +1,107 @@
+{
+  "schema": "GMFQ_CB_PRICING_TEMPORAL_PIT_CONTRACT_V1",
+  "created_at": "2026-10-11",
+  "purpose": "Define fail-closed point-in-time eligibility rules for historical central-bank market-pricing data used by GLOBAL MACRO FX QUANT. This contract does not authorize production publication and does not modify OIS_DATA, NATIVE_CB_DATA, engine logic, or UI runtime.",
+  "scope": {
+    "layer": "Central Banks / Market Pricing",
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "target_fields": ["3m", "6m", "12m", "change_1d_bp", "change_1w_bp"],
+    "historical_goal": "Reconstruct only information that was reproducibly available from the authorized source by the decision timestamp."
+  },
+  "core_rules": {
+    "official_or_directly_licensed_source_required": true,
+    "homogeneous_basis_required": true,
+    "same_instrument_family_required_for_current_and_references": true,
+    "no_secondary_price_fallback": true,
+    "no_proxy_substitution_without_methodology_reclassification": true,
+    "no_interpolation_unless_explicitly_authorized_by_contract": true,
+    "no_lookahead": true,
+    "fail_closed_on_missing_or_ambiguous_publication_time": true,
+    "raw_source_hash_required": true,
+    "semantic_replay_required": true,
+    "production_writes_forbidden_during_certification": true
+  },
+  "temporal_eligibility": {
+    "principle": "A market-pricing observation may influence a historical decision only after the source-defined settlement/publication is available.",
+    "same_day_use": "Forbidden unless the official source provides a verified publication timestamp that is earlier than the historical decision timestamp.",
+    "unknown_publication_time": "Use only from the next decision point after the observation date.",
+    "t_minus_1": "Must be the previous complete official session on the same authorized basis.",
+    "weekly_reference": "Must follow the source-specific certified rule; calendar approximations are forbidden unless explicitly part of the source contract.",
+    "contract_rolls": "3M/6M/12M mappings must be deterministic and reproducible for each historical as-of date; silent contract remapping is forbidden."
+  },
+  "currently_certifiable_sources": {
+    "AUD": {
+      "status": "CERTIFICATION_CANDIDATE",
+      "authority": "ASX",
+      "instrument": "30 Day Interbank Cash Rate futures (IB)",
+      "method": "Direct official settlement prices, 100 minus rate, no interpolation",
+      "weekly_reference_rule": "Fifth prior complete official ASX trading session (T-5)",
+      "existing_readiness": "DAILY_READY"
+    },
+    "CAD": {
+      "status": "CERTIFICATION_CANDIDATE",
+      "authority": "Montreal Exchange",
+      "instrument": "Three-Month CORRA Futures (CRA)",
+      "method": "Direct official settlement prices, 100 minus compounded CORRA, no interpolation",
+      "weekly_reference_rule": "Complete official MX session nearest to as_of minus 7 calendar days; ties prefer on/before target",
+      "existing_readiness": "DAILY_READY"
+    },
+    "GBP": {
+      "status": "CERTIFICATION_CANDIDATE",
+      "authority": "Bank of England",
+      "instrument": "Estimated sterling instantaneous OIS forward curve based on SONIA",
+      "method": "Exact official 3M/6M/12M forward-curve columns, no interpolation",
+      "existing_readiness": "DAILY_READY"
+    },
+    "JPY": {
+      "status": "CERTIFICATION_CANDIDATE",
+      "authority": "Tokyo Financial Exchange",
+      "instrument": "Three-month TONA Futures",
+      "method": "Direct official settlement prices, 100 minus compounded TONA, no interpolation",
+      "weekly_reference_rule": "Nearest complete official TFX session on or before as_of minus 5 calendar days",
+      "existing_readiness": "DAILY_READY"
+    }
+  },
+  "currently_withheld_sources": {
+    "USD": {
+      "status": "WITHHELD",
+      "authority": "CME/CBOT",
+      "instrument": "30-Day Federal Funds Futures (ZQ)",
+      "blocker": "Homogeneous official T-5 settlement history is unavailable to the current automated environment; CME archive access is blocked/Datamine-routed."
+    },
+    "EUR": {
+      "status": "WITHHELD",
+      "authority": "Eurex",
+      "instrument": "Three-Month Euro STR Futures (FST3)",
+      "blocker": "Free official historical files do not expose required settlement prices on a reproducible homogeneous basis."
+    },
+    "CHF": {
+      "status": "WITHHELD",
+      "authority": "ICE Futures Europe",
+      "instrument": "Three Month SARON Index Futures (SA3)",
+      "blocker": "Public metadata does not provide reproducible daily historical settlement prices; official EOD history is not exposed as a free public series."
+    },
+    "NZD": {
+      "status": "WITHHELD",
+      "authority": "Reserve Bank of New Zealand / NZD OIS market",
+      "instrument": "NZD OIS linked to OCR expectations",
+      "blocker": "Public RBNZ B2 does not publish the required OIS curve; standard swap series are not a clean OCR/OIS substitute."
+    }
+  },
+  "certification_requirements": {
+    "independent_materializations": 2,
+    "semantic_hash_equality_required": true,
+    "source_hash_capture_required": true,
+    "exact_coverage_report_required": true,
+    "source_specific_anchor_checks_required": true,
+    "no_live_data_changes": true,
+    "no_engine_rule_changes": true,
+    "no_ui_runtime_changes": true,
+    "full_engine_audit_required": true,
+    "full_browser_audit_required": true,
+    "candidate_branch_required": true,
+    "explicit_merge_approval_required": true
+  },
+  "next_order": ["AUD", "CAD", "GBP", "JPY"],
+  "governance": "Better WITHHELD than inferred historical certainty. A source moves from WITHHELD to certifiable only after homogeneous official historical observations and temporal eligibility can be reproduced without look-ahead."
+}
