@@ -127,6 +127,8 @@ jobs:
       - name: Assert repository remains clean
         run: |
           set -euo pipefail
+          find validation -type d -name __pycache__ -prune -exec rm -rf {} +
+          find validation -type f -name '*.pyc' -delete
           git diff --exit-code
           test -z "$(git status --porcelain)"
 
