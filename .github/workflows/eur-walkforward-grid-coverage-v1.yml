@@ -1,0 +1,177 @@
+name: EUR Walk-Forward Grid Coverage V1
+
+on:
+  push:
+    branches:
+      - validation-eur-walkforward-grid-coverage-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  MACRO_CONTRACT_SHA: 6b19a687e4b2a235070eb026dc7e6476e5323191
+  EUR_INFLATION_ARTIFACT_ID: '11674452706'
+  EUR_INFLATION_ARTIFACT_DIGEST: 'sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d'
+  EUR_LABOUR_ARTIFACT_ID: '11678794954'
+  EUR_LABOUR_ARTIFACT_DIGEST: 'sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677'
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  grid-coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Issue exact verified Macro permits for every grid month
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wf-grid/permits /tmp/wf-grid/snapshots /tmp/wf-grid/artifacts/inflation /tmp/wf-grid/artifacts/labour
+          git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
+          git checkout FETCH_HEAD -- validation/macro_walkforward_eligibility_gate_v1.py validation/backtest_input_contract_v1.py
+          python - <<'PY'
+          import subprocess
+          y,m=2018,3
+          while (y,m) <= (2026,8):
+              ym=f'{y:04d}-{m:02d}'
+              out=f'/tmp/wf-grid/permits/{ym}.json'
+              ver=f'/tmp/wf-grid/permits/{ym}-verified.json'
+              subprocess.run(['python','validation/backtest_input_contract_v1.py','--as-of',ym,'--target','EUR.inflation','--target','EUR.labour','--output',out],check=True)
+              subprocess.run(['python','validation/backtest_input_contract_v1.py','--verify-permit',out,'--output',ver],check=True)
+              if open(out,'rb').read()!=open(ver,'rb').read(): raise SystemExit(f'permit verification mismatch {ym}')
+              if m==12: y,m=y+1,1
+              else: m+=1
+          PY
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Download and verify exact certified EUR Macro artifacts
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid, expected in [
+              (os.environ['EUR_INFLATION_ARTIFACT_ID'], os.environ['EUR_INFLATION_ARTIFACT_DIGEST']),
+              (os.environ['EUR_LABOUR_ARTIFACT_ID'], os.environ['EUR_LABOUR_ARTIFACT_DIGEST']),
+          ]:
+              meta=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert meta['expired'] is False, meta
+              assert meta.get('digest') == expected, (meta.get('digest'), expected)
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_INFLATION_ARTIFACT_ID}/zip" > /tmp/wf-grid/inflation.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_LABOUR_ARTIFACT_ID}/zip" > /tmp/wf-grid/labour.zip
+          unzip -q /tmp/wf-grid/inflation.zip -d /tmp/wf-grid/artifacts/inflation
+          unzip -q /tmp/wf-grid/labour.zip -d /tmp/wf-grid/artifacts/labour
+          python - <<'PY'
+          import json
+          for folder,expected in [
+            ('inflation','fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1'),
+            ('labour','b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9')]:
+              a=json.load(open(f'/tmp/wf-grid/artifacts/{folder}/a/evidence.json'))
+              b=json.load(open(f'/tmp/wf-grid/artifacts/{folder}/b/evidence.json'))
+              assert a['status']=='PASS' and b['status']=='PASS'
+              assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']==expected
+          PY
+
+      - name: Materialize certified EUR Rates PIT rowset once
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3; do
+            if python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/wf-grid/eur-rates-rowset.json; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+
+      - name: Build and verify every monthly point-in-time snapshot
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          INF='/tmp/wf-grid/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv'
+          LAB='/tmp/wf-grid/artifacts/labour/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv'
+          RATES='/tmp/wf-grid/eur-rates-rowset.json'
+          y,m=2018,3
+          count=0
+          while (y,m) <= (2026,8):
+              ym=f'{y:04d}-{m:02d}'; dp=f'{ym}-10'; root=f'/tmp/wf-grid/work/{ym}'
+              subprocess.run(['mkdir','-p',root],check=True)
+              permit=f'/tmp/wf-grid/permits/{ym}-verified.json'
+              def run(*args): subprocess.run(list(args),check=True)
+              run('python','validation/macro_temporal_row_selector_v1.py','select','--macro-permit',permit,'--rowset-csv',INF,'--target','EUR.inflation','--decision-point',dp,'--output',f'{root}/macro-inflation.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/macro-inflation.json','--macro-permit',permit,'--rowset-csv',INF,'--output',f'{root}/macro-inflation-verified.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','select','--macro-permit',permit,'--rowset-csv',LAB,'--target','EUR.labour','--decision-point',dp,'--output',f'{root}/macro-labour.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/macro-labour.json','--macro-permit',permit,'--rowset-csv',LAB,'--output',f'{root}/macro-labour-verified.json')
+              run('python','validation/rates_backtest_input_contract_v1.py','issue','--decision-date',dp,'--target','EUR.rates_2y_10y','--output',f'{root}/rates-permit.json')
+              run('python','validation/rates_temporal_row_selector_v1.py','select','--permit',f'{root}/rates-permit.json','--rowset',RATES,'--target','EUR.rates_2y_10y','--decision-point',dp,'--output',f'{root}/rates-row.json')
+              run('python','validation/rates_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/rates-row.json','--permit',f'{root}/rates-permit.json','--rowset',RATES,'--output',f'{root}/rates-row-verified.json')
+              run('python','validation/cross_layer_backtest_input_coordinator_v1.py','bind','--currency','EUR','--decision-point',dp,'--macro-permit',permit,'--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',f'{root}/cross-layer.json')
+              run('python','validation/cross_layer_backtest_input_coordinator_v1.py','verify','--bundle',f'{root}/cross-layer.json','--macro-permit',permit,'--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',f'{root}/cross-layer-verified.json')
+              snap=f'/tmp/wf-grid/snapshots/{dp}-snapshot.json'; ver=f'/tmp/wf-grid/snapshots/{dp}-snapshot-verified.json'
+              build=['python','validation/walkforward_input_snapshot_builder_v1.py','build','--cross-layer-bundle',f'{root}/cross-layer.json','--macro-row-result',f'{root}/macro-inflation.json','--macro-row-result',f'{root}/macro-labour.json','--macro-row-verification',f'{root}/macro-inflation-verified.json','--macro-row-verification',f'{root}/macro-labour-verified.json','--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',snap]
+              run(*build)
+              verify=['python','validation/walkforward_input_snapshot_builder_v1.py','verify','--snapshot',snap,'--cross-layer-bundle',f'{root}/cross-layer.json','--macro-row-result',f'{root}/macro-inflation.json','--macro-row-result',f'{root}/macro-labour.json','--macro-row-verification',f'{root}/macro-inflation-verified.json','--macro-row-verification',f'{root}/macro-labour-verified.json','--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',ver]
+              run(*verify)
+              count+=1
+              if m==12: y,m=y+1,1
+              else: m+=1
+          assert count==102, count
+          PY
+
+      - name: Audit complete grid coverage and determinism
+        run: |
+          set -euo pipefail
+          python validation/walkforward_grid_coverage_v1.py build --directory /tmp/wf-grid/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR --output /tmp/wf-grid/grid.json
+          python validation/walkforward_grid_coverage_v1.py verify --grid /tmp/wf-grid/grid.json --directory /tmp/wf-grid/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR --output /tmp/wf-grid/grid-verified.json
+          python - <<'PY'
+          import json
+          g=json.load(open('/tmp/wf-grid/grid.json')); v=json.load(open('/tmp/wf-grid/grid-verified.json'))
+          assert g['status']=='FULL_GRID_COVERAGE_VERIFIED'
+          assert g['grid']['expected_points']==102 and g['grid']['eligible_points']==102 and g['grid']['coverage_ratio']==1.0
+          assert g['grid']['start']=='2018-03-10' and g['grid']['end']=='2026-08-10'
+          assert v['status']=='VERIFIED' and v['eligible_points']==102 and v['backtest_execution_authorized'] is False
+          assert g['policy']['signal_calculation_allowed'] is False
+          assert g['policy']['return_label_calculation_allowed'] is False
+          assert g['policy']['position_sizing_allowed'] is False
+          assert g['policy']['backtest_execution_authorized'] is False
+          PY
+
+      - name: Prove grid fails closed on a missing or tampered monthly point
+        run: |
+          set -euo pipefail
+          cp /tmp/wf-grid/snapshots/2026-07-10-snapshot.json /tmp/wf-grid/2026-07-backup.json
+          rm /tmp/wf-grid/snapshots/2026-07-10-snapshot.json
+          if python validation/walkforward_grid_coverage_v1.py build --directory /tmp/wf-grid/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR >/dev/null 2>&1; then
+            echo 'missing monthly point was incorrectly accepted' >&2; exit 1
+          fi
+          mv /tmp/wf-grid/2026-07-backup.json /tmp/wf-grid/snapshots/2026-07-10-snapshot.json
+          python - <<'PY'
+          import json
+          p='/tmp/wf-grid/snapshots/2026-08-10-snapshot.json'; s=json.load(open(p)); s['policy']['backtest_execution_authorized']=True
+          json.dump(s,open('/tmp/wf-grid/snapshots/2026-08-10-snapshot.json','w'))
+          PY
+          if python validation/walkforward_grid_coverage_v1.py build --directory /tmp/wf-grid/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR >/dev/null 2>&1; then
+            echo 'tampered monthly point was incorrectly accepted' >&2; exit 1
+          fi
+
+      - name: Assert repository clean
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eur-walkforward-grid-coverage-${{ github.run_id }}
+          path: |
+            /tmp/wf-grid/grid.json
+            /tmp/wf-grid/grid-verified.json
+          retention-days: 90
