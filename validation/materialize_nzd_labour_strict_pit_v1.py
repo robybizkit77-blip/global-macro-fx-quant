@@ -63,71 +63,53 @@ def unemployment_rate(page: str, year: int, month: int) -> float:
     period = f"{MONTHS[month].capitalize()} {year} quarter"
     p = re.escape(period)
 
-    # Exact historical exception verified against the official Stats NZ release.
-    # June 2018's page teaser states only "Unemployment rate rose to 4.5 percent."
-    # The page identity itself is separately locked to the June 2018 quarter.
     if (year, month) == (2018, 6):
         values = list(dict.fromkeys(float(v) for v in re.findall(
-            r"\bUnemployment rate rose to\s+([0-9]+(?:\.[0-9]+)?)\s+percent\b",
-            page,
-            re.I,
+            r"\bUnemployment rate rose to\s+([0-9]+(?:\.[0-9]+)?)\s+percent\b", page, re.I
         )))
         if values == [4.5]:
             return 4.5
         raise ValueError(f"Stats NZ exact June 2018 unemployment wording mismatch: {values}")
 
-    # Exact historical exception verified against the official Stats NZ release.
-    # December 2021 states "The unemployment rate was 3.2 percent in the
-    # December 2021 quarter." Keep this period-specific so subgroup rates cannot
-    # turn a broad "unemployment rate was" matcher into a false national match.
     if (year, month) == (2021, 12):
         values = list(dict.fromkeys(float(v) for v in re.findall(
-            r"\bThe unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the December 2021 quarter\b",
-            page,
-            re.I,
+            r"\bThe unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the December 2021 quarter\b", page, re.I
         )))
         if values == [3.2]:
             return 3.2
         raise ValueError(f"Stats NZ exact December 2021 unemployment wording mismatch: {values}")
 
-    # March 2022 has an official release headline "Unemployment rate remains at
-    # 3.2 percent". Use that exact period-specific headline because the longer
-    # visible sentence is split by HTML markup on the archival page.
     if (year, month) == (2022, 3):
         if re.search(r"\bUnemployment rate remains at 3\.2 percent\b", page, re.I):
             return 3.2
         raise ValueError("Stats NZ exact March 2022 unemployment headline missing")
 
-    # September 2022's official summary states that the unemployment rate
-    # "remained unchanged at 3.3 percent in the September 2022 quarter".
-    # Keep this matcher period-specific rather than broadening the generic
-    # unchanged-rate family.
     if (year, month) == (2022, 9):
         values = list(dict.fromkeys(float(v) for v in re.findall(
-            r"\bUnemployment rate remained unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the September 2022 quarter\b",
-            page,
-            re.I,
+            r"\bUnemployment rate remained unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the September 2022 quarter\b", page, re.I
         )))
         if values == [3.3]:
             return 3.3
         raise ValueError(f"Stats NZ exact September 2022 unemployment wording mismatch: {values}")
 
-    # March 2023 repeats the same period-specific "remained unchanged at"
-    # wording, at 3.4 percent, explicitly anchored to the March 2023 quarter.
     if (year, month) == (2023, 3):
         values = list(dict.fromkeys(float(v) for v in re.findall(
-            r"\bUnemployment rate remained unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the March 2023 quarter\b",
-            page,
-            re.I,
+            r"\bUnemployment rate remained unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the March 2023 quarter\b", page, re.I
         )))
         if values == [3.4]:
             return 3.4
         raise ValueError(f"Stats NZ exact March 2023 unemployment wording mismatch: {values}")
 
-    # Ordered from strongest national headline wording to weaker same-sentence
-    # variants. Stop at the first family with one unique value so subgroup
-    # rates later in the page (Māori, women, etc.) cannot contaminate a valid
-    # national first-release match.
+    # December 2023's national paragraph uses "seasonally adjusted unemployment"
+    # without the word "rate". Keep the exception exact and quarter-specific.
+    if (year, month) == (2023, 12):
+        values = list(dict.fromkeys(float(v) for v in re.findall(
+            r"\bThe seasonally adjusted unemployment was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the December 2023 quarter\b", page, re.I
+        )))
+        if values == [4.0]:
+            return 4.0
+        raise ValueError(f"Stats NZ exact December 2023 unemployment wording mismatch: {values}")
+
     patterns = (
         rf"seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"In the {p},?\s+(?:the\s+)?seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
@@ -144,9 +126,7 @@ def unemployment_rate(page: str, year: int, month: int) -> float:
         if len(values) == 1:
             return values[0]
         if len(values) > 1:
-            raise ValueError(
-                f"Stats NZ unemployment-rate ambiguity for {year:04d}-{month:02d} in one official wording family: {values}"
-            )
+            raise ValueError(f"Stats NZ unemployment-rate ambiguity for {year:04d}-{month:02d} in one official wording family: {values}")
     raise ValueError(f"Stats NZ unemployment-rate missing for {year:04d}-{month:02d}")
 
 
