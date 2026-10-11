@@ -1,0 +1,77 @@
+name: JPYUSD Rolling36 Independent Validation V1
+on:
+  push:
+    branches: ['validation-jpyusd-rolling36-independent-v1-2026-10-11']
+    paths:
+      - 'validation/jpyusd_rolling36_independent_v1.py'
+      - '.github/workflows/jpyusd-rolling36-independent-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      JPY_INF_ARTIFACT_ID: '11680868760'
+      JPY_INF_ARTIFACT_DIGEST: 'sha256:e4c44e0a497bf343059cd26592068bde1a26ed97d5cac3bacd67137dba69b13c'
+      JPY_LAB_ARTIFACT_ID: '11622693872'
+      JPY_LAB_ARTIFACT_DIGEST: 'sha256:5dbf0b7e135bc0191c0519230681ed0171bfcfa1039a79e9dd3743e228a6db0f'
+      RATES_STORE_SHA: '0f4f45190fa5d5e010650026a30a0f981373ec34'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Download certified JPY macro artifacts
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jpy/inf /tmp/jpy/lab
+          python - <<'PY'
+          import json,os,subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid,dig in [(os.environ['JPY_INF_ARTIFACT_ID'],os.environ['JPY_INF_ARTIFACT_DIGEST']),(os.environ['JPY_LAB_ARTIFACT_ID'],os.environ['JPY_LAB_ARTIFACT_DIGEST'])]:
+              m=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True)); assert not m['expired']; assert m.get('digest')==dig,(m.get('digest'),dig)
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${JPY_INF_ARTIFACT_ID}/zip" > /tmp/jpy/inf.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${JPY_LAB_ARTIFACT_ID}/zip" > /tmp/jpy/lab.zip
+          unzip -q /tmp/jpy/inf.zip -d /tmp/jpy/inf
+          unzip -q /tmp/jpy/lab.zip -d /tmp/jpy/lab
+          find /tmp/jpy -maxdepth 3 -type f -print
+      - name: Borrow exact frozen JPY and USD rates histories
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jpy/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          git checkout FETCH_HEAD -- validation/rates_pit_rowsets/jpy_rates_2y_10y_temporal_pit_v1.csv validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv
+          cp validation/rates_pit_rowsets/jpy_rates_2y_10y_temporal_pit_v1.csv /tmp/jpy/rates/jpy.csv
+          cp validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv /tmp/jpy/rates/usd.csv
+          git reset --hard "$GITHUB_SHA"; git clean -fd
+      - name: Download official ECB JPY and USD reference rates
+        run: |
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.JPY.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/jpy/jpy_ecb.csv
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' -o /tmp/jpy/usd_ecb.csv
+          test -s /tmp/jpy/jpy_ecb.csv; test -s /tmp/jpy/usd_ecb.csv
+      - name: Run frozen independent validation
+        run: |
+          set -euo pipefail
+          INF=$(find /tmp/jpy/inf -type f -name '*.json' | head -1)
+          LAB=$(find /tmp/jpy/lab -type f -name 'JPY_LABOUR_LFS_STRICT_FIRST_RELEASE_2018_2026_08.csv' | head -1)
+          test -n "$INF"; test -n "$LAB"
+          python validation/jpyusd_rolling36_independent_v1.py --inflation-json "$INF" --labour-csv "$LAB" --jpy-rates /tmp/jpy/rates/jpy.csv --usd-rates /tmp/jpy/rates/usd.csv --jpy-ecb /tmp/jpy/jpy_ecb.csv --usd-ecb /tmp/jpy/usd_ecb.csv --output /tmp/jpy/result.json
+          python validation/jpyusd_rolling36_independent_v1.py --inflation-json "$INF" --labour-csv "$LAB" --jpy-rates /tmp/jpy/rates/jpy.csv --usd-rates /tmp/jpy/rates/usd.csv --jpy-ecb /tmp/jpy/jpy_ecb.csv --usd-ecb /tmp/jpy/usd_ecb.csv --output /tmp/jpy/result-b.json >/dev/null
+          cmp /tmp/jpy/result.json /tmp/jpy/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/jpy/result.json')); assert r['status']=='INDEPENDENT_VALIDATION_COMPLETE'; assert r['scope']['snapshot_count']==102; assert r['scope']['oos_predictions_per_model']==65; assert r['method']['rolling_window_months_fixed']==36; assert r['method']['window_search_on_jpy'] is False; assert r['method']['hyperparameter_tuning_on_jpy'] is False; assert r['policy']['production_signal_authorized'] is False
+          print(json.dumps({'comparison':r['comparison'],'models':r['models']},indent=2,sort_keys=True))
+          PY
+      - name: Assert repository clean
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jpyusd-rolling36-independent-${{ github.run_id }}
+          path: /tmp/jpy/result.json
+          retention-days: 90
