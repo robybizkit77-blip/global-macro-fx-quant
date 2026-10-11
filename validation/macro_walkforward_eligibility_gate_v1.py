@@ -42,7 +42,7 @@ def ym(value: str) -> str:
 def load_receipts() -> tuple[dict[str, dict[str, Any]], list[str]]:
     receipts: dict[str, dict[str, Any]] = {}
     files: list[str] = []
-    for path in sorted(MACRO_DIR.glob("*_strict_pit_receipt_v1_*.json")):
+    for path in sorted(MACRO_DIR.glob("*_strict_pit_receipt_v*_*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         target = data.get("target")
         if target not in EXPECTED_SET:
