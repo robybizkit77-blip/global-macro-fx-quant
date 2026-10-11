@@ -17,6 +17,8 @@ permissions:
 jobs:
   gate:
     runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -83,13 +85,10 @@ jobs:
           import json
           a=json.load(open('/tmp/rates-gate/start-boundary.json', encoding='utf-8'))
           b=json.load(open('/tmp/rates-gate/end-boundary.json', encoding='utf-8'))
-          # Same-day first observations must not be admitted.
           assert a['targets']['EUR.rates_2y_10y']['backtest_eligible'] is False
           assert a['targets']['CAD.rates_2y_10y']['backtest_eligible'] is False
           assert a['targets']['AUD.rates_2y_10y']['backtest_eligible'] is False
-          # USD only proves the boundary at year resolution; entire 2018 boundary year is withheld.
           assert a['targets']['USD.rates_2y_10y']['backtest_eligible'] is False
-          # No currency may extend beyond its certified rowset end.
           assert b['targets']['USD.rates_2y_10y']['backtest_eligible'] is False
           assert b['targets']['EUR.rates_2y_10y']['backtest_eligible'] is False
           assert b['targets']['JPY.rates_2y_10y']['backtest_eligible'] is False
