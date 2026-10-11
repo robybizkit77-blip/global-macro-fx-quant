@@ -1,0 +1,42 @@
+{
+  "schema": "GMFQ_COT_2018_2019_SHUTDOWN_OFFICIAL_SCHEDULE_EVIDENCE_V1",
+  "as_of": "2026-10-11",
+  "source": {
+    "authority": "U.S. Commodity Futures Trading Commission",
+    "release_number": "7864-19",
+    "published_date": "2019-01-29",
+    "title": "CFTC’s Release Schedule for Delayed Market Data Reports",
+    "url": "https://www.cftc.gov/PressRoom/PressReleases/7864-19"
+  },
+  "official_statements": {
+    "last_cot_publication_before_shutdown": "2018-12-21",
+    "first_backlogged_report_date": "2018-12-24",
+    "first_expected_catchup_publication": "2019-02-01",
+    "catchup_rule": "After the first catch-up publication, CFTC expected one COT report on Tuesday and another on Friday of each week, in chronological order, until current."
+  },
+  "derived_expected_schedule": [
+    {"report_date":"2018-12-24","official_expected_publish_date":"2019-02-01"},
+    {"report_date":"2018-12-31","official_expected_publish_date":"2019-02-05"},
+    {"report_date":"2019-01-08","official_expected_publish_date":"2019-02-08"},
+    {"report_date":"2019-01-15","official_expected_publish_date":"2019-02-12"},
+    {"report_date":"2019-01-22","official_expected_publish_date":"2019-02-15"},
+    {"report_date":"2019-01-29","official_expected_publish_date":"2019-02-19"},
+    {"report_date":"2019-02-05","official_expected_publish_date":"2019-02-22"},
+    {"report_date":"2019-02-12","official_expected_publish_date":"2019-02-26"},
+    {"report_date":"2019-02-19","official_expected_publish_date":"2019-03-01"},
+    {"report_date":"2019-02-26","official_expected_publish_date":"2019-03-05"}
+  ],
+  "certification": {
+    "official_schedule_proven": true,
+    "individual_actual_publication_dates_proven": false,
+    "classification": "OFFICIAL_EXPECTED_SCHEDULE_ONLY_ACTUAL_DATE_UNPROVEN",
+    "eligible_for_strict_pit_edge_backtest": false,
+    "withhold_from_strict_pit_until_actual_publication_proof": true
+  },
+  "governance": {
+    "no_inference_that_expected_equals_actual": true,
+    "no_backtest_authorization": true,
+    "no_production_signal_authorization": true,
+    "no_sizing_authorization": true
+  }
+}
