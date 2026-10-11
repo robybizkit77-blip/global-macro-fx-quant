@@ -1,0 +1,137 @@
+name: Rates Backtest Input Contract V1
+
+on:
+  push:
+    branches:
+      - validation-rates-backtest-input-contract-v1-2026-10-11
+  pull_request:
+    paths:
+      - 'validation/rates_walkforward_eligibility_gate_v1.py'
+      - 'validation/rates_backtest_input_contract_v1.py'
+      - '.github/workflows/rates-backtest-input-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Issue and verify deterministic layer permit twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-contract/a /tmp/rates-contract/b
+          python validation/rates_backtest_input_contract_v1.py issue \
+            --decision-date 2020-01-15 \
+            --target USD.rates_2y_10y \
+            --target JPY.rates_2y_10y \
+            --output /tmp/rates-contract/a/permit.json
+          python validation/rates_backtest_input_contract_v1.py issue \
+            --decision-date 2020-01-15 \
+            --target JPY.rates_2y_10y \
+            --target USD.rates_2y_10y \
+            --output /tmp/rates-contract/b/permit.json
+          cmp /tmp/rates-contract/a/permit.json /tmp/rates-contract/b/permit.json
+          python validation/rates_backtest_input_contract_v1.py verify \
+            --permit /tmp/rates-contract/a/permit.json \
+            --output /tmp/rates-contract/verification.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/rates-contract/a/permit.json', encoding='utf-8'))
+          v=json.load(open('/tmp/rates-contract/verification.json', encoding='utf-8'))
+          assert p['status']=='PERMIT_ISSUED'
+          assert p['requested_targets']==['JPY.rates_2y_10y','USD.rates_2y_10y']
+          assert all(x['layer_eligible'] is True for x in p['permits'])
+          assert all(x['row_consumption_authorized'] is False for x in p['permits'])
+          assert all(x['same_day_use_allowed'] is False for x in p['permits'])
+          assert v['status']=='VERIFIED'
+          assert v['row_consumption_authorized'] is False
+          assert v['next_required_gate']=='TEMPORAL_RATE_ROW_SELECTOR'
+          assert '09:30 JST' in next(x for x in p['permits'] if x['target'].startswith('JPY'))['temporal_eligibility_rule']
+          PY
+
+      - name: Prove withheld and out-of-window targets abort
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail_issue() {
+            if python validation/rates_backtest_input_contract_v1.py issue "$@" >/tmp/should-not-exist.json 2>/tmp/expected-error.log; then
+              echo "expected failure but permit was issued: $*" >&2
+              exit 1
+            fi
+          }
+          fail_issue --decision-date 2020-01-15 --target GBP.rates_2y_10y
+          fail_issue --decision-date 2020-01-15 --target CHF.rates_2y_10y
+          fail_issue --decision-date 2020-01-15 --target NZD.rates_2y_10y
+          fail_issue --decision-date 2018-12-31 --target USD.rates_2y_10y
+          fail_issue --decision-date 2026-10-07 --target EUR.rates_2y_10y
+          fail_issue --decision-date 2020-01-15 --target XXX.rates_2y_10y
+          fail_issue --decision-date 2020-01-15 --target USD.rates_2y_10y --target USD.rates_2y_10y
+
+      - name: Prove permit tamper and date mismatch abort
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/rates-contract/a/permit.json /tmp/rates-contract/tampered.json
+          python - <<'PY'
+          import json
+          p='/tmp/rates-contract/tampered.json'
+          d=json.load(open(p, encoding='utf-8'))
+          d['permits'][0]['row_consumption_authorized']=True
+          open(p,'w',encoding='utf-8').write(json.dumps(d,indent=2,sort_keys=True)+'\n')
+          PY
+          if python validation/rates_backtest_input_contract_v1.py verify --permit /tmp/rates-contract/tampered.json >/dev/null 2>&1; then
+            echo 'tampered permit unexpectedly verified' >&2
+            exit 1
+          fi
+
+          cp /tmp/rates-contract/a/permit.json /tmp/rates-contract/date-tampered.json
+          python - <<'PY'
+          import json, hashlib
+          p='/tmp/rates-contract/date-tampered.json'
+          d=json.load(open(p, encoding='utf-8'))
+          d['decision_date']='2020-01-16'
+          body={k:v for k,v in d.items() if k!='bundle_sha256'}
+          raw=json.dumps(body,sort_keys=True,separators=(',',':'),ensure_ascii=True).encode()
+          d['bundle_sha256']=hashlib.sha256(raw).hexdigest()
+          open(p,'w',encoding='utf-8').write(json.dumps(d,indent=2,sort_keys=True)+'\n')
+          PY
+          if python validation/rates_backtest_input_contract_v1.py verify --permit /tmp/rates-contract/date-tampered.json >/dev/null 2>&1; then
+            echo 'date-mismatched permit unexpectedly verified' >&2
+            exit 1
+          fi
+
+      - name: Assert contract never authorizes direct row consumption
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/rates-contract/a/permit.json', encoding='utf-8'))
+          assert d['policy']['layer_permit_is_not_row_permit'] is True
+          assert d['policy']['row_consumption_requires_separate_temporal_selector'] is True
+          assert d['policy']['missing_or_invalid_permit_action']=='ABORT_BACKTEST'
+          assert d['policy']['runtime_history_fallback_allowed'] is False
+          assert d['policy']['secondary_source_fallback_allowed'] is False
+          PY
+
+      - name: Assert repository remains read only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-backtest-input-contract-${{ github.run_id }}
+          path: /tmp/rates-contract/
+          retention-days: 90
