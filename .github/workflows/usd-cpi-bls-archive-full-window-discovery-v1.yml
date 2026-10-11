@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probe BLS CPI archive twice
+      - name: Probe direct BLS supplemental archives twice
         run: |
           mkdir -p /tmp/usd-cpi-bls/a /tmp/usd-cpi-bls/b
           python validation/macro/discover_usd_cpi_bls_archive_full_window_v1.py --output /tmp/usd-cpi-bls/a/discovery.json
@@ -28,17 +28,21 @@ jobs:
           from pathlib import Path
           a=json.loads(Path('/tmp/usd-cpi-bls/a/discovery.json').read_text())
           b=json.loads(Path('/tmp/usd-cpi-bls/b/discovery.json').read_text())
-          assert a['status']=='DISCOVERY_PASS', a['status']
-          assert b['status']=='DISCOVERY_PASS', b['status']
-          assert a['coverage_ok'] is True and b['coverage_ok'] is True
+          assert a['status']=='DISCOVERY_PASS', a
+          assert b['status']=='DISCOVERY_PASS', b
+          assert a['transport_ok'] is True and b['transport_ok'] is True
+          assert a['annual_ok'] is True and b['annual_ok'] is True
+          assert a['recent_ok'] is True and b['recent_ok'] is True
           assert a['semantic_sha256']==b['semantic_sha256']
-          assert a['by_year']==b['by_year']
-          assert a['release_count']==b['release_count']
+          assert a['annual']==b['annual']
+          assert a['recent']==b['recent']
+          assert a['invariants']['official_bls_static_files_only'] is True
+          assert a['invariants']['no_mirror'] is True
           assert a['invariants']['production_write'] is False
           assert a['invariants']['changes_live_data'] is False
           assert a['invariants']['changes_engine_rules'] is False
           assert a['invariants']['certification_implied'] is False
-          print('BLS archive discovery reproducibility: PASS')
+          print('BLS supplemental transport reproducibility: PASS')
           PY
       - name: Assert no production writes
         run: |
