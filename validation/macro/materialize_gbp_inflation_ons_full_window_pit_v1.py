@@ -17,6 +17,7 @@ from html import unescape
 from html.parser import HTMLParser
 
 INDEX = 'https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23/previous'
+CURRENT_CSV = 'https://www.ons.gov.uk/generator?format=csv&uri=/economy/inflationandpriceindices/timeseries/d7g7/mm23'
 UA = 'GLOBAL-MACRO-FX-QUANT GBP inflation ONS full-window PIT materializer v1'
 TITLE = 'CPI ANNUAL RATE 00: ALL ITEMS 2015=100'
 START = datetime(2018, 1, 1)
@@ -116,7 +117,6 @@ def parse_superseded_rows(raw: bytes) -> list[dict]:
             'date_superseded': superseded_dt.strftime('%Y-%m-%d'),
             'date_superseded_dt': superseded_dt,
             'csv_url': csv_url,
-            'row_text': row_text,
         })
 
     uniq = {r['version']: r for r in rows}
@@ -130,12 +130,12 @@ def build_effective_versions(rows: list[dict]) -> list[dict]:
     out = []
     for i in range(1, len(rows)):
         current = rows[i]
-        previous_supersession = rows[i-1]['date_superseded_dt']
-        effective_from = previous_supersession
+        effective_from = rows[i-1]['date_superseded_dt']
         effective_until = current['date_superseded_dt']
         if START <= effective_from <= END:
             out.append({
                 'version': current['version'],
+                'source_kind': 'superseded',
                 'effective_from': effective_from.strftime('%Y-%m-%d'),
                 'effective_until_exclusive': effective_until.strftime('%Y-%m-%d'),
                 'csv_url': current['csv_url'],
@@ -191,12 +191,9 @@ def main() -> int:
     index_raw = get(INDEX)
     superseded_rows = parse_superseded_rows(index_raw)
     versions = build_effective_versions(superseded_rows)
+    if len(versions) != 104:
+        raise ValueError(f'expected 104 archived effective vintages before current version, found {len(versions)}')
 
-    if len(versions) not in {104, 105}:
-        raise ValueError(f'unexpected effective release count before latest-version handling: {len(versions)}')
-
-    # Critical temporal sentinel: the file superseded on 13-Feb-2018 must be the
-    # vintage that became effective on 16-Jan-2018 and should contain Dec-2017 CPI.
     sentinel = next((r for r in versions if r['effective_from'] == '2018-01-16'), None)
     if not sentinel:
         raise ValueError('missing 2018-01-16 effective vintage sentinel')
@@ -214,6 +211,7 @@ def main() -> int:
             raise ValueError(f"v{row['version']} latest period {period} != expected {expected_period} for effective_from {row['effective_from']}")
         ledger.append({
             'version': row['version'],
+            'source_kind': row['source_kind'],
             'effective_from': row['effective_from'],
             'effective_until_exclusive': row['effective_until_exclusive'],
             'decision_rule': 'decision_date > effective_from',
@@ -223,22 +221,42 @@ def main() -> int:
             'raw_sha256': hashlib.sha256(raw).hexdigest(),
         })
 
+    # The currently active file became effective when the last archived version
+    # was superseded. It is the same ONS MM23/D7G7 series and is handled explicitly,
+    # rather than pretending it already appears in the previous-version table.
+    current_effective_from = superseded_rows[-1]['date_superseded']
+    if current_effective_from != '2026-09-16':
+        raise ValueError(f'unexpected current-version effective date: {current_effective_from}')
+    current_raw = get(CURRENT_CSV)
+    current_period, current_value = parse_latest_monthly(current_raw)
+    expected_current_period = previous_month(current_effective_from)
+    if current_period != expected_current_period:
+        raise ValueError(f'current latest period {current_period} != expected {expected_current_period}')
+    ledger.append({
+        'version': 'current',
+        'source_kind': 'current',
+        'effective_from': current_effective_from,
+        'effective_until_exclusive': None,
+        'decision_rule': 'decision_date > effective_from',
+        'reference_period': current_period,
+        'value_pct': current_value,
+        'csv_url': CURRENT_CSV,
+        'raw_sha256': hashlib.sha256(current_raw).hexdigest(),
+    })
+
     by_year = {}
     for row in ledger:
         y = row['effective_from'][:4]
         by_year[y] = by_year.get(y, 0) + 1
     expected_by_year = {str(y): 12 for y in range(2018, 2026)} | {'2026': 9}
-
-    # The superseded table may not yet include the currently-active September 2026
-    # vintage. Until the latest-version row is explicitly incorporated and checked,
-    # fail closed instead of pretending full 105-release coverage.
     coverage_ok = by_year == expected_by_year and len(ledger) == EXPECTED_RELEASES
-    semantic_rows = [[r['version'], r['effective_from'], r['effective_until_exclusive'], r['reference_period'], r['value_pct'], r['csv_url'], r['raw_sha256']] for r in ledger]
+
+    semantic_rows = [[r['version'], r['source_kind'], r['effective_from'], r['effective_until_exclusive'], r['reference_period'], r['value_pct'], r['csv_url'], r['raw_sha256']] for r in ledger]
     semantic_sha = hashlib.sha256(json.dumps(semantic_rows, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
 
     out = {
         'schema': 'GMFQ_GBP_INFLATION_ONS_FULL_WINDOW_PIT_LEDGER_V1',
-        'status': 'PIT_MATERIALIZED' if coverage_ok else 'WITHHELD_CURRENT_VERSION_PENDING',
+        'status': 'PIT_MATERIALIZED' if coverage_ok else 'WITHHELD',
         'authority': 'Office for National Statistics',
         'canonical_series': {'dataset': 'MM23', 'series_id': 'D7G7', 'label': TITLE, 'unit': '%', 'transformation': 'reported_yoy_rate'},
         'window': {'start_effective_from': '2018-01-01', 'end_effective_from': '2026-09-30'},
@@ -248,9 +266,10 @@ def main() -> int:
         'coverage_ok': coverage_ok,
         'index_url': INDEX,
         'index_sha256': hashlib.sha256(index_raw).hexdigest(),
+        'current_csv_url': CURRENT_CSV,
         'semantic_sha256': semantic_sha,
         'temporal_policy': {
-            'ons_table_semantics': 'Each archived file is associated with its Date superseded. Its effective_from is the previous supersession date.',
+            'ons_table_semantics': 'Each archived file is associated with its Date superseded. Its effective_from is the previous supersession date. The current file becomes effective on the last archived version supersession date.',
             'release_time_verified': False,
             'same_day_use_allowed': False,
             'eligibility_rule': 'decision_date > effective_from',
@@ -258,8 +277,10 @@ def main() -> int:
         'ledger': ledger,
         'invariants': {
             'native_ons_vintages_only': True,
+            'current_and_archived_same_mm23_d7g7_series': True,
             'same_table_row_version_to_superseded_date_pairing': True,
             'effective_from_derived_from_previous_supersession': True,
+            'current_effective_from_equals_last_supersession': True,
             'temporal_sentinel_2018_01_16_is_dec_2017': True,
             'exact_series_semantics': True,
             'latest_observation_equals_previous_calendar_month': True,
@@ -274,7 +295,15 @@ def main() -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(out, indent=2) + '\n', encoding='utf-8')
-    print(json.dumps({'status': out['status'], 'release_count': len(ledger), 'by_release_year': by_year, 'coverage_ok': coverage_ok, 'sentinel': sentinel, 'first': ledger[0] if ledger else None, 'last': ledger[-1] if ledger else None, 'semantic_sha256': semantic_sha}, indent=2))
+    print(json.dumps({
+        'status': out['status'],
+        'release_count': len(ledger),
+        'by_release_year': by_year,
+        'coverage_ok': coverage_ok,
+        'sentinel': ledger[0],
+        'current': ledger[-1],
+        'semantic_sha256': semantic_sha,
+    }, indent=2))
     return 0 if out['status'] == 'PIT_MATERIALIZED' else 2
 
 
