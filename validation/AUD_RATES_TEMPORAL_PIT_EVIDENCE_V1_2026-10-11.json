@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_AUD_RATES_TEMPORAL_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "AUD.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "authority": "Reserve Bank of Australia",
+  "source": "F2 Capital Market Yields – Government Bonds – Daily",
+  "source_endpoint": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-09-30",
+    "observations": 2205
+  },
+  "series_contract": {
+    "currency": "AUD",
+    "tenors": ["2Y", "10Y"],
+    "series_2y": "FCMYGBAG2D",
+    "series_10y": "FCMYGBAG10D",
+    "basis": "official_same_basis_rba_f2_government_bond_daily_yields",
+    "same_observation_date_required": true,
+    "same_source_family_required": true
+  },
+  "temporal_contract": {
+    "exact_publication_timestamp_verified": false,
+    "same_day_use_allowed": false,
+    "eligibility": "decision_date > observation_date",
+    "daily_backtest_interpretation": "The RBA F2 file exposes a current file publication date rather than a verified historical publication timestamp for each daily row, so an observation dated D cannot affect a D decision and may first affect a later decision point.",
+    "intraday_same_day_use": "FORBIDDEN_WITHOUT_VERIFIED_OFFICIAL_TIMESTAMP"
+  },
+  "validation": {
+    "base_main_sha": "73f55a345d04a454aa98311076b144b5c5b633c5",
+    "validated_source_sha": "f941813fdf95e103a7c4ae2701f9aa6210c96b4a",
+    "materializer_run_id": 38128507737,
+    "engine_logic_audit_run_id": 38128507675,
+    "staging_browser_audit_run_id": 38128507645,
+    "artifact_id": 11698900287,
+    "artifact_name": "aud-rates-temporal-pit-v1-38128507737",
+    "artifact_digest": "sha256:056e0bf91411319704bb54e58e8ea55d892519cba5c8803de62f73694b3b00e7",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "source_sha256": "92b111ea04a5e2c62119e811156578593331bfcdd5902eb83b694b64778b9fa2",
+  "semantic_rowset_sha256": "d3d33e76c94722667c640e8a2b3bcb663b71da37f2fbccf34471fabe99db1c17",
+  "invariants": {
+    "official_source_only": true,
+    "same_basis_2y_10y": true,
+    "duplicate_observation_dates": false,
+    "monotonic_observation_order": true,
+    "secondary_source_fallback_used": false,
+    "same_day_lookahead_prevented": true,
+    "two_materializations_semantically_identical": true
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}
