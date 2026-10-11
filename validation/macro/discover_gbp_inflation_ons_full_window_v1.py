@@ -24,10 +24,15 @@ def get(url:str,timeout:int=35)->bytes:
         return r.read()
 
 
+def norm(s:str)->str:
+    return re.sub(r'[^a-z0-9]+',' ',unescape(s).lower()).strip()
+
+
 def parse_index(raw:bytes):
     text=raw.decode('utf-8',errors='replace')
     plain=re.sub(r'<[^>]+>',' ',text); plain=re.sub(r'\s+',' ',plain)
-    if 'Series ID: D7G7' not in plain or TITLE not in plain:
+    n=norm(plain)
+    if 'd7g7' not in n or 'cpi annual rate 00 all items 2015 100' not in n:
         raise ValueError('ONS previous-version index is not canonical D7G7/MM23')
     rows=[]
     for m in CSV_LINK_RE.finditer(text):
@@ -65,7 +70,8 @@ def main():
         try:
             raw=get(row['csv_url'])
             text=raw.decode('utf-8-sig',errors='replace')
-            if 'D7G7' not in text and TITLE not in text:
+            nt=norm(text)
+            if 'd7g7' not in nt and 'cpi annual rate 00 all items 2015 100' not in nt:
                 raise ValueError('sample CSV lacks D7G7/title marker')
             samples.append({'version':row['version'],'release_date':row['release_date'],'csv_url':row['csv_url'],'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()})
         except Exception as e:
