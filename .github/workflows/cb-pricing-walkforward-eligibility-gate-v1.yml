@@ -1,0 +1,203 @@
+name: CB Pricing Walk-Forward Eligibility Gate V1
+
+on:
+  push:
+    branches:
+      - validation-cb-pricing-walkforward-eligibility-gate-v1-2026-10-11
+  pull_request:
+    paths:
+      - 'validation/CB_PRICING_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json'
+      - 'validation/cb_pricing/*_TEMPORAL_PIT_EVIDENCE_V1*.json'
+      - 'validation/cb_pricing_walkforward_eligibility_gate_v1.py'
+      - '.github/workflows/cb-pricing-walkforward-eligibility-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prove current canonical universe is 0 of 8
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cb-pricing-gate/a /tmp/cb-pricing-gate/b
+          python validation/cb_pricing_walkforward_eligibility_gate_v1.py \
+            --decision-date 2024-06-15 \
+            --expect-certified-count 0 \
+            --expect-eligible-count 0 \
+            --output /tmp/cb-pricing-gate/a/current.json
+          python validation/cb_pricing_walkforward_eligibility_gate_v1.py \
+            --decision-date 2024-06-15 \
+            --expect-certified-count 0 \
+            --expect-eligible-count 0 \
+            --output /tmp/cb-pricing-gate/b/current.json
+          cmp /tmp/cb-pricing-gate/a/current.json /tmp/cb-pricing-gate/b/current.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cb-pricing-gate/a/current.json'))
+          assert d['expected_currencies']==8
+          assert d['certified_currencies']==0
+          assert d['eligible_currencies']==0
+          assert d['withheld_currencies']==8
+          assert all(x['certification']=='WITHHELD' for x in d['targets'].values())
+          assert all(x['backtest_eligible'] is False for x in d['targets'].values())
+          assert d['targets']['AUD']['contract_status']=='CERTIFICATION_CANDIDATE'
+          assert d['targets']['USD']['contract_status']=='WITHHELD'
+          PY
+
+      - name: Prove future partial coverage is date-aware without backfilling history
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, json, tempfile
+          from pathlib import Path
+
+          spec=importlib.util.spec_from_file_location('gate','validation/cb_pricing_walkforward_eligibility_gate_v1.py')
+          gate=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+
+          evidence={
+            'schema':'GMFQ_CB_PRICING_TEMPORAL_PIT_EVIDENCE_V1',
+            'status':'PASS',
+            'layer':'Central Banks / Market Pricing',
+            'currency':'JPY',
+            'authority':'TEST_ONLY_OFFICIAL_AUTHORITY',
+            'instrument':'TEST_ONLY_HOMOGENEOUS_INSTRUMENT',
+            'coverage':{'start_date':'2023-03-20','end_date':'2026-09-30'},
+            'temporal_contract':{
+              'same_day_use_allowed':False,
+              'eligibility':'TEST_ONLY: observation usable only from next decision point after official settlement.'
+            },
+            'source_contract':{
+              'official_or_directly_licensed':True,
+              'homogeneous_basis':True,
+              'same_instrument_family':True,
+              'no_secondary_price_fallback':True,
+              'deterministic_horizon_mapping':True
+            },
+            'integrity':{
+              'raw_source_sha256':'1'*64,
+              'semantic_replay_sha256':'2'*64,
+              'two_independent_materializations_equal':True
+            }
+          }
+          with tempfile.TemporaryDirectory() as td:
+              tmp=Path(td)
+              (tmp/'JPY_TEMPORAL_PIT_EVIDENCE_V1_TEST.json').write_text(json.dumps(evidence))
+              old=gate.CB_DIR
+              gate.CB_DIR=tmp
+              try:
+                  pre=gate.build('2022-12-31')
+                  inside=gate.build('2024-06-15')
+                  post=gate.build('2026-10-01')
+                  assert pre['certified_currencies']==1 and pre['eligible_currencies']==0
+                  assert pre['targets']['JPY']['backtest_eligible'] is False
+                  assert inside['certified_currencies']==1 and inside['eligible_currencies']==1
+                  assert inside['targets']['JPY']['backtest_eligible'] is True
+                  assert post['certified_currencies']==1 and post['eligible_currencies']==0
+                  assert post['targets']['JPY']['backtest_eligible'] is False
+                  assert inside['targets']['USD']['backtest_eligible'] is False
+              finally:
+                  gate.CB_DIR=old
+          PY
+
+      - name: Prove invalid evidence fails closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, json, tempfile
+          from pathlib import Path
+
+          spec=importlib.util.spec_from_file_location('gate','validation/cb_pricing_walkforward_eligibility_gate_v1.py')
+          gate=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+
+          base={
+            'schema':'GMFQ_CB_PRICING_TEMPORAL_PIT_EVIDENCE_V1','status':'PASS',
+            'layer':'Central Banks / Market Pricing','currency':'JPY','authority':'TEST','instrument':'TEST',
+            'coverage':{'start_date':'2023-03-20','end_date':'2026-09-30'},
+            'temporal_contract':{'same_day_use_allowed':False,'eligibility':'next decision point'},
+            'source_contract':{
+              'official_or_directly_licensed':True,'homogeneous_basis':True,
+              'same_instrument_family':True,'no_secondary_price_fallback':True,
+              'deterministic_horizon_mapping':True},
+            'integrity':{'raw_source_sha256':'1'*64,'semantic_replay_sha256':'2'*64,
+                         'two_independent_materializations_equal':True}
+          }
+
+          def must_fail(mutator):
+              with tempfile.TemporaryDirectory() as td:
+                  tmp=Path(td); d=json.loads(json.dumps(base)); mutator(d)
+                  (tmp/'JPY_TEMPORAL_PIT_EVIDENCE_V1_TEST.json').write_text(json.dumps(d))
+                  old=gate.CB_DIR; gate.CB_DIR=tmp
+                  try:
+                      try: gate.load_evidence()
+                      except RuntimeError: return
+                      raise SystemExit('invalid synthetic evidence was accepted')
+                  finally: gate.CB_DIR=old
+
+          must_fail(lambda d: d['source_contract'].__setitem__('homogeneous_basis',False))
+          must_fail(lambda d: d['source_contract'].__setitem__('no_secondary_price_fallback',False))
+          must_fail(lambda d: d['integrity'].__setitem__('two_independent_materializations_equal',False))
+          must_fail(lambda d: d['integrity'].__setitem__('semantic_replay_sha256','bad'))
+          must_fail(lambda d: d['coverage'].__setitem__('start_date','2027-01-01'))
+          def bad_same_day(d):
+              d['temporal_contract']['same_day_use_allowed']=True
+          must_fail(bad_same_day)
+          PY
+
+      - name: Prove explicit same-day evidence requires verified timestamp rule
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, json, tempfile
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('gate','validation/cb_pricing_walkforward_eligibility_gate_v1.py')
+          gate=importlib.util.module_from_spec(spec); spec.loader.exec_module(gate)
+          d={
+            'schema':'GMFQ_CB_PRICING_TEMPORAL_PIT_EVIDENCE_V1','status':'PASS',
+            'layer':'Central Banks / Market Pricing','currency':'JPY','authority':'TEST','instrument':'TEST',
+            'coverage':{'start_date':'2023-03-20','end_date':'2026-09-30'},
+            'temporal_contract':{
+              'same_day_use_allowed':True,
+              'verified_publication_timestamp_rule':'TEST_ONLY verified official publication at 15:00 JST; use strictly after timestamp.',
+              'eligibility':'strictly after official publication timestamp'},
+            'source_contract':{
+              'official_or_directly_licensed':True,'homogeneous_basis':True,
+              'same_instrument_family':True,'no_secondary_price_fallback':True,
+              'deterministic_horizon_mapping':True},
+            'integrity':{'raw_source_sha256':'1'*64,'semantic_replay_sha256':'2'*64,
+                         'two_independent_materializations_equal':True}
+          }
+          with tempfile.TemporaryDirectory() as td:
+              tmp=Path(td); (tmp/'JPY_TEMPORAL_PIT_EVIDENCE_V1_TEST.json').write_text(json.dumps(d))
+              old=gate.CB_DIR; gate.CB_DIR=tmp
+              try:
+                  rows=gate.load_evidence(); assert rows['JPY']['same_day_use_allowed'] is True
+              finally: gate.CB_DIR=old
+          PY
+
+      - name: Assert repository remains read only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cb-pricing-walkforward-eligibility-${{ github.run_id }}
+          path: /tmp/cb-pricing-gate/
+          retention-days: 90
