@@ -14,7 +14,10 @@ Contract-critical semantics:
 - no observation/as-of date may substitute for release eligibility;
 - an explicitly documented official nonpublication is not a synthetic reading:
   it is skipped in the release sequence, leaving the latest two actually-known
-  readings unchanged until a new release becomes eligible.
+  readings unchanged until a new release becomes eligible;
+- all country-specific certified inputs must first pass through the frozen
+  canonical adapter schema: reference_period, release_date, value,
+  availability_status.
 """
 from __future__ import annotations
 
@@ -26,6 +29,7 @@ from pathlib import Path
 CCYS=("EUR","JPY","CAD","AUD")
 STATES=("ALIGNED","MIXED","CONTRADICTORY","UNAVAILABLE")
 OFFICIAL_UNAVAILABLE_STATUSES={"UNAVAILABLE_OFFICIAL_NOT_PUBLISHED","NOT_PUBLISHED_OFFICIAL"}
+CANONICAL_FIELDS={"reference_period","release_date","value","availability_status"}
 
 
 def mean(x): return sum(x)/len(x) if x else None
@@ -52,19 +56,23 @@ def hit(rows):
     if not rows: return None
     return sum(1 for r in rows if (r['prediction']>=0)==(r['target_return']>0))/len(rows)
 
-def load_macro(path:Path, date_col:str, value_col:str):
+def load_macro(path:Path):
     rows=[]
     with path.open(newline='',encoding='utf-8-sig') as f:
-        for r in csv.DictReader(f):
-            if date_col not in r or value_col not in r:
-                raise ValueError(f'missing required macro columns in {path}: {date_col}/{value_col}')
+        reader=csv.DictReader(f)
+        fields=set(reader.fieldnames or [])
+        if fields != CANONICAL_FIELDS:
+            raise ValueError(f'non-canonical macro schema in {path}: {sorted(fields)}')
+        for r in reader:
             status=(r.get('availability_status') or '').strip()
-            value=(r.get(value_col) or '').strip()
-            rel=(r.get('release_date') or r.get('first_eligible_decision_date') or r.get('eligible_date') or '').strip()
+            value=(r.get('value') or '').strip()
+            rel=(r.get('release_date') or '').strip()
             if status in OFFICIAL_UNAVAILABLE_STATUSES:
                 if value or rel:
                     raise ValueError(f'official-unavailable row in {path} unexpectedly contains value/eligibility')
                 continue
+            if status != 'AVAILABLE_STRICT_PIT':
+                raise ValueError(f'non-certified availability status in {path}: {status!r}')
             if not rel:
                 raise ValueError(f'PIT eligibility missing in {path}; observation/asof dates are forbidden as release-date fallback')
             if not value:
@@ -131,20 +139,15 @@ def main():
     frozen=json.load(open(a.frozen_oos,encoding='utf-8'))
     assert frozen['schema']=='GMFQ_G4USD_RELATIVE_FRONT_END_PANEL_OOS_V1'
     assert frozen['frozen_from_pr']==122
+    assert frozen['frozen_head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+    assert len(frozen['observations'])==256
+    assert abs(frozen['baseline_panel_sharpe']-0.30119374143958916)<1e-12
 
-    meta={
-      'EUR':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'JPY':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'CAD':('reference_month','cpi_yoy_full_precision','reference_month','unemployment_rate'),
-      'AUD':('reference_quarter','cpi_yoy','reference_month','unemployment_rate'),
-      'USD':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-    }
     data={}
     for c in (*CCYS,'USD'):
-        ic,iv,lc,lv=meta[c]
         data[c]={
-          'inf':load_macro(Path(getattr(a,f'{c.lower()}_inflation')),ic,iv),
-          'lab':load_macro(Path(getattr(a,f'{c.lower()}_labour')),lc,lv),
+          'inf':load_macro(Path(getattr(a,f'{c.lower()}_inflation'))),
+          'lab':load_macro(Path(getattr(a,f'{c.lower()}_labour'))),
         }
 
     out=[]
@@ -193,6 +196,7 @@ def main():
       'method':{
         'frozen_model_refit':False,'hyperparameter_tuning':False,'state_threshold_search':False,
         'currency_specific_rules':False,'eur_excluded':False,'pit_release_fallback_forbidden':True,
+        'canonical_input_schema':['reference_period','release_date','value','availability_status'],
         'official_nonpublication_semantics':'skip as non-observation; do not impute or synthesize; retain latest two actually-known releases',
         'inflation_definition':'change(local PIT-known inflation) minus change(US PIT-known inflation)',
         'labour_definition':'negative of [change(local PIT-known unemployment) minus change(US PIT-known unemployment)]',
