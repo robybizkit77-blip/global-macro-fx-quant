@@ -1,0 +1,64 @@
+name: COT Flow Continuation Contract V1
+
+on:
+  push:
+    branches:
+      - validation-cot-flow-continuation-contract-v1-2026-10-11
+    paths:
+      - 'validation/COT_FLOW_CONTINUATION_EDGE_CONTRACT_V1_2026-10-11.json'
+      - '.github/workflows/cot-flow-continuation-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate result-blind research contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, math
+          p='validation/COT_FLOW_CONTINUATION_EDGE_CONTRACT_V1_2026-10-11.json'
+          d=json.load(open(p))
+          assert d['schema']=='GMFQ_COT_FLOW_CONTINUATION_EDGE_CONTRACT_V1'
+          assert d['status']=='PREDECLARED_NO_RESULTS_OBSERVED'
+          assert d['universe']['currencies']==['EUR','GBP','JPY','CHF','AUD','NZD','CAD']
+          assert d['pit_contract']['required_policy_schema']=='GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1'
+          assert d['signal']['threshold']=='none'
+          assert d['signal']['normalization']=='none'
+          assert d['fx_return_definition']['horizon_trading_days']==5
+          assert d['test_statistic']['annualization_factor']==52
+          assert 'sqrt(52)' in d['test_statistic']['panel_annualized_sharpe']
+          assert d['chronology']['split_rounding']=='floor(0.60 * N) observations assigned to diagnostic segment'
+          g=d['predeclared_edge_gate']
+          assert g=={
+            'all_required': True,
+            'oos_panel_annualized_sharpe_min': 0.50,
+            'oos_directional_accuracy_min': 0.52,
+            'positive_currency_oos_sharpes_min_count': 5,
+            'minimum_oos_observations_per_currency': 50,
+            'minimum_pooled_oos_observations': 350,
+            'max_single_currency_share_of_pooled_oos': 0.20
+          }
+          gov=d['governance']
+          assert gov['production_signal_authorized'] is False
+          assert gov['sizing_authorized'] is False
+          assert gov['no_parameter_tuning'] is True
+          assert gov['failure_is_valid_result'] is True
+          print('COT_FLOW_CONTINUATION_CONTRACT_PASS')
+          PY
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
