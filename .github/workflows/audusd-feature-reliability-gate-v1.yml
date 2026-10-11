@@ -67,7 +67,9 @@ jobs:
           import json
           r=json.load(open('/tmp/aud/result.json'))
           assert r['status']=='UNTOUCHED_HOLDOUT_COMPLETE'
-          assert r['scope']['snapshot_count']==102 and r['scope']['oos_predictions_per_model']==65
+          assert r['scope']['first_eligible_decision_date']=='2018-05-10'
+          assert r['scope']['snapshot_count']==100 and r['scope']['oos_predictions_per_model']==63
+          assert r['scope']['two_early_grid_points_withheld_for_unavailable_strict_pit_cpi'] is True
           assert r['scope']['holdout_currency_not_used_to_define_gate'] is True
           assert r['method']['reliability_window_months_fixed']==36 and r['method']['aud_parameter_tuning'] is False
           assert r['method']['gate_uses_current_or_future_outcome'] is False
