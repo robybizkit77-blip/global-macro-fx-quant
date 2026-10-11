@@ -11,11 +11,13 @@ Canonical CSV columns:
 Rules are explicit per certified source stream. JPY inflation derives
 reference_period as YYYY-MM from the source observation_date only; all other
 period labels and numeric values are copied directly from certified source
-rows. Official unavailable rows remain null.
+rows. Certified release dates are normalized mechanically to ISO YYYY-MM-DD;
+the accepted source representations are ISO YYYY-MM-DD[/timestamp suffix] and
+unambiguous DD/MM/YYYY. Official unavailable rows remain null.
 """
 from __future__ import annotations
 
-import argparse,csv,hashlib,json,pathlib
+import argparse,csv,datetime as dt,hashlib,json,pathlib,re
 
 STREAMS={
   'EUR_INFLATION': {'period':'reference_month','value':'headline_hicp_yoy_pct'},
@@ -31,6 +33,8 @@ STREAMS={
 }
 UNAVAILABLE={'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED','NOT_PUBLISHED_OFFICIAL'}
 AVAILABLE={'AVAILABLE_STRICT_PIT','PUBLISHED','CERTIFIED'}
+ISO_DATE=re.compile(r'^\d{4}-\d{2}-\d{2}')
+DMY_DATE=re.compile(r'^(\d{2})/(\d{2})/(\d{4})$')
 
 
 def ref_period(raw:str,transform:str|None)->str:
@@ -40,6 +44,34 @@ def ref_period(raw:str,transform:str|None)->str:
         if len(x)<7 or x[4]!='-': raise ValueError(f'invalid observation date {x!r}')
         return x[:7]
     return x
+
+
+def normalize_release_date(raw:str)->str:
+    """Normalize certified release eligibility mechanically, never infer it.
+
+    Accepted inputs are:
+    - ISO date or ISO-leading timestamp: YYYY-MM-DD...
+    - exact DD/MM/YYYY, used by the certified AUD source artifacts.
+
+    Anything else fails closed so an ambiguous date cannot alter PIT ordering.
+    """
+    x=raw.strip()
+    if not x:
+        raise ValueError('missing release eligibility')
+    if ISO_DATE.match(x):
+        candidate=x[:10]
+        try:
+            return dt.date.fromisoformat(candidate).isoformat()
+        except ValueError as e:
+            raise ValueError(f'invalid ISO release date {x!r}') from e
+    m=DMY_DATE.fullmatch(x)
+    if m:
+        day,month,year=(int(m.group(1)),int(m.group(2)),int(m.group(3)))
+        try:
+            return dt.date(year,month,day).isoformat()
+        except ValueError as e:
+            raise ValueError(f'invalid DD/MM/YYYY release date {x!r}') from e
+    raise ValueError(f'unsupported/ambiguous release date format {x!r}')
 
 
 def adapt(stream:str,source:pathlib.Path)->dict:
@@ -73,9 +105,10 @@ def adapt(stream:str,source:pathlib.Path)->dict:
             if not rel: raise ValueError(f'{stream} row {i}: missing release eligibility')
             if not val: raise ValueError(f'{stream} row {i}: missing value')
             period=ref_period(period_raw,cfg.get('period_transform'))
+            rel_iso=normalize_release_date(rel)
             try: numeric=float(val)
             except ValueError as e: raise ValueError(f'{stream} row {i}: nonnumeric value {val!r}') from e
-            rows.append({'reference_period':period,'release_date':rel[:10],'value':format(numeric,'.15g'),'availability_status':'AVAILABLE_STRICT_PIT'})
+            rows.append({'reference_period':period,'release_date':rel_iso,'value':format(numeric,'.15g'),'availability_status':'AVAILABLE_STRICT_PIT'})
 
     if not rows: raise ValueError(f'{stream}: empty input')
     # Never reorder source chronology silently. Certified files are expected to
@@ -86,7 +119,7 @@ def adapt(stream:str,source:pathlib.Path)->dict:
         raise ValueError(f'{stream}: duplicate reference periods')
     semantic_sha=hashlib.sha256(json.dumps(rows,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     return {'schema':'GMFQ_G4USD_MACRO_INPUT_ADAPTER_V1','stream':stream,'rows':rows,'semantic_sha256':semantic_sha,
-            'policy':{'economic_transform':False,'interpolation':False,'imputation':False,'result_blind':True}}
+            'policy':{'economic_transform':False,'release_date_representation_normalized':True,'interpolation':False,'imputation':False,'result_blind':True}}
 
 
 def write_csv(out:dict,path:pathlib.Path)->None:
