@@ -66,9 +66,9 @@ def next_month(k:str)->str:
     if m==13: y+=1; m=1
     return f'{y:04d}-{m:02d}'
 
-def parse_next_reference(label:str,current_ref:str)->str:
+def parse_next_reference(label:str,current_ref:str,expected_override:str|None=None)->str:
     label=' '.join(label.split())
-    expected=next_month(current_ref)
+    expected=expected_override or next_month(current_ref)
     if re.fullmatch(r'[A-Za-z]+\s+\d{4}',label):
         parsed=month_key(label)
     elif re.fullmatch(r'[A-Za-z]+',label):
@@ -79,10 +79,10 @@ def parse_next_reference(label:str,current_ref:str)->str:
     else:
         raise ValueError(f'unrecognized next reference label {label!r}')
     if parsed!=expected:
-        raise ValueError(f'non-consecutive next reference after {current_ref}: {parsed}')
+        raise ValueError(f'next reference after {current_ref} is {parsed}, expected {expected}')
     return parsed
 
-def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_missing_next:bool=False)->dict:
+def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_missing_next:bool=False, expected_next_override:str|None=None)->dict:
     text=plain(raw)
     title=re.search(r'THE EMPLOYMENT SITUATION\s+[-–—]{1,2}\s+([A-Za-z]+\s+\d{4})',text,re.I)
     if not title:
@@ -125,7 +125,7 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
         if nxt: break
     if not nxt and not allow_missing_next:
         raise ValueError(f'next-release statement not found for {ref}')
-    next_ref=parse_next_reference(nxt.group(1),ref) if nxt else None
+    next_ref=parse_next_reference(nxt.group(1),ref,expected_next_override) if nxt else None
 
     return {
       'reference_month':ref,'release_date':expected_release_date,'release_time':'08:30',
@@ -145,8 +145,9 @@ def main():
             if special and current_date==special['announced_release_date']:
                 current_date=special['actual_release_date']
             has_gap=bool(special and special.get('missing_reference_month'))
+            expected_next_override=special.get('resume_reference_month') if has_gap else None
             raw,url=fetch(current_date)
-            row=parse_release(raw,current_date,current_ref,allow_missing_next=has_gap)
+            row=parse_release(raw,current_date,current_ref,allow_missing_next=has_gap,expected_next_override=expected_next_override)
             row['source_url']=url; row['source_sha256']=hashlib.sha256(raw).hexdigest()
             if special:
                 eraw,efinal=fetch_url(special['evidence_url'])
@@ -159,6 +160,10 @@ def main():
             if current_ref==TARGET_END: break
 
             if has_gap:
+                if row['next_reference_month'] is not None and row['next_reference_month']!=special['resume_reference_month']:
+                    raise ValueError('2025 lapse next-reference mismatch')
+                if row['next_release_date'] is not None and row['next_release_date']!=special['resume_release_date']:
+                    raise ValueError('2025 lapse next-release-date mismatch')
                 missing={
                   'reference_month':special['missing_reference_month'],'release_date':None,'release_time':None,
                   'release_timezone':'America/New_York','availability_status':'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED',
@@ -187,7 +192,7 @@ def main():
       'series_contract':{'series_id':'LNS14000000','measure':'U-3 seasonally adjusted unemployment rate','unit':'percent','semantics':'as first published in Employment Situation'},
       'coverage':{'start':TARGET_START,'end':TARGET_END,'expected_months':EXPECTED,'observed_months':len(rows),'materialized_months':available,'official_unavailable_months':unavailable},
       'rows':rows,'errors':errors,'semantic_sha256':sha,
-      'invariants':{'official_archive_only':True,'actual_release_date_required':True,'official_embargo_timestamp_required':True,'headline_first_published_u3_only':True,'current_revised_history_substitution_forbidden':True,'october_2025_household_imputation_forbidden':True,'production_write':False},
+      'invariants':{'official_archive_only':True,'actual_release_date_required':True,'official_embargo_timestamp_required':True,'headline_first_published_u3_only':True,'current_revised_history_substitution_forbidden':True,'october_2025_household_imputation_forbidden':True,'documented_gap_transition_must_match_official_resume':True,'production_write':False},
       'policy':{'authorizes_pr123_performance_by_itself':False,'production_signal_authorized':False}
     }
     a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n',encoding='utf-8')
