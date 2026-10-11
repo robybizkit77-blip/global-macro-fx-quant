@@ -1,0 +1,62 @@
+name: USD Inflation FRED Initial Release Discovery V1
+
+on:
+  push:
+    branches:
+      - 'validation-usd-inflation-fred-initial-release-discovery-v1-*'
+    paths:
+      - 'validation/macro/discover_usd_inflation_fred_initial_release_v1.py'
+      - '.github/workflows/usd-inflation-fred-initial-release-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Probe official FRED initial-release API
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-fred-initial
+          python validation/macro/discover_usd_inflation_fred_initial_release_v1.py --output /tmp/usd-fred-initial/discovery.json
+
+      - name: Enforce initial-release semantics
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/usd-fred-initial/discovery.json'))
+          assert p['status']=='DISCOVERY_PASS'
+          assert p['series_id']=='CPIAUCSL'
+          assert p['api_output_type']==4
+          assert p['api_output_semantics']=='INITIAL_RELEASE_ONLY'
+          assert p['observation_count']>=116
+          assert p['first_observation']['observation_date']=='2017-01-01'
+          assert p['last_observation']['observation_date']=='2026-08-01'
+          assert all(x is not None for x in p['sample_anchors'])
+          assert p['invariants']['api_key_redacted'] is True
+          assert p['invariants']['production_write'] is False
+          assert len(p['semantic_sha256'])==64
+          print({'status':'PASS','count':p['observation_count'],'first':p['first_observation'],'last':p['last_observation'],'semantic_sha256':p['semantic_sha256']})
+          PY
+
+      - name: Assert no repository writes
+        run: git diff --exit-code
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: usd-inflation-fred-initial-release-${{ github.run_id }}
+          path: /tmp/usd-fred-initial/
+          if-no-files-found: warn
+          retention-days: 90
