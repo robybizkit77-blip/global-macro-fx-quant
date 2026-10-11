@@ -1,0 +1,138 @@
+name: EURUSD Relative Rates Components Diagnostic V1
+
+on:
+  push:
+    branches:
+      - validation-eurusd-relative-rates-components-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  EUR_INFLATION_ARTIFACT_ID: '11674452706'
+  EUR_INFLATION_ARTIFACT_DIGEST: 'sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d'
+  EUR_LABOUR_ARTIFACT_ID: '11678794954'
+  EUR_LABOUR_ARTIFACT_DIGEST: 'sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677'
+  RATES_STORE_SHA: '0f4f45190fa5d5e010650026a30a0f981373ec34'
+  USD_RATES_SEMANTIC_SHA: 'd2e763818122430cc59c0ae208704f14532f47f34bf75706d2ca86b63fbdd5e0'
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download exact certified EUR Macro artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rc/inf /tmp/rc/lab
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          pairs=[
+            (os.environ['EUR_INFLATION_ARTIFACT_ID'],os.environ['EUR_INFLATION_ARTIFACT_DIGEST']),
+            (os.environ['EUR_LABOUR_ARTIFACT_ID'],os.environ['EUR_LABOUR_ARTIFACT_DIGEST']),
+          ]
+          for aid,digest in pairs:
+              m=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert m['expired'] is False
+              assert m.get('digest') == digest
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_INFLATION_ARTIFACT_ID}/zip" > /tmp/rc/inf.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_LABOUR_ARTIFACT_ID}/zip" > /tmp/rc/lab.zip
+          unzip -q /tmp/rc/inf.zip -d /tmp/rc/inf
+          unzip -q /tmp/rc/lab.zip -d /tmp/rc/lab
+          python - <<'PY'
+          import json
+          for folder,expected in [
+            ('inf','fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1'),
+            ('lab','b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9')]:
+              a=json.load(open(f'/tmp/rc/{folder}/a/evidence.json'))
+              b=json.load(open(f'/tmp/rc/{folder}/b/evidence.json'))
+              assert a['status']=='PASS' and b['status']=='PASS'
+              assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']==expected
+          PY
+
+      - name: Borrow exact frozen certified EUR and USD Rates histories
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rc/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          git checkout FETCH_HEAD -- \
+            validation/rates_pit_rowsets/eur_rates_2y_10y_temporal_pit_v1.csv \
+            validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv \
+            validation/USD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json
+          cp validation/rates_pit_rowsets/eur_rates_2y_10y_temporal_pit_v1.csv /tmp/rc/rates/eur.csv
+          cp validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv /tmp/rc/rates/usd.csv
+          cp validation/USD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json /tmp/rc/rates/usd-evidence.json
+          python - <<'PY'
+          import csv,json,os
+          u=json.load(open('/tmp/rc/rates/usd-evidence.json'))
+          assert u['status']=='PASS'
+          assert u['target']=='USD.rates_2y_10y'
+          assert u['semantic_rowset_sha256']==os.environ['USD_RATES_SEMANTIC_SHA']
+          assert u['temporal_contract']['same_day_use_allowed'] is False
+          assert u['temporal_contract']['eligibility']=='decision_date > observation_date'
+          for p in ['/tmp/rc/rates/eur.csv','/tmp/rc/rates/usd.csv']:
+              rows=list(csv.DictReader(open(p,newline='',encoding='utf-8-sig')))
+              assert len(rows)>2000
+              assert all(r['observation_date'] < r['first_eligible_decision_date'] for r in rows)
+          PY
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Download official ECB EURUSD history
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+            'https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata' \
+            -o /tmp/rc/ecb.csv
+          test -s /tmp/rc/ecb.csv
+
+      - name: Run fixed component diagnostic
+        run: |
+          set -euo pipefail
+          INF=/tmp/rc/inf/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv
+          LAB=/tmp/rc/lab/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv
+          python validation/eurusd_relative_rates_components_v1.py \
+            --inflation "$INF" --labour "$LAB" \
+            --eur-rates /tmp/rc/rates/eur.csv --usd-rates /tmp/rc/rates/usd.csv \
+            --ecb /tmp/rc/ecb.csv --output /tmp/rc/result.json
+          python validation/eurusd_relative_rates_components_v1.py \
+            --inflation "$INF" --labour "$LAB" \
+            --eur-rates /tmp/rc/rates/eur.csv --usd-rates /tmp/rc/rates/usd.csv \
+            --ecb /tmp/rc/ecb.csv --output /tmp/rc/result-b.json >/dev/null
+          cmp /tmp/rc/result.json /tmp/rc/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/rc/result.json'))
+          assert r['status']=='DIAGNOSTIC_COMPLETE'
+          assert r['scope']['snapshot_count']==102
+          assert r['scope']['oos_predictions_per_model']==65
+          assert r['method']['hyperparameter_tuning'] is False
+          assert r['method']['test_set_model_selection'] is False
+          assert r['policy']['production_backtest_authorized'] is False
+          assert r['policy']['production_signal_authorized'] is False
+          assert set(r['models'])=={
+            'MACRO_ONLY','MACRO_PLUS_FRONT_END_SPREAD','MACRO_PLUS_LONG_END_SPREAD',
+            'MACRO_PLUS_CURVE_DIFF','MACRO_PLUS_FRONT_AND_LONG','FULL_RELATIVE_LEVELS_REDUNDANT'
+          }
+          print(json.dumps({'comparison':r['comparison_2025_to_2026_07_vs_macro_only'],'models':r['models']},indent=2,sort_keys=True))
+          PY
+
+      - name: Assert repository clean
+        run: test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eurusd-relative-rates-components-${{ github.run_id }}
+          path: /tmp/rc/result.json
+          retention-days: 90
