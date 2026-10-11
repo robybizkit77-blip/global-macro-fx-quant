@@ -1,0 +1,122 @@
+name: Backtest Input Contract V1
+
+on:
+  push:
+    branches:
+      - validation-backtest-input-contract-v1-2026-10-11
+    paths:
+      - 'validation/backtest_input_contract_v1.py'
+      - 'validation/macro_walkforward_eligibility_gate_v1.py'
+      - 'validation/macro/*_strict_pit_receipt_v*.json'
+      - '.github/workflows/backtest-input-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Issue deterministic permit twice
+        run: |
+          set -euo pipefail
+          python validation/backtest_input_contract_v1.py \
+            --as-of 2020-06 \
+            --target EUR.inflation \
+            --target JPY.labour \
+            --output /tmp/backtest-permit-a.json
+          python validation/backtest_input_contract_v1.py \
+            --as-of 2020-06 \
+            --target EUR.inflation \
+            --target JPY.labour \
+            --output /tmp/backtest-permit-b.json
+          cmp /tmp/backtest-permit-a.json /tmp/backtest-permit-b.json
+
+      - name: Verify issued permit against canonical state
+        run: |
+          set -euo pipefail
+          python validation/backtest_input_contract_v1.py \
+            --verify-permit /tmp/backtest-permit-a.json \
+            --output /tmp/backtest-permit-verified.json
+          cmp /tmp/backtest-permit-a.json /tmp/backtest-permit-verified.json
+
+      - name: Enforce expected positive state
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/backtest-permit-a.json'))
+          assert p['schema']=='GMFQ_BACKTEST_INPUT_PERMIT_V1'
+          assert p['status']=='PASS'
+          assert p['as_of']=='2020-06'
+          assert p['requested_targets']==['EUR.inflation','JPY.labour']
+          assert p['authorized_target_count']==2
+          assert p['eligibility_contract']['certified_targets_seen']==13
+          req=p['consumer_requirements']
+          assert req['permit_verification_required_before_macro_load'] is True
+          assert req['runtime_history_archive_allowed'] is False
+          assert req['future_revised_history_allowed'] is False
+          assert req['missing_or_invalid_permit_action']=='ABORT_BACKTEST'
+          for target,row in p['authorizations'].items():
+              assert row['authorization']=='ALLOW_STRICT_PIT_ONLY'
+              assert row['receipt'].startswith('validation/macro/')
+              assert row['coverage']['start'] <= p['as_of'] <= row['coverage']['end']
+          assert len(p['permit_semantic_sha256'])==64
+          PY
+
+      - name: Enforce fail-closed denied targets and invalid requests
+        run: |
+          set -euo pipefail
+          expect_fail() {
+            set +e
+            "$@" >/tmp/expected-fail.log 2>&1
+            rc=$?
+            set -e
+            if [ "$rc" -eq 0 ]; then
+              echo "Expected failure but command succeeded: $*"
+              cat /tmp/expected-fail.log
+              exit 1
+            fi
+          }
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2020-06 --target USD.inflation
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2020-06 --target USD.labour
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2020-06 --target CHF.labour
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2020-06 --target NOT_A_TARGET
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2020-06 --target EUR.inflation --target EUR.inflation
+          expect_fail python validation/backtest_input_contract_v1.py --as-of 2017-12 --target JPY.labour
+
+      - name: Enforce tamper detection
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          src='/tmp/backtest-permit-a.json'
+          dst='/tmp/backtest-permit-tampered.json'
+          p=json.load(open(src))
+          p['consumer_requirements']['runtime_history_archive_allowed']=True
+          json.dump(p,open(dst,'w'),indent=2,sort_keys=True)
+          PY
+          set +e
+          python validation/backtest_input_contract_v1.py --verify-permit /tmp/backtest-permit-tampered.json
+          rc=$?
+          set -e
+          test "$rc" -ne 0
+
+      - name: Assert no repository writes
+        run: git diff --exit-code
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backtest-input-contract-${{ github.run_id }}
+          path: |
+            /tmp/backtest-permit-a.json
+            /tmp/backtest-permit-verified.json
+          if-no-files-found: warn
+          retention-days: 90
