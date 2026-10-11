@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, io, json, pathlib, urllib.request, zipfile, xml.etree.ElementTree as ET
+import argparse, io, json, pathlib, time, urllib.error, urllib.request, zipfile, xml.etree.ElementTree as ET
 
 # Inspect exact workbook rows before designing any monthly-vintage reconstruction.
 UA="Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; research validation)"
@@ -9,8 +9,26 @@ BASE='https://www.bls.gov/cpi/tables/seasonal-adjustment/revised-seasonally-adju
 
 
 def fetch(year:int)->bytes:
-    req=urllib.request.Request(BASE.format(year=year),headers={'User-Agent':UA,'Connection':'close'})
-    with urllib.request.urlopen(req,timeout=30) as r:return r.read()
+    url=BASE.format(year=year)
+    last=None
+    for attempt in range(1,7):
+        req=urllib.request.Request(url,headers={
+            'User-Agent':UA,
+            'Accept':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*;q=0.1',
+            'Accept-Language':'en-US,en;q=0.9',
+            'Connection':'close',
+        })
+        try:
+            with urllib.request.urlopen(req,timeout=30) as r:
+                raw=r.read()
+                if getattr(r,'status',200)==200 and raw.startswith(b'PK'):
+                    return raw
+                last=RuntimeError(f'unexpected response status={getattr(r,"status",None)} bytes={len(raw)}')
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+            last=e
+        if attempt<6:
+            time.sleep(min(5*attempt,20))
+    raise RuntimeError(f'BLS workbook transport failed after retries year={year}: {last!r}')
 
 def shared(z):
     if 'xl/sharedStrings.xml' not in z.namelist(): return []
