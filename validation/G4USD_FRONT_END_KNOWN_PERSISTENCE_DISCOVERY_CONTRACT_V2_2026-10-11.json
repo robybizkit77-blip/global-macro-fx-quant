@@ -1,0 +1,64 @@
+{
+  "schema": "GMFQ_G4USD_FRONT_END_KNOWN_PERSISTENCE_DISCOVERY_CONTRACT_V2",
+  "date": "2026-10-11",
+  "status": "PREDECLARED_EXPLORATORY_NO_V2_RESULTS_OBSERVED",
+  "lineage": {
+    "source_discovery_v1_run_id": 38173337956,
+    "source_discovery_v1_commit": "119de54ac929e3c9f9902cc67636bd6ca4235164",
+    "source_alignment_pr": 129,
+    "frozen_parent_pr": 122,
+    "frozen_parent_head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5"
+  },
+  "motivation": "Discovery V1 suggested that future front-end persistence was associated with positive 3m FX follow-through, but that classification used the next observation and is therefore not tradable at the current decision time. V2 replaces it with persistence already observable at time t.",
+  "governance": {
+    "same_sample_discovery_only": true,
+    "no_edge_certification": true,
+    "no_production_signal_authorization": true,
+    "no_sizing_authorization": true,
+    "no_refit": true,
+    "no_threshold_search": true,
+    "no_currency_exclusion": true,
+    "eur_must_remain_included": true,
+    "future_unseen_confirmation_required": true,
+    "negative_result_must_be_retained": true
+  },
+  "eligibility": {
+    "current_state": "CONTRADICTORY under the unchanged alignment contract",
+    "current_front_end_sign": "non-zero sign of current local-minus-USD 2Y repricing",
+    "previous_front_end_sign": "sign of immediately previous OOS observation for the same currency",
+    "KNOWN_PERSISTENCE_AT_T": "current and previous front-end signs are both non-zero and equal",
+    "NO_KNOWN_PERSISTENCE_AT_T": "previous sign is zero or different from current sign",
+    "lookahead_forbidden": true
+  },
+  "outcomes": {
+    "signed_fx_return_1m": "current front-end sign multiplied by current OOS target_return",
+    "signed_fx_return_3m": "current front-end sign multiplied by the sum of target_return at t, t+1 and t+2 for the same currency",
+    "minimum_remaining_horizon_for_3m": "three target_return observations including current t"
+  },
+  "predeclared_diagnostics": {
+    "groups": ["KNOWN_PERSISTENCE_AT_T", "NO_KNOWN_PERSISTENCE_AT_T"],
+    "metrics": [
+      "n",
+      "mean_signed_fx_return_1m",
+      "mean_signed_fx_return_3m",
+      "median_signed_fx_return_1m",
+      "median_signed_fx_return_3m"
+    ],
+    "per_currency": true
+  },
+  "candidate_generation_rules": {
+    "purpose": "Decide only whether this mechanism deserves a separately predeclared future unseen-data test.",
+    "minimum_pooled_known_persistence_n": 25,
+    "pooled_3m_mean_must_be_positive": true,
+    "known_persistence_3m_mean_must_exceed_no_persistence_3m_mean": true,
+    "minimum_currencies_with_positive_known_persistence_3m_mean": 3,
+    "no_single_currency_may_exceed_share_of_known_persistence_observations": 0.5,
+    "passing_does_not_certify_an_edge": true
+  },
+  "future_confirmation": {
+    "required": true,
+    "data": "strictly unseen observations after the historical discovery cutoff",
+    "new_contract_required_before_results": true,
+    "production_promotion_forbidden_until_future_gate_passes": true
+  }
+}
