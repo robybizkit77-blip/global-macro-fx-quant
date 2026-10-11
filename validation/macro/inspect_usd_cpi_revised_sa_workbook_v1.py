@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse, io, json, pathlib, urllib.request, zipfile, xml.etree.ElementTree as ET
 
+# Inspect exact workbook rows before designing any monthly-vintage reconstruction.
 UA="Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; research validation)"
 NS={'a':'http://schemas.openxmlformats.org/spreadsheetml/2006/main','r':'http://schemas.openxmlformats.org/officeDocument/2006/relationships','p':'http://schemas.openxmlformats.org/package/2006/relationships'}
 BASE='https://www.bls.gov/cpi/tables/seasonal-adjustment/revised-seasonally-adjusted-indexes-{year}.xlsx'
