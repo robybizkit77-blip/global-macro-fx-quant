@@ -52,8 +52,13 @@ def parse(raw:bytes, expected_release_date:str)->dict:
     if not m: raise ValueError('current reference month not found')
     ref=month_key(m.group(1))
     # Official availability timestamp embedded in release embargo line. Newer
-    # releases may use ET rather than explicit EST/EDT; canonical timezone is NY.
-    emb=re.search(r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
+    # releases may use ET rather than explicit EST/EDT and may include weekday
+    # between timezone and calendar date; canonical timezone remains NY.
+    emb=re.search(
+        r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
+        r'(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+)?'
+        r'([A-Za-z]+\s+\d{1,2},\s+\d{4})',
+        text,re.I)
     if not emb: raise ValueError(f'embargo timestamp not found for {ref}')
     embargo_date=iso_date(emb.group(2))
     if embargo_date != expected_release_date:
