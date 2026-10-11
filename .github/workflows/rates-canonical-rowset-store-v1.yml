@@ -1,0 +1,124 @@
+name: Rates Canonical Rowset Store V1
+
+on:
+  push:
+    branches:
+      - validation-rates-canonical-rowset-store-v1-2026-10-11
+    paths:
+      - 'validation/build_rates_canonical_rowset_store_v1.py'
+      - '.github/workflows/rates-canonical-rowset-store-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build-and-freeze:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      EXPECTED_BRANCH: validation-rates-canonical-rowset-store-v1-2026-10-11
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Assert candidate-only branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
+          test "$GITHUB_REF_NAME" != "main"
+          test "$GITHUB_REF_NAME" != "gh-pages"
+
+      - name: Download exact certified artifacts and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-certified
+          python - <<'PY'
+          import json
+          cfg={
+            'USD':11695909548,
+            'EUR':11696513178,
+            'JPY':11697156816,
+            'CAD':11698400061,
+            'AUD':11698900287,
+          }
+          open('/tmp/rates-certified/config.json','w').write(json.dumps(cfg,sort_keys=True))
+          PY
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          token=os.environ['GH_TOKEN']
+          cfg=json.load(open('/tmp/rates-certified/config.json'))
+          meta={}
+          for ccy,artifact_id in cfg.items():
+              headers=['-H',f'Authorization: Bearer {token}','-H','Accept: application/vnd.github+json','-H','X-GitHub-Api-Version: 2022-11-28']
+              info_url=f'https://api.github.com/repos/{repo}/actions/artifacts/{artifact_id}'
+              raw=subprocess.check_output(['curl','--fail','--silent','--show-error','--location',*headers,info_url])
+              info=json.loads(raw)
+              meta[str(artifact_id)]={'digest':info.get('digest'),'name':info.get('name'),'expired':info.get('expired')}
+              if info.get('expired'):
+                  raise SystemExit(f'certified artifact expired: {ccy}/{artifact_id}')
+              zip_url=f'https://api.github.com/repos/{repo}/actions/artifacts/{artifact_id}/zip'
+              out=f'/tmp/rates-certified/{ccy.lower()}.zip'
+              subprocess.run(['curl','--fail','--silent','--show-error','--location',*headers,'--output',out,zip_url],check=True)
+          open('/tmp/rates-certified/artifact_metadata.json','w').write(json.dumps(meta,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Build compact canonical snapshots from certified A/B rowsets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf validation/rates_pit_rowsets
+          python validation/build_rates_canonical_rowset_store_v1.py build \
+            --artifact-dir /tmp/rates-certified \
+            --artifact-metadata /tmp/rates-certified/artifact_metadata.json
+          python validation/build_rates_canonical_rowset_store_v1.py verify
+          test "$(find validation/rates_pit_rowsets -maxdepth 1 -type f | wc -l)" -eq 6
+
+      - name: Prove semantic hash bridge to canonical evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          m=json.load(open('validation/rates_pit_rowsets/manifest_v1.json'))
+          assert m['status']=='PASS'
+          assert m['currencies']==['AUD','CAD','EUR','JPY','USD']
+          assert m['total_observations']==10953
+          for ccy,e in m['entries'].items():
+              src=json.load(open(e['canonical_evidence']))
+              assert e['semantic_rowset_sha256']==src['semantic_rowset_sha256']
+              assert e['observations']==src['coverage']['observations']
+              assert e['end_date']==src['coverage']['end_date']
+              assert e['a_b_materializations_exactly_identical'] is True
+          j=m['entries']['JPY']
+          assert 'first_eligible_decision_point' in j['columns']
+          PY
+
+      - name: Assert generated scope only
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad="$(git status --porcelain | awk '{print $2}' | grep -v '^validation/rates_pit_rowsets/' || true)"
+          test -z "$bad"
+          test -z "$(git diff --name-only)"
+
+      - name: Freeze snapshots on candidate branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/rates_pit_rowsets/
+          git diff --cached --quiet && { echo 'No generated rowset changes'; exit 1; }
+          git commit -m 'Freeze certified Rates Temporal-PIT rowsets'
+          git push origin "HEAD:${EXPECTED_BRANCH}"

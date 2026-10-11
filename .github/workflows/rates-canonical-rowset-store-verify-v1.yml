@@ -1,0 +1,83 @@
+name: Rates Canonical Rowset Store Verify V1
+
+on:
+  push:
+    branches:
+      - validation-rates-canonical-rowset-store-v1-2026-10-11
+    paths:
+      - 'validation/rates_pit_rowsets/**'
+      - 'validation/build_rates_canonical_rowset_store_v1.py'
+      - '.github/workflows/rates-canonical-rowset-store-verify-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/rates_pit_rowsets/**'
+      - 'validation/build_rates_canonical_rowset_store_v1.py'
+      - '.github/workflows/rates-canonical-rowset-store-verify-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify frozen rowsets against canonical evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_rates_canonical_rowset_store_v1.py verify | tee /tmp/rates-rowset-verification.json
+
+      - name: Enforce exact canonical store contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv, hashlib, json
+          from pathlib import Path
+
+          root=Path('.')
+          manifest=json.load(open('validation/rates_pit_rowsets/manifest_v1.json', encoding='utf-8'))
+          assert manifest['schema']=='GMFQ_RATES_CANONICAL_ROWSET_STORE_V1'
+          assert manifest['status']=='PASS'
+          assert manifest['currencies']==['AUD','CAD','EUR','JPY','USD']
+          assert manifest['total_observations']==10953
+          assert manifest['policy']['runtime_history_fallback_allowed'] is False
+          assert manifest['policy']['secondary_source_fallback_allowed'] is False
+          assert manifest['policy']['same_day_use_allowed'] is False
+          assert manifest['policy']['store_updates_require_new_certification'] is True
+
+          files=list(Path('validation/rates_pit_rowsets').glob('*.csv'))
+          assert len(files)==5
+          for ccy,entry in manifest['entries'].items():
+              p=root/entry['rowset_file']
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==entry['rowset_file_sha256']
+              rows=list(csv.DictReader(p.open(encoding='utf-8', newline='')))
+              assert len(rows)==entry['observations']
+              assert rows[0]['observation_date']==entry['start_date']
+              assert rows[-1]['observation_date']==entry['end_date']
+              assert all(r['first_eligible_decision_date'] > r['observation_date'] for r in rows)
+              if ccy=='JPY':
+                  assert 'first_eligible_decision_point' in rows[0]
+                  assert all(r['first_eligible_decision_point'].endswith('+09:00') for r in rows)
+          PY
+
+      - name: Assert repository remains read only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-canonical-rowset-verification-${{ github.run_id }}
+          path: /tmp/rates-rowset-verification.json
+          retention-days: 90
