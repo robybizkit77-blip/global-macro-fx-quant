@@ -1,0 +1,96 @@
+name: G4USD Divergence Direction Discovery V4
+
+on:
+  push:
+    branches:
+      - validation-g4usd-divergence-direction-discovery-v4-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze V4 contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_DIVERGENCE_DIRECTION_DISCOVERY_CONTRACT_V4_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_EXPLORATORY_NO_V4_RESULTS_OBSERVED'
+          assert c['groups']['HAWKISH_DIVERGENCE']=='d_diff_2y > 0'
+          assert c['groups']['DOVISH_DIVERGENCE']=='d_diff_2y < 0'
+          assert c['governance']['no_edge_certification'] is True
+          assert c['governance']['no_rescue_tuning_after_results'] is True
+          print('V4_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Download exact GREEN readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: g4usd-alignment-integration-readiness-fast-v3-38169617850
+          path: /tmp/v4
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38169617850
+      - name: Reconstruct exact corrected alignment source
+        run: |
+          mkdir -p /tmp/v4/canonical-fixed
+          for f in /tmp/v4/canonical/*.csv; do
+            b=$(basename "$f")
+            python validation/g4usd_canonical_release_date_normalizer_v1.py --source "$f" --output "/tmp/v4/canonical-fixed/$b"
+          done
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/v4/frozen_oos.json \
+            --eur-inflation /tmp/v4/canonical-fixed/eur_inflation.csv \
+            --eur-labour /tmp/v4/canonical-fixed/eur_labour.csv \
+            --jpy-inflation /tmp/v4/canonical-fixed/jpy_inflation.csv \
+            --jpy-labour /tmp/v4/canonical-fixed/jpy_labour.csv \
+            --cad-inflation /tmp/v4/canonical-fixed/cad_inflation.csv \
+            --cad-labour /tmp/v4/canonical-fixed/cad_labour.csv \
+            --aud-inflation /tmp/v4/canonical-fixed/aud_inflation.csv \
+            --aud-labour /tmp/v4/canonical-fixed/aud_labour.csv \
+            --usd-inflation /tmp/v4/canonical-fixed/usd_inflation.csv \
+            --usd-labour /tmp/v4/canonical-fixed/usd_labour.csv \
+            --output /tmp/v4/alignment-source.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v4/alignment-source.json'))
+          assert r['state_results']['CONTRADICTORY']['n']==67
+          assert abs(r['state_results']['CONTRADICTORY']['sharpe']-1.1348751274937703)<1e-12
+          print('V4_SOURCE_REPRODUCED_PASS')
+          PY
+      - name: Execute divergence direction discovery
+        run: |
+          python validation/g4usd_divergence_direction_discovery_v4.py \
+            --alignment-result /tmp/v4/alignment-source.json \
+            --output /tmp/v4/divergence-direction-v4.json
+      - name: Validate V4 governance and completeness
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v4/divergence-direction-v4.json'))
+          assert r['status']=='EXPLORATORY_DIAGNOSTIC_COMPLETE_NOT_EDGE_CERTIFICATION'
+          assert sum(v['n'] for v in r['pooled'].values())==67
+          g=r['governance']
+          assert g['edge_certified'] is False
+          assert g['production_signal_authorized'] is False
+          assert g['sizing_authorized'] is False
+          assert g['future_unseen_confirmation_required'] is True
+          assert g['no_rescue_tuning'] is True
+          print('V4_OUTPUT_GOVERNANCE_PASS')
+          PY
+      - name: Upload V4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-divergence-direction-discovery-v4-${{ github.run_id }}
+          path: |
+            /tmp/v4/divergence-direction-v4.json
+            validation/G4USD_DIVERGENCE_DIRECTION_DISCOVERY_CONTRACT_V4_2026-10-11.json
+          if-no-files-found: error
+          retention-days: 30
