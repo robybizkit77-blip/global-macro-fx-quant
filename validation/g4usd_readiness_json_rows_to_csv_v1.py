@@ -13,6 +13,10 @@ MODES={
     'input_schema':'GMFQ_JPY_INFLATION_STRICT_PIT_EVIDENCE_V1_RUNTIME',
     'fields':['observation_date','release_date','value','availability_status'],
   },
+  'AUD_LABOUR': {
+    'input_schema':'GMFQ_AUD_LABOUR_FULL_ARCHIVE_PROBE_V1',
+    'fields':['reference_month','unemployment_rate_sa','release_date','availability_status'],
+  },
   'USD_INFLATION': {
     'input_schema':'GMFQ_USD_INFLATION_ALFRED_RELEASE_PIT_V1',
     'fields':['reference_month','release_date','cpi_yoy','availability_status'],
@@ -42,6 +46,17 @@ def export(mode:str,src:pathlib.Path,dst:pathlib.Path)->dict:
               'availability_status':'AVAILABLE_STRICT_PIT',
             }
             if not vals['observation_date'] or not vals['release_date'] or vals['value']=='' or vals['value'] is None:
+                raise ValueError(f'{mode} row {i}: missing certified field')
+        elif mode=='AUD_LABOUR':
+            vals={
+              'reference_month':r.get('reference_month',''),
+              'unemployment_rate_sa':'' if r.get('unemployment_rate_sa') is None else r.get('unemployment_rate_sa'),
+              'release_date':r.get('release_date',''),
+              'availability_status':'AVAILABLE_STRICT_PIT',
+            }
+            if r.get('pit_status')!='STRICT_FIRST_RELEASE':
+                raise ValueError(f'{mode} row {i}: non-strict PIT row')
+            if not vals['reference_month'] or vals['unemployment_rate_sa']=='' or not vals['release_date']:
                 raise ValueError(f'{mode} row {i}: missing certified field')
         elif mode=='USD_INFLATION':
             status=r.get('availability_status','')
