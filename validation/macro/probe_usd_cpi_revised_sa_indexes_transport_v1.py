@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse, io, json, pathlib, re, urllib.error, urllib.request, zipfile
 
+# Annual BLS files preserve the recalculated five-year SA vintage published with January CPI.
 YEARS = [2017, 2018, 2019, 2023, 2024, 2025]
 BASE = "https://www.bls.gov/cpi/tables/seasonal-adjustment/revised-seasonally-adjusted-indexes-{year}.xlsx"
 UA = "Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; research validation)"
