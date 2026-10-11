@@ -1,0 +1,244 @@
+name: G4USD Alignment Integration Readiness Fast V3
+
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-integration-readiness-fast-v3-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PR122_SHA: 0d9e2128680bddcb917767389cad97937b7c48f5
+  RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
+  USD_CPI_SEMANTIC_SHA: 2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485
+  USD_LABOUR_SEMANTIC_SHA: 4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51
+  EUR_INF_SEMANTIC_SHA: fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1
+  EUR_LAB_SEMANTIC_SHA: b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9
+  JPY_INF_SEMANTIC_SHA: 4c42b3da7ff99202022ca6090a53dce86c0b7fd75e45752bfe127b2c678486ac
+
+jobs:
+  readiness-fast:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install certified parser dependencies
+        run: python -m pip install --disable-pip-version-check pypdf==5.9.0
+
+      - name: Reconstruct exact frozen PR122 OOS parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/pr122 /tmp/readiness/rates /tmp/readiness/fx
+          git show "$PR122_SHA:validation/g4usd_relative_front_end_panel_v1.py" > /tmp/readiness/pr122/model.py
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git show FETCH_HEAD:"validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" > "/tmp/readiness/rates/${c}.csv"
+          done
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata" \
+              -o "/tmp/readiness/fx/${c}.csv"
+          done
+          python validation/g4usd_frozen_oos_export_v1.py \
+            --model /tmp/readiness/pr122/model.py \
+            --eur-rates /tmp/readiness/rates/eur.csv --jpy-rates /tmp/readiness/rates/jpy.csv \
+            --cad-rates /tmp/readiness/rates/cad.csv --aud-rates /tmp/readiness/rates/aud.csv --usd-rates /tmp/readiness/rates/usd.csv \
+            --usd-ecb /tmp/readiness/fx/USD.csv --jpy-ecb /tmp/readiness/fx/JPY.csv --cad-ecb /tmp/readiness/fx/CAD.csv --aud-ecb /tmp/readiness/fx/AUD.csv \
+            --output /tmp/readiness/frozen_oos.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/readiness/frozen_oos.json'))
+          assert r['schema']=='GMFQ_G4USD_RELATIVE_FRONT_END_PANEL_OOS_V1'
+          assert r['frozen_from_pr']==122
+          assert r['frozen_head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          assert len(r['observations'])==256
+          assert abs(r['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          print('FROZEN_PARENT_EXACT_PASS')
+          PY
+
+      - name: Download certified EUR inflation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: eur-inflation-strict-pit-v1-38063873303
+          path: /tmp/readiness/eur-inf-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38063873303
+      - name: Download certified EUR labour artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: eur-labour-strict-pit-v1-38076288187
+          path: /tmp/readiness/eur-lab-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38076288187
+      - name: Verify and stage certified EUR inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/eur-inf /tmp/readiness/eur-lab/out
+          cp /tmp/readiness/eur-inf-artifact/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv /tmp/readiness/eur-inf/source.csv
+          cp /tmp/readiness/eur-inf-artifact/a/evidence.json /tmp/readiness/eur-inf/evidence.json
+          cp /tmp/readiness/eur-lab-artifact/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv /tmp/readiness/eur-lab/out/source.csv
+          cp /tmp/readiness/eur-lab-artifact/a/evidence.json /tmp/readiness/eur-lab/out/evidence.json
+          python - <<'PY'
+          import csv,json,os
+          a=json.load(open('/tmp/readiness/eur-inf/evidence.json')); b=json.load(open('/tmp/readiness/eur-lab/out/evidence.json'))
+          assert a['status']=='PASS' and b['status']=='PASS'
+          assert a['semantic_rowset_sha256']==os.environ['EUR_INF_SEMANTIC_SHA']
+          assert b['semantic_rowset_sha256']==os.environ['EUR_LAB_SEMANTIC_SHA']
+          assert len(list(csv.DictReader(open('/tmp/readiness/eur-inf/source.csv'))))>=104
+          assert len(list(csv.DictReader(open('/tmp/readiness/eur-lab/out/source.csv'))))==104
+          PY
+
+      - name: Download certified JPY inflation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jpy-inflation-strict-pit-v1-38080380742
+          path: /tmp/readiness/jpy-inf-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38080380742
+      - name: Verify certified JPY inflation artifact and materialize labour
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/jpy-inf /tmp/readiness/jpy-lab
+          cp /tmp/readiness/jpy-inf-artifact/jpy_inflation_strict_pit_rowset_v1_runtime.csv /tmp/readiness/jpy-inf/source.csv
+          cp /tmp/readiness/jpy-inf-artifact/jpy_inflation_strict_pit_evidence_v1_runtime.json /tmp/readiness/jpy-inf/evidence.json
+          python validation/materialize_jpy_labour_strict_pit_v2.py --csv /tmp/readiness/jpy-lab/source.csv --evidence /tmp/readiness/jpy-lab/evidence.json
+          python - <<'PY'
+          import csv,json,os
+          a=json.load(open('/tmp/readiness/jpy-inf/evidence.json')); b=json.load(open('/tmp/readiness/jpy-lab/evidence.json'))
+          assert a['verdict']=='STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE'
+          assert a['semantic_rowset_sha256']==os.environ['JPY_INF_SEMANTIC_SHA']
+          assert a['coverage']=={'start':'2018-01','end':'2026-08','expected':104,'observed':104}
+          assert b['status']=='PASS'
+          assert len(list(csv.DictReader(open('/tmp/readiness/jpy-inf/source.csv'))))==104
+          assert len(list(csv.DictReader(open('/tmp/readiness/jpy-lab/source.csv'))))==104
+          PY
+
+      - name: Materialize certified CAD inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/cad-inf /tmp/readiness/cad-lab
+          python validation/materialize_cad_inflation_strict_pit_v1.py --csv /tmp/readiness/cad-inf/source.csv --evidence /tmp/readiness/cad-inf/evidence.json
+          python validation/materialize_cad_labour_strict_pit_v1.py --csv /tmp/readiness/cad-lab/source.csv --evidence /tmp/readiness/cad-lab/evidence.json
+          python - <<'PY'
+          import csv,json
+          a=json.load(open('/tmp/readiness/cad-inf/evidence.json')); b=json.load(open('/tmp/readiness/cad-lab/evidence.json'))
+          assert a['status']=='PASS' and b['status']=='PASS'
+          assert len(list(csv.DictReader(open('/tmp/readiness/cad-inf/source.csv'))))==104
+          assert len(list(csv.DictReader(open('/tmp/readiness/cad-lab/source.csv'))))==104
+          PY
+
+      - name: Materialize certified AUD inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/aud-inf /tmp/readiness/aud-lab
+          python validation/materialize_aud_inflation_strict_pit_v1.py --csv /tmp/readiness/aud-inf/source.csv --evidence /tmp/readiness/aud-inf/evidence.json
+          python validation/materialize_aud_labour_strict_pit_v1.py --csv /tmp/readiness/aud-lab/source.csv --evidence /tmp/readiness/aud-lab/evidence.json
+          python - <<'PY'
+          import csv,json
+          a=json.load(open('/tmp/readiness/aud-inf/evidence.json')); b=json.load(open('/tmp/readiness/aud-lab/evidence.json'))
+          assert a['status']=='PASS' and b['status']=='PASS'
+          assert len(list(csv.DictReader(open('/tmp/readiness/aud-inf/source.csv'))))==34
+          assert len(list(csv.DictReader(open('/tmp/readiness/aud-lab/source.csv'))))==104
+          PY
+
+      - name: Materialize certified USD CPI once against pinned semantic hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/usd-inf
+          python validation/macro/materialize_usd_cpi_bls_release_chain_v1.py --output /tmp/readiness/usd-inf/calendar.json
+          python validation/macro/materialize_usd_inflation_alfred_release_pit_v1.py --release-calendar /tmp/readiness/usd-inf/calendar.json --output /tmp/readiness/usd-inf/evidence.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/readiness/usd-inf/evidence.json'))
+          assert d['status']=='CERTIFIABLE_STRICT_PIT_WITH_OFFICIAL_GAP'
+          assert d['semantic_sha256']==os.environ['USD_CPI_SEMANTIC_SHA']
+          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected_rows':104,'observed_rows':104,'materialized_rows':103,'official_unavailable_rows':1}
+          PY
+          python validation/g4usd_readiness_json_rows_to_csv_v1.py --mode USD_INFLATION --input /tmp/readiness/usd-inf/evidence.json --output /tmp/readiness/usd-inf/source.csv
+
+      - name: Materialize certified USD labour once against pinned semantic hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/usd-lab
+          python validation/macro/materialize_usd_labour_bls_release_pit_v1.py --output /tmp/readiness/usd-lab/evidence.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/readiness/usd-lab/evidence.json'))
+          assert d['status']=='CERTIFIABLE_STRICT_PIT_WITH_OFFICIAL_GAP'
+          assert d['semantic_sha256']==os.environ['USD_LABOUR_SEMANTIC_SHA']
+          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'observed_months':104,'materialized_months':103,'official_unavailable_months':1}
+          PY
+          python validation/g4usd_readiness_json_rows_to_csv_v1.py --mode USD_LABOUR --input /tmp/readiness/usd-lab/evidence.json --output /tmp/readiness/usd-lab/source.csv
+
+      - name: Canonicalize all ten certified input streams
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/readiness/canonical /tmp/readiness/adapter-receipts
+          python validation/g4usd_macro_input_adapter_v1.py --stream EUR_INFLATION --source /tmp/readiness/eur-inf/source.csv --output /tmp/readiness/canonical/eur_inflation.csv --receipt /tmp/readiness/adapter-receipts/eur_inflation.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream EUR_LABOUR --source /tmp/readiness/eur-lab/out/source.csv --output /tmp/readiness/canonical/eur_labour.csv --receipt /tmp/readiness/adapter-receipts/eur_labour.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream JPY_INFLATION --source /tmp/readiness/jpy-inf/source.csv --output /tmp/readiness/canonical/jpy_inflation.csv --receipt /tmp/readiness/adapter-receipts/jpy_inflation.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream JPY_LABOUR --source /tmp/readiness/jpy-lab/source.csv --output /tmp/readiness/canonical/jpy_labour.csv --receipt /tmp/readiness/adapter-receipts/jpy_labour.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream CAD_INFLATION --source /tmp/readiness/cad-inf/source.csv --output /tmp/readiness/canonical/cad_inflation.csv --receipt /tmp/readiness/adapter-receipts/cad_inflation.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream CAD_LABOUR --source /tmp/readiness/cad-lab/source.csv --output /tmp/readiness/canonical/cad_labour.csv --receipt /tmp/readiness/adapter-receipts/cad_labour.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream AUD_INFLATION --source /tmp/readiness/aud-inf/source.csv --output /tmp/readiness/canonical/aud_inflation.csv --receipt /tmp/readiness/adapter-receipts/aud_inflation.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream AUD_LABOUR --source /tmp/readiness/aud-lab/source.csv --output /tmp/readiness/canonical/aud_labour.csv --receipt /tmp/readiness/adapter-receipts/aud_labour.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream USD_INFLATION --source /tmp/readiness/usd-inf/source.csv --output /tmp/readiness/canonical/usd_inflation.csv --receipt /tmp/readiness/adapter-receipts/usd_inflation.json
+          python validation/g4usd_macro_input_adapter_v1.py --stream USD_LABOUR --source /tmp/readiness/usd-lab/source.csv --output /tmp/readiness/canonical/usd_labour.csv --receipt /tmp/readiness/adapter-receipts/usd_labour.json
+
+      - name: Enforce readiness counts and write result-blind receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,hashlib,json,pathlib
+          root=pathlib.Path('/tmp/readiness/canonical')
+          expected={'eur_inflation.csv':104,'eur_labour.csv':104,'jpy_inflation.csv':104,'jpy_labour.csv':104,'cad_inflation.csv':104,'cad_labour.csv':104,'aud_inflation.csv':34,'aud_labour.csv':104,'usd_inflation.csv':104,'usd_labour.csv':104}
+          streams={}
+          for name,min_rows in expected.items():
+            p=root/name; rows=list(csv.DictReader(p.open()))
+            assert len(rows)>=min_rows if name=='eur_inflation.csv' else len(rows)==min_rows,(name,len(rows))
+            assert set(rows[0])=={'reference_period','release_date','value','availability_status'}
+            unavailable=sum(r['availability_status']=='UNAVAILABLE_OFFICIAL_NOT_PUBLISHED' for r in rows)
+            if name in {'usd_inflation.csv','usd_labour.csv'}:
+              assert unavailable==1
+              assert sum(r['availability_status']=='AVAILABLE_STRICT_PIT' for r in rows)==103
+            else:
+              assert unavailable==0
+            streams[name]={'rows':len(rows),'unavailable_rows':unavailable,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+          parent=json.load(open('/tmp/readiness/frozen_oos.json'))
+          receipt={'schema':'GMFQ_G4USD_ALIGNMENT_INTEGRATION_READINESS_V3','status':'READY_FOR_ONE_SHOT_TEST','frozen_parent':{'pr':122,'head_sha':parent['frozen_head_sha'],'oos_observations':len(parent['observations']),'baseline_panel_sharpe':parent['baseline_panel_sharpe']},'input_streams':streams,'pinned_usd_semantic_hashes':{'inflation':'2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485','labour':'4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51'},'pinned_eur_semantic_hashes':{'inflation':'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1','labour':'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'},'pinned_jpy_semantic_hashes':{'inflation':'4c42b3da7ff99202022ca6090a53dce86c0b7fd75e45752bfe127b2c678486ac'},'performance_authorized':False,'alignment_result_computed':False,'alignment_engine_invoked':False,'ready_for_one_shot_test':True,'production_signal_authorized':False,'sizing_authorized':False}
+          pathlib.Path('/tmp/readiness/readiness-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
+          PY
+          test ! -e /tmp/readiness/alignment-result.json
+          test ! -e /tmp/readiness/alignment_result.json
+          git diff --exit-code
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-alignment-integration-readiness-fast-v3-${{ github.run_id }}
+          path: |
+            /tmp/readiness/readiness-receipt.json
+            /tmp/readiness/frozen_oos.json
+            /tmp/readiness/adapter-receipts/
+            /tmp/readiness/canonical/
+          if-no-files-found: error
+          retention-days: 90
