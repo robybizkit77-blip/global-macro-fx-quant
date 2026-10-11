@@ -62,19 +62,15 @@ def release_date(page: str, label: str) -> str:
 def unemployment_rate(page: str, year: int, month: int) -> float:
     period = f"{MONTHS[month].capitalize()} {year} quarter"
     p = re.escape(period)
-    # Narrow official wording families only. The page identity is validated
-    # separately, and no matcher may span arbitrary prose across the release.
+    # Narrow official wording families only. Every matcher is anchored to the
+    # exact reference quarter; generic teaser matches are intentionally barred
+    # because subgroup rates elsewhere on the page can use the same wording.
     patterns = (
-        # Stats NZ teaser/headline wording (eg June 2018).
-        r"\bUnemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent\b",
         rf"seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        # 2018-era copy can begin with the exact reference quarter.
         rf"In the {p},?\s+(?:the\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"(?:The\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        # Bound same-sentence variants so component/subgroup rates later in the
-        # page cannot be selected.
         rf"In the {p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"{p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent[^.]{{0,220}}?{p}",
