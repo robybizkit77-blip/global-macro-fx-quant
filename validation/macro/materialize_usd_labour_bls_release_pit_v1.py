@@ -91,8 +91,6 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     ref=month_key(title.group(1))
     if ref!=expected_ref: raise ValueError(f'expected reference {expected_ref}, got {ref}')
 
-    # Older Employment Situation releases place a USDL release code between
-    # "embargoed until" and the 8:30 timestamp. Permit only that bounded token.
     emb=re.search(
       r'embargoed until(?:\s+USDL-\d{2}-\d+)?\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
       r'(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+)?'
@@ -102,12 +100,10 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     if embargo_date!=expected_release_date:
         raise ValueError(f'archive URL date {expected_release_date} != embargo date {embargo_date}')
 
-    # First-published U-3 headline value. Keep extraction tightly anchored to
-    # the first narrative occurrence before detailed tables.
     prefix=text[:min(len(text),12000)]
     ur=None
     patterns=[
-      r'unemployment rate[^.]{0,120}?at\s+(\d+(?:\.\d+)?)\s*percent',
+      r'unemployment rate[^.]{0,120}?(?:at|to)\s+(\d+(?:\.\d+)?)\s*percent',
       r'unemployment rate\s+(?:was|is|remained|held)\s+(\d+(?:\.\d+)?)\s*percent',
     ]
     for p in patterns:
@@ -117,10 +113,6 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     if ur is None: raise ValueError(f'headline unemployment rate not found for {ref}')
     if not (2.0 <= ur <= 15.0): raise ValueError(f'implausible unemployment rate {ur} for {ref}')
 
-    # Historical releases often omit the YEAR in the next reference label
-    # (e.g. "for February"). The label is accepted only when its month equals
-    # the mechanically consecutive reference month. Newer releases may include
-    # Month Year and may use "news release ... published" wording.
     next_patterns=[
       r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
       r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
@@ -136,15 +128,10 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     next_ref=parse_next_reference(nxt.group(1),ref) if nxt else None
 
     return {
-      'reference_month':ref,
-      'release_date':expected_release_date,
-      'release_time':'08:30',
-      'release_timezone':'America/New_York',
-      'embargo_tz_abbrev':emb.group(1).upper(),
-      'availability_status':'AVAILABLE_STRICT_PIT',
-      'unemployment_rate':ur,
-      'official_series_id':'LNS14000000',
-      'next_reference_month':next_ref,
+      'reference_month':ref,'release_date':expected_release_date,'release_time':'08:30',
+      'release_timezone':'America/New_York','embargo_tz_abbrev':emb.group(1).upper(),
+      'availability_status':'AVAILABLE_STRICT_PIT','unemployment_rate':ur,
+      'official_series_id':'LNS14000000','next_reference_month':next_ref,
       'next_release_date':iso_date(nxt.group(2)) if nxt else None,
     }
 
@@ -173,23 +160,17 @@ def main():
 
             if has_gap:
                 missing={
-                  'reference_month':special['missing_reference_month'],
-                  'release_date':None,'release_time':None,
-                  'release_timezone':'America/New_York',
-                  'availability_status':'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED',
-                  'unemployment_rate':None,
-                  'official_series_id':'LNS14000000',
-                  'unavailable_reason':special['missing_kind'],
-                  'source_url':row['source_url'],
-                  'source_sha256':row['source_sha256'],
-                  'next_reference_month':special['resume_reference_month'],
+                  'reference_month':special['missing_reference_month'],'release_date':None,'release_time':None,
+                  'release_timezone':'America/New_York','availability_status':'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED',
+                  'unemployment_rate':None,'official_series_id':'LNS14000000',
+                  'unavailable_reason':special['missing_kind'],'source_url':row['source_url'],
+                  'source_sha256':row['source_sha256'],'next_reference_month':special['resume_reference_month'],
                   'next_release_date':special['resume_release_date'],
                 }
                 if TARGET_START <= missing['reference_month'] <= TARGET_END: rows.append(missing)
                 current_ref=special['resume_reference_month']; current_date=special['resume_release_date']
                 time.sleep(0.15); continue
 
-            # parse_next_reference already enforces exact consecutiveness.
             current_ref=row['next_reference_month']; current_date=row['next_release_date']
             time.sleep(0.15)
     except Exception as exc:
@@ -202,21 +183,11 @@ def main():
     semantic=[{k:v for k,v in r.items() if k not in {'source_sha256','schedule_exception_evidence_sha256'}} for r in rows]
     sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     out={
-      'schema':'GMFQ_USD_LABOUR_BLS_RELEASE_PIT_V1',
-      'status':status,
-      'authority':'U.S. Bureau of Labor Statistics',
+      'schema':'GMFQ_USD_LABOUR_BLS_RELEASE_PIT_V1','status':status,'authority':'U.S. Bureau of Labor Statistics',
       'series_contract':{'series_id':'LNS14000000','measure':'U-3 seasonally adjusted unemployment rate','unit':'percent','semantics':'as first published in Employment Situation'},
       'coverage':{'start':TARGET_START,'end':TARGET_END,'expected_months':EXPECTED,'observed_months':len(rows),'materialized_months':available,'official_unavailable_months':unavailable},
       'rows':rows,'errors':errors,'semantic_sha256':sha,
-      'invariants':{
-        'official_archive_only':True,
-        'actual_release_date_required':True,
-        'official_embargo_timestamp_required':True,
-        'headline_first_published_u3_only':True,
-        'current_revised_history_substitution_forbidden':True,
-        'october_2025_household_imputation_forbidden':True,
-        'production_write':False,
-      },
+      'invariants':{'official_archive_only':True,'actual_release_date_required':True,'official_embargo_timestamp_required':True,'headline_first_published_u3_only':True,'current_revised_history_substitution_forbidden':True,'october_2025_household_imputation_forbidden':True,'production_write':False},
       'policy':{'authorizes_pr123_performance_by_itself':False,'production_signal_authorized':False}
     }
     a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n',encoding='utf-8')
