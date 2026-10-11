@@ -14,7 +14,7 @@ env:
   PR122_SHA: 0d9e2128680bddcb917767389cad97937b7c48f5
   RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
   USD_CPI_SEMANTIC_SHA: 2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485
-  USD_LABOUR_SEMANTIC_SHA: 4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51
+  USD_LABOUR_SEMANTIC_SHA: 0c18bd5d6327c73e6a7421f4cfbad1374a08e17093de0dcc6b18b38dcbd602ff
   EUR_INF_SEMANTIC_SHA: fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1
   EUR_LAB_SEMANTIC_SHA: b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9
   JPY_INF_SEMANTIC_SHA: 6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8
@@ -300,7 +300,7 @@ jobs:
             'status':'READY_FOR_ONE_SHOT_TEST',
             'frozen_parent':{'pr':122,'head_sha':parent['frozen_head_sha'],'oos_observations':len(parent['observations']),'baseline_panel_sharpe':parent['baseline_panel_sharpe']},
             'input_streams':streams,
-            'pinned_usd_semantic_hashes':{'inflation':'2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485','labour':'4360f65174019341cec76447c99ce3a84a8f8df154136b0383bc00c3a4dd0c51'},
+            'pinned_usd_semantic_hashes':{'inflation':'2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485','labour':'0c18bd5d6327c73e6a7421f4cfbad1374a08e17093de0dcc6b18b38dcbd602ff'},
             'pinned_eur_semantic_hashes':{'inflation':'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1','labour':'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'},
             'pinned_jpy_semantic_hashes':{'inflation':'6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8'},
             'pinned_cad_semantic_hashes':{'inflation':'d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a','labour':'77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a'},
