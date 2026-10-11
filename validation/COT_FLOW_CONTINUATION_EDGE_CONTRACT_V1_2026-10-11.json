@@ -54,9 +54,15 @@
   },
   "test_statistic": {
     "observation_return": "sign(delta_net_oi_t) * subsequent_5d_fx_log_return",
-    "primary_panel": "equal-weight pooled currency-week observations",
+    "primary_panel": "For each ISO calendar week of entry, equal-weight all available OOS currency observation returns in that week; calculate panel performance from this chronological weekly portfolio series.",
+    "panel_annualized_sharpe": "mean(weekly_panel_return) / sample_std(weekly_panel_return, ddof=1) * sqrt(52)",
+    "currency_annualized_sharpe": "mean(currency_observation_return) / sample_std(currency_observation_return, ddof=1) * sqrt(52)",
+    "directional_accuracy": "pooled OOS currency-week fraction with observation_return > 0; observation_return <= 0 counts as miss; NO_POSITION rows are excluded before this calculation",
+    "panel_total_log_return": "sum chronological weekly_panel_return",
+    "panel_max_drawdown": "maximum peak-to-trough loss on exp(cumulative sum of chronological weekly_panel_return)",
     "currency_diagnostics": true,
-    "no_position_rows_excluded": true
+    "no_position_rows_excluded": true,
+    "annualization_factor": 52
   },
   "chronology": {
     "primary_evaluation": "strict chronological out-of-sample tail",
@@ -83,6 +89,7 @@
     "signal_balance_positive_negative": true
   },
   "governance": {
+    "contract_completion_note": "Panel aggregation, Sharpe annualization, directional-accuracy treatment and drawdown definition were completed while status remained PREDECLARED_NO_RESULTS_OBSERVED and before any predictive performance was computed.",
     "no_change_after_results_to_signal_definition": true,
     "no_change_after_results_to_horizon": true,
     "no_change_after_results_to_split": true,
