@@ -1,0 +1,139 @@
+name: Walk-Forward Snapshot Series V1
+
+on:
+  push:
+    branches: [validation-walkforward-snapshot-series-v1-2026-10-11]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  MACRO_CONTRACT_SHA: 6b19a687e4b2a235070eb026dc7e6476e5323191
+  EUR_INFLATION_ARTIFACT_ID: '11674452706'
+  EUR_INFLATION_ARTIFACT_DIGEST: 'sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d'
+  EUR_LABOUR_ARTIFACT_ID: '11678794954'
+  EUR_LABOUR_ARTIFACT_DIGEST: 'sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677'
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  series-builder:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+
+      - name: Issue verified Macro monthly permits
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wf-series
+          git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
+          git checkout FETCH_HEAD -- validation/macro_walkforward_eligibility_gate_v1.py validation/backtest_input_contract_v1.py
+          for m in 06 07 08; do
+            python validation/backtest_input_contract_v1.py --as-of "2026-${m}" --target EUR.inflation --target EUR.labour --output "/tmp/wf-series/macro-permit-${m}.json"
+            python validation/backtest_input_contract_v1.py --verify-permit "/tmp/wf-series/macro-permit-${m}.json" --output "/tmp/wf-series/macro-permit-${m}-verified.json"
+            cmp "/tmp/wf-series/macro-permit-${m}.json" "/tmp/wf-series/macro-permit-${m}-verified.json"
+          done
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Download exact certified EUR Macro artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wf-series/artifacts/inflation /tmp/wf-series/artifacts/labour
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid,expected in [(os.environ['EUR_INFLATION_ARTIFACT_ID'],os.environ['EUR_INFLATION_ARTIFACT_DIGEST']),(os.environ['EUR_LABOUR_ARTIFACT_ID'],os.environ['EUR_LABOUR_ARTIFACT_DIGEST'])]:
+              m=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert not m['expired'] and m.get('digest')==expected
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_INFLATION_ARTIFACT_ID}/zip" > /tmp/wf-series/inflation.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_LABOUR_ARTIFACT_ID}/zip" > /tmp/wf-series/labour.zip
+          unzip -q /tmp/wf-series/inflation.zip -d /tmp/wf-series/artifacts/inflation
+          unzip -q /tmp/wf-series/labour.zip -d /tmp/wf-series/artifacts/labour
+          python - <<'PY'
+          import json
+          p='/tmp/wf-series/artifacts/'
+          for f,h in [('inflation','fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1'),('labour','b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9')]:
+              a=json.load(open(f'{p}{f}/a/evidence.json')); b=json.load(open(f'{p}{f}/b/evidence.json'))
+              assert a['status']==b['status']=='PASS' and a['semantic_rowset_sha256']==b['semantic_rowset_sha256']==h
+          PY
+
+      - name: Materialize EUR Rates PIT once
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3; do
+            if python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/wf-series/eur-rates-rowset.json; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+
+      - name: Build three verified point-in-time snapshots
+        run: |
+          set -euo pipefail
+          INF=/tmp/wf-series/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv
+          LAB=/tmp/wf-series/artifacts/labour/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv
+          for spec in '06 2026-06-10' '07 2026-07-10' '08 2026-08-10'; do
+            set -- $spec; m=$1; d=$2; P="/tmp/wf-series/macro-permit-${m}-verified.json"
+            for t in inflation labour; do
+              CSV="$INF"; [ "$t" = labour ] && CSV="$LAB"
+              python validation/macro_temporal_row_selector_v1.py select --macro-permit "$P" --rowset-csv "$CSV" --target "EUR.${t}" --decision-point "$d" --output "/tmp/wf-series/${m}-macro-${t}.json"
+              python validation/macro_temporal_row_selector_v1.py verify --selector-result "/tmp/wf-series/${m}-macro-${t}.json" --macro-permit "$P" --rowset-csv "$CSV" --output "/tmp/wf-series/${m}-macro-${t}-verified.json"
+            done
+            python validation/rates_backtest_input_contract_v1.py issue --decision-date "$d" --target EUR.rates_2y_10y --output "/tmp/wf-series/${m}-rates-permit.json"
+            python validation/rates_temporal_row_selector_v1.py select --permit "/tmp/wf-series/${m}-rates-permit.json" --rowset /tmp/wf-series/eur-rates-rowset.json --target EUR.rates_2y_10y --decision-point "$d" --output "/tmp/wf-series/${m}-rates-row.json"
+            python validation/rates_temporal_row_selector_v1.py verify --selector-result "/tmp/wf-series/${m}-rates-row.json" --permit "/tmp/wf-series/${m}-rates-permit.json" --rowset /tmp/wf-series/eur-rates-rowset.json --output "/tmp/wf-series/${m}-rates-row-verified.json"
+            python validation/cross_layer_backtest_input_coordinator_v1.py bind --currency EUR --decision-point "$d" --macro-permit "$P" --rates-row-result "/tmp/wf-series/${m}-rates-row.json" --rates-row-verification "/tmp/wf-series/${m}-rates-row-verified.json" --output "/tmp/wf-series/${m}-cross-layer.json"
+            python validation/cross_layer_backtest_input_coordinator_v1.py verify --bundle "/tmp/wf-series/${m}-cross-layer.json" --macro-permit "$P" --rates-row-result "/tmp/wf-series/${m}-rates-row.json" --rates-row-verification "/tmp/wf-series/${m}-rates-row-verified.json" --output "/tmp/wf-series/${m}-cross-layer-verified.json"
+            python validation/walkforward_input_snapshot_builder_v1.py build --cross-layer-bundle "/tmp/wf-series/${m}-cross-layer.json" --macro-row-result "/tmp/wf-series/${m}-macro-inflation.json" --macro-row-result "/tmp/wf-series/${m}-macro-labour.json" --macro-row-verification "/tmp/wf-series/${m}-macro-inflation-verified.json" --macro-row-verification "/tmp/wf-series/${m}-macro-labour-verified.json" --rates-row-result "/tmp/wf-series/${m}-rates-row.json" --rates-row-verification "/tmp/wf-series/${m}-rates-row-verified.json" --output "/tmp/wf-series/${m}-snapshot.json"
+            python validation/walkforward_input_snapshot_builder_v1.py verify --snapshot "/tmp/wf-series/${m}-snapshot.json" --cross-layer-bundle "/tmp/wf-series/${m}-cross-layer.json" --macro-row-result "/tmp/wf-series/${m}-macro-inflation.json" --macro-row-result "/tmp/wf-series/${m}-macro-labour.json" --macro-row-verification "/tmp/wf-series/${m}-macro-inflation-verified.json" --macro-row-verification "/tmp/wf-series/${m}-macro-labour-verified.json" --rates-row-result "/tmp/wf-series/${m}-rates-row.json" --rates-row-verification "/tmp/wf-series/${m}-rates-row-verified.json" --output "/tmp/wf-series/${m}-snapshot-verified.json"
+          done
+
+      - name: Build verify and attack chronological series
+        run: |
+          set -euo pipefail
+          ARGS='--snapshot /tmp/wf-series/06-snapshot.json --snapshot-verification /tmp/wf-series/06-snapshot-verified.json --snapshot /tmp/wf-series/07-snapshot.json --snapshot-verification /tmp/wf-series/07-snapshot-verified.json --snapshot /tmp/wf-series/08-snapshot.json --snapshot-verification /tmp/wf-series/08-snapshot-verified.json'
+          eval python validation/walkforward_snapshot_series_builder_v1.py build $ARGS --output /tmp/wf-series/series.json
+          eval python validation/walkforward_snapshot_series_builder_v1.py verify --series /tmp/wf-series/series.json $ARGS --output /tmp/wf-series/series-verified.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/wf-series/series.json')); v=json.load(open('/tmp/wf-series/series-verified.json'))
+          assert s['currency']=='EUR' and s['coverage']=={'start_decision_point':'2026-06-10','end_decision_point':'2026-08-10','snapshot_count':3}
+          assert [x['decision_point'] for x in s['snapshots']]==['2026-06-10','2026-07-10','2026-08-10']
+          assert s['policy']['signal_calculation_allowed'] is False and s['policy']['return_label_calculation_allowed'] is False
+          assert s['policy']['position_sizing_allowed'] is False and s['policy']['backtest_execution_authorized'] is False
+          assert v['status']=='VERIFIED' and v['backtest_execution_authorized'] is False
+          for x in s['snapshots']:
+              for r in x['layers']['Macro']['rows'].values(): assert r['release_date'] < x['decision_point']
+              assert x['layers']['Rates']['row']['observation_date'] < x['decision_point']
+          PY
+          if python validation/walkforward_snapshot_series_builder_v1.py build --snapshot /tmp/wf-series/08-snapshot.json --snapshot-verification /tmp/wf-series/08-snapshot-verified.json --snapshot /tmp/wf-series/07-snapshot.json --snapshot-verification /tmp/wf-series/07-snapshot-verified.json >/dev/null 2>&1; then exit 1; fi
+          if python validation/walkforward_snapshot_series_builder_v1.py build --snapshot /tmp/wf-series/07-snapshot.json --snapshot-verification /tmp/wf-series/07-snapshot-verified.json --snapshot /tmp/wf-series/07-snapshot.json --snapshot-verification /tmp/wf-series/07-snapshot-verified.json >/dev/null 2>&1; then exit 1; fi
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/wf-series/08-snapshot.json')); s['policy']['backtest_execution_authorized']=True
+          json.dump(s,open('/tmp/wf-series/08-snapshot-tampered.json','w'))
+          PY
+          if python validation/walkforward_snapshot_series_builder_v1.py build --snapshot /tmp/wf-series/07-snapshot.json --snapshot-verification /tmp/wf-series/07-snapshot-verified.json --snapshot /tmp/wf-series/08-snapshot-tampered.json --snapshot-verification /tmp/wf-series/08-snapshot-verified.json >/dev/null 2>&1; then exit 1; fi
+
+      - name: Assert repository clean
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: walkforward-snapshot-series-${{ github.run_id }}
+          path: |
+            /tmp/wf-series/series.json
+            /tmp/wf-series/series-verified.json
+            /tmp/wf-series/06-snapshot.json
+            /tmp/wf-series/07-snapshot.json
+            /tmp/wf-series/08-snapshot.json
+          retention-days: 90
