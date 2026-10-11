@@ -1,0 +1,50 @@
+name: COT Shutdown Evidence Classification V1
+
+on:
+  push:
+    branches:
+      - validation-cot-shutdown-release-evidence-v1-2026-10-11
+    paths:
+      - 'validation/COT_2018_2019_SHUTDOWN_OFFICIAL_SCHEDULE_EVIDENCE_V1_2026-10-11.json'
+      - 'validation/COT_2018_2019_SHUTDOWN_EVIDENCE_CLASSIFICATION_V1_2026-10-11.json'
+      - '.github/workflows/cot-shutdown-evidence-classification-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce no false PIT promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          ev=json.load(open('validation/COT_2018_2019_SHUTDOWN_OFFICIAL_SCHEDULE_EVIDENCE_V1_2026-10-11.json'))
+          cl=json.load(open('validation/COT_2018_2019_SHUTDOWN_EVIDENCE_CLASSIFICATION_V1_2026-10-11.json'))
+          rows=ev['derived_expected_schedule']
+          assert len(rows)==10
+          assert ev['certification']['official_schedule_proven'] is True
+          assert ev['certification']['individual_actual_publication_dates_proven'] is False
+          assert ev['certification']['eligible_for_strict_pit_edge_backtest'] is False
+          assert cl['new_state']=='WITHHELD_OFFICIAL_SCHEDULE_KNOWN_ACTUAL_PUBLICATION_UNPROVEN'
+          assert len(cl['affected_report_dates'])==10
+          assert cl['strict_pit_status']=='BLOCKED'
+          assert cl['edge_backtest_authorized'] is False
+          assert cl['production_signal_authorized'] is False
+          assert cl['sizing_authorized'] is False
+          assert [x['report_date'] for x in rows] == cl['affected_report_dates']
+          print('COT_SHUTDOWN_EVIDENCE_CLASSIFICATION_PASS')
+          PY
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"

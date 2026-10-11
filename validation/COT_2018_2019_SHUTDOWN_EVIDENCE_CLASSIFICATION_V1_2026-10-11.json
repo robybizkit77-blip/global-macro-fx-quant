@@ -1,0 +1,29 @@
+{
+  "schema": "GMFQ_COT_2018_2019_SHUTDOWN_EVIDENCE_CLASSIFICATION_V1",
+  "as_of": "2026-10-11",
+  "input_evidence": "validation/COT_2018_2019_SHUTDOWN_OFFICIAL_SCHEDULE_EVIDENCE_V1_2026-10-11.json",
+  "previous_state": "WITHHELD_UNRESOLVED_2018_2019_SHUTDOWN",
+  "new_state": "WITHHELD_OFFICIAL_SCHEDULE_KNOWN_ACTUAL_PUBLICATION_UNPROVEN",
+  "affected_report_dates": [
+    "2018-12-24",
+    "2018-12-31",
+    "2019-01-08",
+    "2019-01-15",
+    "2019-01-22",
+    "2019-01-29",
+    "2019-02-05",
+    "2019-02-12",
+    "2019-02-19",
+    "2019-02-26"
+  ],
+  "improvement": {
+    "shutdown_schedule_unknown": false,
+    "official_catchup_schedule_documented": true,
+    "individual_actual_release_dates_documented": false
+  },
+  "strict_pit_status": "BLOCKED",
+  "edge_backtest_authorized": false,
+  "production_signal_authorized": false,
+  "sizing_authorized": false,
+  "next_evidence_required": "Contemporaneous or archival CFTC evidence proving actual publication date for each affected report, or an equally strong official record that the announced catch-up schedule was executed without deviation."
+}
