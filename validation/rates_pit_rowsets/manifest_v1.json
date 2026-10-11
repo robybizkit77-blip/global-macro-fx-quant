@@ -1,0 +1,131 @@
+{
+  "currencies": [
+    "AUD",
+    "CAD",
+    "EUR",
+    "JPY",
+    "USD"
+  ],
+  "entries": {
+    "AUD": {
+      "a_b_materializations_exactly_identical": true,
+      "authority": "Reserve Bank of Australia",
+      "canonical_evidence": "validation/AUD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json",
+      "certified_artifact_digest": "sha256:056e0bf91411319704bb54e58e8ea55d892519cba5c8803de62f73694b3b00e7",
+      "certified_artifact_id": 11698900287,
+      "columns": [
+        "observation_date",
+        "yield_2y",
+        "yield_10y",
+        "first_eligible_decision_date"
+      ],
+      "end_date": "2026-09-30",
+      "observations": 2205,
+      "rowset_file": "validation/rates_pit_rowsets/aud_rates_2y_10y_temporal_pit_v1.csv",
+      "rowset_file_sha256": "0959051ffea47d05f77a407e07ef7a8cd967dc38329f04323e0a6502daa8516c",
+      "semantic_rowset_sha256": "d3d33e76c94722667c640e8a2b3bcb663b71da37f2fbccf34471fabe99db1c17",
+      "source_basis": "official_same_basis_rba_f2_government_bond_daily_yields",
+      "start_date": "2018-01-02",
+      "target": "AUD.rates_2y_10y"
+    },
+    "CAD": {
+      "a_b_materializations_exactly_identical": true,
+      "authority": "Bank of Canada",
+      "canonical_evidence": "validation/CAD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json",
+      "certified_artifact_digest": "sha256:152fd875fc276f699c4b460b49b6379746076c8a84c6fd97e1c2202e0e5a9ddb",
+      "certified_artifact_id": 11698400061,
+      "columns": [
+        "observation_date",
+        "yield_2y",
+        "yield_10y",
+        "first_eligible_decision_date"
+      ],
+      "end_date": "2026-10-06",
+      "observations": 2186,
+      "rowset_file": "validation/rates_pit_rowsets/cad_rates_2y_10y_temporal_pit_v1.csv",
+      "rowset_file_sha256": "6e679c5ec165f415e3329a73424afa905f14ac2e5617fa835c78c017c9b873ce",
+      "semantic_rowset_sha256": "ab271ce33a31ae41c37dc1f7d19043cbe1941e31edef7f048682265657ad9c5d",
+      "source_basis": "official_same_basis_selected_benchmark_government_of_canada_bond_yields",
+      "start_date": "2018-01-02",
+      "target": "CAD.rates_2y_10y"
+    },
+    "EUR": {
+      "a_b_materializations_exactly_identical": true,
+      "authority": "European Central Bank",
+      "canonical_evidence": "validation/EUR_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json",
+      "certified_artifact_digest": "sha256:8ffd5f840c4fd7f0c7dfa5746c1994e3041d9d4b9690882234063418235a7823",
+      "certified_artifact_id": 11696513178,
+      "columns": [
+        "observation_date",
+        "yield_2y",
+        "yield_10y",
+        "first_eligible_decision_date"
+      ],
+      "end_date": "2026-10-06",
+      "observations": 2235,
+      "rowset_file": "validation/rates_pit_rowsets/eur_rates_2y_10y_temporal_pit_v1.csv",
+      "rowset_file_sha256": "8afd7b64800e08ededeaf103c1607672653dbd299523a70789dbb80d05f87965",
+      "semantic_rowset_sha256": "c8b2f80c2c89fb31c07d25f64942100e90c9a85305d215460168a4088ab4f915",
+      "source_basis": "official_same_basis_ecb_aaa_svensson_spot_curve",
+      "start_date": "2018-01-02",
+      "target": "EUR.rates_2y_10y"
+    },
+    "JPY": {
+      "a_b_materializations_exactly_identical": true,
+      "authority": "Japan Ministry of Finance",
+      "canonical_evidence": "validation/JPY_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json",
+      "certified_artifact_digest": "sha256:760bf4e5299aa27bfa7be71dee4cb889a7b56afcebe2a22908d678d9828cbbff",
+      "certified_artifact_id": 11697156816,
+      "columns": [
+        "observation_date",
+        "yield_2y",
+        "yield_10y",
+        "first_eligible_decision_date",
+        "first_eligible_decision_point"
+      ],
+      "end_date": "2026-10-06",
+      "observations": 2136,
+      "rowset_file": "validation/rates_pit_rowsets/jpy_rates_2y_10y_temporal_pit_v1.csv",
+      "rowset_file_sha256": "fef75eb7bf1ac99502a7a9dd0a322421343b8927a17bdf06a8ee05223509b97f",
+      "semantic_rowset_sha256": "9cb636b4d4b982184e44096b38c7082c84407f441d36b1ba4395d229bcdf79b3",
+      "source_basis": "official_same_basis_jgb_constant_maturity_interest_rate_csv",
+      "start_date": "2018-01-04",
+      "target": "JPY.rates_2y_10y"
+    },
+    "USD": {
+      "a_b_materializations_exactly_identical": true,
+      "authority": "U.S. Department of the Treasury",
+      "canonical_evidence": "validation/USD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json",
+      "certified_artifact_digest": "sha256:9e53dc54ea79dca08afc9ce45b32c2183350d5b06bb42f7f6def6acd85181016",
+      "certified_artifact_id": 11695909548,
+      "columns": [
+        "observation_date",
+        "yield_2y",
+        "yield_10y",
+        "first_eligible_decision_date"
+      ],
+      "end_date": "2026-10-06",
+      "observations": 2191,
+      "rowset_file": "validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv",
+      "rowset_file_sha256": "3996517a6233eef43e6762576708030c14f12d171690c0ddee50819e5403e492",
+      "semantic_rowset_sha256": "d2e763818122430cc59c0ae208704f14532f47f34bf75706d2ca86b63fbdd5e0",
+      "source_basis": "official_same_basis_daily_par_yield_curve",
+      "start_date": "2018-01-02",
+      "target": "USD.rates_2y_10y"
+    }
+  },
+  "policy": {
+    "a_b_materializations_must_match_exactly": true,
+    "artifact_digest_must_match_canonical_evidence": true,
+    "official_certified_artifacts_only": true,
+    "runtime_history_fallback_allowed": false,
+    "same_day_use_allowed": false,
+    "secondary_source_fallback_allowed": false,
+    "semantic_hash_must_match_canonical_evidence": true,
+    "store_updates_require_new_certification": true
+  },
+  "purpose": "Immutable normalized snapshots of the exact certified Rates Temporal-PIT artifact rowsets for deterministic backtest row selection.",
+  "schema": "GMFQ_RATES_CANONICAL_ROWSET_STORE_V1",
+  "status": "PASS",
+  "total_observations": 10953
+}
