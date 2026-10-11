@@ -1,0 +1,54 @@
+name: GBP Inflation ONS Full-Window Discovery v1
+
+on:
+  push:
+    branches:
+      - 'validation-gbp-inflation-ons-full-window-discovery-v1-*'
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe ONS D7G7/MM23 versions twice
+        run: |
+          mkdir -p /tmp/gbp-ons/a /tmp/gbp-ons/b
+          python validation/macro/discover_gbp_inflation_ons_full_window_v1.py --output /tmp/gbp-ons/a/discovery.json
+          python validation/macro/discover_gbp_inflation_ons_full_window_v1.py --output /tmp/gbp-ons/b/discovery.json
+      - name: Enforce reproducibility and fail-closed invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/gbp-ons/a/discovery.json').read_text())
+          b=json.loads(Path('/tmp/gbp-ons/b/discovery.json').read_text())
+          assert a['status']=='DISCOVERY_PASS', a
+          assert b['status']=='DISCOVERY_PASS', b
+          assert a['coverage_ok'] is True and b['coverage_ok'] is True
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert a['target_coverage']==b['target_coverage']
+          assert a['version_count']==b['version_count']
+          assert a['invariants']['exact_series_semantics'] is True
+          assert a['invariants']['no_cpih_substitution'] is True
+          assert a['invariants']['production_write'] is False
+          assert a['invariants']['changes_live_data'] is False
+          assert a['invariants']['changes_engine_rules'] is False
+          assert a['invariants']['certification_implied'] is False
+          print('ONS D7G7/MM23 version discovery reproducibility: PASS')
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html
+      - name: Upload discovery artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-inflation-ons-full-window-discovery-v1-${{ github.run_id }}
+          path: /tmp/gbp-ons/
+          retention-days: 90
