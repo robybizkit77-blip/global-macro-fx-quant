@@ -36,6 +36,15 @@ def iso_day(value: str) -> str:
     return parsed.isoformat()
 
 
+def evidence_ref(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        # Test harnesses may stage exact evidence copies outside the repository.
+        # Production discovery still scans VALIDATION_DIR under ROOT.
+        return path.name
+
+
 def coverage_bounds(coverage: Any) -> tuple[str | None, int | None, str]:
     if not isinstance(coverage, dict):
         raise RuntimeError("coverage must be an object")
@@ -106,7 +115,7 @@ def validate_evidence(path: Path, data: dict[str, Any]) -> tuple[str, dict[str, 
         "coverage_end_date": end_date,
         "temporal_eligibility_rule": eligibility_rule,
         "same_day_use_allowed": False,
-        "evidence": str(path.relative_to(ROOT)),
+        "evidence": evidence_ref(path),
         "semantic_rowset_sha256": data.get("semantic_rowset_sha256"),
     }
 
