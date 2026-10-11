@@ -1,0 +1,79 @@
+{
+  "schema": "GMFQ_MACRO_STRICT_PIT_STATUS_V1",
+  "status": "WITHHELD",
+  "target": "USD.inflation",
+  "as_of": "2026-10-11",
+  "requested_coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104,
+    "required_internal_index_base_start": "2017-01"
+  },
+  "series_contract": {
+    "series_id": "US_CPI_HEADLINE_YOY",
+    "official_bls_series_id": "CUSR0000SA0",
+    "fred_series_id": "CPIAUCSL",
+    "frequency": "M",
+    "transformation": "100 * (index_t / index_t_minus_12 - 1)",
+    "unit": "% YoY",
+    "required_semantics": "BLS_CPI_U_ALL_ITEMS_SEASONALLY_ADJUSTED_INDEX_AS_KNOWN_AT_EACH_RELEASE_THEN_CANONICAL_YOY_TRANSFORMATION"
+  },
+  "blocker": {
+    "code": "OFFICIAL_INITIAL_RELEASE_TRANSPORT_NOT_AVAILABLE_WITH_CURRENT_RUNNER_CONFIGURATION",
+    "summary": "The keyless ALFRED vintage CSV route is not reliably readable from GitHub Actions, while the official FRED/ALFRED Initial Release Only API path requires a FRED_API_KEY that is not configured in the repository.",
+    "why_it_matters": "CPIAUCSL/CUSR0000SA0 can be revised through seasonal adjustment, so a leakage-free walk-forward backtest requires the vintage known at each release rather than current revised index history.",
+    "fail_closed_action": "WITHHOLD_FROM_WALK_FORWARD_AND_BACKTEST"
+  },
+  "evidence": {
+    "keyless_alfred_vintage_probe": {
+      "branch": "validation-usd-inflation-alfred-full-window-discovery-v1-2026-10-11",
+      "head_sha": "1047a2bb6d858c8de673128a226d297cda567438",
+      "workflow_run": 38137780633,
+      "artifact": 11701437264,
+      "artifact_sha256": "b9beb4170cc64df175949b0797ef206717ea77ea6bdf03766d1c911720cd534e",
+      "result": "FAIL",
+      "finding": "The first requested vintage, 2018-03-15, failed after four attempts with 60-second read timeouts; zero vintage probes completed."
+    },
+    "official_fred_initial_release_api_probe": {
+      "branch": "validation-usd-inflation-fred-initial-release-discovery-v1-2026-10-11",
+      "head_sha": "ac1fe7c7d995757735fb06e1c8bf4c160b6384c2",
+      "workflow_run": 38138214552,
+      "artifact": 11702017396,
+      "artifact_sha256": "436ef2f0eb7d7a0310452c77b09337cbe4fc3b8887accfb5a8a267d7778b7064",
+      "result": "FAIL",
+      "finding": "The official FRED API route using output_type=4 (Initial Release Only) could not run because FRED_API_KEY is not configured."
+    },
+    "bls_release_calendar_probe": {
+      "branch": "validation-usd-cpi-release-calendar-discovery-v1-2026-10-11",
+      "head_sha": "c0992981f70d26c276eb0af3820cabf110a731cd",
+      "workflow_run": 38137944954,
+      "result": "FAIL",
+      "finding": "BLS schedule archive pages returned HTTP 403 from the GitHub runner; this route cannot currently provide a deterministic full release calendar there."
+    },
+    "canonical_anchor": {
+      "path": "validation/macro/usd_inflation_historical_anchor_2026-08.json",
+      "reference_month": "2026-08",
+      "release_date": "2026-09-11",
+      "index_value": 333.509,
+      "canonical_yoy": 2.939144511,
+      "purpose": "Semantic cross-check anchor only; not full-window PIT certification."
+    }
+  },
+  "prohibited_shortcuts": [
+    "Do not use current CPIAUCSL/CUSR0000SA0 history as if it were the historical vintage available at each release.",
+    "Do not replace the canonical index-derived YoY transformation with a different precomputed inflation series.",
+    "Do not use search-engine caches or unofficial mirrors as canonical vintage evidence.",
+    "Do not use arbitrary month-end vintage snapshots without exact release-availability semantics."
+  ],
+  "reopen_conditions": [
+    "A FRED_API_KEY is configured and output_type=4 Initial Release Only is validated against BLS anchors and canonical live semantics, or",
+    "A deterministic official keyless vintage route becomes replayable from the validation runner."
+  ],
+  "backtest_eligible": false,
+  "runtime_history_fallback_allowed": false,
+  "future_revised_history_allowed": false,
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui": false,
+  "changes_gh_pages": false
+}
