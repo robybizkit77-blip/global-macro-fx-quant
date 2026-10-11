@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_COT_FLOW_CONTINUATION_ONE_SHOT_AUDIT_RECEIPT_V1",
+  "as_of": "2026-10-11",
+  "run_id": 38177034673,
+  "head_sha": "63b612587845ea7be4a5b01e05e256b1892f8c61",
+  "engine_sha256": "37859713585cc10f598dd7a0f6a5903c5f1b74d9960b361774b611f1b3485c44",
+  "artifact": {
+    "id": 11715963967,
+    "name": "cot-flow-continuation-one-shot-38177034673",
+    "zip_sha256": "4f754d5687a9c368675c1a2a07b224082c578ed5ea84368d2567841e2b464a8c"
+  },
+  "verdict": "FAIL_PREDECLARED_COT_FLOW_CONTINUATION_EDGE_GATE",
+  "edge_survival": false,
+  "pit_coverage": {
+    "report_dates": 458,
+    "eligible": 448,
+    "withheld": 10
+  },
+  "oos": {
+    "pooled_observations": 1239,
+    "weekly_panel_observations": 172,
+    "panel_annualized_sharpe": -0.27578579641542506,
+    "directional_accuracy": 0.48426150121065376,
+    "panel_total_log_return": -0.032697126060223486,
+    "panel_max_drawdown": -0.06343043483887911,
+    "positive_currency_sharpes": 3,
+    "max_single_currency_share": 0.14285714285714285
+  },
+  "currency_oos": {
+    "AUD": {"n":177,"sharpe":-0.12152431163368224,"directional_accuracy":0.480225988700565,"total_log_return":-0.03852576660826676},
+    "CAD": {"n":177,"sharpe":0.21497867959328532,"directional_accuracy":0.5536723163841808,"total_log_return":0.03784945443390673},
+    "CHF": {"n":177,"sharpe":-0.6466498751846902,"directional_accuracy":0.4350282485875706,"total_log_return":-0.17712083502041728},
+    "EUR": {"n":177,"sharpe":0.7956723377686981,"directional_accuracy":0.5141242937853108,"total_log_return":0.1840910850852409},
+    "GBP": {"n":177,"sharpe":0.3237812915406945,"directional_accuracy":0.480225988700565,"total_log_return":0.07487902611940404},
+    "JPY": {"n":177,"sharpe":-0.02653046609832244,"directional_accuracy":0.5310734463276836,"total_log_return":-0.008668448128544875},
+    "NZD": {"n":177,"sharpe":-1.0681131695090853,"directional_accuracy":0.3954802259887006,"total_log_return":-0.35123509138443504}
+  },
+  "predeclared_gates": {
+    "oos_panel_annualized_sharpe_ge_0_50": false,
+    "oos_directional_accuracy_ge_0_52": false,
+    "positive_currency_oos_sharpes_ge_5": false,
+    "minimum_oos_observations_per_currency_ge_50": true,
+    "minimum_pooled_oos_observations_ge_350": true,
+    "max_single_currency_share_le_0_20": true
+  },
+  "governance": {
+    "economic_result_computed_once": true,
+    "no_rerun_used_to_change_result": true,
+    "no_threshold_search": true,
+    "no_currency_exclusion": true,
+    "no_horizon_change": true,
+    "no_extreme_or_percentile_rescue": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "dashboard_action": "Keep COT positioning as contextual information; do not promote raw weekly Net/OI flow continuation to predictive score or sizing input."
+  }
+}
