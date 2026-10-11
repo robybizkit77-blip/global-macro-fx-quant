@@ -62,26 +62,30 @@ def release_date(page: str, label: str) -> str:
 def unemployment_rate(page: str, year: int, month: int) -> float:
     period = f"{MONTHS[month].capitalize()} {year} quarter"
     p = re.escape(period)
-    # Narrow official wording families only. Every matcher is anchored to the
-    # exact reference quarter; generic teaser matches are intentionally barred
-    # because subgroup rates elsewhere on the page can use the same wording.
+    # Ordered from strongest national headline wording to weaker same-sentence
+    # variants. Stop at the first family with one unique value so subgroup
+    # rates later in the page (Māori, women, etc.) cannot contaminate a valid
+    # national first-release match.
     patterns = (
         rf"seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
+        rf"In the {p},?\s+(?:the\s+)?seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"In the {p},?\s+(?:the\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"(?:The\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        rf"In the {p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
-        rf"{p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
-        rf"unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent[^.]{{0,220}}?{p}",
+        rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
+        rf"In the {p}[^.]{{0,220}}?seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"{p}[^.]{{0,220}}?seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent[^.]{{0,220}}?{p}",
     )
-    values: list[float] = []
     for pattern in patterns:
-        values.extend(float(v) for v in re.findall(pattern, page, re.I))
-    values = list(dict.fromkeys(values))
-    if len(values) != 1:
-        raise ValueError(f"Stats NZ unemployment-rate ambiguity/missing for {year:04d}-{month:02d}: {values}")
-    return values[0]
+        values = list(dict.fromkeys(float(v) for v in re.findall(pattern, page, re.I)))
+        if len(values) == 1:
+            return values[0]
+        if len(values) > 1:
+            raise ValueError(
+                f"Stats NZ unemployment-rate ambiguity for {year:04d}-{month:02d} in one official wording family: {values}"
+            )
+    raise ValueError(f"Stats NZ unemployment-rate missing for {year:04d}-{month:02d}")
 
 
 def parse(raw: bytes, year: int, month: int) -> tuple[float, str]:
