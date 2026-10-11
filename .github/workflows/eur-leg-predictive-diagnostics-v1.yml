@@ -1,0 +1,156 @@
+name: EUR Leg Predictive Diagnostics V1
+
+on:
+  push:
+    branches:
+      - validation-eur-leg-predictive-diagnostics-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  MACRO_CONTRACT_SHA: 6b19a687e4b2a235070eb026dc7e6476e5323191
+  EUR_INFLATION_ARTIFACT_ID: '11674452706'
+  EUR_INFLATION_ARTIFACT_DIGEST: 'sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d'
+  EUR_LABOUR_ARTIFACT_ID: '11678794954'
+  EUR_LABOUR_ARTIFACT_DIGEST: 'sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677'
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Rebuild exact certified 102-point EUR snapshot grid
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/eur-diag/permits /tmp/eur-diag/snapshots /tmp/eur-diag/artifacts/inflation /tmp/eur-diag/artifacts/labour
+          git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
+          git checkout FETCH_HEAD -- validation/macro_walkforward_eligibility_gate_v1.py validation/backtest_input_contract_v1.py
+          python - <<'PY'
+          import subprocess
+          y,m=2018,3
+          while (y,m) <= (2026,8):
+              ym=f'{y:04d}-{m:02d}'
+              out=f'/tmp/eur-diag/permits/{ym}.json'; ver=f'/tmp/eur-diag/permits/{ym}-verified.json'
+              subprocess.run(['python','validation/backtest_input_contract_v1.py','--as-of',ym,'--target','EUR.inflation','--target','EUR.labour','--output',out],check=True)
+              subprocess.run(['python','validation/backtest_input_contract_v1.py','--verify-permit',out,'--output',ver],check=True)
+              if open(out,'rb').read()!=open(ver,'rb').read(): raise SystemExit(f'permit mismatch {ym}')
+              y,m=(y+1,1) if m==12 else (y,m+1)
+          PY
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid, expected in [(os.environ['EUR_INFLATION_ARTIFACT_ID'],os.environ['EUR_INFLATION_ARTIFACT_DIGEST']),(os.environ['EUR_LABOUR_ARTIFACT_ID'],os.environ['EUR_LABOUR_ARTIFACT_DIGEST'])]:
+              meta=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert meta['expired'] is False and meta.get('digest')==expected
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_INFLATION_ARTIFACT_ID}/zip" > /tmp/eur-diag/inflation.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_LABOUR_ARTIFACT_ID}/zip" > /tmp/eur-diag/labour.zip
+          unzip -q /tmp/eur-diag/inflation.zip -d /tmp/eur-diag/artifacts/inflation
+          unzip -q /tmp/eur-diag/labour.zip -d /tmp/eur-diag/artifacts/labour
+          python - <<'PY'
+          import json
+          for folder,expected in [('inflation','fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1'),('labour','b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9')]:
+              a=json.load(open(f'/tmp/eur-diag/artifacts/{folder}/a/evidence.json')); b=json.load(open(f'/tmp/eur-diag/artifacts/{folder}/b/evidence.json'))
+              assert a['status']=='PASS' and b['status']=='PASS' and a['semantic_rowset_sha256']==b['semantic_rowset_sha256']==expected
+          PY
+
+          ok=0
+          for attempt in 1 2 3; do
+            if python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/eur-diag/eur-rates-rowset.json; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+
+          python - <<'PY'
+          import subprocess
+          INF='/tmp/eur-diag/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv'
+          LAB='/tmp/eur-diag/artifacts/labour/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv'
+          RATES='/tmp/eur-diag/eur-rates-rowset.json'
+          y,m=2018,3; count=0
+          while (y,m) <= (2026,8):
+              ym=f'{y:04d}-{m:02d}'; dp=f'{ym}-10'; root=f'/tmp/eur-diag/work/{ym}'
+              subprocess.run(['mkdir','-p',root],check=True); permit=f'/tmp/eur-diag/permits/{ym}-verified.json'
+              def run(*a): subprocess.run(list(a),check=True)
+              run('python','validation/macro_temporal_row_selector_v1.py','select','--macro-permit',permit,'--rowset-csv',INF,'--target','EUR.inflation','--decision-point',dp,'--output',f'{root}/macro-inflation.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/macro-inflation.json','--macro-permit',permit,'--rowset-csv',INF,'--output',f'{root}/macro-inflation-verified.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','select','--macro-permit',permit,'--rowset-csv',LAB,'--target','EUR.labour','--decision-point',dp,'--output',f'{root}/macro-labour.json')
+              run('python','validation/macro_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/macro-labour.json','--macro-permit',permit,'--rowset-csv',LAB,'--output',f'{root}/macro-labour-verified.json')
+              run('python','validation/rates_backtest_input_contract_v1.py','issue','--decision-date',dp,'--target','EUR.rates_2y_10y','--output',f'{root}/rates-permit.json')
+              run('python','validation/rates_temporal_row_selector_v1.py','select','--permit',f'{root}/rates-permit.json','--rowset',RATES,'--target','EUR.rates_2y_10y','--decision-point',dp,'--output',f'{root}/rates-row.json')
+              run('python','validation/rates_temporal_row_selector_v1.py','verify','--selector-result',f'{root}/rates-row.json','--permit',f'{root}/rates-permit.json','--rowset',RATES,'--output',f'{root}/rates-row-verified.json')
+              run('python','validation/cross_layer_backtest_input_coordinator_v1.py','bind','--currency','EUR','--decision-point',dp,'--macro-permit',permit,'--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',f'{root}/cross-layer.json')
+              run('python','validation/cross_layer_backtest_input_coordinator_v1.py','verify','--bundle',f'{root}/cross-layer.json','--macro-permit',permit,'--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json','--output',f'{root}/cross-layer-verified.json')
+              snap=f'/tmp/eur-diag/snapshots/{dp}-snapshot.json'; ver=f'/tmp/eur-diag/snapshots/{dp}-snapshot-verified.json'
+              common=['--cross-layer-bundle',f'{root}/cross-layer.json','--macro-row-result',f'{root}/macro-inflation.json','--macro-row-result',f'{root}/macro-labour.json','--macro-row-verification',f'{root}/macro-inflation-verified.json','--macro-row-verification',f'{root}/macro-labour-verified.json','--rates-row-result',f'{root}/rates-row.json','--rates-row-verification',f'{root}/rates-row-verified.json']
+              run('python','validation/walkforward_input_snapshot_builder_v1.py','build',*common,'--output',snap)
+              run('python','validation/walkforward_input_snapshot_builder_v1.py','verify','--snapshot',snap,*common,'--output',ver)
+              count+=1; y,m=(y+1,1) if m==12 else (y,m+1)
+          assert count==102
+          PY
+          python validation/walkforward_grid_coverage_v1.py build --directory /tmp/eur-diag/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR --output /tmp/eur-diag/grid.json
+          python validation/walkforward_grid_coverage_v1.py verify --grid /tmp/eur-diag/grid.json --directory /tmp/eur-diag/snapshots --start 2018-03-10 --end 2026-08-10 --day 10 --currency EUR --output /tmp/eur-diag/grid-verified.json
+
+      - name: Download official ECB EURUSD reference-rate history
+        run: |
+          set -euo pipefail
+          URL='https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata'
+          ok=0
+          for attempt in 1 2 3; do
+            if curl -fL --connect-timeout 20 --max-time 120 "$URL" -o /tmp/eur-diag/ecb-eurusd.csv; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+          test -s /tmp/eur-diag/ecb-eurusd.csv
+
+      - name: Run fixed diagnostics decomposition
+        run: |
+          set -euo pipefail
+          python validation/eur_leg_predictive_diagnostics_v1.py --snapshots /tmp/eur-diag/snapshots --ecb-csv /tmp/eur-diag/ecb-eurusd.csv --output /tmp/eur-diag/diagnostics.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/eur-diag/diagnostics.json'))
+          assert r['status']=='DIAGNOSTIC_DECOMPOSITION_COMPLETE'
+          assert r['scope']['snapshot_count']==102
+          assert r['scope']['oos_predictions_per_model']==65
+          assert set(r['models'])=={'FULL','MACRO_ONLY','RATES_ONLY'}
+          assert r['method']['hyperparameter_tuning'] is False
+          assert r['method']['test_set_model_selection'] is False
+          assert r['policy']['production_backtest_authorized'] is False
+          assert r['policy']['parameter_changes_from_results_authorized'] is False
+          print(json.dumps(r,indent=2,sort_keys=True))
+          PY
+
+      - name: Re-run and require byte-identical diagnostics
+        run: |
+          set -euo pipefail
+          python validation/eur_leg_predictive_diagnostics_v1.py --snapshots /tmp/eur-diag/snapshots --ecb-csv /tmp/eur-diag/ecb-eurusd.csv --output /tmp/eur-diag/diagnostics-b.json >/dev/null
+          cmp /tmp/eur-diag/diagnostics.json /tmp/eur-diag/diagnostics-b.json
+
+      - name: Assert repository clean
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eur-leg-predictive-diagnostics-${{ github.run_id }}
+          path: |
+            /tmp/eur-diag/diagnostics.json
+            /tmp/eur-diag/grid.json
+            /tmp/eur-diag/grid-verified.json
+          retention-days: 90
