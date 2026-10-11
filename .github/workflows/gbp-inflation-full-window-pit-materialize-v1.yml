@@ -36,10 +36,18 @@ jobs:
           assert a['by_release_year']==b['by_release_year']==a['expected_by_release_year']
           assert a['semantic_sha256']==b['semantic_sha256']
           assert a['ledger']==b['ledger']
+          assert a['ledger'][0]['effective_from']=='2018-01-16'
+          assert a['ledger'][0]['reference_period']=='2017 DEC'
+          assert a['ledger'][-1]['source_kind']=='current'
+          assert a['ledger'][-1]['effective_from']=='2026-09-16'
+          assert a['ledger'][-1]['reference_period']=='2026 AUG'
           assert a['temporal_policy']['same_day_use_allowed'] is False
-          assert a['temporal_policy']['eligibility_rule']=='decision_date > release_date'
+          assert a['temporal_policy']['eligibility_rule']=='decision_date > effective_from'
           inv=a['invariants']
           assert inv['native_ons_vintages_only'] is True
+          assert inv['current_and_archived_same_mm23_d7g7_series'] is True
+          assert inv['current_effective_from_equals_last_supersession'] is True
+          assert inv['temporal_sentinel_2018_01_16_is_dec_2017'] is True
           assert inv['exact_series_semantics'] is True
           assert inv['latest_observation_equals_previous_calendar_month'] is True
           assert inv['no_cpih_substitution'] is True
