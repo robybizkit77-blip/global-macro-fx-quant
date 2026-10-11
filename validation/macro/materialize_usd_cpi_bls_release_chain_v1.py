@@ -81,9 +81,22 @@ def parse(raw:bytes, expected_release_date:str, allow_missing_next:bool=False)->
     embargo_date=iso_date(emb.group(2))
     if embargo_date != expected_release_date:
         raise ValueError(f'archive URL date {expected_release_date} != embargo date {embargo_date}')
-    nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
-    if not nxt:
-        nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
+
+    # Historical wording: "The Consumer Price Index for <month> is scheduled
+    # to be released...". Beginning in mid-2026 BLS changed this to "The
+    # Consumer Price Index news release for <month> is scheduled to be
+    # published...". Both forms still carry the exact official next-release
+    # month, date, time, and timezone; accept only these tightly anchored forms.
+    next_patterns=[
+      r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Consumer Price Index news release for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be published on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Consumer Price Index news release for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be published on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+    ]
+    nxt=None
+    for pattern in next_patterns:
+        nxt=re.search(pattern,text,re.I)
+        if nxt: break
     if not nxt and not allow_missing_next:
         raise ValueError(f'next-release statement not found for {ref}')
     out={
