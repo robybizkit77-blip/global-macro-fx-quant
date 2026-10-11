@@ -5,19 +5,20 @@
   "source": {
     "publisher": "Board of Governors of the Federal Reserve System (US)",
     "release": "H.10 Foreign Exchange Rates",
-    "delivery": "FRED daily series",
+    "delivery": "Direct Federal Reserve H.10 country historical pages",
     "frequency": "Daily",
     "price_type": "Noon buying rates in New York City for cable transfers payable in foreign currencies",
-    "role": "Historical FX target/return labels only; never used as a predictor feature in this experiment"
+    "role": "Historical FX target/return labels only; never used as a predictor feature in this experiment",
+    "transport_change_note": "The initially frozen FRED transport timed out in GitHub Actions before any edge result was computed. Delivery was therefore changed result-blind to the Board's direct H.10 historical pages while preserving the same publisher, release, economic series, units, transformations and readiness gates."
   },
   "series": {
-    "EUR": {"fred_id":"DEXUSEU","native_units":"USD per EUR","transform_to_local_currency_vs_usd":"identity"},
-    "GBP": {"fred_id":"DEXUSUK","native_units":"USD per GBP","transform_to_local_currency_vs_usd":"identity"},
-    "JPY": {"fred_id":"DEXJPUS","native_units":"JPY per USD","transform_to_local_currency_vs_usd":"reciprocal"},
-    "CHF": {"fred_id":"DEXSZUS","native_units":"CHF per USD","transform_to_local_currency_vs_usd":"reciprocal"},
-    "AUD": {"fred_id":"DEXUSAL","native_units":"USD per AUD","transform_to_local_currency_vs_usd":"identity"},
-    "NZD": {"fred_id":"DEXUSNZ","native_units":"USD per NZD","transform_to_local_currency_vs_usd":"identity"},
-    "CAD": {"fred_id":"DEXCAUS","native_units":"CAD per USD","transform_to_local_currency_vs_usd":"reciprocal"}
+    "EUR": {"fred_id":"DEXUSEU","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm","native_units":"USD per EUR","transform_to_local_currency_vs_usd":"identity"},
+    "GBP": {"fred_id":"DEXUSUK","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_uk.htm","native_units":"USD per GBP","transform_to_local_currency_vs_usd":"identity"},
+    "JPY": {"fred_id":"DEXJPUS","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm","native_units":"JPY per USD","transform_to_local_currency_vs_usd":"reciprocal"},
+    "CHF": {"fred_id":"DEXSZUS","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_sz.htm","native_units":"CHF per USD","transform_to_local_currency_vs_usd":"reciprocal"},
+    "AUD": {"fred_id":"DEXUSAL","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm","native_units":"USD per AUD","transform_to_local_currency_vs_usd":"identity"},
+    "NZD": {"fred_id":"DEXUSNZ","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_nz.htm","native_units":"USD per NZD","transform_to_local_currency_vs_usd":"identity"},
+    "CAD": {"fred_id":"DEXCAUS","board_history_url":"https://www.federalreserve.gov/releases/h10/hist/dat00_ca.htm","native_units":"CAD per USD","transform_to_local_currency_vs_usd":"reciprocal"}
   },
   "orientation_invariant": "After transformation, an increase in every series means local currency appreciation versus USD.",
   "date_scope": {
@@ -26,7 +27,7 @@
     "future_return_rows_without_five_subsequent_nonmissing_daily_observations": "WITHHOLD_OBSERVATION"
   },
   "missing_value_policy": {
-    "fred_dot_values": "missing",
+    "board_nd_values": "missing",
     "no_forward_fill": true,
     "entry": "first nonmissing observation on or after research_available_from",
     "exit": "fifth subsequent nonmissing daily observation after entry",
