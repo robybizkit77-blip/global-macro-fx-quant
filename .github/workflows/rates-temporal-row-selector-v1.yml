@@ -1,0 +1,137 @@
+name: Rates Temporal Row Selector V1
+
+on:
+  push:
+    branches:
+      - validation-rates-temporal-row-selector-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  temporal-row-selector:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize certified EUR and JPY rowsets
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-row-selector
+          python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/rates-row-selector/eur-rowset.json
+          python validation/materialize_jpy_rates_temporal_pit_v1.py --output /tmp/rates-row-selector/jpy-rowset.json
+
+      - name: Issue verified layer permits
+        run: |
+          set -euo pipefail
+          python validation/rates_backtest_input_contract_v1.py issue \
+            --decision-date 2026-10-06 \
+            --target EUR.rates_2y_10y \
+            --output /tmp/rates-row-selector/eur-layer-permit.json
+          python validation/rates_backtest_input_contract_v1.py issue \
+            --decision-date 2026-10-06 \
+            --target JPY.rates_2y_10y \
+            --output /tmp/rates-row-selector/jpy-layer-permit.json
+
+      - name: Select and verify latest eligible rows
+        run: |
+          set -euo pipefail
+          python validation/rates_temporal_row_selector_v1.py select \
+            --permit /tmp/rates-row-selector/eur-layer-permit.json \
+            --rowset /tmp/rates-row-selector/eur-rowset.json \
+            --target EUR.rates_2y_10y \
+            --decision-point 2026-10-06 \
+            --output /tmp/rates-row-selector/eur-row-permit.json
+          python validation/rates_temporal_row_selector_v1.py verify \
+            --selector-result /tmp/rates-row-selector/eur-row-permit.json \
+            --permit /tmp/rates-row-selector/eur-layer-permit.json \
+            --rowset /tmp/rates-row-selector/eur-rowset.json \
+            --output /tmp/rates-row-selector/eur-row-verified.json
+
+          python validation/rates_temporal_row_selector_v1.py select \
+            --permit /tmp/rates-row-selector/jpy-layer-permit.json \
+            --rowset /tmp/rates-row-selector/jpy-rowset.json \
+            --target JPY.rates_2y_10y \
+            --decision-point 2026-10-06T09:30:01+09:00 \
+            --output /tmp/rates-row-selector/jpy-row-permit-after.json
+          python validation/rates_temporal_row_selector_v1.py verify \
+            --selector-result /tmp/rates-row-selector/jpy-row-permit-after.json \
+            --permit /tmp/rates-row-selector/jpy-layer-permit.json \
+            --rowset /tmp/rates-row-selector/jpy-rowset.json \
+            --output /tmp/rates-row-selector/jpy-row-verified.json
+
+      - name: Assert temporal boundary behavior
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, subprocess
+          p='/tmp/rates-row-selector/'
+          eur=json.load(open(p+'eur-row-permit.json'))['row_permit']
+          assert eur['observation_date']=='2026-10-05', eur
+          assert eur['row_consumption_authorized'] is True
+
+          jpy_after=json.load(open(p+'jpy-row-permit-after.json'))['row_permit']
+          assert jpy_after['observation_date']=='2026-10-05', jpy_after
+          assert jpy_after['first_eligible_decision_point']=='2026-10-06T09:30:00+09:00'
+
+          # Exact 09:30 is not strictly after release: the 2026-10-05 row must not be selected.
+          subprocess.run([
+              'python','validation/rates_temporal_row_selector_v1.py','select',
+              '--permit',p+'jpy-layer-permit.json','--rowset',p+'jpy-rowset.json',
+              '--target','JPY.rates_2y_10y','--decision-point','2026-10-06T09:30:00+09:00',
+              '--output',p+'jpy-row-permit-exact.json'],check=True)
+          jpy_exact=json.load(open(p+'jpy-row-permit-exact.json'))['row_permit']
+          assert jpy_exact['observation_date'] < '2026-10-05', jpy_exact
+
+          # Date-only JPY decisions cannot prove they occur after the verified 09:30 release.
+          r=subprocess.run([
+              'python','validation/rates_temporal_row_selector_v1.py','select',
+              '--permit',p+'jpy-layer-permit.json','--rowset',p+'jpy-rowset.json',
+              '--target','JPY.rates_2y_10y','--decision-point','2026-10-06'],
+              stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          assert r.returncode != 0
+          PY
+
+      - name: Assert rowset and permit tamper detection
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy, json, subprocess
+          p='/tmp/rates-row-selector/'
+          rowset=json.load(open(p+'eur-rowset.json'))
+          tampered=copy.deepcopy(rowset)
+          tampered['rows'][-2]['yield_2y'] += 0.01
+          json.dump(tampered,open(p+'eur-rowset-tampered.json','w'))
+          r=subprocess.run([
+              'python','validation/rates_temporal_row_selector_v1.py','select',
+              '--permit',p+'eur-layer-permit.json','--rowset',p+'eur-rowset-tampered.json',
+              '--target','EUR.rates_2y_10y','--decision-point','2026-10-06'],
+              stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          assert r.returncode != 0
+
+          result=json.load(open(p+'eur-row-permit.json'))
+          result['row_permit']['yield_2y'] += 0.01
+          json.dump(result,open(p+'eur-row-permit-tampered.json','w'))
+          r=subprocess.run([
+              'python','validation/rates_temporal_row_selector_v1.py','verify',
+              '--selector-result',p+'eur-row-permit-tampered.json',
+              '--permit',p+'eur-layer-permit.json','--rowset',p+'eur-rowset.json'],
+              stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          assert r.returncode != 0
+          PY
+
+      - name: Assert repository remains clean
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-temporal-row-selector-${{ github.run_id }}
+          path: /tmp/rates-row-selector/
+          retention-days: 90
