@@ -1,0 +1,86 @@
+name: G4USD Front-End Macro CB Alignment V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-front-end-macro-cb-alignment-contract-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PR122_SHA: 0d9e2128680bddcb917767389cad97937b7c48f5
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Reconstruct frozen PR122 OOS observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/alignment/pr122
+          git show "$PR122_SHA:validation/g4usd_relative_front_end_panel_v1.py" > /tmp/alignment/pr122/model.py
+          # materialize PR122 inputs exactly as that workflow did
+          RATES_STORE_SHA=0f4f45190fa5d5e010650026a30a0f981373ec34
+          mkdir -p /tmp/alignment/rates /tmp/alignment/fx
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git show FETCH_HEAD:"validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" > "/tmp/alignment/rates/${c}.csv"
+          done
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata" \
+              -o "/tmp/alignment/fx/${c}.csv"
+          done
+          python validation/g4usd_frozen_oos_export_v1.py \
+            --model /tmp/alignment/pr122/model.py \
+            --eur-rates /tmp/alignment/rates/eur.csv --jpy-rates /tmp/alignment/rates/jpy.csv \
+            --cad-rates /tmp/alignment/rates/cad.csv --aud-rates /tmp/alignment/rates/aud.csv --usd-rates /tmp/alignment/rates/usd.csv \
+            --usd-ecb /tmp/alignment/fx/USD.csv --jpy-ecb /tmp/alignment/fx/JPY.csv --cad-ecb /tmp/alignment/fx/CAD.csv --aud-ecb /tmp/alignment/fx/AUD.csv \
+            --output /tmp/alignment/frozen_oos.json
+      - name: Materialize strict PIT macro rowsets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/alignment/macro
+          python validation/materialize_eur_inflation_strict_pit_v1.py --csv /tmp/alignment/macro/eur_inf.csv --evidence /tmp/alignment/macro/eur_inf_ev.json
+          python validation/materialize_eur_labour_strict_pit_v1.py --csv /tmp/alignment/macro/eur_lab.csv --evidence /tmp/alignment/macro/eur_lab_ev.json
+          python validation/materialize_jpy_inflation_strict_pit_v1.py --csv /tmp/alignment/macro/jpy_inf.csv --evidence /tmp/alignment/macro/jpy_inf_ev.json
+          python validation/materialize_jpy_labour_strict_pit_v2.py --csv /tmp/alignment/macro/jpy_lab.csv --evidence /tmp/alignment/macro/jpy_lab_ev.json
+          python validation/materialize_cad_inflation_strict_pit_v1.py --csv /tmp/alignment/macro/cad_inf.csv --evidence /tmp/alignment/macro/cad_inf_ev.json
+          python validation/materialize_cad_labour_strict_pit_v1.py --csv /tmp/alignment/macro/cad_lab.csv --evidence /tmp/alignment/macro/cad_lab_ev.json
+          python validation/materialize_aud_inflation_strict_pit_v1.py --csv /tmp/alignment/macro/aud_inf.csv --evidence /tmp/alignment/macro/aud_inf_ev.json
+          python validation/materialize_aud_labour_strict_pit_v1.py --csv /tmp/alignment/macro/aud_lab.csv --evidence /tmp/alignment/macro/aud_lab_ev.json
+          python validation/materialize_usd_macro_alignment_inputs_v1.py --inflation-csv /tmp/alignment/macro/usd_inf.csv --labour-csv /tmp/alignment/macro/usd_lab.csv
+      - name: Run frozen stratification twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS="--frozen-oos /tmp/alignment/frozen_oos.json --eur-inflation /tmp/alignment/macro/eur_inf.csv --eur-labour /tmp/alignment/macro/eur_lab.csv --jpy-inflation /tmp/alignment/macro/jpy_inf.csv --jpy-labour /tmp/alignment/macro/jpy_lab.csv --cad-inflation /tmp/alignment/macro/cad_inf.csv --cad-labour /tmp/alignment/macro/cad_lab.csv --aud-inflation /tmp/alignment/macro/aud_inf.csv --aud-labour /tmp/alignment/macro/aud_lab.csv --usd-inflation /tmp/alignment/macro/usd_inf.csv --usd-labour /tmp/alignment/macro/usd_lab.csv"
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py $ARGS --output /tmp/alignment/result.json
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py $ARGS --output /tmp/alignment/result-b.json >/dev/null
+          cmp /tmp/alignment/result.json /tmp/alignment/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/alignment/result.json'))
+          assert r['method']['frozen_model_refit'] is False
+          assert r['method']['hyperparameter_tuning'] is False
+          assert r['method']['state_threshold_search'] is False
+          assert r['method']['eur_excluded'] is False
+          assert r['policy']['production_signal_authorized'] is False
+          print(json.dumps({'edge_survival':r['edge_survival'],'state_results':r['state_results'],'edge_gate':r['edge_gate']},indent=2,sort_keys=True))
+          PY
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: g4usd-front-end-macro-cb-alignment-${{ github.run_id }}
+          path: /tmp/alignment/
+          retention-days: 90
