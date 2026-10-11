@@ -42,21 +42,27 @@ def iso_date(label:str)->str:
 
 def parse(raw:bytes, expected_release_date:str)->dict:
     text=plain(raw)
-    # Current release identity.
-    m=re.search(r'CONSUMER PRICE INDEX\s*[–—-]\s*([A-Za-z]+\s+\d{4})',text,re.I)
+    # Historical BLS HTML contains several separator encodings (dash, em-dash,
+    # or a replacement glyph after legacy charset conversion). Anchor on the
+    # stable title and accept a short non-alphanumeric separator only.
+    m=re.search(r'CONSUMER PRICE INDEX\s+[^A-Za-z0-9]{1,6}\s*([A-Za-z]+\s+\d{4})',text,re.I)
+    if not m:
+        # Fallback remains tightly anchored to the title and month-year token.
+        m=re.search(r'CONSUMER PRICE INDEX.{0,12}?([A-Za-z]+\s+\d{4})',text,re.I)
     if not m: raise ValueError('current reference month not found')
     ref=month_key(m.group(1))
-    # Official availability timestamp embedded in release embargo line.
-    emb=re.search(r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT)\)\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
+    # Official availability timestamp embedded in release embargo line. Newer
+    # releases may use ET rather than explicit EST/EDT; canonical timezone is NY.
+    emb=re.search(r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
     if not emb: raise ValueError(f'embargo timestamp not found for {ref}')
     embargo_date=iso_date(emb.group(2))
     if embargo_date != expected_release_date:
         raise ValueError(f'archive URL date {expected_release_date} != embargo date {embargo_date}')
     # Each official CPI release announces the exact next CPI release date.
-    nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT)\)',text,re.I)
+    nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
     if not nxt:
         # Some releases omit weekday punctuation; retain strict 8:30 requirement.
-        nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT)\)',text,re.I)
+        nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
     if not nxt: raise ValueError(f'next-release statement not found for {ref}')
     next_ref=month_key(nxt.group(1)); next_date=iso_date(nxt.group(2))
     return {
