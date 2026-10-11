@@ -66,6 +66,10 @@ def unemployment_rate(page: str, year: int, month: int) -> float:
     # matcher keeps both the unemployment label and exact reference quarter.
     patterns = (
         rf"seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
+        # 2018-era release copy can omit "seasonally adjusted" in the teaser,
+        # but still states the exact reference quarter and direction.
+        rf"In the {p},\s+(?:the\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"(?:The\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"In the {p}.*?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
