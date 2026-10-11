@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_AUD_RATES_TEMPORAL_PIT_RECEIPT_V1",
+  "target": "AUD.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "verdict": "TEMPORAL_PIT_CERTIFIABLE",
+  "base_main_sha": "73f55a345d04a454aa98311076b144b5c5b633c5",
+  "validated_source_sha": "f941813fdf95e103a7c4ae2701f9aa6210c96b4a",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-09-30",
+    "observations": 2205
+  },
+  "semantic_rowset_sha256": "d3d33e76c94722667c640e8a2b3bcb663b71da37f2fbccf34471fabe99db1c17",
+  "materializer_run_id": 38128507737,
+  "engine_logic_audit_run_id": 38128507675,
+  "staging_browser_audit_run_id": 38128507645,
+  "artifact_id": 11698900287,
+  "artifact_name": "aud-rates-temporal-pit-v1-38128507737",
+  "artifact_digest": "sha256:056e0bf91411319704bb54e58e8ea55d892519cba5c8803de62f73694b3b00e7",
+  "artifact_expires_at": "2027-01-09T09:28:47Z",
+  "checks": {
+    "official_rba_f2_only": true,
+    "same_basis_2y_10y": true,
+    "double_materialization_semantic_match": true,
+    "same_day_use_forbidden_without_verified_timestamp": true,
+    "decision_date_must_be_strictly_after_observation_date": true,
+    "secondary_source_fallback_used": false,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "temporal_policy": {
+    "verified_publication_timestamp": false,
+    "conservative_daily_rule": "D observation is eligible only for a decision point after D.",
+    "intraday_rule": "Same-day use is forbidden unless a source-specific official publication timestamp is independently verified."
+  }
+}
