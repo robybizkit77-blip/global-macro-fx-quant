@@ -1,0 +1,60 @@
+name: COT Ultra-Conservative PIT Calendar V1
+
+on:
+  push:
+    branches:
+      - validation-cot-ultraconservative-pit-policy-v1-2026-10-11
+    paths:
+      - 'validation/COT_ULTRACONSERVATIVE_PIT_POLICY_V1_2026-10-11.json'
+      - 'validation/build_cot_ultraconservative_pit_calendar_v1.py'
+      - 'validation/discover_cot_conservative_availability_calendar_v1.py'
+      - '.github/workflows/cot-ultraconservative-pit-calendar-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build research PIT calendar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-pit
+          python validation/build_cot_ultraconservative_pit_calendar_v1.py --output /tmp/cot-pit/calendar.json
+      - name: Enforce coverage and fail-closed exceptions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cot-pit/calendar.json'))
+          assert d['status']=='RESEARCH_PIT_ELIGIBLE_SUBSET_READY'
+          assert d['scope']=={'report_dates_total':458,'eligible':448,'withheld':10}
+          assert d['edge_test_authorized_on_eligible_subset'] is True
+          assert d['production_signal_authorized'] is False
+          assert d['sizing_authorized'] is False
+          rows=d['rows']
+          assert all(r['research_available_from'] is None for r in rows if not r['research_pit_eligible'])
+          assert all(r['research_available_from'] is not None for r in rows if r['research_pit_eligible'])
+          print('COT_ULTRACONSERVATIVE_PIT_CALENDAR_PASS')
+          PY
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-ultraconservative-pit-calendar-${{ github.run_id }}
+          path: /tmp/cot-pit/
+          retention-days: 90
