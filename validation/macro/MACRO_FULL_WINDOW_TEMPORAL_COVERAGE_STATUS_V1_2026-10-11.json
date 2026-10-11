@@ -1,0 +1,83 @@
+{
+  "schema": "GMFQ_MACRO_FULL_WINDOW_TEMPORAL_COVERAGE_STATUS_V1",
+  "created_at": "2026-10-11",
+  "scope": {
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "dimensions": ["inflation", "labour"],
+    "core_series_count": 16,
+    "target_window": "2018-2026"
+  },
+  "source_registry": {
+    "path": "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
+    "anchor_historical_replay_certified_count": 16,
+    "anchor_historical_replay_certified_total": 16,
+    "status": "ANCHOR_REPLAY_COMPLETE"
+  },
+  "contract_semantics": {
+    "anchor_contract": "validation/macro_pit_anchor_contract.py",
+    "anchor_contract_scope": "ONE_ATOMIC_MACRO_PIT_REFRESH",
+    "historical_bootstrap": "validation/macro_pit_historical_bootstrap.py",
+    "historical_bootstrap_scope": "BOUNDED_BEFORE_TO_AFTER_RECONSTRUCTION_FOR_A_VERIFIED_RELEASE_PAIR",
+    "full_window_release_by_release_ledger_required_for_walk_forward": true
+  },
+  "full_window_temporal_status": {
+    "status": "NOT_YET_CERTIFIED",
+    "certified_series_count": 0,
+    "total_series_count": 16,
+    "reason": "Existing historical replay certification proves atomic bounded release replay for each core series. It does not establish a complete release-by-release vintage ledger across 2018-2026.",
+    "backtest_use": "WITHHELD_UNTIL_FULL_WINDOW_TEMPORAL_LEDGER_OR_EQUIVALENT_FAIL_CLOSED_METHOD_EXISTS"
+  },
+  "historical_runtime_archive": {
+    "path": "history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js",
+    "classification": "ECONOMIC_HISTORY_RUNTIME_ARCHIVE",
+    "point_in_time_classification": "NOT_CERTIFIED_AS_AS_KNOWN_HISTORY",
+    "allowed_use": [
+      "coverage inspection",
+      "series continuity inspection",
+      "non-PIT descriptive analysis"
+    ],
+    "forbidden_use_until_certified": [
+      "leakage-free walk-forward backtest",
+      "historical model decision replay presented as point-in-time",
+      "out-of-sample claims requiring as-known-at-the-time macro values"
+    ]
+  },
+  "series": {
+    "AUD.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "AUD.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "CAD.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "CAD.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "CHF.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "CHF.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "EUR.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "EUR.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "GBP.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "GBP.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "JPY.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "JPY.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "NZD.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "NZD.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "USD.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "USD.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING"
+  },
+  "minimum_next_contract": {
+    "require_release_timestamp_or_conservative_availability_rule": true,
+    "require_observation_value_as_known_at_decision_time": true,
+    "require_revision_handling": true,
+    "require_no_future_revisions": true,
+    "require_source_or_vintage_provenance": true,
+    "require_deterministic_replay": true,
+    "require_semantic_hashes": true,
+    "require_no_production_writes_during_materialization": true,
+    "require_fail_closed_on_missing_vintage": true,
+    "require_explicit_withheld_intervals": true
+  },
+  "safety": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_dashboard_payload": false,
+    "changes_ui_runtime": false,
+    "changes_gh_pages": false,
+    "production_write": false
+  }
+}
