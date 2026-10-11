@@ -1,0 +1,66 @@
+name: G4USD Macro Input Adapter Conformance V1
+on:
+  push:
+    branches:
+      - validation-g4usd-macro-input-adapter-v1-2026-10-11
+  pull_request:
+    paths:
+      - validation/g4usd_macro_input_adapter_v1.py
+      - .github/workflows/g4usd-macro-input-adapter-conformance-v1.yml
+permissions:
+  contents: read
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify adapter semantics without real backtest results
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util,tempfile,pathlib
+          spec=importlib.util.spec_from_file_location('a','validation/g4usd_macro_input_adapter_v1.py')
+          a=importlib.util.module_from_spec(spec); spec.loader.exec_module(a)
+          cases={
+            'EUR_INFLATION':('reference_month,release_date,headline_hicp_yoy_pct\n2020-01,2020-01-31,1.4\n','2020-01','1.4'),
+            'EUR_LABOUR':('reference_month,release_date,unemployment_rate_pct\n2020-01,2020-03-03,7.4\n','2020-01','7.4'),
+            'JPY_INFLATION':('observation_date,release_date,value\n2020-01-01,2020-02-21,0.7\n','2020-01','0.7'),
+            'JPY_LABOUR':('reference_month,release_date,unemployment_rate_sa_pct\n2020-01,2020-02-28,2.4\n','2020-01','2.4'),
+            'CAD_INFLATION':('reference_month,release_date,cpi_yoy_full_precision\n2020-01,2020-02-19,2.4\n','2020-01','2.4'),
+            'CAD_LABOUR':('reference_month,release_date,unemployment_rate_sa\n2020-01,2020-02-07,5.5\n','2020-01','5.5'),
+            'AUD_INFLATION':('reference_quarter,release_date,cpi_yoy\n2020-Q1,2020-04-29,2.2\n','2020-Q1','2.2'),
+            'AUD_LABOUR':('reference_month,release_date,unemployment_rate_sa\n2020-01,2020-02-20,5.3\n','2020-01','5.3'),
+            'USD_INFLATION':('reference_month,release_date,cpi_yoy,availability_status\n2020-01,2020-02-13,2.5,AVAILABLE_STRICT_PIT\n2025-10,,,UNAVAILABLE_OFFICIAL_NOT_PUBLISHED\n','2020-01','2.5'),
+            'USD_LABOUR':('reference_month,release_date,unemployment_rate,availability_status\n2020-01,2020-02-07,3.6,AVAILABLE_STRICT_PIT\n2025-10,,,UNAVAILABLE_OFFICIAL_NOT_PUBLISHED\n','2020-01','3.6'),
+          }
+          with tempfile.TemporaryDirectory() as td:
+            td=pathlib.Path(td)
+            for stream,(content,period,val) in cases.items():
+              src=td/f'{stream}.csv'; src.write_text(content,encoding='utf-8')
+              out=a.adapt(stream,src)
+              assert out['policy']=={'economic_transform':False,'interpolation':False,'imputation':False,'result_blind':True}
+              assert out['rows'][0]['reference_period']==period
+              assert float(out['rows'][0]['value'])==float(val)
+              if stream.startswith('USD_'):
+                gap=out['rows'][1]
+                assert gap=={'reference_period':'2025-10','release_date':'','value':'','availability_status':'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED'}
+
+            # fail closed: unavailable row may not carry a synthetic value/date
+            bad=td/'bad.csv'; bad.write_text('reference_month,release_date,cpi_yoy,availability_status\n2025-10,2025-11-13,3.1,UNAVAILABLE_OFFICIAL_NOT_PUBLISHED\n',encoding='utf-8')
+            try:
+              a.adapt('USD_INFLATION',bad)
+              raise AssertionError('contradictory unavailable row must fail')
+            except ValueError: pass
+
+            # fail closed: duplicate reference period is ambiguous
+            dup=td/'dup.csv'; dup.write_text('reference_month,release_date,unemployment_rate_sa\n2020-01,2020-02-01,5.0\n2020-01,2020-02-02,5.1\n',encoding='utf-8')
+            try:
+              a.adapt('CAD_LABOUR',dup)
+              raise AssertionError('duplicate period must fail')
+            except ValueError: pass
+          print('ADAPTER_CONFORMANCE_PASS')
+          PY
+          git diff --exit-code
