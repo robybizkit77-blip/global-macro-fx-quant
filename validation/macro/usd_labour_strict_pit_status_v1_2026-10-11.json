@@ -1,0 +1,64 @@
+{
+  "schema": "GMFQ_MACRO_STRICT_PIT_STATUS_V1",
+  "status": "WITHHELD",
+  "target": "USD.labour",
+  "as_of": "2026-10-11",
+  "requested_coverage": {
+    "start": "2018-01",
+    "end": "2026-08",
+    "expected_months": 104
+  },
+  "series_contract": {
+    "series_id": "US_UNEMP_RATE",
+    "official_bls_series_id": "LNS14000000",
+    "fred_series_id": "UNRATE",
+    "frequency": "M",
+    "transformation": "level",
+    "unit": "%",
+    "required_semantics": "BLS_U3_SEASONALLY_ADJUSTED_UNEMPLOYMENT_RATE_AS_FIRST_PUBLISHED"
+  },
+  "blocker": {
+    "code": "OFFICIAL_FIRST_RELEASE_TRANSPORT_NOT_REPLAYABLE_WITH_CURRENT_RUNNER_CONFIGURATION",
+    "summary": "Period-specific BLS Employment Situation archives exist, but the strict official archive route is not reproducibly accessible from GitHub Actions; the official FRED/ALFRED Initial Release Only API path requires a FRED_API_KEY that is not configured in the repository.",
+    "why_it_matters": "A leakage-free walk-forward backtest must use the unemployment rate as known at each Employment Situation release, not a later revised historical series.",
+    "fail_closed_action": "WITHHOLD_FROM_WALK_FORWARD_AND_BACKTEST"
+  },
+  "evidence": {
+    "bls_archive_probe": {
+      "branch": "validation-usd-labour-strict-pit-v1-2026-10-09",
+      "head_sha": "68946f560a67439edb5ef4de90730ba14a43108e",
+      "workflow_run": 37945668648,
+      "artifact": 11622209770,
+      "artifact_sha256": "d99f4eb7a06c8f14577544dbd9fa6b14909a6ed2a9717246798995df33e47b9e",
+      "result": "FAIL",
+      "finding": "The official period-specific BLS archive probe failed on the first direct anchor, https://www.bls.gov/news.release/archives/empsit_02022018.htm, before parsing could begin."
+    },
+    "official_api_alternative": {
+      "service": "Federal Reserve Bank of St. Louis FRED/ALFRED API",
+      "method": "fred/series/observations output_type=4 (Initial Release Only)",
+      "suitability": "METHOD_ACCEPTABLE_IF_SEMANTIC_EQUIVALENCE_TO_BLS_LNS14000000_IS_VERIFIED",
+      "credential_state": "FRED_API_KEY_NOT_CONFIGURED",
+      "credential_probe_run": 38138214552,
+      "credential_probe_artifact": 11702017396,
+      "credential_probe_artifact_sha256": "436ef2f0eb7d7a0310452c77b09337cbe4fc3b8887accfb5a8a267d7778b7064",
+      "note": "The credential probe was executed for the same official FRED API service while investigating USD inflation; the missing secret is repository-wide, not series-specific."
+    }
+  },
+  "prohibited_shortcuts": [
+    "Do not use current UNRATE history as if it were an as-published first-release ledger.",
+    "Do not substitute a different labour-market measure for BLS U-3 unemployment.",
+    "Do not use unofficial mirrors or cached copies as canonical release evidence.",
+    "Do not infer first-release values from later Employment Situation releases."
+  ],
+  "reopen_conditions": [
+    "The official BLS period-specific archive becomes deterministically replayable from the validation runner, or",
+    "A FRED_API_KEY is configured and the official Initial Release Only API path is validated against BLS first-release anchors before certification."
+  ],
+  "backtest_eligible": false,
+  "runtime_history_fallback_allowed": false,
+  "future_revised_history_allowed": false,
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui": false,
+  "changes_gh_pages": false
+}
