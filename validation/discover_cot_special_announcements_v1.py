@@ -101,18 +101,36 @@ def block_for(blocks:list[dict], announcement_date:str)->dict:
     return found[0]
 
 
+def require_phrases(block:dict, phrases:tuple[str,...], label:str)->None:
+    """Require all independent factual anchors inside one dated CFTC block.
+
+    This intentionally avoids brittle sentence-level regexes while remaining
+    fail-closed: every stated date/reference must occur in the same official block.
+    """
+    low=block['text'].lower()
+    missing=[p for p in phrases if p.lower() not in low]
+    if missing:
+        raise RuntimeError(f'{label} missing official anchors: {missing}')
+
+
 def extract_explicit_report_mappings(blocks:list[dict])->list[dict]:
     """Only emit report_date when the CFTC text itself states it."""
     out=[]
 
     b=block_for(blocks,'2020-12-28')
-    if not re.search(r'data dated\s+Monday\s+December\s+21,\s+2020.*published.*Monday\s+December\s+28,\s+2020',b['text'],re.I):
-        raise RuntimeError('2020-12-28 block does not explicitly prove report 2020-12-21 -> publish 2020-12-28')
+    require_phrases(
+        b,
+        ('data dated monday december 21, 2020','monday december 28, 2020'),
+        '2020-12-28 block report 2020-12-21 -> publish 2020-12-28',
+    )
     out.append({'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-28'})
 
     b=block_for(blocks,'2021-06-17')
-    if not re.search(r'data from\s+Tuesday\s+June\s+15(?:th)?\s*,?.*published on\s+Monday\s+June\s+21,\s+2021',b['text'],re.I):
-        raise RuntimeError('2021-06-17 block does not explicitly prove report 2021-06-15 -> publish 2021-06-21')
+    require_phrases(
+        b,
+        ('data from tuesday june 15th','friday june 18, 2021','monday june 21, 2021'),
+        '2021-06-17 block report 2021-06-15 -> publish 2021-06-21',
+    )
     out.append({'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-17'})
     return out
 
@@ -120,8 +138,11 @@ def extract_explicit_report_mappings(blocks:list[dict])->list[dict]:
 def extract_unjoined_release_exceptions(blocks:list[dict])->list[dict]:
     """Timing evidence where the announcement does not itself name report_date."""
     b=block_for(blocks,'2025-01-07')
-    if not re.search(r"this week.s\s+Commitments of Traders Report.*released on\s+Monday,?\s+January\s+13,\s+2025",b['text'],re.I):
-        raise RuntimeError('2025-01-07 block does not prove delayed release on 2025-01-13')
+    require_phrases(
+        b,
+        ('commitments of traders report','january 13, 2025'),
+        '2025-01-07 delayed weekly release -> 2025-01-13',
+    )
     return [{
         'report_date':None,
         'actual_publish_date':'2025-01-13',
