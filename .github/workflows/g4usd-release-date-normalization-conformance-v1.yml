@@ -1,0 +1,59 @@
+name: G4USD Release Date Normalization Conformance V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-date-normalization-repair-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build synthetic source rows
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/date-conformance
+          cat > /tmp/date-conformance/aud.csv <<'CSV'
+          reference_month,release_date,unemployment_rate_sa,availability_status
+          2018-01,15/02/2018,5.5,AVAILABLE_STRICT_PIT
+          2018-02,22/03/2018,5.6,AVAILABLE_STRICT_PIT
+          CSV
+          cat > /tmp/date-conformance/eur.csv <<'CSV'
+          reference_month,release_date,unemployment_rate_pct,availability_status
+          2018-01,2018-03-01,8.6,AVAILABLE_STRICT_PIT
+          2018-02,2018-04-04T09:00:00Z,8.5,AVAILABLE_STRICT_PIT
+          CSV
+          cat > /tmp/date-conformance/bad.csv <<'CSV'
+          reference_month,release_date,unemployment_rate_sa,availability_status
+          2018-01,02-15-2018,5.5,AVAILABLE_STRICT_PIT
+          CSV
+      - name: Normalize accepted representations
+        run: |
+          set -euo pipefail
+          python validation/g4usd_macro_input_adapter_v1.py --stream AUD_LABOUR --source /tmp/date-conformance/aud.csv --output /tmp/date-conformance/aud_out.csv
+          python validation/g4usd_macro_input_adapter_v1.py --stream EUR_LABOUR --source /tmp/date-conformance/eur.csv --output /tmp/date-conformance/eur_out.csv
+          python - <<'PY'
+          import csv
+          aud=list(csv.DictReader(open('/tmp/date-conformance/aud_out.csv')))
+          eur=list(csv.DictReader(open('/tmp/date-conformance/eur_out.csv')))
+          assert [r['release_date'] for r in aud]==['2018-02-15','2018-03-22']
+          assert [r['release_date'] for r in eur]==['2018-03-01','2018-04-04']
+          assert all(len(r['release_date'])==10 and r['release_date'][4]=='-' and r['release_date'][7]=='-' for r in aud+eur)
+          print('DATE_NORMALIZATION_PASS')
+          PY
+      - name: Fail closed on unsupported ambiguous format
+        run: |
+          set -euo pipefail
+          if python validation/g4usd_macro_input_adapter_v1.py --stream AUD_LABOUR --source /tmp/date-conformance/bad.csv --output /tmp/date-conformance/bad_out.csv; then
+            echo 'adapter unexpectedly accepted unsupported date format' >&2
+            exit 1
+          fi
+          echo 'AMBIGUOUS_DATE_REJECTED_PASS'
