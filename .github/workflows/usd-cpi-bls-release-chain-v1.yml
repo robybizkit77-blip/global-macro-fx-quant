@@ -23,12 +23,14 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('/tmp/usd-cpi-release-chain/result.json'))
-          assert d['status']=='CERTIFIABLE_RELEASE_CALENDAR'
-          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'observed_months':104}
+          assert d['status']=='CERTIFIABLE_RELEASE_CALENDAR_WITH_OFFICIAL_GAP'
+          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'observed_months':104,'published_months':103,'official_unavailable_months':1}
           assert len(d['release_rows'])==104
           assert not d['errors']
-          assert all(r['release_time']=='08:30' and r['release_timezone']=='America/New_York' for r in d['release_rows'])
-          print('RELEASE_CHAIN_PASS',d['semantic_sha256'])
+          gaps=[r for r in d['release_rows'] if r['availability_status']=='NOT_PUBLISHED_OFFICIAL']
+          assert len(gaps)==1 and gaps[0]['reference_month']=='2025-10'
+          assert all(r['release_time']=='08:30' and r['release_timezone']=='America/New_York' for r in d['release_rows'] if r['availability_status']=='PUBLISHED')
+          print('RELEASE_CHAIN_PASS_WITH_OFFICIAL_GAP',d['semantic_sha256'])
           PY
           git diff --exit-code
       - uses: actions/upload-artifact@v4
