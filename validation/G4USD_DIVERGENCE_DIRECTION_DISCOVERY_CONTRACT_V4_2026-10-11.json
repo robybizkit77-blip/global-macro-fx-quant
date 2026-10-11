@@ -1,0 +1,39 @@
+{
+  "schema": "GMFQ_G4USD_DIVERGENCE_DIRECTION_DISCOVERY_CONTRACT_V4",
+  "status": "PREDECLARED_EXPLORATORY_NO_V4_RESULTS_OBSERVED",
+  "source": {
+    "alignment_schema": "GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_V1",
+    "population": "CONTRADICTORY only",
+    "expected_n": 67,
+    "currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "eur_mandatory": true
+  },
+  "groups": {
+    "HAWKISH_DIVERGENCE": "d_diff_2y > 0",
+    "DOVISH_DIVERGENCE": "d_diff_2y < 0"
+  },
+  "metrics": {
+    "pooled": ["n", "mean_front_end_signed_fx_return_1m", "mean_front_end_signed_fx_return_3m"],
+    "per_currency": ["n", "mean_front_end_signed_fx_return_1m", "mean_front_end_signed_fx_return_3m"]
+  },
+  "candidate_generation_gate": {
+    "minimum_n_per_direction": 20,
+    "winner_mean_1m_positive": true,
+    "winner_mean_3m_positive": true,
+    "winner_minus_loser_1m_min": 0.001,
+    "winner_minus_loser_3m_min": 0.002,
+    "positive_currencies_at_3m_min": 3,
+    "single_currency_share_max": 0.50
+  },
+  "governance": {
+    "same_sample_discovery_only": true,
+    "no_edge_certification": true,
+    "future_unseen_confirmation_required": true,
+    "no_threshold_search": true,
+    "no_refit": true,
+    "no_currency_exclusion": true,
+    "no_rescue_tuning_after_results": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false
+  }
+}
