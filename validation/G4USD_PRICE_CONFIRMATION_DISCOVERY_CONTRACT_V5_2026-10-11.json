@@ -1,0 +1,46 @@
+{
+  "schema": "GMFQ_G4USD_PRICE_CONFIRMATION_DISCOVERY_CONTRACT_V5",
+  "status": "PREDECLARED_EXPLORATORY_NO_V5_RESULTS_OBSERVED",
+  "research_question": "Does already-observed FX price confirmation of the current relative 2Y repricing direction improve subsequent FX outcomes?",
+  "source": {
+    "alignment_schema": "GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_V1",
+    "currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "sample_expected_oos_observations": 256,
+    "frozen_parent_pr": 122
+  },
+  "causal_timing": {
+    "current_rates_signal": "sign(current observation d_diff_2y)",
+    "already_observed_fx_move": "previous observation target_return for the same currency",
+    "forbidden": "current or future target_return may not be used to define confirmation state"
+  },
+  "groups": {
+    "PRICE_CONFIRMS_RATES": "sign(previous target_return) == sign(current d_diff_2y), both nonzero",
+    "PRICE_DIVERGES_FROM_RATES": "sign(previous target_return) == -sign(current d_diff_2y), both nonzero"
+  },
+  "evaluation": {
+    "primary_return_1m": "current d_diff_2y sign multiplied by current target_return",
+    "primary_return_3m": "current d_diff_2y sign multiplied by sum of current and next two target_returns for same currency",
+    "no_refit": true,
+    "no_threshold_search": true,
+    "no_currency_exclusion": true,
+    "eur_mandatory": true
+  },
+  "predeclared_candidate_gate": {
+    "minimum_n_per_group": 60,
+    "confirmed_mean_1m_gt_0": true,
+    "confirmed_mean_3m_gt_0": true,
+    "confirmed_minus_diverged_1m_ge": 0.001,
+    "confirmed_minus_diverged_3m_ge": 0.002,
+    "positive_confirmed_currencies_at_3m_ge": 3,
+    "single_currency_share_le": 0.50,
+    "all_conditions_required": true
+  },
+  "governance": {
+    "same_sample_discovery_only": true,
+    "no_edge_certification": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "future_unseen_confirmation_required_if_candidate_generated": true,
+    "no_rescue_tuning_after_results": true
+  }
+}
