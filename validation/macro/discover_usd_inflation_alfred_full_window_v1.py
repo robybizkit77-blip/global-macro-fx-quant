@@ -1,17 +1,47 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,csv,hashlib,io,json,pathlib,urllib.parse,urllib.request
+import argparse,csv,hashlib,io,json,pathlib,time,urllib.parse,urllib.request
+from datetime import date,timedelta
 
 BASE='https://alfred.stlouisfed.org/graph/alfredgraph.csv'
 SERIES='CPIAUCSL'
 VINTAGES=['2018-03-15','2020-03-15','2022-03-15','2024-03-15','2026-03-15']
 UA='GLOBAL-MACRO-FX-QUANT USD inflation ALFRED temporal discovery v1'
 
+
+def bounded_window(vintage:str)->tuple[str,str]:
+    end=date.fromisoformat(vintage)
+    # Discovery needs only enough history to prove a PIT vintage is usable and
+    # to support a YoY calculation.  Two years avoids downloading the entire
+    # CPI history from 1947 for every probe.
+    start=end-timedelta(days=730)
+    return start.isoformat(),end.isoformat()
+
+
 def fetch(vintage:str):
-    url=BASE+'?'+urllib.parse.urlencode({'id':SERIES,'vintage_date':vintage})
-    req=urllib.request.Request(url,headers={'User-Agent':UA})
-    with urllib.request.urlopen(req,timeout=60) as r:
-        raw=r.read()
+    start,end=bounded_window(vintage)
+    params={
+        'id':SERIES,
+        'vintage_date':vintage,
+        'cosd':start,
+        'coed':end,
+    }
+    url=BASE+'?'+urllib.parse.urlencode(params)
+    last_error=None
+    raw=None
+    for attempt in range(1,4):
+        try:
+            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,*/*;q=0.8'})
+            with urllib.request.urlopen(req,timeout=35) as r:
+                raw=r.read()
+            break
+        except Exception as exc:
+            last_error=exc
+            if attempt<3:
+                time.sleep(2**attempt)
+    if raw is None:
+        raise RuntimeError(f'ALFRED fetch failed for {vintage} after 3 attempts: {last_error!r}')
+
     text=raw.decode('utf-8-sig')
     rows=list(csv.reader(io.StringIO(text)))
     if len(rows)<2 or len(rows[0])<2:
@@ -33,10 +63,12 @@ def fetch(vintage:str):
     if latest[0] > vintage:
         raise ValueError(f'look-ahead: latest observation {latest[0]} after vintage {vintage}')
     return {
-      'vintage_date':vintage,'url':url,'http_sha256':hashlib.sha256(raw).hexdigest(),
+      'vintage_date':vintage,'query_start':start,'query_end':end,'url':url,
+      'http_sha256':hashlib.sha256(raw).hexdigest(),
       'header':header,'observation_count':len(values),'first_observation':min(values,key=lambda x:x[0])[0],
       'latest_observation':latest[0],'latest_value':latest[1]
     }
+
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--output',required=True,type=pathlib.Path); a=ap.parse_args()
@@ -49,8 +81,9 @@ def main():
       'purpose':'Test key-free single-vintage retrieval for point-in-time USD inflation reconstruction.',
       'probes':probes,
       'invariants':{
-        'single_vintage_per_request':True,'no_future_observation_dates':True,
-        'production_write':False,'changes_live_data':False,'changes_engine_rules':False
+        'single_vintage_per_request':True,'bounded_observation_window':True,
+        'no_future_observation_dates':True,'production_write':False,
+        'changes_live_data':False,'changes_engine_rules':False
       }
     }
     raw=json.dumps(out,sort_keys=True,separators=(',',':')).encode(); out['semantic_sha256']=hashlib.sha256(raw).hexdigest()
