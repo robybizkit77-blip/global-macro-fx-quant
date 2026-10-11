@@ -116,6 +116,8 @@ def parse_release(raw:bytes, expected_release_date:str, expected_ref:str, allow_
     next_patterns=[
       r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
       r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
+      r'The Employment Situation for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
       r'The Employment Situation news release for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
       r'The Employment Situation news release for\s+([A-Za-z]+(?:\s+\d{4})?)\s+is scheduled to be published on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)',
     ]
