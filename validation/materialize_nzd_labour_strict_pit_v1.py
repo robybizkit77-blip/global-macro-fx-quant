@@ -112,6 +112,18 @@ def unemployment_rate(page: str, year: int, month: int) -> float:
             return 3.3
         raise ValueError(f"Stats NZ exact September 2022 unemployment wording mismatch: {values}")
 
+    # March 2023 repeats the same period-specific "remained unchanged at"
+    # wording, at 3.4 percent, explicitly anchored to the March 2023 quarter.
+    if (year, month) == (2023, 3):
+        values = list(dict.fromkeys(float(v) for v in re.findall(
+            r"\bUnemployment rate remained unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the March 2023 quarter\b",
+            page,
+            re.I,
+        )))
+        if values == [3.4]:
+            return 3.4
+        raise ValueError(f"Stats NZ exact March 2023 unemployment wording mismatch: {values}")
+
     # Ordered from strongest national headline wording to weaker same-sentence
     # variants. Stop at the first family with one unique value so subgroup
     # rates later in the page (Māori, women, etc.) cannot contaminate a valid
