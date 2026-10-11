@@ -36,7 +36,7 @@
       "authority": "U.S. Commodity Futures Trading Commission (CFTC)",
       "purpose": "Official report-date archive and period-specific report identity",
       "url": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalViewable/index.htm",
-      "important_note": "CFTC states that archive dates indicate report date, not release date."
+      "important_note": "CFTC states that archive dates indicate report date, not release date; period-specific report HTML tested in 2019, 2023, 2025 and 2026 does not expose release date/time metadata."
     },
     "release_schedule": {
       "authority": "U.S. Commodity Futures Trading Commission (CFTC)",
@@ -55,10 +55,11 @@
     "actual_available_from": "The earliest verified public availability timestamp/date after applying release schedule plus any CFTC delay/suspension/catch-up announcement. Backtest consumption is forbidden before this point.",
     "normal_publication_rule": "CFTC states that the reports generally use the immediately preceding Tuesday and are generally published Friday at 3:30 p.m. U.S. Eastern Time.",
     "same_day_rule": "If a release timestamp is verified, use must be strictly after actual_available_from; equality is not eligible.",
-    "date_only_fallback": "If only an actual publication date is verifiable, the observation becomes eligible on the following calendar day. This deliberately sacrifices same-day Friday use rather than inventing a timestamp.",
+    "date_only_fallback": "If only an actual publication date is verifiable, the observation becomes eligible on the following calendar day. This deliberately sacrifices same-day use rather than inventing a timestamp.",
     "missing_actual_release_action": "WITHHOLD",
     "report_date_is_never_availability_date": true,
-    "scheduled_release_is_never_assumed_actual_when_an_exception_exists": true
+    "scheduled_release_is_never_assumed_actual_when_an_exception_exists": true,
+    "historical_report_page_without_release_metadata_is_not_availability_evidence": true
   },
   "known_exception_classes": {
     "federal_holidays": {
@@ -67,6 +68,14 @@
     "2018_2019_appropriations_lapse": {
       "rule": "CFTC suspended COT publication after the December 21, 2018 release and later published delayed reports in chronological catch-up order beginning February 1, 2019. Naive Friday availability is forbidden for affected report dates.",
       "official_reference": "https://www.cftc.gov/PressRoom/PressReleases/7864-19"
+    },
+    "2023_ion_cyber_incident": {
+      "rule": "The ION Cleared Derivatives cyber incident prevented timely and accurate submissions to CFTC. COT reports that normally would have been published in February and March 2023 were postponed and issued sequentially as the backlog was validated. Naive Friday availability is forbidden for every affected report date; use requires official CFTC catch-up evidence.",
+      "official_reference": "https://www.cftc.gov/PressRoom/PressReleases/8662-23"
+    },
+    "2025_national_day_of_mourning": {
+      "rule": "CFTC announced that offices would be closed January 9, 2025 and that the COT report for that week would be released Monday January 13, 2025. The normal Friday rule is forbidden for the affected report date.",
+      "official_reference": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
     },
     "2025_appropriations_lapse": {
       "rule": "CFTC interrupted COT processing/publication from October 1 through November 12, 2025 and published an explicit catch-up table. Naive Friday availability is forbidden for affected report dates.",
@@ -112,7 +121,7 @@
     "cross_currency_report_date_consistency_required_when_expected": true,
     "actual_availability_required": true,
     "no_tuesday_to_friday_lookahead": true,
-    "holiday_and_shutdown_exceptions_required": true,
+    "holiday_shutdown_and_operational_exceptions_required": true,
     "revision_handling_required": true,
     "two_independent_materializations_semantically_equal": true,
     "raw_source_hash_required": true,
@@ -131,7 +140,8 @@
   },
   "next_certification_steps": [
     "Materialize official Legacy Futures Only annual historical rows for 2018-2026 using the exact eight market codes.",
-    "Construct an official release-availability calendar that handles normal releases, holidays, 2018-2019 appropriations-lapse catch-up, 2025 appropriations-lapse catch-up, and known corrections.",
+    "Construct an official release-availability calendar that handles normal releases, federal holidays, the 2018-2019 appropriations-lapse catch-up, the 2023 ION cyber backlog, the January 2025 National Day of Mourning delay, the 2025 appropriations-lapse catch-up, and known corrections.",
+    "Do not treat period-specific Historical Viewable report pages as release metadata: direct probes show they identify report date but do not expose release date/time.",
     "Join report_date rows to actual_available_from fail-closed; unresolved weeks remain WITHHELD.",
     "Materialize twice independently and require semantic equality.",
     "Freeze a canonical historical ledger only after raw/source hashes and release provenance are verified.",
