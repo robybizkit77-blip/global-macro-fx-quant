@@ -48,7 +48,13 @@ jobs:
               assert x['semantic_sha256']==y['semantic_sha256']
               assert x['target_rows']==y['target_rows']
               assert set(x['currencies'])==set(expected)
-              assert all(v['observations']>=45 for v in x['currencies'].values())
+              assert x['target_rows'] % len(expected) == 0
+              expected_per_currency = x['target_rows'] // len(expected)
+              assert all(v['observations']==expected_per_currency for v in x['currencies'].values())
+              if x['year'] < 2026:
+                  assert expected_per_currency in (52,53)
+              else:
+                  assert expected_per_currency >= 35
               assert all(v['code']==expected[c] for c,v in x['currencies'].items())
           assert a['invariants']['publication_availability_assigned'] is False
           assert a['invariants']['historical_backtest_certified'] is False
