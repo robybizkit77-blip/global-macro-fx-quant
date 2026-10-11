@@ -33,10 +33,12 @@ def load_macro(path:Path, date_col:str, value_col:str):
     rows=[]
     with path.open(newline='',encoding='utf-8-sig') as f:
         for r in csv.DictReader(f):
-            d=r[date_col][:10]
-            # Prefer explicit release_date; fallback to eligible/asof fields if present.
-            rel=(r.get('release_date') or r.get('first_eligible_decision_date') or r.get('eligible_date') or r.get('asof_date') or d)[:10]
-            rows.append((rel,float(r[value_col])))
+            if date_col not in r or value_col not in r:
+                raise ValueError(f'missing required macro columns in {path}: {date_col}/{value_col}')
+            rel=r.get('release_date') or r.get('first_eligible_decision_date') or r.get('eligible_date')
+            if not rel:
+                raise ValueError(f'PIT eligibility missing in {path}; observation/asof dates are forbidden as release-date fallback')
+            rows.append((rel[:10],float(r[value_col])))
     rows.sort()
     return rows
 
@@ -135,6 +137,7 @@ def main():
       'method':{
         'frozen_model_refit':False,'hyperparameter_tuning':False,'state_threshold_search':False,
         'currency_specific_rules':False,'eur_excluded':False,
+        'pit_release_fallback_forbidden':True,
         'labour_definition':'local minus US unemployment; lower relative unemployment implies more hawkish pressure',
       },
       'baseline_panel_sharpe':baseline,
