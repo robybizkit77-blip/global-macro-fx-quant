@@ -1,0 +1,64 @@
+name: GBP Inflation Full-Window PIT Materialize v1
+
+on:
+  push:
+    branches:
+      - 'validation-gbp-inflation-full-window-pit-materialize-v1-*'
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-twice:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize GBP CPI PIT ledger twice
+        run: |
+          mkdir -p /tmp/gbp-cpi-pit/a /tmp/gbp-cpi-pit/b
+          python validation/macro/materialize_gbp_inflation_ons_full_window_pit_v1.py --output /tmp/gbp-cpi-pit/a/ledger.json
+          sleep 15
+          python validation/macro/materialize_gbp_inflation_ons_full_window_pit_v1.py --output /tmp/gbp-cpi-pit/b/ledger.json
+      - name: Enforce full-window PIT reproducibility
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/gbp-cpi-pit/a/ledger.json').read_text())
+          b=json.loads(Path('/tmp/gbp-cpi-pit/b/ledger.json').read_text())
+          assert a['status']=='PIT_MATERIALIZED', a['status']
+          assert b['status']=='PIT_MATERIALIZED', b['status']
+          assert a['release_count']==105 and b['release_count']==105
+          assert a['coverage_ok'] is True and b['coverage_ok'] is True
+          assert a['by_release_year']==b['by_release_year']==a['expected_by_release_year']
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert a['ledger']==b['ledger']
+          assert a['temporal_policy']['same_day_use_allowed'] is False
+          assert a['temporal_policy']['eligibility_rule']=='decision_date > release_date'
+          inv=a['invariants']
+          assert inv['native_ons_vintages_only'] is True
+          assert inv['exact_series_semantics'] is True
+          assert inv['latest_observation_equals_previous_calendar_month'] is True
+          assert inv['no_cpih_substitution'] is True
+          assert inv['no_interpolation'] is True
+          assert inv['no_current_database_backfill'] is True
+          assert inv['production_write'] is False
+          assert inv['changes_live_data'] is False
+          assert inv['changes_engine_rules'] is False
+          assert inv['certification_implied'] is False
+          print('GBP CPI full-window PIT ledger reproducibility: PASS')
+          print('semantic_sha256:', a['semantic_sha256'])
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html
+      - name: Upload PIT ledgers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-inflation-full-window-pit-v1-${{ github.run_id }}
+          path: /tmp/gbp-cpi-pit/
+          retention-days: 90
