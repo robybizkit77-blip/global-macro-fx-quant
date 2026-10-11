@@ -1,0 +1,7 @@
+{
+  "schema":"GMFQ_G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_LEDGER_V1",
+  "contract_schema":"GMFQ_G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_CONTRACT_V1",
+  "historical_cutoff_reference_period":"2026-08",
+  "append_only":true,
+  "signals":[]
+}
