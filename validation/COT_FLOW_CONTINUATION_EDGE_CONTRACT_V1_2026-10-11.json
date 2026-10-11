@@ -1,0 +1,101 @@
+{
+  "schema": "GMFQ_COT_FLOW_CONTINUATION_EDGE_CONTRACT_V1",
+  "as_of": "2026-10-11",
+  "status": "PREDECLARED_NO_RESULTS_OBSERVED",
+  "research_question": "Does weekly change in CFTC Legacy Non-Commercial Net/Open Interest contain predictive continuation information for the next five FX trading days once COT availability is PIT-safe?",
+  "hypothesis": {
+    "primary": "Positive weekly change in Non-Commercial Net/OI predicts positive subsequent local-currency-vs-USD return; negative change predicts negative subsequent return.",
+    "economic_interpretation": "Fresh speculative positioning flow may persist into subsequent FX price action.",
+    "alternative_hypotheses_not_tested_here": [
+      "COT extremes predict reversal",
+      "COT extremes predict continuation",
+      "level of Net/OI predicts returns",
+      "104-week percentile predicts returns",
+      "absolute positioning threshold predicts returns"
+    ]
+  },
+  "universe": {
+    "currencies": ["EUR","GBP","JPY","CHF","AUD","NZD","CAD"],
+    "usd_role": "USD is the common counter-currency; USD COT contract is not used in the primary signal.",
+    "cftc_dataset": "Legacy Futures Only - Non-Commercial",
+    "cftc_codes": {
+      "EUR":"099741",
+      "GBP":"096742",
+      "JPY":"097741",
+      "CHF":"092741",
+      "AUD":"232741",
+      "NZD":"112741",
+      "CAD":"090741"
+    }
+  },
+  "pit_contract": {
+    "required_policy_schema": "GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1",
+    "normal_week_minimum_availability": "report_date_plus_14_calendar_days",
+    "documented_exception_availability": "max(report_date_plus_14_calendar_days, official_actual_publication_date_plus_1_calendar_day)",
+    "shutdown_2018_2019": "WITHHOLD",
+    "withheld_rows_must_not_be_imputed": true
+  },
+  "signal": {
+    "raw_positioning": "nc_net_oi_t = (noncommercial_long_t - noncommercial_short_t) / open_interest_t",
+    "weekly_flow": "delta_net_oi_t = nc_net_oi_t - nc_net_oi_t_minus_1",
+    "direction": "sign(delta_net_oi_t)",
+    "zero_flow": "NO_POSITION",
+    "normalization": "none",
+    "threshold": "none",
+    "winsorization": "none"
+  },
+  "fx_return_definition": {
+    "orientation": "positive return always means local currency strengthens versus USD",
+    "entry": "first available daily FX close on or after research_available_from",
+    "exit": "fifth subsequent FX trading-day close after entry",
+    "horizon_trading_days": 5,
+    "return": "log(exit_price / entry_price) in local-currency-vs-USD orientation",
+    "missing_price_action": "WITHHOLD_OBSERVATION"
+  },
+  "test_statistic": {
+    "observation_return": "sign(delta_net_oi_t) * subsequent_5d_fx_log_return",
+    "primary_panel": "equal-weight pooled currency-week observations",
+    "currency_diagnostics": true,
+    "no_position_rows_excluded": true
+  },
+  "chronology": {
+    "primary_evaluation": "strict chronological out-of-sample tail",
+    "split_rule": "Within each currency, first 60 percent of eligible labeled observations by entry date are diagnostic-only; final 40 percent are frozen OOS evaluation.",
+    "split_rounding": "floor(0.60 * N) observations assigned to diagnostic segment",
+    "no_model_fitting": true,
+    "diagnostic_segment_must_not_be_used_to_change_signal_or_gates": true
+  },
+  "predeclared_edge_gate": {
+    "all_required": true,
+    "oos_panel_annualized_sharpe_min": 0.50,
+    "oos_directional_accuracy_min": 0.52,
+    "positive_currency_oos_sharpes_min_count": 5,
+    "minimum_oos_observations_per_currency": 50,
+    "minimum_pooled_oos_observations": 350,
+    "max_single_currency_share_of_pooled_oos": 0.20
+  },
+  "robustness_reported_but_not_rescue_gates": {
+    "currency_sharpes": true,
+    "hit_rates": true,
+    "total_log_return": true,
+    "max_drawdown": true,
+    "calendar_year_breakdown": true,
+    "signal_balance_positive_negative": true
+  },
+  "governance": {
+    "no_change_after_results_to_signal_definition": true,
+    "no_change_after_results_to_horizon": true,
+    "no_change_after_results_to_split": true,
+    "no_change_after_results_to_gate_thresholds": true,
+    "no_currency_exclusion_after_results": true,
+    "no_threshold_search": true,
+    "no_parameter_tuning": true,
+    "failure_is_valid_result": true,
+    "if_fail": "Keep COT as contextual positioning information; do not promote weekly flow to predictive score, production signal, or sizing input.",
+    "if_pass": "Classify only as research candidate requiring separate confirmation/forward validation before any production use.",
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
