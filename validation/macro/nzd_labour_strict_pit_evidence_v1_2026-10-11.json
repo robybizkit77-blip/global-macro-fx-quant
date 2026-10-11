@@ -1,0 +1,72 @@
+{
+  "schema": "GMFQ_NZD_LABOUR_STRICT_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "NZD.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "authority": "Stats NZ",
+  "source": "Stats NZ period-specific Labour market statistics information releases",
+  "coverage": {
+    "start": "2018-03",
+    "end": "2026-06",
+    "expected_quarters": 34,
+    "materialized_quarters": 34
+  },
+  "series_contract": {
+    "series_id": "NZ_UNEMP_RATE",
+    "macro_series_id": "NZ_UNEMP_RATE_history_value",
+    "frequency": "Q",
+    "transformation": "level",
+    "unit": "%",
+    "first_release_semantics": "OFFICIAL_PERIOD_SPECIFIC_INFORMATION_RELEASE"
+  },
+  "strict_rules": {
+    "official_publisher_only": true,
+    "period_specific_release_artifact_required": true,
+    "sha256_required": true,
+    "current_revised_history_forbidden": true,
+    "revised_history_fallback_used": false
+  },
+  "anchors": {
+    "2018-03": {
+      "rate": 4.4,
+      "release_date": "2018-05-02",
+      "source_sha256": "93bb785dc29668693ccb67a66be7184e8b3f54fc01c2ba6e1af33685e4e99240"
+    },
+    "2024-12": {
+      "rate": 5.1,
+      "release_date": "2025-02-05",
+      "source_sha256": "4b7002cb95693391ed7f89f92594053607d7120f527b74302569242a6dfca2b2"
+    },
+    "2026-06": {
+      "rate": 5.6,
+      "release_date": "2026-08-05",
+      "source_sha256": "78ecfad604bd44f6b455084479af242e6151921a090f9dc48bccf7774ad08f78"
+    }
+  },
+  "unique_source_hashes": 34,
+  "network_capture_count": 34,
+  "replay_count": 2,
+  "replay_equal": true,
+  "semantic_rowset_sha256": "f4969f286d77779d576c8b564273b24f29773deac9adde7830e92ef64dfefbc1",
+  "source_validation": {
+    "base_main_sha": "61439fefb5eaa97aaa93af03885da662f3297e63",
+    "validated_source_sha": "a71c7aa2bc81f1044d074cab724ff13ddcf4ac97",
+    "materializer_run_id": 38123567197,
+    "engine_logic_audit_run_id": 38123567214,
+    "staging_browser_audit_run_id": 38123567222,
+    "artifact_id": 11695734299,
+    "artifact_digest": "sha256:d2123d9499a023140d7341e9b59b11e777f26c2682629df6192b18d616e55211",
+    "independent_replays_compared": 2,
+    "semantic_fields_match_across_replays": true,
+    "raw_source_hashes_retained_and_verified_per_replay": true
+  },
+  "missing": [],
+  "duplicates": [],
+  "errors": [],
+  "current_revised_history_used": false,
+  "revised_fallback_used": false,
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}

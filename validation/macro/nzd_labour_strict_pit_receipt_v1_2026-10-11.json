@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_NZD_LABOUR_STRICT_PIT_RECEIPT_V1",
+  "target": "NZD.labour",
+  "evidence_class": "STRICT_DIRECT_ARCHIVAL_PIT",
+  "verdict": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE",
+  "base_main_sha": "61439fefb5eaa97aaa93af03885da662f3297e63",
+  "validated_source_sha": "a71c7aa2bc81f1044d074cab724ff13ddcf4ac97",
+  "coverage": {
+    "start": "2018-03",
+    "end": "2026-06",
+    "expected_quarters": 34,
+    "materialized_quarters": 34
+  },
+  "unique_source_hashes": 34,
+  "semantic_rowset_sha256": "f4969f286d77779d576c8b564273b24f29773deac9adde7830e92ef64dfefbc1",
+  "materializer_run_id": 38123567197,
+  "engine_logic_audit_run_id": 38123567214,
+  "staging_browser_audit_run_id": 38123567222,
+  "artifact_id": 11695734299,
+  "artifact_name": "nzd-labour-strict-pit-v1-38123567197",
+  "artifact_digest": "sha256:d2123d9499a023140d7341e9b59b11e777f26c2682629df6192b18d616e55211",
+  "artifact_expires_at": "2027-01-09T08:05:07Z",
+  "checks": {
+    "official_period_specific_stats_nz_releases_only": true,
+    "source_hash_uniqueness": true,
+    "double_replay_semantic_match": true,
+    "raw_source_hashes_verified_per_replay": true,
+    "no_current_revised_history": true,
+    "no_revised_history_fallback": true,
+    "engine_logic_green": true,
+    "staging_browser_green": true,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "anchors_verified": {
+    "2018-03": {
+      "rate": 4.4,
+      "release_date": "2018-05-02"
+    },
+    "2024-12": {
+      "rate": 5.1,
+      "release_date": "2025-02-05"
+    },
+    "2026-06": {
+      "rate": 5.6,
+      "release_date": "2026-08-05"
+    }
+  },
+  "exceptions_verified": {
+    "2018-06": "Pinned exact official teaser wording: 'Unemployment rate rose to 4.5 percent'; period identity is separately locked to the June 2018 quarter.",
+    "2021-12": "Pinned exact national wording: 'The unemployment rate was 3.2 percent in the December 2021 quarter'.",
+    "2022-03": "Pinned exact official headline: 'Unemployment rate remains at 3.2 percent'.",
+    "2022-09": "Pinned exact national wording: 'Unemployment rate remained unchanged at 3.3 percent in the September 2022 quarter'.",
+    "2023-03": "Pinned exact national wording: 'Unemployment rate remained unchanged at 3.4 percent in the March 2023 quarter'.",
+    "2023-12": "Pinned exact national wording: 'The seasonally adjusted unemployment was 4.0 percent in the December 2023 quarter'. No generic broad matcher or revised-history fallback is used for these exceptions."
+  }
+}
