@@ -5,27 +5,33 @@ from datetime import datetime
 
 BASE='https://www.bls.gov/news.release/archives/cpi_{stamp}.htm'
 UA='Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; strict PIT release-chain validation)'
-SEED_RELEASE='2018-01-12'  # official CPI release for December 2017
+SEED_RELEASE='2018-01-12'
 SEED_REFERENCE='2017-12'
 TARGET_START='2018-01'
 TARGET_END='2026-08'
 EXPECTED=104
 
-# Officially documented 2025 lapse exceptions. These are not inferred or
-# backfilled. September 2025 was rescheduled; October 2025 CPI was not
-# published at all. The latter must remain explicitly unavailable downstream.
+# Only documented BLS schedule exceptions are allowed. A pure reschedule changes
+# availability date but not the observation sequence. A documented nonpublication
+# creates an explicit unavailable reference month and is never imputed.
 SPECIAL_TRANSITIONS={
     '2025-09': {
         'announced_release_date':'2025-10-15',
         'actual_release_date':'2025-10-24',
         'kind':'RESCHEDULED_2025_LAPSE',
         'evidence_url':'https://www.bls.gov/bls/092025-cpi-reschedule-notice.htm',
-        'next_reference_month':'2025-11',
-        'next_release_date':'2025-12-18',
         'missing_reference_month':'2025-10',
         'missing_kind':'NOT_PUBLISHED_2025_LAPSE',
         'missing_evidence_url':'https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm',
-    }
+        'resume_reference_month':'2025-11',
+        'resume_release_date':'2025-12-18',
+    },
+    '2026-01': {
+        'announced_release_date':'2026-02-11',
+        'actual_release_date':'2026-02-13',
+        'kind':'RESCHEDULED_2026_LAPSE',
+        'evidence_url':'https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm',
+    },
 }
 
 
@@ -70,8 +76,7 @@ def parse(raw:bytes, expected_release_date:str, allow_missing_next:bool=False)->
     emb=re.search(
         r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
         r'(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+)?'
-        r'([A-Za-z]+\s+\d{1,2},\s+\d{4})',
-        text,re.I)
+        r'([A-Za-z]+\s+\d{1,2},\s+\d{4})',text,re.I)
     if not emb: raise ValueError(f'embargo timestamp not found for {ref}')
     embargo_date=iso_date(emb.group(2))
     if embargo_date != expected_release_date:
@@ -88,11 +93,9 @@ def parse(raw:bytes, expected_release_date:str, allow_missing_next:bool=False)->
       'release_timezone':'America/New_York',
       'embargo_tz_abbrev':emb.group(1).upper(),
       'availability_status':'PUBLISHED',
+      'next_reference_month':month_key(nxt.group(1)) if nxt else None,
+      'next_release_date':iso_date(nxt.group(2)) if nxt else None,
     }
-    if nxt:
-        out['next_reference_month']=month_key(nxt.group(1)); out['next_release_date']=iso_date(nxt.group(2))
-    else:
-        out['next_reference_month']=None; out['next_release_date']=None
     return out
 
 def next_month(k:str)->str:
@@ -106,30 +109,32 @@ def main():
     selected=[]; chain=[]; errors=[]
     try:
         while True:
-            # September 2025 had an officially announced date that was superseded
-            # by a documented BLS reschedule during the appropriations lapse.
-            if expected_ref=='2025-09' and current_date==SPECIAL_TRANSITIONS['2025-09']['announced_release_date']:
-                current_date=SPECIAL_TRANSITIONS['2025-09']['actual_release_date']
             special=SPECIAL_TRANSITIONS.get(expected_ref)
-            raw,url=fetch(current_date); row=parse(raw,current_date,allow_missing_next=bool(special))
+            if special and current_date==special['announced_release_date']:
+                current_date=special['actual_release_date']
+
+            # Only the 2025 transition with a documented missing following month
+            # may lack a normal next-release sentence in the rescheduled release.
+            has_gap=bool(special and special.get('missing_reference_month'))
+            raw,url=fetch(current_date); row=parse(raw,current_date,allow_missing_next=has_gap)
             if row['reference_month'] != expected_ref:
                 raise ValueError(f'expected reference {expected_ref}, got {row["reference_month"]}')
             row['source_url']=url; row['source_sha256']=hashlib.sha256(raw).hexdigest()
+
             if special:
                 eraw,efinal=fetch_url(special['evidence_url'])
                 row['schedule_exception']=special['kind']
                 row['schedule_exception_evidence_url']=efinal
                 row['schedule_exception_evidence_sha256']=hashlib.sha256(eraw).hexdigest()
                 row['announced_release_date']=special['announced_release_date']
+                row['actual_release_date']=special['actual_release_date']
+
             chain.append(row)
             if TARGET_START <= row['reference_month'] <= TARGET_END:
                 selected.append(row)
             if row['reference_month']==TARGET_END: break
 
-            if special:
-                # October 2025 CPI all-items was officially not published. Preserve
-                # the reference month as an explicit unavailable row instead of
-                # imputing, skipping time, or pretending a release existed.
+            if has_gap:
                 mraw,mfinal=fetch_url(special['missing_evidence_url'])
                 missing={
                   'reference_month':special['missing_reference_month'],
@@ -140,13 +145,13 @@ def main():
                   'official_gap_reason':special['missing_kind'],
                   'source_url':mfinal,
                   'source_sha256':hashlib.sha256(mraw).hexdigest(),
-                  'next_reference_month':special['next_reference_month'],
-                  'next_release_date':special['next_release_date'],
+                  'next_reference_month':special['resume_reference_month'],
+                  'next_release_date':special['resume_release_date'],
                 }
                 chain.append(missing)
                 if TARGET_START <= missing['reference_month'] <= TARGET_END:
                     selected.append(missing)
-                expected_ref=special['next_reference_month']; current_date=special['next_release_date']
+                expected_ref=special['resume_reference_month']; current_date=special['resume_release_date']
                 time.sleep(0.15)
                 continue
 
@@ -176,8 +181,8 @@ def main():
         'official_archive_only':True,
         'official_schedule_exception_evidence_only':True,
         'official_embargo_timestamp_required_for_published_rows':True,
-        'availability_rule':'AT_OR_AFTER_08:30_AMERICA_NEW_YORK_ON_RELEASE_DATE; EXPLICIT_UNAVAILABLE_IF_BLS_DID_NOT_PUBLISH',
-        'no_schedule_page_dependency_except_documented_2025_lapse_exception':True,
+        'availability_rule':'AT_OR_AFTER_08:30_AMERICA_NEW_YORK_ON_ACTUAL_RELEASE_DATE; EXPLICIT_UNAVAILABLE_IF_BLS_DID_NOT_PUBLISH',
+        'documented_reschedules_do_not_create_synthetic_observations':True,
         'no_inflation_values_materialized':True,
         'no_imputation_for_missing_official_release':True,
         'certifies_values':False,
