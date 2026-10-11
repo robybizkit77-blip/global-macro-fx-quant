@@ -1,0 +1,71 @@
+{
+  "schema": "GMFQ_RATES_TEMPORAL_PIT_STATUS_V1",
+  "as_of": "2026-10-11",
+  "base_main_sha": "674bf7fdd5002104d9b9c5d03e3d7c8c7cf62bb5",
+  "policy": {
+    "official_source_required": true,
+    "same_basis_2y_10y_required": true,
+    "secondary_source_fallback_forbidden": true,
+    "same_day_use_forbidden_without_verified_official_timestamp": true,
+    "blocked_is_preferred_to_manufactured_certainty": true
+  },
+  "summary": {
+    "certified": 5,
+    "blocked_or_not_certifiable": 3,
+    "certified_currencies": ["USD", "EUR", "JPY", "CAD", "AUD"],
+    "blocked_or_not_certifiable_currencies": ["GBP", "NZD", "CHF"]
+  },
+  "currencies": {
+    "USD": {
+      "status": "TEMPORAL_PIT_CERTIFIED",
+      "authority": "U.S. Department of the Treasury",
+      "evidence": "validation/USD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json"
+    },
+    "EUR": {
+      "status": "TEMPORAL_PIT_CERTIFIED",
+      "authority": "European Central Bank",
+      "evidence": "validation/EUR_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json"
+    },
+    "JPY": {
+      "status": "TEMPORAL_PIT_CERTIFIED",
+      "authority": "Japan Ministry of Finance",
+      "evidence": "validation/JPY_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json"
+    },
+    "CAD": {
+      "status": "TEMPORAL_PIT_CERTIFIED",
+      "authority": "Bank of Canada",
+      "evidence": "validation/CAD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json"
+    },
+    "AUD": {
+      "status": "TEMPORAL_PIT_CERTIFIED",
+      "authority": "Reserve Bank of Australia",
+      "evidence": "validation/AUD_RATES_TEMPORAL_PIT_EVIDENCE_V1_2026-10-11.json"
+    },
+    "GBP": {
+      "status": "NOT_CERTIFIABLE_CURRENTLY",
+      "authority": "Bank of England",
+      "reason": "The official historical nominal government zero-coupon curve archive is revisionable and the currently available archive does not provide the revision-vintage provenance required to prove what the model could have known at each historical decision date. Current revised history is not accepted as point-in-time evidence.",
+      "allowed_next_step": "Resume only if official revision-vintage or archived historical snapshots with sufficient provenance become available."
+    },
+    "NZD": {
+      "status": "BLOCKED_RUNNER_ACCESS",
+      "authority": "Reserve Bank of New Zealand",
+      "source": "B2 Wholesale interest rates – government bond close",
+      "official_source_url": "https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
+      "reason": "The official RBNZ B2 page/XLSX has been manually verified for current same-basis 2Y/10Y data, but the canonical official XLSX returns HTTP 403 to GitHub-hosted runners. A deterministic official historical replay cannot currently be materialized in CI without bypassing the official-source requirement.",
+      "allowed_next_step": "Resume when official RBNZ historical transport is accessible from the controlled runner or an official archival endpoint with equivalent provenance is available."
+    },
+    "CHF": {
+      "status": "BLOCKED_SOURCE_EXPORT",
+      "authority": "Swiss National Bank",
+      "reason": "The previously validated official SNB spot-rate export currently returns metadata without observations. Mixing a separately published current 10Y with another 2Y source would violate the same-basis contract.",
+      "allowed_next_step": "Resume when an official same-basis 2Y/10Y historical export is available again."
+    }
+  },
+  "production_changes": {
+    "live_data": false,
+    "engine_rules": false,
+    "ui_runtime": false
+  },
+  "verdict": "RATES_TEMPORAL_PIT_LAYER_PARTIALLY_CERTIFIED__5_CERTIFIED__3_FAIL_CLOSED"
+}
