@@ -11,11 +11,13 @@ Canonical CSV columns:
 Rules are explicit per certified source stream. JPY inflation derives
 reference_period as YYYY-MM from the source observation_date only; all other
 period labels and numeric values are copied directly from certified source
-rows. Official unavailable rows remain null.
+rows. Certified release dates are normalized mechanically to ISO YYYY-MM-DD so
+temporal comparisons use one canonical representation. Official unavailable
+rows remain null.
 """
 from __future__ import annotations
 
-import argparse,csv,hashlib,json,pathlib
+import argparse,csv,datetime as dt,hashlib,json,pathlib
 
 STREAMS={
   'EUR_INFLATION': {'period':'reference_month','value':'headline_hicp_yoy_pct'},
@@ -40,6 +42,19 @@ def ref_period(raw:str,transform:str|None)->str:
         if len(x)<7 or x[4]!='-': raise ValueError(f'invalid observation date {x!r}')
         return x[:7]
     return x
+
+
+def release_date_iso(raw:str)->str:
+    """Normalize certified date spelling only; never infer a missing date."""
+    x=raw.strip()
+    if not x: raise ValueError('missing release date')
+    token=x[:10]
+    for fmt in ('%Y-%m-%d','%d/%m/%Y'):
+        try:
+            return dt.datetime.strptime(token,fmt).date().isoformat()
+        except ValueError:
+            pass
+    raise ValueError(f'unsupported certified release date format {raw!r}')
 
 
 def adapt(stream:str,source:pathlib.Path)->dict:
@@ -75,7 +90,7 @@ def adapt(stream:str,source:pathlib.Path)->dict:
             period=ref_period(period_raw,cfg.get('period_transform'))
             try: numeric=float(val)
             except ValueError as e: raise ValueError(f'{stream} row {i}: nonnumeric value {val!r}') from e
-            rows.append({'reference_period':period,'release_date':rel[:10],'value':format(numeric,'.15g'),'availability_status':'AVAILABLE_STRICT_PIT'})
+            rows.append({'reference_period':period,'release_date':release_date_iso(rel),'value':format(numeric,'.15g'),'availability_status':'AVAILABLE_STRICT_PIT'})
 
     if not rows: raise ValueError(f'{stream}: empty input')
     # Never reorder source chronology silently. Certified files are expected to

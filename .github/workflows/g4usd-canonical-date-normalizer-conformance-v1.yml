@@ -1,0 +1,40 @@
+name: G4USD Canonical Date Normalizer Conformance V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-one-shot-v3-datefix-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prove date-only normalization
+        run: |
+          set -euo pipefail
+          cat > /tmp/in.csv <<'CSV'
+          reference_period,release_date,value,availability_status
+          2026-01,15/02/2026,4.1,AVAILABLE_STRICT_PIT
+          2026-02,2026-03-19,4.0,AVAILABLE_STRICT_PIT
+          2026-03,,,UNAVAILABLE_OFFICIAL_NOT_PUBLISHED
+          CSV
+          python validation/g4usd_canonical_release_date_normalizer_v1.py --source /tmp/in.csv --output /tmp/out.csv
+          python - <<'PY'
+          import csv
+          a=list(csv.DictReader(open('/tmp/in.csv')))
+          b=list(csv.DictReader(open('/tmp/out.csv')))
+          assert len(a)==len(b)==3
+          assert [r['release_date'] for r in b]==['2026-02-15','2026-03-19','']
+          for x,y in zip(a,b):
+            for k in ('reference_period','value','availability_status'):
+              assert x[k]==y[k],(k,x,y)
+          print('DATE_ONLY_NORMALIZATION_CONFORMANCE_PASS')
+          PY

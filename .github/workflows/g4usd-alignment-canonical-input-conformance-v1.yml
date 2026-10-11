@@ -1,0 +1,99 @@
+name: G4USD Alignment Canonical Input Conformance V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-one-shot-v3-datefix-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Assert canonical adapter normalizes certified AUD dates
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4usd-adapter
+          cat > /tmp/g4usd-adapter/aud.csv <<'CSV'
+          reference_month,release_date,unemployment_rate_sa,availability_status
+          2026-01,15/02/2026,4.1,AVAILABLE_STRICT_PIT
+          2026-02,2026-03-19,4.0,AVAILABLE_STRICT_PIT
+          CSV
+          python validation/g4usd_macro_input_adapter_v1.py \
+            --stream AUD_LABOUR \
+            --source /tmp/g4usd-adapter/aud.csv \
+            --output /tmp/g4usd-adapter/aud-canonical.csv
+          python - <<'PY'
+          import csv
+          rows=list(csv.DictReader(open('/tmp/g4usd-adapter/aud-canonical.csv')))
+          assert [r['release_date'] for r in rows]==['2026-02-15','2026-03-19'],rows
+          print('AUD_RELEASE_DATE_NORMALIZATION_PASS')
+          PY
+      - name: Build synthetic canonical PIT inputs
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4usd-canon
+          python - <<'PY'
+          import csv,json,pathlib
+          root=pathlib.Path('/tmp/g4usd-canon')
+          series={
+            'USD': {'inf':[2.0,2.1], 'lab':[4.0,4.1]},
+            'EUR': {'inf':[2.0,2.3], 'lab':[6.0,5.8]},
+            'JPY': {'inf':[2.0,1.9], 'lab':[3.0,3.3]},
+            'CAD': {'inf':[2.0,2.3], 'lab':[5.0,5.3]},
+            'AUD': {'inf':[2.0,2.3], 'lab':[4.5,4.2]},
+          }
+          for c,d in series.items():
+            for kind in ('inf','lab'):
+              p=root/f'{c.lower()}_{"inflation" if kind=="inf" else "labour"}.csv'
+              with p.open('w',newline='') as f:
+                w=csv.DictWriter(f,fieldnames=['reference_period','release_date','value','availability_status'])
+                w.writeheader()
+                w.writerow({'reference_period':'2026-01','release_date':'2026-02-01','value':d[kind][0],'availability_status':'AVAILABLE'})
+                w.writerow({'reference_period':'2026-02','release_date':'2026-03-01','value':d[kind][1],'availability_status':'AVAILABLE'})
+                if c=='USD' and kind=='inf':
+                  w.writerow({'reference_period':'2026-03','release_date':'','value':'','availability_status':'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED'})
+          obs=[]
+          for c,diff,pred,target in [
+            ('EUR',0.10,0.1,0.02),
+            ('JPY',0.10,0.1,-0.01),
+            ('CAD',0.10,0.1,0.01),
+            ('AUD',0.00,-0.1,-0.02),
+          ]:
+            obs.append({'currency':c,'asof_date':'2026-04-01','d_diff_2y':diff,'prediction':pred,'target_return':target,'strategy_return':pred*target})
+          json.dump({'schema':'GMFQ_G4USD_RELATIVE_FRONT_END_PANEL_OOS_V1','frozen_from_pr':122,'baseline_panel_sharpe':0.30119374143958916,'observations':obs},open(root/'frozen.json','w'))
+          PY
+      - name: Execute synthetic conformance only
+        run: |
+          set -euo pipefail
+          python -m py_compile validation/g4usd_front_end_macro_cb_alignment_v1.py
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/g4usd-canon/frozen.json \
+            --eur-inflation /tmp/g4usd-canon/eur_inflation.csv --eur-labour /tmp/g4usd-canon/eur_labour.csv \
+            --jpy-inflation /tmp/g4usd-canon/jpy_inflation.csv --jpy-labour /tmp/g4usd-canon/jpy_labour.csv \
+            --cad-inflation /tmp/g4usd-canon/cad_inflation.csv --cad-labour /tmp/g4usd-canon/cad_labour.csv \
+            --aud-inflation /tmp/g4usd-canon/aud_inflation.csv --aud-labour /tmp/g4usd-canon/aud_labour.csv \
+            --usd-inflation /tmp/g4usd-canon/usd_inflation.csv --usd-labour /tmp/g4usd-canon/usd_labour.csv \
+            --output /tmp/g4usd-canon/result.json
+      - name: Assert frozen classification semantics
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/g4usd-canon/result.json'))
+          got={x['currency']:x['alignment_state'] for x in r['observations']}
+          assert got=={'EUR':'ALIGNED','JPY':'CONTRADICTORY','CAD':'MIXED','AUD':'MIXED'},got
+          assert r['method']['canonical_macro_input_schema']=='reference_period,release_date,value,availability_status'
+          assert r['method']['frozen_model_refit'] is False
+          assert r['method']['hyperparameter_tuning'] is False
+          assert r['method']['state_threshold_search'] is False
+          assert r['method']['zero_repricing_state']=='MIXED'
+          assert r['policy']=={'production_signal_authorized':False,'sizing_authorized':False}
+          print('CANONICAL_INPUT_CONFORMANCE_PASS')
+          PY
