@@ -1,0 +1,40 @@
+name: GBP CB Pricing Temporal PIT Discovery v1
+on:
+  push:
+    branches:
+      - 'validation-gbp-cb-pricing-temporal-pit-discovery-v1-*'
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect official BoE OIS archive
+        run: |
+          mkdir -p /tmp/gbp-boe-ois
+          python validation/cb_pricing/discover_gbp_boe_ois_archive_v1.py --output /tmp/gbp-boe-ois/discovery.json
+      - name: Enforce discovery-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          p='/tmp/gbp-boe-ois/discovery.json'
+          d=json.load(open(p))
+          assert d['authority']=='Bank of England'
+          assert d['xlsx_count'] >= 1
+          assert d['changes_live_data'] is False
+          assert d['changes_engine_rules'] is False
+          assert d['production_write'] is False
+          print({'xlsx_count':d['xlsx_count'],'archive_sha256':d['archive_sha256']})
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html || (echo 'production mutation detected' && exit 1)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gbp-boe-ois-archive-discovery-v1-${{ github.run_id }}
+          path: /tmp/gbp-boe-ois/discovery.json
+          retention-days: 90
