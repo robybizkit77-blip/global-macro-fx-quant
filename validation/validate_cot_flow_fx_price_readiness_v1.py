@@ -13,34 +13,38 @@ from datetime import date
 CONTRACT = pathlib.Path('validation/COT_FLOW_FX_PRICE_SOURCE_CONTRACT_V1_2026-10-11.json')
 START = '2018-01-01'
 
-def fetch_series(series_id: str):
-    params=urllib.parse.urlencode({'id':series_id,'cosd':START})
+def fetch_all(series_ids: list[str]):
+    params=urllib.parse.urlencode({'id':','.join(series_ids),'cosd':START}, safe=',')
     url='https://fred.stlouisfed.org/graph/fredgraph.csv?'+params
     req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-COT-PIT-Research/1.0'})
-    with urllib.request.urlopen(req,timeout=45) as r:
+    with urllib.request.urlopen(req,timeout=60) as r:
         raw=r.read().decode('utf-8')
-    rows=[]
-    reader=csv.reader(io.StringIO(raw))
-    header=next(reader)
-    assert len(header)>=2, header
+    reader=csv.DictReader(io.StringIO(raw))
+    assert reader.fieldnames and len(reader.fieldnames)==len(series_ids)+1, reader.fieldnames
+    date_field=reader.fieldnames[0]
+    out={sid:[] for sid in series_ids}
     for rec in reader:
-        if len(rec)<2: continue
-        ds=rec[0].strip(); vs=rec[1].strip()
-        if not ds or not vs or vs in {'.','NA','NaN'}: continue
-        try: v=float(vs)
-        except ValueError: continue
-        if not math.isfinite(v): continue
-        rows.append((date.fromisoformat(ds),v))
-    return url,rows
+        ds=(rec.get(date_field) or '').strip()
+        if not ds: continue
+        d=date.fromisoformat(ds)
+        for sid in series_ids:
+            vs=(rec.get(sid) or '').strip()
+            if not vs or vs in {'.','NA','NaN'}: continue
+            try: v=float(vs)
+            except ValueError: continue
+            if math.isfinite(v): out[sid].append((d,v))
+    return url,out
 
 def main():
     c=json.loads(CONTRACT.read_text())
     gate=c['readiness_gate']
+    ids=[spec['fred_id'] for spec in c['series'].values()]
+    url,data=fetch_all(ids)
     diagnostics={}
     latest=[]
     all_pass=True
     for ccy,spec in c['series'].items():
-        url,rows=fetch_series(spec['fred_id'])
+        rows=data[spec['fred_id']]
         values=[v for _,v in rows]
         first=rows[0][0] if rows else None
         last=rows[-1][0] if rows else None
@@ -58,7 +62,7 @@ def main():
         if last: latest.append(last)
         diagnostics[ccy]={
           'fred_id':spec['fred_id'],
-          'url':url,
+          'transport_url':url,
           'transform':spec['transform_to_local_currency_vs_usd'],
           'nonmissing_count':len(rows),
           'first_nonmissing':first.isoformat() if first else None,
@@ -74,6 +78,7 @@ def main():
       'status':'READY_FOR_RESULT_BLIND_EDGE_EXECUTION' if all_pass else 'BLOCKED_FX_PRICE_READINESS',
       'contract_schema':c['schema'],
       'series_count':len(c['series']),
+      'transport':'single FRED multi-series CSV request',
       'common_latest_nonmissing_date':common_latest.isoformat() if common_latest else None,
       'common_latest_gate_pass':common_pass,
       'diagnostics':diagnostics,
