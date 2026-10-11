@@ -1,0 +1,61 @@
+name: AUD CB Pricing ASX SFT Coverage Probe v1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-cb-pricing-temporal-pit-discovery-v1-*'
+    paths:
+      - 'validation/cb_pricing/probe_aud_asx_ib_sft_coverage_v1.py'
+      - 'validation/cb_pricing/discover_aud_asx_ib_temporal_pit_v1.py'
+      - '.github/workflows/aud-cb-pricing-asx-sft-coverage-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe-sft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install probe dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4
+      - name: Probe official ASX SFT archive
+        run: |
+          mkdir -p /tmp/aud-cb-pricing-sft
+          python validation/cb_pricing/probe_aud_asx_ib_sft_coverage_v1.py \
+            --output /tmp/aud-cb-pricing-sft/discovery.json
+      - name: Enforce discovery-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = json.loads(Path('/tmp/aud-cb-pricing-sft/discovery.json').read_text())
+          assert p['report_variant'] == 'SFT'
+          assert p['certification_authorized'] is False
+          assert p['changes_live_data'] is False
+          assert p['changes_engine_rules'] is False
+          assert p['expected_anchors'] == 36
+          print(json.dumps({
+              'status': p['status'],
+              'anchors_found': p['anchors_found'],
+              'anchors_mapping_ok': p['anchors_mapping_ok'],
+              'by_year': p['by_year'],
+              'semantic_discovery_sha256': p['semantic_discovery_sha256'],
+          }, indent=2))
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html assets || {
+            echo 'Production mutation detected'; exit 1;
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud-cb-pricing-asx-sft-coverage-probe-v1
+          path: /tmp/aud-cb-pricing-sft/
+          retention-days: 30
