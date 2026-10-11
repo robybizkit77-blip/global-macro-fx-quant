@@ -1,0 +1,76 @@
+name: Macro Walk-Forward Eligibility Gate V1
+
+on:
+  push:
+    branches:
+      - validation-macro-walkforward-eligibility-gate-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize eligibility map twice
+        run: |
+          set -euo pipefail
+          python validation/macro_walkforward_eligibility_gate_v1.py \
+            --expect-certified-count 13 --output /tmp/macro-eligibility-a.json
+          python validation/macro_walkforward_eligibility_gate_v1.py \
+            --expect-certified-count 13 --output /tmp/macro-eligibility-b.json
+          cmp /tmp/macro-eligibility-a.json /tmp/macro-eligibility-b.json
+
+      - name: Enforce current fail-closed state
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/macro-eligibility-a.json'))
+          assert p['status']=='PASS'
+          assert p['expected_targets']==16
+          assert p['certified_targets']==13
+          assert p['eligible_targets']==13
+          assert p['withheld_targets']==3
+          missing={k for k,v in p['targets'].items() if v['certification']=='WITHHELD'}
+          assert missing=={'USD.inflation','USD.labour','CHF.labour'}, missing
+          assert p['policy']['runtime_history_fallback_allowed'] is False
+          assert p['policy']['future_revision_fallback_allowed'] is False
+          PY
+
+      - name: Enforce temporal boundary behavior
+        run: |
+          set -euo pipefail
+          python validation/macro_walkforward_eligibility_gate_v1.py \
+            --as-of 2018-01 --expect-certified-count 13 --output /tmp/macro-eligibility-2018-01.json
+          python validation/macro_walkforward_eligibility_gate_v1.py \
+            --as-of 2026-06 --expect-certified-count 13 --output /tmp/macro-eligibility-2026-06.json
+          python - <<'PY'
+          import json
+          for fn in ('/tmp/macro-eligibility-2018-01.json','/tmp/macro-eligibility-2026-06.json'):
+              p=json.load(open(fn))
+              assert p['status']=='PASS'
+              assert p['eligible_targets'] <= p['certified_targets'] == 13
+              for target,row in p['targets'].items():
+                  if row['backtest_eligible']:
+                      assert row['certification']=='CERTIFIED'
+                      assert row['coverage']['start'] <= p['as_of'] <= row['coverage']['end']
+          PY
+
+      - name: Assert no repository writes
+        run: git diff --exit-code
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-walkforward-eligibility-${{ github.run_id }}
+          path: |
+            /tmp/macro-eligibility-a.json
+            /tmp/macro-eligibility-2018-01.json
+            /tmp/macro-eligibility-2026-06.json
+          retention-days: 90
