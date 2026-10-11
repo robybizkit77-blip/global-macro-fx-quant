@@ -1,0 +1,59 @@
+name: JPY Rates Temporal PIT Materialize V1
+
+on:
+  push:
+    branches:
+      - validation-jpy-rates-temporal-pit-v1-2026-10-11
+    paths:
+      - validation/materialize_jpy_rates_temporal_pit_v1.py
+      - .github/workflows/jpy-rates-temporal-pit-materialize-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-twice:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independently materialize MOF JGB history twice
+        run: |
+          mkdir -p /tmp/jpy-rates-temporal-pit/{a,b}
+          python validation/materialize_jpy_rates_temporal_pit_v1.py --output /tmp/jpy-rates-temporal-pit/a/evidence.json
+          python validation/materialize_jpy_rates_temporal_pit_v1.py --output /tmp/jpy-rates-temporal-pit/b/evidence.json
+      - name: Enforce temporal PIT invariants and equivalence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/jpy-rates-temporal-pit')
+          a=json.loads((root/'a/evidence.json').read_text())
+          b=json.loads((root/'b/evidence.json').read_text())
+          assert a['status']==b['status']=='PASS'
+          assert a['target']==b['target']=='JPY.rates_2y_10y'
+          assert a['semantic_rowset_sha256']==b['semantic_rowset_sha256']
+          assert a['coverage']==b['coverage']
+          assert a['same_basis_2y_10y'] is b['same_basis_2y_10y'] is True
+          assert a['temporal_rule']['same_day_use_allowed'] is False
+          assert b['temporal_rule']['same_day_use_allowed'] is False
+          assert a['secondary_source_fallback_used'] is b['secondary_source_fallback_used'] is False
+          assert a['changes_live_data'] is b['changes_live_data'] is False
+          assert a['changes_engine_rules'] is b['changes_engine_rules'] is False
+          assert len(a['rows']) == len(b['rows']) > 1500
+          for x,y in zip(a['rows'],b['rows']):
+              for key in ['currency','observation_date','yield_2y','yield_10y','source_basis','first_eligible_decision_date']:
+                  assert x[key]==y[key], (key,x,y)
+          print(json.dumps({'status':'PASS','observations':len(a['rows']),'semantic_rowset_sha256':a['semantic_rowset_sha256']},indent=2))
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jpy-rates-temporal-pit-v1-${{ github.run_id }}
+          path: /tmp/jpy-rates-temporal-pit/
+          retention-days: 90
