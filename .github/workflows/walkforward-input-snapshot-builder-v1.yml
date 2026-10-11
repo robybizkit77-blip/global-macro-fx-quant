@@ -1,0 +1,209 @@
+name: Walk-Forward Input Snapshot Builder V1
+
+on:
+  push:
+    branches:
+      - validation-walkforward-input-snapshot-builder-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  MACRO_CONTRACT_SHA: 6b19a687e4b2a235070eb026dc7e6476e5323191
+  EUR_INFLATION_ARTIFACT_ID: '11674452706'
+  EUR_INFLATION_ARTIFACT_DIGEST: 'sha256:ddab80f0b0cfe51a5e8b37dc482d77285353916cf499d7be3791273fdc677c6d'
+  EUR_LABOUR_ARTIFACT_ID: '11678794954'
+  EUR_LABOUR_ARTIFACT_DIGEST: 'sha256:933a0032ba3712050d7306908a3c64fd23a2c7731cd68f44cf4f4c6ea7b0e677'
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  snapshot-builder:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Borrow exact verified Macro permit contract
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
+          git checkout FETCH_HEAD -- validation/macro_walkforward_eligibility_gate_v1.py validation/backtest_input_contract_v1.py
+
+      - name: Issue and verify EUR Macro series permits
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wf-snapshot
+          python validation/backtest_input_contract_v1.py --as-of 2026-08 --target EUR.inflation --target EUR.labour --output /tmp/wf-snapshot/macro-permit.json
+          python validation/backtest_input_contract_v1.py --verify-permit /tmp/wf-snapshot/macro-permit.json --output /tmp/wf-snapshot/macro-permit-verified.json
+          cmp /tmp/wf-snapshot/macro-permit.json /tmp/wf-snapshot/macro-permit-verified.json
+          python validation/backtest_input_contract_v1.py --as-of 2026-07 --target EUR.inflation --output /tmp/wf-snapshot/macro-permit-july.json
+          python validation/backtest_input_contract_v1.py --verify-permit /tmp/wf-snapshot/macro-permit-july.json --output /tmp/wf-snapshot/macro-permit-july-verified.json
+          cmp /tmp/wf-snapshot/macro-permit-july.json /tmp/wf-snapshot/macro-permit-july-verified.json
+
+      - name: Remove borrowed Macro contract from repository working tree
+        run: |
+          set -euo pipefail
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Verify and download exact certified EUR Macro artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wf-snapshot/artifacts/inflation /tmp/wf-snapshot/artifacts/labour
+          python - <<'PY'
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          for aid, expected in [
+              (os.environ['EUR_INFLATION_ARTIFACT_ID'], os.environ['EUR_INFLATION_ARTIFACT_DIGEST']),
+              (os.environ['EUR_LABOUR_ARTIFACT_ID'], os.environ['EUR_LABOUR_ARTIFACT_DIGEST']),
+          ]:
+              meta=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{aid}'],text=True))
+              assert meta['expired'] is False, meta
+              assert meta.get('digest') == expected, (meta.get('digest'), expected)
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_INFLATION_ARTIFACT_ID}/zip" > /tmp/wf-snapshot/inflation.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${EUR_LABOUR_ARTIFACT_ID}/zip" > /tmp/wf-snapshot/labour.zip
+          unzip -q /tmp/wf-snapshot/inflation.zip -d /tmp/wf-snapshot/artifacts/inflation
+          unzip -q /tmp/wf-snapshot/labour.zip -d /tmp/wf-snapshot/artifacts/labour
+
+      - name: Assert certified Macro A/B semantic reproducibility
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,hashlib,json
+          p='/tmp/wf-snapshot/artifacts/'
+          cases=[
+            ('inflation','EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv',
+             ['reference_month','headline_hicp_yoy_pct','release_date','source_route','pit_status'],
+             'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1'),
+            ('labour','EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv',
+             ['reference_month','unemployment_rate_pct','release_date','release_geo_vintage','source_route','pit_status'],
+             'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'),
+          ]
+          for folder,name,fields,expected in cases:
+              hashes=[]
+              for side in ('a','b'):
+                  ev=json.load(open(f'{p}{folder}/{side}/evidence.json'))
+                  assert ev['status']=='PASS' and ev['semantic_rowset_sha256']==expected
+                  rows=list(csv.DictReader(open(f'{p}{folder}/{side}/{name}',newline='',encoding='utf-8')))
+                  for r in rows:
+                      for f in fields:
+                          if f in ('headline_hicp_yoy_pct','unemployment_rate_pct'): r[f]=float(r[f])
+                  canon=[{k:r[k] for k in fields} for r in rows]
+                  h=hashlib.sha256(json.dumps(canon,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+                  assert h==expected,(folder,side,h,expected); hashes.append(h)
+              assert hashes[0]==hashes[1]==expected
+          PY
+
+      - name: Select and independently verify Macro rows knowable on 2026-08-10
+        run: |
+          set -euo pipefail
+          INF=/tmp/wf-snapshot/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv
+          LAB=/tmp/wf-snapshot/artifacts/labour/a/EUR_LABOUR_STRICT_FIRST_RELEASE_2018_2026_08.csv
+          P=/tmp/wf-snapshot/macro-permit-verified.json
+          python validation/macro_temporal_row_selector_v1.py select --macro-permit "$P" --rowset-csv "$INF" --target EUR.inflation --decision-point 2026-08-10 --output /tmp/wf-snapshot/macro-inflation-row.json
+          python validation/macro_temporal_row_selector_v1.py verify --selector-result /tmp/wf-snapshot/macro-inflation-row.json --macro-permit "$P" --rowset-csv "$INF" --output /tmp/wf-snapshot/macro-inflation-verified.json
+          python validation/macro_temporal_row_selector_v1.py select --macro-permit "$P" --rowset-csv "$LAB" --target EUR.labour --decision-point 2026-08-10 --output /tmp/wf-snapshot/macro-labour-row.json
+          python validation/macro_temporal_row_selector_v1.py verify --selector-result /tmp/wf-snapshot/macro-labour-row.json --macro-permit "$P" --rowset-csv "$LAB" --output /tmp/wf-snapshot/macro-labour-verified.json
+          python - <<'PY'
+          import json
+          p='/tmp/wf-snapshot/'; i=json.load(open(p+'macro-inflation-row.json'))['row_permit']; l=json.load(open(p+'macro-labour-row.json'))['row_permit']
+          assert (i['reference_month'],i['value'],i['release_date']) == ('2026-07',2.9,'2026-07-31'), i
+          assert (l['reference_month'],l['value'],l['release_date']) == ('2026-06',6.3,'2026-07-30'), l
+          assert i['reference_month'] != '2026-08'; assert l['reference_month'] not in ('2026-07','2026-08')
+          PY
+
+      - name: Prove Macro selector blocks same-day and tampered information
+        run: |
+          set -euo pipefail
+          INF=/tmp/wf-snapshot/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv
+          python validation/macro_temporal_row_selector_v1.py select --macro-permit /tmp/wf-snapshot/macro-permit-july-verified.json --rowset-csv "$INF" --target EUR.inflation --decision-point 2026-07-31 --output /tmp/wf-snapshot/macro-inflation-sameday.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/wf-snapshot/macro-inflation-sameday.json'))['row_permit']
+          assert r['release_date'] < '2026-07-31' and r['reference_month'] != '2026-07', r
+          PY
+          cp "$INF" /tmp/wf-snapshot/inflation-tampered.csv
+          python - <<'PY'
+          import csv
+          p='/tmp/wf-snapshot/inflation-tampered.csv'; rows=list(csv.DictReader(open(p,newline='',encoding='utf-8'))); fields=list(rows[0])
+          for r in rows:
+              if r['reference_month']=='2026-07': r['headline_hicp_yoy_pct']='99.9'
+          with open(p,'w',newline='',encoding='utf-8') as f:
+              w=csv.DictWriter(f,fieldnames=fields,lineterminator='\n'); w.writeheader(); w.writerows(rows)
+          PY
+          if python validation/macro_temporal_row_selector_v1.py select --macro-permit /tmp/wf-snapshot/macro-permit-verified.json --rowset-csv /tmp/wf-snapshot/inflation-tampered.csv --target EUR.inflation --decision-point 2026-08-10 >/dev/null 2>&1; then
+            echo 'tampered Macro rowset was incorrectly accepted' >&2; exit 1
+          fi
+
+      - name: Materialize and verify exact EUR Rates row for same decision point
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3; do
+            if python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/wf-snapshot/eur-rates-rowset.json; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+          python validation/rates_backtest_input_contract_v1.py issue --decision-date 2026-08-10 --target EUR.rates_2y_10y --output /tmp/wf-snapshot/rates-layer-permit.json
+          python validation/rates_temporal_row_selector_v1.py select --permit /tmp/wf-snapshot/rates-layer-permit.json --rowset /tmp/wf-snapshot/eur-rates-rowset.json --target EUR.rates_2y_10y --decision-point 2026-08-10 --output /tmp/wf-snapshot/rates-row-result.json
+          python validation/rates_temporal_row_selector_v1.py verify --selector-result /tmp/wf-snapshot/rates-row-result.json --permit /tmp/wf-snapshot/rates-layer-permit.json --rowset /tmp/wf-snapshot/eur-rates-rowset.json --output /tmp/wf-snapshot/rates-row-verified.json
+
+      - name: Rebuild and verify cross-layer input authorization
+        run: |
+          set -euo pipefail
+          python validation/cross_layer_backtest_input_coordinator_v1.py bind --currency EUR --decision-point 2026-08-10 --macro-permit /tmp/wf-snapshot/macro-permit-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/cross-layer-bundle.json
+          python validation/cross_layer_backtest_input_coordinator_v1.py verify --bundle /tmp/wf-snapshot/cross-layer-bundle.json --macro-permit /tmp/wf-snapshot/macro-permit-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/cross-layer-verified.json
+
+      - name: Build and independently verify deterministic input snapshot
+        run: |
+          set -euo pipefail
+          python validation/walkforward_input_snapshot_builder_v1.py build --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/snapshot.json
+          python validation/walkforward_input_snapshot_builder_v1.py verify --snapshot /tmp/wf-snapshot/snapshot.json --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/snapshot-verified.json
+          python - <<'PY'
+          import json
+          p='/tmp/wf-snapshot/'; s=json.load(open(p+'snapshot.json')); v=json.load(open(p+'snapshot-verified.json'))
+          assert s['status']=='SNAPSHOT_MATERIALIZED' and s['currency']=='EUR' and s['decision_point']=='2026-08-10'
+          assert s['layers']['Macro']['rows']['EUR.inflation']['reference_month']=='2026-07'; assert s['layers']['Macro']['rows']['EUR.labour']['reference_month']=='2026-06'
+          for k in ('signal_calculation_allowed','return_label_calculation_allowed','position_sizing_allowed','backtest_execution_authorized'): assert s['policy'][k] is False
+          assert v['status']=='VERIFIED' and v['backtest_execution_authorized'] is False
+          PY
+
+      - name: Assert snapshot fail-closed completeness and tamper resistance
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,subprocess
+          p='/tmp/wf-snapshot/'
+          base=['python','validation/walkforward_input_snapshot_builder_v1.py','build','--cross-layer-bundle',p+'cross-layer-bundle.json','--macro-row-result',p+'macro-inflation-row.json','--macro-row-verification',p+'macro-inflation-verified.json','--rates-row-result',p+'rates-row-result.json','--rates-row-verification',p+'rates-row-verified.json']
+          assert subprocess.run(base,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+          mv=json.load(open(p+'macro-labour-verified.json')); mv['reference_month']='2026-07'; json.dump(mv,open(p+'macro-labour-verified-tampered.json','w'))
+          bad=base+['--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-labour-verified-tampered.json']; assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+          s=json.load(open(p+'snapshot.json')); s['policy']['backtest_execution_authorized']=True; json.dump(s,open(p+'snapshot-tampered.json','w'))
+          verify=['python','validation/walkforward_input_snapshot_builder_v1.py','verify','--snapshot',p+'snapshot-tampered.json','--cross-layer-bundle',p+'cross-layer-bundle.json','--macro-row-result',p+'macro-inflation-row.json','--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-inflation-verified.json','--macro-row-verification',p+'macro-labour-verified.json','--rates-row-result',p+'rates-row-result.json','--rates-row-verification',p+'rates-row-verified.json']; assert subprocess.run(verify,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+          PY
+
+      - name: Assert repository clean
+        run: |
+          set -euo pipefail
+          find validation -type d -name __pycache__ -prune -exec rm -rf {} +
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: walkforward-input-snapshot-${{ github.run_id }}
+          path: |
+            /tmp/wf-snapshot/snapshot.json
+            /tmp/wf-snapshot/snapshot-verified.json
+            /tmp/wf-snapshot/macro-inflation-row.json
+            /tmp/wf-snapshot/macro-labour-row.json
+            /tmp/wf-snapshot/rates-row-result.json
+            /tmp/wf-snapshot/cross-layer-bundle.json
+          retention-days: 90
