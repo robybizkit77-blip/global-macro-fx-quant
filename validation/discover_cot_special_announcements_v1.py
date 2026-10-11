@@ -105,16 +105,15 @@ def block_for(blocks:list[dict], announcement_date:str)->dict:
 
 
 def extract_other_timing_anchors(blocks:list[dict])->list[dict]:
+    # Exact page-heading dates from CFTC Historical Special Announcements.
     specs=[
-        ('2020-12-18','2020-12-21','2020-12-28'),
-        ('2021-06-18','2021-06-15','2021-06-21'),
-        ('2025-01-08','2025-01-07','2025-01-13'),
+        ('2020-12-28','2020-12-21','2020-12-28'),
+        ('2021-06-17','2021-06-15','2021-06-21'),
+        ('2025-01-07','2025-01-07','2025-01-13'),
     ]
     out=[]
     for announcement,report,actual in specs:
         b=block_for(blocks,announcement)
-        # Require both the report-date day and actual publication date to be
-        # recoverable from the CFTC text before emitting the normalized anchor.
         report_fmt=datetime.fromisoformat(report).strftime('%B %-d, %Y')
         actual_fmt=datetime.fromisoformat(actual).strftime('%B %-d, %Y')
         low=b['text'].lower()
