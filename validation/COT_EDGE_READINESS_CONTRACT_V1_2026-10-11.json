@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_COT_EDGE_READINESS_CONTRACT_V1",
+  "status": "PREDECLARED_NO_EDGE_TEST_AUTHORIZED",
+  "purpose": "Fail closed before any COT predictive-edge backtest unless historical positioning values and their decision-time publication availability are certified.",
+  "scope": {
+    "years": [2018,2019,2020,2021,2022,2023,2024,2025,2026],
+    "currencies": ["EUR","GBP","JPY","CHF","AUD","NZD","CAD","USD"],
+    "legacy_noncommercial_only": true
+  },
+  "required_before_edge_test": {
+    "full_history_discovery_pass": true,
+    "actual_release_date_proven_per_used_report": true,
+    "no_candidate_only_standard_rule_rows": true,
+    "unresolved_exception_rows_withheld": true,
+    "no_tuesday_report_date_as_availability_proxy": true,
+    "publication_lag_applied_before_signal_use": true
+  },
+  "known_discovery_state_at_freeze": {
+    "report_dates": 458,
+    "candidate_eligible_report_dates": 448,
+    "withheld_report_dates": 10,
+    "standard_rule_candidate_only_rows": 424,
+    "edge_test_authorized": false
+  },
+  "governance": {
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "no_backtest_until_gate_pass": true,
+    "no_release_date_imputation_for_certification": true,
+    "no_rescue_tuning": true
+  }
+}
