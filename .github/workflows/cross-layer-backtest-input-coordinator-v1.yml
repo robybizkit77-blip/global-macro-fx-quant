@@ -1,0 +1,183 @@
+name: Cross-Layer Backtest Input Coordinator V1
+
+on:
+  push:
+    branches:
+      - validation-cross-layer-backtest-input-coordinator-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MACRO_CONTRACT_SHA: 6b19a687e4b2a235070eb026dc7e6476e5323191
+
+jobs:
+  cross-layer-coordinator:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Borrow exact verified Macro contract without committing it
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
+          git checkout FETCH_HEAD -- \
+            validation/macro_walkforward_eligibility_gate_v1.py \
+            validation/backtest_input_contract_v1.py
+
+      - name: Issue and independently verify Macro permit
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cross-layer
+          python validation/backtest_input_contract_v1.py \
+            --as-of 2026-08 \
+            --target EUR.inflation \
+            --target EUR.labour \
+            --output /tmp/cross-layer/macro-permit.json
+          python validation/backtest_input_contract_v1.py \
+            --verify-permit /tmp/cross-layer/macro-permit.json \
+            --output /tmp/cross-layer/macro-verified.json
+          cmp /tmp/cross-layer/macro-permit.json /tmp/cross-layer/macro-verified.json
+
+      - name: Remove borrowed Macro contract from working tree
+        run: |
+          set -euo pipefail
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Materialize exact certified EUR Rates rowset with bounded retry
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3; do
+            if python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/cross-layer/eur-rowset.json; then
+              ok=1
+              break
+            fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" -eq 1
+
+      - name: Issue Rates layer permit and verified row permit
+        run: |
+          set -euo pipefail
+          python validation/rates_backtest_input_contract_v1.py issue \
+            --decision-date 2026-08-10 \
+            --target EUR.rates_2y_10y \
+            --output /tmp/cross-layer/rates-layer-permit.json
+          python validation/rates_temporal_row_selector_v1.py select \
+            --permit /tmp/cross-layer/rates-layer-permit.json \
+            --rowset /tmp/cross-layer/eur-rowset.json \
+            --target EUR.rates_2y_10y \
+            --decision-point 2026-08-10 \
+            --output /tmp/cross-layer/rates-row-result.json
+          python validation/rates_temporal_row_selector_v1.py verify \
+            --selector-result /tmp/cross-layer/rates-row-result.json \
+            --permit /tmp/cross-layer/rates-layer-permit.json \
+            --rowset /tmp/cross-layer/eur-rowset.json \
+            --output /tmp/cross-layer/rates-row-verified.json
+
+      - name: Bind Macro and Rates into one input authorization
+        run: |
+          set -euo pipefail
+          python validation/cross_layer_backtest_input_coordinator_v1.py bind \
+            --currency EUR \
+            --decision-point 2026-08-10 \
+            --macro-permit /tmp/cross-layer/macro-verified.json \
+            --rates-row-result /tmp/cross-layer/rates-row-result.json \
+            --rates-row-verification /tmp/cross-layer/rates-row-verified.json \
+            --output /tmp/cross-layer/cross-layer-bundle.json
+          python validation/cross_layer_backtest_input_coordinator_v1.py verify \
+            --bundle /tmp/cross-layer/cross-layer-bundle.json \
+            --macro-permit /tmp/cross-layer/macro-verified.json \
+            --rates-row-result /tmp/cross-layer/rates-row-result.json \
+            --rates-row-verification /tmp/cross-layer/rates-row-verified.json \
+            --output /tmp/cross-layer/cross-layer-verified.json
+
+      - name: Assert fail-closed cross-layer mismatches
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy, json, subprocess
+          p='/tmp/cross-layer/'
+          base=[
+            'python','validation/cross_layer_backtest_input_coordinator_v1.py','bind',
+            '--currency','EUR','--decision-point','2026-08-10',
+            '--macro-permit',p+'macro-verified.json',
+            '--rates-row-result',p+'rates-row-result.json',
+            '--rates-row-verification',p+'rates-row-verified.json']
+
+          # Currency substitution must fail even when both source permits are otherwise valid.
+          bad=base.copy(); bad[bad.index('EUR')]='JPY'
+          assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+
+          # A valid Macro permit for a different month must fail the daily/monthly temporal binding.
+          subprocess.run([
+            'git','fetch','--depth=1','origin','6b19a687e4b2a235070eb026dc7e6476e5323191'],check=True,
+            stdout=subprocess.DEVNULL)
+          subprocess.run(['git','checkout','FETCH_HEAD','--',
+            'validation/macro_walkforward_eligibility_gate_v1.py',
+            'validation/backtest_input_contract_v1.py'],check=True,stdout=subprocess.DEVNULL)
+          subprocess.run(['python','validation/backtest_input_contract_v1.py',
+            '--as-of','2026-07','--target','EUR.inflation','--target','EUR.labour',
+            '--output',p+'macro-july.json'],check=True)
+          subprocess.run(['git','reset','--hard'],check=True,stdout=subprocess.DEVNULL)
+          subprocess.run(['git','clean','-fd'],check=True,stdout=subprocess.DEVNULL)
+          bad=base.copy(); bad[bad.index(p+'macro-verified.json')]=p+'macro-july.json'
+          assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+
+          # Rates verification tampering must fail even if the row permit itself is intact.
+          rv=json.load(open(p+'rates-row-verified.json'))
+          tampered=copy.deepcopy(rv)
+          tampered['observation_date']='2026-08-01'
+          json.dump(tampered,open(p+'rates-row-verified-tampered.json','w'))
+          bad=base.copy(); bad[bad.index(p+'rates-row-verified.json')]=p+'rates-row-verified-tampered.json'
+          assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+
+          # Bundle tampering must fail deterministic verification.
+          bundle=json.load(open(p+'cross-layer-bundle.json'))
+          bundle['policy']['backtest_execution_authorized']=True
+          json.dump(bundle,open(p+'cross-layer-bundle-tampered.json','w'))
+          r=subprocess.run([
+            'python','validation/cross_layer_backtest_input_coordinator_v1.py','verify',
+            '--bundle',p+'cross-layer-bundle-tampered.json',
+            '--macro-permit',p+'macro-verified.json',
+            '--rates-row-result',p+'rates-row-result.json',
+            '--rates-row-verification',p+'rates-row-verified.json'],
+            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          assert r.returncode != 0
+          PY
+
+      - name: Assert bundle policy and repository clean
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='/tmp/cross-layer/'
+          b=json.load(open(p+'cross-layer-bundle.json'))
+          v=json.load(open(p+'cross-layer-verified.json'))
+          assert b['status']=='INPUT_LOAD_AUTHORIZED'
+          assert b['currency']=='EUR'
+          assert b['macro_as_of']=='2026-08'
+          assert b['policy']['required_layers']==['Macro','Rates']
+          assert b['policy']['partial_layer_bundle_allowed'] is False
+          assert b['policy']['backtest_execution_authorized'] is False
+          assert v['status']=='VERIFIED'
+          assert v['input_load_authorized'] is True
+          assert v['backtest_execution_authorized'] is False
+          PY
+          find validation -type d -name __pycache__ -prune -exec rm -rf {} +
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-layer-backtest-input-${{ github.run_id }}
+          path: /tmp/cross-layer/
+          retention-days: 90
