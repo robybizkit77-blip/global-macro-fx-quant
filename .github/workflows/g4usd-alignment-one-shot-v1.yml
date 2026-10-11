@@ -1,0 +1,126 @@
+name: G4USD Alignment One-Shot V1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  READINESS_RUN_ID: '38165837777'
+  READINESS_ARTIFACT: g4usd-alignment-integration-readiness-38165837777
+
+jobs:
+  one-shot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Assert frozen predeclared contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_CONTRACT_V1_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_NO_RESULTS_OBSERVED'
+          assert c['stacked_on']['pull_request']==122
+          assert c['stacked_on']['head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          g=c['predeclared_conditional_edge_gate']
+          assert g['all_conditions_required'] is True
+          assert g['minimum_aligned_panel_sharpe']==0.5
+          assert g['minimum_aligned_minus_unfiltered_sharpe']==0.2
+          assert g['minimum_aligned_minus_contradictory_sharpe']==0.3
+          assert g['minimum_positive_currency_sharpes_in_aligned_bucket']==3
+          assert g['minimum_aligned_pooled_directional_accuracy']==0.52
+          assert g['minimum_coverage_must_pass'] is True
+          print('FROZEN_CONTRACT_PASS')
+          PY
+
+      - name: Download exact GREEN readiness artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/one-shot
+          gh run download "$READINESS_RUN_ID" -n "$READINESS_ARTIFACT" -D /tmp/one-shot
+          test -f /tmp/one-shot/readiness-receipt.json
+          test -f /tmp/one-shot/frozen_oos.json
+          test -d /tmp/one-shot/canonical
+
+      - name: Verify readiness receipt is result-blind and authorized for one shot
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/one-shot/readiness-receipt.json'))
+          assert r['schema']=='GMFQ_G4USD_ALIGNMENT_INTEGRATION_READINESS_V1'
+          assert r['status']=='READY_FOR_ONE_SHOT_TEST'
+          assert r['ready_for_one_shot_test'] is True
+          assert r['performance_authorized'] is False
+          assert r['alignment_result_computed'] is False
+          assert r['alignment_engine_invoked'] is False
+          p=r['frozen_parent']
+          assert p['pr']==122
+          assert p['head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          assert p['oos_observations']==256
+          assert abs(p['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          assert len(r['input_streams'])==10
+          print('READINESS_RECEIPT_PASS')
+          PY
+
+      - name: Execute predeclared one-shot conditional diagnostic exactly once
+        run: |
+          set -euo pipefail
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/one-shot/frozen_oos.json \
+            --eur-inflation /tmp/one-shot/canonical/eur_inflation.csv \
+            --eur-labour /tmp/one-shot/canonical/eur_labour.csv \
+            --jpy-inflation /tmp/one-shot/canonical/jpy_inflation.csv \
+            --jpy-labour /tmp/one-shot/canonical/jpy_labour.csv \
+            --cad-inflation /tmp/one-shot/canonical/cad_inflation.csv \
+            --cad-labour /tmp/one-shot/canonical/cad_labour.csv \
+            --aud-inflation /tmp/one-shot/canonical/aud_inflation.csv \
+            --aud-labour /tmp/one-shot/canonical/aud_labour.csv \
+            --usd-inflation /tmp/one-shot/canonical/usd_inflation.csv \
+            --usd-labour /tmp/one-shot/canonical/usd_labour.csv \
+            --output /tmp/one-shot/result.json
+
+      - name: Validate result completeness without rescuing a failed edge
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/one-shot/result.json'))
+          assert r['schema']=='GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_V1'
+          assert r['status']=='DIAGNOSTIC_COMPLETE'
+          assert abs(r['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          assert set(r['state_results'])=={'ALIGNED','MIXED','CONTRADICTORY','UNAVAILABLE'}
+          assert set(r['currency_state_results'])=={'EUR','JPY','CAD','AUD'}
+          expected={
+            'aligned_panel_sharpe_ge_0_50',
+            'aligned_improvement_ge_0_20',
+            'aligned_minus_contradictory_ge_0_30',
+            'positive_aligned_currency_sharpes_ge_3',
+            'aligned_directional_accuracy_ge_0_52',
+            'minimum_coverage',
+          }
+          assert set(r['edge_gate'])==expected
+          assert r['edge_survival']==all(r['edge_gate'].values())
+          assert r['policy']['production_signal_authorized'] is False
+          assert r['policy']['sizing_authorized'] is False
+          print(json.dumps({
+            'edge_survival':r['edge_survival'],
+            'aligned':r['state_results']['ALIGNED'],
+            'mixed':r['state_results']['MIXED'],
+            'contradictory':r['state_results']['CONTRADICTORY'],
+            'gates':r['edge_gate'],
+          },indent=2,sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-alignment-one-shot-${{ github.run_id }}
+          path: /tmp/one-shot/result.json
+          if-no-files-found: error
+          retention-days: 90
