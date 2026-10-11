@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
 """Conditional diagnostic: frozen G4USD relative-2Y repricing × macro/CB alignment.
 
-This script MUST NOT refit or retune the PR #122 model. It consumes a frozen OOS
-prediction file plus point-in-time macro rowsets and only stratifies observations
-into predeclared states: ALIGNED, MIXED, CONTRADICTORY, UNAVAILABLE.
+This implementation is deliberately result-blind. It MUST NOT refit or retune the
+PR #122 model. It consumes frozen OOS predictions plus point-in-time macro rowsets
+and stratifies observations into the predeclared states ALIGNED, MIXED,
+CONTRADICTORY, UNAVAILABLE.
+
+Contract-critical semantics:
+- macro pressure is based on CHANGES in the latest PIT-known macro readings,
+  not contemporaneous relative levels;
+- pooled state Sharpe is computed from equal-weight MONTHLY panel returns so it
+  is comparable with the frozen PR #122 panel Sharpe;
+- no observation/as-of date may substitute for release eligibility.
 """
 from __future__ import annotations
 
 import argparse, csv, json, math
 from bisect import bisect_right
+from collections import defaultdict
 from pathlib import Path
 
 CCYS=("EUR","JPY","CAD","AUD")
+STATES=("ALIGNED","MIXED","CONTRADICTORY","UNAVAILABLE")
 
 
 def mean(x): return sum(x)/len(x) if x else None
@@ -25,9 +35,19 @@ def sharpe(r):
     s=stdev(r)
     return None if not r or s<=1e-12 else (sum(r)/len(r))/s*math.sqrt(12)
 
+def max_drawdown_log_returns(r):
+    if not r: return 0.0
+    wealth=1.0; peak=1.0; mdd=0.0
+    for x in r:
+        wealth*=math.exp(x)
+        peak=max(peak,wealth)
+        mdd=min(mdd,wealth/peak-1.0)
+    return mdd
+
 def hit(rows):
     if not rows: return None
-    return sum(1 for r in rows if (r['prediction']>0)==(r['target_return']>0))/len(rows)
+    # Exact frozen-parent convention: prediction >= 0 is the positive direction.
+    return sum(1 for r in rows if (r['prediction']>=0)==(r['target_return']>0))/len(rows)
 
 def load_macro(path:Path, date_col:str, value_col:str):
     rows=[]
@@ -42,20 +62,28 @@ def load_macro(path:Path, date_col:str, value_col:str):
     rows.sort()
     return rows
 
-def latest(rows, asof):
+def latest_two(rows,asof):
+    """Return (latest, previous) readings eligible by asof, preserving release order."""
     dates=[d for d,_ in rows]
     i=bisect_right(dates,asof)-1
-    return None if i<0 else rows[i][1]
+    if i<0: return (None,None)
+    latest=rows[i][1]
+    prev=rows[i-1][1] if i>=1 else None
+    return latest,prev
 
-def sign(v, eps=1e-12): return 1 if v>eps else (-1 if v<-eps else 0)
+def change_pair(rows,asof):
+    cur,prev=latest_two(rows,asof)
+    return (None,cur,prev) if cur is None or prev is None else (cur-prev,cur,prev)
 
-def classify(repricing, inf_rel, lab_rel):
-    if inf_rel is None or lab_rel is None: return 'UNAVAILABLE'
+def sign(v,eps=1e-12): return 1 if v>eps else (-1 if v<-eps else 0)
+
+def classify(repricing, inflation_pressure, labour_pressure):
+    if inflation_pressure is None or labour_pressure is None: return 'UNAVAILABLE'
     s=sign(repricing)
+    # Exact-zero repricing carries no directional vote. Keep inside the frozen
+    # predeclared state universe as MIXED; report zero count separately.
     if s==0: return 'MIXED'
-    # Inflation higher relative to US => more hawkish pressure; labour uses unemployment,
-    # so LOWER unemployment relative to US is more hawkish: invert labour differential.
-    votes=[sign(inf_rel), sign(-lab_rel)]
+    votes=[sign(inflation_pressure),sign(labour_pressure)]
     agree=sum(1 for v in votes if v==s)
     opp=sum(1 for v in votes if v==-s)
     if agree==2: return 'ALIGNED'
@@ -63,12 +91,24 @@ def classify(repricing, inf_rel, lab_rel):
     if opp>=1: return 'CONTRADICTORY'
     return 'MIXED'
 
-def summarize(rows):
+def panel_returns(rows):
+    """Equal-weight cross-sectional strategy return for each OOS as-of month."""
+    by_date=defaultdict(list)
+    for r in rows: by_date[r['asof_date'][:10]].append(r['strategy_return'])
+    return [(d,sum(v)/len(v)) for d,v in sorted(by_date.items())]
+
+def summarize(rows,panel:bool):
+    if panel:
+        pr=panel_returns(rows); rr=[v for _,v in pr]
+    else:
+        pr=[]; rr=[r['strategy_return'] for r in rows]
     return {
         'n':len(rows),
-        'sharpe':sharpe([r['strategy_return'] for r in rows]),
+        'months':len(pr) if panel else len(rows),
+        'sharpe':sharpe(rr),
         'directional_accuracy':hit(rows),
-        'total_log_return':sum(r['strategy_return'] for r in rows) if rows else 0.0,
+        'total_log_return':sum(rr) if rr else 0.0,
+        'max_drawdown':max_drawdown_log_returns(rr),
     }
 
 def main():
@@ -103,21 +143,36 @@ def main():
     out=[]
     for r in frozen['observations']:
         c=r['currency']; asof=r['asof_date'][:10]
-        li=latest(data[c]['inf'],asof); ui=latest(data['USD']['inf'],asof)
-        ll=latest(data[c]['lab'],asof); ul=latest(data['USD']['lab'],asof)
-        inf_rel=None if li is None or ui is None else li-ui
-        lab_rel=None if ll is None or ul is None else ll-ul
-        state=classify(r['d_diff_2y'],inf_rel,lab_rel)
+        dli,li,pli=change_pair(data[c]['inf'],asof)
+        dui,ui,pui=change_pair(data['USD']['inf'],asof)
+        dll,ll,pll=change_pair(data[c]['lab'],asof)
+        dul,ul,pul=change_pair(data['USD']['lab'],asof)
+
+        # Frozen contract:
+        # inflation pressure = sign(Δ local inflation - Δ US inflation)
+        # labour pressure = sign(-(Δ local unemployment - Δ US unemployment))
+        inf_pressure=None if dli is None or dui is None else dli-dui
+        lab_pressure=None if dll is None or dul is None else -(dll-dul)
+        state=classify(r['d_diff_2y'],inf_pressure,lab_pressure)
         x=dict(r)
-        x.update({'local_inflation':li,'usd_inflation':ui,'inflation_relative':inf_rel,
-                  'local_unemployment':ll,'usd_unemployment':ul,'labour_relative':lab_rel,
-                  'alignment_state':state})
+        x.update({
+          'local_inflation':li,'local_inflation_previous':pli,'local_inflation_change':dli,
+          'usd_inflation':ui,'usd_inflation_previous':pui,'usd_inflation_change':dui,
+          'inflation_pressure':inf_pressure,
+          'local_unemployment':ll,'local_unemployment_previous':pll,'local_unemployment_change':dll,
+          'usd_unemployment':ul,'usd_unemployment_previous':pul,'usd_unemployment_change':dul,
+          'labour_pressure':lab_pressure,
+          'alignment_state':state,
+        })
         out.append(x)
 
-    states={s:summarize([r for r in out if r['alignment_state']==s]) for s in ('ALIGNED','MIXED','CONTRADICTORY','UNAVAILABLE')}
+    # Pooled state metrics use monthly equal-weight panel returns, matching PR #122.
+    states={s:summarize([r for r in out if r['alignment_state']==s],panel=True) for s in STATES}
+    # One row/currency/month in frozen OOS, so per-currency metrics are ordinary monthly series.
     per_ccy={}
     for c in CCYS:
-        per_ccy[c]={s:summarize([r for r in out if r['currency']==c and r['alignment_state']==s]) for s in ('ALIGNED','MIXED','CONTRADICTORY')}
+        per_ccy[c]={s:summarize([r for r in out if r['currency']==c and r['alignment_state']==s],panel=False)
+                    for s in ('ALIGNED','MIXED','CONTRADICTORY')}
 
     baseline=frozen['baseline_panel_sharpe']
     sa=states['ALIGNED']['sharpe']; sc=states['CONTRADICTORY']['sharpe']
@@ -131,6 +186,7 @@ def main():
       'aligned_directional_accuracy_ge_0_52': states['ALIGNED']['directional_accuracy'] is not None and states['ALIGNED']['directional_accuracy']>=0.52,
       'minimum_coverage': min_cov,
     }
+    zero_repricing=sum(1 for r in out if sign(r['d_diff_2y'])==0)
     result={
       'schema':'GMFQ_G4USD_FRONT_END_MACRO_CB_ALIGNMENT_V1',
       'status':'DIAGNOSTIC_COMPLETE',
@@ -138,7 +194,12 @@ def main():
         'frozen_model_refit':False,'hyperparameter_tuning':False,'state_threshold_search':False,
         'currency_specific_rules':False,'eur_excluded':False,
         'pit_release_fallback_forbidden':True,
-        'labour_definition':'local minus US unemployment; lower relative unemployment implies more hawkish pressure',
+        'inflation_definition':'change(local PIT-known inflation) minus change(US PIT-known inflation)',
+        'labour_definition':'negative of [change(local PIT-known unemployment) minus change(US PIT-known unemployment)]',
+        'pooled_state_sharpe_definition':'annualized Sharpe of equal-weight monthly panel strategy returns',
+        'direction_convention':'prediction >= 0 is positive, matching frozen parent',
+        'zero_repricing_state':'MIXED',
+        'zero_repricing_observations':zero_repricing,
       },
       'baseline_panel_sharpe':baseline,
       'state_results':states,'currency_state_results':per_ccy,
@@ -147,6 +208,6 @@ def main():
       'policy':{'production_signal_authorized':False,'sizing_authorized':False}
     }
     Path(a.output).write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-    print(json.dumps({'edge_survival':result['edge_survival'],'state_results':states,'gates':gates},indent=2,sort_keys=True))
+    print(json.dumps({'edge_survival':result['edge_survival'],'state_results':states,'gates':gates,'zero_repricing_observations':zero_repricing},indent=2,sort_keys=True))
 
 if __name__=='__main__': main()
