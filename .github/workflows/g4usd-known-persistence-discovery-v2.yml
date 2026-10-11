@@ -1,0 +1,91 @@
+name: G4USD Known Persistence Discovery V2
+
+on:
+  push:
+    branches:
+      - validation-g4usd-known-persistence-discovery-v2-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze V2 contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_FRONT_END_KNOWN_PERSISTENCE_DISCOVERY_CONTRACT_V2_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_EXPLORATORY_NO_V2_RESULTS_OBSERVED'
+          assert c['eligibility']['lookahead_forbidden'] is True
+          assert c['governance']['no_edge_certification'] is True
+          assert c['governance']['future_unseen_confirmation_required'] is True
+          print('V2_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Download exact GREEN readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: g4usd-alignment-integration-readiness-fast-v3-38169617850
+          path: /tmp/v2
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38169617850
+      - name: Normalize dates and reconstruct corrected alignment source
+        run: |
+          mkdir -p /tmp/v2/canonical-fixed
+          for f in /tmp/v2/canonical/*.csv; do
+            b=$(basename "$f")
+            python validation/g4usd_canonical_release_date_normalizer_v1.py --source "$f" --output "/tmp/v2/canonical-fixed/$b"
+          done
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/v2/frozen_oos.json \
+            --eur-inflation /tmp/v2/canonical-fixed/eur_inflation.csv \
+            --eur-labour /tmp/v2/canonical-fixed/eur_labour.csv \
+            --jpy-inflation /tmp/v2/canonical-fixed/jpy_inflation.csv \
+            --jpy-labour /tmp/v2/canonical-fixed/jpy_labour.csv \
+            --cad-inflation /tmp/v2/canonical-fixed/cad_inflation.csv \
+            --cad-labour /tmp/v2/canonical-fixed/cad_labour.csv \
+            --aud-inflation /tmp/v2/canonical-fixed/aud_inflation.csv \
+            --aud-labour /tmp/v2/canonical-fixed/aud_labour.csv \
+            --usd-inflation /tmp/v2/canonical-fixed/usd_inflation.csv \
+            --usd-labour /tmp/v2/canonical-fixed/usd_labour.csv \
+            --output /tmp/v2/alignment-source.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v2/alignment-source.json'))
+          assert r['state_results']['CONTRADICTORY']['n']==67
+          assert abs(r['state_results']['CONTRADICTORY']['sharpe']-1.1348751274937703)<1e-12
+          print('V2_SOURCE_REPRODUCED_PASS')
+          PY
+      - name: Execute known-at-decision persistence discovery
+        run: |
+          python validation/g4usd_front_end_known_persistence_discovery_v2.py \
+            --alignment-result /tmp/v2/alignment-source.json \
+            --output /tmp/v2/known-persistence-v2.json
+      - name: Validate governance
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v2/known-persistence-v2.json'))
+          assert r['status']=='EXPLORATORY_DIAGNOSTIC_COMPLETE_NOT_EDGE_CERTIFICATION'
+          assert r['governance']['edge_certified'] is False
+          assert r['governance']['production_signal_authorized'] is False
+          assert r['governance']['sizing_authorized'] is False
+          assert r['governance']['lookahead_forbidden'] is True
+          assert sum(g['n'] for g in r['groups'].values())==67
+          print('V2_OUTPUT_GOVERNANCE_PASS')
+          PY
+      - name: Upload V2 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-known-persistence-discovery-v2-${{ github.run_id }}
+          path: /tmp/v2/known-persistence-v2.json
+          if-no-files-found: error
+          retention-days: 30
