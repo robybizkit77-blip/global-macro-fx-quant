@@ -1,0 +1,60 @@
+name: AUD CB Pricing Temporal PIT Discovery v1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-cb-pricing-temporal-pit-discovery-v1-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install discovery dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4
+      - name: Independently probe ASX IB archive twice
+        run: |
+          mkdir -p /tmp/aud-cb-pricing-pit/{a,b}
+          python validation/cb_pricing/discover_aud_asx_ib_temporal_pit_v1.py --output /tmp/aud-cb-pricing-pit/a/discovery.json
+          python validation/cb_pricing/discover_aud_asx_ib_temporal_pit_v1.py --output /tmp/aud-cb-pricing-pit/b/discovery.json
+      - name: Enforce reproducibility and fail-closed discovery invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/aud-cb-pricing-pit')
+          a=json.loads((root/'a/discovery.json').read_text())
+          b=json.loads((root/'b/discovery.json').read_text())
+          assert a['schema']==b['schema']=='GMFQ_AUD_CB_PRICING_TEMPORAL_PIT_DISCOVERY_V1'
+          assert a['semantic_discovery_sha256']==b['semantic_discovery_sha256']
+          assert a['by_year']==b['by_year']
+          assert a['changes_live_data'] is b['changes_live_data'] is False
+          assert a['changes_engine_rules'] is b['changes_engine_rules'] is False
+          assert a['expected_anchors']==36
+          assert a['anchors_found']==b['anchors_found']
+          assert a['anchors_mapping_ok']==b['anchors_mapping_ok']
+          print(json.dumps({
+            'status':a['status'],
+            'anchors_found':a['anchors_found'],
+            'anchors_mapping_ok':a['anchors_mapping_ok'],
+            'by_year':a['by_year'],
+            'semantic_discovery_sha256':a['semantic_discovery_sha256'],
+          },indent=2))
+          if a['status'] != 'PASS':
+              raise SystemExit('AUD ASX archive is not yet certifiable across the discovery anchors; fail closed')
+          PY
+      - name: Assert no production writes
+        run: git diff --exit-code -- live_data index.html payload
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud-cb-pricing-temporal-pit-discovery-v1-${{ github.run_id }}
+          path: /tmp/aud-cb-pricing-pit/
+          retention-days: 90
