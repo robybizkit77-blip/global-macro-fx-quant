@@ -1,0 +1,91 @@
+{
+  "schema": "GMFQ_G4USD_FRONT_END_MACRO_DIVERGENCE_DISCOVERY_CONTRACT_V1",
+  "date": "2026-10-11",
+  "status": "PREDECLARED_EXPLORATORY_NO_NEW_RESULTS_OBSERVED",
+  "purpose": "Characterize why the previously observed CONTRADICTORY state outperformed without promoting that observation to a certified edge on the already-seen sample.",
+  "lineage": {
+    "failed_alignment_pr": 129,
+    "failed_alignment_head_sha": "7b75f2229abfb992967cecd9668a1f9a9fadb36d",
+    "frozen_parent_pr": 122,
+    "frozen_parent_head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5",
+    "baseline_panel_sharpe": 0.30119374143958916,
+    "corrected_alignment_run_id": 38171819022,
+    "corrected_observed_contradictory_sharpe": 1.1348751274937703
+  },
+  "research_governance": {
+    "same_historical_sample_is_discovery_only": true,
+    "no_production_edge_certification_from_discovery_sample": true,
+    "no_sizing_authorization": true,
+    "no_production_signal_authorization": true,
+    "no_currency_exclusion": true,
+    "no_threshold_search_after_outputs": true,
+    "no_hyperparameter_tuning": true,
+    "no_model_refit": true,
+    "eur_must_remain_included": true,
+    "negative_or_null_result_must_be_retained": true,
+    "future_confirmation_requires_unseen_data": true
+  },
+  "core_question": "When local-minus-USD 2Y repricing contradicts the contemporaneously known relative macro impulse, is the information primarily coming from rates leading macro, from temporary macro-rate dislocation, or from a non-robust sample effect?",
+  "frozen_inputs": {
+    "frozen_oos_parent": "exact PR122 OOS observations",
+    "macro_inputs": "exact corrected canonical PIT streams used by PR129",
+    "currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "usd_leg": "USD",
+    "frequency": "monthly OOS observation grid inherited from PR122"
+  },
+  "divergence_definition": {
+    "front_end_sign": "sign(change in local-minus-USD 2Y differential at t)",
+    "inflation_pressure_sign": "sign(change in latest-known local inflation impulse minus change in latest-known USD inflation impulse)",
+    "labour_pressure_sign": "sign(-(change in latest-known local unemployment impulse minus change in latest-known USD unemployment impulse))",
+    "contradictory_state": "neither macro pressure supports the non-zero front-end sign and at least one macro pressure opposes it",
+    "zero_front_end_repricing": "not eligible for divergence subtyping"
+  },
+  "predeclared_subtypes": {
+    "DOUBLE_OPPOSITION": "inflation and labour pressure are both non-zero and both opposite the front-end sign",
+    "INFLATION_ONLY_OPPOSITION": "inflation pressure is opposite the front-end sign and labour pressure is zero",
+    "LABOUR_ONLY_OPPOSITION": "labour pressure is opposite the front-end sign and inflation pressure is zero",
+    "OTHER_CONTRADICTORY": "contradictory under the parent contract but not one of the three mutually exclusive subtypes above"
+  },
+  "predeclared_diagnostics": {
+    "per_subtype": [
+      "n",
+      "months",
+      "directional_accuracy_of_frozen_parent_prediction",
+      "total_log_return_of_frozen_parent_prediction",
+      "annualized_sharpe_of_frozen_parent_prediction",
+      "max_drawdown_of_frozen_parent_prediction"
+    ],
+    "per_currency": [
+      "subtype_counts",
+      "subtype_sharpe",
+      "subtype_directional_accuracy"
+    ],
+    "lead_lag_characterization": {
+      "horizons_months": [1, 3],
+      "metric": "subsequent FX return signed by current front-end repricing direction",
+      "purpose": "test whether rates direction tends to lead subsequent FX during contradiction",
+      "note": "exploratory only on this already-observed history"
+    },
+    "persistence_characterization": {
+      "definition": "whether the front-end repricing sign remains the same at the next OOS observation",
+      "groups": ["PERSISTS", "REVERSES_OR_ZERO"],
+      "metrics": ["n", "subsequent_1m_signed_fx_return_mean", "subsequent_3m_signed_fx_return_mean"]
+    }
+  },
+  "interpretation_rules": {
+    "no_single_subtype_can_be_called_an_edge_from_this_sample": true,
+    "large_sharpe_with_small_n_must_be_flagged_as_fragile": true,
+    "cross_currency_consistency_required_before_candidate_generation": "at least 3 of 4 currencies must point in the same qualitative direction",
+    "candidate_generation_only": "If a coherent mechanism appears, write a separate confirmatory contract before looking at any future OOS validation results."
+  },
+  "future_confirmatory_stage": {
+    "required": true,
+    "sample": "strictly unseen observations after the discovery cutoff",
+    "minimum_candidate_requirements_before_forward_test": {
+      "minimum_discovery_observations": 40,
+      "minimum_currencies_with_same_sign": 3,
+      "no_single_currency_contribution_dominance": "no one currency may contribute more than 50% of candidate observations"
+    },
+    "production_promotion": "forbidden until a separate predeclared unseen-data gate passes"
+  }
+}
