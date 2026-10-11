@@ -1,0 +1,46 @@
+name: G4USD Alignment One-Shot Preflight V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-alignment-one-shot-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Assert frozen contract remains predeclared
+        run: |
+          python - <<'PY'
+          import json
+          p='validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_CONTRACT_V1_2026-10-11.json'
+          c=json.load(open(p))
+          assert c['status']=='PREDECLARED_NO_RESULTS_OBSERVED'
+          assert c['stacked_on']['pull_request']==122
+          assert c['stacked_on']['head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          g=c['predeclared_conditional_edge_gate']
+          assert g=={
+            'all_conditions_required': True,
+            'minimum_aligned_panel_sharpe': 0.5,
+            'minimum_aligned_minus_unfiltered_sharpe': 0.2,
+            'minimum_aligned_minus_contradictory_sharpe': 0.3,
+            'minimum_positive_currency_sharpes_in_aligned_bucket': 3,
+            'minimum_aligned_pooled_directional_accuracy': 0.52,
+            'minimum_coverage_must_pass': True,
+          }
+          print('FROZEN_CONTRACT_PASS')
+          PY
+      - name: Test canonical input schema and state semantics with synthetic data only
+        run: python validation/test_g4usd_alignment_canonical_schema_v1.py
+      - name: Assert no real result artifacts exist on branch
+        run: |
+          test ! -e validation/G4USD_FRONT_END_MACRO_CB_ALIGNMENT_RESULT_V1_2026-10-11.json
+          echo RESULT_BLIND_PREFLIGHT_PASS
