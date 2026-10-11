@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_EUR_RATES_TEMPORAL_PIT_RECEIPT_V1",
+  "target": "EUR.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "verdict": "TEMPORAL_PIT_CERTIFIABLE",
+  "base_main_sha": "68ffbbeaf0b18c64456f0468ed5be55b071d6b9c",
+  "validated_source_sha": "975e9b9d386285b37f08d7cd49ead99f4ec147c3",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-10-06",
+    "observations": 2235
+  },
+  "semantic_rowset_sha256": "c8b2f80c2c89fb31c07d25f64942100e90c9a85305d215460168a4088ab4f915",
+  "materializer_run_id": 38124528903,
+  "engine_logic_audit_run_id": 38124528886,
+  "staging_browser_audit_run_id": 38124528879,
+  "artifact_id": 11696513178,
+  "artifact_name": "eur-rates-temporal-pit-v1-38124528903",
+  "artifact_digest": "sha256:8ffd5f840c4fd7f0c7dfa5746c1994e3041d9d4b9690882234063418235a7823",
+  "artifact_expires_at": "2027-01-09T08:21:44Z",
+  "checks": {
+    "official_ecb_api_only": true,
+    "same_basis_2y_10y": true,
+    "double_materialization_semantic_match": true,
+    "same_day_use_forbidden_without_verified_timestamp": true,
+    "decision_date_must_be_strictly_after_observation_date": true,
+    "secondary_source_fallback_used": false,
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_ui_runtime": false
+  },
+  "temporal_policy": {
+    "verified_publication_timestamp": false,
+    "conservative_daily_rule": "D observation is eligible only for a decision point after D.",
+    "intraday_rule": "Same-day use is forbidden unless a source-specific official publication/settlement timestamp is independently verified."
+  }
+}
