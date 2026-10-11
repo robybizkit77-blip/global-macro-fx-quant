@@ -1,0 +1,54 @@
+name: COT Edge Readiness Gate V1
+
+on:
+  push:
+    branches:
+      - validation-cot-edge-readiness-gate-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/COT_EDGE_READINESS_CONTRACT_V1_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_NO_EDGE_TEST_AUTHORIZED'
+          assert c['governance']['no_backtest_until_gate_pass'] is True
+          assert c['known_discovery_state_at_freeze']['edge_test_authorized'] is False
+          print('COT_EDGE_READINESS_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Rebuild conservative availability discovery
+        run: |
+          mkdir -p /tmp/cot-edge-readiness
+          python validation/discover_cot_conservative_availability_calendar_v1.py --output /tmp/cot-edge-readiness/availability.json
+      - name: Evaluate fail-closed edge readiness
+        run: |
+          python validation/cot_edge_readiness_gate_v1.py \
+            --availability-discovery /tmp/cot-edge-readiness/availability.json \
+            --output /tmp/cot-edge-readiness/readiness.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cot-edge-readiness/readiness.json'))
+          assert r['status']=='BLOCKED_TEMPORAL_PIT_NOT_FULLY_CERTIFIED'
+          assert r['counts']['report_dates']==458
+          assert r['counts']['withheld']==10
+          assert r['counts']['candidate_only_standard_rule']==424
+          assert r['edge_test_authorized'] is False
+          print('COT_EDGE_READINESS_FAIL_CLOSED_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cot-edge-readiness-v1-${{ github.run_id }}
+          path: /tmp/cot-edge-readiness/
+          if-no-files-found: error
+          retention-days: 90
