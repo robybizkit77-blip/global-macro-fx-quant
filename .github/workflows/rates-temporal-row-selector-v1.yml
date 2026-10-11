@@ -22,8 +22,23 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/rates-row-selector
-          python validation/materialize_eur_rates_temporal_pit_v1.py --output /tmp/rates-row-selector/eur-rowset.json
-          python validation/materialize_jpy_rates_temporal_pit_v1.py --output /tmp/rates-row-selector/jpy-rowset.json
+          materialize_with_retry() {
+            local script="$1"
+            local output="$2"
+            local attempt
+            for attempt in 1 2 3; do
+              rm -f "$output"
+              if python "$script" --output "$output"; then
+                return 0
+              fi
+              if [ "$attempt" -lt 3 ]; then
+                sleep $((attempt * 5))
+              fi
+            done
+            return 1
+          }
+          materialize_with_retry validation/materialize_eur_rates_temporal_pit_v1.py /tmp/rates-row-selector/eur-rowset.json
+          materialize_with_retry validation/materialize_jpy_rates_temporal_pit_v1.py /tmp/rates-row-selector/jpy-rowset.json
 
       - name: Issue verified layer permits
         run: |
@@ -78,7 +93,6 @@ jobs:
           assert jpy_after['observation_date']=='2026-10-05', jpy_after
           assert jpy_after['first_eligible_decision_point']=='2026-10-06T09:30:00+09:00'
 
-          # Exact 09:30 is not strictly after release: the 2026-10-05 row must not be selected.
           subprocess.run([
               'python','validation/rates_temporal_row_selector_v1.py','select',
               '--permit',p+'jpy-layer-permit.json','--rowset',p+'jpy-rowset.json',
@@ -87,7 +101,6 @@ jobs:
           jpy_exact=json.load(open(p+'jpy-row-permit-exact.json'))['row_permit']
           assert jpy_exact['observation_date'] < '2026-10-05', jpy_exact
 
-          # Date-only JPY decisions cannot prove they occur after the verified 09:30 release.
           r=subprocess.run([
               'python','validation/rates_temporal_row_selector_v1.py','select',
               '--permit',p+'jpy-layer-permit.json','--rowset',p+'jpy-rowset.json',
