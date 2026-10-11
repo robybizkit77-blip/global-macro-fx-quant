@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_EUR_RATES_TEMPORAL_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "EUR.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "authority": "European Central Bank",
+  "source": "ECB AAA Svensson spot curve, SR_2Y and SR_10Y",
+  "source_endpoint_pattern": "https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.{series}?format=csvdata&startPeriod=2018-01-01",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-10-06",
+    "observations": 2235
+  },
+  "series_contract": {
+    "currency": "EUR",
+    "tenors": ["2Y", "10Y"],
+    "basis": "official_same_basis_ecb_aaa_svensson_spot_curve",
+    "same_observation_date_required": true,
+    "same_source_family_required": true
+  },
+  "temporal_contract": {
+    "exact_publication_timestamp_verified": false,
+    "same_day_use_allowed": false,
+    "eligibility": "decision_date > observation_date",
+    "daily_backtest_interpretation": "Without a verified official publication timestamp for each historical row, an observation dated D cannot affect a D decision and may first affect a later decision point.",
+    "intraday_same_day_use": "FORBIDDEN_WITHOUT_VERIFIED_OFFICIAL_TIMESTAMP"
+  },
+  "validation": {
+    "base_main_sha": "68ffbbeaf0b18c64456f0468ed5be55b071d6b9c",
+    "validated_source_sha": "975e9b9d386285b37f08d7cd49ead99f4ec147c3",
+    "materializer_run_id": 38124528903,
+    "engine_logic_audit_run_id": 38124528886,
+    "staging_browser_audit_run_id": 38124528879,
+    "artifact_id": 11696513178,
+    "artifact_name": "eur-rates-temporal-pit-v1-38124528903",
+    "artifact_digest": "sha256:8ffd5f840c4fd7f0c7dfa5746c1994e3041d9d4b9690882234063418235a7823",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "source_hashes": {
+    "SR_2Y": "0088dffeee94863a223c0def6c88e69d47db0320a73bdd8550030fb1fc9d9875",
+    "SR_10Y": "3b176f9cc1a97ddc59b39c7e393dfee257f5392ddd6fce9baf24ab947087c0f0"
+  },
+  "semantic_rowset_sha256": "c8b2f80c2c89fb31c07d25f64942100e90c9a85305d215460168a4088ab4f915",
+  "invariants": {
+    "official_source_only": true,
+    "same_basis_2y_10y": true,
+    "duplicate_observation_dates": false,
+    "monotonic_observation_order": true,
+    "secondary_source_fallback_used": false,
+    "same_day_lookahead_prevented": true,
+    "two_materializations_semantically_identical": true
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}
