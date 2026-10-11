@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_CAD_RATES_TEMPORAL_PIT_EVIDENCE_V1",
+  "status": "PASS",
+  "target": "CAD.rates_2y_10y",
+  "evidence_class": "TEMPORAL_PIT_OFFICIAL_MARKET_HISTORY",
+  "authority": "Bank of Canada",
+  "source": "Valet API selected benchmark Government of Canada bond yields",
+  "source_endpoint": "https://www.bankofcanada.ca/valet/observations/group/bond_yields_benchmark/json",
+  "coverage": {
+    "start_date": "2018-01-02",
+    "end_date": "2026-10-06",
+    "observations": 2186
+  },
+  "series_contract": {
+    "currency": "CAD",
+    "tenors": ["2Y", "10Y"],
+    "series_2y": "BD.CDN.2YR.DQ.YLD",
+    "series_10y": "BD.CDN.10YR.DQ.YLD",
+    "basis": "official_same_basis_selected_benchmark_government_of_canada_bond_yields",
+    "same_observation_date_required": true,
+    "same_source_family_required": true
+  },
+  "temporal_contract": {
+    "exact_publication_timestamp_verified": false,
+    "same_day_use_allowed": false,
+    "eligibility": "decision_date > observation_date",
+    "daily_backtest_interpretation": "Without a verified official publication timestamp for each historical row, an observation dated D cannot affect a D decision and may first affect a later decision point.",
+    "intraday_same_day_use": "FORBIDDEN_WITHOUT_VERIFIED_OFFICIAL_TIMESTAMP"
+  },
+  "validation": {
+    "base_main_sha": "eb5b8d357c003b83aa5fb9e598227ef3d68ef422",
+    "validated_source_sha": "b3de18ed15ad9ac30e98cd4b18d08a0afeed3576",
+    "materializer_run_id": 38128036912,
+    "engine_logic_audit_run_id": 38128036934,
+    "staging_browser_audit_run_id": 38128036945,
+    "artifact_id": 11698400061,
+    "artifact_name": "cad-rates-temporal-pit-v1-38128036912",
+    "artifact_digest": "sha256:152fd875fc276f699c4b460b49b6379746076c8a84c6fd97e1c2202e0e5a9ddb",
+    "independent_materializations_compared": 2,
+    "semantic_fields_match_across_materializations": true
+  },
+  "source_sha256": "70fe756b5080d90d658630a5945e30488bbc95e81b3c8c2c7d7e2c040901481e",
+  "semantic_rowset_sha256": "ab271ce33a31ae41c37dc1f7d19043cbe1941e31edef7f048682265657ad9c5d",
+  "invariants": {
+    "official_source_only": true,
+    "same_basis_2y_10y": true,
+    "duplicate_observation_dates": false,
+    "monotonic_observation_order": true,
+    "secondary_source_fallback_used": false,
+    "same_day_lookahead_prevented": true,
+    "two_materializations_semantically_identical": true
+  },
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui_runtime": false
+}
