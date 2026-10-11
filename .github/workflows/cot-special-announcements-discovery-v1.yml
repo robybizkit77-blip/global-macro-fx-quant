@@ -31,7 +31,7 @@ jobs:
           python validation/discover_cot_special_announcements_v1.py --output /tmp/cot-special/a/discovery.json
           python validation/discover_cot_special_announcements_v1.py --output /tmp/cot-special/b/discovery.json
 
-      - name: Enforce reproducible timing-exception extraction
+      - name: Enforce reproducible normalized timing evidence
         shell: bash
         run: |
           set -euo pipefail
@@ -40,12 +40,18 @@ jobs:
           a=json.load(open('/tmp/cot-special/a/discovery.json'))
           b=json.load(open('/tmp/cot-special/b/discovery.json'))
           assert a['status']==b['status']=='DISCOVERY_PASS'
-          assert a['raw_sha256']==b['raw_sha256']
-          assert a['visible_text_sha256']==b['visible_text_sha256']
+          # Transport hashes are provenance only: CFTC page bytes are volatile.
+          assert a['semantic_timing_sha256']==b['semantic_timing_sha256']
           assert a['final_2025_appropriations_catchup']==b['final_2025_appropriations_catchup']
           assert a['ion_2023_original_to_actual_publish']==b['ion_2023_original_to_actual_publish']
-          assert len(a['final_2025_appropriations_catchup'])>=10
-          assert len(a['ion_2023_original_to_actual_publish'])>=7
+          assert a['other_timing_anchors']==b['other_timing_anchors']
+          assert len(a['final_2025_appropriations_catchup'])==13
+          assert len(a['ion_2023_original_to_actual_publish'])==7
+          assert a['other_timing_anchors']==[
+              {'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-18'},
+              {'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-18'},
+              {'report_date':'2025-01-07','actual_publish_date':'2025-01-13','source_announcement_date':'2025-01-08'},
+          ]
           ion=a['ion_2023_original_to_actual_publish']
           assert ion[0]['original_publish_date']=='2023-02-03'
           assert ion[0]['actual_publish_date']=='2023-02-24'
@@ -58,9 +64,10 @@ jobs:
               'actual_publish_date':'2025-11-19'}
           assert catch[-1]['report_date']=='2025-12-23'
           assert catch[-1]['actual_publish_date']=='2025-12-29'
+          assert a['invariants']['volatile_transport_hash_not_used_as_economic_reproducibility_key'] is True
           assert a['invariants']['full_release_calendar_certified'] is False
           assert a['invariants']['production_write'] is False
-          print('COT_SPECIAL_ANNOUNCEMENTS_DISCOVERY_REPRODUCIBLE')
+          print('COT_SPECIAL_ANNOUNCEMENTS_SEMANTIC_DISCOVERY_REPRODUCIBLE')
           PY
 
       - name: Assert no repository writes
