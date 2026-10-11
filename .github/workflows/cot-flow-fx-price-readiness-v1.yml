@@ -1,0 +1,56 @@
+name: COT Flow FX Price Readiness V1
+
+on:
+  push:
+    branches:
+      - validation-cot-flow-fx-price-readiness-v1-2026-10-11
+    paths:
+      - 'validation/COT_FLOW_FX_PRICE_SOURCE_CONTRACT_V1_2026-10-11.json'
+      - 'validation/validate_cot_flow_fx_price_readiness_v1.py'
+      - '.github/workflows/cot-flow-fx-price-readiness-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate official H10 FX price coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/validate_cot_flow_fx_price_readiness_v1.py
+      - name: Enforce receipt authorization boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cot-fx-price-readiness/receipt.json'))
+          assert d['status']=='READY_FOR_RESULT_BLIND_EDGE_EXECUTION'
+          assert d['series_count']==7
+          assert d['edge_execution_authorized'] is True
+          assert d['production_signal_authorized'] is False
+          assert d['sizing_authorized'] is False
+          assert all(x['pass'] for x in d['diagnostics'].values())
+          print('COT_FLOW_FX_PRICE_READINESS_PASS')
+          PY
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-flow-fx-price-readiness-${{ github.run_id }}
+          path: /tmp/cot-fx-price-readiness/
+          retention-days: 90
