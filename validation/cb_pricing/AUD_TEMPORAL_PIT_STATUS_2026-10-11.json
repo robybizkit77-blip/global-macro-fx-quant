@@ -1,0 +1,75 @@
+{
+  "schema": "GMFQ_CB_PRICING_TEMPORAL_PIT_STATUS_V1",
+  "currency": "AUD",
+  "as_of": "2026-10-11",
+  "status": "WITHHELD",
+  "layer": "Central Banks / Market Pricing",
+  "instrument": "ASX 30 Day Interbank Cash Rate futures (IB)",
+  "authority": "ASX",
+  "decision": "Historical Temporal PIT certification is blocked because the official dated ASX report archive is not deep enough for the required 2018-2026 validation window.",
+  "required_window": {
+    "start": "2018-01-01",
+    "end": "2026-09-30",
+    "quarterly_anchor_count": 36
+  },
+  "tested_report_variants": {
+    "SFN": {
+      "archive_pattern": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{YYMMDD}SFN.htm",
+      "anchors_found": 9,
+      "anchors_mapping_ok": 9,
+      "coverage_by_year": {
+        "2018": 0,
+        "2019": 0,
+        "2020": 0,
+        "2021": 0,
+        "2022": 0,
+        "2023": 0,
+        "2024": 1,
+        "2025": 4,
+        "2026": 4
+      },
+      "workflow_run_id": 38131091607,
+      "artifact_id": 11699305732,
+      "artifact_digest": "sha256:6bf3f97350224a24b10aa2b6beacbc623e0d16830c1d1bd9a8f338d07fd3a7a1"
+    },
+    "SFT": {
+      "archive_pattern": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary{YYMMDD}SFT.htm",
+      "anchors_found": 9,
+      "anchors_mapping_ok": 9,
+      "coverage_by_year": {
+        "2018": 0,
+        "2019": 0,
+        "2020": 0,
+        "2021": 0,
+        "2022": 0,
+        "2023": 0,
+        "2024": 1,
+        "2025": 4,
+        "2026": 4
+      },
+      "workflow_run_id": 38131589941,
+      "artifact_id": 11698953982,
+      "artifact_digest": "sha256:2d76395fff47b1623ac2199cc538f7968df6842cc7d52575688aa5711ccd5711"
+    }
+  },
+  "mapping_result": {
+    "status": "VALID_WHERE_ARCHIVE_EXISTS",
+    "rule": "Exact listed IB contract month equal to trade date plus 3/6/12 calendar months.",
+    "interpolation": false,
+    "nearest_contract_substitution": false,
+    "comment": "All 9 discovered anchors map cleanly for 3M, 6M and 12M. The blocker is archive depth, not contract mapping quality."
+  },
+  "temporal_rule": "Same-day use remains forbidden unless publication timestamp is separately verified.",
+  "prohibited_fallbacks": [
+    "mixing SFT and SFN to manufacture a longer history",
+    "third-party reconstructed futures history without auditable provenance",
+    "interpolated or nearest-contract substitution",
+    "using current 2026 contract labels retroactively for historical dates"
+  ],
+  "production_effect": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_dashboard_payload": false
+  },
+  "revisit_condition": "Re-evaluate only if ASX exposes a deeper official dated archive or another official source provides auditable historical IB settlement vintages with equivalent semantics."
+}
