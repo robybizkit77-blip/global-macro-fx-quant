@@ -1,0 +1,41 @@
+{
+  "schema": "GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1",
+  "as_of": "2026-10-11",
+  "status": "PREDECLARED_NO_EDGE_RESULTS_OBSERVED",
+  "purpose": "Define a fail-closed historical availability rule for COT edge research without requiring individual Friday publication proof for every normal week.",
+  "official_basis": {
+    "cftc_about_cot": "CFTC states that since 1992 the COT report is published on the third business day after the as-of date.",
+    "historical_special_announcements": "Known exceptional publication disruptions and delays are recorded in the CFTC historical special announcements archive."
+  },
+  "availability_policy": {
+    "normal_week": {
+      "available_from": "report_date_plus_14_calendar_days",
+      "rationale": "Deliberately later than the ordinary third-business-day release to create a strong anti-look-ahead buffer.",
+      "individual_actual_release_proof_required": false
+    },
+    "documented_exception": {
+      "available_from": "official_actual_publish_date_or_later",
+      "fallback": "WITHHOLD if actual publication date is not proven"
+    },
+    "shutdown_2018_2019": {
+      "treatment": "WITHHOLD until individual actual publication dates or equally strong official execution evidence are proven"
+    }
+  },
+  "scope": {
+    "report_dates_total": 458,
+    "normal_or_explicitly_resolved_candidate_dates": 448,
+    "withheld_shutdown_dates": 10
+  },
+  "research_governance": {
+    "no_edge_hypothesis_selected_by_results": true,
+    "no_parameter_tuning_after_results": true,
+    "no_production_signal_authorization": true,
+    "no_sizing_authorization": true,
+    "withheld_rows_must_not_be_imputed": true
+  },
+  "eligibility_intent": {
+    "allow_edge_test_on_strictly_available_subset_if_validator_passes": true,
+    "minimum_required_rows_before_edge_test": 300,
+    "shutdown_rows_may_be_excluded_only_for_temporal_provenance_reason": true
+  }
+}
