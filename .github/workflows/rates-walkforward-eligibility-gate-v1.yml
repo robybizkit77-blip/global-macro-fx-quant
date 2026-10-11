@@ -1,0 +1,143 @@
+name: Rates Walk-Forward Eligibility Gate V1
+
+on:
+  push:
+    branches:
+      - validation-rates-walkforward-eligibility-gate-v1-2026-10-11
+  pull_request:
+    paths:
+      - 'validation/*_RATES_TEMPORAL_PIT_EVIDENCE_V1_*.json'
+      - 'validation/rates_walkforward_eligibility_gate_v1.py'
+      - '.github/workflows/rates-walkforward-eligibility-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize eligibility twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-gate/a /tmp/rates-gate/b
+          python validation/rates_walkforward_eligibility_gate_v1.py \
+            --expect-certified-count 5 \
+            --output /tmp/rates-gate/a/all.json
+          python validation/rates_walkforward_eligibility_gate_v1.py \
+            --expect-certified-count 5 \
+            --output /tmp/rates-gate/b/all.json
+          cmp /tmp/rates-gate/a/all.json /tmp/rates-gate/b/all.json
+
+      - name: Prove date eligibility and blocked currencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/rates_walkforward_eligibility_gate_v1.py \
+            --decision-date 2020-01-15 \
+            --expect-certified-count 5 \
+            --expect-eligible-count 5 \
+            --output /tmp/rates-gate/date.json
+          python - <<'PY'
+          import json
+          p='/tmp/rates-gate/date.json'
+          d=json.load(open(p, encoding='utf-8'))
+          assert d['status']=='PASS'
+          assert d['expected_targets']==8
+          assert d['certified_targets']==5
+          assert d['eligible_targets']==5
+          assert d['withheld_targets']==3
+          for ccy in ('GBP','CHF','NZD'):
+              row=d['targets'][f'{ccy}.rates_2y_10y']
+              assert row['certification']=='WITHHELD'
+              assert row['backtest_eligible'] is False
+          for ccy in ('USD','EUR','JPY','CAD','AUD'):
+              row=d['targets'][f'{ccy}.rates_2y_10y']
+              assert row['certification']=='CERTIFIED'
+              assert row['backtest_eligible'] is True
+              assert row['same_day_use_allowed'] is False
+              assert row['temporal_eligibility_rule']
+          assert '09:30 JST' in d['targets']['JPY.rates_2y_10y']['temporal_eligibility_rule']
+          PY
+
+      - name: Prove fail-closed temporal boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/rates_walkforward_eligibility_gate_v1.py \
+            --decision-date 2018-01-02 \
+            --expect-certified-count 5 \
+            --output /tmp/rates-gate/start-boundary.json
+          python validation/rates_walkforward_eligibility_gate_v1.py \
+            --decision-date 2026-10-07 \
+            --expect-certified-count 5 \
+            --output /tmp/rates-gate/end-boundary.json
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/rates-gate/start-boundary.json', encoding='utf-8'))
+          b=json.load(open('/tmp/rates-gate/end-boundary.json', encoding='utf-8'))
+          # Same-day first observations must not be admitted.
+          assert a['targets']['EUR.rates_2y_10y']['backtest_eligible'] is False
+          assert a['targets']['CAD.rates_2y_10y']['backtest_eligible'] is False
+          assert a['targets']['AUD.rates_2y_10y']['backtest_eligible'] is False
+          # USD only proves the boundary at year resolution; entire 2018 boundary year is withheld.
+          assert a['targets']['USD.rates_2y_10y']['backtest_eligible'] is False
+          # No currency may extend beyond its certified rowset end.
+          assert b['targets']['USD.rates_2y_10y']['backtest_eligible'] is False
+          assert b['targets']['EUR.rates_2y_10y']['backtest_eligible'] is False
+          assert b['targets']['JPY.rates_2y_10y']['backtest_eligible'] is False
+          assert b['targets']['CAD.rates_2y_10y']['backtest_eligible'] is False
+          assert b['targets']['AUD.rates_2y_10y']['backtest_eligible'] is False
+          PY
+
+      - name: Prove tamper fails closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, json, shutil, tempfile
+          from pathlib import Path
+
+          spec=importlib.util.spec_from_file_location('gate','validation/rates_walkforward_eligibility_gate_v1.py')
+          gate=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+
+          src=Path('validation')
+          with tempfile.TemporaryDirectory() as td:
+              tmp=Path(td)
+              for p in src.glob('*_RATES_TEMPORAL_PIT_EVIDENCE_V1_*.json'):
+                  shutil.copy2(p,tmp/p.name)
+              victim=next(tmp.glob('EUR_RATES_TEMPORAL_PIT_EVIDENCE_V1_*.json'))
+              d=json.loads(victim.read_text())
+              d['temporal_contract']['same_day_use_allowed']=True
+              victim.write_text(json.dumps(d))
+              old=gate.VALIDATION_DIR
+              gate.VALIDATION_DIR=tmp
+              try:
+                  gate.load_evidence()
+              except RuntimeError:
+                  pass
+              else:
+                  raise SystemExit('tampered same-day policy was not rejected')
+              finally:
+                  gate.VALIDATION_DIR=old
+          PY
+
+      - name: Assert repository remains read only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rates-walkforward-eligibility-${{ github.run_id }}
+          path: /tmp/rates-gate/
+          retention-days: 90
