@@ -3,8 +3,8 @@
 
 Captures the official page as transport provenance and extracts normalized
 publication-timing exceptions for 2018-2026. Full-page bytes may vary between
-requests; reproducibility is therefore judged on the normalized timing evidence,
-not volatile HTML bytes. This is discovery evidence only.
+requests; reproducibility is judged on normalized timing evidence, not volatile
+HTML bytes. This is discovery evidence only.
 """
 from __future__ import annotations
 
@@ -66,7 +66,6 @@ def extract_blocks(text:str)->list[dict]:
 
 
 def extract_2025_catchup(text:str)->list[dict]:
-    # Final Dec 9 schedule supersedes the earlier Nov 18 intended schedule.
     start=text.find('December 9, 2025:')
     end=text.find('November 18, 2025:',start)
     if start<0 or end<0: return []
@@ -80,8 +79,6 @@ def extract_2025_catchup(text:str)->list[dict]:
 
 
 def extract_ion_mappings(blocks:list[dict])->list[dict]:
-    # CFTC wording gives original scheduled publish date and the announcement date
-    # on which that delayed report is being issued. Do not infer report_date here.
     out=[]
     pat=re.compile(r'originally scheduled to be published on\s+(Friday,\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(2023)',re.I)
     for b in blocks:
@@ -104,34 +101,41 @@ def block_for(blocks:list[dict], announcement_date:str)->dict:
     return found[0]
 
 
-def extract_other_timing_anchors(blocks:list[dict])->list[dict]:
-    # Exact page-heading dates from CFTC Historical Special Announcements.
-    specs=[
-        ('2020-12-28','2020-12-21','2020-12-28'),
-        ('2021-06-17','2021-06-15','2021-06-21'),
-        ('2025-01-07','2025-01-07','2025-01-13'),
-    ]
+def extract_explicit_report_mappings(blocks:list[dict])->list[dict]:
+    """Only emit report_date when the CFTC text itself states it."""
     out=[]
-    for announcement,report,actual in specs:
-        b=block_for(blocks,announcement)
-        report_fmt=datetime.fromisoformat(report).strftime('%B %-d, %Y')
-        actual_fmt=datetime.fromisoformat(actual).strftime('%B %-d, %Y')
-        low=b['text'].lower()
-        if report_fmt.lower() not in low or actual_fmt.lower() not in low:
-            raise RuntimeError(f'official block {announcement} does not prove {report}->{actual}')
-        out.append({
-            'report_date':report,
-            'actual_publish_date':actual,
-            'source_announcement_date':announcement,
-        })
+
+    b=block_for(blocks,'2020-12-28')
+    if not re.search(r'data dated\s+Monday\s+December\s+21,\s+2020.*published.*Monday\s+December\s+28,\s+2020',b['text'],re.I):
+        raise RuntimeError('2020-12-28 block does not explicitly prove report 2020-12-21 -> publish 2020-12-28')
+    out.append({'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-28'})
+
+    b=block_for(blocks,'2021-06-17')
+    if not re.search(r'data from\s+Tuesday\s+June\s+15(?:th)?\s*,?.*published on\s+Monday\s+June\s+21,\s+2021',b['text'],re.I):
+        raise RuntimeError('2021-06-17 block does not explicitly prove report 2021-06-15 -> publish 2021-06-21')
+    out.append({'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-17'})
     return out
 
 
-def semantic_evidence(catchup:list[dict],ion:list[dict],anchors:list[dict])->dict:
+def extract_unjoined_release_exceptions(blocks:list[dict])->list[dict]:
+    """Timing evidence where the announcement does not itself name report_date."""
+    b=block_for(blocks,'2025-01-07')
+    if not re.search(r"this week.s\s+Commitments of Traders Report.*released on\s+Monday,?\s+January\s+13,\s+2025",b['text'],re.I):
+        raise RuntimeError('2025-01-07 block does not prove delayed release on 2025-01-13')
+    return [{
+        'report_date':None,
+        'actual_publish_date':'2025-01-13',
+        'source_announcement_date':'2025-01-07',
+        'join_requirement':'REPORT_DATE_MUST_BE_PROVEN_BY_OFFICIAL_RELEASE_SCHEDULE_OR_EQUIVALENT_BEFORE_LEDGER_JOIN',
+    }]
+
+
+def semantic_evidence(catchup:list[dict],ion:list[dict],explicit:list[dict],unjoined:list[dict])->dict:
     return {
         'final_2025_appropriations_catchup':catchup,
         'ion_2023_original_to_actual_publish':ion,
-        'other_timing_anchors':anchors,
+        'explicit_report_to_actual_publish':explicit,
+        'unjoined_release_exceptions':unjoined,
     }
 
 
@@ -141,8 +145,9 @@ def main()->int:
     timing=[b for b in blocks if b['timing_relevant']]
     catchup=extract_2025_catchup(text)
     ion=extract_ion_mappings(blocks)
-    anchors=extract_other_timing_anchors(blocks)
-    semantic=semantic_evidence(catchup,ion,anchors)
+    explicit=extract_explicit_report_mappings(blocks)
+    unjoined=extract_unjoined_release_exceptions(blocks)
+    semantic=semantic_evidence(catchup,ion,explicit,unjoined)
     out={
       'schema':'GMFQ_COT_SPECIAL_ANNOUNCEMENTS_DISCOVERY_V1',
       'status':'DISCOVERY_PASS',
@@ -157,12 +162,14 @@ def main()->int:
       'timing_relevant_blocks':timing,
       'final_2025_appropriations_catchup':catchup,
       'ion_2023_original_to_actual_publish':ion,
-      'other_timing_anchors':anchors,
+      'explicit_report_to_actual_publish':explicit,
+      'unjoined_release_exceptions':unjoined,
       'semantic_timing_sha256':sha(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()),
       'invariants':{
         'official_cftc_only':True,
         'final_2025_schedule_only':True,
         'ion_mapping_does_not_infer_report_date':True,
+        'unjoined_release_exception_does_not_infer_report_date':True,
         'volatile_transport_hash_not_used_as_economic_reproducibility_key':True,
         'full_release_calendar_certified':False,
         'production_write':False,
@@ -170,7 +177,8 @@ def main()->int:
     }
     if len(catchup) != 13: raise RuntimeError(f'2025 final catch-up table unexpected length: {len(catchup)}')
     if len(ion) != 7: raise RuntimeError(f'ION mapping unexpected length: {len(ion)}')
-    if len(anchors) != 3: raise RuntimeError(f'other timing anchors unexpected length: {len(anchors)}')
+    if len(explicit) != 2: raise RuntimeError(f'explicit report mappings unexpected length: {len(explicit)}')
+    if len(unjoined) != 1: raise RuntimeError(f'unjoined timing exceptions unexpected length: {len(unjoined)}')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n',encoding='utf-8')
     print(json.dumps({
@@ -179,7 +187,8 @@ def main()->int:
       'semantic_timing_sha256':out['semantic_timing_sha256'],
       'announcement_blocks_2018_2026':out['announcement_blocks_2018_2026'],
       'timing_relevant_count':len(timing),'catchup_2025_rows':len(catchup),
-      'ion_2023_rows':len(ion),'other_timing_anchors':anchors,
+      'ion_2023_rows':len(ion),'explicit_report_mappings':explicit,
+      'unjoined_release_exceptions':unjoined,
       'ion':ion,'catchup_2025':catchup,
     },indent=2))
     return 0
