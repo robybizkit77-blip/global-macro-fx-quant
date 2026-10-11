@@ -1,0 +1,42 @@
+name: COT Viewable Release Metadata Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-cot-legacy-full-history-discovery-v1-2026-10-11
+    paths:
+      - 'validation/discover_cot_viewable_release_metadata_v1.py'
+      - '.github/workflows/cot-viewable-release-metadata-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official historical report pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-release-metadata
+          python validation/discover_cot_viewable_release_metadata_v1.py \
+            --output /tmp/cot-release-metadata/discovery.json
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-viewable-release-metadata-${{ github.run_id }}
+          path: /tmp/cot-release-metadata/
+          retention-days: 90
