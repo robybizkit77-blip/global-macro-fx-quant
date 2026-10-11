@@ -1,0 +1,126 @@
+{
+  "schema": "GMFQ_G4USD_ALIGNMENT_ONE_SHOT_CORRECTED_V3_LOG_RECEIPT",
+  "date": "2026-10-11",
+  "source_run": {
+    "run_id": 38171819022,
+    "job_id": 114565820757,
+    "head_sha": "a33c9f07e3c322dabd9cb054ee7597ad6a0a1b4f",
+    "engine_execution_status": "SUCCESS_ONCE",
+    "workflow_conclusion": "FAILURE_POST_RESULT_VALIDATOR_ONLY",
+    "post_result_validator_error": "KeyError: 'UNAVAILABLE' because AUD had zero UNAVAILABLE observations and the per-currency sparse result omitted that zero-count key",
+    "economic_engine_rerun_performed": false
+  },
+  "provenance": {
+    "frozen_parent_pr": 122,
+    "frozen_parent_head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5",
+    "frozen_oos_observations": 256,
+    "baseline_panel_sharpe": 0.30119374143958916,
+    "readiness_run_id": 38169617850,
+    "readiness_artifact": "g4usd-alignment-integration-readiness-fast-v3-38169617850",
+    "readiness_artifact_digest": "sha256:e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df",
+    "engine_blob_sha": "d11a7eff0268dac89d3b3f651938d82fcd2ab8ec",
+    "usd_inflation_semantic_sha256": "2d70a0404d4591cca18ae7f8b86753627fd3a560c84523b9e991cc60d0a43485",
+    "usd_labour_semantic_sha256": "0c18bd5d6327c73e6a7421f4cfbad1374a08e17093de0dcc6b18b38dcbd602ff"
+  },
+  "invalid_predecessor": {
+    "run_id": 38170139793,
+    "status": "INVALID_PLUMBING_AUD_DATE_FORMAT",
+    "reason": "AUD release_date values in DD/MM/YYYY were compared lexicographically against ISO as-of dates, making all 64 AUD OOS observations UNAVAILABLE.",
+    "economic_result_authorized": false
+  },
+  "correction": {
+    "scope": "release_date spelling normalization only",
+    "rows_total": 971,
+    "rows_changed": 138,
+    "aud_rows_changed": 138,
+    "non_aud_rows_changed": 0,
+    "economic_fields_changed": false,
+    "row_order_changed": false,
+    "reference_period_changed": false,
+    "value_changed": false,
+    "availability_status_changed": false,
+    "engine_changed": false,
+    "contract_changed": false,
+    "gates_changed": false
+  },
+  "corrected_result": {
+    "status": "DIAGNOSTIC_COMPLETE",
+    "edge_survival": false,
+    "state_results": {
+      "ALIGNED": {
+        "n": 62,
+        "months": 40,
+        "sharpe": -0.031140793514472073,
+        "directional_accuracy": 0.46774193548387094,
+        "total_log_return": -0.007015959332981646,
+        "max_drawdown": -0.08606674098793021
+      },
+      "MIXED": {
+        "n": 127,
+        "months": 58,
+        "sharpe": -0.20330568964313508,
+        "directional_accuracy": 0.5118110236220472,
+        "total_log_return": -0.058593100291095566,
+        "max_drawdown": -0.19284550747875007
+      },
+      "CONTRADICTORY": {
+        "n": 67,
+        "months": 41,
+        "sharpe": 1.1348751274937703,
+        "directional_accuracy": 0.6268656716417911,
+        "total_log_return": 0.22305339252038503,
+        "max_drawdown": -0.032510751510979374
+      },
+      "UNAVAILABLE": {
+        "n": 0,
+        "months": 0,
+        "sharpe": null,
+        "directional_accuracy": null,
+        "total_log_return": 0.0,
+        "max_drawdown": 0.0
+      }
+    },
+    "derived": {
+      "aligned_minus_unfiltered_sharpe": -0.33233453495406123,
+      "aligned_minus_contradictory_sharpe": -1.1660159210082424,
+      "aligned_directional_accuracy_pct": 46.774193548387096,
+      "zero_repricing_observations": 1
+    },
+    "edge_gate": {
+      "aligned_panel_sharpe_ge_0_50": false,
+      "aligned_improvement_ge_0_20": false,
+      "aligned_minus_contradictory_ge_0_30": false,
+      "positive_aligned_currency_sharpes_ge_3": true,
+      "aligned_directional_accuracy_ge_0_52": false,
+      "minimum_coverage": false
+    },
+    "coverage_diagnostic": {
+      "pooled_aligned_n": 62,
+      "pooled_minimum_required": 60,
+      "aud_state_counts_inferred_from_date_only_correction": {
+        "ALIGNED": 10,
+        "MIXED": 33,
+        "CONTRADICTORY": 21,
+        "UNAVAILABLE": 0
+      },
+      "aud_aligned_minimum_required": 12,
+      "minimum_coverage_failure_explained": true,
+      "inference_basis": "The invalid predecessor classified all 64 AUD observations UNAVAILABLE while non-AUD inputs were unchanged; corrected totals minus predecessor non-AUD totals therefore identify the 64 AUD state counts exactly."
+    }
+  },
+  "verdict": {
+    "predeclared_conditional_edge_gate": "FAIL",
+    "interpretation": "Macro-implied alignment with relative front-end repricing does not improve the frozen parent signal under the predeclared contract. The contradictory bucket materially outperforms the aligned bucket in this sample.",
+    "retuning_authorized": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "recommended_research_status": "CONTEXTUAL_ONLY_NO_CONDITIONAL_EDGE_CERTIFICATION"
+  },
+  "audit_policy": {
+    "no_result_driven_parameter_change": true,
+    "no_currency_exclusion": true,
+    "no_threshold_search": true,
+    "no_hyperparameter_tuning": true,
+    "no_economic_engine_rerun_after_valid_result": true
+  }
+}
