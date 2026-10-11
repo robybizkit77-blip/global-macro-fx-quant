@@ -1,0 +1,82 @@
+name: G4USD Relative Front-End Panel V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-relative-front-end-panel-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize certified temporal-PIT rates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git checkout FETCH_HEAD -- "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv"
+            cp "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" "/tmp/g4/rates/${c}.csv"
+          done
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Fetch official ECB FX reference histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4/fx
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata" \
+              -o "/tmp/g4/fx/${c}.csv"
+            test -s "/tmp/g4/fx/${c}.csv"
+          done
+
+      - name: Run fixed untuned panel twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS="--eur-rates /tmp/g4/rates/eur.csv --jpy-rates /tmp/g4/rates/jpy.csv --cad-rates /tmp/g4/rates/cad.csv --aud-rates /tmp/g4/rates/aud.csv --usd-rates /tmp/g4/rates/usd.csv --usd-ecb /tmp/g4/fx/USD.csv --jpy-ecb /tmp/g4/fx/JPY.csv --cad-ecb /tmp/g4/fx/CAD.csv --aud-ecb /tmp/g4/fx/AUD.csv"
+          python validation/g4usd_relative_front_end_panel_v1.py $ARGS --output /tmp/g4/result.json
+          python validation/g4usd_relative_front_end_panel_v1.py $ARGS --output /tmp/g4/result-b.json >/dev/null
+          cmp /tmp/g4/result.json /tmp/g4/result-b.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/g4/result.json'))
+          assert r['status']=='DIAGNOSTIC_COMPLETE'
+          assert r['method']['same_rule_all_currencies'] is True
+          assert r['method']['hyperparameter_tuning'] is False
+          assert r['method']['currency_specific_tuning'] is False
+          assert r['policy']['production_signal_authorized'] is False
+          assert set(r['currency_results'])=={'EUR','JPY','CAD','AUD'}
+          for c,v in r['currency_results'].items():
+              assert v['scope']['snapshot_count']==102, (c,v['scope'])
+              assert v['scope']['repricing_rows']==101, (c,v['scope'])
+              assert v['scope']['labelled_months']==100, (c,v['scope'])
+              assert v['scope']['oos_predictions_per_model']==64, (c,v['scope'])
+          p=r['panel_results']['PRIMARY_REL_2Y_REPRICE']
+          assert p['currencies']==4 and p['pooled_observations']==256
+          print(json.dumps({'edge_survival':r['edge_survival'],'primary_panel':p,'static_panel':r['panel_results']['STATIC_REL_2Y'],'full_reprice_panel':r['panel_results']['FULL_REL_REPRICE']},indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-relative-front-end-panel-${{ github.run_id }}
+          path: /tmp/g4/result.json
+          retention-days: 90
