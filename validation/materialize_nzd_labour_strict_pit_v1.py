@@ -62,6 +62,20 @@ def release_date(page: str, label: str) -> str:
 def unemployment_rate(page: str, year: int, month: int) -> float:
     period = f"{MONTHS[month].capitalize()} {year} quarter"
     p = re.escape(period)
+
+    # Exact historical exception verified against the official Stats NZ release.
+    # June 2018's page teaser states only "Unemployment rate rose to 4.5 percent."
+    # The page identity itself is separately locked to the June 2018 quarter.
+    if (year, month) == (2018, 6):
+        values = list(dict.fromkeys(float(v) for v in re.findall(
+            r"\bUnemployment rate rose to\s+([0-9]+(?:\.[0-9]+)?)\s+percent\b",
+            page,
+            re.I,
+        )))
+        if values == [4.5]:
+            return 4.5
+        raise ValueError(f"Stats NZ exact June 2018 unemployment wording mismatch: {values}")
+
     # Ordered from strongest national headline wording to weaker same-sentence
     # variants. Stop at the first family with one unique value so subgroup
     # rates later in the page (Māori, women, etc.) cannot contaminate a valid
