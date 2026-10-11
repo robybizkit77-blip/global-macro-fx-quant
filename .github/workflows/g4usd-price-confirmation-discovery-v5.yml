@@ -1,0 +1,94 @@
+name: G4USD Price Confirmation Discovery V5
+
+on:
+  push:
+    branches:
+      - validation-g4usd-price-confirmation-discovery-v5-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze V5 contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_PRICE_CONFIRMATION_DISCOVERY_CONTRACT_V5_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_EXPLORATORY_NO_V5_RESULTS_OBSERVED'
+          assert c['causal_timing']['forbidden'].startswith('current or future target_return')
+          assert c['governance']['no_edge_certification'] is True
+          assert c['governance']['no_rescue_tuning_after_results'] is True
+          print('V5_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Download exact GREEN readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: g4usd-alignment-integration-readiness-fast-v3-38169617850
+          path: /tmp/v5
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38169617850
+      - name: Reconstruct exact corrected alignment source
+        run: |
+          mkdir -p /tmp/v5/canonical-fixed
+          for f in /tmp/v5/canonical/*.csv; do
+            b=$(basename "$f")
+            python validation/g4usd_canonical_release_date_normalizer_v1.py --source "$f" --output "/tmp/v5/canonical-fixed/$b"
+          done
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/v5/frozen_oos.json \
+            --eur-inflation /tmp/v5/canonical-fixed/eur_inflation.csv \
+            --eur-labour /tmp/v5/canonical-fixed/eur_labour.csv \
+            --jpy-inflation /tmp/v5/canonical-fixed/jpy_inflation.csv \
+            --jpy-labour /tmp/v5/canonical-fixed/jpy_labour.csv \
+            --cad-inflation /tmp/v5/canonical-fixed/cad_inflation.csv \
+            --cad-labour /tmp/v5/canonical-fixed/cad_labour.csv \
+            --aud-inflation /tmp/v5/canonical-fixed/aud_inflation.csv \
+            --aud-labour /tmp/v5/canonical-fixed/aud_labour.csv \
+            --usd-inflation /tmp/v5/canonical-fixed/usd_inflation.csv \
+            --usd-labour /tmp/v5/canonical-fixed/usd_labour.csv \
+            --output /tmp/v5/alignment-source.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v5/alignment-source.json'))
+          assert len(r['observations'])==256
+          assert abs(r['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          print('V5_SOURCE_REPRODUCED_PASS')
+          PY
+      - name: Execute price confirmation discovery
+        run: |
+          python validation/g4usd_price_confirmation_discovery_v5.py \
+            --alignment-result /tmp/v5/alignment-source.json \
+            --output /tmp/v5/price-confirmation-v5.json
+      - name: Validate governance
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v5/price-confirmation-v5.json'))
+          assert r['status']=='EXPLORATORY_DIAGNOSTIC_COMPLETE_NOT_EDGE_CERTIFICATION'
+          g=r['governance']
+          assert g['edge_certified'] is False
+          assert g['production_signal_authorized'] is False
+          assert g['sizing_authorized'] is False
+          assert g['future_unseen_confirmation_required'] is True
+          assert g['no_rescue_tuning'] is True
+          print('V5_OUTPUT_GOVERNANCE_PASS')
+          PY
+      - name: Upload V5 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-price-confirmation-discovery-v5-${{ github.run_id }}
+          path: |
+            /tmp/v5/price-confirmation-v5.json
+            validation/G4USD_PRICE_CONFIRMATION_DISCOVERY_CONTRACT_V5_2026-10-11.json
+          if-no-files-found: error
+          retention-days: 30
