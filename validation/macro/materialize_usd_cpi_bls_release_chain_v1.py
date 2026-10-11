@@ -5,7 +5,7 @@ from datetime import datetime
 
 BASE='https://www.bls.gov/news.release/archives/cpi_{stamp}.htm'
 UA='Mozilla/5.0 (compatible; GLOBAL-MACRO-FX-QUANT/1.0; strict PIT release-chain validation)'
-SEED_RELEASE='2018-01-12'  # official CPI release for December 2017
+SEED_RELEASE='2018-01-12'
 SEED_REFERENCE='2017-12'
 TARGET_START='2018-01'
 TARGET_END='2026-08'
@@ -42,18 +42,11 @@ def iso_date(label:str)->str:
 
 def parse(raw:bytes, expected_release_date:str)->dict:
     text=plain(raw)
-    # Historical BLS HTML contains several separator encodings (dash, em-dash,
-    # or a replacement glyph after legacy charset conversion). Anchor on the
-    # stable title and accept a short non-alphanumeric separator only.
     m=re.search(r'CONSUMER PRICE INDEX\s+[^A-Za-z0-9]{1,6}\s*([A-Za-z]+\s+\d{4})',text,re.I)
     if not m:
-        # Fallback remains tightly anchored to the title and month-year token.
         m=re.search(r'CONSUMER PRICE INDEX.{0,12}?([A-Za-z]+\s+\d{4})',text,re.I)
     if not m: raise ValueError('current reference month not found')
     ref=month_key(m.group(1))
-    # Official availability timestamp embedded in release embargo line. Newer
-    # releases may use ET rather than explicit EST/EDT and may include weekday
-    # between timezone and calendar date; canonical timezone remains NY.
     emb=re.search(
         r'embargoed until\s+8:30\s*a\.m\.\s*\((EST|EDT|ET)\)\s+'
         r'(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+)?'
@@ -63,11 +56,18 @@ def parse(raw:bytes, expected_release_date:str)->dict:
     embargo_date=iso_date(emb.group(2))
     if embargo_date != expected_release_date:
         raise ValueError(f'archive URL date {expected_release_date} != embargo date {embargo_date}')
-    # Each official CPI release announces the exact next CPI release date.
-    nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
+    # BLS has used both "8:30 a.m." and compact "8:30a.m." formatting.
+    timepat=r'8:30\s*a\.m\.\s*\((EST|EDT|ET)\)'
+    nxt=re.search(
+        r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+'
+        r'(?:Monday|Tuesday|Wednesday|Thursday|Friday),?\s+'
+        r'([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+'+timepat,
+        text,re.I)
     if not nxt:
-        # Some releases omit weekday punctuation; retain strict 8:30 requirement.
-        nxt=re.search(r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+8:30\s+a\.m\.\s*\((EST|EDT|ET)\)',text,re.I)
+        nxt=re.search(
+            r'The Consumer Price Index for\s+([A-Za-z]+\s+\d{4})\s+is scheduled to be released on\s+'
+            r'([A-Za-z]+\s+\d{1,2},\s+\d{4}),?\s+at\s+'+timepat,
+            text,re.I)
     if not nxt: raise ValueError(f'next-release statement not found for {ref}')
     next_ref=month_key(nxt.group(1)); next_date=iso_date(nxt.group(2))
     return {
@@ -120,13 +120,13 @@ def main():
       'errors':errors,
       'semantic_sha256':semantic_sha,
       'invariants':{
-        'official_archive_only':True,
-        'each_next_release_date_announced_by_prior_official_release':True,
-        'official_embargo_timestamp_required':True,
         'availability_rule':'AT_OR_AFTER_08:30_AMERICA_NEW_YORK_ON_RELEASE_DATE',
-        'no_schedule_page_dependency':True,
-        'no_inflation_values_materialized':True,
         'certifies_values':False,
+        'each_next_release_date_announced_by_prior_official_release':True,
+        'no_inflation_values_materialized':True,
+        'no_schedule_page_dependency':True,
+        'official_archive_only':True,
+        'official_embargo_timestamp_required':True,
         'production_write':False,
       }
     }
