@@ -14,16 +14,18 @@ START = date(2018,1,1)
 
 class TableParser(HTMLParser):
     def __init__(self):
-        super().__init__(); self.in_tr=False; self.in_td=False; self.cell=[]; self.row=[]; self.rows=[]
+        super().__init__(); self.in_tr=False; self.in_cell=False; self.cell_tag=None; self.cell=[]; self.row=[]; self.rows=[]
     def handle_starttag(self, tag, attrs):
-        if tag.lower()=='tr': self.in_tr=True; self.row=[]
-        elif tag.lower()=='td' and self.in_tr: self.in_td=True; self.cell=[]
+        t=tag.lower()
+        if t=='tr': self.in_tr=True; self.row=[]
+        elif t in {'td','th'} and self.in_tr:
+            self.in_cell=True; self.cell_tag=t; self.cell=[]
     def handle_data(self, data):
-        if self.in_td: self.cell.append(data)
+        if self.in_cell: self.cell.append(data)
     def handle_endtag(self, tag):
         t=tag.lower()
-        if t=='td' and self.in_td:
-            self.row.append(' '.join(''.join(self.cell).split())); self.in_td=False
+        if self.in_cell and t==self.cell_tag:
+            self.row.append(' '.join(''.join(self.cell).split())); self.in_cell=False; self.cell_tag=None
         elif t=='tr' and self.in_tr:
             if self.row: self.rows.append(self.row)
             self.in_tr=False
