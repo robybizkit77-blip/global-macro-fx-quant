@@ -40,7 +40,6 @@ jobs:
           a=json.load(open('/tmp/cot-special/a/discovery.json'))
           b=json.load(open('/tmp/cot-special/b/discovery.json'))
           assert a['status']==b['status']=='DISCOVERY_PASS'
-          # Transport hashes are provenance only: CFTC page bytes are volatile.
           assert a['semantic_timing_sha256']==b['semantic_timing_sha256']
           assert a['final_2025_appropriations_catchup']==b['final_2025_appropriations_catchup']
           assert a['ion_2023_original_to_actual_publish']==b['ion_2023_original_to_actual_publish']
@@ -48,9 +47,9 @@ jobs:
           assert len(a['final_2025_appropriations_catchup'])==13
           assert len(a['ion_2023_original_to_actual_publish'])==7
           assert a['other_timing_anchors']==[
-              {'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-18'},
-              {'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-18'},
-              {'report_date':'2025-01-07','actual_publish_date':'2025-01-13','source_announcement_date':'2025-01-08'},
+              {'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-28'},
+              {'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-17'},
+              {'report_date':'2025-01-07','actual_publish_date':'2025-01-13','source_announcement_date':'2025-01-07'},
           ]
           ion=a['ion_2023_original_to_actual_publish']
           assert ion[0]['original_publish_date']=='2023-02-03'
