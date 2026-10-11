@@ -4,72 +4,56 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import hashlib
+import io
 import json
 import pathlib
-import re
+import urllib.error
 import urllib.request
-from html import unescape
+import zipfile
 
-INDEX_URL = "https://www.bls.gov/bls/news-release/cpi.htm"
-ARCHIVE_PREFIX = "https://www.bls.gov/news.release/archives/"
-UA = "GLOBAL-MACRO-FX-QUANT USD CPI BLS archive temporal discovery v1"
-YEAR_MIN = 2018
-YEAR_MAX = 2026
-
-RE_LINK = re.compile(r'href=["\'](?P<href>/news\.release/archives/cpi_(?P<mdy>\d{8})\.htm)["\']', re.I)
-RE_TITLE = re.compile(r'CONSUMER PRICE INDEX\s*[\u2013\-]\s*(?P<month>[A-Z]+)\s+(?P<year>\d{4})', re.I)
-RE_YOY = re.compile(r'Over the last 12 months,\s+the all items\s+index\s+(?:rose|increased)\s+(?P<value>\d+(?:\.\d+)?)\s+percent', re.I | re.S)
-RE_YOY_FELL = re.compile(r'Over the last 12 months,\s+the all items\s+index\s+(?:fell|decreased)\s+(?P<value>\d+(?:\.\d+)?)\s+percent', re.I | re.S)
-RE_EMBARGO = re.compile(r'embargoed until\s+(?P<time>\d{1,2}:\d{2}\s*[ap]\.m\.)\s*\((?P<tz>EST|EDT)\)\s*(?P<date>[A-Z][a-z]+\s+\d{1,2},\s+\d{4})', re.I | re.S)
+BASE = "https://www.bls.gov/cpi/tables/supplemental-files"
+UA = "GLOBAL-MACRO-FX-QUANT USD CPI BLS supplemental temporal discovery v1"
+ANNUAL_YEARS = range(2018, 2025)
+RECENT_MONTHS = [f"2025{m:02d}" for m in range(1, 13) if m != 10] + [f"2026{m:02d}" for m in range(1, 9)]
 
 
 def get(url: str, timeout: int = 45) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    req = urllib.request.Request(url, headers={
+        "User-Agent": UA,
+        "Accept": "application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
+    })
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 
 
-def clean_html(raw: bytes) -> str:
-    text = raw.decode("utf-8", errors="replace")
-    text = re.sub(r"<script\b.*?</script>", " ", text, flags=re.I | re.S)
-    text = re.sub(r"<style\b.*?</style>", " ", text, flags=re.I | re.S)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = unescape(text)
-    return re.sub(r"\s+", " ", text).strip()
-
-
-def discover_links(index_html: str) -> list[tuple[str, str]]:
-    out = []
-    for m in RE_LINK.finditer(index_html):
-        mdy = m.group("mdy")
-        year = int(mdy[4:])
-        if YEAR_MIN <= year <= YEAR_MAX:
-            out.append((mdy, ARCHIVE_PREFIX + f"cpi_{mdy}.htm"))
-    unique = sorted(dict(out).items())
-    return unique
-
-
-def parse_release(item: tuple[str, str]) -> dict:
-    mdy, url = item
+def fetch_annual(year: int) -> dict:
+    url = f"{BASE}/archive-{year}.zip"
     raw = get(url)
-    text = clean_html(raw)
-    title = RE_TITLE.search(text)
-    yoy = RE_YOY.search(text)
-    sign = 1.0
-    if not yoy:
-        yoy = RE_YOY_FELL.search(text)
-        sign = -1.0
-    embargo = RE_EMBARGO.search(text)
-    if not title or not yoy:
-        raise ValueError(f"cannot parse required CPI fields from {url}")
+    if raw[:2] != b"PK":
+        raise ValueError(f"not a ZIP payload: {url}")
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names = sorted(n for n in z.namelist() if not n.endswith("/"))
+    historical = [n for n in names if "historical-cpi-u" in n.lower() and n.lower().endswith(".xlsx")]
     return {
-        "archive_id": mdy,
+        "year": year,
         "url": url,
-        "release_year": int(mdy[4:]),
-        "reference_month_label": f"{title.group('month').title()} {title.group('year')}",
-        "reported_headline_yoy_pct": sign * float(yoy.group("value")),
-        "embargo": ({"time": embargo.group("time"), "tz": embargo.group("tz"), "date": embargo.group("date")} if embargo else None),
-        "http_sha256": hashlib.sha256(raw).hexdigest(),
+        "bytes": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "member_count": len(names),
+        "historical_cpi_u_members": historical,
+    }
+
+
+def fetch_recent(yyyymm: str) -> dict:
+    url = f"{BASE}/historical-cpi-u-{yyyymm}.xlsx"
+    raw = get(url)
+    if raw[:2] != b"PK":
+        raise ValueError(f"not an XLSX payload: {url}")
+    return {
+        "yyyymm": yyyymm,
+        "url": url,
+        "bytes": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(),
     }
 
 
@@ -78,46 +62,50 @@ def main() -> int:
     ap.add_argument("--output", required=True, type=pathlib.Path)
     args = ap.parse_args()
 
-    index_raw = get(INDEX_URL)
-    links = discover_links(index_raw.decode("utf-8", errors="replace"))
-    if not links:
-        raise SystemExit("no BLS CPI archive links found for 2018-2026")
-
+    errors = []
+    annual = []
+    recent = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        releases = list(pool.map(parse_release, links))
-    releases.sort(key=lambda x: x["archive_id"])
+        annual_f = {pool.submit(fetch_annual, y): y for y in ANNUAL_YEARS}
+        recent_f = {pool.submit(fetch_recent, m): m for m in RECENT_MONTHS}
+        for f, y in annual_f.items():
+            try:
+                annual.append(f.result())
+            except Exception as exc:
+                errors.append({"kind": "annual_zip", "key": str(y), "error": repr(exc)})
+        for f, m in recent_f.items():
+            try:
+                recent.append(f.result())
+            except Exception as exc:
+                errors.append({"kind": "recent_xlsx", "key": m, "error": repr(exc)})
 
-    by_year: dict[str, int] = {}
-    for r in releases:
-        by_year[str(r["release_year"])] = by_year.get(str(r["release_year"]), 0) + 1
-
-    expected_min = {str(y): (8 if y == 2026 else 11) for y in range(YEAR_MIN, YEAR_MAX + 1)}
-    coverage_ok = all(by_year.get(y, 0) >= n for y, n in expected_min.items())
-    all_embargo = all(r["embargo"] is not None for r in releases)
+    annual.sort(key=lambda x: x["year"])
+    recent.sort(key=lambda x: x["yyyymm"])
+    annual_ok = len(annual) == len(list(ANNUAL_YEARS)) and all(len(x["historical_cpi_u_members"]) >= 10 for x in annual)
+    recent_ok = len(recent) == len(RECENT_MONTHS)
+    transport_ok = annual_ok and recent_ok and not errors
 
     semantic_rows = [
-        [r["archive_id"], r["reference_month_label"], r["reported_headline_yoy_pct"], r["url"]]
-        for r in releases
-    ]
+        ["annual", x["year"], x["sha256"], x["historical_cpi_u_members"]] for x in annual
+    ] + [["recent", x["yyyymm"], x["sha256"]] for x in recent]
     semantic_sha = hashlib.sha256(json.dumps(semantic_rows, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
     out = {
-        "schema": "GMFQ_USD_CPI_BLS_ARCHIVE_FULL_WINDOW_DISCOVERY_V1",
-        "status": "DISCOVERY_PASS" if coverage_ok else "DISCOVERY_WITHHELD",
+        "schema": "GMFQ_USD_CPI_BLS_SUPPLEMENTAL_FULL_WINDOW_DISCOVERY_V1",
+        "status": "DISCOVERY_PASS" if transport_ok else "DISCOVERY_WITHHELD",
         "authority": "U.S. Bureau of Labor Statistics",
-        "source": "BLS Consumer Price Index archived news releases",
-        "index_url": INDEX_URL,
-        "window": {"start_year": YEAR_MIN, "end_year": YEAR_MAX},
-        "release_count": len(releases),
-        "by_year": by_year,
-        "coverage_thresholds": expected_min,
-        "coverage_ok": coverage_ok,
-        "all_release_times_parsed": all_embargo,
+        "source": "BLS archived CPI supplemental files",
+        "transport": "direct official static ZIP/XLSX endpoints; no HTML index dependency",
+        "annual": annual,
+        "recent": recent,
+        "errors": errors,
+        "annual_ok": annual_ok,
+        "recent_ok": recent_ok,
+        "transport_ok": transport_ok,
         "semantic_sha256": semantic_sha,
-        "releases": releases,
         "invariants": {
-            "archived_release_source_only": True,
-            "reported_release_yoy_not_recomputed_from_current_database": True,
+            "official_bls_static_files_only": True,
+            "no_mirror": True,
             "no_interpolation": True,
             "production_write": False,
             "changes_live_data": False,
@@ -127,8 +115,16 @@ def main() -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({k: out[k] for k in ["status", "release_count", "by_year", "coverage_ok", "all_release_times_parsed", "semantic_sha256"]}, indent=2))
-    return 0 if coverage_ok else 2
+    print(json.dumps({
+        "status": out["status"],
+        "annual_ok": annual_ok,
+        "recent_ok": recent_ok,
+        "annual_count": len(annual),
+        "recent_count": len(recent),
+        "errors": errors,
+        "semantic_sha256": semantic_sha,
+    }, indent=2))
+    return 0 if transport_ok else 2
 
 
 if __name__ == "__main__":
