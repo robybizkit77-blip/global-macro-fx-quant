@@ -3,7 +3,7 @@ name: G4USD Alignment Canonical Input Conformance V1
 on:
   push:
     branches:
-      - validation-g4usd-alignment-one-shot-v2-2026-10-11
+      - validation-g4usd-alignment-one-shot-v3-datefix-2026-10-11
   workflow_dispatch:
 
 permissions:
@@ -17,6 +17,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Assert canonical adapter normalizes certified AUD dates
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4usd-adapter
+          cat > /tmp/g4usd-adapter/aud.csv <<'CSV'
+          reference_month,release_date,unemployment_rate_sa,availability_status
+          2026-01,15/02/2026,4.1,AVAILABLE_STRICT_PIT
+          2026-02,2026-03-19,4.0,AVAILABLE_STRICT_PIT
+          CSV
+          python validation/g4usd_macro_input_adapter_v1.py \
+            --stream AUD_LABOUR \
+            --source /tmp/g4usd-adapter/aud.csv \
+            --output /tmp/g4usd-adapter/aud-canonical.csv
+          python - <<'PY'
+          import csv
+          rows=list(csv.DictReader(open('/tmp/g4usd-adapter/aud-canonical.csv')))
+          assert [r['release_date'] for r in rows]==['2026-02-15','2026-03-19'],rows
+          print('AUD_RELEASE_DATE_NORMALIZATION_PASS')
+          PY
       - name: Build synthetic canonical PIT inputs
         run: |
           set -euo pipefail
