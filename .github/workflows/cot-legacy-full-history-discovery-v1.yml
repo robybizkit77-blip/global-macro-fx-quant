@@ -1,0 +1,71 @@
+name: COT Legacy Full-History Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-cot-legacy-full-history-discovery-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Discover annual CFTC Legacy history twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-history/a /tmp/cot-history/b
+          python validation/discover_cot_legacy_full_history_v1.py --output /tmp/cot-history/a/discovery.json
+          python validation/discover_cot_legacy_full_history_v1.py --output /tmp/cot-history/b/discovery.json
+
+      - name: Enforce economic reproducibility and full G8 annual coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/cot-history/a/discovery.json'))
+          b=json.load(open('/tmp/cot-history/b/discovery.json'))
+          assert a['status']==b['status']=='DISCOVERY_PASS'
+          assert a['semantic_discovery_sha256']==b['semantic_discovery_sha256']
+          assert a['years']==list(range(2018,2027))
+          assert len(a['annual'])==9
+          expected={'EUR':'099741','GBP':'096742','JPY':'097741','CHF':'092741','AUD':'232741','NZD':'112741','CAD':'090741','USD':'098662'}
+          assert a['currency_codes']==expected
+          for x,y in zip(a['annual'],b['annual']):
+              assert x['year']==y['year']
+              assert x['member_sha256']==y['member_sha256']
+              assert x['semantic_sha256']==y['semantic_sha256']
+              assert x['target_rows']==y['target_rows']
+              assert set(x['currencies'])==set(expected)
+              assert all(v['observations']>=45 for v in x['currencies'].values())
+              assert all(v['code']==expected[c] for c,v in x['currencies'].items())
+          assert a['invariants']['publication_availability_assigned'] is False
+          assert a['invariants']['historical_backtest_certified'] is False
+          assert a['invariants']['production_write'] is False
+          print('COT_LEGACY_HISTORY_DISCOVERY_REPRODUCIBLE')
+          PY
+
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-legacy-full-history-discovery-${{ github.run_id }}
+          path: /tmp/cot-history/
+          if-no-files-found: warn
+          retention-days: 90
