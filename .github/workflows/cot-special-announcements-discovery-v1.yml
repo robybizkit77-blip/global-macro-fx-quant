@@ -41,15 +41,22 @@ jobs:
           b=json.load(open('/tmp/cot-special/b/discovery.json'))
           assert a['status']==b['status']=='DISCOVERY_PASS'
           assert a['semantic_timing_sha256']==b['semantic_timing_sha256']
-          assert a['final_2025_appropriations_catchup']==b['final_2025_appropriations_catchup']
-          assert a['ion_2023_original_to_actual_publish']==b['ion_2023_original_to_actual_publish']
-          assert a['other_timing_anchors']==b['other_timing_anchors']
+          for key in ('final_2025_appropriations_catchup','ion_2023_original_to_actual_publish',
+                      'explicit_report_to_actual_publish','unjoined_release_exceptions'):
+              assert a[key]==b[key], key
           assert len(a['final_2025_appropriations_catchup'])==13
           assert len(a['ion_2023_original_to_actual_publish'])==7
-          assert a['other_timing_anchors']==[
+          assert a['explicit_report_to_actual_publish']==[
               {'report_date':'2020-12-21','actual_publish_date':'2020-12-28','source_announcement_date':'2020-12-28'},
               {'report_date':'2021-06-15','actual_publish_date':'2021-06-21','source_announcement_date':'2021-06-17'},
-              {'report_date':'2025-01-07','actual_publish_date':'2025-01-13','source_announcement_date':'2025-01-07'},
+          ]
+          assert a['unjoined_release_exceptions']==[
+              {
+                'report_date':None,
+                'actual_publish_date':'2025-01-13',
+                'source_announcement_date':'2025-01-07',
+                'join_requirement':'REPORT_DATE_MUST_BE_PROVEN_BY_OFFICIAL_RELEASE_SCHEDULE_OR_EQUIVALENT_BEFORE_LEDGER_JOIN'
+              }
           ]
           ion=a['ion_2023_original_to_actual_publish']
           assert ion[0]['original_publish_date']=='2023-02-03'
@@ -63,6 +70,8 @@ jobs:
               'actual_publish_date':'2025-11-19'}
           assert catch[-1]['report_date']=='2025-12-23'
           assert catch[-1]['actual_publish_date']=='2025-12-29'
+          assert a['invariants']['ion_mapping_does_not_infer_report_date'] is True
+          assert a['invariants']['unjoined_release_exception_does_not_infer_report_date'] is True
           assert a['invariants']['volatile_transport_hash_not_used_as_economic_reproducibility_key'] is True
           assert a['invariants']['full_release_calendar_certified'] is False
           assert a['invariants']['production_write'] is False
