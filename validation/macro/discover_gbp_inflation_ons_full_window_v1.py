@@ -6,6 +6,8 @@ import hashlib
 import json
 import pathlib
 import re
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from html import unescape
@@ -19,9 +21,21 @@ VERSION_RE=re.compile(r'(?:%2F|/)previous(?:%2F|/)v(?P<v>\d+)',re.I)
 
 
 def get(url:str,timeout:int=35)->bytes:
-    req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,text/csv,*/*'})
-    with urllib.request.urlopen(req,timeout=timeout) as r:
-        return r.read()
+    last=None
+    for attempt in range(4):
+        req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,text/csv,*/*'})
+        try:
+            with urllib.request.urlopen(req,timeout=timeout) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            last=e
+            if e.code != 429 or attempt == 3:
+                raise
+            retry_after=e.headers.get('Retry-After') if e.headers else None
+            try: delay=max(1.0,float(retry_after)) if retry_after else (2.0*(attempt+1))
+            except ValueError: delay=2.0*(attempt+1)
+            time.sleep(delay)
+    raise RuntimeError(f'ONS fetch failed: {last!r}')
 
 
 def norm(s:str)->str:
