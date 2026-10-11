@@ -21,6 +21,7 @@ env:
   CAD_INF_SEMANTIC_SHA: d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a
   CAD_LAB_SEMANTIC_SHA: 77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a
   AUD_INF_SEMANTIC_SHA: d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f
+  AUD_LAB_SEMANTIC_SHA: b0f91883c118d15bffdb594d646786bd14d279090d7aafea1fad0f0c11faf436
 
 jobs:
   readiness-fast:
@@ -189,21 +190,40 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: robybizkit77-blip/global-macro-fx-quant
           run-id: 37956927900
-      - name: Verify certified AUD inflation and materialize labour
+      - name: Download certified AUD labour artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: aud-labour-full-archive-probe-37947855930
+          path: /tmp/readiness/aud-lab-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 37947855930
+      - name: Verify and stage certified AUD inputs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/readiness/aud-inf /tmp/readiness/aud-lab
           cp /tmp/readiness/aud-inf-artifact/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv /tmp/readiness/aud-inf/source.csv
           cp /tmp/readiness/aud-inf-artifact/AUD_INFLATION_STRICT_PIT_EVIDENCE_V1.json /tmp/readiness/aud-inf/evidence.json
-          python validation/materialize_aud_labour_strict_pit_v1.py --csv /tmp/readiness/aud-lab/source.csv --evidence /tmp/readiness/aud-lab/evidence.json
+          cp /tmp/readiness/aud-lab-artifact/aud-labour-full-archive-probe.json /tmp/readiness/aud-lab/probe.json
           python - <<'PY'
-          import csv,json,os
-          a=json.load(open('/tmp/readiness/aud-inf/evidence.json')); b=json.load(open('/tmp/readiness/aud-lab/evidence.json'))
-          assert a['status']=='PASS' and b['status']=='PASS'
+          import csv,hashlib,json,os
+          a=json.load(open('/tmp/readiness/aud-inf/evidence.json')); b=json.load(open('/tmp/readiness/aud-lab/probe.json'))
+          assert a['status']=='PASS'
           assert a['semantic_rowset_sha256']==os.environ['AUD_INF_SEMANTIC_SHA']
           assert a['coverage']['materialized_quarters']==34
+          assert b['schema']=='GMFQ_AUD_LABOUR_FULL_ARCHIVE_PROBE_V1' and b['status']=='PASS'
+          assert b['expected_months']==104 and b['resolved_months']==104 and len(b['rows'])==104
+          keys=['reference_month','unemployment_rate_sa','release_date','release_time','timezone','pit_status']
+          canon=[{k:r[k] for k in keys} for r in b['rows']]
+          semantic=hashlib.sha256(json.dumps(canon,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+          assert semantic==os.environ['AUD_LAB_SEMANTIC_SHA'],semantic
+          assert all(r['pit_status']=='STRICT_FIRST_RELEASE' for r in b['rows'])
           assert len(list(csv.DictReader(open('/tmp/readiness/aud-inf/source.csv'))))==34
+          PY
+          python validation/g4usd_readiness_json_rows_to_csv_v1.py --mode AUD_LABOUR --input /tmp/readiness/aud-lab/probe.json --output /tmp/readiness/aud-lab/source.csv
+          python - <<'PY'
+          import csv
           assert len(list(csv.DictReader(open('/tmp/readiness/aud-lab/source.csv'))))==104
           PY
 
@@ -284,7 +304,7 @@ jobs:
             'pinned_eur_semantic_hashes':{'inflation':'fd19fea3a286b327019b9727a79ade5e51550cfc073538139ac3f600d81c68b1','labour':'b8b9384ac5aefa293521137d5df9f713585d232c21999a59916f7058161113f9'},
             'pinned_jpy_semantic_hashes':{'inflation':'6981ccb92c24db17ea1fcdf49795887692ed950d833d77c38f09f21bfd3477c8'},
             'pinned_cad_semantic_hashes':{'inflation':'d35f3da5a41ea5550a3d51bc9d7087aeef7c8901a2ef59a48cd7bd674c1dce2a','labour':'77fd60f9eba8cf56189667256a2797f47c7259d5633e390ab876085b7541a56a'},
-            'pinned_aud_semantic_hashes':{'inflation':'d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f'},
+            'pinned_aud_semantic_hashes':{'inflation':'d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f','labour':'b0f91883c118d15bffdb594d646786bd14d279090d7aafea1fad0f0c11faf436'},
             'performance_authorized':False,
             'alignment_result_computed':False,
             'alignment_engine_invoked':False,
