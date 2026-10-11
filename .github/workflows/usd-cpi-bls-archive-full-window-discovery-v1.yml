@@ -1,0 +1,52 @@
+name: USD CPI BLS Archive Full-Window Discovery v1
+
+on:
+  push:
+    branches:
+      - 'validation-usd-cpi-bls-archive-full-window-discovery-v1-*'
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe BLS CPI archive twice
+        run: |
+          mkdir -p /tmp/usd-cpi-bls/a /tmp/usd-cpi-bls/b
+          python validation/macro/discover_usd_cpi_bls_archive_full_window_v1.py --output /tmp/usd-cpi-bls/a/discovery.json
+          python validation/macro/discover_usd_cpi_bls_archive_full_window_v1.py --output /tmp/usd-cpi-bls/b/discovery.json
+      - name: Enforce reproducibility and fail-closed invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/usd-cpi-bls/a/discovery.json').read_text())
+          b=json.loads(Path('/tmp/usd-cpi-bls/b/discovery.json').read_text())
+          assert a['status']=='DISCOVERY_PASS', a['status']
+          assert b['status']=='DISCOVERY_PASS', b['status']
+          assert a['coverage_ok'] is True and b['coverage_ok'] is True
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert a['by_year']==b['by_year']
+          assert a['release_count']==b['release_count']
+          assert a['invariants']['production_write'] is False
+          assert a['invariants']['changes_live_data'] is False
+          assert a['invariants']['changes_engine_rules'] is False
+          assert a['invariants']['certification_implied'] is False
+          print('BLS archive discovery reproducibility: PASS')
+          PY
+      - name: Assert no production writes
+        run: |
+          git diff --exit-code -- live_data index.html
+      - name: Upload discovery artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usd-cpi-bls-archive-full-window-discovery-v1-${{ github.run_id }}
+          path: /tmp/usd-cpi-bls/
+          retention-days: 90
