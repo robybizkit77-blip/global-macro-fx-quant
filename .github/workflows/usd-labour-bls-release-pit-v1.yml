@@ -1,0 +1,47 @@
+name: USD Labour BLS Release PIT V1
+on:
+  push:
+    branches:
+      - validation-usd-labour-release-archive-transport-v1-2026-10-11
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  strict-pit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize BLS first-published U3 twice
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-labour-pit
+          python validation/macro/materialize_usd_labour_bls_release_pit_v1.py --output /tmp/usd-labour-pit/a.json
+          python validation/macro/materialize_usd_labour_bls_release_pit_v1.py --output /tmp/usd-labour-pit/b.json
+      - name: Enforce strict PIT and semantic identity
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/usd-labour-pit/a.json'))
+          b=json.load(open('/tmp/usd-labour-pit/b.json'))
+          assert a['status']=='CERTIFIABLE_STRICT_PIT_WITH_OFFICIAL_GAP'
+          assert a['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'observed_months':104,'materialized_months':103,'official_unavailable_months':1}
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert len(a['rows'])==104
+          gap=[r for r in a['rows'] if r['availability_status']=='UNAVAILABLE_OFFICIAL_NOT_PUBLISHED']
+          assert len(gap)==1 and gap[0]['reference_month']=='2025-10' and gap[0]['unemployment_rate'] is None
+          published=[r for r in a['rows'] if r['availability_status']=='AVAILABLE_STRICT_PIT']
+          assert len(published)==103
+          assert all(r['release_time']=='08:30' and r['release_timezone']=='America/New_York' for r in published)
+          assert all(2.0 <= r['unemployment_rate'] <= 15.0 for r in published)
+          print('USD_LABOUR_STRICT_PIT_PASS',a['semantic_sha256'])
+          PY
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        with:
+          name: usd-labour-bls-release-pit-${{ github.run_id }}
+          path: /tmp/usd-labour-pit/
+          retention-days: 90
