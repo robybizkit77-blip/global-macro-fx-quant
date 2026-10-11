@@ -8,6 +8,7 @@ permissions:
 jobs:
   discover-twice:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,10 +16,11 @@ jobs:
           python-version: '3.12'
       - name: Probe ALFRED vintages twice
         run: |
+          set -euo pipefail
           mkdir -p /tmp/usd-alfred/a /tmp/usd-alfred/b
           python validation/macro/discover_usd_inflation_alfred_full_window_v1.py --output /tmp/usd-alfred/a/discovery.json
           python validation/macro/discover_usd_inflation_alfred_full_window_v1.py --output /tmp/usd-alfred/b/discovery.json
-      - name: Enforce reproducibility and fail-closed invariants
+      - name: Enforce economic reproducibility and fail-closed invariants
         run: |
           python - <<'PY'
           import json
@@ -26,11 +28,15 @@ jobs:
           b=json.load(open('/tmp/usd-alfred/b/discovery.json'))
           assert a['status']=='DISCOVERY_PASS' and b['status']=='DISCOVERY_PASS'
           assert a['semantic_sha256']==b['semantic_sha256']
-          assert a['probes']==b['probes']
-          assert len(a['probes'])==5
+          assert len(a['probes'])==5 and len(b['probes'])==5
+          def econ(p):
+              return {k:v for k,v in p.items() if k!='http_sha256'}
+          assert [econ(p) for p in a['probes']]==[econ(p) for p in b['probes']]
           for p in a['probes']:
               assert p['latest_observation'] <= p['vintage_date']
               assert p['observation_count'] > 0
+              assert len(p['http_sha256'])==64
+          assert a['errors']==[] and b['errors']==[]
           assert a['invariants']['production_write'] is False
           print({'status':'PASS','semantic_sha256':a['semantic_sha256'],'vintages':[p['vintage_date'] for p in a['probes']]})
           PY
@@ -42,4 +48,5 @@ jobs:
         with:
           name: usd-inflation-alfred-full-window-discovery-v1-${{ github.run_id }}
           path: /tmp/usd-alfred/
+          if-no-files-found: warn
           retention-days: 90
