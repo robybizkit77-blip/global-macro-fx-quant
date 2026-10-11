@@ -35,13 +35,16 @@ jobs:
           git fetch --depth=1 origin "$MACRO_CONTRACT_SHA"
           git checkout FETCH_HEAD -- validation/macro_walkforward_eligibility_gate_v1.py validation/backtest_input_contract_v1.py
 
-      - name: Issue and verify EUR Macro series permit for August 2026
+      - name: Issue and verify EUR Macro series permits
         run: |
           set -euo pipefail
           mkdir -p /tmp/wf-snapshot
           python validation/backtest_input_contract_v1.py --as-of 2026-08 --target EUR.inflation --target EUR.labour --output /tmp/wf-snapshot/macro-permit.json
           python validation/backtest_input_contract_v1.py --verify-permit /tmp/wf-snapshot/macro-permit.json --output /tmp/wf-snapshot/macro-permit-verified.json
           cmp /tmp/wf-snapshot/macro-permit.json /tmp/wf-snapshot/macro-permit-verified.json
+          python validation/backtest_input_contract_v1.py --as-of 2026-07 --target EUR.inflation --output /tmp/wf-snapshot/macro-permit-july.json
+          python validation/backtest_input_contract_v1.py --verify-permit /tmp/wf-snapshot/macro-permit-july.json --output /tmp/wf-snapshot/macro-permit-july-verified.json
+          cmp /tmp/wf-snapshot/macro-permit-july.json /tmp/wf-snapshot/macro-permit-july-verified.json
 
       - name: Remove borrowed Macro contract from repository working tree
         run: |
@@ -87,16 +90,14 @@ jobs:
               hashes=[]
               for side in ('a','b'):
                   ev=json.load(open(f'{p}{folder}/{side}/evidence.json'))
-                  assert ev['status']=='PASS'
-                  assert ev['semantic_rowset_sha256']==expected
+                  assert ev['status']=='PASS' and ev['semantic_rowset_sha256']==expected
                   rows=list(csv.DictReader(open(f'{p}{folder}/{side}/{name}',newline='',encoding='utf-8')))
                   for r in rows:
                       for f in fields:
                           if f in ('headline_hicp_yoy_pct','unemployment_rate_pct'): r[f]=float(r[f])
                   canon=[{k:r[k] for k in fields} for r in rows]
                   h=hashlib.sha256(json.dumps(canon,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
-                  assert h==expected,(folder,side,h,expected)
-                  hashes.append(h)
+                  assert h==expected,(folder,side,h,expected); hashes.append(h)
               assert hashes[0]==hashes[1]==expected
           PY
 
@@ -112,19 +113,17 @@ jobs:
           python validation/macro_temporal_row_selector_v1.py verify --selector-result /tmp/wf-snapshot/macro-labour-row.json --macro-permit "$P" --rowset-csv "$LAB" --output /tmp/wf-snapshot/macro-labour-verified.json
           python - <<'PY'
           import json
-          p='/tmp/wf-snapshot/'
-          i=json.load(open(p+'macro-inflation-row.json'))['row_permit']; l=json.load(open(p+'macro-labour-row.json'))['row_permit']
+          p='/tmp/wf-snapshot/'; i=json.load(open(p+'macro-inflation-row.json'))['row_permit']; l=json.load(open(p+'macro-labour-row.json'))['row_permit']
           assert (i['reference_month'],i['value'],i['release_date']) == ('2026-07',2.9,'2026-07-31'), i
           assert (l['reference_month'],l['value'],l['release_date']) == ('2026-06',6.3,'2026-07-30'), l
-          assert i['reference_month'] != '2026-08'
-          assert l['reference_month'] not in ('2026-07','2026-08')
+          assert i['reference_month'] != '2026-08'; assert l['reference_month'] not in ('2026-07','2026-08')
           PY
 
       - name: Prove Macro selector blocks same-day and tampered information
         run: |
           set -euo pipefail
           INF=/tmp/wf-snapshot/artifacts/inflation/a/EUR_INFLATION_STRICT_FIRST_RELEASE_FLASH_2018_2026_09.csv
-          python validation/macro_temporal_row_selector_v1.py select --macro-permit /tmp/wf-snapshot/macro-permit-verified.json --rowset-csv "$INF" --target EUR.inflation --decision-point 2026-07-31 --output /tmp/wf-snapshot/macro-inflation-sameday.json
+          python validation/macro_temporal_row_selector_v1.py select --macro-permit /tmp/wf-snapshot/macro-permit-july-verified.json --rowset-csv "$INF" --target EUR.inflation --decision-point 2026-07-31 --output /tmp/wf-snapshot/macro-inflation-sameday.json
           python - <<'PY'
           import json
           r=json.load(open('/tmp/wf-snapshot/macro-inflation-sameday.json'))['row_permit']
@@ -165,24 +164,13 @@ jobs:
       - name: Build and independently verify deterministic input snapshot
         run: |
           set -euo pipefail
-          python validation/walkforward_input_snapshot_builder_v1.py build \
-            --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json \
-            --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json \
-            --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json \
-            --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json \
-            --output /tmp/wf-snapshot/snapshot.json
-          python validation/walkforward_input_snapshot_builder_v1.py verify \
-            --snapshot /tmp/wf-snapshot/snapshot.json --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json \
-            --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json \
-            --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json \
-            --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json \
-            --output /tmp/wf-snapshot/snapshot-verified.json
+          python validation/walkforward_input_snapshot_builder_v1.py build --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/snapshot.json
+          python validation/walkforward_input_snapshot_builder_v1.py verify --snapshot /tmp/wf-snapshot/snapshot.json --cross-layer-bundle /tmp/wf-snapshot/cross-layer-bundle.json --macro-row-result /tmp/wf-snapshot/macro-inflation-row.json --macro-row-result /tmp/wf-snapshot/macro-labour-row.json --macro-row-verification /tmp/wf-snapshot/macro-inflation-verified.json --macro-row-verification /tmp/wf-snapshot/macro-labour-verified.json --rates-row-result /tmp/wf-snapshot/rates-row-result.json --rates-row-verification /tmp/wf-snapshot/rates-row-verified.json --output /tmp/wf-snapshot/snapshot-verified.json
           python - <<'PY'
           import json
           p='/tmp/wf-snapshot/'; s=json.load(open(p+'snapshot.json')); v=json.load(open(p+'snapshot-verified.json'))
           assert s['status']=='SNAPSHOT_MATERIALIZED' and s['currency']=='EUR' and s['decision_point']=='2026-08-10'
-          assert s['layers']['Macro']['rows']['EUR.inflation']['reference_month']=='2026-07'
-          assert s['layers']['Macro']['rows']['EUR.labour']['reference_month']=='2026-06'
+          assert s['layers']['Macro']['rows']['EUR.inflation']['reference_month']=='2026-07'; assert s['layers']['Macro']['rows']['EUR.labour']['reference_month']=='2026-06'
           for k in ('signal_calculation_allowed','return_label_calculation_allowed','position_sizing_allowed','backtest_execution_authorized'): assert s['policy'][k] is False
           assert v['status']=='VERIFIED' and v['backtest_execution_authorized'] is False
           PY
@@ -196,11 +184,9 @@ jobs:
           base=['python','validation/walkforward_input_snapshot_builder_v1.py','build','--cross-layer-bundle',p+'cross-layer-bundle.json','--macro-row-result',p+'macro-inflation-row.json','--macro-row-verification',p+'macro-inflation-verified.json','--rates-row-result',p+'rates-row-result.json','--rates-row-verification',p+'rates-row-verified.json']
           assert subprocess.run(base,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
           mv=json.load(open(p+'macro-labour-verified.json')); mv['reference_month']='2026-07'; json.dump(mv,open(p+'macro-labour-verified-tampered.json','w'))
-          bad=base+['--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-labour-verified-tampered.json']
-          assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+          bad=base+['--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-labour-verified-tampered.json']; assert subprocess.run(bad,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
           s=json.load(open(p+'snapshot.json')); s['policy']['backtest_execution_authorized']=True; json.dump(s,open(p+'snapshot-tampered.json','w'))
-          verify=['python','validation/walkforward_input_snapshot_builder_v1.py','verify','--snapshot',p+'snapshot-tampered.json','--cross-layer-bundle',p+'cross-layer-bundle.json','--macro-row-result',p+'macro-inflation-row.json','--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-inflation-verified.json','--macro-row-verification',p+'macro-labour-verified.json','--rates-row-result',p+'rates-row-result.json','--rates-row-verification',p+'rates-row-verified.json']
-          assert subprocess.run(verify,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
+          verify=['python','validation/walkforward_input_snapshot_builder_v1.py','verify','--snapshot',p+'snapshot-tampered.json','--cross-layer-bundle',p+'cross-layer-bundle.json','--macro-row-result',p+'macro-inflation-row.json','--macro-row-result',p+'macro-labour-row.json','--macro-row-verification',p+'macro-inflation-verified.json','--macro-row-verification',p+'macro-labour-verified.json','--rates-row-result',p+'rates-row-result.json','--rates-row-verification',p+'rates-row-verified.json']; assert subprocess.run(verify,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode != 0
           PY
 
       - name: Assert repository clean
