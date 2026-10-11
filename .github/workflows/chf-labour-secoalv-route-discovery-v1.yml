@@ -1,0 +1,56 @@
+name: CHF Labour SECO-ALV Route Discovery V1
+
+on:
+  push:
+    branches:
+      - 'validation-chf-labour-secoalv-route-discovery-v1-*'
+    paths:
+      - 'validation/macro/discover_chf_labour_secoalv_route_v1.py'
+      - '.github/workflows/chf-labour-secoalv-route-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official SECO-ALV archive twice
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chf-secoalv/a /tmp/chf-secoalv/b
+          python validation/macro/discover_chf_labour_secoalv_route_v1.py --output /tmp/chf-secoalv/a/discovery.json
+          python validation/macro/discover_chf_labour_secoalv_route_v1.py --output /tmp/chf-secoalv/b/discovery.json
+      - name: Enforce official PDF transport and economic reproducibility
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/chf-secoalv/a/discovery.json'))
+          b=json.load(open('/tmp/chf-secoalv/b/discovery.json'))
+          assert a['status']=='DISCOVERY_PASS' and b['status']=='DISCOVERY_PASS'
+          assert a['errors']==[] and b['errors']==[]
+          assert len(a['probes'])==4 and len(b['probes'])==4
+          def econ(row): return {k:v for k,v in row.items() if k!='sha256'}
+          assert [econ(r) for r in a['probes']]==[econ(r) for r in b['probes']]
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert all(r['http_status']==200 and r['is_pdf'] and r['bytes']>10000 and len(r['sha256'])==64 for r in a['probes'])
+          assert a['invariants']['official_domain_only'] is True
+          assert a['invariants']['production_write'] is False
+          print({'status':'PASS','months':[r['reference_month'] for r in a['probes']],'semantic_sha256':a['semantic_sha256']})
+          PY
+      - name: Assert no repository writes
+        run: git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chf-labour-secoalv-route-${{ github.run_id }}
+          path: /tmp/chf-secoalv/
+          if-no-files-found: warn
+          retention-days: 90
