@@ -1,0 +1,73 @@
+{
+  "schema": "GMFQ_G4USD_FRONT_END_REPRICING_INTENSITY_DISCOVERY_CONTRACT_V3",
+  "status": "PREDECLARED_EXPLORATORY_NO_V3_RESULTS_OBSERVED",
+  "lineage": {
+    "corrected_alignment_source_sharpe_contradictory": 1.1348751274937703,
+    "corrected_alignment_source_contradictory_n": 67,
+    "source_engine_blob_sha": "d11a7eff0268dac89d3b3f651938d82fcd2ab8ec",
+    "readiness_run_id": 38169617850,
+    "readiness_artifact": "g4usd-alignment-integration-readiness-fast-v3-38169617850",
+    "readiness_digest": "sha256:e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df",
+    "frozen_parent_pr": 122,
+    "frozen_parent_head_sha": "0d9e2128680bddcb917767389cad97937b7c48f5",
+    "frozen_parent_baseline_panel_sharpe": 0.30119374143958916
+  },
+  "research_question": "Within the already-observed CONTRADICTORY macro/rates state, is the apparent FX information concentrated in economically large relative-2Y repricing rather than small/noisy moves?",
+  "sample": {
+    "scope": ["EUR", "JPY", "CAD", "AUD"],
+    "state": "CONTRADICTORY_ONLY",
+    "same_historical_sample_is_discovery_only": true,
+    "no_new_model_fit": true,
+    "no_currency_exclusion": true,
+    "eur_mandatory": true
+  },
+  "intensity_definition": {
+    "source_field": "abs(d_diff_2y)",
+    "source_unit": "percentage_points",
+    "basis_point_conversion": "abs(d_diff_2y) * 100",
+    "buckets": [
+      {"name": "LT_5BP", "min_bp_inclusive": 0.0, "max_bp_exclusive": 5.0},
+      {"name": "BP_5_TO_LT_10", "min_bp_inclusive": 5.0, "max_bp_exclusive": 10.0},
+      {"name": "BP_10_TO_LT_20", "min_bp_inclusive": 10.0, "max_bp_exclusive": 20.0},
+      {"name": "GE_20BP", "min_bp_inclusive": 20.0, "max_bp_exclusive": null}
+    ],
+    "threshold_selection": "FIXED_ECONOMIC_BP_THRESHOLDS_PREDECLARED_BEFORE_V3_OUTPUTS",
+    "no_percentile_thresholds": true,
+    "no_threshold_search_after_outputs": true
+  },
+  "metrics": {
+    "primary": [
+      "mean_fx_return_signed_by_front_end_1m",
+      "mean_fx_return_signed_by_front_end_3m",
+      "median_fx_return_signed_by_front_end_1m",
+      "median_fx_return_signed_by_front_end_3m"
+    ],
+    "secondary": [
+      "frozen_parent_strategy_return_mean",
+      "frozen_parent_directional_accuracy",
+      "count",
+      "currency_mix"
+    ]
+  },
+  "candidate_generation_rules_for_future_unseen_confirmation": {
+    "large_bucket": "GE_20BP",
+    "comparison_bucket": "LT_10BP_COMBINED",
+    "minimum_large_n": 15,
+    "large_mean_signed_fx_1m_positive": true,
+    "large_mean_signed_fx_3m_positive": true,
+    "large_1m_exceeds_lt10bp": true,
+    "large_3m_exceeds_lt10bp": true,
+    "minimum_3_positive_currencies_at_3m": true,
+    "no_single_currency_over_50pct_of_large_bucket": true,
+    "all_rules_required": true
+  },
+  "governance": {
+    "no_edge_certification": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "future_unseen_confirmation_required": true,
+    "no_rescue_tuning_after_outputs": true,
+    "no_threshold_search": true,
+    "negative_result_must_remain_visible": true
+  }
+}
