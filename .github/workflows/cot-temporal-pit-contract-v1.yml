@@ -1,0 +1,96 @@
+name: COT Temporal PIT Contract V1
+
+on:
+  push:
+    branches:
+      - validation-cot-temporal-pit-contract-v1-2026-10-11
+  pull_request:
+    paths:
+      - 'validation/COT_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json'
+      - '.github/workflows/cot-temporal-pit-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Enforce COT Temporal PIT contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/COT_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json'
+          d=json.load(open(p,encoding='utf-8'))
+          assert d['schema']=='GMFQ_COT_TEMPORAL_PIT_CONTRACT_V1'
+          assert d['status']=='CONTRACT_DEFINED__HISTORICAL_CERTIFICATION_NOT_YET_COMPLETE'
+          assert d['layer']=='COT / Positioning'
+          assert d['target_window']=={'start_date':'2018-01-01','end_date':'2026-10-11'}
+          expected={'EUR':'099741','GBP':'096742','JPY':'097741','CHF':'092741','AUD':'232741','NZD':'112741','CAD':'090741','USD':'098662'}
+          assert d['universe']['report']=='CFTC Legacy Commitments of Traders - Futures Only'
+          assert d['universe']['participant_class']=='Non-Commercial'
+          assert d['universe']['currencies']==expected
+          t=d['temporal_semantics']
+          assert t['report_date_is_never_availability_date'] is True
+          assert t['scheduled_release_is_never_assumed_actual_when_an_exception_exists'] is True
+          assert t['historical_report_page_without_release_metadata_is_not_availability_evidence'] is True
+          assert t['missing_actual_release_action']=='WITHHOLD'
+          assert 'strictly after actual_available_from' in t['same_day_rule']
+          exceptions=d['known_exception_classes']
+          for key in ('federal_holidays','2018_2019_appropriations_lapse','2023_ion_cyber_incident',
+                      '2025_national_day_of_mourning','2025_appropriations_lapse','corrections_and_revisions'):
+              assert key in exceptions, key
+          assert exceptions['2023_ion_cyber_incident']['official_reference'].endswith('/8662-23')
+          assert 'January 13, 2025' in exceptions['2025_national_day_of_mourning']['rule']
+          c=d['certification_rules']
+          for k in ('official_cftc_source_only','legacy_futures_only_required','noncommercial_class_required',
+                    'market_code_must_match_currency_contract','actual_availability_required','no_tuesday_to_friday_lookahead',
+                    'holiday_shutdown_and_operational_exceptions_required','revision_handling_required',
+                    'two_independent_materializations_semantically_equal','raw_source_hash_required','semantic_ledger_hash_required'):
+              assert c[k] is True, k
+          assert c['runtime_history_fallback_allowed'] is False
+          assert c['secondary_source_fallback_allowed'] is False
+          assert c['production_write'] is False
+          m=d['derived_metric_policy']
+          assert m['percentile_window_weeks']==104
+          assert m['derived_metrics_must_use_only_rows_available_at_decision_point'] is True
+          assert m['runtime_104_week_chart_is_not_historical_pit_evidence'] is True
+          assert d['current_repo_assessment']['full_window_backtest_status']=='WITHHELD_PENDING_TEMPORAL_LEDGER_CERTIFICATION'
+          fields=set(d['required_historical_ledger_fields'])
+          required={'report_date','scheduled_release_date','actual_release_date','actual_available_from','availability_precision',
+                    'noncommercial_long','noncommercial_short','noncommercial_net','open_interest','net_open_interest_pct',
+                    'source_artifact_sha256','semantic_row_sha256','revision_state'}
+          assert required <= fields
+          print('COT_TEMPORAL_PIT_CONTRACT_V1_PASS')
+          PY
+
+      - name: Prove current runtime cannot satisfy PIT ledger contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          runtime=json.load(open('live_data/sections/V250_COT_CHART_DATA.json',encoding='utf-8'))
+          assert set(runtime)=={'USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'}
+          required={'actual_available_from','actual_release_date','scheduled_release_date'}
+          for ccy,s in runtime.items():
+              assert len(s['dates'])==104
+              assert required.isdisjoint(s.keys())
+          print('CURRENT_RUNTIME_IS_104W_REPORT_DATE_SERIES_NOT_PIT_LEDGER')
+          PY
+
+      - name: Assert repository remains read only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
