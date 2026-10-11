@@ -1,0 +1,146 @@
+name: G4USD Divergence Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-divergence-discovery-contract-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    env:
+      READINESS_RUN_ID: '38169617850'
+      READINESS_ARTIFACT: 'g4usd-alignment-integration-readiness-fast-v3-38169617850'
+      READINESS_DIGEST: 'sha256:e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df'
+      ENGINE_BLOB_SHA: 'd11a7eff0268dac89d3b3f651938d82fcd2ab8ec'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Assert frozen discovery contract and unchanged source engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object validation/g4usd_front_end_macro_cb_alignment_v1.py)" = "$ENGINE_BLOB_SHA"
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_FRONT_END_MACRO_DIVERGENCE_DISCOVERY_CONTRACT_V1_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_EXPLORATORY_NO_NEW_RESULTS_OBSERVED'
+          assert c['research_governance']['same_historical_sample_is_discovery_only'] is True
+          assert c['research_governance']['no_production_edge_certification_from_discovery_sample'] is True
+          assert c['research_governance']['no_threshold_search_after_outputs'] is True
+          assert c['research_governance']['future_confirmation_requires_unseen_data'] is True
+          assert c['lineage']['corrected_alignment_run_id']==38171819022
+          print('DISCOVERY_CONTRACT_FROZEN_PASS')
+          PY
+
+      - name: Download exact GREEN readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.READINESS_ARTIFACT }}
+          path: /tmp/discovery
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.READINESS_RUN_ID }}
+
+      - name: Verify readiness receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/discovery/readiness-receipt.json'))
+          assert r['status']=='READY_FOR_ONE_SHOT_TEST'
+          assert r['ready_for_one_shot_test'] is True
+          assert r['alignment_result_computed'] is False
+          assert r['alignment_engine_invoked'] is False
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          assert r['frozen_parent']['head_sha']=='0d9e2128680bddcb917767389cad97937b7c48f5'
+          assert abs(r['frozen_parent']['baseline_panel_sharpe']-0.30119374143958916)<1e-12
+          print('READINESS_SOURCE_PASS')
+          PY
+
+      - name: Normalize release-date representation only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/discovery/canonical-fixed
+          for f in /tmp/discovery/canonical/*.csv; do
+            b=$(basename "$f")
+            python validation/g4usd_canonical_release_date_normalizer_v1.py --source "$f" --output "/tmp/discovery/canonical-fixed/$b"
+          done
+
+      - name: Reconstruct exact corrected alignment observation rowset
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/g4usd_front_end_macro_cb_alignment_v1.py \
+            --frozen-oos /tmp/discovery/frozen_oos.json \
+            --eur-inflation /tmp/discovery/canonical-fixed/eur_inflation.csv \
+            --eur-labour /tmp/discovery/canonical-fixed/eur_labour.csv \
+            --jpy-inflation /tmp/discovery/canonical-fixed/jpy_inflation.csv \
+            --jpy-labour /tmp/discovery/canonical-fixed/jpy_labour.csv \
+            --cad-inflation /tmp/discovery/canonical-fixed/cad_inflation.csv \
+            --cad-labour /tmp/discovery/canonical-fixed/cad_labour.csv \
+            --aud-inflation /tmp/discovery/canonical-fixed/aud_inflation.csv \
+            --aud-labour /tmp/discovery/canonical-fixed/aud_labour.csv \
+            --usd-inflation /tmp/discovery/canonical-fixed/usd_inflation.csv \
+            --usd-labour /tmp/discovery/canonical-fixed/usd_labour.csv \
+            --output /tmp/discovery/alignment-source.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/discovery/alignment-source.json'))
+          assert r['state_results']['CONTRADICTORY']['n']==67
+          assert abs(r['state_results']['CONTRADICTORY']['sharpe']-1.1348751274937703)<1e-12
+          assert r['state_results']['UNAVAILABLE']['n']==0
+          assert r['edge_survival'] is False
+          print('CORRECTED_ALIGNMENT_SOURCE_REPRODUCED_PASS')
+          PY
+
+      - name: Execute predeclared divergence discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/g4usd_front_end_macro_divergence_discovery_v1.py \
+            --alignment-result /tmp/discovery/alignment-source.json \
+            --output /tmp/discovery/divergence-discovery.json
+
+      - name: Validate discovery governance and completeness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/discovery/divergence-discovery.json'))
+          assert r['schema']=='GMFQ_G4USD_FRONT_END_MACRO_DIVERGENCE_DISCOVERY_V1'
+          assert r['status']=='EXPLORATORY_DIAGNOSTIC_COMPLETE_NOT_EDGE_CERTIFICATION'
+          assert r['source_contradictory_n']==67
+          assert sum(r['subtype_counts'].values())==67
+          assert set(r['per_currency'])=={'EUR','JPY','CAD','AUD'}
+          g=r['governance']
+          assert g['same_sample_discovery_only'] is True
+          assert g['production_signal_authorized'] is False
+          assert g['sizing_authorized'] is False
+          assert g['edge_certified'] is False
+          assert g['future_unseen_confirmation_required'] is True
+          assert g['no_threshold_search'] is True
+          print('DISCOVERY_OUTPUT_GOVERNANCE_PASS')
+          PY
+
+      - name: Upload discovery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-divergence-discovery-v1-${{ github.run_id }}
+          path: |
+            /tmp/discovery/divergence-discovery.json
+            validation/G4USD_FRONT_END_MACRO_DIVERGENCE_DISCOVERY_CONTRACT_V1_2026-10-11.json
+          if-no-files-found: error
+          retention-days: 30
