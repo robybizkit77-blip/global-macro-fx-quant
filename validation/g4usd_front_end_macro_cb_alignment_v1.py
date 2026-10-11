@@ -14,7 +14,9 @@ Contract-critical semantics:
 - no observation/as-of date may substitute for release eligibility;
 - an explicitly documented official nonpublication is not a synthetic reading:
   it is skipped in the release sequence, leaving the latest two actually-known
-  readings unchanged until a new release becomes eligible.
+  readings unchanged until a new release becomes eligible;
+- all ten readiness-certified macro streams are consumed through the canonical
+  schema reference_period,release_date,value,availability_status.
 """
 from __future__ import annotations
 
@@ -132,19 +134,11 @@ def main():
     assert frozen['schema']=='GMFQ_G4USD_RELATIVE_FRONT_END_PANEL_OOS_V1'
     assert frozen['frozen_from_pr']==122
 
-    meta={
-      'EUR':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'JPY':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'CAD':('reference_month','cpi_yoy_full_precision','reference_month','unemployment_rate'),
-      'AUD':('reference_quarter','cpi_yoy','reference_month','unemployment_rate'),
-      'USD':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-    }
     data={}
     for c in (*CCYS,'USD'):
-        ic,iv,lc,lv=meta[c]
         data[c]={
-          'inf':load_macro(Path(getattr(a,f'{c.lower()}_inflation')),ic,iv),
-          'lab':load_macro(Path(getattr(a,f'{c.lower()}_labour')),lc,lv),
+          'inf':load_macro(Path(getattr(a,f'{c.lower()}_inflation')),'reference_period','value'),
+          'lab':load_macro(Path(getattr(a,f'{c.lower()}_labour')),'reference_period','value'),
         }
 
     out=[]
@@ -193,6 +187,7 @@ def main():
       'method':{
         'frozen_model_refit':False,'hyperparameter_tuning':False,'state_threshold_search':False,
         'currency_specific_rules':False,'eur_excluded':False,'pit_release_fallback_forbidden':True,
+        'canonical_macro_input_schema':'reference_period,release_date,value,availability_status',
         'official_nonpublication_semantics':'skip as non-observation; do not impute or synthesize; retain latest two actually-known releases',
         'inflation_definition':'change(local PIT-known inflation) minus change(US PIT-known inflation)',
         'labour_definition':'negative of [change(local PIT-known unemployment) minus change(US PIT-known unemployment)]',
