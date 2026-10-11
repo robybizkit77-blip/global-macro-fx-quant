@@ -1,0 +1,81 @@
+name: COT Conservative Availability Calendar Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-cot-legacy-full-history-discovery-v1-2026-10-11
+    paths:
+      - 'validation/discover_cot_conservative_availability_calendar_v1.py'
+      - '.github/workflows/cot-conservative-availability-calendar-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build conservative availability candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-availability
+          python validation/discover_cot_conservative_availability_calendar_v1.py \
+            --output /tmp/cot-availability/discovery.json
+
+      - name: Enforce candidate-versus-certified separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cot-availability/discovery.json'))
+          assert d['status']=='DISCOVERY_PASS'
+          assert d['scope']['report_dates']==458
+          assert d['candidate_eligible_report_dates']==448
+          assert d['withheld_report_dates']==10
+          assert d['class_counts']['WITHHELD_UNRESOLVED_2018_2019_SHUTDOWN']==10
+          assert d['class_counts']['EXPLICIT_CFTC_ACTUAL_DATE_CONSERVATIVE_NEXT_DAY']==16
+          assert d['class_counts']['CFTC_ION_ORIGINAL_SCHEDULE_JOIN_TO_EXPLICIT_ACTUAL_DATE']==7
+          assert d['class_counts']['STANDARD_RULE_PLUS_EXPLICIT_CFTC_CLOSURE_DELAY_CONFIRMATION']==1
+          assert d['class_counts']['OFFICIAL_STANDARD_THIRD_BUSINESS_DAY_CONSERVATIVE_NEXT_DAY__ACTUAL_NOT_INDIVIDUALLY_PROVEN']==424
+          assert d['policy']['actual_release_date_required_for_final_certification'] is True
+          assert d['policy']['standard_rule_rows_are_candidate_only_not_certified_actual_release'] is True
+          assert d['policy']['unresolved_exception_action']=='WITHHOLD'
+          assert d['policy']['production_write'] is False
+          withheld=[x['report_date'] for x in d['withheld_rows']]
+          assert withheld==[
+            '2018-12-24','2018-12-31','2019-01-08','2019-01-15','2019-01-22',
+            '2019-01-29','2019-02-05','2019-02-12','2019-02-19','2019-02-26'
+          ]
+          rows={x['report_date']:x for x in d['rows']}
+          assert rows['2018-12-18']['actual_release_date']=='2018-12-21'
+          assert rows['2020-12-21']['actual_release_date']=='2020-12-28'
+          assert rows['2021-06-15']['actual_release_date']=='2021-06-21'
+          assert rows['2023-01-31']['actual_release_date']=='2023-02-24'
+          assert rows['2025-01-07']['scheduled_release_date']=='2025-01-13'
+          assert rows['2025-01-07']['actual_release_date']=='2025-01-13'
+          assert rows['2025-09-30']['actual_release_date']=='2025-11-19'
+          print('COT_CONSERVATIVE_AVAILABILITY_DISCOVERY_PASS')
+          PY
+
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-conservative-availability-discovery-${{ github.run_id }}
+          path: /tmp/cot-availability/
+          retention-days: 90
