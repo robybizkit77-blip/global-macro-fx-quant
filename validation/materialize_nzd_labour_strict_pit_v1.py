@@ -62,19 +62,22 @@ def release_date(page: str, label: str) -> str:
 def unemployment_rate(page: str, year: int, month: int) -> float:
     period = f"{MONTHS[month].capitalize()} {year} quarter"
     p = re.escape(period)
-    # Narrow families observed in official Stats NZ first-release copy. Each
-    # matcher keeps both the unemployment label and exact reference quarter.
+    # Narrow official wording families only. The page identity is validated
+    # separately, and no matcher may span arbitrary prose across the release.
     patterns = (
+        # Stats NZ teaser/headline wording (eg June 2018).
+        r"\bUnemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent\b",
         rf"seasonally adjusted unemployment rate (?:fell|rose|increased|decreased) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        # 2018-era release copy can omit "seasonally adjusted" in the teaser,
-        # but still states the exact reference quarter and direction.
-        rf"In the {p},\s+(?:the\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        # 2018-era copy can begin with the exact reference quarter.
+        rf"In the {p},?\s+(?:the\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
         rf"(?:The\s+)?unemployment rate (?:fell|rose) to\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
         rf"seasonally adjusted unemployment rate was unchanged at\s+([0-9]+(?:\.[0-9]+)?)\s+percent in the {p}",
-        rf"In the {p}.*?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
-        rf"{p}.*?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
-        rf"unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent, compared with.*?{p}",
+        # Bound same-sentence variants so component/subgroup rates later in the
+        # page cannot be selected.
+        rf"In the {p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"{p}[^.]{{0,220}}?unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent",
+        rf"unemployment rate was\s+([0-9]+(?:\.[0-9]+)?)\s+percent[^.]{{0,220}}?{p}",
     )
     values: list[float] = []
     for pattern in patterns:
