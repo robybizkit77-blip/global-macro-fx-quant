@@ -1,0 +1,77 @@
+name: COT Special Announcements Discovery V1
+
+on:
+  push:
+    branches:
+      - validation-cot-legacy-full-history-discovery-v1-2026-10-11
+    paths:
+      - 'validation/discover_cot_special_announcements_v1.py'
+      - '.github/workflows/cot-special-announcements-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Discover CFTC special announcements twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-special/a /tmp/cot-special/b
+          python validation/discover_cot_special_announcements_v1.py --output /tmp/cot-special/a/discovery.json
+          python validation/discover_cot_special_announcements_v1.py --output /tmp/cot-special/b/discovery.json
+
+      - name: Enforce reproducible timing-exception extraction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/cot-special/a/discovery.json'))
+          b=json.load(open('/tmp/cot-special/b/discovery.json'))
+          assert a['status']==b['status']=='DISCOVERY_PASS'
+          assert a['raw_sha256']==b['raw_sha256']
+          assert a['visible_text_sha256']==b['visible_text_sha256']
+          assert a['final_2025_appropriations_catchup']==b['final_2025_appropriations_catchup']
+          assert a['ion_2023_original_to_actual_publish']==b['ion_2023_original_to_actual_publish']
+          assert len(a['final_2025_appropriations_catchup'])>=10
+          assert len(a['ion_2023_original_to_actual_publish'])>=7
+          ion=a['ion_2023_original_to_actual_publish']
+          assert ion[0]['original_publish_date']=='2023-02-03'
+          assert ion[0]['actual_publish_date']=='2023-02-24'
+          assert ion[-1]['original_publish_date']=='2023-03-17'
+          assert ion[-1]['actual_publish_date']=='2023-03-21'
+          catch=a['final_2025_appropriations_catchup']
+          assert catch[0]=={
+              'report_date':'2025-09-30',
+              'original_publish_date':'2025-10-03',
+              'actual_publish_date':'2025-11-19'}
+          assert catch[-1]['report_date']=='2025-12-23'
+          assert catch[-1]['actual_publish_date']=='2025-12-29'
+          assert a['invariants']['full_release_calendar_certified'] is False
+          assert a['invariants']['production_write'] is False
+          print('COT_SPECIAL_ANNOUNCEMENTS_DISCOVERY_REPRODUCIBLE')
+          PY
+
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-special-announcements-discovery-${{ github.run_id }}
+          path: /tmp/cot-special/
+          retention-days: 90
