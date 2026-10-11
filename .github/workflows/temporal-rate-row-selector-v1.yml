@@ -1,0 +1,175 @@
+name: Temporal Rate Row Selector V1
+
+on:
+  push:
+    branches:
+      - validation-temporal-rate-row-selector-v1-2026-10-11
+  pull_request:
+    paths:
+      - 'validation/temporal_rate_row_selector_v1.py'
+      - 'validation/rates_pit_rowsets/**'
+      - 'validation/build_rates_canonical_rowset_store_v1.py'
+      - '.github/workflows/temporal-rate-row-selector-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selector:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Select and verify conservative date-only row
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rate-selector
+          python validation/temporal_rate_row_selector_v1.py select \
+            --target USD.rates_2y_10y \
+            --decision-date 2020-01-15 \
+            --output /tmp/rate-selector/usd.json
+          python validation/temporal_rate_row_selector_v1.py verify \
+            --receipt /tmp/rate-selector/usd.json \
+            --output /tmp/rate-selector/usd-verify.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/rate-selector/usd.json'))
+          v=json.load(open('/tmp/rate-selector/usd-verify.json'))
+          assert d['status']=='ROW_SELECTED'
+          assert d['selector_mode']=='CONSERVATIVE_DATE_ONLY'
+          assert d['selected_row']['observation_date'] < d['decision_date']
+          assert d['selected_row']['first_eligible_decision_date'] <= d['decision_date']
+          assert d['backtest_consumption_authorized'] is False
+          assert v['status']=='VERIFIED'
+          assert v['backtest_consumption_authorized'] is False
+          PY
+
+      - name: Prove JPY strict 09:30 JST boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python validation/temporal_rate_row_selector_v1.py select \
+            --target JPY.rates_2y_10y \
+            --decision-timestamp 2018-01-05T09:30:00+09:00 >/tmp/rate-selector/jpy-too-early.json 2>/tmp/rate-selector/jpy-too-early.err; then
+            echo 'JPY exact first release boundary unexpectedly admitted first row' >&2
+            exit 1
+          fi
+          python validation/temporal_rate_row_selector_v1.py select \
+            --target JPY.rates_2y_10y \
+            --decision-timestamp 2018-01-05T09:30:01+09:00 \
+            --output /tmp/rate-selector/jpy-first.json
+          python validation/temporal_rate_row_selector_v1.py select \
+            --target JPY.rates_2y_10y \
+            --decision-timestamp 2018-01-09T09:30:00+09:00 \
+            --output /tmp/rate-selector/jpy-boundary.json
+          python validation/temporal_rate_row_selector_v1.py select \
+            --target JPY.rates_2y_10y \
+            --decision-timestamp 2018-01-09T09:30:01+09:00 \
+            --output /tmp/rate-selector/jpy-after.json
+          python - <<'PY'
+          import json
+          first=json.load(open('/tmp/rate-selector/jpy-first.json'))
+          exact=json.load(open('/tmp/rate-selector/jpy-boundary.json'))
+          after=json.load(open('/tmp/rate-selector/jpy-after.json'))
+          assert first['selected_row']['observation_date']=='2018-01-04'
+          # 2018-01-05 row is released at exactly 2018-01-09 09:30 JST;
+          # strict 'decision_timestamp > boundary' means it is not visible at equality.
+          assert exact['selected_row']['observation_date']=='2018-01-04'
+          assert after['selected_row']['observation_date']=='2018-01-05'
+          assert after['selected_row']['first_eligible_decision_point']=='2018-01-09T09:30:00+09:00'
+          assert after['backtest_consumption_authorized'] is False
+          PY
+
+      - name: Prove invalid modes and withheld windows fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail_select() {
+            if python validation/temporal_rate_row_selector_v1.py select "$@" >/tmp/rate-selector/should-not-pass.json 2>/tmp/rate-selector/expected.err; then
+              echo "expected selector failure but selection passed: $*" >&2
+              exit 1
+            fi
+          }
+          fail_select --target JPY.rates_2y_10y --decision-date 2020-01-15
+          fail_select --target JPY.rates_2y_10y --decision-timestamp 2020-01-15T10:00:00+00:00
+          fail_select --target USD.rates_2y_10y --decision-timestamp 2020-01-15T10:00:00+00:00
+          fail_select --target USD.rates_2y_10y --decision-date 2018-12-31
+          fail_select --target EUR.rates_2y_10y --decision-date 2026-10-07
+          fail_select --target GBP.rates_2y_10y --decision-date 2020-01-15
+
+      - name: Prove frozen rowset tamper fails before selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv
+          cp "$p" /tmp/rate-selector/usd.csv.backup
+          python - <<'PY'
+          p='validation/rates_pit_rowsets/usd_rates_2y_10y_temporal_pit_v1.csv'
+          lines=open(p,encoding='utf-8').read().splitlines()
+          cells=lines[1].split(',')
+          cells[1]='9.99'
+          lines[1]=','.join(cells)
+          open(p,'w',encoding='utf-8',newline='').write('\n'.join(lines)+'\n')
+          PY
+          if python validation/temporal_rate_row_selector_v1.py select \
+            --target USD.rates_2y_10y --decision-date 2020-01-15 >/dev/null 2>&1; then
+            echo 'tampered canonical rowset unexpectedly selected' >&2
+            cp /tmp/rate-selector/usd.csv.backup "$p"
+            exit 1
+          fi
+          cp /tmp/rate-selector/usd.csv.backup "$p"
+
+      - name: Prove receipt tamper fails even with recomputed outer hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/rate-selector/usd.json /tmp/rate-selector/usd-tampered.json
+          python - <<'PY'
+          import hashlib,json
+          p='/tmp/rate-selector/usd-tampered.json'
+          d=json.load(open(p))
+          d['selected_row']['yield_2y']=99.0
+          body={k:v for k,v in d.items() if k!='selection_receipt_sha256'}
+          raw=json.dumps(body,sort_keys=True,separators=(',',':'),ensure_ascii=True).encode()
+          d['selection_receipt_sha256']=hashlib.sha256(raw).hexdigest()
+          open(p,'w').write(json.dumps(d,indent=2,sort_keys=True)+'\n')
+          PY
+          if python validation/temporal_rate_row_selector_v1.py verify \
+            --receipt /tmp/rate-selector/usd-tampered.json >/dev/null 2>&1; then
+            echo 'tampered row receipt unexpectedly verified' >&2
+            exit 1
+          fi
+
+      - name: Assert row selection still cannot authorize backtest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          for p in ('/tmp/rate-selector/usd.json','/tmp/rate-selector/jpy-after.json'):
+              d=json.load(open(p))
+              assert d['backtest_consumption_authorized'] is False
+              assert d['next_required_binding']=='BIND_ROW_SELECTION_TO_VALID_RATES_LAYER_PERMIT'
+              assert d['selection_policy']['runtime_history_fallback_allowed'] is False
+              assert d['selection_policy']['secondary_source_fallback_allowed'] is False
+              assert d['selection_policy']['same_day_use_allowed'] is False
+          PY
+
+      - name: Assert repository remains read only after restored tamper test
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: temporal-rate-row-selector-${{ github.run_id }}
+          path: /tmp/rate-selector/
+          retention-days: 90
