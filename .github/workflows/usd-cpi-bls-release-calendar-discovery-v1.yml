@@ -1,0 +1,68 @@
+name: USD CPI BLS Release Calendar Discovery V1
+
+on:
+  push:
+    branches:
+      - 'validation-usd-cpi-release-calendar-discovery-v1-*'
+    paths:
+      - 'validation/macro/discover_usd_cpi_bls_release_calendar_v1.py'
+      - '.github/workflows/usd-cpi-bls-release-calendar-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-twice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize BLS release calendar twice
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-cpi-calendar/a /tmp/usd-cpi-calendar/b
+          python validation/macro/discover_usd_cpi_bls_release_calendar_v1.py --output /tmp/usd-cpi-calendar/a/discovery.json
+          python validation/macro/discover_usd_cpi_bls_release_calendar_v1.py --output /tmp/usd-cpi-calendar/b/discovery.json
+
+      - name: Enforce full 104-month availability timeline and reproducibility
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/usd-cpi-calendar/a/discovery.json'))
+          b=json.load(open('/tmp/usd-cpi-calendar/b/discovery.json'))
+          assert a['status']=='DISCOVERY_PASS' and b['status']=='DISCOVERY_PASS'
+          assert a['coverage']=={'start':'2018-01','end':'2026-08','months':104,'expected_months':104}
+          assert a['missing_reference_months']==[]
+          assert a['duplicate_reference_months']==[]
+          assert a['errors']==[] and b['errors']==[]
+          assert len(a['release_rows'])==104
+          assert a['release_rows']==b['release_rows']
+          assert a['semantic_sha256']==b['semantic_sha256']
+          assert all(r['release_time']=='08:30' for r in a['release_rows'])
+          assert all(r['release_timezone']=='America/New_York' for r in a['release_rows'])
+          assert all(r['availability_rule']=='AT_OR_AFTER_OFFICIAL_BLS_RELEASE_TIMESTAMP' for r in a['release_rows'])
+          assert a['release_rows'][0]['reference_month']=='2018-01'
+          assert a['release_rows'][-1]['reference_month']=='2026-08'
+          assert a['invariants']['same_day_pre_release_access_forbidden'] is True
+          assert a['invariants']['production_write'] is False
+          for src in a['sources']:
+              assert len(src['http_sha256'])==64
+          print({'status':'PASS','months':104,'semantic_sha256':a['semantic_sha256']})
+          PY
+
+      - name: Assert no repository writes
+        run: git diff --exit-code
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: usd-cpi-bls-release-calendar-${{ github.run_id }}
+          path: /tmp/usd-cpi-calendar/
+          if-no-files-found: warn
+          retention-days: 90
