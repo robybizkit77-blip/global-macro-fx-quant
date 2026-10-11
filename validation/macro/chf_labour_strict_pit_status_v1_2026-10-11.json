@@ -1,0 +1,67 @@
+{
+  "schema": "GMFQ_MACRO_STRICT_PIT_STATUS_V1",
+  "status": "WITHHELD",
+  "target": "CHF.labour",
+  "as_of": "2026-10-11",
+  "requested_coverage": {
+    "start": "2018-01",
+    "end": "2026-09",
+    "expected_months": 105
+  },
+  "series_contract": {
+    "series_id": "CH_UNEMP_RATE",
+    "frequency": "M",
+    "transformation": "level",
+    "unit": "%",
+    "required_semantics": "SECO_SEASONALLY_ADJUSTED_UNEMPLOYMENT_RATE_AS_FIRST_PUBLISHED_AT_1_DECIMAL"
+  },
+  "blocker": {
+    "code": "OFFICIAL_FIRST_RELEASE_ARCHIVE_NOT_REPLAYABLE",
+    "summary": "The required period-specific SECO monthly first-release artifacts cannot currently be replayed deterministically from an official route in GitHub Actions.",
+    "why_it_matters": "SECO seasonal adjustment recalculates history as new observations arrive, so current revised history is not an acceptable substitute for contemporaneous first-release values.",
+    "fail_closed_action": "WITHHOLD_FROM_WALK_FORWARD_AND_BACKTEST"
+  },
+  "evidence": {
+    "legacy_strict_materializer": {
+      "branch": "validation-chf-labour-strict-pit-v1-2026-10-10",
+      "head_sha": "547b7b6a5e40937f11db4c056148b9d63e03a45c",
+      "workflow_run": 38087915168,
+      "result": "FAIL",
+      "finding": "The first required month 2018-01 could not be retrieved; historical seco.admin.ch DAM candidates returned HTTP 502 from the runner."
+    },
+    "secoalv_archive_probe": {
+      "branch": "validation-chf-labour-secoalv-route-discovery-v1-2026-10-11",
+      "run": 38138585129,
+      "artifact": 11701552710,
+      "artifact_sha256": "97613db737553832f669deaddbf53a7f0b2372c79c44954f88955be684779d98",
+      "result": "FAIL",
+      "finding": "Official historical secoalv.admin.ch paths for 2019-02, 2020-01, 2021-01 and 2022-01 all returned HTTP 404."
+    },
+    "arbeit_swiss_migrated_route_probe": {
+      "branch": "validation-chf-labour-secoalv-route-discovery-v1-2026-10-11",
+      "head_sha": "191c0daf5650f05351131fba9e91157c292b21e3",
+      "run": 38138740464,
+      "artifact": 11701443213,
+      "artifact_sha256": "dcbaf297ae0eef232c697aa6e257e1fac656d803bb65a893c2a9c3abdafe121d",
+      "result": "FAIL",
+      "finding": "The same period-specific paths migrated to the current official arbeit.swiss host also returned HTTP 404 for all four probes."
+    }
+  },
+  "prohibited_shortcuts": [
+    "Do not use current SNB or SECO revised seasonal-adjusted history as a PIT substitute.",
+    "Do not use search-engine caches or third-party mirrors as canonical first-release evidence.",
+    "Do not silently splice a different unemployment definition or non-seasonally-adjusted series.",
+    "Do not infer historical first-release values from later annual publications."
+  ],
+  "reopen_conditions": [
+    "A deterministic official archive route becomes available for every required monthly first-release artifact, or",
+    "SECO provides an official revision-vintage dataset that reproduces the as-published monthly seasonally-adjusted rate for the target window."
+  ],
+  "backtest_eligible": false,
+  "runtime_history_fallback_allowed": false,
+  "future_revised_history_allowed": false,
+  "changes_live_data": false,
+  "changes_engine_rules": false,
+  "changes_ui": false,
+  "changes_gh_pages": false
+}
