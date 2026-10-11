@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse,csv,hashlib,io,json,pathlib,time,urllib.parse,urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date,timedelta
 
 BASE='https://alfred.stlouisfed.org/graph/alfredgraph.csv'
@@ -12,8 +11,6 @@ UA='GLOBAL-MACRO-FX-QUANT USD inflation ALFRED temporal discovery v1'
 
 def bounded_window(vintage:str)->tuple[str,str]:
     end=date.fromisoformat(vintage)
-    # Two years is sufficient for discovery and for a 12-month YoY check while
-    # avoiding a full-history download for every historical vintage.
     start=end-timedelta(days=730)
     return start.isoformat(),end.isoformat()
 
@@ -24,18 +21,18 @@ def fetch(vintage:str):
     url=BASE+'?'+urllib.parse.urlencode(params)
     last_error=None
     raw=None
-    for attempt in range(1,4):
+    for attempt in range(1,5):
         try:
-            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,*/*;q=0.8'})
-            with urllib.request.urlopen(req,timeout=25) as r:
+            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,*/*;q=0.8','Connection':'close'})
+            with urllib.request.urlopen(req,timeout=60) as r:
                 raw=r.read()
             break
         except Exception as exc:
             last_error=exc
-            if attempt<3:
-                time.sleep(2**attempt)
+            if attempt<4:
+                time.sleep((3,8,15)[attempt-1])
     if raw is None:
-        raise RuntimeError(f'ALFRED fetch failed for {vintage} after 3 attempts: {last_error!r}')
+        raise RuntimeError(f'ALFRED fetch failed for {vintage} after 4 attempts: {last_error!r}')
 
     text=raw.decode('utf-8-sig')
     rows=list(csv.reader(io.StringIO(text)))
@@ -65,32 +62,43 @@ def fetch(vintage:str):
     }
 
 
-def probe_all()->list[dict]:
-    # Independent vintages are I/O-bound and may be slow at the ALFRED graph
-    # endpoint. Parallel probing shortens discovery without changing semantics.
-    with ThreadPoolExecutor(max_workers=len(VINTAGES)) as pool:
-        probes=list(pool.map(fetch,VINTAGES))
-    return sorted(probes,key=lambda x:x['vintage_date'])
+def economic_probe(p:dict)->dict:
+    return {k:v for k,v in p.items() if k!='http_sha256'}
 
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--output',required=True,type=pathlib.Path); a=ap.parse_args()
-    probes=probe_all()
+    probes=[]; errors=[]
+    for vintage in VINTAGES:
+        try:
+            probes.append(fetch(vintage))
+        except Exception as exc:
+            errors.append({'vintage_date':vintage,'error':repr(exc)})
+            break
+
+    status='DISCOVERY_PASS' if len(probes)==len(VINTAGES) and not errors else 'DISCOVERY_FAIL'
     out={
       'schema':'GMFQ_USD_INFLATION_ALFRED_FULL_WINDOW_DISCOVERY_V1',
-      'status':'DISCOVERY_PASS',
+      'status':status,
       'authority':'Federal Reserve Bank of St. Louis ALFRED; underlying CPI source U.S. Bureau of Labor Statistics',
       'series_id':SERIES,
       'purpose':'Test key-free single-vintage retrieval for point-in-time USD inflation reconstruction.',
       'probes':probes,
+      'errors':errors,
       'invariants':{
         'single_vintage_per_request':True,'bounded_observation_window':True,
-        'parallel_transport_only_semantics_unchanged':True,
+        'sequential_transport_to_reduce_endpoint_pressure':True,
         'no_future_observation_dates':True,'production_write':False,
         'changes_live_data':False,'changes_engine_rules':False
       }
     }
-    raw=json.dumps(out,sort_keys=True,separators=(',',':')).encode(); out['semantic_sha256']=hashlib.sha256(raw).hexdigest()
-    a.output.parent.mkdir(parents=True,exist_ok=True); a.output.write_text(json.dumps(out,indent=2)+'\n')
-    print(json.dumps(out,indent=2))
+    semantic={**out,'probes':[economic_probe(p) for p in probes]}
+    raw=json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()
+    out['semantic_sha256']=hashlib.sha256(raw).hexdigest()
+    a.output.parent.mkdir(parents=True,exist_ok=True)
+    a.output.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
+    print(json.dumps(out,indent=2,sort_keys=True))
+    if status!='DISCOVERY_PASS':
+        raise SystemExit(2)
+
 if __name__=='__main__': main()
