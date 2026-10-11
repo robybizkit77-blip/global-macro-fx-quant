@@ -1,0 +1,40 @@
+name: USD Inflation ALFRED Monthly Decision Grid V1
+on:
+  push:
+    branches:
+      - validation-usd-cpi-release-archive-transport-v1-2026-10-11
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe monthly decision-date vintages
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-cpi-alfred-monthly-grid
+          python validation/macro/probe_usd_inflation_alfred_monthly_decision_grid_v1.py \
+            --output /tmp/usd-cpi-alfred-monthly-grid/result.json
+          python - <<'PY'
+          import json
+          p='/tmp/usd-cpi-alfred-monthly-grid/result.json'
+          d=json.load(open(p))
+          assert d['status']=='DISCOVERY_PASS'
+          assert d['expected_months']==103
+          assert d['observed_months']==103
+          assert not d['errors']
+          for r in d['rows']:
+              assert r['latest_observation_date'] <= r['decision_date']
+          print('PASS', d['observed_months'], d['semantic_sha256'])
+          PY
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        with:
+          name: usd-inflation-alfred-monthly-decision-grid-${{ github.run_id }}
+          path: /tmp/usd-cpi-alfred-monthly-grid/result.json
+          retention-days: 90

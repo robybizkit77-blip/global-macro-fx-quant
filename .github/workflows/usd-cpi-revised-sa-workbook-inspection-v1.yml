@@ -1,0 +1,34 @@
+name: USD CPI Revised SA Workbook Inspection V1
+
+on:
+  push:
+    branches:
+      - validation-usd-cpi-release-archive-transport-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Inspect canonical rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-cpi-sa-inspection
+          python validation/macro/inspect_usd_cpi_revised_sa_workbook_v1.py \
+            --years 2017 2018 2024 2025 \
+            --output /tmp/usd-cpi-sa-inspection/result.json
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: usd-cpi-revised-sa-workbook-inspection-${{ github.run_id }}
+          path: /tmp/usd-cpi-sa-inspection/
+          retention-days: 90

@@ -1,0 +1,40 @@
+name: USD CPI BLS Release Chain V1
+on:
+  push:
+    branches:
+      - validation-usd-cpi-release-archive-transport-v1-2026-10-11
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release-chain:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official chained CPI release calendar
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/usd-cpi-release-chain
+          python validation/macro/materialize_usd_cpi_bls_release_chain_v1.py \
+            --output /tmp/usd-cpi-release-chain/result.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/usd-cpi-release-chain/result.json'))
+          assert d['status']=='CERTIFIABLE_RELEASE_CALENDAR_WITH_OFFICIAL_GAP'
+          assert d['coverage']=={'start':'2018-01','end':'2026-08','expected_months':104,'observed_months':104,'published_months':103,'official_unavailable_months':1}
+          assert len(d['release_rows'])==104
+          assert not d['errors']
+          gaps=[r for r in d['release_rows'] if r['availability_status']=='NOT_PUBLISHED_OFFICIAL']
+          assert len(gaps)==1 and gaps[0]['reference_month']=='2025-10'
+          assert all(r['release_time']=='08:30' and r['release_timezone']=='America/New_York' for r in d['release_rows'] if r['availability_status']=='PUBLISHED')
+          print('RELEASE_CHAIN_PASS_WITH_OFFICIAL_GAP',d['semantic_sha256'])
+          PY
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        with:
+          name: usd-cpi-bls-release-chain-${{ github.run_id }}
+          path: /tmp/usd-cpi-release-chain/result.json
+          retention-days: 90
