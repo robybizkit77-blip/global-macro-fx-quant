@@ -1,0 +1,110 @@
+{
+  "schema": "GMFQ_MACRO_FULL_WINDOW_TEMPORAL_COVERAGE_STATUS_V1",
+  "created_at": "2026-10-11",
+  "scope": {
+    "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "dimensions": ["inflation", "labour"],
+    "core_series_count": 16,
+    "target_window": "2018-2026"
+  },
+  "source_registry": {
+    "path": "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
+    "anchor_historical_replay_certified_count": 16,
+    "anchor_historical_replay_certified_total": 16,
+    "status": "ANCHOR_REPLAY_COMPLETE"
+  },
+  "contract_semantics": {
+    "anchor_contract": "validation/macro_pit_anchor_contract.py",
+    "anchor_contract_scope": "ONE_ATOMIC_MACRO_PIT_REFRESH",
+    "historical_bootstrap": "validation/macro_pit_historical_bootstrap.py",
+    "historical_bootstrap_scope": "BOUNDED_BEFORE_TO_AFTER_RECONSTRUCTION_FOR_A_VERIFIED_RELEASE_PAIR",
+    "walk_forward_requirement": "FULL_WINDOW_RELEASE_BY_RELEASE_LEDGER_OR_EQUIVALENT_STRICT_DIRECT_ARCHIVAL_PIT_EVIDENCE"
+  },
+  "full_window_temporal_status": {
+    "status": "PARTIAL_13_OF_16_CERTIFIED",
+    "certified_series_count": 13,
+    "pending_series_count": 3,
+    "total_series_count": 16,
+    "certification_basis": "Canonical strict PIT evidence/receipt files present on main with verdict STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIABLE and complete period-specific official archival coverage for the series frequency.",
+    "cross_g8_backtest_use": "WITHHELD_UNTIL_REMAINING_3_SERIES_ARE_CERTIFIED_OR_EXPLICITLY_EXCLUDED_BY_BACKTEST_CONTRACT",
+    "certified_subset_backtest_use": "ELIGIBLE_SUBJECT_TO_WALK_FORWARD_ENGINE_GATES_AND_SERIES_SPECIFIC_AVAILABILITY_RULES"
+  },
+  "receipt_inventory": {
+    "certified": [
+      "AUD.inflation",
+      "AUD.labour",
+      "CAD.inflation",
+      "CAD.labour",
+      "CHF.inflation",
+      "EUR.inflation",
+      "EUR.labour",
+      "GBP.inflation",
+      "GBP.labour",
+      "JPY.inflation",
+      "JPY.labour",
+      "NZD.inflation",
+      "NZD.labour"
+    ],
+    "pending": [
+      "USD.inflation",
+      "USD.labour",
+      "CHF.labour"
+    ],
+    "inventory_source": "validation/macro/*_strict_pit_receipt_*.json on canonical main"
+  },
+  "historical_runtime_archive": {
+    "path": "history/MACRO_SERIES_2016_2026_RUNTIME_ARCHIVE_2026-10-01.js",
+    "classification": "ECONOMIC_HISTORY_RUNTIME_ARCHIVE",
+    "point_in_time_classification": "NOT_GLOBALLY_CERTIFIED_AS_AS_KNOWN_HISTORY",
+    "allowed_use": [
+      "coverage inspection",
+      "series continuity inspection",
+      "non-PIT descriptive analysis",
+      "walk-forward only where a canonical strict PIT receipt independently certifies the specific series and the replay uses that certified PIT source"
+    ],
+    "forbidden_use": [
+      "treating the runtime archive itself as proof of point-in-time availability",
+      "using uncertified USD.inflation, USD.labour, or CHF.labour as leakage-free historical inputs",
+      "out-of-sample claims that silently substitute revised runtime history for certified archival PIT evidence"
+    ]
+  },
+  "series": {
+    "AUD.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "AUD.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "CAD.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "CAD.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "CHF.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "CHF.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "EUR.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "EUR.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "GBP.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "GBP.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "JPY.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "JPY.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "NZD.inflation": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "NZD.labour": "STRICT_DIRECT_ARCHIVAL_PIT_CERTIFIED",
+    "USD.inflation": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING",
+    "USD.labour": "ANCHOR_CERTIFIED_FULL_WINDOW_PENDING"
+  },
+  "remaining_work": {
+    "priority": ["USD.inflation", "USD.labour", "CHF.labour"],
+    "require_release_timestamp_or_conservative_availability_rule": true,
+    "require_observation_value_as_known_at_decision_time": true,
+    "require_revision_handling": true,
+    "require_no_future_revisions": true,
+    "require_source_or_vintage_provenance": true,
+    "require_deterministic_replay": true,
+    "require_semantic_hashes": true,
+    "require_no_production_writes_during_materialization": true,
+    "require_fail_closed_on_missing_vintage": true,
+    "require_explicit_withheld_intervals": true
+  },
+  "safety": {
+    "changes_live_data": false,
+    "changes_engine_rules": false,
+    "changes_dashboard_payload": false,
+    "changes_ui_runtime": false,
+    "changes_gh_pages": false,
+    "production_write": false
+  }
+}
