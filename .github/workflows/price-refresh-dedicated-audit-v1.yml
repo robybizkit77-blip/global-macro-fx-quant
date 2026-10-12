@@ -1,0 +1,54 @@
+name: Price Refresh Dedicated Audit V1
+on:
+  push:
+    branches: [validation-price-refresh-dedicated-v1-2026-10-12]
+    paths: ['.github/workflows/price-refresh-dedicated-audit-v1.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Verify current Price passthrough and structural invariants
+        run: |
+          cat > price-refresh-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1400,height:1000}});
+            const errs=[]; page.on('pageerror',e=>errs.push(String(e))); page.on('console',m=>{if(m.type()==='error') errs.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_ECB_PRICE_AUDIT?.status==='PASS' && window.__GMFQ_PRICE_FRESHNESS_STATE,null,{timeout:120000});
+            const x=await page.evaluate((PAIRS)=>({
+              ecb:window.GMFQ_ECB_PRICE_AUDIT,
+              freshness:window.__GMFQ_PRICE_FRESHNESS_STATE,
+              latest:window.D?.prices?.at(-1)||null,
+              frames:Object.fromEntries(PAIRS.map(p=>{const f=window.derivePairDecisionFrame?.(p);return [p,{fav:f?.fav,quality:f?.quality,setup:f?.setup,structural:f?.structural,priceReading:f?.priceReading}] }))
+            }),PAIRS);
+            if(x.ecb.as_of!=='2026-10-12') throw new Error('ECB as-of '+x.ecb.as_of);
+            if(x.latest?.Date!=='2026-10-12') throw new Error('latest Price '+x.latest?.Date);
+            if(x.ecb.pair_count!==28) throw new Error('pair_count '+x.ecb.pair_count);
+            if(String(x.freshness.status||'').includes('WITHHELD')) throw new Error('Price still withheld '+JSON.stringify(x.freshness));
+            if(x.freshness.as_of && x.freshness.as_of!=='2026-10-12') throw new Error('freshness as-of '+x.freshness.as_of);
+            for(const [p,f] of Object.entries(x.frames)){
+              if(!f.quality || !f.structural?.macro || !f.structural?.policy || !f.structural?.ratesGap) throw new Error('bad pair '+p);
+            }
+            if(errs.length) throw new Error('browser errors '+errs.join(' | '));
+            console.log(JSON.stringify({status:'PASS_PRICE_REFRESH',ecb:x.ecb,freshness:x.freshness,latest:x.latest,priceReadings:Object.fromEntries(Object.entries(x.frames).map(([p,f])=>[p,f.priceReading]))},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node price-refresh-audit.js
