@@ -1,0 +1,2 @@
+Audit-only trigger for candidate ec0bed8de405c3324c5c1f9261975c9de978cc4f.
+No runtime or canonical data semantics.
