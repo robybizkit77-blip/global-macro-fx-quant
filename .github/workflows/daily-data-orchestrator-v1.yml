@@ -13,6 +13,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_cboe_vix_candidate.py'
+      - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
@@ -34,6 +35,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_cboe_vix_candidate.py'
+      - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
@@ -93,8 +95,8 @@ jobs:
           assert d['lanes']['RISK']['guard_proven'] is True
           assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
           assert d['lanes']['RISK']['vix_source_status']=='READY'
-          assert d['lanes']['RISK']['brent_source_status']=='WITHHELD'
-          assert d['lanes']['RISK']['state']=='BLOCKED_BRENT_SOURCE_PROVENANCE_UNRESOLVED'
+          assert d['lanes']['RISK']['brent_source_status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE'
+          assert d['lanes']['RISK']['state']=='BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE'
           assert d['promotion_performed'] is False
           assert d['live_data_published'] is False
           assert d['gh_pages_published'] is False
@@ -117,6 +119,24 @@ jobs:
           assert c['publication_performed'] is False
           assert c['runtime_mutated'] is False
           print('RISK_VIX_SOURCE_CANDIDATE_PASS',c['latest_date'],c['latest_value'])
+          PY
+
+      - name: Probe official EIA Brent source against Risk gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_eia_brent_probe.py | tee /tmp/daily-orchestrator-v1/risk-brent-probe.log
+          cp validation/risk-brent-probe.json /tmp/daily-orchestrator-v1/risk-brent-probe.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/daily-orchestrator-v1/risk-brent-probe.json'))
+          assert c['schema']=='GMFQ_RISK_BRENT_SOURCE_PROBE_V1', c
+          assert c['source']['series_id']=='DCOILBRENTEU', c
+          assert c['business_day_lag'] > c['max_business_day_lag'], c
+          assert c['status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('RISK_BRENT_OFFICIAL_SOURCE_WITHHELD_AS_EXPECTED',c['latest_date'],c['latest_value'],'lag=',c['business_day_lag'])
           PY
 
       - name: Inventory Liquidity subseries without inventing freshness
@@ -216,7 +236,7 @@ jobs:
         shell: bash
         run: |
           git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
-          rm -f validation/risk-vix-candidate.json
+          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
