@@ -1,0 +1,98 @@
+name: Forward CAD Labour Atomic PIT V1
+
+on:
+  push:
+    branches:
+      - validation-forward-cad-labour-atomic-pit-v1-2026-10-12
+    paths:
+      - '.github/workflows/forward-cad-labour-atomic-pit-v1.yml'
+  pull_request:
+    branches:
+      - validation-forward-macro-refresh-dry-run-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  SOURCE_RUN_ID: '38228472363'
+  SOURCE_ARTIFACT: forward-macro-refresh-dry-run-38228472363
+
+jobs:
+  extract-candidate:
+    runs-on: ubuntu-24.04
+    outputs:
+      candidate_json: ${{ steps.extract.outputs.candidate_json }}
+      candidate_sha256: ${{ steps.extract.outputs.candidate_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SOURCE_ARTIFACT }}
+          path: /tmp/cad-forward-source
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.SOURCE_RUN_ID }}
+      - id: extract
+        name: Extract exact APPEND_NEW CAD labour candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import hashlib,json
+          from pathlib import Path
+          p=Path('/tmp/cad-forward-source/cad/labour/candidate.json')
+          s=Path('/tmp/cad-forward-source/cad/labour/built/summary.json')
+          c=json.loads(p.read_text()); b=json.loads(s.read_text())
+          assert c['currency']=='CAD' and c['dimension']=='labour',c
+          assert c['macro_series_id']=='CA_UNEMP_RATE_history_value',c
+          assert c['observation_date']=='2026-09-01',c
+          assert abs(float(c['value'])-6.5)<1e-12,c
+          assert b['series_action']=='APPEND_NEW',b
+          assert b['old_value'] is None,b
+          raw=p.read_bytes()
+          print('candidate_json='+json.dumps(c,separators=(',',':')))
+          print('candidate_sha256='+hashlib.sha256(raw).hexdigest())
+          PY
+
+  atomic-pit:
+    needs: extract-candidate
+    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
+    with:
+      refresh_scope: single_series
+      currency: CAD
+      dimension: labour
+      macro_series_id: CA_UNEMP_RATE_history_value
+      dry_run: false
+      candidate_json: ${{ needs.extract-candidate.outputs.candidate_json }}
+
+  verify-no-publication:
+    needs: atomic-pit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: macro-single-series-pit-refresh-*
+          path: /tmp/cad-pit
+          merge-multiple: true
+      - name: Verify atomic PIT receipt and no publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          hits=list(Path('/tmp/cad-pit').rglob('receipt.json'))
+          assert len(hits)==1,hits
+          r=json.loads(hits[0].read_text())
+          assert r['schema']=='GMFQ_MACRO_PIT_REFRESH_RECEIPT_V1',r
+          assert r['status']=='PIT_ANCHOR_VALIDATED_NO_PUBLICATION',r
+          assert r['promotion_performed'] is False,r
+          assert r['live_data_published'] is False,r
+          assert r['gh_pages_published'] is False,r
+          assert r['automatic_publication'] is False,r
+          print(json.dumps(r,indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain)"
