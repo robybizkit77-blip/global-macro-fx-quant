@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_SOURCE_CANDIDATE_V1",
+  "currency": "GBP",
+  "dimension": "labour",
+  "macro_series_id": "UK_UNEMP_RATE_history_value",
+  "observation_date": "2026-07",
+  "value": 4.9,
+  "source": "ONS",
+  "series_id": "MGSX",
+  "frequency": "M",
+  "transformation": "level",
+  "pit_status": "STRICT_FIRST_RELEASE",
+  "release_date": "2026-09-15",
+  "rolling_period": "May 2026 to July 2026",
+  "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket/september2026",
+  "source_page_sha256": "b1b445f25d95fbabf33b451051f9f3a8e65820bb587df13af33ac46a8518b207",
+  "evidence_status": "PASS_STRICT_FIRST_RELEASE_2026_07",
+  "evidence_workflow_run_id": 38240757570,
+  "candidate_only": true
+}
