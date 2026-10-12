@@ -3,11 +3,18 @@ from __future__ import annotations
 import argparse,csv,json,math
 from bisect import bisect_right
 from collections import Counter
-from datetime import date
+from datetime import date,datetime
 from pathlib import Path
 
 CCYS=('EUR','JPY','CAD','AUD')
 OFFICIAL_UNAVAILABLE={'UNAVAILABLE_OFFICIAL_NOT_PUBLISHED','NOT_PUBLISHED_OFFICIAL'}
+
+def normalize_release_date(raw):
+    x=raw.strip()
+    for fmt in ('%Y-%m-%d','%d/%m/%Y'):
+        try:return datetime.strptime(x[:10],fmt).date().isoformat()
+        except ValueError:pass
+    raise RuntimeError(f'unsupported certified release-date format: {raw!r}')
 
 def load_rates(p):
     out=[]
@@ -29,9 +36,9 @@ def load_macro(p):
         if 'release_date' not in fs or 'value' not in fs:raise RuntimeError(f'{p}: expected canonical release_date/value schema')
         for r in rd:
             if (r.get('availability_status') or '').strip() in OFFICIAL_UNAVAILABLE:continue
-            rel=(r.get('release_date') or '').strip()[:10];val=(r.get('value') or '').strip()
+            rel=(r.get('release_date') or '').strip();val=(r.get('value') or '').strip()
             if not rel or not val:continue
-            date.fromisoformat(rel);out.append((rel,float(val)))
+            out.append((normalize_release_date(rel),float(val)))
     out.sort();return out
 
 def latest3(rows,asof):
