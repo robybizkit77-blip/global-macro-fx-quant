@@ -1,0 +1,157 @@
+name: G4USD Relative Macro Turning 2Y FX Forward Engine V1
+
+on:
+  push:
+    branches:
+      - validation-relative-macro-turning-2y-fx-forward-engine-v1-2026-10-12
+    paths:
+      - 'validation/g4usd_relative_macro_turning_2y_fx_forward_shadow_v1.py'
+      - '.github/workflows/g4usd-relative-macro-turning-2y-fx-forward-engine-v1.yml'
+  pull_request:
+    branches:
+      - validation-relative-macro-turning-2y-fx-forward-shadow-v1-2026-10-12
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 12 * *'
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
+  READINESS_RUN_ID: '38169617850'
+  READINESS_ARTIFACT: g4usd-alignment-integration-readiness-fast-v3-38169617850
+  FORWARD_READINESS_RUN_ID: '38226865856'
+  FORWARD_READINESS_ARTIFACT: forward-input-readiness-38226865856
+
+jobs:
+  forward-shadow:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download exact shared forward-readiness receipt
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.FORWARD_READINESS_ARTIFACT }}
+          path: /tmp/mt-forward/shared-readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.FORWARD_READINESS_RUN_ID }}
+
+      - name: Resolve certified decision boundary from shared receipt
+        id: boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          files=list(Path('/tmp/mt-forward/shared-readiness').rglob('forward-input-readiness.json'))
+          assert len(files)==1, files
+          r=json.loads(files[0].read_text())
+          assert r['current_inputs_green']==15, r
+          assert r['macro_green']==10 and r['rates_green']==5, r
+          assert r['historical_backfill_used'] is False, r
+          assert r['production_signal_authorized'] is False and r['sizing_authorized'] is False, r
+          dp=r['current_max_certified_decision_point']
+          print(f'max_certified_decision_point={dp}')
+          PY
+
+      - name: Materialize pinned temporal-PIT rates snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mt-forward/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git checkout FETCH_HEAD -- "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv"
+            cp "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" "/tmp/mt-forward/rates/${c}.csv"
+          done
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Download exact GREEN macro readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.READINESS_ARTIFACT }}
+          path: /tmp/mt-forward/readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.READINESS_RUN_ID }}
+
+      - name: Materialize certified macro files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mt-forward/macro
+          cp /tmp/mt-forward/readiness/canonical/*.csv /tmp/mt-forward/macro/
+          test -s /tmp/mt-forward/macro/eur_inflation.csv
+          test -s /tmp/mt-forward/macro/usd_labour.csv
+
+      - name: Fetch official ECB FX histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mt-forward/fx
+          END=$(date -u +%F)
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2026-10-01&endPeriod=${END}&format=csvdata" \
+              -o "/tmp/mt-forward/fx/${c}.csv"
+            test -s "/tmp/mt-forward/fx/${c}.csv"
+          done
+
+      - name: Collect true forward-only macro turning events
+        shell: bash
+        env:
+          MAX_CERTIFIED_DECISION_POINT: ${{ steps.boundary.outputs.max_certified_decision_point }}
+        run: |
+          set -euo pipefail
+          test -n "$MAX_CERTIFIED_DECISION_POINT"
+          mkdir -p /tmp/mt-forward/out
+          python validation/g4usd_relative_macro_turning_2y_fx_forward_shadow_v1.py \
+            --contract validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_FORWARD_SHADOW_V1_2026-10-12.json \
+            --rates-dir /tmp/mt-forward/rates \
+            --macro-dir /tmp/mt-forward/macro \
+            --fx-dir /tmp/mt-forward/fx \
+            --max-certified-decision-point "$MAX_CERTIFIED_DECISION_POINT" \
+            --output /tmp/mt-forward/out/result.json
+
+      - name: Guard boundary and production state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='/tmp/mt-forward/out/result.json';r=json.load(open(p))
+          assert r['first_permitted_macro_signal_asof']=='2026-11-10'
+          assert r['historical_backfill_used'] is False
+          assert all(e['macro_signal_asof']>='2026-11-10' for e in r['events'])
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          assert r['edge_certified'] is False
+          assert r['no_rescue_tuning'] is True
+          assert r['status'] in {'WAITING_FOR_UNSEEN_OBSERVATIONS','FORWARD_CONFIRMED_PENDING_PROMOTION_REVIEW','FORWARD_GATE_FAILED_NO_TUNING'}
+          if r['max_certified_decision_point']=='2026-10-10':
+              assert r['signals_total']==0 and r['matured_fx_events']==0
+          print(json.dumps(r,indent=2,sort_keys=True))
+          PY
+
+      - name: Assert repository remains clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-relative-macro-turning-2y-fx-forward-${{ github.run_id }}
+          path: /tmp/mt-forward/out/
+          if-no-files-found: error
+          retention-days: 90
