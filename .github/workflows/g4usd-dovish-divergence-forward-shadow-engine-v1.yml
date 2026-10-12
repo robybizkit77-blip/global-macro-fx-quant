@@ -6,6 +6,7 @@ on:
       - validation-g4usd-dovish-divergence-forward-shadow-engine-v1-2026-10-12
     paths:
       - 'validation/g4usd_dovish_divergence_forward_shadow_collector_v1.py'
+      - 'validation/FORWARD_READINESS_LINK_NOTE_V1_2026-10-12.json'
       - '.github/workflows/g4usd-dovish-divergence-forward-shadow-engine-v1.yml'
   pull_request:
     branches:
@@ -22,7 +23,8 @@ env:
   READINESS_RUN_ID: '38169617850'
   READINESS_ARTIFACT: g4usd-alignment-integration-readiness-fast-v3-38169617850
   READINESS_ARTIFACT_DIGEST: sha256:e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df
-  MAX_CERTIFIED_DECISION_POINT: '2026-10-10'
+  FORWARD_READINESS_RUN_ID: '38226865856'
+  FORWARD_READINESS_ARTIFACT: forward-input-readiness-38226865856
 
 jobs:
   forward-shadow:
@@ -32,6 +34,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Download exact shared forward-readiness receipt
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.FORWARD_READINESS_ARTIFACT }}
+          path: /tmp/g4-forward/shared-readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.FORWARD_READINESS_RUN_ID }}
+
+      - name: Resolve certified decision boundary from shared receipt
+        id: boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          files=list(Path('/tmp/g4-forward/shared-readiness').rglob('forward-input-readiness.json'))
+          assert len(files)==1, files
+          r=json.loads(files[0].read_text())
+          assert r['current_inputs_green']==15, r
+          assert r['macro_green']==10 and r['rates_green']==5, r
+          assert r['historical_backfill_used'] is False, r
+          assert r['production_signal_authorized'] is False and r['sizing_authorized'] is False, r
+          dp=r['current_max_certified_decision_point']
+          print(f'max_certified_decision_point={dp}')
+          PY
 
       - name: Materialize pinned temporal-PIT rates snapshot
         shell: bash
@@ -80,8 +110,11 @@ jobs:
 
       - name: Collect strictly post-cutoff signals from certified snapshots
         shell: bash
+        env:
+          MAX_CERTIFIED_DECISION_POINT: ${{ steps.boundary.outputs.max_certified_decision_point }}
         run: |
           set -euo pipefail
+          test -n "$MAX_CERTIFIED_DECISION_POINT"
           mkdir -p /tmp/g4-forward/out
           python validation/g4usd_dovish_divergence_forward_shadow_collector_v1.py \
             --contract validation/G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_CONTRACT_V1_2026-10-11.json \
