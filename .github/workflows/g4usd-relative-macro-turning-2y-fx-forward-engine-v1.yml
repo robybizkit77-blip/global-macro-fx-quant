@@ -23,7 +23,8 @@ env:
   RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
   READINESS_RUN_ID: '38169617850'
   READINESS_ARTIFACT: g4usd-alignment-integration-readiness-fast-v3-38169617850
-  MAX_CERTIFIED_DECISION_POINT: '2026-10-10'
+  FORWARD_READINESS_RUN_ID: '38226865856'
+  FORWARD_READINESS_ARTIFACT: forward-input-readiness-38226865856
 
 jobs:
   forward-shadow:
@@ -33,6 +34,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Download exact shared forward-readiness receipt
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.FORWARD_READINESS_ARTIFACT }}
+          path: /tmp/mt-forward/shared-readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.FORWARD_READINESS_RUN_ID }}
+
+      - name: Resolve certified decision boundary from shared receipt
+        id: boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          files=list(Path('/tmp/mt-forward/shared-readiness').rglob('forward-input-readiness.json'))
+          assert len(files)==1, files
+          r=json.loads(files[0].read_text())
+          assert r['current_inputs_green']==15, r
+          assert r['macro_green']==10 and r['rates_green']==5, r
+          assert r['historical_backfill_used'] is False, r
+          assert r['production_signal_authorized'] is False and r['sizing_authorized'] is False, r
+          dp=r['current_max_certified_decision_point']
+          print(f'max_certified_decision_point={dp}')
+          PY
 
       - name: Materialize pinned temporal-PIT rates snapshot
         shell: bash
@@ -80,8 +109,11 @@ jobs:
 
       - name: Collect true forward-only macro turning events
         shell: bash
+        env:
+          MAX_CERTIFIED_DECISION_POINT: ${{ steps.boundary.outputs.max_certified_decision_point }}
         run: |
           set -euo pipefail
+          test -n "$MAX_CERTIFIED_DECISION_POINT"
           mkdir -p /tmp/mt-forward/out
           python validation/g4usd_relative_macro_turning_2y_fx_forward_shadow_v1.py \
             --contract validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_FORWARD_SHADOW_V1_2026-10-12.json \
@@ -106,7 +138,6 @@ jobs:
           assert r['edge_certified'] is False
           assert r['no_rescue_tuning'] is True
           assert r['status'] in {'WAITING_FOR_UNSEEN_OBSERVATIONS','FORWARD_CONFIRMED_PENDING_PROMOTION_REVIEW','FORWARD_GATE_FAILED_NO_TUNING'}
-          # At the 2026-10-12 freeze there must be no admissible event yet.
           if r['max_certified_decision_point']=='2026-10-10':
               assert r['signals_total']==0 and r['matured_fx_events']==0
           print(json.dumps(r,indent=2,sort_keys=True))
