@@ -1,0 +1,82 @@
+name: COT Price Role Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-cot-price-role-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8139 --bind 127.0.0.1 >/tmp/gmfq-cot-price-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit COT and price decision roles
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8139/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForTimeout(400);
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const pairs=(D?.pairs||[]).map(x=>x.pair);
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const currencyStates=Object.fromEntries(currencies.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const pairFn=typeof window.derivePairDecisionFrame==='function'?Function.prototype.toString.call(window.derivePairDecisionFrame):'';
+              const currFn=typeof window.deriveCurrencyState==='function'?Function.prototype.toString.call(window.deriveCurrencyState):'';
+              const text=(pairFn+'\n'+currFn).toLowerCase();
+              return {
+                pairCount:pairs.length,
+                pairFrames,currencyStates,
+                sources:{pairFn,currFn},
+                references:{
+                  cot:text.includes('cot'),
+                  price:text.includes('price'),
+                  macro:text.includes('macro'),
+                  policy:text.includes('policy'),
+                  rates:text.includes('rate')
+                },
+                frameFields:[...new Set(Object.values(pairFrames).flatMap(x=>x?Object.keys(x):[]))].sort(),
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V1',...out};
+            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify({pairCount:out.pairCount,references:out.references,frameFields:out.frameFields,currencyStates:out.currencyStates,sampleFrames:Object.fromEntries(Object.entries(out.pairFrames).slice(0,4))},null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-price-role-audit-v1
+          path: |
+            cot-price-role-audit.json
+            /tmp/gmfq-cot-price-audit-server.log
