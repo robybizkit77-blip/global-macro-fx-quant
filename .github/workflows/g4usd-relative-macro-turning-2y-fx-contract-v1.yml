@@ -1,0 +1,53 @@
+name: G4USD Relative Macro Turning 2Y FX Contract V1
+
+on:
+  push:
+    branches:
+      - validation-relative-macro-turning-2y-fx-contract-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen FX contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_CONTRACT_V1_2026-10-12.json'
+          c=json.load(open(p))
+          assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_FX_CONTRACT_V1'
+          assert c['status']=='PREDECLARED_FX_RESULT_BLIND'
+          assert c['parent_mechanism']['result_json_sha256']=='1cb6e8ea5e86fb5c8d6701c746fc97aeff70dcee3cef54d6ee3fe52ba8d0af7b'
+          assert c['event_selection']['expected_confirmed_events_from_parent_only']=={'AUD':8,'CAD':11,'EUR':9,'JPY':12,'pooled':40}
+          assert c['event_selection']['selection_uses_fx'] is False
+          assert c['causal_timing']['same_period_fx_before_rates_confirmation_forbidden'] is True
+          assert c['causal_timing']['horizon_search']=='forbidden'
+          g=c['predeclared_candidate_gate']
+          assert g['minimum_pooled_confirmed_events']==30
+          assert g['minimum_confirmed_events_per_currency']==5
+          assert g['mean_signed_fx_log_return_gt']==0.0
+          assert g['directional_accuracy_min']==0.52
+          assert g['minimum_currencies_positive_mean']==3
+          assert g['max_single_currency_share']==0.35
+          assert g['both_hawkish_and_dovish_required'] is True
+          assert c['governance']['edge_certification_possible_from_this_historical_test'] is False
+          assert c['governance']['production_signal_authorized'] is False
+          assert c['governance']['sizing_authorized'] is False
+          print('POST_RATES_CONFIRMATION_FX_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Assert no FX result exists on contract branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_RESULT_V1.json
+          test -z "$(git status --porcelain)"
