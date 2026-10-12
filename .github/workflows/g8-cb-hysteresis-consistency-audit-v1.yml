@@ -52,10 +52,11 @@ jobs:
                 let expected='UNKNOWN';
                 if(candidate?.status==='WITHHELD') expected='WITHHELD';
                 else if(candidate?.status==='PENDING_CONFIRMATION') expected='PENDING_MARKET_CONFIRMATION';
+                else if(candidate?.status==='NO_STRUCTURAL_FLIP' && candidate?.candidate===current) expected='NO_CHANGE';
                 else if(candidate?.status==='CANDIDATE' && candidate?.candidate===current) expected='NO_CHANGE';
                 else if(candidate?.status==='CANDIDATE' && candidate?.candidate!==current) expected='PENDING_OR_ELIGIBLE_CHANGE';
                 const coherent = expected==='UNKNOWN' ? false :
-                  expected==='PENDING_OR_ELIGIBLE_CHANGE' ? ['PENDING_HYSTERESIS','AUTO_ELIGIBLE','NEEDS_REVIEW','NO_CHANGE'].includes(h?.status) :
+                  expected==='PENDING_OR_ELIGIBLE_CHANGE' ? ['PENDING_CONFIRMATION','PENDING_HYSTERESIS','AUTO_ELIGIBLE','NEEDS_REVIEW'].includes(h?.status) :
                   h?.status===expected;
                 return {c,candidate,hysteresis:h,memory,policy:currency?.policy,policyContext:currency?.policyContext,expected,coherent};
               });
@@ -65,9 +66,10 @@ jobs:
             if(out.bootstrapError) throw new Error(out.bootstrapError);
             if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
             const incoherent=out.rows.filter(x=>!x.coherent);
-            const summary={schema:'GMFQ_G8_CB_HYSTERESIS_CONSISTENCY_AUDIT_V1',status:incoherent.length?'REVIEW_REQUIRED':'PASS',incoherent_count:incoherent.length,rows:out.rows};
+            const summary={schema:'GMFQ_G8_CB_HYSTERESIS_CONSISTENCY_AUDIT_V2',status:incoherent.length?'REVIEW_REQUIRED':'PASS',incoherent_count:incoherent.length,rows:out.rows};
             fs.writeFileSync('g8-cb-hysteresis-consistency.json',JSON.stringify(summary,null,2));
             console.log(JSON.stringify(summary,null,2));
+            if(incoherent.length) process.exitCode=2;
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
