@@ -1,0 +1,29 @@
+name: Price Refresh Promotion V2
+on:
+  push:
+    branches: [validation-price-refresh-promotion-runner-v1-2026-10-12]
+    paths: ['.github/workflows/price-refresh-promotion-runner-v2.yml']
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cp validation/price_refresh_apply_v1.py /tmp/price_refresh_apply_v1.py
+      - run: |
+          git config user.name github-actions-bot
+          git config user.email github-actions-bot@users.noreply.github.com
+          git checkout --detach 25e88d725d597ece9a46a509e13d5110e2a1e286
+          git switch -c candidate-price-refresh-v1-2026-10-12
+          python /tmp/price_refresh_apply_v1.py
+          test "$(git diff --name-only)" = "payload/part-15.txt"
+          git add payload/part-15.txt
+          git commit -m "Refresh ECB G8 Price fixing to 2026-10-12"
+          git push --force-with-lease origin candidate-price-refresh-v1-2026-10-12
+          git rev-parse HEAD
