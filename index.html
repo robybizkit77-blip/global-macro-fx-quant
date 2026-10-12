@@ -21,10 +21,11 @@
  if(refreshCalls!==25) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
  const marker='<script id="gmfq-post-gate-final-audit-settlement">';
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
+ const canonicalOverlay='<script id="gmfq-canonical-runtime-overlay" src="live_data/canonical-runtime-overlay.js"></scr'+'ipt>\n';
  const researchUi='<script id="gmfq-research-status-card-loader" src="live_data/research-state-card.js"></scr'+'ipt>\n';
  const researchBootstrap='<script id="gmfq-research-state-sidecar">(async()=>{try{const r=await fetch(\'live_data/sections/RESEARCH_STATE.json\',{cache:\'no-store\'});if(!r.ok)throw new Error(\'research-state-http-\'+r.status);const x=await r.json();if(x.research_signal_state!==\'WITHHELD\'||x.decision_weight!==0||x.may_modify_pair_bias!==false||x.may_modify_currency_score!==false||x.may_modify_sizing!==false)throw new Error(\'research-state-fail-closed\');Object.freeze(x.context_only||[]);window.__GMFQ_RESEARCH_STATE=Object.freeze(x);window.dispatchEvent(new CustomEvent(\'gmfq:research-state-ready\',{detail:window.__GMFQ_RESEARCH_STATE}));}catch(e){window.__GMFQ_RESEARCH_STATE=Object.freeze({research_signal_state:\'WITHHELD\',decision_weight:0,context_only:[],load_error:String(e&&e.message||e)});console.error(\'research-state-sidecar\',e);}})();</scr'+'ipt>\n';
- const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
- html=html.replace(marker,researchUi+researchBootstrap+finalRefresh+marker);
+ const finalRefresh='<script id="gmfq-single-final-stable-refresh">(async()=>{try{if(window.__GMFQ_CANONICAL_OVERLAY_READY)await window.__GMFQ_CANONICAL_OVERLAY_READY;if(window.__GMFQ_CANONICAL_OVERLAY_STATE&&window.__GMFQ_CANONICAL_OVERLAY_STATE.status!==\'PASS_CANONICAL_MACRO_OVERLAY\')throw new Error(\'canonical-overlay-not-ready\');if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);window.__GMFQ_FINAL_REFRESH_ERROR=String(e&&e.message||e);}})();</scr'+'ipt>\n';
+ html=html.replace(marker,canonicalOverlay+researchUi+researchBootstrap+finalRefresh+marker);
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
