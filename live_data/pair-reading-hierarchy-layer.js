@@ -11,6 +11,12 @@
     {needle:'COSA LA METTE IN DUBBIO?',kind:'invalidate'},
     {needle:'CONCLUSIONE',kind:'conclusion'}
   ];
+  let renderedPairHint=null;
+
+  function normalizePair(value){
+    const p=String(value||'').trim().toUpperCase();
+    return /^[A-Z]{3}\/[A-Z]{3}$/.test(p)?p:null;
+  }
 
   function injectStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -97,18 +103,99 @@
     }
   }
 
+  function currentPair(){
+    if(renderedPairHint) return renderedPairHint;
+    const lp=normalizePair(window.lastPair);
+    if(lp) return lp;
+    const active=document.querySelector('#pairs [data-pair].active,#pairs [data-pair][aria-selected="true"],#pairs [data-pair].selected');
+    return normalizePair(active?.getAttribute('data-pair'));
+  }
+
+  function replaceText(el,from,to){
+    if(!el) return false;
+    const text=String(el.textContent||'');
+    if(!text.includes(from) || text.includes(to)) return false;
+    el.textContent=text.replace(from,to);
+    return true;
+  }
+
+  function clarifyRatesContext(pairOverride){
+    const tutor=document.getElementById('gmfqPairTutor');
+    const pair=normalizePair(pairOverride)||currentPair();
+    if(!tutor || !pair || typeof window.derivePairDecisionFrame!=='function') return;
+    const frame=window.derivePairDecisionFrame(pair)||null;
+    const rg=frame?.structural?.ratesGap;
+    const policy=frame?.structural?.policy;
+    if(!rg || rg.material!==true || !rg.side || policy?.side!=='TIE') return;
+
+    const side=String(rg.side).toUpperCase();
+    const bp=Math.round(Math.abs(Number(rg.bp)||0));
+    const stamp=`${pair}|${side}|${bp}`;
+    const tutorText=String(tutor.innerText||'');
+    const wordingStillApplied=
+      tutorText.includes('Aspettative CB neutre') &&
+      tutorText.includes(`2Y di livello favorisce ${side} (${bp} pb)`);
+    if(tutor.dataset.gmfqRatesContext===stamp && wordingStillApplied) return;
+
+    const drivers=[...tutor.querySelectorAll('.driver')];
+    const ratesDriver=drivers.find(d=>/^Tassi\s*\/\s*CB/i.test(String(d.querySelector('b')?.textContent||'').trim()));
+    const ratesSpan=ratesDriver?.querySelector('span');
+    if(ratesSpan){
+      ratesSpan.textContent=`Aspettative CB neutre · 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto`;
+    }
+
+    const textEl=document.getElementById('gmfqPairText');
+    if(textEl && String(textEl.textContent||'').includes('Tassi/CB non separano le due valute')){
+      textEl.textContent=`La Macro favorisce ${frame.fav}; le aspettative CB canoniche non separano le due valute. Il differenziale 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto e non vale come seconda conferma strutturale.`;
+    }
+
+    const leafCandidates=[
+      document.getElementById('gmfqPairText'),
+      document.getElementById('gmfqPairConfirm'),
+      document.getElementById('gmfqPairReverse'),
+      document.getElementById('gmfqPairConclusion'),
+      ...tutor.querySelectorAll('.driver span')
+    ].filter(Boolean);
+    for(const el of leafCandidates){
+      replaceText(el,
+        'Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.',
+        'Solo uno tra Macro e aspettative CB canoniche separa chiaramente le due valute. Il gap 2Y di livello è visibile come contesto, non come secondo pilastro strutturale.'
+      );
+      replaceText(el,
+        'Solo uno dei due pilastri strutturali separa chiaramente le valute.',
+        'Solo uno dei due pilastri strutturali separa chiaramente le valute; il gap 2Y di livello resta contesto.'
+      );
+      replaceText(el,'vantaggio Macro/Tassi','vantaggio Macro/aspettative CB');
+    }
+
+    tutor.dataset.gmfqRatesContext=stamp;
+  }
+
+  function capturePairSelection(event){
+    const target=event.target?.closest?.('#pairs [data-pair]');
+    const pair=normalizePair(target?.getAttribute('data-pair'));
+    if(!pair) return;
+    renderedPairHint=pair;
+    requestAnimationFrame(()=>clarifyRatesContext(pair));
+  }
+
   let queued=false;
   function apply(){
     queued=false;
     injectStyle();
     addGuide();
     decorate();
+    clarifyRatesContext();
     window.__GMFQ_PAIR_READING_HIERARCHY_STATE=Object.freeze({
       status:'PASS_PRESENTATION_ONLY',
       changes_engine:false,
       changes_pair_logic:false,
       changes_bias:false,
       changes_sizing:false,
+      clarifies_static_2y_as_context:true,
+      pair_selection_hint:'DOM_DATA_PAIR_ONLY',
+      rerender_guard:'VERIFY_TEXT_NOT_STAMP_ONLY',
+      dom_mutation_scope:'LEAF_TEXT_ONLY',
       guide_present:!!document.getElementById(GUIDE_ID)
     });
   }
@@ -120,6 +207,7 @@
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',queue,{once:true});
   else queue();
+  document.addEventListener('click',capturePairSelection,true);
   const observer=new MutationObserver(queue);
   observer.observe(document.documentElement,{subtree:true,childList:true});
   window.addEventListener('resize',queue,{passive:true});
