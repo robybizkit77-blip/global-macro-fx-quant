@@ -1,6 +1,6 @@
 {
   "cotGate": {
-    "status": "PASS_WITHHELD_STALE_COT",
+    "status": "PASS_FRESH_COT_UNCHANGED",
     "max_calendar_lag_days": 10,
     "freshness_time_zone": "Europe/Rome",
     "changes_engine": false,
@@ -9,11 +9,11 @@
     "changes_pair_structure": false,
     "underlying_cot_data_mutated": false,
     "provenance_wait_attempts": 1,
-    "reason": "Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.",
-    "cot_asof": "2026-09-22",
+    "reason": "Canonical weekly COT is within freshness window.",
+    "cot_asof": "2026-10-06",
     "reference_asof": "2026-10-12",
-    "calendar_lag_days": 20,
-    "currency_cot_risk_nonempty": 0,
+    "calendar_lag_days": 6,
+    "currency_cot_risk_nonempty": 5,
     "price_dependency_status": "PASS_FRESH_PRICE_UNCHANGED"
   },
   "priceGate": {
@@ -54,7 +54,7 @@
     },
     "cot": {
       "status": "CURRENT_WEEKLY",
-      "current_as_of": "2026-09-22",
+      "current_as_of": "2026-10-06",
       "action": "HOLD_UNTIL_NEXT_CFTC_RELEASE",
       "rule": "Weekly CFTC Legacy Futures Only snapshot only; no interpolation."
     },
@@ -92,7 +92,7 @@
       "cadence": "weekly",
       "policy": "AUTO_UPDATE_PRIMARY_WHEN_RELEASED",
       "fallback": "LAST_VALID_STALE",
-      "current_as_of": "2026-09-22"
+      "current_as_of": "2026-10-06"
     },
     "RATES": {
       "USD": {
@@ -5686,7 +5686,7 @@
         "cadence": "weekly",
         "policy": "AUTO_UPDATE_PRIMARY_WHEN_RELEASED",
         "fallback": "LAST_VALID_STALE",
-        "current_as_of": "2026-09-22"
+        "current_as_of": "2026-10-06"
       },
       "RATES": {
         "USD": {
@@ -5888,7 +5888,7 @@
       },
       "cot": {
         "status": "CURRENT_WEEKLY",
-        "current_as_of": "2026-09-22",
+        "current_as_of": "2026-10-06",
         "action": "HOLD_UNTIL_NEXT_CFTC_RELEASE",
         "rule": "Weekly CFTC Legacy Futures Only snapshot only; no interpolation."
       },
@@ -5953,7 +5953,7 @@
     },
     "PRODUCTION_REFRESH_GENERATION": "0",
     "__GMFQ_COT_FRESHNESS_GATE_STATE": {
-      "status": "PASS_WITHHELD_STALE_COT",
+      "status": "PASS_FRESH_COT_UNCHANGED",
       "max_calendar_lag_days": 10,
       "freshness_time_zone": "Europe/Rome",
       "changes_engine": false,
@@ -5962,24 +5962,20 @@
       "changes_pair_structure": false,
       "underlying_cot_data_mutated": false,
       "provenance_wait_attempts": 1,
-      "reason": "Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.",
-      "cot_asof": "2026-09-22",
+      "reason": "Canonical weekly COT is within freshness window.",
+      "cot_asof": "2026-10-06",
       "reference_asof": "2026-10-12",
-      "calendar_lag_days": 20,
-      "currency_cot_risk_nonempty": 0,
+      "calendar_lag_days": 6,
+      "currency_cot_risk_nonempty": 5,
       "price_dependency_status": "PASS_FRESH_PRICE_UNCHANGED"
     },
     "v245CotSelected": "EUR"
   },
   "eurHeat": {
-    "txt": "P9 · STALE",
-    "cls": "neu",
-    "ext": false
-  },
-  "eurHeatOriginal": {
     "txt": "P9",
     "cls": "mix",
     "ext": true
   },
+  "eurHeatOriginal": null,
   "bootstrapError": null
 }

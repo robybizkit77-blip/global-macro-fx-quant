@@ -46,7 +46,8 @@
 ./.github/workflows/cot-provenance-source-audit-v1.yml:110:                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT),
 ./.github/workflows/cot-freshness-gate-audit-v1.yml:115:              return {gate,currentRomeDate,currencies,currenciesBefore,pairsNow,pairsBefore,currencyFailures,currencyCoreDiffs,pairStructuralDiffs,heatEvidence,heatFailures,helpers,bannerText,provenance:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot),priceGate:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
 ./.github/workflows/liquidity-freshness-audit-v1.yml:64:                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.liquidity),
-./live_data/cot-freshness-gate.js:28:  return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
+./live_data/cot-freshness-gate.js:44:  const production=window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot;
+./live_data/cot-freshness-gate.js:52:  return syncCotProvenanceFromCanonical() || window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
 ./payload/part-15.txt:2873:    if(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.price){
 ./payload/part-15.txt:2874:      Object.assign(window.PRODUCTION_PRICE_COT_LIQ_AUDIT.price,{status:'CURRENT_OFFICIAL',current_as_of:'2026-10-12',action:'CURRENT',next_expected:'2026-10-13 around 16:00 CET/CEST'});
 ./payload/part-09.txt:522:window.PRODUCTION_PRICE_COT_LIQ_AUDIT={"audited_at":"2026-09-29T09:39+02:00","price":{"status":"CURRENT_LAST_OFFICIAL","current_as_of":"2026-09-28","action":"HOLD_UNTIL_ECB_FIXING","next_expected":"around 16:00 CET/CEST on working days","rule":"Do not use intraday spot to overwrite the canonical ECB daily fixing."},"cot":{"status":"CURRENT_WEEKLY","current_as_of":"2026-09-22","action":"HOLD_UNTIL_NEXT_CFTC_RELEASE","rule":"Weekly CFTC Legacy Futures Only snapshot only; no interpolation."},"liquidity":{"status":"NO_NEW_VALIDATED_COMPONENTS_AT_AUDIT_TIME","action":"HOLD_LAST_VALID_BY_SOURCE_CADENCE","nzd":{"current_period":"2026-07","source":"RBNZ D10 + C50","next_release":"2026-09-30","action":"HOLD_UNTIL_SCHEDULED_RELEASE"}},"structural_commit":"NONE","contamination_check":"PASS"};
@@ -59,7 +60,8 @@
 ./.github/workflows/cot-provenance-source-audit-v1.yml:109:                sourcePolicyType:typeof window.FINAL_SOURCE_POLICY_AUDIT,
 ./.github/workflows/cot-provenance-source-audit-v1.yml:111:                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT),
 ./.github/workflows/liquidity-freshness-audit-v1.yml:65:                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT?.LIQUIDITY),
-./live_data/cot-freshness-gate.js:28:  return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
+./live_data/cot-freshness-gate.js:45:  const policy=window.FINAL_SOURCE_POLICY_AUDIT?.COT;
+./live_data/cot-freshness-gate.js:52:  return syncCotProvenanceFromCanonical() || window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
 ./payload/part-15.txt:1300:      if(window.FINAL_SOURCE_POLICY_AUDIT?.cb_pricing?.AUD){
 ./payload/part-15.txt:1301:        const a=window.FINAL_SOURCE_POLICY_AUDIT.cb_pricing.AUD;
 ./payload/part-15.txt:1467:    const A=window.FINAL_SOURCE_POLICY_AUDIT;
