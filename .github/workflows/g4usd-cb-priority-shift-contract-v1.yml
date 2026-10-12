@@ -1,0 +1,73 @@
+name: G4USD CB Priority Shift Contract V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-cb-priority-shift-contract-v1-2026-10-12
+    paths:
+      - 'validation/G4USD_CB_PRIORITY_SHIFT_FX_CONTRACT_V1_2026-10-12.json'
+      - 'validation/CB_PRIORITY_FOCUS_DATA_CONTRACT_V1_2026-10-12.json'
+      - '.github/workflows/g4usd-cb-priority-shift-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate result-blind economic contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/G4USD_CB_PRIORITY_SHIFT_FX_CONTRACT_V1_2026-10-12.json'))
+          d=json.load(open('validation/CB_PRIORITY_FOCUS_DATA_CONTRACT_V1_2026-10-12.json'))
+          assert c['schema']=='GMFQ_G4USD_CB_PRIORITY_SHIFT_FX_CONTRACT_V1'
+          assert c['status']=='PREDECLARED_BLOCKED_PENDING_CB_FOCUS_PIT_DATA'
+          assert c['result_blind_base']['sha']=='839daa94e8022d7b102c8b191b51fd36df7d032d'
+          assert c['universe']['local_currencies']==['EUR','JPY','CAD','AUD']
+          assert c['central_bank_focus']['ordered_policy_score']=={'LABOUR_GROWTH':-1,'BALANCED':0,'INFLATION':1}
+          assert c['macro_turning_confirmation']['magnitude_threshold'] is None
+          assert c['rates_confirmation']['magnitude_threshold_bp'] is None
+          assert c['historical_test_design']['currency_exclusion']=='forbidden'
+          assert c['historical_test_design']['direction_search']=='forbidden'
+          assert c['historical_test_design']['threshold_search']=='forbidden'
+          assert c['historical_test_design']['horizon_search']=='forbidden'
+          g=c['predeclared_primary_gate']
+          assert g['minimum_pooled_oos_events']==40
+          assert g['minimum_oos_events_per_currency']==6
+          assert g['minimum_currencies_positive_primary_mean']==3
+          assert g['primary_20obs_panel_annualized_sharpe_min']==0.50
+          assert g['primary_directional_accuracy_min']==0.52
+          assert g['max_single_currency_share']==0.40
+          assert g['both_dovish_and_hawkish_relative_shifts_required'] is True
+          assert c['readiness_blocker']['performance_execution_authorized'] is False
+          assert c['governance']['no_performance_result_observed_under_this_contract'] is True
+          assert c['governance']['production_signal_authorized'] is False
+          assert c['governance']['sizing_authorized'] is False
+          assert d['schema']=='GMFQ_CB_PRIORITY_FOCUS_DATA_CONTRACT_V1'
+          assert d['status']=='PREDECLARED_DATASET_NOT_YET_BUILT'
+          assert d['central_banks']==['FED','ECB','BOJ','BOC','RBA']
+          assert d['minimum_history_start']=='2018-01-01'
+          q=d['quality_gate_before_performance_test']
+          assert q['minimum_events_per_central_bank']==50
+          assert q['maximum_withheld_ambiguous_share_per_central_bank']==0.20
+          assert q['labeling_complete_before_any_fx_performance_is_computed'] is True
+          assert d['governance']['performance_test_authorized_now'] is False
+          print('CB_PRIORITY_SHIFT_CONTRACT_FROZEN_PASS')
+          print('ECONOMIC_EXECUTION_STATUS=BLOCKED_PENDING_CB_FOCUS_PIT_DATA')
+          PY
+      - name: Assert no central-bank focus dataset or performance output is smuggled into contract branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e validation/cb_priority_focus_history.csv
+          test ! -e validation/G4USD_CB_PRIORITY_SHIFT_FX_RESULT_V1.json
+          test -z "$(git status --porcelain)"

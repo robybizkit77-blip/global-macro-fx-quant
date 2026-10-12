@@ -1,0 +1,69 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_FOCUS_DATA_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_DATASET_NOT_YET_BUILT",
+  "purpose": "Create a historical PIT-safe official central-bank decision-event dataset for priority-shift research, without observing or using FX/rates outcomes during labeling.",
+  "central_banks": ["FED", "ECB", "BOJ", "BOC", "RBA"],
+  "minimum_history_start": "2018-01-01",
+  "eligible_events": "scheduled or unscheduled monetary-policy decisions with official decision communication",
+  "primary_sources": {
+    "FED": ["FOMC statement", "official Chair press-conference opening material if released with decision"],
+    "ECB": ["monetary-policy decision", "official President introductory statement if released with decision"],
+    "BOJ": ["statement on monetary policy", "official outlook/decision communication released with decision"],
+    "BOC": ["rate decision statement", "official monetary policy report opening material when part of decision event"],
+    "RBA": ["monetary policy decision statement", "official Governor decision-day statement when applicable"]
+  },
+  "required_row_fields": [
+    "central_bank",
+    "decision_date",
+    "publication_timestamp",
+    "source_url",
+    "source_document_type",
+    "focus_primary",
+    "focus_evidence",
+    "label_method_version",
+    "pit_eligible"
+  ],
+  "allowed_focus_primary": ["INFLATION", "BALANCED", "LABOUR_GROWTH", "FINANCIAL_STABILITY_OTHER", "WITHHELD_AMBIGUOUS"],
+  "label_codebook": {
+    "INFLATION": "Inflation, inflation persistence, wages/prices, or inflation risks are explicitly the dominant reason for the policy stance or next-step guidance.",
+    "LABOUR_GROWTH": "Employment, labour-market weakening, demand/growth downside, or activity risks are explicitly the dominant reason for the policy stance or next-step guidance.",
+    "BALANCED": "Official communication explicitly balances inflation and activity/labour risks without a clearly dominant primary concern.",
+    "FINANCIAL_STABILITY_OTHER": "Another concern is explicitly primary, including financial stability, market functioning, exchange-rate intervention considerations, or other non-comparable regime drivers.",
+    "WITHHELD_AMBIGUOUS": "Primary priority cannot be assigned reproducibly from the contemporaneous official communication."
+  },
+  "evidence_rules": {
+    "official_text_only": true,
+    "market_reaction_forbidden": true,
+    "later_speeches_forbidden_for_relabeling_prior_event": true,
+    "later_macro_data_forbidden_for_relabeling_prior_event": true,
+    "future_policy_decisions_forbidden": true,
+    "focus_evidence_required": true,
+    "focus_evidence_must_support_label": true
+  },
+  "pit_rules": {
+    "event_available_from": "official publication timestamp",
+    "same_day_use": "allowed only after official publication timestamp",
+    "unknown_publication_time": "conservatively available from next calendar day",
+    "revised_archive_text": "may be used only when official archive identifies the original decision communication and no later editorial change affects the substantive wording; otherwise WITHHOLD",
+    "missing_or_conflicting_source": "WITHHOLD"
+  },
+  "quality_gate_before_performance_test": {
+    "all_five_central_banks_required": true,
+    "minimum_events_per_central_bank": 50,
+    "maximum_withheld_ambiguous_share_per_central_bank": 0.20,
+    "duplicate_decision_events": 0,
+    "missing_required_field_rows": 0,
+    "all_source_urls_official": true,
+    "labeling_complete_before_any_fx_performance_is_computed": true
+  },
+  "governance": {
+    "dataset_build_is_result_blind": true,
+    "label_changes_after_performance_seen": false,
+    "performance_test_authorized_now": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}

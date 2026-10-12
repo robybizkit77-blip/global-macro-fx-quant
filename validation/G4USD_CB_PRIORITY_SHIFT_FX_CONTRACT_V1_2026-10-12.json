@@ -1,0 +1,120 @@
+{
+  "schema": "GMFQ_G4USD_CB_PRIORITY_SHIFT_FX_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_BLOCKED_PENDING_CB_FOCUS_PIT_DATA",
+  "research_question": "When a central bank changes its primary policy priority after a macro turning point, and relative front-end rates confirm that shift, does the currency subsequently move in the same relative policy direction versus USD?",
+  "result_blind_base": {
+    "branch": "validation-g4usd-alignment-integration-readiness-fast-v3-2026-10-11",
+    "sha": "839daa94e8022d7b102c8b191b51fd36df7d032d",
+    "reason": "Reuse only already-certified PIT macro/rates plumbing before the corrected alignment economic result was observed."
+  },
+  "universe": {
+    "local_currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "comparison_currency": "USD",
+    "central_banks": {
+      "EUR": "ECB",
+      "JPY": "BOJ",
+      "CAD": "BOC",
+      "AUD": "RBA",
+      "USD": "FED"
+    }
+  },
+  "central_bank_focus": {
+    "event_driven": true,
+    "eligible_communication": "official monetary-policy decision communication only; statement and official press-conference/opening material released with the decision may be combined into one event record",
+    "official_sources_only": true,
+    "market_commentary_forbidden": true,
+    "focus_categories": ["INFLATION", "BALANCED", "LABOUR_GROWTH", "FINANCIAL_STABILITY_OTHER"],
+    "ordered_policy_score": {
+      "LABOUR_GROWTH": -1,
+      "BALANCED": 0,
+      "INFLATION": 1
+    },
+    "financial_stability_other_primary_test_action": "WITHHOLD_EVENT",
+    "priority_impulse": "current ordered policy score minus immediately previous eligible decision-event score for the same central bank",
+    "relative_priority_impulse": "local priority impulse minus FED priority impulse known at the local event timestamp; if FED has no new event since its prior decision, FED impulse is 0",
+    "dovish_relative_shift": "relative_priority_impulse < 0",
+    "hawkish_relative_shift": "relative_priority_impulse > 0",
+    "zero_relative_shift": "NO_SIGNAL"
+  },
+  "focus_label_governance": {
+    "label_must_be_blind_to_future_fx_and_rates": true,
+    "required_fields": ["central_bank", "decision_date", "publication_timestamp", "source_url", "source_document_type", "focus_primary", "focus_evidence", "label_method_version"],
+    "focus_evidence": "short contemporaneous evidence excerpt or structured evidence note supporting the primary focus; future market outcomes forbidden",
+    "ambiguous_focus_action": "BALANCED_OR_WITHHOLD_PER_CODEBOOK; never infer from subsequent market reaction",
+    "label_changes_after_performance_seen": "forbidden",
+    "historical_dataset_required_before_test": true
+  },
+  "macro_turning_confirmation": {
+    "inputs": "same strict PIT inflation and unemployment streams already normalized by the G4USD macro readiness chain",
+    "inflation_pressure": "change(local PIT-known inflation) minus change(US PIT-known inflation)",
+    "labour_pressure": "negative of [change(local PIT-known unemployment) minus change(US PIT-known unemployment)]",
+    "direction_sign": "sign(relative_priority_impulse)",
+    "confirmation_rule": "inflation_pressure and labour_pressure must each be either zero or have the same sign as relative_priority_impulse, and at least one must have the same non-zero sign",
+    "magnitude_threshold": null,
+    "zscore_threshold": null,
+    "persistence_filter": null,
+    "missing_input_action": "WITHHOLD_EVENT"
+  },
+  "rates_confirmation": {
+    "source": "same certified temporal-PIT local and US 2Y yield rowsets used by prior G4USD research",
+    "relative_2y": "local 2Y minus US 2Y",
+    "confirmation_window": "five subsequent eligible rate observations after the CB event; no same-event future rate value may enter before it is PIT-eligible",
+    "relative_2y_repricing": "relative_2y at fifth subsequent eligible rate observation minus relative_2y at last eligible observation at or before event publication",
+    "confirmation_rule": "sign(relative_2y_repricing) == sign(relative_priority_impulse)",
+    "magnitude_threshold_bp": null,
+    "signal_becomes_tradeable": "only after the fifth subsequent eligible rate observation confirms the shift",
+    "insufficient_future_rates_action": "WITHHOLD_UNMATURED_CONFIRMATION"
+  },
+  "fx_outcome": {
+    "orientation": "positive return means local currency strengthens versus USD",
+    "entry": "first official FX fixing on or after rates-confirmation timestamp",
+    "primary_horizon": "20 subsequent FX trading observations",
+    "secondary_horizon": "60 subsequent FX trading observations",
+    "signed_return": "sign(relative_priority_impulse) multiplied by local-vs-USD log FX return",
+    "future_outcome_not_available_action": "WITHHOLD_UNMATURED_OUTCOME"
+  },
+  "predeclared_models": {
+    "PRIMARY_FULL_CHAIN": "CB relative priority shift + macro turning confirmation + 5-observation relative-2Y confirmation",
+    "DIAGNOSTIC_CB_ONLY": "CB relative priority shift only",
+    "DIAGNOSTIC_CB_MACRO": "CB relative priority shift + macro turning confirmation",
+    "diagnostic_rescue_forbidden": true,
+    "primary_cannot_be_redefined_after_results": true
+  },
+  "historical_test_design": {
+    "split": "chronological 60/40 within each currency on eligible PRIMARY_FULL_CHAIN events",
+    "final_40_percent": "frozen out-of-sample evaluation",
+    "event_overlap": "all eligible decision events retained; no post-result event pruning",
+    "currency_exclusion": "forbidden",
+    "direction_search": "forbidden",
+    "threshold_search": "forbidden",
+    "horizon_search": "forbidden"
+  },
+  "predeclared_primary_gate": {
+    "all_required": true,
+    "minimum_pooled_oos_events": 40,
+    "minimum_oos_events_per_currency": 6,
+    "minimum_currencies_positive_primary_mean": 3,
+    "primary_20obs_panel_annualized_sharpe_min": 0.50,
+    "primary_directional_accuracy_min": 0.52,
+    "primary_mean_signed_return_gt_zero": true,
+    "secondary_60obs_mean_signed_return_gt_zero": true,
+    "max_single_currency_share": 0.40,
+    "both_dovish_and_hawkish_relative_shifts_required": true
+  },
+  "readiness_blocker": {
+    "cb_focus_historical_pit_dataset": "NOT_YET_CERTIFIED",
+    "performance_execution_authorized": false,
+    "reason": "No structured historical official-central-bank priority dataset exists in the repository yet. The economic test must remain blocked until that dataset is built and certified without using FX/rates outcomes."
+  },
+  "governance": {
+    "no_performance_result_observed_under_this_contract": true,
+    "no_rescue_tuning": true,
+    "no_parameter_change_after_result": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false,
+    "separate_promotion_required_after_any_pass": true
+  }
+}
