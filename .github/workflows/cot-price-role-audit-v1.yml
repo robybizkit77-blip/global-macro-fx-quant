@@ -46,20 +46,17 @@ jobs:
               const pairs=(D?.pairs||[]).map(x=>x.pair);
               const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
               const currencyStates=Object.fromEntries(currencies.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const canonicalFn=typeof window.canonicalPairDecisionFrame==='function'?Function.prototype.toString.call(window.canonicalPairDecisionFrame):typeof canonicalPairDecisionFrame==='function'?Function.prototype.toString.call(canonicalPairDecisionFrame):'';
               const pairFn=typeof window.derivePairDecisionFrame==='function'?Function.prototype.toString.call(window.derivePairDecisionFrame):'';
               const currFn=typeof window.deriveCurrencyState==='function'?Function.prototype.toString.call(window.deriveCurrencyState):'';
-              const text=(pairFn+'\n'+currFn).toLowerCase();
+              const lower=canonicalFn.toLowerCase();
+              const structuralBlocks=Object.values(pairFrames).map(x=>x?.structural).filter(Boolean);
+              const structuralKeys=[...new Set(structuralBlocks.flatMap(x=>Object.keys(x||{})))].sort();
               return {
-                pairCount:pairs.length,
-                pairFrames,currencyStates,
-                sources:{pairFn,currFn},
-                references:{
-                  cot:text.includes('cot'),
-                  price:text.includes('price'),
-                  macro:text.includes('macro'),
-                  policy:text.includes('policy'),
-                  rates:text.includes('rate')
-                },
+                pairCount:pairs.length,pairFrames,currencyStates,
+                sources:{canonicalFn,pairFn,currFn},
+                canonicalReferences:{cot:lower.includes('cot'),price:lower.includes('price'),macro:lower.includes('macro'),policy:lower.includes('policy'),rates:lower.includes('rate')},
+                structuralKeys,
                 frameFields:[...new Set(Object.values(pairFrames).flatMap(x=>x?Object.keys(x):[]))].sort(),
                 bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
               };
@@ -67,9 +64,19 @@ jobs:
             await browser.close();
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
-            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V1',...out};
+            const assertions={
+              all28Pairs:out.pairCount===28,
+              canonicalFnAvailable:out.sources.canonicalFn.length>0,
+              cotAbsentFromCanonicalPairFrame:out.canonicalReferences.cot===false,
+              structuralKeysOnlyMacroPolicyRatesGap:JSON.stringify(out.structuralKeys)===JSON.stringify(['macro','policy','ratesGap']),
+              priceIsNonStructuralField:out.frameFields.includes('priceReading')&&out.frameFields.includes('priceNote')&&!out.structuralKeys.includes('price'),
+              cotIsCurrencyRiskField:Object.values(out.currencyStates).every(x=>x&&Object.prototype.hasOwnProperty.call(x,'cotRisk'))
+            };
+            const ok=Object.values(assertions).every(Boolean);
+            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V2',status:ok?'PASS':'FAIL',assertions,...out};
             fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
-            console.log(JSON.stringify({pairCount:out.pairCount,references:out.references,frameFields:out.frameFields,currencyStates:out.currencyStates,sampleFrames:Object.fromEntries(Object.entries(out.pairFrames).slice(0,4))},null,2));
+            console.log(JSON.stringify({status:summary.status,assertions,canonicalReferences:out.canonicalReferences,structuralKeys:out.structuralKeys,frameFields:out.frameFields,canonicalFn:out.sources.canonicalFn},null,2));
+            if(!ok)process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
