@@ -2,7 +2,6 @@
 ./.github/workflows/cad-mx-corra-refresh-readiness.yml:33:          exp={'current':{'date':'2026-09-29','3m':2.75,'6m':3.105,'12m':3.515},'t_minus_1':{'date':'2026-09-28','3m':2.755,'6m':3.115,'12m':3.52},'weekly_reference':{'date':'2026-09-22','3m':2.74,'6m':3.065,'12m':3.41}}
 ./.github/workflows/cot-provenance-source-audit-v1.yml:26:            echo '=== 2026-09-22 ==='
 ./.github/workflows/cot-provenance-source-audit-v1.yml:27:            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' '2026-09-22' . || true
-./.github/workflows/cot-provenance-source-audit-v1.yml:77:                if(txt.includes('2026-10-06')||txt.includes('2026-09-22'))cotDataCandidates[k]=clone(v);
 ./.github/workflows/cot-freshness-gate-audit-v1.yml:123:            if(out.gate?.cot_asof!=='2026-09-22'||out.gate?.reference_asof!==out.currentRomeDate||out.gate?.calendar_lag_days!==20)throw new Error('COT freshness dates unexpected: '+JSON.stringify({gate:out.gate,currentRomeDate:out.currentRomeDate}));
 ./.github/workflows/cot-freshness-gate-audit-v1.yml:129:            if(out.provenance?.current_as_of!=='2026-09-22')throw new Error('COT provenance mutated: '+JSON.stringify(out.provenance));
 ./.github/workflows/gbp-boe-ois-refresh-readiness.yml:45:          exp={'current':{'date':'2026-09-29','3m':4.0707067450601,'6m':4.438953403175621,'12m':4.865918782825779},'t_minus_1':{'date':'2026-09-28','3m':4.066723783453592,'6m':4.428555992006569,'12m':4.828541155959475},'t_minus_5':{'date':'2026-09-22','3m':4.030117517991387,'6m':4.394366351385613,'12m':4.800520288124897}}
@@ -42,8 +41,9 @@
 === PRODUCTION_PRICE_COT_LIQ_AUDIT ===
 ./.github/workflows/cot-provenance-source-audit-v1.yml:29:            echo '=== PRODUCTION_PRICE_COT_LIQ_AUDIT ==='
 ./.github/workflows/cot-provenance-source-audit-v1.yml:30:            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' 'PRODUCTION_PRICE_COT_LIQ_AUDIT' . || true
-./.github/workflows/cot-provenance-source-audit-v1.yml:96:                productionType:typeof window.PRODUCTION_PRICE_COT_LIQ_AUDIT,
-./.github/workflows/cot-provenance-source-audit-v1.yml:98:                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT),
+./.github/workflows/cot-provenance-source-audit-v1.yml:58:              for(const name of ['PRODUCTION_PRICE_COT_LIQ_AUDIT','FINAL_SOURCE_POLICY_AUDIT']){
+./.github/workflows/cot-provenance-source-audit-v1.yml:108:                productionType:typeof window.PRODUCTION_PRICE_COT_LIQ_AUDIT,
+./.github/workflows/cot-provenance-source-audit-v1.yml:110:                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT),
 ./.github/workflows/cot-freshness-gate-audit-v1.yml:115:              return {gate,currentRomeDate,currencies,currenciesBefore,pairsNow,pairsBefore,currencyFailures,currencyCoreDiffs,pairStructuralDiffs,heatEvidence,heatFailures,helpers,bannerText,provenance:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot),priceGate:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
 ./.github/workflows/liquidity-freshness-audit-v1.yml:64:                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.liquidity),
 ./live_data/cot-freshness-gate.js:28:  return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
@@ -55,8 +55,9 @@
 === FINAL_SOURCE_POLICY_AUDIT ===
 ./.github/workflows/cot-provenance-source-audit-v1.yml:32:            echo '=== FINAL_SOURCE_POLICY_AUDIT ==='
 ./.github/workflows/cot-provenance-source-audit-v1.yml:33:            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' 'FINAL_SOURCE_POLICY_AUDIT' . || true
-./.github/workflows/cot-provenance-source-audit-v1.yml:97:                sourcePolicyType:typeof window.FINAL_SOURCE_POLICY_AUDIT,
-./.github/workflows/cot-provenance-source-audit-v1.yml:99:                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT),
+./.github/workflows/cot-provenance-source-audit-v1.yml:58:              for(const name of ['PRODUCTION_PRICE_COT_LIQ_AUDIT','FINAL_SOURCE_POLICY_AUDIT']){
+./.github/workflows/cot-provenance-source-audit-v1.yml:109:                sourcePolicyType:typeof window.FINAL_SOURCE_POLICY_AUDIT,
+./.github/workflows/cot-provenance-source-audit-v1.yml:111:                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT),
 ./.github/workflows/liquidity-freshness-audit-v1.yml:65:                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT?.LIQUIDITY),
 ./live_data/cot-freshness-gate.js:28:  return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
 ./payload/part-15.txt:1300:      if(window.FINAL_SOURCE_POLICY_AUDIT?.cb_pricing?.AUD){
