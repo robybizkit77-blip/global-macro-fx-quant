@@ -131,7 +131,8 @@ jobs:
           import json
           c=json.load(open('/tmp/daily-orchestrator-v1/risk-brent-probe.json'))
           assert c['schema']=='GMFQ_RISK_BRENT_SOURCE_PROBE_V1', c
-          assert c['source']['series_id']=='DCOILBRENTEU', c
+          assert c['source']['series_id']=='RBRTE', c
+          assert c['source']['fred_mirror_series_id']=='DCOILBRENTEU', c
           assert c['business_day_lag'] > c['max_business_day_lag'], c
           assert c['status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE', c
           assert c['publication_performed'] is False
