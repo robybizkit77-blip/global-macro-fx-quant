@@ -23,15 +23,16 @@
       "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
     },
     "Brent": {
-      "status": "WITHHELD",
+      "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
       "role": "PRIMARY_GATE_INPUT",
-      "source_name": null,
-      "source_url": null,
-      "publisher": null,
-      "frequency": null,
+      "source_name": "Crude Oil Prices: Brent - Europe",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+      "publisher": "U.S. Energy Information Administration via FRED",
+      "series_id": "DCOILBRENTEU",
+      "frequency": "Daily",
       "max_business_day_lag_vs_price": 1,
-      "collector": null,
-      "reason": "The embedded D.risk Brent series contains no source/provenance metadata, and the historical canonical refresh workflow does not define a Brent collector. EIA Europe Brent Spot Price FOB is official, but its publication schedule can lag the daily Price lane beyond the existing one-business-day Risk gate. Do not weaken the gate or infer a historical source."
+      "collector": "validation/fetch_eia_brent_probe.py",
+      "reason": "An auditable official Brent source exists, but its release cadence can lag the daily Price lane beyond the existing one-business-day Risk gate. The historical canonical refresh workflow did not define a Brent collector. Do not weaken the gate or substitute a non-equivalent proxy merely to produce GREEN."
     }
   },
   "secondary_runtime_series": {
