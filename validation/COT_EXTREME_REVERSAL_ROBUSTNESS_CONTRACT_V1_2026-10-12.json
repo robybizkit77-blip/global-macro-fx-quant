@@ -1,0 +1,40 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_ROBUSTNESS_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_BEFORE_ROBUSTNESS_RESULTS",
+  "candidate_rule": {
+    "lookback_weeks": 104,
+    "extreme_long_percentile": 80,
+    "extreme_short_percentile": 20,
+    "direction": "reversal",
+    "fx_horizon_trading_days": 5,
+    "chronological_split": "same frozen 60/40 split used in PR #142"
+  },
+  "tests": {
+    "leave_one_currency_out": {
+      "metric": "weekly panel annualized Sharpe recomputed after omitting each currency",
+      "robust_if_min_sharpe_ge": 0.50
+    },
+    "chronological_halves": {
+      "metric": "weekly panel annualized Sharpe in first and second halves of the frozen OOS weekly panel",
+      "robust_if_both_positive": true
+    },
+    "newey_west": {
+      "metric": "HAC t-stat of mean frozen OOS weekly panel return",
+      "lag": 4,
+      "robust_if_tstat_ge": 1.96
+    }
+  },
+  "overall_robustness_gate": "all three tests must pass",
+  "governance": {
+    "candidate_rule_must_not_change": true,
+    "forward_shadow_pr_143_must_not_change": true,
+    "no_threshold_search": true,
+    "no_currency_exclusion_as_rescue": true,
+    "no_horizon_change": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
