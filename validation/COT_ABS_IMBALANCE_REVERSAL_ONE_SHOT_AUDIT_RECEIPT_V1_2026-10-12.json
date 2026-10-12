@@ -1,0 +1,59 @@
+{
+  "schema": "GMFQ_COT_ABS_IMBALANCE_REVERSAL_ONE_SHOT_AUDIT_RECEIPT_V1",
+  "as_of": "2026-10-12",
+  "run_id": 38202754289,
+  "head_sha": "f75f089ae5c5910ff10418471eaa5ee30df1f32e",
+  "engine_sha256": "186130b8e3e42535b724f3bc12f877bdcbb1d980067c5c1bccc40df9690deb39",
+  "artifact_id": 11725982509,
+  "artifact_name": "cot-abs-imbalance-reversal-one-shot-38202754289",
+  "artifact_zip_sha256": "6283558bfa7b5a7639932d75557c96ee3af81f5a8a2e25da98546972267f52fe",
+  "verdict": "FAIL_PREDECLARED_COT_ABS_IMBALANCE_REVERSAL_EDGE_GATE",
+  "edge_survival": false,
+  "oos": {
+    "pooled_observations": 344,
+    "weekly_panel_observations": 146,
+    "panel_annualized_sharpe": 0.2556318326668257,
+    "directional_accuracy": 0.5261627906976745,
+    "panel_total_log_return": 0.05874599094084692,
+    "panel_max_drawdown": -0.10839722645384342,
+    "positive_currency_sharpes": 5,
+    "max_single_currency_share": 0.22093023255813954
+  },
+  "currency_oos_sharpes": {
+    "EUR": null,
+    "GBP": -1.2209954681134867,
+    "JPY": 0.08428777679264049,
+    "CHF": 1.273758629508056,
+    "AUD": 1.0846041361961138,
+    "NZD": 1.1344129100255764,
+    "CAD": 0.5756474341581193
+  },
+  "side_diagnostics": {
+    "negative_imbalance_reversal": {
+      "n": 309,
+      "sharpe": 0.8664121926381996,
+      "directional_accuracy": 0.5307443365695793
+    },
+    "positive_imbalance_reversal": {
+      "n": 35,
+      "sharpe": -0.39154385779995204,
+      "directional_accuracy": 0.4857142857142857
+    }
+  },
+  "gate_outcome": {
+    "oos_panel_annualized_sharpe_ge_0_50": false,
+    "oos_directional_accuracy_ge_0_52": true,
+    "positive_currency_oos_sharpes_ge_5": true,
+    "minimum_oos_signal_observations_per_currency_ge_20": false,
+    "minimum_pooled_oos_signal_observations_ge_150": true,
+    "max_single_currency_share_le_0_30": true
+  },
+  "research_interpretation": "Absolute |Net/OI| >=30% is not validated as a broad standalone FX reversal edge. The failure is especially informative versus the passed 104-week percentile candidate: relative extremeness versus a currency's own history appears more informative than a universal absolute imbalance threshold. No rescue tuning is authorized.",
+  "governance": {
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "no_rescue_tuning": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
