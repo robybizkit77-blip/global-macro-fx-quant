@@ -1,0 +1,85 @@
+name: AUD Policy Transition Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-policy-transition-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8134 --bind 127.0.0.1 > /tmp/gmfq-aud-policy-server.log 2>&1 &
+          sleep 2
+      - name: Inspect AUD policy transition chain
+        run: |
+          cat > aud-policy-transition-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const fnSrc=f=>typeof f==='function'?Function.prototype.toString.call(f):null;
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8134/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const runtime=await page.evaluate(()=>{
+              const names=Object.keys(window).filter(k=>/policyFamily|hyster|cb.*change|change.*cb|pricing.*aud|aud.*pricing|currencyIntel/i.test(k)).sort();
+              const funcs={}; const objs={};
+              for(const k of names){
+                const v=window[k];
+                if(typeof v==='function') funcs[k]=Function.prototype.toString.call(v);
+                else {
+                  try{const s=JSON.stringify(v); if(s&&s.length<250000) objs[k]=JSON.parse(s);}catch{}
+                }
+              }
+              const directNames=['policyFamilyPolarity','policyFamilyContext','applyCbLiquidityHysteresis','cbLiquidityHysteresis','deriveCurrencyState','deriveCurrencyDriver','runProductionDailyRefresh'];
+              for(const k of directNames) if(typeof window[k]==='function') funcs[k]=Function.prototype.toString.call(window[k]);
+              const ci=window.currencyIntelData||window.CURRENCY_INTEL_DATA||null;
+              return {
+                globals:names,
+                functions:funcs,
+                objects:objs,
+                audCurrencyIntel:ci?.AUD||null,
+                audState:window.deriveCurrencyState?.('AUD')||null,
+                audPostRba:window.GMFQ_AUD_POST_RBA_PRICING_AUDIT||null,
+                hysteresis:window.CB_LIQ_HYSTERESIS_STATE?.AUD||null,
+                memory:{cb:window.CB_LIQ_CHANGE_MEMORY?.['AUD:cb']||null,liq:window.CB_LIQ_CHANGE_MEMORY?.['AUD:liq']||null},
+                sourcePolicy:window.FINAL_SOURCE_POLICY_AUDIT?.CB_PRICING?.AUD||null,
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            if(runtime.bootstrapError) throw new Error(runtime.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            const report={schema:'GMFQ_AUD_POLICY_TRANSITION_AUDIT_V1',reference_date:'2026-10-12',...runtime,verdict:'EVIDENCE_ONLY'};
+            fs.writeFileSync('aud-policy-transition-audit.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+          })().catch(e=>{console.error('::error title=AUD policy transition audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node aud-policy-transition-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud-policy-transition-audit-v1
+          path: |
+            aud-policy-transition-audit.json
+            /tmp/gmfq-aud-policy-server.log
