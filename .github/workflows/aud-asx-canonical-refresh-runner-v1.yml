@@ -1,0 +1,139 @@
+name: AUD ASX Canonical Refresh Runner V1
+
+on:
+  push:
+    branches:
+      - validation-aud-asx-canonical-refresh-runner-v1-2026-10-12
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout clean candidate branch
+        uses: actions/checkout@v4
+        with:
+          ref: candidate-aud-asx-canonical-refresh-v1-2026-10-12
+          fetch-depth: 0
+
+      - name: Install collector dependencies
+        run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4
+
+      - name: Prove exact 30 Sep benchmark and T-5 rule
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_aud_asx_ib.py --as-of 2026-09-30 --output /tmp/aud-benchmark.json >/tmp/aud-benchmark.log
+          python3 validation/cb_pricing/build_aud_asx_ib_candidate.py --snapshot /tmp/aud-benchmark.json --output /tmp/aud-benchmark-candidate.json >/tmp/aud-benchmark-candidate.log
+          python3 - <<'PY'
+          import json,pathlib
+          s=json.loads(pathlib.Path('/tmp/aud-benchmark.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/aud-benchmark-candidate.json').read_text())
+          exp={'current':{'date':'2026-09-30','3m':4.685,'6m':4.81,'12m':4.91},'t_minus_1':{'date':'2026-09-29','3m':4.74,'6m':4.855,'12m':4.96},'weekly_reference':{'date':'2026-09-23','3m':4.725,'6m':4.84,'12m':4.935}}
+          for b,w in exp.items():
+            g=s['observations'][b]
+            if g['date']!=w['date']: raise SystemExit(f'{b} date mismatch {g}')
+            for k in ('3m','6m','12m'):
+              if abs(float(g[k])-w[k])>1e-9: raise SystemExit(f'{b} {k} mismatch {g[k]}')
+          if s['contract_mapping']!={'3m':'Dec 2026','6m':'Mar 2027','12m':'Sep 2027'}: raise SystemExit('contract mapping mismatch')
+          got1=[c['horizons'][k]['change_1d_bp'] for k in ('3m','6m','12m')]
+          gotw=[c['horizons'][k]['change_1w_bp'] for k in ('3m','6m','12m')]
+          if got1!=[-5.5,-4.5,-5.0]: raise SystemExit(f'1D mismatch {got1}')
+          if gotw!=[-4.0,-3.0,-2.5]: raise SystemExit(f'1W mismatch {gotw}')
+          if s['validation']['weekly_reference_rule']!='fifth prior complete official ASX SFN trading session (T-5); no calendar approximation': raise SystemExit('weekly rule mismatch')
+          print('AUD_ASX_20260930_REGRESSION_PASS')
+          PY
+
+      - name: Build latest official AUD snapshot and candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/collect_aud_asx_ib.py --output /tmp/aud-latest.json >/tmp/aud-latest.log
+          python3 validation/cb_pricing/build_aud_asx_ib_candidate.py --snapshot /tmp/aud-latest.json --output /tmp/aud-latest-candidate.json >/tmp/aud-latest-candidate.log
+          python3 - <<'PY'
+          import json,pathlib,datetime as dt
+          s=json.loads(pathlib.Path('/tmp/aud-latest.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/aud-latest-candidate.json').read_text())
+          if s['contract_mapping']!={'3m':'Dec 2026','6m':'Mar 2027','12m':'Sep 2027'}: raise SystemExit('latest mapping mismatch')
+          if c['status']!='READY_FOR_DRY_RUN': raise SystemExit('candidate not ready')
+          if not all(c['validation'].get(k) is True for k in ('source_validated','asof_validated','meeting_path_validated','changes_validated','current_real','previous_real','week_real','no_interpolation')): raise SystemExit('candidate validation incomplete')
+          dates=[dt.date.fromisoformat(s['observations'][x]['date']) for x in ('weekly_reference','t_minus_1','current')]
+          if not (dates[0] < dates[1] < dates[2]): raise SystemExit(f'bad observation ordering {dates}')
+          for k in ('3m','6m','12m'):
+            for fld in ('rate','change_1d_bp','change_1w_bp','policy_delta_bp'):
+              if c['horizons'][k].get(fld) is None: raise SystemExit(f'missing {k} {fld}')
+          print('AUD_LATEST_READY',c['as_of'],s['observations']['t_minus_1']['date'],s['observations']['weekly_reference']['date'])
+          print('AUD_LATEST_1D',[c['horizons'][k]['change_1d_bp'] for k in ('3m','6m','12m')])
+          print('AUD_LATEST_1W',[c['horizons'][k]['change_1w_bp'] for k in ('3m','6m','12m')])
+          PY
+
+      - name: Apply latest candidate through canonical AUD path
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp live_data/sections/OIS_DATA.json /tmp/OIS.before.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/NATIVE.before.json
+          cp payload/part-00.txt /tmp/part-00.before.txt
+          cp live_data/manifest.v2.json /tmp/manifest.before.json
+          python3 validation/cb_pricing/apply_aud_asx_ib_candidate.py --candidate /tmp/aud-latest-candidate.json >/tmp/aud-apply.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/manifest-build.json
+          python3 validation/check_cb_pricing_source_registry.py >/tmp/source-registry-check.json
+          python3 validation/check_live_update_contract.py >/tmp/live-contract-check.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/runtime-roundtrip.json
+
+      - name: Verify exact AUD-only semantic and file scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          bo=json.loads(pathlib.Path('/tmp/OIS.before.json').read_text()); ao=json.loads(pathlib.Path('live_data/sections/OIS_DATA.json').read_text())
+          bn=json.loads(pathlib.Path('/tmp/NATIVE.before.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          c=json.loads(pathlib.Path('/tmp/aud-latest-candidate.json').read_text())
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]
+          cn=[k for k in bn if bn[k]!=an[k]]
+          if co!=['AUD'] or cn!=['AUD']: raise SystemExit(f'bad semantic scope OIS={co} NATIVE={cn}')
+          x=ao['currencies']['AUD']; n=an['AUD']['market_pricing']
+          if x['status']!='ACTIVE' or x['as_of']!=c['as_of']: raise SystemExit('AUD OIS state mismatch')
+          if n.get('as_of')!=c['as_of'] or n.get('freshness_status')!='CURRENT_VALIDATED': raise SystemExit('AUD NATIVE pricing mismatch')
+          for k in ('3m','6m','12m'):
+            h=x['horizons'][k]; ch=c['horizons'][k]
+            if abs(float(h['rate'])-float(ch['rate']))>1e-9: raise SystemExit(f'{k} rate mismatch')
+            if abs(float(h['change_1d_bp'])-round(float(ch['change_1d_bp']),1))>1e-9: raise SystemExit(f'{k} 1D mismatch')
+            if abs(float(h['change_1w_bp'])-round(float(ch['change_1w_bp']),1))>1e-9: raise SystemExit(f'{k} 1W mismatch')
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
+          if changed!=expected: raise SystemExit(f'bad file scope {changed}')
+          print('AUD_CANONICAL_SCOPE_PASS',c['as_of'])
+          print('AUD_CHANGED_FILES',changed)
+          PY
+
+      - name: Commit exact canonical outputs to candidate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASOF=$(python3 -c "import json;print(json.load(open('/tmp/aud-latest-candidate.json'))['as_of'])")
+          git config user.name "gmfq-validation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add live_data/manifest.v2.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/OIS_DATA.json payload/part-00.txt
+          git commit -m "Refresh AUD ASX pricing with exact T-5 history (${ASOF})"
+          git push origin HEAD:candidate-aud-asx-canonical-refresh-v1-2026-10-12
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-asx-canonical-refresh-runner-v1
+          path: |
+            /tmp/aud-benchmark.json
+            /tmp/aud-benchmark-candidate.json
+            /tmp/aud-latest.json
+            /tmp/aud-latest-candidate.json
+            /tmp/aud-apply.json
+            /tmp/manifest-build.json
+            /tmp/source-registry-check.json
+            /tmp/live-contract-check.json
+            /tmp/runtime-roundtrip.json
+          if-no-files-found: error
+          retention-days: 30
