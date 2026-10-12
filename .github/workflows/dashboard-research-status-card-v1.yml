@@ -1,0 +1,77 @@
+name: Dashboard Research Status Card V1
+
+on:
+  push:
+    branches:
+      - validation-dashboard-research-status-card-v1-2026-10-12
+  pull_request:
+    branches:
+      - validation-dashboard-research-sidecar-integration-v1-2026-10-12
+  workflow_dispatch:
+
+jobs:
+  verify-card:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Static read-only guard
+        run: |
+          node <<'JS'
+          const fs=require('fs');
+          const js=fs.readFileSync('live_data/research-state-card.js','utf8');
+          const html=fs.readFileSync('index.html','utf8');
+          const required=['gmfq-research-status-card','gmfq:research-state-ready','themes','Non modifica bias, score o sizing.'];
+          for(const token of required) if(!js.includes(token)) throw new Error('missing '+token);
+          if(!html.includes('live_data/research-state-card.js')) throw new Error('card loader missing');
+          const forbidden=['stableModelRefresh(', 'derivePairDecisionFrame(', 'deriveCurrencyState(', 'selectCurrency(', 'showView(', 'pair_bias_override', 'currency_score_override', 'sizing_override'];
+          for(const token of forbidden) if(js.includes(token)) throw new Error('forbidden mutation/call '+token);
+          console.log('PASS_STATIC_RESEARCH_CARD_READ_ONLY');
+          JS
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/gmfq-research-card-server.log 2>&1 &
+          sleep 2
+      - name: Browser card audit
+        run: |
+          cat > /tmp/research-card-audit.js <<'JS'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:1000}});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text());});
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.__GMFQ_RESEARCH_STATE?.research_signal_state==='WITHHELD',null,{timeout:30000});
+            await page.waitForSelector('#gmfq-research-status-card',{timeout:30000});
+            const result=await page.evaluate(()=>{
+              const card=document.getElementById('gmfq-research-status-card');
+              const themes=document.getElementById('themes');
+              return {
+                count:document.querySelectorAll('#gmfq-research-status-card').length,
+                inThemes:!!(card&&themes&&card.parentElement===themes),
+                text:card?.innerText||'',
+                state:window.__GMFQ_RESEARCH_STATE,
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT
+              };
+            });
+            if(result.count!==1) throw new Error('card count '+result.count);
+            if(!result.inThemes) throw new Error('card not first-level child of themes');
+            for(const t of ['RESEARCH / STATO QUANT','WITHHELD','peso decisionale 0','Non modifica bias, score o sizing.']) if(!result.text.includes(t)) throw new Error('missing card text '+t);
+            if(result.state?.decision_weight!==0 || result.state?.decision_signal_count!==0) throw new Error('research state not withheld');
+            if(result.finalAudit?.status!=='PASS') throw new Error('existing final audit not PASS');
+            if(errors.length) throw new Error('browser errors: '+errors.join(' | '));
+            console.log(JSON.stringify({verdict:'PASS_RESEARCH_STATUS_CARD',count:result.count,inThemes:result.inThemes,research_state:result.state.research_signal_state,decision_weight:result.state.decision_weight},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1);});
+          JS
+          node /tmp/research-card-audit.js
