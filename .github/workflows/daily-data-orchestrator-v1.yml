@@ -4,11 +4,28 @@ on:
   push:
     branches:
       - validation-daily-data-orchestrator-v1-2026-10-12
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
     paths:
       - '.github/workflows/daily-data-orchestrator-v1.yml'
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/repair_detached_direct_section.py'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
+      - 'validation/check_freshness_registry.py'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/RATES_AUDIT_METADATA.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+  pull_request:
+    branches:
+      - release-candidate-freshness-registry-v1-2026-10-12
+    paths:
+      - '.github/workflows/daily-data-orchestrator-v1.yml'
+      - 'validation/run_daily_data_orchestrator_v1.py'
+      - 'validation/repair_detached_direct_section.py'
+      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
+      - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
       - 'live_data/sections/RATES_AUDIT_METADATA.json'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
