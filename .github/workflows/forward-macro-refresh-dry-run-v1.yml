@@ -1,0 +1,150 @@
+name: Forward Macro Refresh Dry Run V1
+
+on:
+  push:
+    branches:
+      - validation-forward-macro-refresh-dry-run-v1-2026-10-12
+    paths:
+      - 'validation/build_forward_macro_refresh_dry_run_receipt_v1.py'
+      - '.github/workflows/forward-macro-refresh-dry-run-v1.yml'
+  pull_request:
+    branches:
+      - validation-forward-input-readiness-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      E_STAT_APP_ID: ${{ secrets.E_STAT_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot protected runtime before dry run
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/forward-macro-before.sha256
+          mkdir -p /tmp/forward-macro-refresh
+
+      - name: Fetch USD official BLS candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/sources/us_bls_core_macro.py --output-dir /tmp/usd-source
+          for d in inflation labour; do
+            mkdir -p "/tmp/forward-macro-refresh/usd/$d"
+            cp "/tmp/usd-source/${d}-candidate.json" "/tmp/forward-macro-refresh/usd/$d/candidate.json"
+            cp /tmp/usd-source/source-audit.json "/tmp/forward-macro-refresh/usd/$d/source-audit.json"
+          done
+
+      - name: Fetch EUR official Eurostat candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in inflation labour; do
+            mkdir -p "/tmp/forward-macro-refresh/eur/$d"
+            python validation/sources/eur_eurostat_core.py --dimension "$d" \
+              --output "/tmp/forward-macro-refresh/eur/$d/candidate.json" \
+              --audit-output "/tmp/forward-macro-refresh/eur/$d/source-audit.json"
+          done
+
+      - name: Fetch CAD official Statistics Canada candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in inflation labour; do
+            mkdir -p "/tmp/forward-macro-refresh/cad/$d"
+            python validation/sources/cad_statcan_core.py --dimension "$d" \
+              --output "/tmp/forward-macro-refresh/cad/$d/candidate.json" \
+              --audit-output "/tmp/forward-macro-refresh/cad/$d/source-audit.json"
+          done
+
+      - name: Fetch AUD official ABS candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in inflation labour; do
+            mkdir -p "/tmp/forward-macro-refresh/aud/$d"
+            python validation/sources/aud_abs_core.py --dimension "$d" \
+              --output "/tmp/forward-macro-refresh/aud/$d/candidate.json" \
+              --audit-output "/tmp/forward-macro-refresh/aud/$d/source-audit.json"
+          done
+
+      - name: Fetch JPY official CPI candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/forward-macro-refresh/jpy/inflation
+          python validation/sources/jpy_statistics_bureau_cpi.py \
+            --output /tmp/forward-macro-refresh/jpy/inflation/candidate.json \
+            --audit-output /tmp/forward-macro-refresh/jpy/inflation/source-audit.json
+
+      - name: Fetch JPY official labour candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${E_STAT_APP_ID:-}" || { echo 'E_STAT_APP_ID required for JPY labour'; exit 1; }
+          mkdir -p /tmp/forward-macro-refresh/jpy/labour
+          python validation/sources/jpy_estat_unemployment.py \
+            --output /tmp/forward-macro-refresh/jpy/labour/candidate.json \
+            --audit-output /tmp/forward-macro-refresh/jpy/labour/source-audit.json
+
+      - name: Pass all 10 candidates through canonical read-only builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          for c in usd eur jpy cad aud; do
+            for d in inflation labour; do
+              python validation/build_macro_candidate.py \
+                --candidate "/tmp/forward-macro-refresh/$c/$d/candidate.json" \
+                --output-dir "/tmp/forward-macro-refresh/$c/$d/built"
+            done
+          done
+
+      - name: Build aggregate dry-run receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/forward-macro-refresh/out
+          python validation/build_forward_macro_refresh_dry_run_receipt_v1.py \
+            --root /tmp/forward-macro-refresh \
+            --source-map validation/FORWARD_INPUT_REFRESH_SOURCE_MAP_V1_2026-10-12.json \
+            --output /tmp/forward-macro-refresh/out/forward-macro-refresh-dry-run.json
+
+      - name: Prove no runtime publication or PIT promotion occurred
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c /tmp/forward-macro-before.sha256
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/forward-macro-refresh/out/forward-macro-refresh-dry-run.json'))
+          assert r['status']=='PASS_ALL_10_SOURCE_CANDIDATES_READ_ONLY'
+          assert r['stream_count']==10
+          assert r['pit_promotion_performed'] is False
+          assert r['shared_boundary_advanced'] is False
+          assert r['live_data_written'] is False
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          print('FORWARD_MACRO_REFRESH_DRY_RUN_GOVERNANCE_PASS')
+          PY
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forward-macro-refresh-dry-run-${{ github.run_id }}
+          path: /tmp/forward-macro-refresh/
+          if-no-files-found: error
+          retention-days: 30
