@@ -18,7 +18,7 @@ permissions:
 env:
   PYTHONDONTWRITEBYTECODE: '1'
   RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
-  SAFE_TARGET_DATE: '2026-10-08'
+  SAFE_TARGET_DATE: '2026-10-07'
 
 jobs:
   dry-run:
@@ -54,6 +54,7 @@ jobs:
           import json
           r=json.load(open('/tmp/forward-rates/out/result.json'))
           assert r['status']=='PASS_5_OF_5_FORWARD_EXTENSION',r
+          assert r['target_observation_date']=='2026-10-07',r
           assert r['rates_green']==5,r
           assert r['historical_prefix_unchanged'] is True,r
           assert all(x['appended_rows']>=1 for x in r['currencies']),r
