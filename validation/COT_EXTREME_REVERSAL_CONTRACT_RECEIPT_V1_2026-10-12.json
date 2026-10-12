@@ -1,0 +1,11 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_CONTRACT_RECEIPT_V1",
+  "as_of": "2026-10-12",
+  "status": "FROZEN_BEFORE_RESULTS",
+  "parent_fx_readiness_head": "3dd89c2468056e5657785d3bd6c3b379f9598caf",
+  "contract_branch_head_before_receipt": "4d6a40e1acf1e49493dda258eeae4960ecba8bee",
+  "contract_path": "validation/COT_EXTREME_REVERSAL_EDGE_CONTRACT_V1_2026-10-12.json",
+  "research_result_observed": false,
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
