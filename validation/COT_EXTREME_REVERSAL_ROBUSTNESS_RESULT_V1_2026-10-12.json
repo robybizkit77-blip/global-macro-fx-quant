@@ -1,0 +1,48 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_ROBUSTNESS_RESULT_V1",
+  "as_of": "2026-10-12",
+  "source_run": 38203143263,
+  "source_head": "0cdd4c3cfcec5be4aa93640c0f6df50018faed44",
+  "artifact_id": 11726153974,
+  "artifact_sha256": "a047f58f2c17186553062472405c6ac2ac4eb8cd9f7b616a44fc9a2e7f45f04c",
+  "verdict": "PASS_PREDECLARED_ROBUSTNESS_GATE",
+  "frozen_oos_replication": {
+    "pooled_observations": 410,
+    "weekly_panel_observations": 117,
+    "panel_annualized_sharpe": 1.4727493054664214,
+    "matches_pr_142_candidate": true
+  },
+  "leave_one_currency_out": {
+    "AUD": 1.5189128396402605,
+    "CAD": 1.4923110085054925,
+    "CHF": 0.8795742755940853,
+    "EUR": 1.4637800288296228,
+    "GBP": 1.6350787516938488,
+    "JPY": 1.4340969328207294,
+    "NZD": 1.4841239440218212,
+    "minimum": 0.8795742755940853,
+    "gate_minimum_ge_0_50": true
+  },
+  "chronological_halves": {
+    "first_half_weekly_n": 58,
+    "first_half_panel_sharpe": 1.2954534601051173,
+    "second_half_weekly_n": 59,
+    "second_half_panel_sharpe": 2.0107900976777016,
+    "gate_both_positive": true
+  },
+  "newey_west_hac": {
+    "lag": 4,
+    "t_stat": 2.965118201937475,
+    "gate_t_stat_ge_1_96": true
+  },
+  "interpretation": "The passed 104-week 80/20 relative-extremeness reversal candidate is not dependent on any single currency, remains positive across both chronological halves of the frozen OOS panel, and retains statistical support after HAC correction for serial dependence. This materially strengthens robustness but does not replace the independent forward shadow confirmation in PR #143.",
+  "governance": {
+    "candidate_rule_changed": false,
+    "forward_shadow_pr_143_changed": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "no_rescue_tuning": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
