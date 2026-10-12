@@ -12,6 +12,8 @@ on:
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
+      - 'validation/fetch_cboe_vix_candidate.py'
+      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -31,6 +33,8 @@ on:
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
+      - 'validation/fetch_cboe_vix_candidate.py'
+      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -87,12 +91,32 @@ jobs:
           assert d['lanes']['LIQUIDITY']['inventory_ready'] is True
           assert d['lanes']['LIQUIDITY']['state']=='BLOCKED_SUBSERIES_POLICY_NOT_MAPPED'
           assert d['lanes']['RISK']['guard_proven'] is True
-          assert d['lanes']['RISK']['state']=='BLOCKED_DATA_UPDATER_MISSING_GUARD_PROVEN'
+          assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
+          assert d['lanes']['RISK']['vix_source_status']=='READY'
+          assert d['lanes']['RISK']['brent_source_status']=='WITHHELD'
+          assert d['lanes']['RISK']['state']=='BLOCKED_BRENT_SOURCE_PROVENANCE_UNRESOLVED'
           assert d['promotion_performed'] is False
           assert d['live_data_published'] is False
           assert d['gh_pages_published'] is False
           assert d['automatic_publication'] is False
           print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
+          PY
+
+      - name: Fetch official Cboe VIX candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_cboe_vix_candidate.py | tee /tmp/daily-orchestrator-v1/risk-vix-candidate.log
+          cp validation/risk-vix-candidate.json /tmp/daily-orchestrator-v1/risk-vix-candidate.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/daily-orchestrator-v1/risk-vix-candidate.json'))
+          assert c['schema']=='GMFQ_RISK_VIX_CANDIDATE_V1', c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['business_day_lag'] <= 1, c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('RISK_VIX_SOURCE_CANDIDATE_PASS',c['latest_date'],c['latest_value'])
           PY
 
       - name: Inventory Liquidity subseries without inventing freshness
@@ -192,6 +216,7 @@ jobs:
         shell: bash
         run: |
           git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
+          rm -f validation/risk-vix-candidate.json
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
