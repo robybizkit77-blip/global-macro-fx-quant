@@ -24,49 +24,56 @@ jobs:
           from pathlib import Path
           p=Path('/tmp/materialize_gbp_labour_candidate.py')
           s=p.read_text()
-          old="targets = list(month_range((2018, 1), (2026, 6)))"
-          if old not in s:
-              raise SystemExit('expected GBP labour target contract not found')
-          s=s.replace(old,"targets = list(month_range((2018, 1), (2026, 7)))",1)
-          s=s.replace('GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_06_','GBP_LABOUR_STRICT_FIRST_RELEASE_2018_2026_07_',1)
+          replacements={
+            "target = list(month_range((2018, 1), (2026, 6)))":"target = list(month_range((2018, 1), (2026, 7)))",
+            "len(rows) != 102":"len(rows) != 103",
+            "len({r['reference_month'] for r in rows}) != 102":"len({r['reference_month'] for r in rows}) != 103",
+            "len({r['page_sha256'] for r in rows}) != 102":"len({r['page_sha256'] for r in rows}) != 103",
+            "'end': '2026-06', 'expected_months': 102":"'end': '2026-07', 'expected_months': 103",
+          }
+          for old,new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'expected GBP labour contract fragment not found: {old}')
+              s=s.replace(old,new,1)
           p.write_text(s)
           PY
 
-          mkdir -p /tmp/gbp-candidate-a /tmp/gbp-candidate-b
-          python3 /tmp/materialize_gbp_labour_candidate.py --output-dir /tmp/gbp-candidate-a
+          mkdir -p /tmp/gbp-candidate-a /tmp/gbp-candidate-b validation_evidence
+          python3 /tmp/materialize_gbp_labour_candidate.py \
+            --csv /tmp/gbp-candidate-a/gbp_labour.csv \
+            --evidence /tmp/gbp-candidate-a/gbp_labour_evidence.json
           sleep 2
-          python3 /tmp/materialize_gbp_labour_candidate.py --output-dir /tmp/gbp-candidate-b
+          python3 /tmp/materialize_gbp_labour_candidate.py \
+            --csv /tmp/gbp-candidate-b/gbp_labour.csv \
+            --evidence /tmp/gbp-candidate-b/gbp_labour_evidence.json
 
           python3 - <<'PY'
-          import glob,hashlib,json,os
-          a=glob.glob('/tmp/gbp-candidate-a/*.json')
-          b=glob.glob('/tmp/gbp-candidate-b/*.json')
-          if len(a)!=1 or len(b)!=1:
-              raise SystemExit(f'unexpected candidate files a={a} b={b}')
-          ja=json.load(open(a[0])); jb=json.load(open(b[0]))
-          def semantic(x):
-              return x.get('observations',x)
-          sa=json.dumps(semantic(ja),sort_keys=True,separators=(',',':')).encode()
-          sb=json.dumps(semantic(jb),sort_keys=True,separators=(',',':')).encode()
-          sha_a=hashlib.sha256(sa).hexdigest(); sha_b=hashlib.sha256(sb).hexdigest()
-          if sha_a!=sha_b:
-              raise SystemExit(f'non deterministic candidate {sha_a} != {sha_b}')
-          obs=ja.get('observations',[])
-          if not obs:
-              raise SystemExit('candidate observations missing')
-          last=obs[-1]
+          import csv,hashlib,json,os
+          ea=json.load(open('/tmp/gbp-candidate-a/gbp_labour_evidence.json'))
+          eb=json.load(open('/tmp/gbp-candidate-b/gbp_labour_evidence.json'))
+          rows_a=list(csv.DictReader(open('/tmp/gbp-candidate-a/gbp_labour.csv',encoding='utf-8')))
+          rows_b=list(csv.DictReader(open('/tmp/gbp-candidate-b/gbp_labour.csv',encoding='utf-8')))
+          if ea.get('semantic_rowset_sha256') != eb.get('semantic_rowset_sha256'):
+              raise SystemExit('non deterministic semantic rowset')
+          if rows_a != rows_b:
+              raise SystemExit('non deterministic CSV rowset')
+          if len(rows_a)!=103:
+              raise SystemExit(f'unexpected observation count {len(rows_a)}')
+          last=rows_a[-1]
           if last.get('reference_month')!='2026-07':
               raise SystemExit(f"unexpected last reference month {last.get('reference_month')}")
           evidence={
               'schema':'GMFQ_GBP_LABOUR_FRESHNESS_CANDIDATE_V1',
               'target_end':'2026-07',
-              'observation_count':len(obs),
+              'observation_count':len(rows_a),
               'last_observation':last,
-              'semantic_sha256':sha_a,
+              'semantic_sha256':ea.get('semantic_rowset_sha256'),
+              'raw_fetch_sha256':ea.get('raw_fetch_rowset_sha256'),
               'deterministic_two_pass':True,
-              'canonical_collector_modified':False
+              'canonical_collector_modified':False,
+              'source_contract':ea.get('series_contract'),
+              'route_counts':ea.get('route_counts')
           }
-          os.makedirs('validation_evidence',exist_ok=True)
           json.dump(evidence,open('validation_evidence/gbp_labour_freshness_candidate_v1.json','w'),indent=2)
           print(json.dumps(evidence,indent=2))
           PY
@@ -78,5 +85,7 @@ jobs:
           name: gbp-labour-freshness-candidate-v1
           path: |
             validation_evidence/gbp_labour_freshness_candidate_v1.json
-            /tmp/gbp-candidate-a/*.json
-            /tmp/gbp-candidate-b/*.json
+            /tmp/gbp-candidate-a/gbp_labour.csv
+            /tmp/gbp-candidate-a/gbp_labour_evidence.json
+            /tmp/gbp-candidate-b/gbp_labour.csv
+            /tmp/gbp-candidate-b/gbp_labour_evidence.json
