@@ -3,7 +3,7 @@ name: Research Candidate Registry V1
 on:
   push:
     branches:
-      - validation-research-candidate-registry-v1-2026-10-12
+      - validation-research-candidate-registry-dashboard-v2-2026-10-12
   workflow_dispatch:
 
 permissions:
@@ -21,6 +21,7 @@ jobs:
         run: |
           python validation/validate_research_candidate_registry_v1.py \
             --registry validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json \
+            --dashboard-sidecar live_data/sections/RESEARCH_CANDIDATES.json \
             --output /tmp/research-candidate-registry-receipt.json
       - name: Upload receipt
         uses: actions/upload-artifact@v4
