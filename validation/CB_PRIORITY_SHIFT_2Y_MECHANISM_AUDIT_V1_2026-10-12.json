@@ -1,0 +1,57 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_SHIFT_2Y_MECHANISM_AUDIT_V1",
+  "as_of": "2026-10-12",
+  "verdict": "FAIL_PREDECLARED_2Y_MECHANISM_GATE",
+  "contract_pull_request": 169,
+  "engine_pull_request": 170,
+  "engine_head_sha": "2d16bc039a95bec1f34db304cec68f8fee230a4d",
+  "workflow_run_id": 38217529547,
+  "artifact_id": 11731504957,
+  "artifact_name": "cb-priority-shift-2y-mechanism-38217529547",
+  "artifact_zip_sha256": "5ef1284c9780ad94adb380030c345c07ceba1031c3fb36bb48120bf36cf4c47d",
+  "result_json_sha256": "5345d132958db5e497ab3967cc1753d8eef77a32e35ae5d86bfe089112145a7e",
+  "sealed_label_dataset_sha256": "3cd295e0455751e81088165f88bde9d24b30bb3d6f26e0b14a7b3ce0cd5b74ca",
+  "sample": {
+    "pooled_n": 48,
+    "mechanism_sample_withheld": 0,
+    "positive_shift_count": 25,
+    "negative_shift_count": 23,
+    "event_shares": {"BOC":0.3333333333333333,"BOJ":0.3125,"RBA":0.3541666666666667}
+  },
+  "pooled": {
+    "mean_signed_2y_1obs_bp": 0.3250000000000032,
+    "mean_signed_2y_5obs_bp": -1.8249999999999984,
+    "median_signed_2y_5obs_bp": -0.39999999999999897,
+    "directional_accuracy_5obs": 0.3958333333333333
+  },
+  "per_central_bank": {
+    "BOC": {"n":16,"mean_signed_2y_5obs_bp":-3.7500000000000004,"directional_accuracy_5obs":0.4375,"mean_signed_2y_1obs_bp":1.0625000000000009},
+    "BOJ": {"n":15,"mean_signed_2y_5obs_bp":-0.18666666666666593,"directional_accuracy_5obs":0.3333333333333333,"mean_signed_2y_1obs_bp":-0.15999999999999998},
+    "RBA": {"n":17,"mean_signed_2y_5obs_bp":-1.4588235294117606,"directional_accuracy_5obs":0.4117647058823529,"mean_signed_2y_1obs_bp":0.05882352941177277}
+  },
+  "predeclared_gates": {
+    "pooled_n": true,
+    "per_cb_n": true,
+    "pooled_mean_positive": false,
+    "pooled_accuracy": false,
+    "positive_cb_means": false,
+    "concentration": true
+  },
+  "interpretation": {
+    "technical_failure": false,
+    "all_input_identity_and_hash_checks_passed": true,
+    "all_48_primary_events_had_usable_rate_rows": true,
+    "simple_ordinal_priority_shift_is_not_supported_as_a_directional_5_observation_local_2y_mechanism": true,
+    "one_observation_effect_is_small_and_not_the_predeclared_primary_horizon": true,
+    "do_not_rescue_with_horizon_threshold_or_currency_tuning": true,
+    "do_not_join_fx_under_this_hypothesis": true,
+    "cb_priority_dataset_remains_valid_as_descriptive_context": true
+  },
+  "governance": {
+    "fx_test_authorized_from_this_mechanism": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
