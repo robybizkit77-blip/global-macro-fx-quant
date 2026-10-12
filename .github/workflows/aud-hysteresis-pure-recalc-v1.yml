@@ -1,0 +1,87 @@
+name: AUD Hysteresis Pure Recalc V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-hysteresis-pure-recalc-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8136 --bind 127.0.0.1 > /tmp/gmfq-aud-hyst-recalc-server.log 2>&1 &
+          sleep 2
+      - name: Recalculate AUD CB candidate read-only
+        run: |
+          cat > aud-hysteresis-pure-recalc.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8136/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const native=(typeof NATIVE_CB_DATA!=='undefined')?NATIVE_CB_DATA:null;
+              let pure=null, fnSource=null, accessible=false, err=null;
+              try{
+                if(typeof cbStructuralChangeCandidate==='function'){
+                  accessible=true;
+                  fnSource=Function.prototype.toString.call(cbStructuralChangeCandidate);
+                  pure=clone(cbStructuralChangeCandidate(native?.AUD));
+                } else if(typeof window.cbStructuralChangeCandidate==='function'){
+                  accessible=true;
+                  fnSource=Function.prototype.toString.call(window.cbStructuralChangeCandidate);
+                  pure=clone(window.cbStructuralChangeCandidate(native?.AUD));
+                }
+              }catch(e){err=String(e.stack||e)}
+              return {
+                accessible,
+                pure,
+                fnSource,
+                error:err,
+                nativeAud:clone(native?.AUD),
+                hysteresisBefore:clone(window.CB_LIQ_HYSTERESIS_STATE?.AUD?.cb),
+                memoryBefore:clone(window.CB_LIQ_CHANGE_MEMORY?.['AUD:cb']),
+                currencyBefore:clone(window.deriveCurrencyState?.('AUD')),
+                pairFrames:Object.fromEntries(['AUD/USD','AUD/JPY','AUD/CAD','EUR/AUD','GBP/AUD','AUD/NZD','AUD/CHF'].map(p=>[p,clone(window.derivePairDecisionFrame?.(p))])),
+                postRba:clone(window.GMFQ_AUD_POST_RBA_PRICING_AUDIT),
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('aud-hysteresis-pure-recalc.json',JSON.stringify({schema:'GMFQ_AUD_HYSTERESIS_PURE_RECALC_V1',...out},null,2));
+            console.log(JSON.stringify({accessible:out.accessible,pure:out.pure,hysteresisBefore:out.hysteresisBefore,memoryBefore:out.memoryBefore,currencyBefore:out.currencyBefore,error:out.error},null,2));
+            if(!out.accessible) process.exitCode=2;
+          })().catch(e=>{console.error('::error title=AUD hysteresis pure recalc::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node aud-hysteresis-pure-recalc.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud-hysteresis-pure-recalc-v1
+          path: |
+            aud-hysteresis-pure-recalc.json
+            /tmp/gmfq-aud-hyst-recalc-server.log
