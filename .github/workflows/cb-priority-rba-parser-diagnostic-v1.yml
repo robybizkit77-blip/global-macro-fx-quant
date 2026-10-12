@@ -1,0 +1,73 @@
+name: CB Priority RBA Parser Diagnostic V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-rba-parser-diagnostic-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-rba-parser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned PDF dependency for engine import
+        run: python -m pip install --disable-pip-version-check 'pypdf==6.1.1'
+      - name: Compare extracted RBA decision text with frozen classifier
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.run_cb_priority_labeling_v1 import fetch_bytes, extract_text, sentences, classify_text
+
+          contract=json.load(open('validation/CB_PRIORITY_LABELING_CONTRACT_V1_2026-10-12.json'))
+          urls=[
+            'https://www.rba.gov.au/media-releases/2018/mr-18-01.html',
+            'https://www.rba.gov.au/media-releases/2018/mr-18-05.html',
+            'https://www.rba.gov.au/media-releases/2018/mr-18-07.html',
+          ]
+          receipt=[]
+          for url in urls:
+              data,ctype=fetch_bytes(url)
+              text,kind=extract_text(data,ctype,url)
+              ss=sentences(text)
+              relevant=[s for s in ss if any(k in s.lower() for k in ['stance','inflation','unemployment','growth','board judged','taking account'])]
+              c=classify_text(text,contract)
+              r={
+                'url':url,
+                'bytes':len(data),
+                'extract_kind':kind,
+                'text_chars':len(text),
+                'sentence_count':len(ss),
+                'contains_board_judged':'board judged' in text.lower(),
+                'contains_stance':'stance' in text.lower(),
+                'contains_inflation':'inflation' in text.lower(),
+                'contains_unemployment':'unemployment' in text.lower(),
+                'contains_growth':'growth' in text.lower(),
+                'classification':c,
+                'relevant_sentences':relevant[-12:],
+              }
+              receipt.append(r)
+              print(json.dumps(r,indent=2,ensure_ascii=False))
+          open('/tmp/rba-parser-diagnostic.json','w').write(json.dumps({'schema':'GMFQ_RBA_PARSER_DIAGNOSTIC_V1','market_data_present':False,'semantic_rules_changed':False,'rows':receipt},indent=2,ensure_ascii=False)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rba-parser-diagnostic-${{ github.run_id }}
+          path: /tmp/rba-parser-diagnostic.json
+          retention-days: 30
+      - name: Assert diagnostic is market-result blind
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/rba-parser-diagnostic.json'))
+          assert d['market_data_present'] is False
+          assert d['semantic_rules_changed'] is False
+          print('RBA_PARSER_DIAGNOSTIC_RESULT_BLIND_PASS')
+          PY
