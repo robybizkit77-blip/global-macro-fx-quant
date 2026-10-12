@@ -25,14 +25,15 @@
     "Brent": {
       "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
       "role": "PRIMARY_GATE_INPUT",
-      "source_name": "Crude Oil Prices: Brent - Europe",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
-      "publisher": "U.S. Energy Information Administration via FRED",
-      "series_id": "DCOILBRENTEU",
+      "source_name": "Europe Brent Spot Price FOB",
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+      "publisher": "U.S. Energy Information Administration",
+      "series_id": "RBRTE",
+      "fred_mirror_series_id": "DCOILBRENTEU",
       "frequency": "Daily",
       "max_business_day_lag_vs_price": 1,
       "collector": "validation/fetch_eia_brent_probe.py",
-      "reason": "An auditable official Brent source exists, but its release cadence can lag the daily Price lane beyond the existing one-business-day Risk gate. The historical canonical refresh workflow did not define a Brent collector. Do not weaken the gate or substitute a non-equivalent proxy merely to produce GREEN."
+      "reason": "An auditable primary EIA Brent source exists, but its release cadence can lag the daily Price lane beyond the existing one-business-day Risk gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. The historical canonical refresh workflow did not define a Brent collector. Do not weaken the gate or substitute a non-equivalent proxy merely to produce GREEN."
     }
   },
   "secondary_runtime_series": {
