@@ -27,7 +27,7 @@ jobs:
           mkdir -p /tmp/price-probe
           grep -R -n --exclude-dir=.git -E 'GMFQ_ECB_PRICE_AUDIT|D\.prices|prices:[[:space:]]*\[' . > /tmp/price-probe/references.txt || true
           python - <<'PY'
-          import json, urllib.request, xml.etree.ElementTree as ET, pathlib, re
+          import json, urllib.request, xml.etree.ElementTree as ET, pathlib
           url='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml'
           req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-Price-Refresh-Probe/1.0'})
           raw=urllib.request.urlopen(req,timeout=60).read()
@@ -43,14 +43,28 @@ jobs:
                   if c in wanted and r is not None: vals[c]=float(r)
               if wanted.issubset(vals): rows.append({'Date':d,**vals})
           rows.sort(key=lambda x:x['Date'])
+          if not rows: raise SystemExit('no complete G8 ECB rows')
           latest=rows[-1]
+          canonical=[
+            'AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY',
+            'EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD',
+            'GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD',
+            'NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'
+          ]
           pairs={}
-          ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
-          for i,a in enumerate(ccys):
-              for b in ccys[i+1:]:
-                  pairs[f'{a}/{b}']=latest[b]/latest[a]
+          for pair in canonical:
+              base,quote=pair.split('/')
+              pairs[pair]=latest[quote]/latest[base]
           refs=pathlib.Path('/tmp/price-probe/references.txt').read_text(errors='ignore')
-          payload={'status':'PASS','source':'ECB official euro reference rates','latest_complete_g8_date':latest['Date'],'latest_row':latest,'pair_count':len(pairs),'sample_pairs':{k:pairs[k] for k in ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD']},'reference_hits':refs.splitlines()[:200]}
+          payload={
+            'status':'PASS',
+            'source':'ECB official euro reference rates',
+            'latest_complete_g8_date':latest['Date'],
+            'latest_row':latest,
+            'pair_count':len(pairs),
+            'sample_pairs':{k:pairs[k] for k in ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD']},
+            'reference_hits':refs.splitlines()[:200]
+          }
           pathlib.Path('/tmp/price-probe/result.json').write_text(json.dumps(payload,indent=2,ensure_ascii=False)+'\n')
           print(json.dumps(payload,indent=2,ensure_ascii=False))
           PY
