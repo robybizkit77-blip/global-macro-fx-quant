@@ -1,0 +1,63 @@
+name: G4USD Relative Macro Turning 2Y Contract V1
+
+on:
+  push:
+    branches:
+      - validation-relative-macro-turning-2y-contract-v1-2026-10-12
+    paths:
+      - 'validation/G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1_2026-10-12.json'
+      - '.github/workflows/g4usd-relative-macro-turning-2y-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen result-blind contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1_2026-10-12.json'
+          c=json.load(open(p))
+          assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1'
+          assert c['status']=='PREDECLARED_RESULT_BLIND'
+          assert c['result_blind_base']['sha']=='839daa94e8022d7b102c8b191b51fd36df7d032d'
+          assert c['universe']['local_currencies']==['EUR','JPY','CAD','AUD']
+          assert c['turning_point_definition']['component_weights']=={'inflation':1,'labour':1}
+          assert c['turning_point_definition']['magnitude_threshold'] is None
+          assert c['monthly_grid']['same_month_rates_as_outcome'] is False
+          h=c['historical_validation']
+          assert h['split']=='chronological 60/40 within each currency after eligible macro signals are constructed'
+          assert h['horizon_search']=='forbidden'
+          assert h['direction_search']=='forbidden'
+          assert h['currency_specific_rules']=='forbidden'
+          assert h['inflation_only_rescue']=='forbidden'
+          assert h['labour_only_rescue']=='forbidden'
+          g=c['predeclared_oos_gate']
+          assert g['minimum_pooled_events']==40
+          assert g['minimum_events_per_currency']==6
+          assert g['mean_signed_next_month_relative_2y_bp_gt']==0.0
+          assert g['directional_accuracy_min']==0.55
+          assert g['minimum_currencies_positive_mean']==3
+          assert g['max_single_currency_share']==0.40
+          assert g['both_local_hawkish_and_local_dovish_required'] is True
+          assert c['governance']['fx_outcomes_joined'] is False
+          assert c['governance']['production_signal_authorized'] is False
+          assert c['governance']['sizing_authorized'] is False
+          print('RELATIVE_MACRO_TURNING_2Y_CONTRACT_FROZEN_PASS')
+          PY
+      - name: Assert no result is present on contract branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e validation/G4USD_RELATIVE_MACRO_TURNING_2Y_RESULT_V1.json
+          test -z "$(git status --porcelain)"
