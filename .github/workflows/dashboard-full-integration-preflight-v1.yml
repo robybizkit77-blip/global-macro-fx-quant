@@ -1,0 +1,64 @@
+name: Dashboard Full Integration Preflight V1
+
+on:
+  push:
+    branches:
+      - validation-dashboard-integration-v1-2026-10-12
+    paths:
+      - 'validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json'
+      - 'validation/validate_research_candidate_registry_v1.py'
+      - 'validation/build_dashboard_research_state_v1.py'
+      - 'validation/dashboard_full_integration_preflight_v1.py'
+      - 'live_data/sections/RESEARCH_STATE.json'
+      - 'live_data/sections/RESEARCH_CANDIDATES.json'
+      - '.github/workflows/dashboard-full-integration-preflight-v1.yml'
+  pull_request:
+    branches:
+      - validation-dashboard-research-state-drift-gate-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate registry and display-only candidate sidecar
+        run: |
+          python validation/validate_research_candidate_registry_v1.py \
+            --registry validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json \
+            --dashboard-sidecar live_data/sections/RESEARCH_CANDIDATES.json \
+            --output /tmp/research-registry-receipt.json
+      - name: Prove generated research state has no drift
+        run: python validation/build_dashboard_research_state_v1.py --check
+      - name: Diagnose dashboard integration boundary
+        run: python validation/dashboard_full_integration_preflight_v1.py
+      - name: Enforce no market-logic mutation
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/dashboard-full-integration-preflight.json'))
+          assert r['status']=='READY_FOR_FULL_DASHBOARD_REBUILD_WITH_KNOWN_MACRO_RUNTIME_BLOCKER',r
+          assert r['research_governance']['decision_weight']==0,r
+          assert r['changes_signal_rules'] is False and r['changes_bias'] is False and r['changes_sizing'] is False,r
+          assert len(r['known_runtime_blockers'])==1,r
+          assert r['known_runtime_blockers'][0]['id']=='LEGACY_MACRO_PAYLOAD_MAPPING',r
+          print('DASHBOARD_FULL_INTEGRATION_PREFLIGHT_PASS')
+          PY
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-full-integration-preflight-${{ github.run_id }}
+          path: |
+            /tmp/dashboard-full-integration-preflight.json
+            /tmp/research-registry-receipt.json
+          if-no-files-found: error
+          retention-days: 60
