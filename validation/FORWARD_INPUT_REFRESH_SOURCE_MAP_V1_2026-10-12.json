@@ -1,0 +1,32 @@
+{
+  "schema": "GMFQ_FORWARD_INPUT_REFRESH_SOURCE_MAP_V1",
+  "as_of": "2026-10-12",
+  "scope": {
+    "currencies": ["USD", "EUR", "JPY", "CAD", "AUD"],
+    "dimensions": ["inflation", "labour"],
+    "required_macro_streams": 10
+  },
+  "rules": {
+    "registry_is_authoritative": true,
+    "source_generation_read_only": true,
+    "single_series_pit_refresh_required": true,
+    "batch_direct_write_forbidden": true,
+    "partial_refresh_cannot_advance_shared_boundary": true,
+    "automatic_publication": false,
+    "main_write": false,
+    "gh_pages_write": false
+  },
+  "streams": [
+    {"key":"USD.inflation","adapter":"validation/sources/us_bls_core_macro.py","workflow":".github/workflows/macro-usd-bls-live-certification.yml","macro_series_id":"US_CPIAUCSL_history_value"},
+    {"key":"USD.labour","adapter":"validation/sources/us_bls_core_macro.py","workflow":".github/workflows/macro-usd-bls-live-certification.yml","macro_series_id":"US_UNRATE_history_value"},
+    {"key":"EUR.inflation","adapter":"validation/sources/eur_eurostat_core.py","workflow":".github/workflows/eur-eurostat-source-contract-v2.yml","macro_series_id":"EA_HICP_HEADLINE_YOY_history_value"},
+    {"key":"EUR.labour","adapter":"validation/sources/eur_eurostat_core.py","workflow":".github/workflows/eur-eurostat-source-contract-v2.yml","macro_series_id":"EA_UNEMP_history_value"},
+    {"key":"JPY.inflation","adapter":"validation/sources/jpy_statistics_bureau_cpi.py","workflow":".github/workflows/jpy-statistics-bureau-cpi-source-contract-v1.yml","macro_series_id":"JP_CPI_HEADLINE_YOY_history_value"},
+    {"key":"JPY.labour","adapter":"validation/sources/jpy_estat_unemployment.py","workflow":".github/workflows/macro-jpy-labour-estat-certification.yml","macro_series_id":"JP_UNEMP_RATE_history_value"},
+    {"key":"CAD.inflation","adapter":"validation/sources/cad_statcan_core.py","workflow":".github/workflows/cad-statcan-source-contract-v1.yml","macro_series_id":"CA_CPI_HEADLINE_YOY_history_value"},
+    {"key":"CAD.labour","adapter":"validation/sources/cad_statcan_core.py","workflow":".github/workflows/cad-statcan-source-contract-v1.yml","macro_series_id":"CA_UNEMP_RATE_history_value"},
+    {"key":"AUD.inflation","adapter":"validation/sources/aud_abs_core.py","workflow":".github/workflows/aud-abs-source-contract-v2.yml","macro_series_id":"AU_CPI_HEADLINE_Q_YOY_history_value"},
+    {"key":"AUD.labour","adapter":"validation/sources/aud_abs_core.py","workflow":".github/workflows/aud-abs-source-contract-v2.yml","macro_series_id":"AU_UNEMP_RATE_history_value"}
+  ],
+  "pit_refresh_entrypoint": ".github/workflows/macro-single-series-pit-refresh-v1.yml"
+}

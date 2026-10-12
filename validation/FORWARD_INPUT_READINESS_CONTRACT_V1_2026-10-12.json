@@ -1,0 +1,60 @@
+{
+  "schema": "GMFQ_FORWARD_INPUT_READINESS_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "FROZEN_INPUT_GOVERNANCE",
+  "base_forward_engine_pr": 180,
+  "current_certified_decision_point": "2026-10-10",
+  "next_required_decision_point": "2026-11-10",
+  "required_universe": ["USD", "EUR", "JPY", "CAD", "AUD"],
+  "required_macro_dimensions": ["inflation", "labour"],
+  "required_rates_dimensions": ["2Y", "10Y"],
+  "required_inputs_total": 15,
+  "macro_inputs": {
+    "count": 10,
+    "authorized_refresh_path": ".github/workflows/macro-single-series-pit-refresh-v1.yml",
+    "refresh_granularity": "single_series_atomic_PIT_only",
+    "batch_refresh_may_not_self_certify": true,
+    "source_rule": "official source adapter -> validated candidate -> atomic PIT anchor receipt",
+    "release_date_normalization": "ISO YYYY-MM-DD; DD/MM/YYYY may be mechanically normalized to ISO with no economic-field mutation",
+    "future_requirement": "each of the 10 series must carry a new certified receipt whose coverage is valid through the requested decision point"
+  },
+  "rates_inputs": {
+    "count": 5,
+    "authorized_source_family": "existing currency-specific Temporal-PIT 2Y/10Y materializers",
+    "same_basis_2y_10y_required": true,
+    "same_day_use_allowed": false,
+    "future_requirement": "each currency rowset must be re-materialized/certified through the requested decision point and contain at least one newly eligible observation after the previous certified decision point"
+  },
+  "advance_rule": {
+    "all_required": true,
+    "macro_10_of_10_certified": true,
+    "rates_5_of_5_certified": true,
+    "source_receipt_hash_required": true,
+    "no_missing_or_withheld_input": true,
+    "new_max_certified_decision_point": "minimum certified decision point across all 15 required inputs",
+    "fail_closed_on_partial_refresh": true,
+    "no_manual_override": true
+  },
+  "consumers": [
+    "RATES_DOVISH_DIVERGENCE_V1",
+    "MACRO_TURNING_2Y_CONFIRMED_FX_V1"
+  ],
+  "current_snapshot": {
+    "macro_readiness_run_id": 38169617850,
+    "macro_readiness_artifact": "g4usd-alignment-integration-readiness-fast-v3-38169617850",
+    "macro_readiness_artifact_sha256": "e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df",
+    "rates_store_sha": "0f4f45190fa5d5e010650026a30a0f981373ec34",
+    "certified_decision_point": "2026-10-10"
+  },
+  "governance": {
+    "changes_signal_rules": false,
+    "changes_historical_backtests": false,
+    "historical_backfill_allowed": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "repository_write_from_readiness_workflow": false,
+    "direct_main_write": false,
+    "auto_merge": false,
+    "gh_pages_write": false
+  }
+}
