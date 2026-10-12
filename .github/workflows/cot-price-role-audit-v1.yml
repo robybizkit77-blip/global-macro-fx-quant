@@ -42,22 +42,73 @@ jobs:
             await page.waitForTimeout(400);
             const out=await page.evaluate(()=>{
               const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
-              const currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const stable=x=>JSON.stringify(x);
               const pairs=(D?.pairs||[]).map(x=>x.pair);
-              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
-              const currencyStates=Object.fromEntries(currencies.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
-              const canonicalFn=typeof window.canonicalPairDecisionFrame==='function'?Function.prototype.toString.call(window.canonicalPairDecisionFrame):typeof canonicalPairDecisionFrame==='function'?Function.prototype.toString.call(canonicalPairDecisionFrame):'';
-              const pairFn=typeof window.derivePairDecisionFrame==='function'?Function.prototype.toString.call(window.derivePairDecisionFrame):'';
-              const currFn=typeof window.deriveCurrencyState==='function'?Function.prototype.toString.call(window.deriveCurrencyState):'';
-              const lower=canonicalFn.toLowerCase();
-              const structuralBlocks=Object.values(pairFrames).map(x=>x?.structural).filter(Boolean);
-              const structuralKeys=[...new Set(structuralBlocks.flatMap(x=>Object.keys(x||{})))].sort();
+              const currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const frames=()=>Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const structuralSignature=fs=>Object.fromEntries(Object.entries(fs).map(([p,f])=>[p,{fav:f?.fav,quality:f?.quality,structural:f?.structural,macroSide:f?.macroSide,policySide:f?.policySide}]));
+              const priceSignature=fs=>Object.fromEntries(Object.entries(fs).map(([p,f])=>[p,{priceReading:f?.priceReading,priceNote:f?.priceNote,watch:f?.watch}]));
+
+              const baselineFrames=frames();
+              const baselineStructural=structuralSignature(baselineFrames);
+              const baselineCurrency=Object.fromEntries(currencies.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const structuralKeys=[...new Set(Object.values(baselineFrames).flatMap(f=>Object.keys(f?.structural||{})))].sort();
+
+              // COT perturbation: force EUR from current state to a deliberately extreme opposite positioning context.
+              const cotBefore=clone(D?.cot?.EUR);
+              let cotPerturbApplied=false,cotRiskChanged=false,cotStructuralUnchanged=false;
+              if(D?.cot?.EUR && typeof D.cot.EUR==='object'){
+                try{
+                  Object.assign(D.cot.EUR,{pct:99.9,percentile:99.9,netoi:55,net_oi:55,netoiSigned:55,net_oi_signed:55});
+                  cotPerturbApplied=true;
+                  const cotFrames=frames();
+                  const cotCurrency=clone(window.deriveCurrencyState?.('EUR'));
+                  cotRiskChanged=(cotCurrency?.cotRisk!==baselineCurrency.EUR?.cotRisk);
+                  cotStructuralUnchanged=stable(structuralSignature(cotFrames))===stable(baselineStructural);
+                }catch(e){}
+                if(cotBefore) Object.keys(D.cot.EUR).forEach(k=>delete D.cot.EUR[k]);
+                if(cotBefore) Object.assign(D.cot.EUR,cotBefore);
+              }
+
+              // Price perturbation: discover a writable representation that changes only derived EUR price polarity.
+              const priceBefore=clone(currencyIntelData?.EUR?.price);
+              const basePriceState=clone(window.deriveCurrencyState?.('EUR'));
+              let pricePerturbApplied=false,priceDerivedChanged=false,priceStructuralUnchanged=false,priceNarrativeChanged=false,priceMutation=null;
+              if(currencyIntelData?.EUR){
+                const candidates=[
+                  1,-1,0,
+                  {score:1},{score:-1},{score:0},
+                  {polarity:1},{polarity:-1},{polarity:0},
+                  {value:1},{value:-1},{value:0},
+                  {state:'POSITIVE',score:1},{state:'NEGATIVE',score:-1}
+                ];
+                for(const candidate of candidates){
+                  try{
+                    currencyIntelData.EUR.price=clone(candidate);
+                    const trial=clone(window.deriveCurrencyState?.('EUR'));
+                    if(trial?.price!==basePriceState?.price){
+                      pricePerturbApplied=true;
+                      priceDerivedChanged=true;
+                      priceMutation=clone(candidate);
+                      const pf=frames();
+                      priceStructuralUnchanged=stable(structuralSignature(pf))===stable(baselineStructural);
+                      priceNarrativeChanged=stable(priceSignature(pf))!==stable(priceSignature(baselineFrames));
+                      break;
+                    }
+                  }catch(e){}
+                }
+                currencyIntelData.EUR.price=priceBefore;
+              }
+
+              const restoredFrames=frames();
+              const restoredCurrency=clone(window.deriveCurrencyState?.('EUR'));
+              const restored=stable(structuralSignature(restoredFrames))===stable(baselineStructural) && stable(restoredCurrency)===stable(baselineCurrency.EUR);
               return {
-                pairCount:pairs.length,pairFrames,currencyStates,
-                sources:{canonicalFn,pairFn,currFn},
-                canonicalReferences:{cot:lower.includes('cot'),price:lower.includes('price'),macro:lower.includes('macro'),policy:lower.includes('policy'),rates:lower.includes('rate')},
-                structuralKeys,
-                frameFields:[...new Set(Object.values(pairFrames).flatMap(x=>x?Object.keys(x):[]))].sort(),
+                pairCount:pairs.length,structuralKeys,baselineCurrency,
+                cot:{before:cotBefore,perturbApplied:cotPerturbApplied,riskChanged:cotRiskChanged,structuralUnchanged:cotStructuralUnchanged},
+                price:{before:priceBefore,baseDerived:basePriceState?.price,mutation:priceMutation,perturbApplied:pricePerturbApplied,derivedChanged:priceDerivedChanged,structuralUnchanged:priceStructuralUnchanged,narrativeChanged:priceNarrativeChanged},
+                restored,
+                frameFields:[...new Set(Object.values(baselineFrames).flatMap(f=>Object.keys(f||{})))].sort(),
                 bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
               };
             });
@@ -66,16 +117,20 @@ jobs:
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
             const assertions={
               all28Pairs:out.pairCount===28,
-              canonicalFnAvailable:out.sources.canonicalFn.length>0,
-              cotAbsentFromCanonicalPairFrame:out.canonicalReferences.cot===false,
               structuralKeysOnlyMacroPolicyRatesGap:JSON.stringify(out.structuralKeys)===JSON.stringify(['macro','policy','ratesGap']),
-              priceIsNonStructuralField:out.frameFields.includes('priceReading')&&out.frameFields.includes('priceNote')&&!out.structuralKeys.includes('price'),
-              cotIsCurrencyRiskField:Object.values(out.currencyStates).every(x=>x&&Object.prototype.hasOwnProperty.call(x,'cotRisk'))
+              cotPerturbationApplied:out.cot.perturbApplied===true,
+              cotRiskActuallyChanged:out.cot.riskChanged===true,
+              cotCannotChangePairStructure:out.cot.structuralUnchanged===true,
+              pricePerturbationApplied:out.price.perturbApplied===true,
+              priceDerivedActuallyChanged:out.price.derivedChanged===true,
+              priceCannotChangePairStructure:out.price.structuralUnchanged===true,
+              priceChangesOnlyConfirmationNarrative:out.price.narrativeChanged===true,
+              runtimeRestored:out.restored===true
             };
             const ok=Object.values(assertions).every(Boolean);
-            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V2',status:ok?'PASS':'FAIL',assertions,...out};
+            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V3',status:ok?'PASS':'FAIL',assertions,...out};
             fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
-            console.log(JSON.stringify({status:summary.status,assertions,canonicalReferences:out.canonicalReferences,structuralKeys:out.structuralKeys,frameFields:out.frameFields,canonicalFn:out.sources.canonicalFn},null,2));
+            console.log(JSON.stringify({status:summary.status,assertions,structuralKeys:out.structuralKeys,cot:out.cot,price:out.price,restored:out.restored},null,2));
             if(!ok)process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
