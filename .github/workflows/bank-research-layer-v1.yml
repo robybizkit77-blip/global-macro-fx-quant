@@ -1,0 +1,44 @@
+name: Bank Research Layer V1
+
+on:
+  push:
+    branches:
+      - feature/bank-research-layer-v1-2026-10-12
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-bank-research-layer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify deterministic, zero-weight state
+        run: |
+          python validation/build_bank_research_state_v1.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('live_data/sections/BANK_RESEARCH_STATE.json').read_text())
+          assert x['state']=='INFORMATIONAL_ONLY'
+          assert x['decision_weight']==0
+          assert x['source_record_count']==8
+          assert all(x[k] is False for k in ('may_modify_pair_bias','may_modify_currency_score','may_modify_sizing','may_create_direction'))
+          assert all('impulse' not in r and 'official_bias' not in r and 'stance' not in r for r in x['records'])
+          print('PASS_BANK_RESEARCH_ZERO_WEIGHT')
+          PY
+      - name: Verify read-only browser sidecar boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('live_data/bank-research-card.js').read_text()
+          html=Path('index.html').read_text()
+          for token in ('gmfq-bank-research-card','gmfq:bank-research-state-ready','Non crea direzioni e non modifica bias, score o sizing.'):
+              assert token in js, token
+          assert 'live_data/bank-research-card.js' in html
+          for token in ('stableModelRefresh(', 'derivePairDecisionFrame(', 'deriveCurrencyState(', 'selectCurrency(', 'showView(', 'pair_bias_override', 'currency_score_override', 'sizing_override'):
+              assert token not in js, token
+          print('PASS_BANK_RESEARCH_READ_ONLY_BOUNDARY')
+          PY

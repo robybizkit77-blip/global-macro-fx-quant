@@ -1,0 +1,126 @@
+{
+  "schema": "GMFQ_BANK_RESEARCH_STATE_V1",
+  "as_of": "2026-10-12",
+  "state": "INFORMATIONAL_ONLY",
+  "reason": "Observed central-bank and pricing provenance only; no research direction is generated.",
+  "decision_weight": 0,
+  "may_modify_pair_bias": false,
+  "may_modify_currency_score": false,
+  "may_modify_sizing": false,
+  "may_create_direction": false,
+  "source_record_count": 8,
+  "records": [
+    {
+      "currency": "USD",
+      "bank": "Fed",
+      "last_decision_date": "2026-09-16",
+      "observed_policy_action": "RIALZO +25 pb",
+      "next_meeting": "2026-10-28",
+      "pricing_tier": "COMPLETO_SECONDARY_QUOTE",
+      "market_pricing": {
+        "as_of": "2026-09 (latest surfaced)",
+        "instrument": "CBOT 30-Day Federal Funds Futures",
+        "quality": "COMPLETO_SECONDARY_QUOTE",
+        "freshness_status": "VALIDATED_SECONDARY_STALE"
+      }
+    },
+    {
+      "currency": "EUR",
+      "bank": "ECB",
+      "last_decision_date": "2026-09-10",
+      "observed_policy_action": "RIALZO +25 pb",
+      "next_meeting": "2026-10-29",
+      "pricing_tier": "COMPLETO_SECONDARY_QUOTE",
+      "market_pricing": {
+        "as_of": "2026-09-26/29 surfaced",
+        "instrument": "Eurex Three-Month Euro STR Futures",
+        "quality": "COMPLETO_SECONDARY_QUOTE",
+        "freshness_status": "VALIDATED_SECONDARY_RECENT"
+      }
+    },
+    {
+      "currency": "GBP",
+      "bank": "BoE",
+      "last_decision_date": "2026-09-17",
+      "observed_policy_action": "INVARIATO",
+      "next_meeting": "2026-11-05",
+      "pricing_tier": "COMPLETO_OFFICIAL_BOE_OIS_HISTORY",
+      "market_pricing": {
+        "as_of": "2026-09-29",
+        "instrument": "UK instantaneous OIS forward curve based on SONIA",
+        "quality": "COMPLETO_OFFICIAL_BOE_OIS_HISTORY",
+        "freshness_status": "CURRENT_VALIDATED"
+      }
+    },
+    {
+      "currency": "JPY",
+      "bank": "BoJ",
+      "last_decision_date": "2026-09-18",
+      "observed_policy_action": "RIALZO +25 pb",
+      "next_meeting": "2026-10-30",
+      "pricing_tier": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+      "market_pricing": {
+        "as_of": "2026-09-29",
+        "instrument": "Three-month TONA Futures",
+        "quality": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+        "freshness_status": "CURRENT_VALIDATED"
+      }
+    },
+    {
+      "currency": "CHF",
+      "bank": "SNB",
+      "last_decision_date": "2026-09-24",
+      "observed_policy_action": "INVARIATO",
+      "next_meeting": "2026-12-10",
+      "pricing_tier": "COMPLETO_SECONDARY_QUOTE",
+      "market_pricing": {
+        "as_of": "2026-09-29 surfaced",
+        "instrument": "ICE Three-Month SARON Index Futures",
+        "quality": "COMPLETO_SECONDARY_QUOTE",
+        "freshness_status": "VALIDATED_SECONDARY_RECENT"
+      }
+    },
+    {
+      "currency": "CAD",
+      "bank": "BoC",
+      "last_decision_date": "2026-09-02",
+      "observed_policy_action": "INVARIATO",
+      "next_meeting": "2026-10-28",
+      "pricing_tier": "COMPLETO_DIRECT_MX_SETTLEMENT_HISTORY",
+      "market_pricing": {
+        "as_of": "2026-09-29",
+        "instrument": "Montréal Exchange Three-Month CORRA Futures (CRA)",
+        "quality": "COMPLETO_DIRECT_MX_SETTLEMENT_HISTORY",
+        "freshness_status": "CURRENT_VALIDATED"
+      }
+    },
+    {
+      "currency": "AUD",
+      "bank": "RBA",
+      "last_decision_date": "2026-09-29",
+      "observed_policy_action": "RIALZO +25 pb",
+      "next_meeting": "2026-11-03",
+      "pricing_tier": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+      "market_pricing": {
+        "as_of": "2026-10-09",
+        "instrument": "ASX 30 Day Interbank Cash Rate futures (IB)",
+        "quality": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+        "freshness_status": "CURRENT_VALIDATED"
+      }
+    },
+    {
+      "currency": "NZD",
+      "bank": "RBNZ",
+      "last_decision_date": "2026-09-02",
+      "observed_policy_action": "RIALZO +25 pb",
+      "next_meeting": "2026-10-28",
+      "pricing_tier": "PARZIALE_OFFICIAL",
+      "market_pricing": {
+        "as_of": "2026-09-02",
+        "instrument": "RBNZ-reported market pricing / NZ interest-rate market",
+        "quality": "PARZIALE_OFFICIAL",
+        "freshness_status": "PARTIAL_VALIDATED"
+      }
+    }
+  ]
+}

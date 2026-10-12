@@ -1,0 +1,28 @@
+{
+  "schema": "GMFQ_BANK_RESEARCH_LAYER_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Publish a descriptive, source-preserving central-bank research sidecar. It is context only and never creates, transforms, or authorizes a trading direction.",
+  "source": {
+    "path": "live_data/sections/NATIVE_CB_DATA.json",
+    "required_currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"],
+    "allowed_fields": ["bank", "last_date", "action", "next_meeting", "pricing_tier", "market_pricing"],
+    "market_pricing_fields": ["as_of", "instrument", "quality", "freshness_status"]
+  },
+  "publication": {
+    "state": "INFORMATIONAL_ONLY",
+    "decision_weight": 0,
+    "may_modify_pair_bias": false,
+    "may_modify_currency_score": false,
+    "may_modify_sizing": false,
+    "may_create_direction": false,
+    "may_infer_missing_data": false,
+    "unavailable_or_ambiguous_source_behavior": "FAIL_CLOSED"
+  },
+  "governance": {
+    "no_engine_rule_changes": true,
+    "no_pair_engine_changes": true,
+    "no_bias_scoring_or_sizing_changes": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
