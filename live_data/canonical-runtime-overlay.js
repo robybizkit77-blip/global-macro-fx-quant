@@ -26,13 +26,13 @@
       fetchJson('live_data/sections/MACRO_SERIES.json')
     ]);
 
-    // Thermometer is already a stable object on the legacy global data bag.
-    // Macro Series is bridged from its lexical binding by index.html so the
-    // exact object identity captured by legacy closures is preserved.
+    // Both canonical Macro surfaces already exist on the legacy global data bag.
+    // Mutate those exact objects in place so every legacy consumer keeps the
+    // original object identity while receiving canonical section content.
     const thermometerTarget=window.__GMFQ_DATA?.MACRO_THERMOMETER_DATA;
-    const seriesTarget=window.__GMFQ_MACRO_SERIES_REF;
+    const seriesTarget=window.__GMFQ_DATA?.MACRO_SERIES;
     if(!thermometerTarget) throw new Error('canonical-overlay-missing-target:MACRO_THERMOMETER_DATA');
-    if(!seriesTarget) throw new Error('canonical-overlay-missing-bridge:MACRO_SERIES');
+    if(!seriesTarget) throw new Error('canonical-overlay-missing-target:MACRO_SERIES');
 
     syncInPlace(thermometerTarget,macroThermometer,'MACRO_THERMOMETER_DATA');
     syncInPlace(seriesTarget,macroSeries,'MACRO_SERIES');
@@ -40,7 +40,7 @@
       status:'PASS_CANONICAL_MACRO_OVERLAY',
       sections:['MACRO_THERMOMETER_DATA','MACRO_SERIES'],
       decision_effect:'DATA_REFRESH_ONLY',
-      bridge_identity_preserved:true,
+      object_identity_preserved:true,
       changes_signal_rules:false,
       changes_bias_rules:false,
       changes_sizing_rules:false
