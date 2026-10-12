@@ -1,0 +1,136 @@
+name: Final Alignment Closure Audit V1
+
+on:
+  push:
+    branches:
+      - 'audit-final-alignment-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8145 --bind 127.0.0.1 >/tmp/gmfq-final-alignment.log 2>&1 &
+          sleep 2
+      - name: Validate final cross-layer alignment
+        run: |
+          cat > final-alignment-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8145/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const macro=window.__GMFQ_CANONICAL_OVERLAY_STATE?.status;
+              const price=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              const cot=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              const risk=window.__GMFQ_RISK_FRESHNESS_GATE_STATE?.status;
+              const focus=window.__GMFQ_PAIR_FOCUS_BOARD_STATE?.status;
+              return (macro&&macro!=='LOADING'&&price&&price!=='WAITING_FOR_PRICE_PROVENANCE'&&cot&&cot!=='WAITING_FOR_COT_PROVENANCE'&&risk&&focus)||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const structural=f=>({fav:f?.fav??null,quality:f?.quality??null,setup:f?.setup??null,structural:f?.structural??null,macroSide:f?.macroSide??null,policySide:f?.policySide??null});
+              const snapshotFrames=()=>Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const diffStructural=(a,b)=>pairs.filter(p=>JSON.stringify(structural(a[p]))!==JSON.stringify(structural(b[p]))).map(p=>({pair:p,before:structural(a[p]),after:structural(b[p])}));
+
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const frames=snapshotFrames();
+              const originalCurrency=window.deriveCurrencyState;
+              const runContextNeutralization=(mode)=>{
+                const wrapped=function(c){
+                  const base=originalCurrency(c);
+                  const x=clone(base)||{...base};
+                  if(mode==='liq')x.liq=0;
+                  if(mode==='cot')x.cotRisk='';
+                  if(mode==='price'){x.price=0;x.confirmation='PREZZO NON RISOLUTIVO';}
+                  return x;
+                };
+                window.deriveCurrencyState=wrapped;try{deriveCurrencyState=wrapped}catch(e){}
+                const altered=snapshotFrames();
+                window.deriveCurrencyState=originalCurrency;try{deriveCurrencyState=originalCurrency}catch(e){}
+                return diffStructural(frames,altered);
+              };
+              const liqStructuralDiffs=runContextNeutralization('liq');
+              const cotStructuralDiffs=runContextNeutralization('cot');
+              const priceStructuralDiffs=runContextNeutralization('price');
+
+              const source=clone(window.FINAL_SOURCE_POLICY_AUDIT)||{};
+              const rates=source.RATES||{};
+              const cbPricing=source.CB_PRICING||{};
+              const rateCoverage=Object.fromEntries(ccys.map(c=>[c,{as_of:rates[c]?.current_as_of||null,status:rates[c]?.status||null,source:rates[c]?.source||null}]));
+              const cbPricingCoverage=Object.fromEntries(ccys.map(c=>[c,{quality:cbPricing[c]?.quality||null,as_of:cbPricing[c]?.current_as_of||null,policy:cbPricing[c]?.policy||null}]));
+              const focus=clone(window.__GMFQ_PAIR_FOCUS_BOARD_STATE);
+              const research=clone(window.__GMFQ_RESEARCH_STATE);
+              const macroGate=clone(window.__GMFQ_CANONICAL_OVERLAY_STATE);
+              const priceGate=clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE);
+              const cotGate=clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE);
+              const riskGate=clone(window.__GMFQ_RISK_FRESHNESS_GATE_STATE);
+              const globalRisk=typeof window.deriveGlobalRiskState==='function'?clone(window.deriveGlobalRiskState()):null;
+              const dom={focusBoard:!!document.getElementById('gmfq-pair-focus-board'),pairConfirm:!!document.getElementById('gmfqPairConfirm'),pairReverse:!!document.getElementById('gmfqPairReverse'),pairGuide:!!document.getElementById('gmfq-pair-reading-path-guide'),cotBannerHidden:document.getElementById('gmfqCotFreshnessBanner')?.hidden??null};
+              const pairNulls=pairs.filter(p=>!frames[p]);
+              const currencyNulls=ccys.filter(c=>!currencies[c]);
+              const rateFailures=ccys.filter(c=>!rateCoverage[c].as_of||!rateCoverage[c].status||!rateCoverage[c].source);
+              const cbPricingFailures=ccys.filter(c=>{const q=String(cbPricingCoverage[c].quality||'');return !(q.startsWith('COMPLETO_')||q.startsWith('WITHHELD_'));});
+              return {bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null,macroGate,priceGate,cotGate,riskGate,globalRisk,research,focus,sourcePolicy:source,rateCoverage,cbPricingCoverage,currencyCount:Object.keys(currencies).length,pairCount:Object.keys(frames).length,currencyNulls,pairNulls,rateFailures,cbPricingFailures,liqStructuralDiffs,cotStructuralDiffs,priceStructuralDiffs,dom};
+            });
+
+            fs.writeFileSync('final-alignment-audit.json',JSON.stringify({schema:'GMFQ_FINAL_ALIGNMENT_CLOSURE_AUDIT_V1',...out,consoleErrors:errors},null,2));
+            console.log(JSON.stringify({macroGate:out.macroGate,priceGate:out.priceGate,cotGate:out.cotGate,riskGate:out.riskGate,research:out.research,focus:out.focus,rateCoverage:out.rateCoverage,cbPricingCoverage:out.cbPricingCoverage,currencyCount:out.currencyCount,pairCount:out.pairCount,rateFailures:out.rateFailures,cbPricingFailures:out.cbPricingFailures,liqStructuralDiffs:out.liqStructuralDiffs,cotStructuralDiffs:out.cotStructuralDiffs,priceStructuralDiffs:out.priceStructuralDiffs,dom:out.dom},null,2));
+            await browser.close();
+
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            if(out.macroGate?.status!=='PASS_CANONICAL_MACRO_OVERLAY')throw new Error('Macro canonical overlay not PASS: '+JSON.stringify(out.macroGate));
+            if(out.priceGate?.status!=='PASS_FRESH_PRICE_UNCHANGED'||out.priceGate?.price_asof!=='2026-10-12'||out.priceGate?.business_lag!==0)throw new Error('Price not current/fresh: '+JSON.stringify(out.priceGate));
+            if(out.cotGate?.status!=='PASS_FRESH_COT_UNCHANGED'||out.cotGate?.cot_asof!=='2026-10-06'||out.cotGate?.calendar_lag_days!==6)throw new Error('COT not current/fresh: '+JSON.stringify(out.cotGate));
+            if(out.cotGate?.canonical_dataset_status!=='PASS'||Object.values(out.cotGate?.canonical_dataset_dates||{}).length!==8||new Set(Object.values(out.cotGate.canonical_dataset_dates||{})).size!==1)throw new Error('COT 8/8 canonical alignment failed: '+JSON.stringify(out.cotGate));
+            if(!['PASS_FRESH_RISK_UNCHANGED','PASS_WITHHELD_STALE_RISK'].includes(out.riskGate?.status))throw new Error('Risk freshness gate non-terminal: '+JSON.stringify(out.riskGate));
+            if(out.currencyCount!==8||out.currencyNulls.length)throw new Error('Currency coverage failed: '+JSON.stringify(out.currencyNulls));
+            if(out.pairCount!==28||out.pairNulls.length)throw new Error('Pair coverage failed: '+JSON.stringify(out.pairNulls));
+            if(out.rateFailures.length)throw new Error('Rates source coverage failed: '+JSON.stringify(out.rateFailures));
+            if(out.cbPricingFailures.length)throw new Error('CB pricing semantics failed: '+JSON.stringify(out.cbPricingFailures));
+            if(out.sourcePolicy?.CB?.policy!=='EVENT_DRIVEN_OFFICIAL_ONLY')throw new Error('CB policy contract drift: '+JSON.stringify(out.sourcePolicy?.CB));
+            if(out.sourcePolicy?.LIQUIDITY?.policy!=='SOURCE_NATIVE_CADENCE'||out.sourcePolicy?.LIQUIDITY?.fallback!=='HOLD_LAST_VALID_COMPONENT')throw new Error('Liquidity source policy drift: '+JSON.stringify(out.sourcePolicy?.LIQUIDITY));
+            if(out.sourcePolicy?.MACRO?.policy!=='RELEASE_DRIVEN_BY_SERIES')throw new Error('Macro source policy drift: '+JSON.stringify(out.sourcePolicy?.MACRO));
+            if(out.research?.research_signal_state!=='WITHHELD'||out.research?.decision_weight!==0||out.research?.may_modify_pair_bias!==false||out.research?.may_modify_currency_score!==false||out.research?.may_modify_sizing!==false)throw new Error('Research fail-closed contract failed: '+JSON.stringify(out.research));
+            if(out.focus?.status!=='PASS_PRESENTATION_ONLY'||out.focus?.pair_count!==28||out.focus?.research_decision_weight!==0||out.focus?.research_affects_classification!==false)throw new Error('Focus Board contract failed: '+JSON.stringify(out.focus));
+            const focusTotal=Object.values(out.focus?.counts||{}).reduce((a,b)=>a+Number(b||0),0);
+            if(focusTotal!==28)throw new Error('Focus Board count !=28: '+JSON.stringify(out.focus?.counts));
+            if(out.liqStructuralDiffs.length)throw new Error('Liquidity context changes pair structure: '+JSON.stringify(out.liqStructuralDiffs));
+            if(out.cotStructuralDiffs.length)throw new Error('COT context changes pair structure: '+JSON.stringify(out.cotStructuralDiffs));
+            if(out.priceStructuralDiffs.length)throw new Error('Price confirmation context changes pair structure: '+JSON.stringify(out.priceStructuralDiffs));
+            if(!out.dom.focusBoard||!out.dom.pairConfirm||!out.dom.pairReverse||!out.dom.pairGuide)throw new Error('Presentation DOM contract failed: '+JSON.stringify(out.dom));
+            if(out.dom.cotBannerHidden!==true)throw new Error('Fresh COT banner unexpectedly visible: '+JSON.stringify(out.dom));
+          })().catch(e=>{console.error('::error title=Final alignment audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node final-alignment-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-alignment-closure-audit-v1
+          path: |
+            final-alignment-audit.json
+            /tmp/gmfq-final-alignment.log
