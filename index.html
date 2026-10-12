@@ -18,7 +18,11 @@
  const exposeBinding=(source,name,refName)=>{
    const re=new RegExp('\\b(?:const|let|var)\\s+'+name+'\\s*=','g');
    const matches=[...source.matchAll(re)];
-   if(matches.length!==1) throw new Error('Macro bridge declaration inattesa '+name+': '+matches.length);
+   if(matches.length!==1){
+     const at=source.indexOf(name);
+     const snippet=at>=0?source.slice(Math.max(0,at-80),Math.min(source.length,at+name.length+80)).replace(/\s+/g,' '):'NAME_NOT_FOUND';
+     throw new Error('Macro bridge declaration inattesa '+name+': '+matches.length+' | first='+at+' | snippet='+snippet);
+   }
    const m=matches[0];
    let i=m.index+m[0].length, depth=0, quote=null, escaped=false;
    for(;i<source.length;i++){
