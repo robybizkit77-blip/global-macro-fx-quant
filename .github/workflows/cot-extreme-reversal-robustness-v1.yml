@@ -1,0 +1,24 @@
+name: COT Extreme Reversal Robustness V1
+
+on:
+  push:
+    branches:
+      - validation-cot-extreme-reversal-robustness-v1-2026-10-12
+  workflow_dispatch:
+
+jobs:
+  robustness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run frozen robustness suite
+        working-directory: validation
+        run: python run_cot_extreme_reversal_robustness_v1.py
+      - name: Upload robustness artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cot-extreme-reversal-robustness-${{ github.run_id }}
+          path: /tmp/cot-extreme-reversal-robustness-v1
