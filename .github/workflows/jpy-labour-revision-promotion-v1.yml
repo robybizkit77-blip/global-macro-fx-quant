@@ -1,0 +1,117 @@
+name: JPY Labour Revision Promotion V1
+
+on:
+  push:
+    branches: ['runner-jpy-labour-revision-v1-2026-10-12']
+    paths: ['.github/workflows/jpy-labour-revision-promotion-v1.yml']
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  E_STAT_APP_ID: ${{ secrets.E_STAT_APP_ID }}
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require e-Stat credential and build official JPY labour candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$E_STAT_APP_ID"
+          mkdir -p /tmp/jpy-labour-revision
+          python validation/sources/jpy_estat_unemployment.py \
+            --output /tmp/jpy-labour-revision/candidate.json \
+            --audit-output /tmp/jpy-labour-revision/source-audit.json \
+            | tee /tmp/jpy-labour-revision/source-run.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/jpy-labour-revision/candidate.json'))
+          assert c['currency']=='JPY' and c['dimension']=='labour',c
+          assert c['macro_series_id']=='JP_UNEMP_RATE_history_value',c
+          assert c['observation_date']=='2026-08',c
+          assert abs(float(c['value'])-2.6)<1e-12,c
+          print('JPY_LABOUR_LIVE_2026_08_2_6_PASS')
+          PY
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/jpy-labour-revision/candidate.json \
+            --output-dir /tmp/jpy-labour-revision/built \
+            | tee /tmp/jpy-labour-revision/builder.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/jpy-labour-revision/built/summary.json'))
+          assert s['status']=='PASS',s
+          assert s['series_action']=='REPLACE_EXISTING',s
+          assert abs(float(s['old_value'])-2.5)<1e-12,s
+          assert abs(float(s['new_value'])-2.6)<1e-12,s
+          assert s['observation_date']=='2026-08',s
+          print('JPY_LABOUR_REVISION_BUILDER_PASS',s)
+          PY
+      - name: Capture and verify atomic PIT revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          common=(--evidence-dir /tmp/jpy-labour-revision/evidence --currency JPY --dimension labour --macro-series-id JP_UNEMP_RATE_history_value)
+          python validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/jpy-labour-revision/before.json
+          cp /tmp/jpy-labour-revision/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/jpy-labour-revision/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python validation/macro_pit_anchor_contract.py capture-after "${common[@]}" --allow-live-data-dirty | tee /tmp/jpy-labour-revision/after.json
+          python validation/macro_pit_anchor_contract.py verify \
+            "${common[@]}" \
+            --candidate /tmp/jpy-labour-revision/candidate.json \
+            --evidence-output /tmp/jpy-labour-revision/pit-evidence.json \
+            | tee /tmp/jpy-labour-revision/verify.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-labour-revision/pit-evidence.json'))
+          assert d['status']=='PASS',d
+          assert len(d['atomic_delta']['changed_rows'])==1,d
+          assert d['atomic_delta']['changed_rows'][0]['currency']=='JPY',d
+          assert d['atomic_delta']['changed_rows'][0]['macro_series_id']=='JP_UNEMP_RATE_history_value',d
+          print('JPY_LABOUR_REVISION_ATOMIC_PIT_PASS')
+          PY
+      - name: Rebuild overlay manifest and verify runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/jpy-labour-revision/manifest.json
+          python validation/check_live_update_contract.py | tee /tmp/jpy-labour-revision/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/jpy-labour-revision/runtime-roundtrip.json
+          git diff --name-only | sort > /tmp/jpy-labour-revision/changed.txt
+          python - <<'PY'
+          got=set(open('/tmp/jpy-labour-revision/changed.txt').read().splitlines())
+          expected={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json'}
+          assert got==expected,(got,expected)
+          m=json.load(open('live_data/manifest.v2.json'))
+          by={x['key']:x for x in m['sections']}
+          for k in ('MACRO_SERIES','MACRO_THERMOMETER_DATA'):
+              assert by[k]['mode']=='RUNTIME_OVERLAY' and by[k]['direct_update_allowed'] is False,by[k]
+          print('JPY_LABOUR_REVISION_EXACT_OVERLAY_SCOPE_PASS')
+          PY
+      - name: Commit candidate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c candidate-jpy-labour-revision-v1-2026-10-12
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json
+          git commit -m 'Revise JPY labour macro to official 2026-08 value'
+          git push origin HEAD:refs/heads/candidate-jpy-labour-revision-v1-2026-10-12
+          echo CANDIDATE_SHA=$(git rev-parse HEAD)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jpy-labour-revision-promotion-${{ github.run_id }}
+          path: /tmp/jpy-labour-revision/
+          if-no-files-found: warn
+          retention-days: 60
