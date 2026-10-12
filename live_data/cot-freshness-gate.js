@@ -5,6 +5,7 @@ const MAX_CALENDAR_LAG_DAYS=10;
 const FRESHNESS_TIME_ZONE='Europe/Rome';
 const MAX_READY_ATTEMPTS=80;
 const READY_RETRY_MS=50;
+const COT_CCYS=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
 
 function currentRomeDate(){
@@ -24,8 +25,31 @@ function calendarLag(from,to){
   return Math.max(0,Math.round((b-a)/86400000));
 }
 
+function canonicalCotAsOf(){
+  const chart=window.__GMFQ_DATA?.V250_COT_CHART_DATA;
+  if(!chart||typeof chart!=='object')return null;
+  const latest=COT_CCYS.map(ccy=>{
+    const dates=chart?.[ccy]?.dates;
+    return Array.isArray(dates)&&dates.length?String(dates[dates.length-1]).slice(0,10):null;
+  });
+  if(latest.some(x=>!x))return null;
+  const unique=[...new Set(latest)];
+  if(unique.length!==1)return null;
+  return unique[0];
+}
+
+function syncCotProvenanceFromCanonical(){
+  const asOf=canonicalCotAsOf();
+  if(!asOf)return null;
+  const production=window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot;
+  const policy=window.FINAL_SOURCE_POLICY_AUDIT?.COT;
+  if(production&&typeof production==='object')production.current_as_of=asOf;
+  if(policy&&typeof policy==='object')policy.current_as_of=asOf;
+  return asOf;
+}
+
 function cotAsOf(){
-  return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
+  return syncCotProvenanceFromCanonical() || window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
 }
 
 function priceGateTerminal(){
@@ -157,7 +181,7 @@ function install(attempt){
       wrapName('cotHeatState',original=>function(c){const x=original(c)||{};return {...x,txt:x.txt?`${x.txt} · STALE`:'STALE',cls:'neu',ext:false};});
     }
 
-    const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+    const ccys=COT_CCYS;
     const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
     state.status=stale?'PASS_WITHHELD_STALE_COT':'PASS_FRESH_COT_UNCHANGED';
     state.reason=stale?'Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.':'Canonical weekly COT is within freshness window.';
