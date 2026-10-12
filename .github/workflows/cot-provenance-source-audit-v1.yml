@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - 'audit-cot-provenance-source-v1-2026-10-12'
+    paths-ignore:
+      - 'validation/audit/cot-provenance-runtime-output.json'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   audit:
@@ -29,6 +31,7 @@ jobs:
         run: |
           cat > cot-runtime-audit.js <<'EOF'
           const {chromium}=require('playwright');
+          const fs=require('fs');
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage();
@@ -86,9 +89,20 @@ jobs:
               };
             });
             console.log(JSON.stringify(out,null,2));
+            fs.mkdirSync('validation/audit',{recursive:true});
+            fs.writeFileSync('validation/audit/cot-provenance-runtime-output.json',JSON.stringify(out,null,2)+'\n');
             await browser.close();
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
           })().catch(e=>{console.error('::error title=COT runtime audit::'+String(e.stack||e));process.exit(1)});
           EOF
           node cot-runtime-audit.js
+      - name: Commit runtime diagnostic
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/audit/cot-provenance-runtime-output.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record COT provenance runtime audit output'
+            git push
+          fi
