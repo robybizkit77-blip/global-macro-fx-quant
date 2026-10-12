@@ -1,0 +1,27 @@
+{
+  "schema": "GMFQ_DASHBOARD_RESEARCH_STATE_ADAPTER_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Read-only adapter from the fail-closed research publication manifest to dashboard-safe research-state objects.",
+  "rules": {
+    "must_consume_publication_manifest": true,
+    "must_not_read_raw_performance_to_infer_authorization": true,
+    "must_not_modify_pair_bias": true,
+    "must_not_modify_currency_score": true,
+    "must_not_modify_sizing": true,
+    "context_only_decision_weight": 0,
+    "excluded_entries_visible_in_live_dashboard": false
+  },
+  "labels_it": {
+    "INFORMATIVE_ONLY": "INFORMATIVO",
+    "CANDIDATE_FORWARD_WAITING": "IN VALIDAZIONE",
+    "FORWARD_CONFLUENCE_WAITING": "CONFLUENZA IN VALIDAZIONE",
+    "VALIDATED_PENDING_PROMOTION": "VALIDATO — NON ANCORA OPERATIVO",
+    "PRODUCTION_AUTHORIZED": "AUTORIZZATO"
+  },
+  "governance": {
+    "read_only": true,
+    "production_logic_changed": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
