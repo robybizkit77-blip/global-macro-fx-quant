@@ -53,6 +53,31 @@ jobs:
             const errors=[];
             page.on('pageerror',e=>errors.push(String(e.stack||e)));
             page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.addInitScript(()=>{
+              window.__GMFQ_PROVENANCE_ASSIGNMENT_TRACES=[];
+              for(const name of ['PRODUCTION_PRICE_COT_LIQ_AUDIT','FINAL_SOURCE_POLICY_AUDIT']){
+                let value;
+                try{
+                  Object.defineProperty(window,name,{
+                    configurable:true,
+                    enumerable:true,
+                    get(){return value;},
+                    set(v){
+                      let cloned=null;
+                      try{cloned=JSON.parse(JSON.stringify(v));}catch(e){}
+                      window.__GMFQ_PROVENANCE_ASSIGNMENT_TRACES.push({
+                        name,
+                        stack:String(new Error('assignment:'+name).stack||''),
+                        value:cloned
+                      });
+                      value=v;
+                    }
+                  });
+                }catch(e){
+                  window.__GMFQ_PROVENANCE_ASSIGNMENT_TRACES.push({name,error:String(e)});
+                }
+              }
+            });
             const r=await page.goto('http://127.0.0.1:8145/index.html',{waitUntil:'domcontentloaded',timeout:120000});
             if(!r||!r.ok())throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
@@ -69,26 +94,13 @@ jobs:
                 if(v&&typeof v==='object') candidates[k]=clone(v);
                 else if(typeof v!=='function') candidates[k]=String(v);
               }
-              const cotDataCandidates={};
-              for(const k of keys){
-                let v;try{v=window[k]}catch(e){continue}
-                if(!v||typeof v!=='object')continue;
-                const txt=JSON.stringify(v);
-                if(txt.includes('2026-10-06')||txt.includes('2026-09-22'))cotDataCandidates[k]=clone(v);
-              }
-              const deriveLatest=obj=>{
-                if(!obj||typeof obj!=='object')return null;
-                const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
-                const per={};
-                for(const c of ccys){
-                  const x=obj[c];
-                  if(x&&Array.isArray(x.dates)&&x.dates.length)per[c]=x.dates[x.dates.length-1];
-                }
-                return Object.keys(per).length?per:null;
-              };
-              const latest={};
-              for(const [k,v] of Object.entries(cotDataCandidates)){
-                const x=deriveLatest(v);if(x)latest[k]=x;
+              const data=window.__GMFQ_DATA||{};
+              const dataKeys=Object.keys(data).sort();
+              const gmfqDataCots={};
+              for(const k of dataKeys){
+                if(!/COT|V247|V250/i.test(k))continue;
+                let v;try{v=data[k]}catch(e){continue}
+                gmfqDataCots[k]=clone(v);
               }
               return {
                 cotGate:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),
@@ -97,7 +109,10 @@ jobs:
                 sourcePolicyType:typeof window.FINAL_SOURCE_POLICY_AUDIT,
                 production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT),
                 sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT),
-                keys,candidates,cotDataCandidates,latest,
+                assignmentTraces:clone(window.__GMFQ_PROVENANCE_ASSIGNMENT_TRACES),
+                gmfqDataKeys:dataKeys,
+                gmfqDataCots,
+                keys,candidates,
                 eurHeat:typeof window.cotHeatState==='function'?clone(window.cotHeatState('EUR')):null,
                 eurHeatOriginal:typeof window.cotHeatState?.__gmfqOriginal==='function'?clone(window.cotHeatState.__gmfqOriginal('EUR')):null,
                 bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
@@ -118,6 +133,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add validation/audit/cot-provenance-runtime-output.json validation/audit/cot-provenance-source-locations.txt
           if ! git diff --cached --quiet; then
-            git commit -m 'Record COT provenance source audit output'
+            git commit -m 'Record COT provenance assignment trace'
             git push
           fi
