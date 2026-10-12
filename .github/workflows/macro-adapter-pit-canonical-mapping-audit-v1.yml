@@ -1,0 +1,96 @@
+name: Macro Adapter PIT Canonical Mapping Audit V1
+
+on:
+  push:
+    branches: ['audit-macro-adapter-pit-canonical-mapping-v1-2026-10-12']
+    paths: ['.github/workflows/macro-adapter-pit-canonical-mapping-audit-v1.yml']
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install adapter dependencies
+        run: pip install openpyxl requests
+      - name: Verify canonical mapping contract and run live 16-series sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util, json, pathlib, subprocess, sys, tempfile
+          root=pathlib.Path.cwd()
+          spec=importlib.util.spec_from_file_location('bridge',root/'validation/macro_adapter_pit_handoff.py')
+          bridge=importlib.util.module_from_spec(spec); spec.loader.exec_module(bridge)
+          expected={
+            ('USD','inflation'):'US_CPIAUCSL_history_value',
+            ('USD','labour'):'US_UNRATE_history_value',
+            ('GBP','inflation'):'UK_CPI_HEADLINE_YOY_history_value',
+            ('GBP','labour'):'UK_UNEMP_RATE_history_value',
+            ('JPY','labour'):'JP_UNEMP_RATE_history_value',
+            ('CAD','labour'):'CA_UNEMP_RATE_history_value',
+          }
+          for target,want in expected.items():
+              _,_,got=bridge.registered_target(*target)
+              assert got==want,(target,got,want)
+          print('CANONICAL_MAPPING_TARGETS_PASS',expected)
+
+          reg=json.load(open(root/'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'))
+          heat=json.load(open(root/'live_data/sections/MACRO_THERMOMETER_DATA.json'))
+          results={}; counts={'UPDATE_AVAILABLE':0,'NO_CHANGE':0,'REVISION_AVAILABLE':0,'SOURCE_BLOCKED':0,'SOURCE_OLDER':0}
+          def period(v):
+              s=str(v or '')
+              return s[:7] if len(s)>=7 and s[4]=='-' else s
+          def fnum(v):
+              try:return float(v)
+              except:return None
+          with tempfile.TemporaryDirectory(prefix='gmfq-bridge-audit-') as td:
+              work=pathlib.Path(td)
+              for c in ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']:
+                  for d in ['inflation','labour']:
+                      key=f'{c}.{d}'; entry=reg['series'][key]; h=heat['currencies'][c][d]
+                      out=work/f'{c}_{d}.json'; audit=work/f'{c}_{d}.audit.json'
+                      cp=subprocess.run([sys.executable,str(root/'validation/macro_adapter_pit_handoff.py'),'--currency',c,'--dimension',d,'--output',str(out),'--audit-output',str(audit)],cwd=root,text=True,capture_output=True)
+                      if cp.returncode:
+                          status='SOURCE_BLOCKED'
+                          results[key]={'status':status,'stderr_tail':cp.stderr[-1000:]}
+                          counts[status]+=1
+                          continue
+                      cand=json.load(open(out))
+                      assert cand['macro_series_id']==bridge.registered_target(c,d)[2],(key,cand)
+                      assert cand['candidate_only'] is True and cand['live_data_written'] is False
+                      cur_date=period(h.get('as_of')); new_date=period(cand.get('observation_date'))
+                      cv=fnum(h.get('latest_value')); nv=fnum(cand.get('value'))
+                      if new_date>cur_date: status='UPDATE_AVAILABLE'
+                      elif new_date<cur_date: status='SOURCE_OLDER'
+                      elif cv is not None and nv is not None and abs(cv-nv)<=1e-9: status='NO_CHANGE'
+                      elif h.get('latest_value')==cand.get('value'): status='NO_CHANGE'
+                      else: status='REVISION_AVAILABLE'
+                      counts[status]+=1
+                      results[key]={'status':status,'canonical':{'as_of':h.get('as_of'),'value':h.get('latest_value')},'official':{'observation_date':cand.get('observation_date'),'value':cand.get('value'),'macro_series_id':cand.get('macro_series_id')}}
+          summary={'status':'PASS_MACRO_ADAPTER_PIT_CANONICAL_MAPPING_AUDIT','counts':counts,'blocked':[k for k,v in results.items() if v['status']=='SOURCE_BLOCKED'],'updates':[k for k,v in results.items() if v['status']=='UPDATE_AVAILABLE'],'revisions':[k for k,v in results.items() if v['status']=='REVISION_AVAILABLE'],'older':[k for k,v in results.items() if v['status']=='SOURCE_OLDER'],'results':results}
+          print(json.dumps(summary,indent=2,ensure_ascii=False))
+          pathlib.Path('/tmp/macro-adapter-pit-mapping-audit.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n')
+          # Mapping fix must unblock the four replay-ID targets. JPY labour is
+          # also expected to use its exact canonical ID; its live source may
+          # still fail independently and is reported rather than hidden.
+          for k in ('USD.inflation','USD.labour','GBP.inflation','GBP.labour'):
+              assert results[k]['status']!='SOURCE_BLOCKED',(k,results[k])
+          PY
+          git diff --exit-code -- live_data payload
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-adapter-pit-canonical-mapping-audit-${{ github.run_id }}
+          path: /tmp/macro-adapter-pit-mapping-audit.json
+          if-no-files-found: warn
+          retention-days: 60
