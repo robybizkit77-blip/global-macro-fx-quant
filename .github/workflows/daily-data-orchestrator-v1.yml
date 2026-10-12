@@ -9,6 +9,8 @@ on:
       - '.github/workflows/daily-data-orchestrator-v1.yml'
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/repair_detached_direct_section.py'
+      - 'validation/fetch_ecb_g8_price_candidate.py'
+      - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -17,6 +19,7 @@ on:
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'payload/part-15.txt'
   pull_request:
     branches:
       - release-candidate-freshness-registry-v1-2026-10-12
@@ -24,6 +27,8 @@ on:
       - '.github/workflows/daily-data-orchestrator-v1.yml'
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/repair_detached_direct_section.py'
+      - 'validation/fetch_ecb_g8_price_candidate.py'
+      - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -32,6 +37,7 @@ on:
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'payload/part-15.txt'
   workflow_dispatch:
 
 permissions:
@@ -44,7 +50,7 @@ concurrency:
 jobs:
   contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,11 +81,45 @@ jobs:
           expected={'PRICE','LIQUIDITY','RISK'}
           got=set(d['blocking_lanes'])
           assert expected.issubset(got), (expected, got)
+          assert d['lanes']['PRICE']['candidate_pipeline_ready'] is True
           assert d['promotion_performed'] is False
           assert d['live_data_published'] is False
           assert d['gh_pages_published'] is False
           assert d['automatic_publication'] is False
           print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
+          PY
+
+      - name: Fetch official ECB G8 Price candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_ecb_g8_price_candidate.py --out /tmp/daily-orchestrator-v1/price-candidate.json
+          python3 - <<'PY'
+          import json,re
+          c=json.load(open('/tmp/daily-orchestrator-v1/price-candidate.json'))
+          reg=json.load(open('validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'))
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">', text)
+          assert len(m)==1,m
+          current=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
+          assert c['as_of'] >= current, (c['as_of'],current)
+          assert c['as_of'] <= reg['as_of'], (c['as_of'],reg['as_of'])
+          assert c['pair_count']==28 and c['base']=='EUR'
+          print('PRICE_CANDIDATE_PASS',current,'->',c['as_of'])
+          PY
+
+      - name: Ephemerally apply ECB Price candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/apply_ecb_g8_price_candidate.py --candidate /tmp/daily-orchestrator-v1/price-candidate.json --apply | tee /tmp/daily-orchestrator-v1/price-apply.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/daily-orchestrator-v1/price-apply.json'))
+          assert r['schema']=='GMFQ_ECB_G8_PRICE_APPLY_RECEIPT_V1'
+          assert r['status'] in {'UPDATE_AVAILABLE','NO_CHANGE'}
+          assert r['publication_performed'] is False
+          print('PRICE_APPLY_DRYRUN_PASS',r['status'],r['as_of'])
           PY
 
       - name: Prove current Macro sections are detached from runtime
@@ -120,7 +160,7 @@ jobs:
           import subprocess
           changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
           print('EPHEMERAL_CHANGED_FILES', changed)
-          expected={'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt'}
+          expected={'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
           if set(changed) != expected:
               raise SystemExit(f'unexpected ephemeral diff scope: {changed}')
           PY
@@ -129,7 +169,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt || true
+          git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
