@@ -46,7 +46,7 @@ jobs:
             git show FETCH_HEAD:"validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" > "/tmp/turning/rates/${c}.csv"
           done
           python - <<'PY'
-          import hashlib,os
+          import hashlib
           exp={
             'aud':'0959051ffea47d05f77a407e07ef7a8cd967dc38329f04323e0a6502daa8516c',
             'cad':'6e679c5ec165f415e3329a73424afa905f14ac2e5617fa835c78c017c9b873ce',
@@ -238,9 +238,17 @@ jobs:
           assert r['fx_outcomes_joined'] is False
           assert r['production_signal_authorized'] is False
           assert r['sizing_authorized'] is False
-          raw=open('.github/workflows/g4usd-relative-macro-turning-2y-engine-v1.yml').read().lower()
-          assert 'data-api.ecb.europa.eu' not in raw
-          assert 'usd-ecb' not in raw and 'jpy-ecb' not in raw and 'cad-ecb' not in raw and 'aud-ecb' not in raw
+          # Verify the economic result schema itself contains no FX return/PnL fields.
+          forbidden=('fx_return','sharpe','pnl','position_size','entry_price','exit_price')
+          def walk(x):
+              if isinstance(x,dict):
+                  for k,v in x.items():
+                      kl=k.lower()
+                      assert not any(t in kl for t in forbidden), k
+                      walk(v)
+              elif isinstance(x,list):
+                  for v in x: walk(v)
+          walk(r)
           print('NO_FX_OUTCOME_BOUNDARY_PASS')
           PY
 
