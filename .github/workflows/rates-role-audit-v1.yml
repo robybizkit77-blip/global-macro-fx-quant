@@ -57,6 +57,7 @@ jobs:
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
             const pn=out.materialNeutral;
             const pg=out.partialWithGap;
+            const favBlock=out.pairSrc.slice(out.pairSrc.indexOf("let fav='—'"),out.pairSrc.indexOf('const certified='));
             const assertions={
               all28Pairs:out.rows.length===28,
               pairSourceLocated:out.pairSrc.length>0,
@@ -65,12 +66,13 @@ jobs:
               staticGapOnlyContextWhenCoreTied:pn.every(x=>x.frame?.fav==='—'&&x.frame?.quality==='SEPARAZIONE RATES MATERIALE'),
               partialRemainsPartialDespiteMaterialGap:pg.every(x=>x.frame?.quality==='VANTAGGIO RELATIVO PARZIALE'),
               strongRequiresMacroPolicyAlignment:out.strong.every(x=>x.frame?.structural?.macro?.side!=='TIE'&&x.frame?.structural?.macro?.side===x.frame?.structural?.policy?.side),
-              gapNeverAppearsInFavoriteAssignment:!out.pairSrc.slice(out.pairSrc.indexOf("let fav='—'"),out.pairSrc.indexOf('const certified=')).includes('rateGapSide===')&&!out.pairSrc.slice(out.pairSrc.indexOf("let fav='—'"),out.pairSrc.indexOf('const certified=')).includes('twoYearSpreadBp>'),
+              staticGapNeverAssignsFavorite:!favBlock.includes('fav=rateGapSide')&&!favBlock.includes('fav = rateGapSide')&&!favBlock.includes('fav=gapSide')&&!favBlock.includes('fav = gapSide'),
+              materialGapMayOnlyLabelContext:pn.length>0&&pn.every(x=>x.frame?.quality==='SEPARAZIONE RATES MATERIALE'),
               frontEndRatesPrimaryInPolicy:out.policySrc.includes('if(rates!==0) return rates')&&out.policySrc.includes('if(cb!==0) return cb'),
               divergentFrontEndNotPromotedByCb:out.policySrc.includes("ratesLabel.includes('diverg')")&&out.policySrc.includes('return 0')
             };
             const ok=Object.values(assertions).every(Boolean);
-            const summary={schema:'GMFQ_RATES_ROLE_AUDIT_V1',status:ok?'PASS':'FAIL',assertions,counts:{materialNeutral:pn.length,partialWithGap:pg.length,strong:out.strong.length},materialNeutral:pn,partialWithGap:pg,strong:out.strong,pairSource:out.pairSrc,policySource:out.policySrc};
+            const summary={schema:'GMFQ_RATES_ROLE_AUDIT_V2',status:ok?'PASS':'FAIL',assertions,counts:{materialNeutral:pn.length,partialWithGap:pg.length,strong:out.strong.length},materialNeutral:pn,partialWithGap:pg,strong:out.strong,pairSource:out.pairSrc,policySource:out.policySrc};
             fs.writeFileSync('rates-role-audit.json',JSON.stringify(summary,null,2));
             console.log(JSON.stringify({status:summary.status,assertions,counts:summary.counts,materialNeutral:pn.map(x=>({pair:x.pair,fav:x.frame.fav,quality:x.frame.quality,gap:x.frame.structural.ratesGap})),partialWithGap:pg.map(x=>({pair:x.pair,fav:x.frame.fav,quality:x.frame.quality,gap:x.frame.structural.ratesGap}))},null,2));
             if(!ok)process.exit(2);
