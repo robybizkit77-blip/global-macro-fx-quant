@@ -28,6 +28,11 @@ function cotAsOf(){
   return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
 }
 
+function priceGateTerminal(){
+  const s=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+  return !!s && s!=='WAITING_FOR_PRICE_PROVENANCE';
+}
+
 function stripCotStory(story){
   if(typeof story!=='string')return story;
   const kept=story.split(' · ').filter(x=>{
@@ -87,15 +92,19 @@ function install(attempt){
   try{
     const asOf=cotAsOf();
     const currencyReady=typeof window.deriveCurrencyState==='function';
-    if((!asOf||!currencyReady)&&attempt<MAX_READY_ATTEMPTS){
-      window.__GMFQ_COT_FRESHNESS_GATE_STATE=Object.freeze({...state,status:'WAITING_FOR_COT_PROVENANCE',reason:!asOf?'COT provenance not ready yet':'currency state consumer not ready yet'});
+    const priceReady=priceGateTerminal();
+    if((!asOf||!currencyReady||!priceReady)&&attempt<MAX_READY_ATTEMPTS){
+      let reason='COT provenance not ready yet';
+      if(asOf&&!priceReady)reason='Price freshness gate not terminal yet';
+      else if(asOf&&priceReady&&!currencyReady)reason='currency state consumer not ready yet';
+      window.__GMFQ_COT_FRESHNESS_GATE_STATE=Object.freeze({...state,status:'WAITING_FOR_COT_PROVENANCE',reason});
       setTimeout(()=>install(attempt+1),READY_RETRY_MS);
       return;
     }
     const reference=currentRomeDate();
-    if(!asOf||!currencyReady){
+    if(!asOf||!currencyReady||!priceReady){
       state.status='WITHHELD_PROVENANCE_UNAVAILABLE';
-      state.reason=!asOf?'COT provenance unavailable after bounded wait':'currency state consumer unavailable after bounded wait';
+      state.reason=!asOf?'COT provenance unavailable after bounded wait':(!priceReady?'Price freshness dependency unavailable after bounded wait':'currency state consumer unavailable after bounded wait');
       state.cot_asof=asOf;
       state.reference_asof=reference;
       state.calendar_lag_days=null;
@@ -156,7 +165,7 @@ function install(attempt){
     state.reference_asof=reference;
     state.calendar_lag_days=lag;
     state.currency_cot_risk_nonempty=ccys.filter(c=>String(currencies[c]?.cotRisk||'').trim()).length;
-    state.raw_cot_currency_count=Object.keys(window.D?.cot||{}).length;
+    state.price_dependency_status=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status||null;
     publishState(state);
 
     const observer=new MutationObserver(()=>{try{installBanner(window.__GMFQ_COT_FRESHNESS_GATE_STATE)}catch(e){}});
