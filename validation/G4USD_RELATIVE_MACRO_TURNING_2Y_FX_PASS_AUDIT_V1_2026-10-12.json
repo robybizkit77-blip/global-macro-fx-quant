@@ -1,0 +1,33 @@
+{
+  "schema": "GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_FX_PASS_AUDIT_V1",
+  "as_of": "2026-10-12",
+  "status": "PASS_HISTORICAL_CONDITIONAL_FX_CANDIDATE_GATE",
+  "contract_pr": 175,
+  "engine_pr": 176,
+  "engine_head": "814bb535eaa166b869dc6cf342ebf2b0efb5b340",
+  "workflow_run_id": 38221218979,
+  "artifact_id": 11733817946,
+  "artifact_zip_sha256": "1484832abcac1826e0539be53711ef669642c6cfb24ceeb0e60f9937fe97bc70",
+  "result_json_sha256": "2cf391fc0bad91438bf1fc87d13a9667a50faa151bd1bf1453b8d76b35bda046",
+  "parent_mechanism_result_sha256": "1cb6e8ea5e86fb5c8d6701c746fc97aeff70dcee3cef54d6ee3fe52ba8d0af7b",
+  "confirmed_event_counts": {"AUD": 8, "CAD": 11, "EUR": 9, "JPY": 12, "pooled": 40},
+  "pooled": {
+    "mean_signed_fx_log_return": 0.004425998528102953,
+    "directional_accuracy": 0.65,
+    "hawkish_n": 20,
+    "dovish_n": 20
+  },
+  "per_currency": {
+    "AUD": {"n": 8, "mean_signed_fx_log_return": 0.008555044673010135, "accuracy": 0.75},
+    "CAD": {"n": 11, "mean_signed_fx_log_return": 0.0026560731777779986, "accuracy": 0.5454545454545454},
+    "EUR": {"n": 9, "mean_signed_fx_log_return": 0.001510505550571895, "accuracy": 0.6666666666666666},
+    "JPY": {"n": 12, "mean_signed_fx_log_return": 0.005482352402444335, "accuracy": 0.6666666666666666}
+  },
+  "max_single_currency_share": 0.30,
+  "all_predeclared_candidate_gates_pass": true,
+  "interpretation": "The full historical causal chain Macro Turning Point -> next-month relative 2Y confirmation -> subsequent FX direction survives the predeclared historical candidate gate. This is candidate generation, not independent edge certification.",
+  "required_next_step": "Freeze true forward-only confirmation after the 2026-10-12 research freeze; no historical rule changes or rescue filters are permitted.",
+  "edge_certified": false,
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
