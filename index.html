@@ -26,6 +26,7 @@
  const audCbHysteresis='<script id="gmfq-aud-cb-hysteresis-realign-loader" src="live_data/aud-cb-hysteresis-realign.js"></scr'+'ipt>\n';
  const riskFreshness='<script id="gmfq-risk-freshness-gate-loader" src="live_data/risk-freshness-gate.js"></scr'+'ipt>\n';
  const priceFreshness='<script id="gmfq-price-freshness-gate-loader" src="live_data/price-freshness-gate.js"></scr'+'ipt>\n';
+ const cotProvenanceRealign='<script id="gmfq-cot-provenance-realign-loader" src="live_data/cot-provenance-realign.js"></scr'+'ipt>\n';
  const cotFreshness='<script id="gmfq-cot-freshness-gate-loader" src="live_data/cot-freshness-gate.js"></scr'+'ipt>\n';
  const researchUi='<script id="gmfq-research-status-card-loader" src="live_data/research-state-card.js"></scr'+'ipt>\n';
  const readingUi='<script id="gmfq-reading-hierarchy-loader" src="live_data/reading-hierarchy-layer.js"></scr'+'ipt>\n';
@@ -33,7 +34,7 @@
  const researchBootstrap='<script id="gmfq-research-state-sidecar">(async()=>{try{const r=await fetch(\'live_data/sections/RESEARCH_STATE.json\',{cache:\'no-store\'});if(!r.ok)throw new Error(\'research-state-http-\'+r.status);const x=await r.json();if(x.research_signal_state!==\'WITHHELD\'||x.decision_weight!==0||x.may_modify_pair_bias!==false||x.may_modify_currency_score!==false||x.may_modify_sizing!==false)throw new Error(\'research-state-fail-closed\');Object.freeze(x.context_only||[]);window.__GMFQ_RESEARCH_STATE=Object.freeze(x);window.dispatchEvent(new CustomEvent(\'gmfq:research-state-ready\',{detail:window.__GMFQ_RESEARCH_STATE}));}catch(e){window.__GMFQ_RESEARCH_STATE=Object.freeze({research_signal_state:\'WITHHELD\',decision_weight:0,context_only:[],load_error:String(e&&e.message||e)});console.error(\'research-state-sidecar\',e);}})();</scr'+'ipt>\n';
  const focusUi='<script id="gmfq-pair-focus-board-loader" src="live_data/pair-focus-board.js"></scr'+'ipt>\n';
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">(async()=>{try{if(window.__GMFQ_CANONICAL_OVERLAY_READY)await window.__GMFQ_CANONICAL_OVERLAY_READY;if(window.__GMFQ_CANONICAL_OVERLAY_STATE&&window.__GMFQ_CANONICAL_OVERLAY_STATE.status!==\'PASS_CANONICAL_MACRO_OVERLAY\')throw new Error(\'canonical-overlay-not-ready\');if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);window.__GMFQ_FINAL_REFRESH_ERROR=String(e&&e.message||e);}})();</scr'+'ipt>\n';
- html=html.replace(marker,canonicalOverlay+audCbHysteresis+riskFreshness+priceFreshness+cotFreshness+researchUi+readingUi+pairReadingUi+researchBootstrap+focusUi+finalRefresh+marker);
+ html=html.replace(marker,canonicalOverlay+audCbHysteresis+riskFreshness+priceFreshness+cotProvenanceRealign+cotFreshness+researchUi+readingUi+pairReadingUi+researchBootstrap+focusUi+finalRefresh+marker);
  document.open(); document.write(html); document.close();
 })().catch(e=>{
  window.__GMFQ_BOOTSTRAP_ERROR=String(e&&e.stack||e);
