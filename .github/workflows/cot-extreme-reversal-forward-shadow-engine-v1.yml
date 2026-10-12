@@ -1,0 +1,63 @@
+name: COT Extreme Reversal Forward Shadow Engine V1
+
+on:
+  push:
+    branches:
+      - validation-cot-extreme-reversal-forward-shadow-engine-v1-2026-10-12
+    paths:
+      - 'validation/run_cot_extreme_reversal_forward_shadow_v1.py'
+      - '.github/workflows/cot-extreme-reversal-forward-shadow-engine-v1.yml'
+  pull_request:
+    branches:
+      - validation-cot-extreme-reversal-forward-shadow-v1-2026-10-12
+  workflow_dispatch:
+  schedule:
+    - cron: '20 6 * * 3'
+
+permissions:
+  contents: read
+
+jobs:
+  forward-shadow:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Execute frozen forward shadow
+        run: python validation/run_cot_extreme_reversal_forward_shadow_v1.py
+      - name: Assert governance remains non-production
+        run: |
+          python - <<'PY'
+          import json
+          p='/tmp/cot-extreme-reversal-forward-shadow/result.json'
+          d=json.load(open(p))
+          assert d['schema']=='GMFQ_COT_EXTREME_REVERSAL_FORWARD_SHADOW_RESULT_V1'
+          assert d['historical_boundary_report_date']=='2026-09-08'
+          assert d['governance']['historical_candidate_reestimated'] is False
+          assert d['governance']['parameter_tuning'] is False
+          assert d['governance']['threshold_changed'] is False
+          assert d['governance']['currency_exclusion'] is False
+          assert d['governance']['horizon_changed'] is False
+          assert d['governance']['partial_results_authorize_production'] is False
+          assert d['governance']['production_signal_authorized'] is False
+          assert d['governance']['sizing_authorized'] is False
+          assert d['governance']['repository_write_performed'] is False
+          assert d['confirmation_gate']['verdict'] in {
+              'WAITING_FOR_UNSEEN_OBSERVATIONS',
+              'PASS_FORWARD_CONFIRMATION_GATE',
+              'FAIL_FORWARD_CONFIRMATION_GATE',
+          }
+          print('PASS_FORWARD_SHADOW_NON_PRODUCTION_GOVERNANCE')
+          PY
+      - name: Assert repository remains clean
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cot-extreme-reversal-forward-shadow-${{ github.run_id }}
+          path: /tmp/cot-extreme-reversal-forward-shadow/
+          if-no-files-found: error
+          retention-days: 90
