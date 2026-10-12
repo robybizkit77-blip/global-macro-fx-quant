@@ -33,6 +33,7 @@ jobs:
           assert p['artifact_id']==11732506878
           assert p['artifact_name']=='cb-priority-decision-event-inventory-38215654681'
           assert p['artifact_zip_sha256']=='84806d3d1c9419dfcfaf10d96f008753a9222cfaeb977459fda2f3d8e0f9daa3'
+          assert p['inventory_json_sha256']=='fbe6fd5c4af09250b50741da23f9cd22eee2d0d756d3cc56035dc98283f5305a'
           assert p['required_status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
           assert set(c['allowed_labels'])=={'INFLATION','BALANCED','LABOUR_GROWTH','FINANCIAL_STABILITY_OTHER','WITHHELD_AMBIGUOUS'}
           d=c['document_boundary']; assert d['market_reaction_forbidden'] is True; assert d['fx_rates_cot_forbidden'] is True
