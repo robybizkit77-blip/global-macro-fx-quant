@@ -1,0 +1,101 @@
+name: CB Priority Labeling Engine V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-labeling-engine-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  INVENTORY_RUN_ID: '38215654681'
+  INVENTORY_ARTIFACT: 'cb-priority-decision-event-inventory-38215654681'
+  INVENTORY_JSON_SHA256: 'fbe6fd5c4af09250b50741da23f9cd22eee2d0d756d3cc56035dc98283f5305a'
+
+jobs:
+  label-result-blind-history:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF text dependency
+        run: python -m pip install --disable-pip-version-check 'pypdf==6.1.1'
+      - name: Download exact GREEN result-blind inventory
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.INVENTORY_ARTIFACT }}
+          path: /tmp/cb-inventory
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.INVENTORY_RUN_ID }}
+      - name: Verify pinned inventory identity and frozen contract
+        run: |
+          set -euo pipefail
+          test -f /tmp/cb-inventory/cb-event-inventory.json
+          echo "$INVENTORY_JSON_SHA256  /tmp/cb-inventory/cb-event-inventory.json" | sha256sum -c -
+          python - <<'PY'
+          import json
+          inv=json.load(open('/tmp/cb-inventory/cb-event-inventory.json'))
+          c=json.load(open('validation/CB_PRIORITY_LABELING_CONTRACT_V1_2026-10-12.json'))
+          assert inv['status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
+          assert len(inv['events'])==365
+          assert inv['focus_labels_present'] is False and inv['performance_data_present'] is False
+          p=c['parent_event_inventory']
+          assert p['run_id']==38215654681
+          assert p['inventory_json_sha256']=='fbe6fd5c4af09250b50741da23f9cd22eee2d0d756d3cc56035dc98283f5305a'
+          assert c['governance']['performance_test_authorized_now'] is False
+          print('PINNED_RESULT_BLIND_INVENTORY_AND_CONTRACT_PASS')
+          PY
+      - name: Generate frozen result-blind labels
+        run: |
+          set -euo pipefail
+          python validation/run_cb_priority_labeling_v1.py \
+            --inventory /tmp/cb-inventory/cb-event-inventory.json \
+            --contract validation/CB_PRIORITY_LABELING_CONTRACT_V1_2026-10-12.json \
+            --out-dir /tmp/cb-priority-labels \
+            --workers 12
+      - name: Assert performance boundary remains closed
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='/tmp/cb-priority-labels/CB_PRIORITY_FOCUS_HISTORY_V1.json'
+          d=json.load(open(p))
+          assert d['result_blind'] is True
+          assert d['performance_data_present'] is False
+          assert d['performance_test_authorized'] is False
+          assert d['production_signal_authorized'] is False
+          assert d['sizing_authorized'] is False
+          forbidden={'fx_return','rates_return','target_return','sharpe','edge_survival','future_return'}
+          for row in d['rows']:
+              assert not (forbidden & set(row)), forbidden & set(row)
+          print('LABEL_DATASET_RESULT_BLIND_BOUNDARY_PASS')
+          PY
+      - name: Upload labeling dataset and quality receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: cb-priority-labeling-v1-${{ github.run_id }}
+          path: /tmp/cb-priority-labels/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Enforce predeclared label quality gate
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          q=json.load(open('/tmp/cb-priority-labels/CB_PRIORITY_LABELING_QUALITY_V1.json'))
+          print(json.dumps(q,indent=2,sort_keys=True))
+          assert q['quality_gate_pass'] is True, 'PREDECLARED_LABEL_QUALITY_GATE_FAIL'
+          assert q['performance_test_authorized'] is False
+          print('PREDECLARED_LABEL_QUALITY_GATE_PASS')
+          print('PERFORMANCE_EXECUTION_STATUS=STILL_BLOCKED_PENDING_SEPARATE_PROMOTION_REVIEW')
+          PY
+      - name: Assert clean repository
+        if: always()
+        run: test -z "$(git status --porcelain)"
