@@ -15,8 +15,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Run frozen robustness suite
-        working-directory: validation
-        run: python run_cot_extreme_reversal_robustness_v1.py
+        run: python validation/run_cot_extreme_reversal_robustness_v1.py
       - name: Upload robustness artifact
         uses: actions/upload-artifact@v4
         with:
