@@ -1,0 +1,119 @@
+name: Price Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-price-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8142 --bind 127.0.0.1 > /tmp/gmfq-price-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit and simulate stale-price neutralization read-only
+        run: |
+          cat > price-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8142/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];
+              for(let i=0;i<ccys.length;i++) for(let j=i+1;j<ccys.length;j++) pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const baselineCurrencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const baselinePairs=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const sourceCurrency=Function.prototype.toString.call(window.deriveCurrencyState);
+              const sourcePair=Function.prototype.toString.call(window.derivePairDecisionFrame);
+              const priceAsOf=window.GMFQ_ECB_PRICE_AUDIT?.as_of||window.D?.prices?.at?.(-1)?.Date||null;
+              const referenceAsOf='2026-10-12';
+              const businessLag=(from,to)=>{
+                if(!from||!to)return null;
+                const a=new Date(from+'T12:00:00Z'),b=new Date(to+'T12:00:00Z');
+                if(!(a<b))return 0;
+                let d=new Date(a),n=0;
+                while(d<b){d.setUTCDate(d.getUTCDate()+1);const w=d.getUTCDay();if(w!==0&&w!==6)n++;}
+                return n;
+              };
+              const lag=businessLag(priceAsOf,referenceAsOf);
+              const originalCurrency=window.deriveCurrencyState;
+              const guardedCurrency=function(c){
+                const s=clone(originalCurrency(c));
+                if(lag!=null&&lag>1&&s){
+                  s.price=0;
+                  s.confirmation='PREZZO NON RISOLUTIVO';
+                  s.priceFreshness={status:'WITHHELD_STALE',as_of:priceAsOf,reference_as_of:referenceAsOf,business_lag:lag,max_business_lag:1};
+                  if(typeof s.story==='string'){
+                    s.story=s.story
+                      .replace(/ · il prezzo diverge dalla struttura/g,' · prezzo withheld per freshness')
+                      .replace(/ · il prezzo conferma la struttura/g,' · prezzo withheld per freshness')
+                      .replace(/ · il prezzo non dà ancora una conferma risolutiva/g,' · prezzo withheld per freshness')
+                      .replace(/ · Prezzo è in ritardo/g,' · prezzo withheld per freshness');
+                  }
+                }
+                return s;
+              };
+              window.deriveCurrencyState=guardedCurrency;
+              try{deriveCurrencyState=guardedCurrency}catch(e){}
+              const simulatedCurrencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const simulatedPairs=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              window.deriveCurrencyState=originalCurrency;
+              try{deriveCurrencyState=originalCurrency}catch(e){}
+              const currencyDiffs={};
+              for(const c of ccys){
+                const a=baselineCurrencies[c]||{},b=simulatedCurrencies[c]||{};
+                currencyDiffs[c]={before:{price:a.price,confirmation:a.confirmation,base:a.base,macro:a.macro,policy:a.policy,driver:a.driver},after:{price:b.price,confirmation:b.confirmation,base:b.base,macro:b.macro,policy:b.policy,driver:b.driver}};
+              }
+              const pairDiffs={};
+              let structuralChanges=0,priceReadingChanges=0;
+              for(const p of pairs){
+                const a=baselinePairs[p]||{},b=simulatedPairs[p]||{};
+                const structuralSame=JSON.stringify({fav:a.fav,quality:a.quality,setup:a.setup,structural:a.structural})===JSON.stringify({fav:b.fav,quality:b.quality,setup:b.setup,structural:b.structural});
+                const priceSame=JSON.stringify({price:a.price,priceReading:a.priceReading})===JSON.stringify({price:b.price,priceReading:b.priceReading});
+                if(!structuralSame)structuralChanges++;
+                if(!priceSame)priceReadingChanges++;
+                if(!structuralSame||!priceSame)pairDiffs[p]={structuralSame,priceSame,before:{fav:a.fav,quality:a.quality,setup:a.setup,price:a.price,priceReading:a.priceReading,structural:a.structural},after:{fav:b.fav,quality:b.quality,setup:b.setup,price:b.price,priceReading:b.priceReading,structural:b.structural}};
+              }
+              return {priceAsOf,referenceAsOf,businessLag:lag,sourceCurrency,sourcePair,baselineCurrencies,simulatedCurrencies,baselinePairs,simulatedPairs,currencyDiffs,pairDiffs,structuralChanges,priceReadingChanges,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('price-freshness-audit.json',JSON.stringify({schema:'GMFQ_PRICE_FRESHNESS_AUDIT_V2',...out},null,2));
+            console.log(JSON.stringify({priceAsOf:out.priceAsOf,referenceAsOf:out.referenceAsOf,businessLag:out.businessLag,structuralChanges:out.structuralChanges,priceReadingChanges:out.priceReadingChanges,currencyDiffs:out.currencyDiffs,pairDiffs:out.pairDiffs,sourceCurrency:out.sourceCurrency,sourcePair:out.sourcePair},null,2));
+            if(out.businessLag==null||out.businessLag<=1) throw new Error('Expected stale price snapshot not detected');
+            if(out.structuralChanges!==0) throw new Error('Price neutralization changed structural pair fields');
+          })().catch(e=>{console.error('::error title=Price freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node price-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: price-freshness-audit-v1
+          path: |
+            price-freshness-audit.json
+            /tmp/gmfq-price-audit-server.log
