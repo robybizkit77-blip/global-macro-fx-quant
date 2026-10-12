@@ -4,17 +4,15 @@
   "status": "PREDECLARED_LABEL_METHOD_NO_LABELS_OBSERVED",
   "parent_event_inventory": {
     "pull_request": 164,
-    "head_sha": "d0604b4a60446ba0f1beb4f7e1fa76e782ad73f5",
+    "head_sha": "ef1a5ba0c0cf673bbd509517b9c772386d3f3085",
+    "run_id": 38215654681,
+    "artifact_id": 11732506878,
+    "artifact_name": "cb-priority-decision-event-inventory-38215654681",
+    "artifact_zip_sha256": "84806d3d1c9419dfcfaf10d96f008753a9222cfaeb977459fda2f3d8e0f9daa3",
     "required_status": "RESULT_BLIND_EVENT_INVENTORY_COMPLETE"
   },
   "purpose": "Assign central-bank primary policy priority from contemporaneous official decision text before any FX/rates performance is computed.",
-  "allowed_labels": [
-    "INFLATION",
-    "BALANCED",
-    "LABOUR_GROWTH",
-    "FINANCIAL_STABILITY_OTHER",
-    "WITHHELD_AMBIGUOUS"
-  ],
+  "allowed_labels": ["INFLATION","BALANCED","LABOUR_GROWTH","FINANCIAL_STABILITY_OTHER","WITHHELD_AMBIGUOUS"],
   "document_boundary": {
     "official_decision_document_only": true,
     "same_event_official_opening_material_allowed_only_if_linked_in_inventory": true,
@@ -31,22 +29,12 @@
     "boJ_english_official_text_only": true
   },
   "topic_terms": {
-    "INFLATION": [
-      "inflation", "price stability", "price pressures", "underlying inflation", "core inflation", "wage pressures", "wages", "prices"
-    ],
-    "LABOUR_GROWTH": [
-      "employment", "unemployment", "labour market", "labor market", "jobs", "growth", "economic activity", "activity", "demand", "output", "recession", "downturn"
-    ],
-    "FINANCIAL_STABILITY_OTHER": [
-      "financial stability", "market functioning", "financial conditions disruption", "exchange rate intervention", "liquidity stress"
-    ]
+    "INFLATION": ["inflation","price stability","price pressures","underlying inflation","core inflation","wage pressures","wages","prices"],
+    "LABOUR_GROWTH": ["employment","unemployment","labour market","labor market","jobs","growth","economic activity","activity","demand","output","recession","downturn"],
+    "FINANCIAL_STABILITY_OTHER": ["financial stability","market functioning","financial conditions disruption","exchange rate intervention","liquidity stress"]
   },
-  "policy_relevance_cues": [
-    "in view of", "because", "therefore", "appropriate", "necessary", "need to", "requires", "warrant", "concern", "risk", "risks", "monitor", "monitoring", "focus", "focused", "objective", "mandate", "outlook", "guidance", "stance"
-  ],
-  "explicit_dominance_cues": [
-    "primary concern", "main concern", "principal concern", "focus is", "focused on", "priority is", "particularly concerned", "especially concerned", "most important"
-  ],
+  "policy_relevance_cues": ["in view of","because","therefore","appropriate","necessary","need to","requires","warrant","concern","risk","risks","monitor","monitoring","focus","focused","objective","mandate","outlook","guidance","stance"],
+  "explicit_dominance_cues": ["primary concern","main concern","principal concern","focus is","focused on","priority is","particularly concerned","especially concerned","most important"],
   "mechanical_label_rule": {
     "unit": "sentence",
     "qualifying_sentence": "sentence contains at least one topic term and at least one policy-relevance cue, or contains an explicit-dominance cue adjacent to a topic term",
@@ -60,21 +48,7 @@
     "tie_break_by_market_outcome": "forbidden",
     "tie_break_by_future_policy": "forbidden"
   },
-  "required_label_row_fields": [
-    "central_bank",
-    "decision_date",
-    "publication_timestamp",
-    "source_url",
-    "source_document_type",
-    "focus_primary",
-    "focus_evidence",
-    "inflation_topic_score",
-    "labour_growth_topic_score",
-    "financial_stability_other_topic_score",
-    "explicit_dominance_topic",
-    "label_method_version",
-    "pit_eligible"
-  ],
+  "required_label_row_fields": ["central_bank","decision_date","publication_timestamp","source_url","source_document_type","focus_primary","focus_evidence","inflation_topic_score","labour_growth_topic_score","financial_stability_other_topic_score","explicit_dominance_topic","label_method_version","pit_eligible"],
   "quality_gate_before_performance": {
     "minimum_events_per_central_bank": 50,
     "maximum_withheld_ambiguous_share_per_central_bank": 0.20,
