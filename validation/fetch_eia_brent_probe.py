@@ -3,7 +3,7 @@ import csv
 import datetime as dt
 import io
 import json
-import urllib.request
+import subprocess
 from pathlib import Path
 
 POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
@@ -29,9 +29,15 @@ def main():
     as_of = dt.date.fromisoformat(policy['as_of'])
     start = as_of - dt.timedelta(days=45)
     url = f'{BASE_URL}&cosd={start.isoformat()}&coed={as_of.isoformat()}'
-    req = urllib.request.Request(url, headers={'User-Agent': 'global-macro-fx-quant/1.0'})
-    with urllib.request.urlopen(req, timeout=20) as r:
-        raw = r.read().decode('utf-8-sig')
+    tmp = Path('/tmp/DCOILBRENTEU.csv')
+    cmd = [
+        'curl', '-fL', '--compressed', '--http1.1',
+        '--retry', '4', '--retry-all-errors', '--retry-delay', '2',
+        '--connect-timeout', '15', '--max-time', '90',
+        '-A', 'Mozilla/5.0', url, '-o', str(tmp),
+    ]
+    subprocess.run(cmd, check=True)
+    raw = tmp.read_text(encoding='utf-8-sig')
 
     rows = list(csv.DictReader(io.StringIO(raw)))
     parsed = []
