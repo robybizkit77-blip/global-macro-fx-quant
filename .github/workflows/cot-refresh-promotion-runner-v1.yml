@@ -1,0 +1,46 @@
+name: COT Refresh Promotion Runner V1
+on:
+  push:
+    branches: [validation-cot-refresh-promotion-runner-v1-2026-10-12]
+    paths: ['.github/workflows/cot-refresh-promotion-runner-v1.yml']
+permissions:
+  contents: write
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build clean official COT candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions-bot
+          git config user.email github-actions-bot@users.noreply.github.com
+          git checkout --detach 0a28c4d3bf271d4bf074e1119622329ef26a7afe
+          git switch -c candidate-cot-refresh-v1-2026-10-12
+          mkdir -p /tmp/cot-refresh
+          python validation/build_cot_candidate.py --output /tmp/cot-refresh/V250_COT_CHART_DATA.json | tee /tmp/cot-refresh/candidate-summary.json
+          python validation/build_cot_stories.py --source /tmp/cot-refresh/V250_COT_CHART_DATA.json --output /tmp/cot-refresh/V247_COT_STORIES.json > /tmp/cot-refresh/stories-summary.json
+          test "$(python -c "import json; print(json.load(open('/tmp/cot-refresh/candidate-summary.json'))['status'])")" = "CANDIDATE_READY"
+          python validation/update_live_direct_section.py --section V250_COT_CHART_DATA --replacement /tmp/cot-refresh/V250_COT_CHART_DATA.json --apply > /tmp/cot-refresh/direct-apply.json
+          python validation/update_live_derived_sections.py --cot /tmp/cot-refresh/V247_COT_STORIES.json --apply > /tmp/cot-refresh/derived-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/cot-refresh/manifest-build.json
+          python validation/check_live_update_contract.py > /tmp/cot-refresh/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/cot-refresh/runtime-roundtrip.json
+          git diff --name-only | sort | tee /tmp/cot-refresh/changed.txt
+          python - <<'PY'
+          allowed={'live_data/manifest.v2.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/V250_COT_CHART_DATA.json','payload/part-00.txt'}
+          changed=set(open('/tmp/cot-refresh/changed.txt').read().splitlines())
+          if changed!=allowed: raise SystemExit(f'exact scope failure {sorted(changed)}')
+          print('COT_REFRESH_EXACT_SCOPE_PASS')
+          PY
+          git add live_data/manifest.v2.json live_data/sections/V247_COT_STORIES.json live_data/sections/V250_COT_CHART_DATA.json payload/part-00.txt
+          git commit -m "Refresh CFTC COT G8 snapshot to 2026-10-06"
+          git push --force-with-lease origin candidate-cot-refresh-v1-2026-10-12
+          git rev-parse HEAD
