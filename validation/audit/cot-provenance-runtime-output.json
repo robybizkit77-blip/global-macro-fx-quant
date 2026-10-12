@@ -1,0 +1,801 @@
+{
+  "cotGate": {
+    "status": "PASS_WITHHELD_STALE_COT",
+    "max_calendar_lag_days": 10,
+    "freshness_time_zone": "Europe/Rome",
+    "changes_engine": false,
+    "changes_bias": false,
+    "changes_sizing": false,
+    "changes_pair_structure": false,
+    "underlying_cot_data_mutated": false,
+    "provenance_wait_attempts": 1,
+    "reason": "Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.",
+    "cot_asof": "2026-09-22",
+    "reference_asof": "2026-10-12",
+    "calendar_lag_days": 20,
+    "currency_cot_risk_nonempty": 0,
+    "price_dependency_status": "PASS_FRESH_PRICE_UNCHANGED"
+  },
+  "priceGate": {
+    "status": "PASS_FRESH_PRICE_UNCHANGED",
+    "max_business_lag": 1,
+    "freshness_time_zone": "Europe/Rome",
+    "changes_engine": false,
+    "changes_bias": false,
+    "changes_sizing": false,
+    "changes_pair_structure": false,
+    "underlying_price_data_mutated": false,
+    "provenance_wait_attempts": 1,
+    "reason": "Canonical daily G8 Price is within certified freshness lag.",
+    "price_asof": "2026-10-12",
+    "reference_asof": "2026-10-12",
+    "business_lag": 0,
+    "currency_confirmation_counts": {
+      "PREZZO NON RISOLUTIVO": 6,
+      "PREZZO DIVERGE": 1,
+      "PREZZO CONFERMA": 1
+    },
+    "pair_price_reading_counts": {
+      "MERCATO GIÀ ALLINEATO": 11,
+      "DIVERGENZA DA MONITORARE": 5,
+      "PREZZO NON RISOLUTIVO": 12
+    }
+  },
+  "productionType": "object",
+  "sourcePolicyType": "object",
+  "production": {
+    "audited_at": "2026-09-29T09:39+02:00",
+    "price": {
+      "status": "CURRENT_OFFICIAL",
+      "current_as_of": "2026-10-12",
+      "action": "CURRENT",
+      "next_expected": "2026-10-13 around 16:00 CET/CEST",
+      "rule": "Do not use intraday spot to overwrite the canonical ECB daily fixing."
+    },
+    "cot": {
+      "status": "CURRENT_WEEKLY",
+      "current_as_of": "2026-09-22",
+      "action": "HOLD_UNTIL_NEXT_CFTC_RELEASE",
+      "rule": "Weekly CFTC Legacy Futures Only snapshot only; no interpolation."
+    },
+    "liquidity": {
+      "status": "NO_NEW_VALIDATED_COMPONENTS_AT_AUDIT_TIME",
+      "action": "HOLD_LAST_VALID_BY_SOURCE_CADENCE",
+      "nzd": {
+        "current_period": "2026-07",
+        "source": "RBNZ D10 + C50",
+        "next_release": "2026-09-30",
+        "action": "HOLD_UNTIL_SCHEDULED_RELEASE"
+      }
+    },
+    "structural_commit": "NONE",
+    "contamination_check": "PASS"
+  },
+  "sourcePolicy": {
+    "audit_date": "2026-10-12",
+    "principles": {
+      "primary_source_first": true,
+      "no_cross_basis_substitution": true,
+      "last_valid_on_source_delay": true,
+      "withhold_if_unvalidated": true,
+      "secondary_market_pricing_requires_validation": true
+    },
+    "PRICE": {
+      "source": "ECB euro foreign exchange reference rates",
+      "cadence": "TARGET business day",
+      "policy": "AUTO_UPDATE_PRIMARY",
+      "fallback": "LAST_VALID_STALE",
+      "current_as_of": "2026-10-12"
+    },
+    "COT": {
+      "source": "CFTC Legacy Futures Only · Non-Commercial",
+      "cadence": "weekly",
+      "policy": "AUTO_UPDATE_PRIMARY_WHEN_RELEASED",
+      "fallback": "LAST_VALID_STALE",
+      "current_as_of": "2026-09-22"
+    },
+    "RATES": {
+      "USD": {
+        "source": "U.S. Treasury Daily Par Yield Curve",
+        "cadence": "US business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-09",
+        "status": "CURRENT_OFFICIAL",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "EUR": {
+        "source": "ECB euro area zero-coupon yield curve",
+        "cadence": "TARGET business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-09",
+        "status": "CURRENT_OFFICIAL_SAME_BASIS",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "GBP": {
+        "source": "Bank of England daily nominal government liability curve",
+        "cadence": "daily business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-09",
+        "status": "CURRENT_OFFICIAL_SAME_BASIS",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "JPY": {
+        "source": "Japan Ministry of Finance JGB interest-rate CSV",
+        "cadence": "business day with publication lag",
+        "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-08",
+        "status": "CURRENT_OFFICIAL_SAME_BASIS",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "CHF": {
+        "source": "SNB data portal · Swiss Confederation yields",
+        "cadence": "source-native publication",
+        "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-09-30",
+        "status": "CURRENT_OFFICIAL_SAME_BASIS",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "CAD": {
+        "source": "Bank of Canada selected benchmark bond yields",
+        "cadence": "daily business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-08",
+        "status": "CURRENT_OFFICIAL_SAME_BASIS",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "AUD": {
+        "source": "RBA F2 Capital Market Yields – Government Bonds",
+        "cadence": "weekly Friday; observations through two business days earlier",
+        "policy": "AUTO_UPDATE_PRIMARY_ON_RELEASE",
+        "fallback": "HOLD_LAST_VALID_NOT_STALE_UNTIL_EXPECTED_RELEASE",
+        "current_as_of": "2026-10-07",
+        "status": "CURRENT_BY_SOURCE_CADENCE",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      },
+      "NZD": {
+        "source": "RBNZ B2 Wholesale interest rates",
+        "cadence": "daily; one business day publication lag",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE_AFTER_EXPECTED_LAG",
+        "current_as_of": "2026-10-05",
+        "status": "CURRENT_OFFICIAL",
+        "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+      }
+    },
+    "CB": {
+      "policy": "EVENT_DRIVEN_OFFICIAL_ONLY",
+      "fallback": "HOLD_LAST_OFFICIAL",
+      "rule": "Only official central-bank decisions/statements can alter the realized CB layer."
+    },
+    "CB_PRICING": {
+      "USD": {
+        "quality": "WITHHELD_PUBLIC_STRIP_INCOMPLETE",
+        "policy": "HOLD_UNTIL_DIRECT_STRIP"
+      },
+      "EUR": {
+        "quality": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+        "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+        "source": "Eurex FST3 official overallstatistics API · D.Settle",
+        "current_as_of": "2026-09-29"
+      },
+      "GBP": {
+        "quality": "COMPLETO_DIRECT_OFFICIAL",
+        "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+        "current_as_of": "2026-09-29",
+        "source": "Bank of England SONIA OIS curve · official workbook"
+      },
+      "JPY": {
+        "quality": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+        "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+        "source": "TFX Historical Database · Three-Month TONA Futures",
+        "current_as_of": "2026-09-29"
+      },
+      "CHF": {
+        "quality": "WITHHELD_LIQUIDITY_BASIS",
+        "policy": "HOLD_UNTIL_LIQUID_DIRECT_STRIP"
+      },
+      "CAD": {
+        "quality": "COMPLETO_DIRECT_EXCHANGE",
+        "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+        "current_as_of": "2026-09-29",
+        "source": "Montréal Exchange · Three-Month CORRA Futures"
+      },
+      "AUD": {
+        "quality": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+        "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+        "source": "ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data",
+        "current_as_of": "2026-09-29"
+      },
+      "NZD": {
+        "quality": "WITHHELD_NO_PUBLIC_FULL_OIS_CURVE",
+        "policy": "HOLD_MISSING_HORIZONS_WITHHELD"
+      }
+    },
+    "LIQUIDITY": {
+      "policy": "SOURCE_NATIVE_CADENCE",
+      "fallback": "HOLD_LAST_VALID_COMPONENT",
+      "rule": "Update each underlying liquidity/money/credit component only on its own source release; never infer a missing component from another layer.",
+      "NZD": {
+        "source": "RBNZ D10 + C50",
+        "cadence": "monthly",
+        "next_expected": "2026-09-30"
+      }
+    },
+    "MACRO": {
+      "policy": "RELEASE_DRIVEN_BY_SERIES",
+      "fallback": "HOLD_LAST_VALID_SERIES",
+      "rule": "Each macro series refreshes only on its own official release. Calendar age alone does not make a monthly/quarterly series stale."
+    }
+  },
+  "keys": [
+    "FINAL_SOURCE_POLICY_AUDIT",
+    "GMFQ_COT_TUTOR",
+    "LAST_PRODUCTION_REFRESH",
+    "PRODUCTION_HEALTH_POLICY",
+    "PRODUCTION_LIVE_REFRESH_AUDIT",
+    "PRODUCTION_LIVE_REFRESH_AUDIT_JPY",
+    "PRODUCTION_MACRO_CBPRICING_AUDIT",
+    "PRODUCTION_PRICE_COT_LIQ_AUDIT",
+    "PRODUCTION_RATES_REFRESH_STATUS",
+    "PRODUCTION_REFRESH_GENERATION",
+    "__GMFQ_COT_FRESHNESS_GATE_STATE",
+    "closeProductionDailyRefresh",
+    "cotChangeText",
+    "cotEarlyWarning",
+    "cotFlowDescription",
+    "cotHeadlineText",
+    "cotHeatState",
+    "currentProductionBusinessDate",
+    "currentProductionSnapshotDate",
+    "openCotDetail",
+    "productionCoverageSummary",
+    "productionDailyCloseoutStatus",
+    "productionHealthCheck",
+    "productionRefreshCoverageMatrix",
+    "productionRefreshStatus",
+    "refreshProductionSnapshotLabels",
+    "renderCot",
+    "renderCotMap",
+    "runProductionDailyRefresh",
+    "v219CotDetail",
+    "v224CotSummary",
+    "v228CotRow",
+    "v245CotSelected",
+    "v315CotRiskClass",
+    "validateProductionDailyPayload"
+  ],
+  "candidates": {
+    "FINAL_SOURCE_POLICY_AUDIT": {
+      "audit_date": "2026-10-12",
+      "principles": {
+        "primary_source_first": true,
+        "no_cross_basis_substitution": true,
+        "last_valid_on_source_delay": true,
+        "withhold_if_unvalidated": true,
+        "secondary_market_pricing_requires_validation": true
+      },
+      "PRICE": {
+        "source": "ECB euro foreign exchange reference rates",
+        "cadence": "TARGET business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-12"
+      },
+      "COT": {
+        "source": "CFTC Legacy Futures Only · Non-Commercial",
+        "cadence": "weekly",
+        "policy": "AUTO_UPDATE_PRIMARY_WHEN_RELEASED",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-09-22"
+      },
+      "RATES": {
+        "USD": {
+          "source": "U.S. Treasury Daily Par Yield Curve",
+          "cadence": "US business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "EUR": {
+          "source": "ECB euro area zero-coupon yield curve",
+          "cadence": "TARGET business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "GBP": {
+          "source": "Bank of England daily nominal government liability curve",
+          "cadence": "daily business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "JPY": {
+          "source": "Japan Ministry of Finance JGB interest-rate CSV",
+          "cadence": "business day with publication lag",
+          "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-08",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "CHF": {
+          "source": "SNB data portal · Swiss Confederation yields",
+          "cadence": "source-native publication",
+          "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-09-30",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "CAD": {
+          "source": "Bank of Canada selected benchmark bond yields",
+          "cadence": "daily business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-08",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "AUD": {
+          "source": "RBA F2 Capital Market Yields – Government Bonds",
+          "cadence": "weekly Friday; observations through two business days earlier",
+          "policy": "AUTO_UPDATE_PRIMARY_ON_RELEASE",
+          "fallback": "HOLD_LAST_VALID_NOT_STALE_UNTIL_EXPECTED_RELEASE",
+          "current_as_of": "2026-10-07",
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "NZD": {
+          "source": "RBNZ B2 Wholesale interest rates",
+          "cadence": "daily; one business day publication lag",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE_AFTER_EXPECTED_LAG",
+          "current_as_of": "2026-10-05",
+          "status": "CURRENT_OFFICIAL",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        }
+      },
+      "CB": {
+        "policy": "EVENT_DRIVEN_OFFICIAL_ONLY",
+        "fallback": "HOLD_LAST_OFFICIAL",
+        "rule": "Only official central-bank decisions/statements can alter the realized CB layer."
+      },
+      "CB_PRICING": {
+        "USD": {
+          "quality": "WITHHELD_PUBLIC_STRIP_INCOMPLETE",
+          "policy": "HOLD_UNTIL_DIRECT_STRIP"
+        },
+        "EUR": {
+          "quality": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "Eurex FST3 official overallstatistics API · D.Settle",
+          "current_as_of": "2026-09-29"
+        },
+        "GBP": {
+          "quality": "COMPLETO_DIRECT_OFFICIAL",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "current_as_of": "2026-09-29",
+          "source": "Bank of England SONIA OIS curve · official workbook"
+        },
+        "JPY": {
+          "quality": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "TFX Historical Database · Three-Month TONA Futures",
+          "current_as_of": "2026-09-29"
+        },
+        "CHF": {
+          "quality": "WITHHELD_LIQUIDITY_BASIS",
+          "policy": "HOLD_UNTIL_LIQUID_DIRECT_STRIP"
+        },
+        "CAD": {
+          "quality": "COMPLETO_DIRECT_EXCHANGE",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "current_as_of": "2026-09-29",
+          "source": "Montréal Exchange · Three-Month CORRA Futures"
+        },
+        "AUD": {
+          "quality": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data",
+          "current_as_of": "2026-09-29"
+        },
+        "NZD": {
+          "quality": "WITHHELD_NO_PUBLIC_FULL_OIS_CURVE",
+          "policy": "HOLD_MISSING_HORIZONS_WITHHELD"
+        }
+      },
+      "LIQUIDITY": {
+        "policy": "SOURCE_NATIVE_CADENCE",
+        "fallback": "HOLD_LAST_VALID_COMPONENT",
+        "rule": "Update each underlying liquidity/money/credit component only on its own source release; never infer a missing component from another layer.",
+        "NZD": {
+          "source": "RBNZ D10 + C50",
+          "cadence": "monthly",
+          "next_expected": "2026-09-30"
+        }
+      },
+      "MACRO": {
+        "policy": "RELEASE_DRIVEN_BY_SERIES",
+        "fallback": "HOLD_LAST_VALID_SERIES",
+        "rule": "Each macro series refreshes only on its own official release. Calendar age alone does not make a monthly/quarterly series stale."
+      }
+    },
+    "GMFQ_COT_TUTOR": {},
+    "LAST_PRODUCTION_REFRESH": "null",
+    "PRODUCTION_HEALTH_POLICY": {
+      "PASS": "No hard integrity errors and no freshness/quality warnings.",
+      "PASS_WITH_WARNINGS": "Architecture coherent; one or more feeds are stale/partial/secondary or a structural proposal is pending.",
+      "FAIL": "Integrity problem: stop production refresh decisions until resolved."
+    },
+    "PRODUCTION_LIVE_REFRESH_AUDIT": {
+      "as_of": "2026-09-29T09:22+02:00",
+      "aud_cb": {
+        "source": "RBA Monetary Policy Decision 29 Sep 2026",
+        "official_rate": "4.60%",
+        "action": "+25 bp",
+        "next_decision": "2026-11-03",
+        "visible_canonical_text_synced": true,
+        "market_pricing_status": "PENDING_POST_DECISION_EOD"
+      },
+      "other_layers": "NO_NEW_OFFICIAL_COMMIT_AT_AUDIT_TIME"
+    },
+    "PRODUCTION_LIVE_REFRESH_AUDIT_JPY": {
+      "audited_at": "2026-09-29T09:26+02:00",
+      "source": "Japan Ministry of Finance · JGB Interest Rate",
+      "source_publication_date": "2026-09-29",
+      "observation_date": "2026-09-28",
+      "y2": 1.95,
+      "y10": 3.08,
+      "chg2_bp": 10.1,
+      "chg10_bp": 9.9,
+      "status": "CURRENT_28SEP_SAME_BASIS"
+    },
+    "PRODUCTION_MACRO_CBPRICING_AUDIT": {
+      "audited_at": "2026-09-29T09:37+02:00",
+      "macro": {
+        "status": "NO_NEW_G8_MACRO_COMMIT_VALIDATED_AT_AUDIT_TIME",
+        "action": "HOLD_ALL_LAST_VALID",
+        "rule": "No macro series is advanced without a validated official release for that exact series."
+      },
+      "aud_cb_pricing": {
+        "status": "PENDING_POST_DECISION_EOD",
+        "action": "HOLD_PRE_DECISION_CURVE",
+        "reason": "No canonical post-29-Sep ASX Rate Tracker settlement snapshot validated yet.",
+        "official_cb_decision": {
+          "date": "2026-09-29",
+          "cash_rate": 4.6,
+          "action": "+25 bp"
+        }
+      },
+      "contamination_check": "PASS",
+      "structural_commit": "NONE"
+    },
+    "PRODUCTION_PRICE_COT_LIQ_AUDIT": {
+      "audited_at": "2026-09-29T09:39+02:00",
+      "price": {
+        "status": "CURRENT_OFFICIAL",
+        "current_as_of": "2026-10-12",
+        "action": "CURRENT",
+        "next_expected": "2026-10-13 around 16:00 CET/CEST",
+        "rule": "Do not use intraday spot to overwrite the canonical ECB daily fixing."
+      },
+      "cot": {
+        "status": "CURRENT_WEEKLY",
+        "current_as_of": "2026-09-22",
+        "action": "HOLD_UNTIL_NEXT_CFTC_RELEASE",
+        "rule": "Weekly CFTC Legacy Futures Only snapshot only; no interpolation."
+      },
+      "liquidity": {
+        "status": "NO_NEW_VALIDATED_COMPONENTS_AT_AUDIT_TIME",
+        "action": "HOLD_LAST_VALID_BY_SOURCE_CADENCE",
+        "nzd": {
+          "current_period": "2026-07",
+          "source": "RBNZ D10 + C50",
+          "next_release": "2026-09-30",
+          "action": "HOLD_UNTIL_SCHEDULED_RELEASE"
+        }
+      },
+      "structural_commit": "NONE",
+      "contamination_check": "PASS"
+    },
+    "PRODUCTION_RATES_REFRESH_STATUS": {
+      "audited_at": "2026-09-29T09:31+02:00",
+      "rates_refresh": {
+        "EUR": {
+          "action": "UPDATED",
+          "current_as_of": "2026-10-09",
+          "reason": "Validated ECB AAA same-basis snapshot retained."
+        },
+        "GBP": {
+          "action": "UPDATED",
+          "current_as_of": "2026-10-09",
+          "reason": "Validated Bank of England same-basis snapshot retained."
+        },
+        "CHF": {
+          "action": "UPDATED",
+          "current_as_of": "2026-09-30",
+          "reason": "Validated SNB same-basis snapshot retained."
+        },
+        "CAD": {
+          "action": "UPDATED",
+          "current_as_of": "2026-10-08",
+          "reason": "Validated Bank of Canada same-basis 2Y/10Y snapshot retained."
+        },
+        "AUD": {
+          "action": "CURRENT_BY_SOURCE_CADENCE",
+          "current_as_of": "2026-10-07",
+          "reason": "Validated RBA F2 observation retained at source-native cadence."
+        },
+        "JPY": {
+          "action": "UPDATED",
+          "current_as_of": "2026-10-08",
+          "reason": "Validated MOF same-basis 2Y/10Y snapshot retained."
+        },
+        "USD": {
+          "action": "CURRENT",
+          "current_as_of": "2026-10-09",
+          "reason": "Validated U.S. Treasury same-basis snapshot retained."
+        },
+        "NZD": {
+          "action": "CURRENT",
+          "current_as_of": "2026-10-05",
+          "reason": "Validated RBNZ B2 same-basis snapshot retained."
+        }
+      },
+      "policy": "A missing newer canonical observation is not replaced by a different curve methodology, partial tenor or secondary quote."
+    },
+    "PRODUCTION_REFRESH_GENERATION": "0",
+    "__GMFQ_COT_FRESHNESS_GATE_STATE": {
+      "status": "PASS_WITHHELD_STALE_COT",
+      "max_calendar_lag_days": 10,
+      "freshness_time_zone": "Europe/Rome",
+      "changes_engine": false,
+      "changes_bias": false,
+      "changes_sizing": false,
+      "changes_pair_structure": false,
+      "underlying_cot_data_mutated": false,
+      "provenance_wait_attempts": 1,
+      "reason": "Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.",
+      "cot_asof": "2026-09-22",
+      "reference_asof": "2026-10-12",
+      "calendar_lag_days": 20,
+      "currency_cot_risk_nonempty": 0,
+      "price_dependency_status": "PASS_FRESH_PRICE_UNCHANGED"
+    },
+    "v245CotSelected": "EUR"
+  },
+  "cotDataCandidates": {
+    "FINAL_SOURCE_POLICY_AUDIT": {
+      "audit_date": "2026-10-12",
+      "principles": {
+        "primary_source_first": true,
+        "no_cross_basis_substitution": true,
+        "last_valid_on_source_delay": true,
+        "withhold_if_unvalidated": true,
+        "secondary_market_pricing_requires_validation": true
+      },
+      "PRICE": {
+        "source": "ECB euro foreign exchange reference rates",
+        "cadence": "TARGET business day",
+        "policy": "AUTO_UPDATE_PRIMARY",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-10-12"
+      },
+      "COT": {
+        "source": "CFTC Legacy Futures Only · Non-Commercial",
+        "cadence": "weekly",
+        "policy": "AUTO_UPDATE_PRIMARY_WHEN_RELEASED",
+        "fallback": "LAST_VALID_STALE",
+        "current_as_of": "2026-09-22"
+      },
+      "RATES": {
+        "USD": {
+          "source": "U.S. Treasury Daily Par Yield Curve",
+          "cadence": "US business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "EUR": {
+          "source": "ECB euro area zero-coupon yield curve",
+          "cadence": "TARGET business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "GBP": {
+          "source": "Bank of England daily nominal government liability curve",
+          "cadence": "daily business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-09",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "JPY": {
+          "source": "Japan Ministry of Finance JGB interest-rate CSV",
+          "cadence": "business day with publication lag",
+          "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-08",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "CHF": {
+          "source": "SNB data portal · Swiss Confederation yields",
+          "cadence": "source-native publication",
+          "policy": "AUTO_UPDATE_PRIMARY_WHEN_POSTED",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-09-30",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "CAD": {
+          "source": "Bank of Canada selected benchmark bond yields",
+          "cadence": "daily business day",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE",
+          "current_as_of": "2026-10-08",
+          "status": "CURRENT_OFFICIAL_SAME_BASIS",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "AUD": {
+          "source": "RBA F2 Capital Market Yields – Government Bonds",
+          "cadence": "weekly Friday; observations through two business days earlier",
+          "policy": "AUTO_UPDATE_PRIMARY_ON_RELEASE",
+          "fallback": "HOLD_LAST_VALID_NOT_STALE_UNTIL_EXPECTED_RELEASE",
+          "current_as_of": "2026-10-07",
+          "status": "CURRENT_BY_SOURCE_CADENCE",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        },
+        "NZD": {
+          "source": "RBNZ B2 Wholesale interest rates",
+          "cadence": "daily; one business day publication lag",
+          "policy": "AUTO_UPDATE_PRIMARY",
+          "fallback": "LAST_VALID_STALE_AFTER_EXPECTED_LAG",
+          "current_as_of": "2026-10-05",
+          "status": "CURRENT_OFFICIAL",
+          "live_metadata_source": "Validated same-basis Rates refresh audits committed on staging"
+        }
+      },
+      "CB": {
+        "policy": "EVENT_DRIVEN_OFFICIAL_ONLY",
+        "fallback": "HOLD_LAST_OFFICIAL",
+        "rule": "Only official central-bank decisions/statements can alter the realized CB layer."
+      },
+      "CB_PRICING": {
+        "USD": {
+          "quality": "WITHHELD_PUBLIC_STRIP_INCOMPLETE",
+          "policy": "HOLD_UNTIL_DIRECT_STRIP"
+        },
+        "EUR": {
+          "quality": "COMPLETO_DIRECT_EXCHANGE_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "Eurex FST3 official overallstatistics API · D.Settle",
+          "current_as_of": "2026-09-29"
+        },
+        "GBP": {
+          "quality": "COMPLETO_DIRECT_OFFICIAL",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "current_as_of": "2026-09-29",
+          "source": "Bank of England SONIA OIS curve · official workbook"
+        },
+        "JPY": {
+          "quality": "COMPLETO_DIRECT_TFX_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "TFX Historical Database · Three-Month TONA Futures",
+          "current_as_of": "2026-09-29"
+        },
+        "CHF": {
+          "quality": "WITHHELD_LIQUIDITY_BASIS",
+          "policy": "HOLD_UNTIL_LIQUID_DIRECT_STRIP"
+        },
+        "CAD": {
+          "quality": "COMPLETO_DIRECT_EXCHANGE",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "current_as_of": "2026-09-29",
+          "source": "Montréal Exchange · Three-Month CORRA Futures"
+        },
+        "AUD": {
+          "quality": "COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY",
+          "policy": "AUTO_UPDATE_IF_SAME_INSTRUMENT_AND_SETTLEMENT",
+          "source": "ASX 30 Day Interbank Cash Rate Futures · official EOD settlement data",
+          "current_as_of": "2026-09-29"
+        },
+        "NZD": {
+          "quality": "WITHHELD_NO_PUBLIC_FULL_OIS_CURVE",
+          "policy": "HOLD_MISSING_HORIZONS_WITHHELD"
+        }
+      },
+      "LIQUIDITY": {
+        "policy": "SOURCE_NATIVE_CADENCE",
+        "fallback": "HOLD_LAST_VALID_COMPONENT",
+        "rule": "Update each underlying liquidity/money/credit component only on its own source release; never infer a missing component from another layer.",
+        "NZD": {
+          "source": "RBNZ D10 + C50",
+          "cadence": "monthly",
+          "next_expected": "2026-09-30"
+        }
+      },
+      "MACRO": {
+        "policy": "RELEASE_DRIVEN_BY_SERIES",
+        "fallback": "HOLD_LAST_VALID_SERIES",
+        "rule": "Each macro series refreshes only on its own official release. Calendar age alone does not make a monthly/quarterly series stale."
+      }
+    },
+    "PRODUCTION_PRICE_COT_LIQ_AUDIT": {
+      "audited_at": "2026-09-29T09:39+02:00",
+      "price": {
+        "status": "CURRENT_OFFICIAL",
+        "current_as_of": "2026-10-12",
+        "action": "CURRENT",
+        "next_expected": "2026-10-13 around 16:00 CET/CEST",
+        "rule": "Do not use intraday spot to overwrite the canonical ECB daily fixing."
+      },
+      "cot": {
+        "status": "CURRENT_WEEKLY",
+        "current_as_of": "2026-09-22",
+        "action": "HOLD_UNTIL_NEXT_CFTC_RELEASE",
+        "rule": "Weekly CFTC Legacy Futures Only snapshot only; no interpolation."
+      },
+      "liquidity": {
+        "status": "NO_NEW_VALIDATED_COMPONENTS_AT_AUDIT_TIME",
+        "action": "HOLD_LAST_VALID_BY_SOURCE_CADENCE",
+        "nzd": {
+          "current_period": "2026-07",
+          "source": "RBNZ D10 + C50",
+          "next_release": "2026-09-30",
+          "action": "HOLD_UNTIL_SCHEDULED_RELEASE"
+        }
+      },
+      "structural_commit": "NONE",
+      "contamination_check": "PASS"
+    },
+    "__GMFQ_COT_FRESHNESS_GATE_STATE": {
+      "status": "PASS_WITHHELD_STALE_COT",
+      "max_calendar_lag_days": 10,
+      "freshness_time_zone": "Europe/Rome",
+      "changes_engine": false,
+      "changes_bias": false,
+      "changes_sizing": false,
+      "changes_pair_structure": false,
+      "underlying_cot_data_mutated": false,
+      "provenance_wait_attempts": 1,
+      "reason": "Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.",
+      "cot_asof": "2026-09-22",
+      "reference_asof": "2026-10-12",
+      "calendar_lag_days": 20,
+      "currency_cot_risk_nonempty": 0,
+      "price_dependency_status": "PASS_FRESH_PRICE_UNCHANGED"
+    }
+  },
+  "latest": {},
+  "eurHeat": {
+    "txt": "P9 · STALE",
+    "cls": "neu",
+    "ext": false
+  },
+  "eurHeatOriginal": {
+    "txt": "P9",
+    "cls": "mix",
+    "ext": true
+  },
+  "bootstrapError": null
+}
