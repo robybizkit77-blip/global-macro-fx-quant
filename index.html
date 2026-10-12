@@ -12,39 +12,6 @@
  let html=responses.join('\n');
  if(!html.includes('GMFQ_RUNTIME_VALIDATION_MANIFEST')) throw new Error('Payload v490 non validato');
 
- // MACRO_THERMOMETER_DATA already lives on window.__GMFQ_DATA. MACRO_SERIES
- // is exposed only if it is a lexical binding; the bridge preserves the exact
- // object identity captured by the legacy runtime and never rebinds the data.
- const exposeLexicalBinding=(source,name,refName)=>{
-   const re=new RegExp('\\b(?:const|let|var)\\s+'+name+'\\s*=','g');
-   const matches=[...source.matchAll(re)];
-   if(matches.length!==1){
-     const at=source.indexOf(name);
-     const snippet=at>=0?source.slice(Math.max(0,at-80),Math.min(source.length,at+name.length+80)).replace(/\s+/g,' '):'NAME_NOT_FOUND';
-     throw new Error('Macro bridge declaration inattesa '+name+': '+matches.length+' | first='+at+' | snippet='+snippet);
-   }
-   const m=matches[0];
-   let i=m.index+m[0].length, depth=0, quote=null, escaped=false;
-   for(;i<source.length;i++){
-     const ch=source[i];
-     if(quote){
-       if(escaped){escaped=false;continue;}
-       if(ch==='\\'){escaped=true;continue;}
-       if(ch===quote) quote=null;
-       continue;
-     }
-     if(ch==='"'||ch==="'"||ch==='`'){quote=ch;continue;}
-     if(ch==='('||ch==='['||ch==='{'){depth++;continue;}
-     if(ch===')'||ch===']'||ch==='}'){depth--;if(depth<0)throw new Error('Macro bridge nesting invalido '+name);continue;}
-     if(ch===';'&&depth===0){
-       const bridge='window.'+refName+'='+name+';';
-       return source.slice(0,i+1)+bridge+source.slice(i+1);
-     }
-   }
-   throw new Error('Macro bridge terminatore non trovato '+name);
- };
- html=exposeLexicalBinding(html,'MACRO_SERIES','__GMFQ_MACRO_SERIES_REF');
-
  let refreshCalls=0;
  html=html.replace(/\bstableModelRefresh\s*\(\s*\)/g,(m,offset,src)=>{
    const prefix=src.slice(Math.max(0,offset-24),offset);
