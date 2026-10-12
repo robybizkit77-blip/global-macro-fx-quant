@@ -1,0 +1,84 @@
+name: CB Priority Official Source Inventory V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-official-source-inventory-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-readiness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen source inventory contract
+        run: |
+          python - <<'PY'
+          import json, urllib.parse
+          p='validation/CB_PRIORITY_OFFICIAL_SOURCE_INVENTORY_V1_2026-10-12.json'
+          x=json.load(open(p))
+          assert x['schema']=='GMFQ_CB_PRIORITY_OFFICIAL_SOURCE_INVENTORY_V1'
+          assert x['status']=='RESULT_BLIND_SOURCE_DISCOVERY'
+          assert set(x['sources'])=={'FED','ECB','BOJ','BOC','RBA'}
+          assert x['governance']['result_blind'] is True
+          assert x['governance']['labeling_authorized'] is False
+          assert x['governance']['performance_test_authorized'] is False
+          forbidden=set(x['forbidden_during_inventory'])
+          assert 'FX returns' in forbidden and 'rates returns' in forbidden and 'performance metrics' in forbidden
+          for cb,s in x['sources'].items():
+              assert s['source_status']=='READY_FOR_INVENTORY'
+              assert s['archive_routes']
+              dom=s['official_domain']
+              for u in s['archive_routes']:
+                  if '{year}' in u: u=u.format(year=2018)
+                  assert urllib.parse.urlparse(u).netloc.endswith(dom), (cb,u,dom)
+          print('SOURCE_CONTRACT_PASS')
+          PY
+      - name: Verify official archive endpoints and signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cb-src
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://www.federalreserve.gov/monetarypolicy/fomchistorical2018.htm' -o /tmp/cb-src/fed.html
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html' -o /tmp/cb-src/ecb.html
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://www.boj.or.jp/en/mopo/mpmdeci/state_2018/index.htm' -o /tmp/cb-src/boj.html
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://www.bankofcanada.ca/press/press-releases/' -o /tmp/cb-src/boc.html
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 'https://www.rba.gov.au/media-releases/2018/' -o /tmp/cb-src/rba.html
+          python - <<'PY'
+          from pathlib import Path
+          checks={
+            'fed':('Federal Open Market Committee','Statement'),
+            'ecb':('Monetary policy decisions','Governing Council'),
+            'boj':('Statements on Monetary Policy 2018','Statement on Monetary Policy'),
+            'boc':('Press releases','Bank of Canada'),
+            'rba':('Media Releases 2018','Monetary Policy Decision'),
+          }
+          for k,need in checks.items():
+              t=Path(f'/tmp/cb-src/{k}.html').read_text(errors='ignore')
+              for s in need:
+                  assert s.lower() in t.lower(), (k,s)
+              print(k,'OFFICIAL_ROUTE_PASS',len(t))
+          PY
+      - name: Enforce result-blind boundary
+        run: |
+          python - <<'PY'
+          import pathlib
+          bad=('sharpe','directional_accuracy','fx_return','rates_return','target_return','edge_survival')
+          files=[pathlib.Path('validation/CB_PRIORITY_OFFICIAL_SOURCE_INVENTORY_V1_2026-10-12.json')]
+          text='\n'.join(p.read_text().lower() for p in files)
+          # governance prose may mention forbidden concepts; executable result fields must not exist.
+          assert '"sharpe"' not in text
+          assert '"directional_accuracy"' not in text
+          assert '"fx_return"' not in text
+          assert '"rates_return"' not in text
+          assert '"target_return"' not in text
+          assert '"edge_survival"' not in text
+          print('RESULT_BLIND_BOUNDARY_PASS')
+          PY
+          test -z "$(git status --porcelain)"
