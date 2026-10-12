@@ -1,0 +1,47 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_FORWARD_SHADOW_FIRST_RECEIPT_V1",
+  "as_of": "2026-10-12",
+  "source_pr": 158,
+  "source_head_sha": "ec31d87cd2f6209ceba43cd2378fb6f1f5d1d7a9",
+  "workflow_run_id": 38208412983,
+  "workflow_conclusion": "success",
+  "artifact": {
+    "id": 11727959029,
+    "name": "cot-extreme-reversal-forward-shadow-38208412983",
+    "sha256": "5560e5cdfef8f2f23025a41feb370f6aad79fbad402db93029763a1a26871e1f"
+  },
+  "historical_boundary_report_date": "2026-09-08",
+  "execution_date": "2026-10-12",
+  "data_snapshot": {
+    "latest_cftc_report_date_present": "2026-10-06",
+    "post_boundary_cftc_report_dates_present": 4,
+    "latest_post_boundary_cftc_report_date_present": "2026-10-06",
+    "h10_common_latest_nonmissing_date": "2026-10-02"
+  },
+  "forward_signal_snapshot": {
+    "signals_total": 8,
+    "matured": 0,
+    "unmatured": 8,
+    "verdict": "WAITING_FOR_UNSEEN_OBSERVATIONS",
+    "signals": [
+      {"currency":"CAD","report_date":"2026-09-15","research_available_from":"2026-09-29","percentile":88.9423076923077,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":"2026-09-29","outcome_status":"UNMATURED"},
+      {"currency":"CHF","report_date":"2026-09-15","research_available_from":"2026-09-29","percentile":98.5576923076923,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":"2026-09-29","outcome_status":"UNMATURED"},
+      {"currency":"NZD","report_date":"2026-09-15","research_available_from":"2026-09-29","percentile":96.63461538461539,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":"2026-09-29","outcome_status":"UNMATURED"},
+      {"currency":"CAD","report_date":"2026-09-22","research_available_from":"2026-10-06","percentile":85.09615384615384,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":null,"outcome_status":"WAITING_FOR_ENTRY_FX_PRICE"},
+      {"currency":"CHF","report_date":"2026-09-22","research_available_from":"2026-10-06","percentile":95.67307692307692,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":null,"outcome_status":"WAITING_FOR_ENTRY_FX_PRICE"},
+      {"currency":"EUR","report_date":"2026-09-22","research_available_from":"2026-10-06","percentile":18.75,"signal":1,"side":"EXTREME_SHORT_REVERSAL","entry_date":null,"outcome_status":"WAITING_FOR_ENTRY_FX_PRICE"},
+      {"currency":"GBP","report_date":"2026-09-22","research_available_from":"2026-10-06","percentile":2.4038461538461537,"signal":1,"side":"EXTREME_SHORT_REVERSAL","entry_date":null,"outcome_status":"WAITING_FOR_ENTRY_FX_PRICE"},
+      {"currency":"NZD","report_date":"2026-09-22","research_available_from":"2026-10-06","percentile":82.21153846153847,"signal":-1,"side":"EXTREME_LONG_REVERSAL","entry_date":null,"outcome_status":"WAITING_FOR_ENTRY_FX_PRICE"}
+    ]
+  },
+  "governance": {
+    "partial_forward_performance_interpretation": "forbidden_until_outcomes_mature_and_predeclared_minimum_is_met",
+    "historical_candidate_reestimated": false,
+    "parameter_tuning": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "promotion_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
