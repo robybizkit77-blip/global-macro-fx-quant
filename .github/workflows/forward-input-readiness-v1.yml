@@ -6,6 +6,8 @@ on:
       - validation-forward-input-readiness-v1-2026-10-12
     paths:
       - 'validation/FORWARD_INPUT_READINESS_CONTRACT_V1_2026-10-12.json'
+      - 'validation/FORWARD_INPUT_REFRESH_SOURCE_MAP_V1_2026-10-12.json'
+      - 'validation/check_forward_input_refresh_source_map_v1.py'
       - 'validation/forward_input_readiness_v1.py'
       - '.github/workflows/forward-input-readiness-v1.yml'
   pull_request:
@@ -33,6 +35,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Validate canonical forward refresh source map
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/check_forward_input_refresh_source_map_v1.py | tee /tmp/forward-refresh-source-map.json
 
       - name: Materialize exact certified macro snapshot
         uses: actions/download-artifact@v4
@@ -112,6 +120,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: forward-input-readiness-${{ github.run_id }}
-          path: /tmp/forward-readiness/out/
+          path: |
+            /tmp/forward-readiness/out/
+            /tmp/forward-refresh-source-map.json
           if-no-files-found: error
           retention-days: 90
