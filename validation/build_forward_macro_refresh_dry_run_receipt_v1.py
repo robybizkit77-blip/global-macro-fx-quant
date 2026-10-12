@@ -16,12 +16,17 @@ def same_value(a,b):
     try: return math.isclose(float(a),float(b),rel_tol=0.0,abs_tol=1e-10)
     except Exception: return a==b
 
+def prior_value(summary:dict):
+    if 'old_value' in summary:
+        return summary.get('old_value')
+    return summary.get('current_value')
+
 def classify_action(summary:dict)->str:
     action=summary.get('series_action')
     if action=='APPEND_NEW':
         return 'APPEND_NEW_ELIGIBLE_FOR_ATOMIC_PIT_REVIEW'
     if action=='REPLACE_EXISTING':
-        old=summary.get('current_value')
+        old=prior_value(summary)
         new=summary.get('new_value')
         if same_value(old,new):
             return 'NO_CHANGE_ALREADY_CANONICAL'
@@ -60,7 +65,7 @@ def main():
                 'source_url':cj.get('source_url'),
                 'macro_series_id':cj['macro_series_id'],
                 'builder_series_action':sj.get('series_action'),
-                'builder_current_value':sj.get('current_value'),
+                'builder_prior_value':prior_value(sj),
                 'builder_new_value':sj.get('new_value'),
                 'pit_refresh_classification':pit_action,
                 'candidate_sha256':sha256(cand),
