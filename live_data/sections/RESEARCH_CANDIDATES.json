@@ -1,0 +1,51 @@
+{
+  "schema": "GMFQ_RESEARCH_CANDIDATES_DASHBOARD_V1",
+  "as_of": "2026-10-12",
+  "mode": "DISPLAY_ONLY_RESEARCH",
+  "governance": {
+    "decision_weight": 0,
+    "bias_effect": 0,
+    "ranking_effect": 0,
+    "sizing_effect": 0,
+    "production_authorized": false,
+    "promotion_requires_separate_review": true
+  },
+  "candidates": [
+    {
+      "id": "COT_104W_EXTREME_REVERSAL_80_20_V1",
+      "label": "COT 104W Extremes",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "display_status": "IN VALIDAZIONE",
+      "decision_weight": 0,
+      "forward_shadow_pr": 143,
+      "note": "Storico OOS forte; attende conferma forward realmente nuova."
+    },
+    {
+      "id": "RATES_DOVISH_DIVERGENCE_V1",
+      "label": "Rates Dovish Divergence",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "display_status": "IN VALIDAZIONE",
+      "decision_weight": 0,
+      "forward_shadow_pr": 132,
+      "note": "Segnale rates storico promettente; nessun peso operativo prima del forward."
+    },
+    {
+      "id": "MACRO_TURNING_2Y_CONFIRMED_FX_V1",
+      "label": "Macro Turning Point -> 2Y -> FX",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "display_status": "IN VALIDAZIONE",
+      "decision_weight": 0,
+      "forward_shadow_pr": 178,
+      "first_permitted_forward_signal_date": "2026-11-10",
+      "historical_snapshot": {
+        "mechanism_oos_events": 66,
+        "mechanism_accuracy": 0.6061,
+        "fx_confirmed_events": 40,
+        "fx_accuracy": 0.65,
+        "fx_mean_signed_log_return": 0.004426,
+        "positive_currencies": 4
+      },
+      "note": "Catena Macro -> Rates -> FX passata storicamente; forward nuovo obbligatorio."
+    }
+  ]
+}
