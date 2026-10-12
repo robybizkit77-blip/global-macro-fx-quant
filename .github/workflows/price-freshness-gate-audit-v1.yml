@@ -40,7 +40,10 @@ jobs:
             const r=await page.goto('http://127.0.0.1:8143/index.html',{waitUntil:'domcontentloaded',timeout:120000});
             if(!r||!r.ok()) throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
-            await page.waitForFunction(()=>window.__GMFQ_PRICE_FRESHNESS_GATE_STATE||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              return (s && s!=='WAITING_FOR_PRICE_PROVENANCE') || window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
             const out=await page.evaluate(()=>{
               const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
               const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
@@ -76,13 +79,14 @@ jobs:
               return {gate,currentRomeDate,currencies,pairsNow,currenciesBefore,pairsBefore,currencyFailures,pairFailures,currencyCoreDiffs,structuralDiffs,ecbAudit:clone(window.GMFQ_ECB_PRICE_AUDIT),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
             });
             await browser.close();
-            fs.writeFileSync('price-freshness-gate-audit.json',JSON.stringify({schema:'GMFQ_PRICE_FRESHNESS_GATE_AUDIT_V2',...out,consoleErrors:errors},null,2));
+            fs.writeFileSync('price-freshness-gate-audit.json',JSON.stringify({schema:'GMFQ_PRICE_FRESHNESS_GATE_AUDIT_V3',...out,consoleErrors:errors},null,2));
             console.log(JSON.stringify({gate:out.gate,currentRomeDate:out.currentRomeDate,currencyFailures:out.currencyFailures.length,pairFailures:out.pairFailures.length,currencyCoreDiffs:out.currencyCoreDiffs.length,structuralDiffs:out.structuralDiffs.length,ecbAsOf:out.ecbAudit?.as_of,ecbPairCount:out.ecbAudit?.pair_count,exampleEUR:out.currencies.EUR,exampleCAD:out.currencies.CAD,exampleUSDEUR:out.pairsNow['USD/EUR']},null,2));
             if(out.bootstrapError) throw new Error(out.bootstrapError);
             if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
             if(out.gate?.status!=='PASS_WITHHELD_STALE_PRICE') throw new Error('Price gate did not withhold stale snapshot: '+JSON.stringify(out.gate));
             if(out.gate?.reference_asof!==out.currentRomeDate) throw new Error('Price gate reference date is not current Europe/Rome date: '+JSON.stringify({gate:out.gate,currentRomeDate:out.currentRomeDate}));
-            if(out.gate?.business_lag==null||out.gate.business_lag<=1) throw new Error('Price business lag not stale: '+JSON.stringify(out.gate));
+            if(out.gate?.price_asof!=='2026-09-30') throw new Error('Price provenance as-of not canonical: '+JSON.stringify(out.gate));
+            if(out.gate?.business_lag!==8) throw new Error('Price business lag expected 8: '+JSON.stringify(out.gate));
             if(out.currencyFailures.length) throw new Error('Currency Price failures: '+JSON.stringify(out.currencyFailures));
             if(out.pairFailures.length) throw new Error('Pair Price failures: '+JSON.stringify(out.pairFailures));
             if(out.currencyCoreDiffs.length) throw new Error('Currency structural core changed: '+JSON.stringify(out.currencyCoreDiffs));
