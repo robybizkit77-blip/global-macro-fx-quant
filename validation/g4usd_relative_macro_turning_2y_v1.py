@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse, csv, json
 from bisect import bisect_right
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 CCYS=("EUR","JPY","CAD","AUD")
@@ -16,6 +17,21 @@ def month_grid():
         out.append(f"{y:04d}-{m:02d}-10")
         y,m=(y+1,1) if m==12 else (y,m+1)
     return out
+
+
+def normalize_release_date(raw:str)->str:
+    """Technical-only normalization of certified release dates to ISO.
+
+    Economic meaning is unchanged. Accepted formats are exactly the formats
+    present in the already-certified macro artifacts used by this research chain.
+    """
+    x=raw.strip()
+    for fmt in ('%Y-%m-%d','%d/%m/%Y'):
+        try:
+            return datetime.strptime(x[:10],fmt).date().isoformat()
+        except ValueError:
+            pass
+    raise RuntimeError(f'unsupported certified release-date format: {raw!r}')
 
 
 def load_rates(path:Path):
@@ -53,7 +69,7 @@ def load_macro(path:Path,period_col:str,value_col:str):
                 continue
             if not rel: raise RuntimeError(f'missing PIT release eligibility in {path}')
             if not value: raise RuntimeError(f'missing macro value in {path}')
-            out.append((rel[:10],float(value)))
+            out.append((normalize_release_date(rel),float(value)))
     out.sort()
     return out
 
@@ -119,7 +135,6 @@ def main():
     c=json.load(open(a.contract,encoding='utf-8'))
     assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1'
     assert c['status']=='PREDECLARED_RESULT_BLIND'
-    # Exact source-field mappings already frozen by validation/g4usd_macro_input_adapter_v1.py.
     meta={
       'EUR':('reference_month','headline_hicp_yoy_pct','reference_month','unemployment_rate_pct'),
       'JPY':('observation_date','value','reference_month','unemployment_rate_sa_pct'),
