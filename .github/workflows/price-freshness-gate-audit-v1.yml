@@ -1,0 +1,75 @@
+name: Price Freshness Gate Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-price-freshness-gate-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8143 --bind 127.0.0.1 > /tmp/gmfq-price-gate-server.log 2>&1 &
+          sleep 2
+      - name: Validate Price freshness gate
+        run: |
+          cat > price-gate-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8143/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>window.__GMFQ_PRICE_FRESHNESS_GATE_STATE||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[]; for(let i=0;i<ccys.length;i++) for(let j=i+1;j<ccys.length;j++) pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const gate=clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE);
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const pairsNow=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const currencyFailures=Object.entries(currencies).filter(([c,s])=>s?.price!==0||s?.confirmation!=='PREZZO NON RISOLUTIVO'||s?.priceFreshness?.status!=='WITHHELD_STALE').map(([c,s])=>({c,s}));
+              const pairFailures=Object.entries(pairsNow).filter(([p,f])=>f?.priceReading!=='PREZZO NON RISOLUTIVO'||f?.priceFreshness?.status!=='WITHHELD_STALE').map(([p,f])=>({p,f}));
+              const structuralShape=Object.fromEntries(Object.entries(pairsNow).map(([p,f])=>[p,{fav:f?.fav,quality:f?.quality,setup:f?.setup,structural:f?.structural}]));
+              return {gate,currencies,pairsNow,currencyFailures,pairFailures,structuralShape,ecbAudit:clone(window.GMFQ_ECB_PRICE_AUDIT),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            if(out.gate?.status!=='PASS_WITHHELD_STALE_PRICE') throw new Error('Price gate did not withhold stale snapshot: '+JSON.stringify(out.gate));
+            if(out.gate?.business_lag==null||out.gate.business_lag<=1) throw new Error('Price business lag not stale');
+            if(out.currencyFailures.length) throw new Error('Currency Price failures: '+JSON.stringify(out.currencyFailures));
+            if(out.pairFailures.length) throw new Error('Pair Price failures: '+JSON.stringify(out.pairFailures));
+            if(out.ecbAudit?.as_of!=='2026-09-30'||out.ecbAudit?.pair_count!==28) throw new Error('Underlying ECB Price audit mutated: '+JSON.stringify(out.ecbAudit));
+            fs.writeFileSync('price-freshness-gate-audit.json',JSON.stringify({schema:'GMFQ_PRICE_FRESHNESS_GATE_AUDIT_V1',...out},null,2));
+            console.log(JSON.stringify({gate:out.gate,currencyFailures:out.currencyFailures.length,pairFailures:out.pairFailures.length,ecbAsOf:out.ecbAudit?.as_of,ecbPairCount:out.ecbAudit?.pair_count,exampleEUR:out.currencies.EUR,exampleCAD:out.currencies.CAD,exampleEURUSD:out.pairsNow['USD/EUR']},null,2));
+          })().catch(e=>{console.error('::error title=Price freshness gate audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node price-gate-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: price-freshness-gate-audit-v1
+          path: |
+            price-freshness-gate-audit.json
+            /tmp/gmfq-price-gate-server.log
