@@ -1,0 +1,115 @@
+name: CAD Labour Current Promotion V1
+
+on:
+  push:
+    branches: ['runner-cad-labour-refresh-v1-2026-10-12']
+    paths: ['.github/workflows/cad-labour-current-promotion-v1.yml']
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official CAD labour candidate and canonical overlay files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad-labour-current
+          python validation/sources/cad_statcan_core.py --dimension labour \
+            --output /tmp/cad-labour-current/candidate.json \
+            --audit-output /tmp/cad-labour-current/source-audit.json
+          python - <<'PY'
+          import json
+          p='/tmp/cad-labour-current/candidate.json'
+          c=json.load(open(p))
+          assert c['currency']=='CAD' and c['dimension']=='labour', c
+          assert c['macro_series_id']=='CA_UNEMP_RATE_history_value', c
+          assert str(c['observation_date'])[:7]=='2026-09', c
+          assert abs(float(c['value'])-6.5)<1e-12, c
+          print('CAD_LABOUR_OFFICIAL_2026_09_6_5_PASS')
+          PY
+          python validation/build_macro_candidate.py \
+            --candidate /tmp/cad-labour-current/candidate.json \
+            --output-dir /tmp/cad-labour-current/built | tee /tmp/cad-labour-current/builder.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/cad-labour-current/built/summary.json'))
+          assert s['status']=='PASS' and s['currency']=='CAD' and s['dimension']=='labour', s
+          assert str(s['observation_date'])[:7]=='2026-09', s
+          print('CAD_LABOUR_BUILDER_PASS', s)
+          PY
+      - name: Capture and verify atomic PIT delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          common=(--evidence-dir /tmp/cad-labour-current/evidence --currency CAD --dimension labour --macro-series-id CA_UNEMP_RATE_history_value)
+          python validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/cad-labour-current/before.json
+          cp /tmp/cad-labour-current/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/cad-labour-current/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python validation/macro_pit_anchor_contract.py capture-after "${common[@]}" --allow-live-data-dirty | tee /tmp/cad-labour-current/after.json
+          python validation/macro_pit_anchor_contract.py verify \
+            "${common[@]}" \
+            --candidate /tmp/cad-labour-current/candidate.json \
+            --evidence-output /tmp/cad-labour-current/pit-evidence.json | tee /tmp/cad-labour-current/verify.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cad-labour-current/pit-evidence.json'))
+          assert d['status']=='PASS', d
+          assert len(d['atomic_delta']['changed_rows'])==1, d
+          print('CAD_LABOUR_ATOMIC_PIT_PASS')
+          PY
+      - name: Build overlay-aware manifest and verify runtime contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/cad-labour-current/manifest.json
+          python - <<'PY'
+          import json
+          m=json.load(open('live_data/manifest.v2.json'))
+          by={x['key']:x for x in m['sections']}
+          for k in ('MACRO_SERIES','MACRO_THERMOMETER_DATA'):
+              assert by[k]['mode']=='RUNTIME_OVERLAY', by[k]
+              assert by[k]['direct_update_allowed'] is False, by[k]
+          assert m['status']=='PASS', m
+          print('MACRO_RUNTIME_OVERLAY_MANIFEST_PASS')
+          PY
+          python validation/check_live_update_contract.py | tee /tmp/cad-labour-current/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/cad-labour-current/runtime-roundtrip.json
+          git diff --name-only | sort > /tmp/cad-labour-current/changed.txt
+          python - <<'PY'
+          got=set(open('/tmp/cad-labour-current/changed.txt').read().splitlines())
+          expected={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json'}
+          assert got==expected,(got,expected)
+          print('CAD_LABOUR_EXACT_OVERLAY_SCOPE_PASS')
+          PY
+      - name: Commit clean candidate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c candidate-cad-labour-refresh-v1-2026-10-12
+          git add live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json
+          git commit -m 'Refresh CAD labour macro to 2026-09'
+          git push origin HEAD:refs/heads/candidate-cad-labour-refresh-v1-2026-10-12
+          echo CANDIDATE_SHA=$(git rev-parse HEAD)
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-labour-current-promotion-${{ github.run_id }}
+          path: /tmp/cad-labour-current/
+          if-no-files-found: warn
+          retention-days: 60
