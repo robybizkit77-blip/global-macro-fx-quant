@@ -16,17 +16,22 @@ permissions:
   actions: read
 
 env:
+  PYTHONDONTWRITEBYTECODE: '1'
   SOURCE_RUN_ID: '38228472363'
   SOURCE_ARTIFACT: forward-macro-refresh-dry-run-38228472363
 
 jobs:
-  extract-candidate:
+  atomic-pit:
     runs-on: ubuntu-24.04
-    outputs:
-      candidate_json: ${{ steps.extract.outputs.candidate_json }}
-      candidate_sha256: ${{ steps.extract.outputs.candidate_sha256 }}
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - uses: actions/download-artifact@v4
         with:
           name: ${{ env.SOURCE_ARTIFACT }}
@@ -34,65 +39,109 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: robybizkit77-blip/global-macro-fx-quant
           run-id: ${{ env.SOURCE_RUN_ID }}
-      - id: extract
-        name: Extract exact APPEND_NEW CAD labour candidate
+
+      - name: Resolve exact APPEND_NEW candidate
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY' >> "$GITHUB_OUTPUT"
-          import hashlib,json
-          from pathlib import Path
-          p=Path('/tmp/cad-forward-source/cad/labour/candidate.json')
-          s=Path('/tmp/cad-forward-source/cad/labour/built/summary.json')
-          c=json.loads(p.read_text()); b=json.loads(s.read_text())
+          mkdir -p /tmp/cad-pit
+          cp /tmp/cad-forward-source/cad/labour/candidate.json /tmp/cad-pit/candidate.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-pit/candidate.json'))
+          s=json.load(open('/tmp/cad-forward-source/cad/labour/built/summary.json'))
           assert c['currency']=='CAD' and c['dimension']=='labour',c
           assert c['macro_series_id']=='CA_UNEMP_RATE_history_value',c
           assert c['observation_date']=='2026-09-01',c
           assert abs(float(c['value'])-6.5)<1e-12,c
-          assert b['series_action']=='APPEND_NEW',b
-          assert b['old_value'] is None,b
-          raw=p.read_bytes()
-          print('candidate_json='+json.dumps(c,separators=(',',':')))
-          print('candidate_sha256='+hashlib.sha256(raw).hexdigest())
+          assert s['series_action']=='APPEND_NEW' and s['old_value'] is None,s
+          print('CAD_LABOUR_APPEND_NEW_CANDIDATE_PASS')
           PY
+          python validation/build_macro_candidate.py --candidate /tmp/cad-pit/candidate.json --output-dir /tmp/cad-pit/built | tee /tmp/cad-pit/builder.json
+          git diff --exit-code -- live_data payload validation/macro
 
-  atomic-pit:
-    needs: extract-candidate
-    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
-    with:
-      refresh_scope: single_series
-      currency: CAD
-      dimension: labour
-      macro_series_id: CA_UNEMP_RATE_history_value
-      dry_run: false
-      candidate_json: ${{ needs.extract-candidate.outputs.candidate_json }}
-
-  verify-no-publication:
-    needs: atomic-pit
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: macro-single-series-pit-refresh-*
-          path: /tmp/cad-pit
-          merge-multiple: true
-      - name: Verify atomic PIT receipt and no publication
+      - name: Capture and verify atomic PIT anchor
         shell: bash
         run: |
           set -euo pipefail
+          common=(--evidence-dir /tmp/cad-pit/evidence --currency CAD --dimension labour --macro-series-id CA_UNEMP_RATE_history_value)
+          python validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/cad-pit/before-capture.json
+          cp /tmp/cad-pit/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/cad-pit/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python validation/macro_pit_anchor_contract.py capture-after "${common[@]}" --allow-live-data-dirty | tee /tmp/cad-pit/after-capture.json
+          python validation/macro_pit_anchor_contract.py verify "${common[@]}" --candidate /tmp/cad-pit/candidate.json --evidence-output /tmp/cad-pit/macro-pit-anchor-evidence.json | tee /tmp/cad-pit/verify.json
           python - <<'PY'
           import json
-          from pathlib import Path
-          hits=list(Path('/tmp/cad-pit').rglob('receipt.json'))
-          assert len(hits)==1,hits
-          r=json.loads(hits[0].read_text())
-          assert r['schema']=='GMFQ_MACRO_PIT_REFRESH_RECEIPT_V1',r
-          assert r['status']=='PIT_ANCHOR_VALIDATED_NO_PUBLICATION',r
-          assert r['promotion_performed'] is False,r
-          assert r['live_data_published'] is False,r
-          assert r['gh_pages_published'] is False,r
-          assert r['automatic_publication'] is False,r
-          print(json.dumps(r,indent=2,sort_keys=True))
+          d=json.load(open('/tmp/cad-pit/macro-pit-anchor-evidence.json'))
+          assert d['status']=='PASS',d
+          assert len(d['atomic_delta']['changed_rows'])==1,d
+          assert d['registry_promotion']=='NOT_ATTEMPTED',d
+          print('CAD_ATOMIC_PIT_EVIDENCE_PASS')
           PY
-          test -z "$(git status --porcelain)"
+
+      - name: Restore baseline sections and normalize baseline manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/cad-pit/evidence/before/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/cad-pit/evidence/before/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git restore --source=HEAD --worktree -- payload live_data/manifest.v2.json
+          python validation/build_live_manifest_v2.py --write /tmp/cad-pit/baseline-manifest.v2.json | tee /tmp/cad-pit/baseline-manifest-build.json
+          cp /tmp/cad-pit/baseline-manifest.v2.json live_data/manifest.v2.json
+          python validation/check_live_update_contract.py | tee /tmp/cad-pit/baseline-live-contract.json
+          echo 'BASELINE_MANIFEST_NORMALIZED_PASS'
+
+      - name: Re-apply candidate through canonical direct-section runtime path
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py --section MACRO_THERMOMETER_DATA --replacement /tmp/cad-pit/built/MACRO_THERMOMETER_DATA.json --apply | tee /tmp/cad-pit/apply-heatmap.json
+          python validation/update_live_direct_section.py --section MACRO_SERIES --replacement /tmp/cad-pit/built/MACRO_SERIES.json --apply | tee /tmp/cad-pit/apply-series.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/cad-pit/final-manifest.json
+          python validation/check_live_update_contract.py | tee /tmp/cad-pit/final-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/cad-pit/runtime-roundtrip.json
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          required={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json'}
+          assert required <= changed,sorted(changed)
+          bad=[p for p in changed if p not in required and not p.startswith('payload/part-')]
+          assert not bad,bad
+          print('CAD_RUNTIME_SCOPE_PASS',sorted(changed))
+          PY
+
+      - name: Record no-publication receipt and restore runner
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' | tee /tmp/cad-pit/receipt.json
+          import datetime as dt,json,pathlib
+          root=pathlib.Path('/tmp/cad-pit')
+          evidence=root/'macro-pit-anchor-evidence.json'
+          final=root/'final-live-contract.json'
+          roundtrip=root/'runtime-roundtrip.json'
+          atomic=bool(evidence.exists() and json.loads(evidence.read_text()).get('status')=='PASS')
+          runtime=bool(final.exists() and json.loads(final.read_text()).get('status')=='PASS' and roundtrip.exists())
+          print(json.dumps({
+            'schema':'GMFQ_FORWARD_CAD_LABOUR_ATOMIC_PIT_RECEIPT_V1',
+            'status':'PASS_ATOMIC_PIT_AND_RUNTIME_NO_PUBLICATION' if atomic and runtime else 'FAILED_NO_PUBLICATION',
+            'candidate':{'currency':'CAD','dimension':'labour','observation_date':'2026-09-01','value':6.5},
+            'atomic_pit_validated':atomic,
+            'runtime_path_validated':runtime,
+            'registry_promotion':'NOT_ATTEMPTED','promotion_performed':False,
+            'shared_boundary_advanced':False,
+            'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+          },indent=2))
+          PY
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forward-cad-labour-atomic-pit-${{ github.run_id }}
+          path: /tmp/cad-pit/
+          if-no-files-found: error
+          retention-days: 60
