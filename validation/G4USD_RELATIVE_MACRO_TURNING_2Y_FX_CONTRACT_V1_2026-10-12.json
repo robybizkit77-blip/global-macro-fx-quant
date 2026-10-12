@@ -1,0 +1,77 @@
+{
+  "schema": "GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_FX_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_FX_RESULT_BLIND",
+  "parent_mechanism": {
+    "audit_pr": 174,
+    "workflow_run_id": 38220431432,
+    "artifact_id": 11734126823,
+    "result_json_sha256": "1cb6e8ea5e86fb5c8d6701c746fc97aeff70dcee3cef54d6ee3fe52ba8d0af7b",
+    "status_required": "PASS_PREDECLARED_MECHANISM_GATE"
+  },
+  "universe": ["EUR", "JPY", "CAD", "AUD"],
+  "event_selection": {
+    "parent_split": "OOS only",
+    "rates_confirmation": "signed_next_month_relative_2y_bp > 0",
+    "expected_confirmed_events_from_parent_only": {
+      "AUD": 8,
+      "CAD": 11,
+      "EUR": 9,
+      "JPY": 12,
+      "pooled": 40
+    },
+    "selection_uses_fx": false,
+    "post_result_currency_exclusion": "forbidden"
+  },
+  "fx_source_and_orientation": {
+    "source": "official ECB reference-rate histories, same source/orientation convention as frozen PR #122",
+    "local_currency_price": "USD per one unit of local currency; positive log return means local FX strength versus USD",
+    "EUR": "USD per EUR directly",
+    "JPY_CAD_AUD": "USD_per_EUR divided by local_currency_per_EUR"
+  },
+  "causal_timing": {
+    "macro_signal_time": "monthly as-of t",
+    "rates_confirmation_time": "next monthly as-of t+1 after the confirmed relative-2Y move is observable",
+    "fx_entry": "first common official ECB fixing strictly after rates_confirmation_time",
+    "fx_exit": "first common official ECB fixing strictly after the following monthly day-10 as-of date",
+    "same_period_fx_before_rates_confirmation_forbidden": true,
+    "horizon_search": "forbidden"
+  },
+  "trade_direction": {
+    "LOCAL_HAWKISH": "LONG local currency versus USD",
+    "LOCAL_DOVISH": "SHORT local currency versus USD",
+    "signed_fx_log_return": "macro_direction * log(exit_local_usd_price / entry_local_usd_price)",
+    "direction_search": "forbidden"
+  },
+  "predeclared_candidate_gate": {
+    "minimum_pooled_confirmed_events": 30,
+    "minimum_confirmed_events_per_currency": 5,
+    "mean_signed_fx_log_return_gt": 0.0,
+    "directional_accuracy_min": 0.52,
+    "minimum_currencies_positive_mean": 3,
+    "max_single_currency_share": 0.35,
+    "both_hawkish_and_dovish_required": true,
+    "all_required": true
+  },
+  "interpretation_policy": {
+    "pass": "Historical conditional FX candidate only. Because the mechanism was selected on the same historical research environment, PASS requires future unseen confirmation before any edge certification or production use.",
+    "fail": "Do not rescue by changing horizon, event definition, currency set, confirmation rule, direction, threshold, or FX source."
+  },
+  "forbidden": [
+    "same-month FX confirmation filter",
+    "price filter",
+    "COT filter",
+    "currency-specific rule",
+    "threshold search",
+    "horizon search",
+    "direction search",
+    "post-result currency exclusion"
+  ],
+  "governance": {
+    "edge_certification_possible_from_this_historical_test": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
