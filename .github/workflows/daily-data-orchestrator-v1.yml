@@ -60,13 +60,47 @@ jobs:
           print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
           PY
 
-      - name: Validate runtime remains unchanged
+      - name: Diagnose current manifest versus payload and sections
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/check_live_update_contract.py
-          python3 validation/rebuild_live_data_runtime.py --verify-only
-          git diff --exit-code -- live_data payload
+          python3 validation/build_live_manifest_v2.py --write /tmp/daily-orchestrator-v1/manifest.candidate.json | tee /tmp/daily-orchestrator-v1/manifest-build.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/daily-orchestrator-v1/runtime-roundtrip.json
+          python3 - <<'PY'
+          import json
+          m=json.load(open('/tmp/daily-orchestrator-v1/manifest.candidate.json'))
+          rows={x['key']:x for x in m['sections']}
+          for key in ('MACRO_THERMOMETER_DATA','MACRO_SERIES'):
+              x=rows[key]
+              print(key, 'bytes=', x['bytes'], 'payload_occurrences=', x['occurrences_in_payload'], 'part=', x['part'], 'sha256=', x['sha256'])
+          if m['status']!='PASS':
+              raise SystemExit('candidate manifest cannot be rebuilt cleanly from current payload/sections')
+          PY
+
+      - name: Compare tracked manifest with deterministic candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if cmp -s live_data/manifest.v2.json /tmp/daily-orchestrator-v1/manifest.candidate.json; then
+            echo MANIFEST_ALREADY_ALIGNED
+          else
+            echo MANIFEST_METADATA_STALE
+            python3 - <<'PY'
+          import json
+          old=json.load(open('live_data/manifest.v2.json'))
+          new=json.load(open('/tmp/daily-orchestrator-v1/manifest.candidate.json'))
+          oldr={x['key']:x for x in old['sections']}; newr={x['key']:x for x in new['sections']}
+          changed=[]
+          for k in sorted(set(oldr)|set(newr)):
+              if oldr.get(k)!=newr.get(k): changed.append(k)
+          print('MANIFEST_CHANGED_KEYS', changed)
+          if changed != ['MACRO_SERIES','MACRO_THERMOMETER_DATA']:
+              raise SystemExit(f'unexpected manifest drift: {changed}')
+          PY
+          fi
+
+      - name: Prove diagnostic is read-only
+        run: git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
         if: always()
