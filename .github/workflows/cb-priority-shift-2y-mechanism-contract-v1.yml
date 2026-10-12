@@ -1,0 +1,74 @@
+name: CB Priority Shift 2Y Mechanism Contract V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-shift-2y-mechanism-contract-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-mechanism-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen mechanism contract
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_V1_2026-10-12.json'
+          c=json.load(open(p))
+          assert c['schema']=='GMFQ_CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_V1'
+          assert c['status']=='PREDECLARED_NO_RATES_JOIN_OBSERVED'
+          d=c['parent_label_dataset']
+          assert d['pull_request']==168
+          assert d['label_engine_pull_request']==166
+          assert d['label_engine_head_sha']=='d3c3d87546e028bbb1a375af731550cdddd4ae22'
+          assert d['workflow_run_id']==38217052303
+          assert d['artifact_id']==11732474523
+          assert d['labeled_dataset_sha256']=='3cd295e0455751e81088165f88bde9d24b30bb3d6f26e0b14a7b3ce0cd5b74ca'
+          r=c['rates_source']
+          assert r['canonical_pull_request']==101
+          assert r['canonical_head_sha']=='0f4f45190fa5d5e010650026a30a0f981373ec34'
+          assert r['same_day_use_forbidden'] is True
+          cov=c['coverage_rule_frozen_before_rates_join']
+          assert cov['minimum_priority_shifts_per_central_bank']==12
+          assert cov['eligible_primary_panel_central_banks']==['BOC','BOJ','RBA']
+          assert cov['known_label_only_shift_counts']=={'BOC':16,'BOJ':15,'RBA':17,'FED':3,'ECB':0}
+          g=c['predeclared_mechanism_gate_all_required']
+          assert g['minimum_pooled_eligible_events']==40
+          assert g['minimum_events_per_primary_panel_central_bank']==12
+          assert g['pooled_mean_signed_2y_change_bp_gt']==0.0
+          assert g['pooled_directional_accuracy_gte']==0.55
+          assert g['minimum_central_banks_with_positive_mean_signed_2y_change']==2
+          assert g['maximum_single_central_bank_event_share_lte']==0.45
+          b=c['interpretation_boundary']
+          assert b['fx_join_authorized_by_contract'] is False
+          assert b['sharpe_calculation_forbidden'] is True
+          assert b['return_or_pnl_calculation_forbidden'] is True
+          assert b['threshold_search_forbidden'] is True
+          assert b['horizon_search_forbidden'] is True
+          assert b['post_result_currency_exclusion_forbidden'] is True
+          print('CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_FROZEN_PASS')
+          print('RATES_JOIN_EXECUTION_STATUS=NOT_YET_EXECUTED')
+          print('FX_JOIN_EXECUTION_STATUS=FORBIDDEN')
+          PY
+      - name: Assert no mechanism result exists on contract branch
+        run: |
+          set -euo pipefail
+          test ! -e validation/CB_PRIORITY_SHIFT_2Y_MECHANISM_RESULT_V1_2026-10-12.json
+          test ! -e validation/cb_priority_shift_2y_events_v1.csv
+          python - <<'PY'
+          from pathlib import Path
+          t=Path('validation/CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_V1_2026-10-12.json').read_text().lower()
+          for forbidden in ['"observed_mean_signed_2y"','"observed_directional_accuracy"','"sharpe"','"fx_return"','"pnl"']:
+              assert forbidden not in t, forbidden
+          print('MECHANISM_CONTRACT_RESULT_BLIND_BOUNDARY_PASS')
+          PY
+          test -z "$(git status --porcelain)"

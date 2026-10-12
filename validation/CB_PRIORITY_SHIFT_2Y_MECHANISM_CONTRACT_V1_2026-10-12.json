@@ -1,0 +1,90 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_NO_RATES_JOIN_OBSERVED",
+  "purpose": "Test whether a newly labeled change in central-bank policy priority is followed by a directionally coherent repricing of the local 2Y yield before any FX outcome is examined.",
+  "parent_label_dataset": {
+    "pull_request": 168,
+    "label_engine_pull_request": 166,
+    "label_engine_head_sha": "d3c3d87546e028bbb1a375af731550cdddd4ae22",
+    "workflow_run_id": 38217052303,
+    "artifact_id": 11732474523,
+    "artifact_name": "cb-priority-labeling-v1-38217052303",
+    "artifact_zip_sha256": "b854fbe4b97f8e7ff78e10e5e07591439d0be747df9a21fece91b73b5497ca41",
+    "labeled_dataset_sha256": "3cd295e0455751e81088165f88bde9d24b30bb3d6f26e0b14a7b3ce0cd5b74ca"
+  },
+  "rates_source": {
+    "canonical_pull_request": 101,
+    "canonical_head_sha": "0f4f45190fa5d5e010650026a30a0f981373ec34",
+    "store": "validation/rates_pit_rowsets/manifest_v1.json",
+    "certified_currencies": ["AUD","CAD","EUR","JPY","USD"],
+    "same_day_use_forbidden": true,
+    "secondary_source_fallback_forbidden": true
+  },
+  "priority_state_ordinal": {
+    "LABOUR_GROWTH": -1,
+    "BALANCED": 0,
+    "INFLATION": 1
+  },
+  "transition_construction": {
+    "same_central_bank_only": true,
+    "current_and_immediately_previous_decision_must_both_have_ordinal_label": true,
+    "withheld_or_nonordinal_label_breaks_transition_chain": true,
+    "shift_value": "current_priority_ordinal - previous_priority_ordinal",
+    "nonzero_shift_required": true,
+    "no_bridge_across_withheld": true,
+    "market_data_may_not_affect_transition_selection": true
+  },
+  "coverage_rule_frozen_before_rates_join": {
+    "minimum_priority_shifts_per_central_bank": 12,
+    "eligible_primary_panel_central_banks": ["BOC","BOJ","RBA"],
+    "eligible_primary_panel_currencies": ["CAD","JPY","AUD"],
+    "known_label_only_shift_counts": {"BOC":16,"BOJ":15,"RBA":17,"FED":3,"ECB":0},
+    "excluded_from_primary_panel_for_coverage_only": ["FED","ECB"],
+    "excluded_banks_remain_in_coverage_diagnostics": true,
+    "currency_exclusion_after_rates_results": "forbidden"
+  },
+  "event_time_measurement": {
+    "pre_event_2y": "latest certified local 2Y observation strictly eligible before the decision publication timestamp/date under the canonical Temporal-PIT rowset rules",
+    "primary_post_event_2y": "fifth subsequent certified local 2Y observation after the decision event",
+    "primary_delta_bp": "100 * (post_5th_2y_percent - pre_event_2y_percent)",
+    "primary_signed_delta_bp": "sign(priority_shift_value) * primary_delta_bp",
+    "secondary_post_event_2y": "first subsequent certified local 2Y observation after the decision event",
+    "secondary_horizon_is_diagnostic_only": true,
+    "missing_pre_or_post_observation": "WITHHELD_FROM_MECHANISM_SAMPLE"
+  },
+  "primary_hypothesis": "A shift toward a more inflation-focused priority raises the local 2Y yield, while a shift away from inflation toward labour/growth lowers the local 2Y yield, so the pooled signed 5-observation 2Y change should be positive.",
+  "predeclared_mechanism_gate_all_required": {
+    "minimum_pooled_eligible_events": 40,
+    "minimum_events_per_primary_panel_central_bank": 12,
+    "pooled_mean_signed_2y_change_bp_gt": 0.0,
+    "pooled_directional_accuracy_gte": 0.55,
+    "minimum_central_banks_with_positive_mean_signed_2y_change": 2,
+    "maximum_single_central_bank_event_share_lte": 0.45
+  },
+  "required_diagnostics": [
+    "per_central_bank_event_count",
+    "per_central_bank_mean_signed_2y_change_bp",
+    "per_central_bank_directional_accuracy",
+    "pooled_median_signed_2y_change_bp",
+    "positive_shift_vs_negative_shift_counts",
+    "secondary_first_observation_signed_2y_change_bp",
+    "excluded_transition_counts_and_reasons"
+  ],
+  "interpretation_boundary": {
+    "historical_rates_have_been_used_elsewhere_in_project": true,
+    "therefore_pass_is_mechanism_evidence_not_independent_edge_certification": true,
+    "fx_join_authorized_by_contract": false,
+    "sharpe_calculation_forbidden": true,
+    "return_or_pnl_calculation_forbidden": true,
+    "threshold_search_forbidden": true,
+    "horizon_search_forbidden": true,
+    "post_result_currency_exclusion_forbidden": true
+  },
+  "governance": {
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
