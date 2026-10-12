@@ -1,0 +1,65 @@
+name: CB Priority Decision Event Inventory V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-event-inventory-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official decision-event inventory only
+        run: |
+          set -euo pipefail
+          python validation/build_cb_priority_event_inventory_v1.py --output /tmp/cb-event-inventory.json
+      - name: Validate result-blind inventory
+        run: |
+          python - <<'PY'
+          import json,urllib.parse
+          r=json.load(open('/tmp/cb-event-inventory.json'))
+          assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
+          assert r['focus_labels_present'] is False
+          assert r['performance_data_present'] is False
+          assert r['labeling_authorized'] is False
+          assert r['performance_test_authorized'] is False
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          seen=set()
+          domains={'FED':'federalreserve.gov','ECB':'ecb.europa.eu','BOJ':'boj.or.jp','BOC':'bankofcanada.ca','RBA':'rba.gov.au'}
+          required={'central_bank','decision_date','source_url','source_document_type','official_domain_verified','publication_timestamp','timestamp_provenance','inventory_status'}
+          for x in r['events']:
+              assert required<=set(x),x
+              k=(x['central_bank'],x['decision_date']); assert k not in seen,k; seen.add(k)
+              assert x['official_domain_verified'] is True
+              host=urllib.parse.urlparse(x['source_url']).netloc.lower()
+              assert host==domains[x['central_bank']] or host.endswith('.'+domains[x['central_bank']]),x
+              assert x['decision_date']>='2018-01-01' and x['decision_date']<='2026-10-12'
+          # Coverage is reported, not rescued. Do not invent missing events.
+          print(json.dumps({'status':r['status'],'counts':r['counts_by_central_bank'],'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events'])},indent=2,sort_keys=True))
+          PY
+      - name: Assert no labels or market outcomes entered inventory
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cb-event-inventory.json'))
+          forbidden={'focus_primary','focus_evidence','fx_return','rates_return','target_return','sharpe','edge_survival'}
+          for row in r['events']:
+              assert not (forbidden & set(row)), (forbidden & set(row),row)
+          print('RESULT_BLIND_INVENTORY_BOUNDARY_PASS')
+          PY
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cb-priority-decision-event-inventory-${{ github.run_id }}
+          path: /tmp/cb-event-inventory.json
+          if-no-files-found: error
+          retention-days: 90
