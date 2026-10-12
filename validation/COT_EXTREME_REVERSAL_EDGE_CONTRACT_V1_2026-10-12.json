@@ -1,0 +1,108 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_EDGE_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_NO_RESULTS_OBSERVED",
+  "research_question": "Do PIT-safe extremes in CFTC Legacy Non-Commercial Net/Open Interest predict short-horizon FX reversal over the next five trading days?",
+  "hypothesis": {
+    "primary": "When 104-week Net/OI percentile is at or above 80, subsequent local-currency-vs-USD return is expected to be negative; when percentile is at or below 20, subsequent return is expected to be positive.",
+    "economic_interpretation": "Extreme speculative positioning may represent crowding and reduced marginal capacity to extend the prevailing position, creating asymmetric short-horizon reversal risk.",
+    "independence_from_prior_failed_test": "This experiment tests positioning level/crowding, not weekly flow continuation. The failed continuation result from PR #139 is not used to tune thresholds, horizon, currency set, or gates.",
+    "alternative_hypotheses_not_tested_here": [
+      "weekly COT flow continuation",
+      "extreme positioning continuation",
+      "price/COT divergence filters",
+      "Net/OI absolute threshold filters",
+      "currency-specific percentile thresholds"
+    ]
+  },
+  "universe": {
+    "currencies": ["EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD"],
+    "usd_role": "USD is the common counter-currency; USD COT contract is not used in the primary signal.",
+    "cftc_dataset": "Legacy Futures Only - Non-Commercial"
+  },
+  "pit_contract": {
+    "required_policy_schema": "GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1",
+    "normal_week_minimum_availability": "report_date_plus_14_calendar_days",
+    "documented_exception_availability": "max(report_date_plus_14_calendar_days, official_actual_publication_date_plus_1_calendar_day)",
+    "shutdown_2018_2019": "WITHHOLD",
+    "withheld_rows_must_not_be_imputed": true,
+    "percentile_lookback_must_use_only_rows_available_by_signal_time": true
+  },
+  "signal": {
+    "raw_positioning": "nc_net_oi_t = (noncommercial_long_t - noncommercial_short_t) / open_interest_t",
+    "lookback_weeks": 104,
+    "percentile_method": "empirical rank percentile computed only from PIT-safe available observations in the trailing 104 report-date observations including t",
+    "minimum_history_weeks": 104,
+    "extreme_long_threshold_percentile": 80,
+    "extreme_short_threshold_percentile": 20,
+    "direction": {
+      "percentile_ge_80": "SHORT_LOCAL_CURRENCY_VS_USD",
+      "percentile_le_20": "LONG_LOCAL_CURRENCY_VS_USD",
+      "otherwise": "NO_POSITION"
+    },
+    "threshold_source": "Canonical Weekly COT G8 interpretation standard already in use before this experiment.",
+    "threshold_search": "forbidden",
+    "winsorization": "none",
+    "currency_specific_rules": "forbidden"
+  },
+  "fx_return_definition": {
+    "orientation": "positive return always means local currency strengthens versus USD",
+    "entry": "first available daily FX close on or after research_available_from",
+    "exit": "fifth subsequent FX trading-day close after entry",
+    "horizon_trading_days": 5,
+    "return": "log(exit_price / entry_price) in local-currency-vs-USD orientation",
+    "missing_price_action": "WITHHOLD_OBSERVATION"
+  },
+  "test_statistic": {
+    "observation_return": "reversal_signal_sign * subsequent_5d_fx_log_return, where signal_sign=-1 for percentile>=80 and +1 for percentile<=20",
+    "primary_panel": "For each ISO calendar week of entry, equal-weight all available OOS currency observation returns in that week; calculate panel performance from this chronological weekly portfolio series.",
+    "panel_annualized_sharpe": "mean(weekly_panel_return) / sample_std(weekly_panel_return, ddof=1) * sqrt(52)",
+    "currency_annualized_sharpe": "mean(currency_observation_return) / sample_std(currency_observation_return, ddof=1) * sqrt(52)",
+    "directional_accuracy": "pooled OOS signal observations with observation_return > 0 divided by all pooled OOS signal observations",
+    "panel_total_log_return": "sum chronological weekly_panel_return",
+    "panel_max_drawdown": "maximum peak-to-trough loss on exp(cumulative sum of chronological weekly_panel_return)",
+    "annualization_factor": 52,
+    "no_position_rows_excluded": true
+  },
+  "chronology": {
+    "primary_evaluation": "strict chronological out-of-sample tail",
+    "split_rule": "Within each currency, first 60 percent of eligible labeled extreme-signal observations by entry date are diagnostic-only; final 40 percent are frozen OOS evaluation.",
+    "split_rounding": "floor(0.60 * N) observations assigned to diagnostic segment",
+    "no_model_fitting": true,
+    "diagnostic_segment_must_not_be_used_to_change_signal_or_gates": true
+  },
+  "predeclared_edge_gate": {
+    "all_required": true,
+    "oos_panel_annualized_sharpe_min": 0.50,
+    "oos_directional_accuracy_min": 0.52,
+    "positive_currency_oos_sharpes_min_count": 5,
+    "minimum_oos_signal_observations_per_currency": 25,
+    "minimum_pooled_oos_signal_observations": 200,
+    "max_single_currency_share_of_pooled_oos": 0.25
+  },
+  "robustness_reported_but_not_rescue_gates": {
+    "long_extreme_and_short_extreme_results_separately": true,
+    "currency_sharpes": true,
+    "hit_rates": true,
+    "total_log_return": true,
+    "max_drawdown": true,
+    "calendar_year_breakdown": true,
+    "signal_counts_by_side": true
+  },
+  "governance": {
+    "no_change_after_results_to_signal_definition": true,
+    "no_change_after_results_to_horizon": true,
+    "no_change_after_results_to_split": true,
+    "no_change_after_results_to_gate_thresholds": true,
+    "no_currency_exclusion_after_results": true,
+    "no_threshold_search": true,
+    "no_parameter_tuning": true,
+    "failure_is_valid_result": true,
+    "if_fail": "Do not promote extreme COT reversal to predictive score, production signal, or sizing input. Keep COT as contextual positioning information unless a separate predeclared hypothesis is tested.",
+    "if_pass": "Classify only as a research candidate requiring separate confirmation or forward validation before production use.",
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
