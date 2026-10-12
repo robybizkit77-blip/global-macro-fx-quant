@@ -1,0 +1,71 @@
+{
+  "schema": "GMFQ_COT_ABS_IMBALANCE_REVERSAL_EDGE_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_NO_RESULTS_OBSERVED",
+  "research_question": "Does a large absolute CFTC Legacy Non-Commercial Net/Open Interest imbalance predict short-horizon FX reversal over the next five trading days?",
+  "hypothesis": {
+    "primary": "When Net/OI is at or above +30%, subsequent local-currency-vs-USD return is expected to be negative; when Net/OI is at or below -30%, subsequent return is expected to be positive.",
+    "economic_interpretation": "Very large absolute speculative imbalances may represent crowding and reduced marginal capacity to extend the same directional position.",
+    "independence_from_prior_tests": "This experiment tests an absolute imbalance threshold that predates the current backtests in the project's canonical COT reporting rules. It is not tuned from the failed weekly-flow test or the passed 104-week percentile test."
+  },
+  "universe": {
+    "currencies": ["EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD"],
+    "cftc_dataset": "Legacy Futures Only - Non-Commercial"
+  },
+  "pit_contract": {
+    "required_policy_schema": "GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1",
+    "shutdown_2018_2019": "WITHHOLD",
+    "withheld_rows_must_not_be_imputed": true
+  },
+  "signal": {
+    "raw_positioning": "nc_net_oi_t = (noncommercial_long_t - noncommercial_short_t) / open_interest_t",
+    "positive_extreme_threshold": 0.30,
+    "negative_extreme_threshold": -0.30,
+    "direction": {
+      "net_oi_ge_plus_0_30": "SHORT_LOCAL_CURRENCY_VS_USD",
+      "net_oi_le_minus_0_30": "LONG_LOCAL_CURRENCY_VS_USD",
+      "otherwise": "NO_POSITION"
+    },
+    "threshold_source": "Canonical Weekly COT G8 reporting rule already in use before this experiment: |Net/OI| >= 30% is a material imbalance alert.",
+    "threshold_search": "forbidden",
+    "winsorization": "none",
+    "currency_specific_rules": "forbidden"
+  },
+  "fx_return_definition": {
+    "orientation": "positive return always means local currency strengthens versus USD",
+    "entry": "first available daily FX close on or after research_available_from",
+    "exit": "fifth subsequent FX trading-day close after entry",
+    "horizon_trading_days": 5,
+    "return": "log(exit_price / entry_price) in local-currency-vs-USD orientation"
+  },
+  "chronology": {
+    "primary_evaluation": "strict chronological out-of-sample tail",
+    "split_rule": "Within each currency, first 60 percent of eligible labeled imbalance-signal observations by entry date are diagnostic-only; final 40 percent are frozen OOS evaluation.",
+    "split_rounding": "floor(0.60 * N) observations assigned to diagnostic segment",
+    "no_model_fitting": true,
+    "diagnostic_segment_must_not_be_used_to_change_signal_or_gates": true
+  },
+  "predeclared_edge_gate": {
+    "all_required": true,
+    "oos_panel_annualized_sharpe_min": 0.50,
+    "oos_directional_accuracy_min": 0.52,
+    "positive_currency_oos_sharpes_min_count": 5,
+    "minimum_oos_signal_observations_per_currency": 20,
+    "minimum_pooled_oos_signal_observations": 150,
+    "max_single_currency_share_of_pooled_oos": 0.30
+  },
+  "governance": {
+    "no_change_after_results_to_signal_definition": true,
+    "no_change_after_results_to_horizon": true,
+    "no_change_after_results_to_split": true,
+    "no_change_after_results_to_gate_thresholds": true,
+    "no_currency_exclusion_after_results": true,
+    "no_threshold_search": true,
+    "no_parameter_tuning": true,
+    "failure_is_valid_result": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
