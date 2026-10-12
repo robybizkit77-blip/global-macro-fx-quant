@@ -1,0 +1,51 @@
+{
+  "schema": "GMFQ_RESEARCH_LINEAGE_STATUS_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Canonical human-readable lineage map for active forward research, historical audit evidence, falsified/superseded research, and parked experiments.",
+  "governance": {
+    "changes_signal_rules": false,
+    "changes_dashboard_bias": false,
+    "changes_sizing": false,
+    "production_authorized": false,
+    "auto_close_prs": false,
+    "auto_merge": false
+  },
+  "active_forward_stack": [
+    {"pr": 158, "role": "COT_104W_FORWARD_ENGINE", "status": "KEEP_ACTIVE"},
+    {"pr": 160, "role": "RATES_DOVISH_DIVERGENCE_FORWARD_ENGINE", "status": "KEEP_ACTIVE", "note": "Consumes shared forward readiness boundary."},
+    {"pr": 178, "role": "MACRO_TURNING_FORWARD_CONTRACT", "status": "KEEP_ACTIVE"},
+    {"pr": 180, "role": "MACRO_TURNING_FORWARD_ENGINE", "status": "KEEP_ACTIVE", "note": "Consumes shared forward readiness boundary."},
+    {"pr": 181, "role": "UNIFIED_FORWARD_INPUT_READINESS", "status": "KEEP_ACTIVE"},
+    {"pr": 182, "role": "FORWARD_CONTROL_ROOM", "status": "KEEP_ACTIVE"}
+  ],
+  "dashboard_research_governance": [
+    {"pr": 152, "role": "RESEARCH_CANDIDATE_REGISTRY", "status": "KEEP_CANONICAL"},
+    {"pr": 153, "role": "RESEARCH_PUBLICATION_GATE", "status": "KEEP_CANONICAL"},
+    {"pr": 154, "role": "DASHBOARD_RESEARCH_STATE_ADAPTER", "status": "KEEP_CANONICAL"},
+    {"pr": 155, "role": "DASHBOARD_RESEARCH_SIDECAR_INTEGRATION", "status": "KEEP_CANONICAL"},
+    {"pr": 156, "role": "DASHBOARD_RESEARCH_STATUS_CARD", "status": "KEEP_CANONICAL"},
+    {"pr": 157, "role": "DASHBOARD_RESEARCH_STATE_DRIFT_GATE", "status": "KEEP_CANONICAL"},
+    {"pr": 179, "role": "CURRENT_RESEARCH_CANDIDATE_SIDECAR", "status": "KEEP_CANONICAL"}
+  ],
+  "historical_audit_only": [
+    {"prs": [140,141,142,147,148,149,150], "family": "COT_104W_EXTREME_REVERSAL", "status": "AUDIT_ONLY", "note": "Historical candidate/robustness evidence; forward #158 is decisive."},
+    {"prs": [129,130,131,132], "family": "RATES_DOVISH_DIVERGENCE_RESEARCH", "status": "AUDIT_ONLY", "note": "Historical candidate evidence; forward #160 is decisive."},
+    {"prs": [172,173,174,175,176,177], "family": "MACRO_TURNING_2Y_FX_RESEARCH", "status": "AUDIT_ONLY", "note": "Historical candidate evidence; forward #178/#180 are decisive."},
+    {"prs": [159,161], "family": "FIRST_FORWARD_RECEIPTS", "status": "AUDIT_ONLY"}
+  ],
+  "falsified_or_superseded": [
+    {"prs": [144,145,146], "family": "COT_ABSOLUTE_IMBALANCE_30_REVERSAL", "status": "FALSIFIED"},
+    {"prs": [137,138,139], "family": "COT_WEEKLY_FLOW_CONTINUATION", "status": "FALSIFIED"},
+    {"prs": [162,163,164,165,166,168,169,170,171], "family": "CB_PRIORITY_SHIFT_DIRECTIONAL_MECHANISM", "status": "RESEARCH_COMPLETE_NO_EDGE", "note": "Priority-label dataset remains useful context; directional CB-priority->2Y mechanism failed."},
+    {"prs": [167], "family": "CB_PRIORITY_LABELING_INVALID_FIRST_AUDIT", "status": "SUPERSEDED_TECHNICAL_BUG"}
+  ],
+  "parked": [
+    {"pr": 151, "family": "RATES_X_COT_FORWARD_CONFLUENCE", "status": "PARKED_NO_NEW_BACKTEST", "note": "Do not advance until parent forward shadows have meaningful unseen maturity."}
+  ],
+  "current_operational_priority": [
+    "Maintain PIT inputs and shared readiness",
+    "Accumulate unseen forward evidence in COT / Rates / Macro Turning",
+    "Use Forward Control Room as the canonical research status surface",
+    "Then perform repository lineage cleanup and full dashboard integration"
+  ]
+}
