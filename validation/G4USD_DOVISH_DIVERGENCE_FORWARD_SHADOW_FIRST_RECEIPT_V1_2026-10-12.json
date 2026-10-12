@@ -1,0 +1,62 @@
+{
+  "schema": "GMFQ_G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_FIRST_RECEIPT_V1",
+  "as_of": "2026-10-12",
+  "source_pr": 160,
+  "source_run_id": 38208920851,
+  "source_artifact_id": 11728407119,
+  "source_artifact_sha256": "fe4a0e929625fda7cd8c6fa04aec7f13b92bca794c5057d21fd3d71102e2ae44",
+  "source_head_sha": "c94f617bd374905e817cca19125b0173f1b9e980",
+  "historical_cutoff_reference_period": "2026-08",
+  "max_certified_decision_point": "2026-10-10",
+  "signals_total": 3,
+  "matured_1m": 0,
+  "matured_3m": 0,
+  "status": "WAITING_FOR_UNSEEN_OBSERVATIONS",
+  "signals": [
+    {
+      "currency": "JPY",
+      "reference_period": "2026-09",
+      "decision_point": "2026-09-10",
+      "state": "CONTRADICTORY",
+      "d_diff_2y": -0.017999999999998906,
+      "signal_direction": "LOCAL_WEAKER_VS_USD",
+      "entry_fixing_date": "2026-09-11",
+      "outcome_1m": null,
+      "outcome_3m": null
+    },
+    {
+      "currency": "CAD",
+      "reference_period": "2026-09",
+      "decision_point": "2026-09-10",
+      "state": "CONTRADICTORY",
+      "d_diff_2y": -0.03999999999999915,
+      "signal_direction": "LOCAL_WEAKER_VS_USD",
+      "entry_fixing_date": "2026-09-11",
+      "outcome_1m": null,
+      "outcome_3m": null
+    },
+    {
+      "currency": "EUR",
+      "reference_period": "2026-10",
+      "decision_point": "2026-10-10",
+      "state": "CONTRADICTORY",
+      "d_diff_2y": -0.28399576870000054,
+      "signal_direction": "LOCAL_WEAKER_VS_USD",
+      "entry_fixing_date": null,
+      "outcome_1m": null,
+      "outcome_3m": null
+    }
+  ],
+  "governance": {
+    "partial_forward_performance_interpretation_forbidden": true,
+    "candidate_rule_changed": false,
+    "confirmation_gate_changed": false,
+    "future_decision_points_after_2026_10_10": "WITHHELD_INPUT_SNAPSHOT_NOT_EXTENDED",
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "promotion_requires_separate_review": true,
+    "no_rescue_tuning": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
