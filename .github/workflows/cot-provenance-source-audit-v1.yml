@@ -27,7 +27,7 @@ jobs:
           sleep 2
       - name: Inspect runtime COT provenance and freshness
         run: |
-          cat > /tmp/cot-runtime-audit.js <<'EOF'
+          cat > cot-runtime-audit.js <<'EOF'
           const {chromium}=require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
@@ -91,4 +91,4 @@ jobs:
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
           })().catch(e=>{console.error('::error title=COT runtime audit::'+String(e.stack||e));process.exit(1)});
           EOF
-          node /tmp/cot-runtime-audit.js
+          node cot-runtime-audit.js
