@@ -4,11 +4,24 @@ on:
   push:
     branches:
       - 'validation-freshness-registry-*'
+      - 'release-candidate-freshness-registry-*'
     paths:
       - '.github/workflows/freshness-registry-audit-v1.yml'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'validation/test_freshness_registry_failclosed.py'
+      - 'live_data/sections/D.json'
+      - 'payload/part-15.txt'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/freshness-registry-audit-v1.yml'
+      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
+      - 'validation/check_freshness_registry.py'
+      - 'validation/test_freshness_registry_failclosed.py'
+      - 'live_data/sections/D.json'
+      - 'payload/part-15.txt'
   workflow_dispatch:
 
 permissions:
@@ -62,3 +75,4 @@ jobs:
           echo 'Registry is observability-only.'
           echo 'No bias, score, sizing, Pair Engine, Quant, live_data, payload, main, or gh-pages mutation is permitted.'
           echo 'GREEN is fail-closed: stale dated observations and records without proof are rejected.'
+          echo 'PRICE freshness is bound to the effective ECB runtime overlay in payload/part-15.txt.'
