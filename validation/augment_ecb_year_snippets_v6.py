@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,json,re,urllib.parse,urllib.request
+import argparse,json,re,time,urllib.parse,urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from html.parser import HTMLParser
@@ -19,9 +19,9 @@ class P(HTMLParser):
         if tag.lower()=='a' and self.h is not None:
             self.links.append((self.h,' '.join(''.join(self.buf).split()))); self.h=None; self.buf=[]
 
-def get(u):
+def get(u,timeout=20):
     q=urllib.request.Request(u,headers={'User-Agent':UA})
-    with urllib.request.urlopen(q,timeout=60) as r:return r.read().decode('utf-8','ignore')
+    with urllib.request.urlopen(q,timeout=timeout) as r:return r.read().decode('utf-8','ignore')
 
 def parse_links(base,body):
     p=P();p.feed(body);return [(urllib.parse.urljoin(base,h),t) for h,t in p.links if h]
@@ -35,17 +35,24 @@ def mp_date(u):
 def verify_candidate(v):
     ds=mp_date(v)
     if not ds or not ('2018-01-01'<=ds<='2026-10-12'): return None
-    try: txt=get(v)
-    except Exception: return None
-    plain=re.sub(r'<[^>]+>',' ',txt)
-    if 'Monetary policy decisions' not in plain: return None
-    return ds,v
+    # Transport-only retry policy. The semantic check is unchanged.
+    last=None
+    for attempt in range(3):
+        try:
+            txt=get(v,timeout=12)
+            plain=re.sub(r'<[^>]+>',' ',txt)
+            if 'Monetary policy decisions' not in plain: return None
+            return ds,v
+        except Exception as e:
+            last=e
+            if attempt<2: time.sleep(0.4*(attempt+1))
+    return None
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--input',required=True);ap.add_argument('--output',required=True);a=ap.parse_args()
     r=json.load(open(a.input));assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
 
-    shell=get(BASE)
+    shell=get(BASE,timeout=20)
     m=re.search(r"data-snippets=['\"]([^'\"]+)['\"]",shell,re.I)
     if not m: raise RuntimeError('ECB data-snippets attribute not found')
     snippet_specs=[x.strip() for x in m.group(1).split(',') if x.strip()]
@@ -59,7 +66,7 @@ def main():
 
     diagnostics={}; candidate_year={}; all_candidates=set()
     for y,u in sorted(wanted):
-        body=get(u)
+        body=get(u,timeout=20)
         candidates=[]
         for v,t in parse_links(u,body):
             host=urllib.parse.urlparse(v).netloc.lower()
@@ -74,7 +81,7 @@ def main():
     found={}
     # Transport-only optimization: verify the exact same candidate URLs concurrently.
     # Economic semantics, filters, title check, dates and output remain unchanged.
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=16) as ex:
         futs={ex.submit(verify_candidate,v):v for v in sorted(all_candidates)}
         for f in as_completed(futs):
             z=f.result()
@@ -96,7 +103,7 @@ def main():
     r['counts_by_central_bank']={k:v for k,v in counts.items() if v}
     r['source_errors']['ECB']=None if counts['ECB']>=50 else f'ECB_YEAR_SNIPPETS_COVERAGE_LT_50:{counts["ECB"]}'
     r['status']='RESULT_BLIND_EVENT_INVENTORY_COMPLETE' if all(counts[cb]>=50 for cb in cbs) and not any(r['source_errors'].values()) else 'RESULT_BLIND_EVENT_INVENTORY_PARTIAL'
-    r['ecb_transport_receipt']={'source_shell':BASE,'mechanism':'official data-snippets annual include files','verification_transport':'parallel_same_candidate_set_v1','annual_diagnostics':diagnostics}
+    r['ecb_transport_receipt']={'source_shell':BASE,'mechanism':'official data-snippets annual include files','verification_transport':'parallel_same_candidate_set_short_timeout_retry_v2','annual_diagnostics':diagnostics}
     assert r['focus_labels_present'] is False and r['performance_data_present'] is False
     Path(a.output).write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
     print(json.dumps({'status':r['status'],'counts':counts,'ecb_verified':len(found),'annual_diagnostics':diagnostics},indent=2,sort_keys=True))
