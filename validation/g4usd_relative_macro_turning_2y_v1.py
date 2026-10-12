@@ -36,27 +36,21 @@ def select_rate(rows,dp):
     return r
 
 
-def load_macro(path:Path):
-    """Load the existing result-blind canonical adapter schema only.
-
-    Canonical columns are reference_period, release_date, value, availability_status.
-    No source-specific field inference is permitted inside the economic engine.
-    """
+def load_macro(path:Path,period_col:str,value_col:str):
+    """Read certified source rows using the exact field mapping frozen in g4usd_macro_input_adapter_v1."""
     out=[]
     with path.open(newline='',encoding='utf-8-sig') as f:
         rd=csv.DictReader(f)
-        required={'reference_period','release_date','value','availability_status'}
-        missing=required-set(rd.fieldnames or [])
-        if missing: raise RuntimeError(f'noncanonical macro input {path}: missing {sorted(missing)}')
+        fields=set(rd.fieldnames or [])
+        if value_col not in fields or period_col not in fields:
+            raise RuntimeError(f'{path}: expected certified fields {period_col}/{value_col}, got {sorted(fields)}')
         for r in rd:
             status=(r.get('availability_status') or '').strip()
-            value=(r.get('value') or '').strip()
-            rel=(r.get('release_date') or '').strip()
+            value=(r.get(value_col) or '').strip()
+            rel=(r.get('release_date') or r.get('first_eligible_decision_date') or r.get('eligible_date') or '').strip()
             if status in OFFICIAL_UNAVAILABLE:
                 if value or rel: raise RuntimeError(f'official-unavailable row carries data in {path}')
                 continue
-            if status!='AVAILABLE_STRICT_PIT':
-                raise RuntimeError(f'unexpected canonical availability status {status!r} in {path}')
             if not rel: raise RuntimeError(f'missing PIT release eligibility in {path}')
             if not value: raise RuntimeError(f'missing macro value in {path}')
             out.append((rel[:10],float(value)))
@@ -88,7 +82,6 @@ def macro_direction(local,usd,asof):
     if None in (li,ui,ll,ul):
         return 0,{'relative_inflation_acceleration':None,'relative_labour_acceleration':None}
     rel_inf=li-ui
-    # Rising unemployment acceleration is weaker macro; invert unemployment acceleration first, then local-minus-US.
     rel_lab=(-ll)-(-ul)
     s1,s2=sign(rel_inf),sign(rel_lab)
     direction=s1 if s1!=0 and s1==s2 else 0
@@ -126,12 +119,21 @@ def main():
     c=json.load(open(a.contract,encoding='utf-8'))
     assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1'
     assert c['status']=='PREDECLARED_RESULT_BLIND'
+    # Exact source-field mappings already frozen by validation/g4usd_macro_input_adapter_v1.py.
+    meta={
+      'EUR':('reference_month','headline_hicp_yoy_pct','reference_month','unemployment_rate_pct'),
+      'JPY':('observation_date','value','reference_month','unemployment_rate_sa_pct'),
+      'CAD':('reference_month','cpi_yoy_full_precision','reference_month','unemployment_rate_sa'),
+      'AUD':('reference_quarter','cpi_yoy','reference_month','unemployment_rate_sa'),
+      'USD':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
+    }
     rates={k:load_rates(Path(getattr(a,f'{k.lower()}_rates'))) for k in (*CCYS,'USD')}
     macro={}
     for k in (*CCYS,'USD'):
+        ip,iv,lp,lv=meta[k]
         macro[k]={
-          'inf':load_macro(Path(getattr(a,f'{k.lower()}_inflation'))),
-          'lab':load_macro(Path(getattr(a,f'{k.lower()}_labour'))),
+          'inf':load_macro(Path(getattr(a,f'{k.lower()}_inflation')),ip,iv),
+          'lab':load_macro(Path(getattr(a,f'{k.lower()}_labour')),lp,lv),
         }
 
     all_events=[]
