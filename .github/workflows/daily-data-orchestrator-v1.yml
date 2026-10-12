@@ -1,0 +1,78 @@
+name: Daily Data Orchestrator V1
+
+on:
+  push:
+    branches:
+      - validation-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/daily-data-orchestrator-v1.yml'
+      - 'validation/run_daily_data_orchestrator_v1.py'
+      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/RATES_AUDIT_METADATA.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-data-orchestrator-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate Freshness Registry schema
+        run: python3 validation/check_freshness_registry.py
+
+      - name: Build fail-closed orchestrator receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/daily-orchestrator-v1
+          python3 validation/run_daily_data_orchestrator_v1.py | tee /tmp/daily-orchestrator-v1/receipt.json
+
+      - name: Enforce expected current blockers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/daily-orchestrator-v1/receipt.json'))
+          assert d['schema']=='GMFQ_DAILY_DATA_ORCHESTRATOR_RECEIPT_V1', d
+          assert d['status']=='BLOCKED_EXPECTED_GAPS_NO_PUBLICATION', d
+          expected={'PRICE','LIQUIDITY','RISK'}
+          got=set(d['blocking_lanes'])
+          assert expected.issubset(got), (expected, got)
+          assert d['promotion_performed'] is False
+          assert d['live_data_published'] is False
+          assert d['gh_pages_published'] is False
+          assert d['automatic_publication'] is False
+          print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
+          PY
+
+      - name: Validate runtime remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/check_live_update_contract.py
+          python3 validation/rebuild_live_data_runtime.py --verify-only
+          git diff --exit-code -- live_data payload
+
+      - name: Upload orchestrator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-data-orchestrator-v1-${{ github.run_id }}
+          path: /tmp/daily-orchestrator-v1/
+          if-no-files-found: error
+          retention-days: 30
