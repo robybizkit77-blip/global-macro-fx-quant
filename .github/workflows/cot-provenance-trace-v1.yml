@@ -1,0 +1,37 @@
+name: COT Provenance Trace V1
+
+on:
+  push:
+    branches: ['audit-cot-provenance-trace-v1-2026-10-12']
+    paths: ['.github/workflows/cot-provenance-trace-v1.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trace COT provenance and hardcoded dates
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '=== PRODUCTION_PRICE_COT_LIQ_AUDIT ==='
+            grep -RIn --exclude-dir=.git --exclude='*.map' 'PRODUCTION_PRICE_COT_LIQ_AUDIT' . || true
+            echo '=== FINAL_SOURCE_POLICY_AUDIT ==='
+            grep -RIn --exclude-dir=.git --exclude='*.map' 'FINAL_SOURCE_POLICY_AUDIT' . || true
+            echo '=== 2026-09-22 ==='
+            grep -RIn --exclude-dir=.git --exclude='*.map' '2026-09-22' live_data payload validation .github/workflows || true
+            echo '=== 2026-10-06 ==='
+            grep -RIn --exclude-dir=.git --exclude='*.map' '2026-10-06' live_data payload validation .github/workflows || true
+          } | tee /tmp/cot-provenance-trace.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-provenance-trace-${{ github.run_id }}
+          path: /tmp/cot-provenance-trace.txt
+          if-no-files-found: error
+          retention-days: 30
