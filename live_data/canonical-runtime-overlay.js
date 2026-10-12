@@ -5,17 +5,6 @@
     if(!r.ok) throw new Error(`canonical-overlay-http-${r.status}:${path}`);
     return r.json();
   };
-  const resolveGlobal=(name)=>{
-    try{
-      // Direct eval is intentional here: the legacy runtime declares some canonical
-      // data surfaces with top-level let/const, so they live in the browser global
-      // lexical environment rather than as window properties. We only retrieve the
-      // existing object reference; we never rebind the lexical name.
-      return eval(name);
-    }catch(e){
-      throw new Error(`canonical-overlay-missing-global:${name}`);
-    }
-  };
   const syncInPlace=(target,fresh,name)=>{
     if(Array.isArray(target)){
       if(!Array.isArray(fresh)) throw new Error(`canonical-overlay-type-mismatch:${name}`);
@@ -36,8 +25,18 @@
       fetchJson('live_data/sections/MACRO_THERMOMETER_DATA.json'),
       fetchJson('live_data/sections/MACRO_SERIES.json')
     ]);
-    const thermometerTarget=resolveGlobal('MACRO_THERMOMETER_DATA');
-    const seriesTarget=resolveGlobal('MACRO_SERIES');
+
+    // The legacy payload exposes these as top-level lexical bindings (let/const),
+    // not as properties on window. A later classic script can reference those
+    // bindings directly, preserving the exact object identities captured by the
+    // runtime closures. We mutate data in-place and never rebind either name.
+    if(typeof MACRO_THERMOMETER_DATA==='undefined')
+      throw new Error('canonical-overlay-missing-global:MACRO_THERMOMETER_DATA');
+    if(typeof MACRO_SERIES==='undefined')
+      throw new Error('canonical-overlay-missing-global:MACRO_SERIES');
+
+    const thermometerTarget=MACRO_THERMOMETER_DATA;
+    const seriesTarget=MACRO_SERIES;
     syncInPlace(thermometerTarget,macroThermometer,'MACRO_THERMOMETER_DATA');
     syncInPlace(seriesTarget,macroSeries,'MACRO_SERIES');
     const state={
