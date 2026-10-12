@@ -1,0 +1,111 @@
+name: Final Alignment Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-final-alignment-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8147 --bind 127.0.0.1 > /tmp/gmfq-final-alignment-server.log 2>&1 &
+          sleep 2
+      - name: Run final alignment audit
+        run: |
+          cat > final-alignment-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8147/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const p=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              const c=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              return ((p&&p!=='WAITING_FOR_PRICE_PROVENANCE')&&(c&&c!=='WAITING_FOR_COT_PROVENANCE'))||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const currencyFailures=Object.entries(currencies).filter(([c,s])=>!s||typeof s.base!=='string'||!s.base.trim()).map(([c,s])=>({c,s}));
+              const pairFailures=Object.entries(pairFrames).filter(([p,f])=>!f||typeof f!=='object').map(([p,f])=>({p,f}));
+              const priceFailures=Object.entries(currencies).filter(([c,s])=>Number(s?.price||0)!==0||String(s?.confirmation||'').toUpperCase().includes('CONFERMA')||String(s?.confirmation||'').toUpperCase().includes('DIVERGE')).map(([c,s])=>({c,price:s?.price,confirmation:s?.confirmation}));
+              const cotFailures=Object.entries(currencies).filter(([c,s])=>String(s?.cotRisk||'').trim()!=='').map(([c,s])=>({c,cotRisk:s?.cotRisk}));
+              const pairLiqLeak=Object.entries(pairFrames).filter(([p,f])=>f?.liq!=null||f?.liquidity!=null||f?.liquidityOverlay!=null||f?.funding!=null).map(([p,f])=>({p,liq:f?.liq,liquidity:f?.liquidity,liquidityOverlay:f?.liquidityOverlay,funding:f?.funding}));
+              const hysteresis=clone(window.CB_LIQ_HYSTERESIS_STATE);
+              const audCb=hysteresis?.AUD?.cb||null;
+              const nzLiq=hysteresis?.NZD?.liquidity||null;
+              const gateSummary={
+                price:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),
+                cot:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),
+                globalRisk:clone(window.__GMFQ_GLOBAL_RISK_FRESHNESS_GATE_STATE||window.__GMFQ_RISK_FRESHNESS_GATE_STATE||null),
+                post:clone(window.GMFQ_POST_GATE_FINAL_AUDIT)
+              };
+              return {ccys,pairs,currencies,pairFrames,currencyFailures,pairFailures,priceFailures,cotFailures,pairLiqLeak,hysteresis,audCb,nzLiq,gateSummary,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            const verdict={
+              schema:'GMFQ_FINAL_ALIGNMENT_AUDIT_V1',
+              status:'PASS_FINAL_ALIGNMENT',
+              currency_count:Object.keys(out.currencies||{}).length,
+              pair_count:Object.keys(out.pairFrames||{}).length,
+              price_status:out.gateSummary?.price?.status||null,
+              cot_status:out.gateSummary?.cot?.status||null,
+              risk_status:out.gateSummary?.globalRisk?.status||null,
+              aud_cb_status:out.audCb?.status||null,
+              nzd_liq_status:out.nzLiq?.status||null,
+              currency_failures:out.currencyFailures,
+              pair_failures:out.pairFailures,
+              price_failures:out.priceFailures,
+              cot_failures:out.cotFailures,
+              pair_liquidity_leaks:out.pairLiqLeak,
+              console_errors:errors
+            };
+            fs.writeFileSync('final-alignment-audit.json',JSON.stringify({...verdict,detail:out},null,2));
+            console.log(JSON.stringify(verdict,null,2));
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            if(verdict.currency_count!==8)throw new Error('Expected 8 currencies');
+            if(verdict.pair_count!==28)throw new Error('Expected 28 pairs');
+            if(out.currencyFailures.length)throw new Error('Currency states incomplete: '+JSON.stringify(out.currencyFailures));
+            if(out.pairFailures.length)throw new Error('Pair frames incomplete: '+JSON.stringify(out.pairFailures));
+            if(out.priceFailures.length)throw new Error('Stale Price still operational: '+JSON.stringify(out.priceFailures));
+            if(out.cotFailures.length)throw new Error('Stale COT warning still operational: '+JSON.stringify(out.cotFailures));
+            if(out.pairLiqLeak.length)throw new Error('Liquidity leaked into pair structural frame: '+JSON.stringify(out.pairLiqLeak));
+            if(out.gateSummary?.price?.status!=='PASS_WITHHELD_STALE_PRICE')throw new Error('Unexpected Price gate: '+JSON.stringify(out.gateSummary?.price));
+            if(out.gateSummary?.cot?.status!=='PASS_WITHHELD_STALE_COT')throw new Error('Unexpected COT gate: '+JSON.stringify(out.gateSummary?.cot));
+            if(out.audCb?.status==='PENDING_MARKET_CONFIRMATION')throw new Error('AUD CB hysteresis still has stale pending diagnostic');
+          })().catch(e=>{console.error('::error title=Final alignment audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node final-alignment-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-alignment-audit-v1
+          path: |
+            final-alignment-audit.json
+            /tmp/gmfq-final-alignment-server.log
