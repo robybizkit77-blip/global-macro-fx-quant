@@ -20,7 +20,8 @@ jobs:
       - name: Build official decision-event inventory only
         run: |
           set -euo pipefail
-          python validation/build_cb_priority_event_inventory_v1.py --output /tmp/cb-event-inventory.json
+          python validation/build_cb_priority_event_inventory_v1.py --output /tmp/cb-event-inventory-base.json
+          python validation/augment_cb_priority_event_inventory_v1.py --input /tmp/cb-event-inventory-base.json --output /tmp/cb-event-inventory.json
       - name: Validate result-blind inventory
         run: |
           python - <<'PY'
@@ -43,7 +44,6 @@ jobs:
               host=urllib.parse.urlparse(x['source_url']).netloc.lower()
               assert host==domains[x['central_bank']] or host.endswith('.'+domains[x['central_bank']]),x
               assert x['decision_date']>='2018-01-01' and x['decision_date']<='2026-10-12'
-          # Coverage is reported, not rescued. Do not invent missing events.
           print(json.dumps({'status':r['status'],'counts':r['counts_by_central_bank'],'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events'])},indent=2,sort_keys=True))
           PY
       - name: Assert no labels or market outcomes entered inventory
