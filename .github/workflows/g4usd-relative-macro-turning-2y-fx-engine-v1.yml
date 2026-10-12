@@ -1,0 +1,103 @@
+name: G4USD Relative Macro Turning 2Y FX Engine V1
+
+on:
+  push:
+    branches:
+      - validation-relative-macro-turning-2y-fx-engine-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  fx-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download exact passed parent mechanism result
+        uses: actions/download-artifact@v4
+        with:
+          name: g4usd-relative-macro-turning-2y-v1-38220431432
+          path: /tmp/fx-parent
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: 38220431432
+
+      - name: Verify parent identity before any FX fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json
+          p='/tmp/fx-parent/result.json'; b=open(p,'rb').read(); h=hashlib.sha256(b).hexdigest()
+          assert h=='1cb6e8ea5e86fb5c8d6701c746fc97aeff70dcee3cef54d6ee3fe52ba8d0af7b',h
+          r=json.loads(b)
+          assert r['status']=='PASS_PREDECLARED_MECHANISM_GATE' and r['mechanism_survival'] is True
+          ev=[x for x in r['events'] if x['split']=='OOS' and x['signed_next_month_relative_2y_bp']>0]
+          from collections import Counter
+          c=Counter(x['currency'] for x in ev)
+          assert len(ev)==40 and {x:c[x] for x in ('AUD','CAD','EUR','JPY')}=={'AUD':8,'CAD':11,'EUR':9,'JPY':12}
+          print('PARENT_CONFIRMED_EVENT_SET_FROZEN_PASS')
+          PY
+
+      - name: Fetch official ECB FX reference histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fx
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2018-03-01&endPeriod=2026-09-30&format=csvdata" \
+              -o "/tmp/fx/${c}.csv"
+            test -s "/tmp/fx/${c}.csv"
+          done
+
+      - name: Execute frozen FX test twice deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS="--parent /tmp/fx-parent/result.json --contract validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_CONTRACT_V1_2026-10-12.json --usd-ecb /tmp/fx/USD.csv --jpy-ecb /tmp/fx/JPY.csv --cad-ecb /tmp/fx/CAD.csv --aud-ecb /tmp/fx/AUD.csv"
+          python validation/g4usd_relative_macro_turning_2y_fx_v1.py $ARGS --output /tmp/fx/result.json
+          python validation/g4usd_relative_macro_turning_2y_fx_v1.py $ARGS --output /tmp/fx/result-b.json >/dev/null
+          cmp /tmp/fx/result.json /tmp/fx/result-b.json
+
+      - name: Assert historical candidate cannot self-promote
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/fx/result.json'))
+          assert r['edge_certified'] is False
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          assert r['confirmed_event_counts']=={'AUD':8,'CAD':11,'EUR':9,'JPY':12,'pooled':40}
+          print('HISTORICAL_FX_CANDIDATE_GOVERNANCE_PASS')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: g4usd-relative-macro-turning-2y-fx-v1-${{ github.run_id }}
+          path: /tmp/fx/result.json
+          retention-days: 90
+
+      - name: Enforce frozen historical FX candidate gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/fx/result.json'))
+          print(json.dumps({'status':r['status'],'pooled':r['pooled'],'per_currency':r['per_currency'],'gates':r['gates']},indent=2,sort_keys=True))
+          assert r['candidate_generated_for_future_confirmation'] is True, 'PREDECLARED_POST_RATES_FX_CANDIDATE_GATE_FAILED'
+          PY
+
+      - name: Assert clean repository
+        if: always()
+        run: test -z "$(git status --porcelain)"
