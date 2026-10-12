@@ -25,7 +25,7 @@ jobs:
         run: |
           python3 -m http.server 8139 --bind 127.0.0.1 >/tmp/gmfq-cot-price-audit-server.log 2>&1 &
           sleep 2
-      - name: Trace canonical pair frame price helper
+      - name: Resolve certified pair price state sensitivity
         run: |
           cat > audit.js <<'EOF'
           const fs=require('fs');
@@ -40,38 +40,45 @@ jobs:
             if(!r||!r.ok())throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
             const out=await page.evaluate(()=>{
-              const src={};
-              const add=(name,fn)=>{try{if(typeof fn==='function')src[name]=Function.prototype.toString.call(fn)}catch(e){}};
-              try{add('canonicalPairDecisionFrame',canonicalPairDecisionFrame)}catch(e){}
-              try{add('pairPriceConfirmation',pairPriceConfirmation)}catch(e){}
-              try{add('pairPriceSide',pairPriceSide)}catch(e){}
-              try{add('pairPriceReading',pairPriceReading)}catch(e){}
-              try{add('relativePriceSide',relativePriceSide)}catch(e){}
-              try{add('certifiedPairForMarket',certifiedPairForMarket)}catch(e){}
-              const canonical=src.canonicalPairDecisionFrame||'';
-              const identifiers=[...new Set((canonical.match(/\b[A-Za-z_$][A-Za-z0-9_$]*\s*\(/g)||[]).map(x=>x.replace(/\s*\($/,'')))].sort();
-              const helpers={};
-              for(const name of identifiers){
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const stable=x=>JSON.stringify(x);
+              const frame=()=>clone(window.derivePairDecisionFrame?.('EUR/USD'));
+              const structural=f=>({fav:f?.fav,quality:f?.quality,structural:f?.structural,macroSide:f?.macroSide,policySide:f?.policySide});
+              const cert=window.certifiedPairForMarket?.('EUR/USD');
+              const baseline=frame();
+              const baselineCert=clone(cert);
+              const tests=[];
+              const run=(name,apply,restore)=>{
                 try{
-                  const fn=eval(name);
-                  if(typeof fn==='function') helpers[name]=Function.prototype.toString.call(fn);
-                }catch(e){}
-              }
-              return {
-                canonical,
-                identifiers,
-                helpers,
-                eurusd:window.derivePairDecisionFrame?.('EUR/USD'),
-                certified:window.certifiedPairForMarket?.('EUR/USD'),
-                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+                  apply();
+                  const f=frame();
+                  tests.push({name,frame:f,priceChanged:f?.priceReading!==baseline?.priceReading||f?.priceNote!==baseline?.priceNote||f?.watch!==baseline?.watch,structureUnchanged:stable(structural(f))===stable(structural(baseline))});
+                }finally{restore();}
               };
+              if(cert){
+                const ps=cert.price_state;
+                run('price_state_DIVERGE',()=>{cert.price_state='DIVERGE'},()=>{cert.price_state=ps});
+                run('price_state_DIVERGENT',()=>{cert.price_state='DIVERGENT'},()=>{cert.price_state=ps});
+                run('price_state_NOT_CONFIRM',()=>{cert.price_state='NOT_CONFIRM'},()=>{cert.price_state=ps});
+                const pc=cert?.dominant_driver_current?.price_confirmation;
+                if(cert.dominant_driver_current) run('dominant_price_DIVERGED',()=>{cert.dominant_driver_current.price_confirmation='PRICE_DIVERGED'},()=>{cert.dominant_driver_current.price_confirmation=pc});
+                const conf=clone(cert.confirms), div=clone(cert.diverges);
+                run('confirm_diverge_arrays',()=>{cert.confirms=(conf||[]).filter(x=>x!=='price');cert.diverges=[...(div||[]).filter(x=>x!=='price'),'price']},()=>{cert.confirms=conf;cert.diverges=div});
+                const lp=cert?.layer_directions?.price;
+                if(cert.layer_directions) run('layer_direction_flip',()=>{cert.layer_directions.price=lp==='A'?'B':'A'},()=>{cert.layer_directions.price=lp});
+              }
+              const mapping=(D?.pairs||[]).map(x=>x.pair).map(p=>{const c=window.certifiedPairForMarket?.(p),f=window.derivePairDecisionFrame?.(p);return {p,price_state:c?.price_state,price_dir:c?.layer_directions?.price,frame:f?.priceReading,fav:f?.fav}});
+              return {baseline,baselineCert,tests,mapping,restored:stable(frame())===stable(baseline),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
             });
             await browser.close();
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
-            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify({schema:'GMFQ_PAIR_PRICE_SOURCE_TRACE_V1',...out},null,2));
-            console.log(JSON.stringify({canonical:out.canonical,identifiers:out.identifiers,helpers:out.helpers,eurusd:out.eurusd,certified:out.certified},null,2));
-            if(!out.canonical)process.exit(2);
+            const responsive=out.tests.filter(t=>t.priceChanged);
+            const safe=responsive.length>0&&responsive.every(t=>t.structureUnchanged)&&out.restored;
+            const summary={schema:'GMFQ_PAIR_PRICE_STATE_SENSITIVITY_V1',status:safe?'PASS':'REVIEW_REQUIRED',responsive_tests:responsive.map(x=>x.name),...out};
+            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify(summary,null,2));
+            if(!safe)process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
