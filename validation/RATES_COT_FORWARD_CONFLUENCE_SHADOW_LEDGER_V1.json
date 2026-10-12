@@ -1,0 +1,5 @@
+{
+  "schema": "GMFQ_RATES_COT_FORWARD_CONFLUENCE_SHADOW_LEDGER_V1",
+  "append_only": true,
+  "signals": []
+}
