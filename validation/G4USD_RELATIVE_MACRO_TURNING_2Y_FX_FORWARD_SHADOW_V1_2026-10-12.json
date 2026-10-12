@@ -1,0 +1,38 @@
+{
+  "schema": "GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_FX_FORWARD_SHADOW_V1",
+  "as_of": "2026-10-12",
+  "status": "FORWARD_ONLY_WAITING",
+  "candidate_audit_pr": 177,
+  "candidate_result_sha256": "2cf391fc0bad91438bf1fc87d13a9667a50faa151bd1bf1453b8d76b35bda046",
+  "first_permitted_macro_signal_asof": "2026-11-10",
+  "historical_backfill_allowed": false,
+  "rule_freeze": {
+    "universe": ["EUR", "JPY", "CAD", "AUD"],
+    "macro_turning_rule": "unchanged from PR #172: relative second-difference inflation plus sign-inverted unemployment; both components must agree; no magnitude threshold",
+    "rates_confirmation": "unchanged: macro_direction * next_month local-minus-USD 2Y repricing > 0",
+    "fx_entry": "first official ECB common fixing strictly after the rates-confirmation monthly as-of",
+    "fx_exit": "first official ECB common fixing strictly after the following monthly day-10 anchor",
+    "trade_direction": "unchanged original macro direction",
+    "no_price_filter": true,
+    "no_cot_filter": true,
+    "no_threshold_search": true,
+    "no_horizon_search": true,
+    "no_currency_exclusion": true
+  },
+  "forward_confirmation_gate": {
+    "minimum_matured_fx_events": 20,
+    "minimum_currencies_represented": 3,
+    "mean_signed_fx_log_return_gt": 0.0,
+    "directional_accuracy_min": 0.55,
+    "minimum_currencies_positive_mean": 3,
+    "max_single_currency_share": 0.50,
+    "both_hawkish_and_dovish_required": true,
+    "all_required": true
+  },
+  "partial_results_policy": "Any sample below the full gate remains WAITING regardless of interim performance.",
+  "promotion_policy": "Even a forward PASS creates VALIDATED_PENDING_PROMOTION only; production/sizing require separate explicit promotion review.",
+  "current_ledger": [],
+  "edge_certified": false,
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
