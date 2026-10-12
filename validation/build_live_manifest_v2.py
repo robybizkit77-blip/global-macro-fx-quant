@@ -8,6 +8,8 @@ SECTIONS=ROOT/'live_data'/'sections'
 OLD=ROOT/'live_data'/'manifest.json'
 PARTS=[PAYLOAD/f'part-{i:02d}.txt' for i in range(16)]
 TRANSFORMED={'V247_COT_STORIES','RATES_AUDIT_METADATA'}
+RUNTIME_OVERLAYS={'MACRO_THERMOMETER_DATA','MACRO_SERIES'}
+RUNTIME_OVERLAY_SCRIPT='live_data/canonical-runtime-overlay.js'
 
 def sha(b:bytes)->str: return hashlib.sha256(b).hexdigest()
 
@@ -23,11 +25,19 @@ def main()->int:
         key=entry['key']; file=entry['file']; raw=(SECTIONS/file).read_bytes()
         hits=[i for i,b in enumerate(part_bytes) if b.count(raw)]
         total=sum(b.count(raw) for b in part_bytes)
-        mode='DERIVED_BUILDER_REQUIRED' if key in TRANSFORMED else 'DIRECT_SINGLE_PART'
+        if key in RUNTIME_OVERLAYS:
+            mode='RUNTIME_OVERLAY'
+        elif key in TRANSFORMED:
+            mode='DERIVED_BUILDER_REQUIRED'
+        else:
+            mode='DIRECT_SINGLE_PART'
         row={'key':key,'file':file,'mode':mode,'bytes':len(raw),'sha256':sha(raw),'occurrences_in_payload':total,'part':hits[0] if len(hits)==1 and total==1 else None}
         if mode=='DIRECT_SINGLE_PART' and (total!=1 or len(hits)!=1):
             failures.append(f'{key}: direct section must occur exactly once inside one payload part; total={total}, parts={hits}')
-        if mode=='DERIVED_BUILDER_REQUIRED':
+        if mode=='RUNTIME_OVERLAY':
+            row['direct_update_allowed']=False
+            row['runtime_overlay']=RUNTIME_OVERLAY_SCRIPT
+        elif mode=='DERIVED_BUILDER_REQUIRED':
             row['direct_update_allowed']=False
         else:
             row['direct_update_allowed']=True
@@ -39,6 +49,7 @@ def main()->int:
       'runtime_bytes':len(runtime),
       'part_count':len(PARTS),
       'direct_section_count':sum(r['mode']=='DIRECT_SINGLE_PART' for r in rows),
+      'overlay_section_count':sum(r['mode']=='RUNTIME_OVERLAY' for r in rows),
       'derived_section_count':sum(r['mode']=='DERIVED_BUILDER_REQUIRED' for r in rows),
       'sections':rows,
       'failures':failures,
