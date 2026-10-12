@@ -31,13 +31,19 @@
       "frequency": null,
       "max_business_day_lag_vs_price": 1,
       "collector": null,
-      "reason": "The embedded D.risk Brent series contains no source/provenance metadata. EIA Europe Brent Spot Price FOB is official, but its publication schedule can lag the daily Price lane beyond the existing one-business-day Risk gate. Do not weaken the gate or infer the historical source."
+      "reason": "The embedded D.risk Brent series contains no source/provenance metadata, and the historical canonical refresh workflow does not define a Brent collector. EIA Europe Brent Spot Price FOB is official, but its publication schedule can lag the daily Price lane beyond the existing one-business-day Risk gate. Do not weaken the gate or infer a historical source."
     }
   },
   "secondary_runtime_series": {
     "WTI": {
-      "status": "NOT_GATE_ELIGIBLE",
-      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored."
+      "status": "SOURCE_RECOVERED_NOT_PRIMARY_GATE",
+      "source_name": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
+      "publisher": "U.S. EIA via FRED",
+      "series_id": "DCOILWTICO",
+      "frequency": "Daily",
+      "historical_contract_commit": "ad954db44b99f7a1f0a9538b684593cc3a1e5596",
+      "historical_workflow": ".github/workflows/canonical-data-refresh-v274.yml",
+      "reason": "The repository history contains an explicit canonical daily FRED/EIA collector and provenance fields for WTI. Current D.risk is truncated, so WTI can be rebuilt from the recovered canonical source contract but remains outside the existing VIX/Brent primary freshness gate."
     },
     "Gold": {
       "status": "NOT_GATE_ELIGIBLE",
