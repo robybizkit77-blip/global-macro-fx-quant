@@ -1,0 +1,69 @@
+{
+  "schema": "GMFQ_RATES_COT_FORWARD_CONFLUENCE_SHADOW_CONTRACT_V1",
+  "status": "FROZEN_WAITING_FOR_UNSEEN_OBSERVATIONS",
+  "frozen_at": "2026-10-12",
+  "purpose": "Forward-only candidate-generation test of directional confluence between two independently frozen candidates. No historical combination search is permitted.",
+  "parent_candidates": {
+    "rates": {
+      "source_pr": 132,
+      "head_sha": "1e009cd73d1b910429a5863fec0ac5b4151edffd",
+      "candidate": "DOVISH_DIVERGENCE",
+      "historical_cutoff_reference_period": "2026-08",
+      "rule": "state == CONTRADICTORY and d_diff_2y < 0",
+      "direction": "LOCAL_WEAKER_VS_USD"
+    },
+    "cot": {
+      "source_pr": 143,
+      "head_sha": "9b4afb19b9e558dc15c2ec469213c7ab1b89bb0a",
+      "candidate": "COT_104W_EXTREME_REVERSAL_80_20",
+      "historical_cutoff_report_date": "2026-09-08",
+      "rule_required_for_confluence": "104W percentile >= 80",
+      "direction": "SHORT_LOCAL_CURRENCY_VS_USD"
+    }
+  },
+  "eligible_currencies": ["EUR", "JPY", "CAD", "AUD"],
+  "confluence_rule": {
+    "rates_condition": "state == CONTRADICTORY and d_diff_2y < 0",
+    "cot_condition": "104W PIT-safe positioning percentile >= 80",
+    "directional_alignment": "both imply LOCAL_WEAKER_VS_USD",
+    "rates_reference_period_must_be_strictly_after": "2026-08",
+    "cot_report_date_must_be_strictly_after": "2026-09-08",
+    "temporal_order": "COT signal must become PIT-available on or after the Rates signal is already PIT-known",
+    "deduplication": "at most one confluence event per currency per Rates reference_period; retain only the first eligible aligned COT signal",
+    "backfill": "forbidden",
+    "threshold_search": "forbidden",
+    "currency_exclusion": "forbidden",
+    "direction_search": "forbidden",
+    "rule_change_after_freeze": "forbidden"
+  },
+  "outcomes": {
+    "measure": "LOCAL_CURRENCY_VS_USD_RETURN_SIGNED_FOR_LOCAL_WEAKER_DIRECTION",
+    "horizons": ["5fx_trading_days", "1m", "3m"],
+    "primary_candidate_generation_horizons": ["5fx_trading_days", "1m"],
+    "3m_is_secondary_until_mature": true,
+    "evaluate_only_after_each_horizon_matures": true
+  },
+  "candidate_generation_gate": {
+    "all_required": true,
+    "minimum_matured_1m_events": 12,
+    "minimum_currencies_represented": 3,
+    "pooled_mean_5d_gt_zero": true,
+    "pooled_mean_1m_gt_zero": true,
+    "directional_accuracy_5d_min": 0.52,
+    "minimum_currencies_positive_1m": 3,
+    "maximum_single_currency_share": 0.50
+  },
+  "governance": {
+    "historical_confluence_backtest_allowed": false,
+    "parent_candidate_rules_changed": false,
+    "parent_forward_shadows_changed": false,
+    "passing_gate_means": "NEW_FORWARD_CONFLUENCE_CANDIDATE_ONLY",
+    "edge_certified": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "separate_validation_required_after_candidate_generation": true,
+    "no_rescue_tuning": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
