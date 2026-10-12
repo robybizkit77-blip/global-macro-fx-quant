@@ -26,30 +26,24 @@ jobs:
           c=json.load(open(p))
           assert c['schema']=='GMFQ_CB_PRIORITY_LABELING_CONTRACT_V1'
           assert c['status']=='PREDECLARED_LABEL_METHOD_NO_LABELS_OBSERVED'
-          assert c['parent_event_inventory']=={
-            'pull_request':164,
-            'head_sha':'d0604b4a60446ba0f1beb4f7e1fa76e782ad73f5',
-            'required_status':'RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
-          }
+          p=c['parent_event_inventory']
+          assert p['pull_request']==164
+          assert p['head_sha']=='ef1a5ba0c0cf673bbd509517b9c772386d3f3085'
+          assert p['run_id']==38215654681
+          assert p['artifact_id']==11732506878
+          assert p['artifact_name']=='cb-priority-decision-event-inventory-38215654681'
+          assert p['artifact_zip_sha256']=='84806d3d1c9419dfcfaf10d96f008753a9222cfaeb977459fda2f3d8e0f9daa3'
+          assert p['required_status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
           assert set(c['allowed_labels'])=={'INFLATION','BALANCED','LABOUR_GROWTH','FINANCIAL_STABILITY_OTHER','WITHHELD_AMBIGUOUS'}
-          d=c['document_boundary']
-          assert d['market_reaction_forbidden'] is True
-          assert d['fx_rates_cot_forbidden'] is True
-          r=c['mechanical_label_rule']
-          assert r['explicit_dominance_precedence'] is True
-          assert r['tie_break_by_market_outcome']=='forbidden'
-          assert r['tie_break_by_future_policy']=='forbidden'
-          q=c['quality_gate_before_performance']
-          assert q['minimum_events_per_central_bank']==50
-          assert q['maximum_withheld_ambiguous_share_per_central_bank']==0.20
-          assert q['dataset_sha256_sealed_before_performance'] is True
-          g=c['governance']
-          assert g['result_blind'] is True
-          assert g['labels_may_not_change_after_performance_is_seen'] is True
-          assert g['performance_test_authorized_now'] is False
-          assert g['production_signal_authorized'] is False
-          assert g['sizing_authorized'] is False
+          d=c['document_boundary']; assert d['market_reaction_forbidden'] is True; assert d['fx_rates_cot_forbidden'] is True
+          r=c['mechanical_label_rule']; assert r['explicit_dominance_precedence'] is True
+          assert r['tie_break_by_market_outcome']=='forbidden'; assert r['tie_break_by_future_policy']=='forbidden'
+          q=c['quality_gate_before_performance']; assert q['minimum_events_per_central_bank']==50
+          assert q['maximum_withheld_ambiguous_share_per_central_bank']==0.20; assert q['dataset_sha256_sealed_before_performance'] is True
+          g=c['governance']; assert g['result_blind'] is True; assert g['labels_may_not_change_after_performance_is_seen'] is True
+          assert g['performance_test_authorized_now'] is False; assert g['production_signal_authorized'] is False; assert g['sizing_authorized'] is False
           print('CB_PRIORITY_LABEL_METHOD_FROZEN_PASS')
+          print('PARENT_GREEN_INVENTORY_RECEIPT_PINNED_PASS')
           print('PERFORMANCE_EXECUTION_STATUS=BLOCKED_PENDING_FROZEN_LABEL_DATASET')
           PY
       - name: Assert no labels or performance outputs exist on contract branch
