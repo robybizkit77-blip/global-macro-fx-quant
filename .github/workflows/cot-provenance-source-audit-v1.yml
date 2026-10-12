@@ -13,11 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate COT provenance producers
+      - name: Inspect exact COT provenance constants and policy
         run: |
-          echo '=== PRODUCTION_PRICE_COT_LIQ_AUDIT / FINAL_SOURCE_POLICY_AUDIT definitions ==='
-          grep -R -n -E 'PRODUCTION_PRICE_COT_LIQ_AUDIT|FINAL_SOURCE_POLICY_AUDIT' . --exclude-dir=.git || true
-          echo '=== stale COT dates ==='
-          grep -R -n '2026-09-22' payload live_data validation .github/workflows --exclude='cot-provenance-source-audit-v1.yml' || true
-          echo '=== current COT date references ==='
-          grep -R -n '2026-10-06' payload live_data validation .github/workflows --exclude='cot-provenance-source-audit-v1.yml' | head -100 || true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('payload/part-14.txt')
+          s=p.read_text()
+          keys=['COT_CURRENT_ASOF','COT_PREV_ASOF','FX_PRICE_LATEST','PRODUCTION_PRICE_COT_LIQ_AUDIT','FINAL_SOURCE_POLICY_AUDIT']
+          for k in keys:
+              print('\n===',k,'===')
+              start=0
+              while True:
+                  i=s.find(k,start)
+                  if i<0: break
+                  a=max(0,i-900); b=min(len(s),i+2200)
+                  print(s[a:b].replace('\r',''))
+                  print('\n--- occurrence end ---')
+                  start=i+len(k)
+          PY
