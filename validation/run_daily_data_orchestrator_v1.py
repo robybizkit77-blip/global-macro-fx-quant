@@ -10,6 +10,7 @@ PRICE_RUNTIME = Path('payload/part-15.txt')
 RATES_META = Path('live_data/sections/RATES_AUDIT_METADATA.json')
 MACRO_REGISTRY = Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
 LIQ_PATH = Path('live_data/sections/NATIVE_LIQ_DATA.json')
+RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 
 
 def load(path):
@@ -33,6 +34,7 @@ def main():
     d = load(D_PATH)
     rates = load(RATES_META)
     macro = load(MACRO_REGISTRY)
+    risk_policy = load(RISK_POLICY)
     today = parse_date(reg['as_of'])
 
     pairs = d.get('pairs', [])
@@ -40,6 +42,13 @@ def main():
     latest_pair = max(pair_dates) if pair_dates else None
     overlay_as_of = price_overlay_as_of()
     price_age = (today - parse_date(overlay_as_of)).days
+
+    vix_policy = risk_policy['gate_inputs']['VIX']
+    brent_policy = risk_policy['gate_inputs']['Brent']
+    if vix_policy['status'] != 'READY':
+        raise SystemExit('Risk VIX source must be READY')
+    if brent_policy['status'] != 'WITHHELD':
+        raise SystemExit('Risk Brent must remain WITHHELD until an auditable daily source is selected')
 
     lanes = {
         'PRICE': {
@@ -77,13 +86,18 @@ def main():
             'reason': 'layer contains mixed monthly/weekly/other series; freshness must be mapped per official subseries cadence before any GREEN state or updater orchestration',
         },
         'RISK': {
-            'state': 'BLOCKED_DATA_UPDATER_MISSING_GUARD_PROVEN',
-            'updater': 'MISSING',
+            'state': 'BLOCKED_BRENT_SOURCE_PROVENANCE_UNRESOLVED',
+            'source_policy': str(RISK_POLICY),
+            'vix_source_status': vix_policy['status'],
+            'vix_updater': vix_policy['collector'],
+            'vix_candidate_pipeline_ready': True,
+            'brent_source_status': brent_policy['status'],
+            'brent_updater': brent_policy['collector'] or 'NONE',
             'freshness_guard': 'Risk Freshness Audit V1 / GMFQ_RISK_FRESHNESS_GATE_SIM_V1',
             'guard_rule': 'VIX or Brent > 1 business day behind Price => WITHHELD; pair structural direction unchanged',
             'guard_proven': True,
             'publication_eligible': False,
-            'reason': 'fail-closed overlay guard is proven; current Risk snapshot is stale and the source refresh path is not yet wired',
+            'reason': 'official Cboe VIX candidate path is now auditable; Brent remains fail-closed because the embedded runtime has no provenance and no eligible daily source has been selected',
         },
         'REBUILD': {
             'state': 'READY_AFTER_INPUT_GATES',
