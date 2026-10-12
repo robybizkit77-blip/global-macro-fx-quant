@@ -11,7 +11,9 @@
     "auto_merge": false
   },
   "active_forward_stack": [
+    {"pr": 143, "role": "COT_104W_FORWARD_CONTRACT", "status": "KEEP_ACTIVE"},
     {"pr": 158, "role": "COT_104W_FORWARD_ENGINE", "status": "KEEP_ACTIVE"},
+    {"pr": 132, "role": "RATES_DOVISH_DIVERGENCE_FORWARD_CONTRACT", "status": "KEEP_ACTIVE"},
     {"pr": 160, "role": "RATES_DOVISH_DIVERGENCE_FORWARD_ENGINE", "status": "KEEP_ACTIVE", "note": "Consumes shared forward readiness boundary."},
     {"pr": 178, "role": "MACRO_TURNING_FORWARD_CONTRACT", "status": "KEEP_ACTIVE"},
     {"pr": 180, "role": "MACRO_TURNING_FORWARD_ENGINE", "status": "KEEP_ACTIVE", "note": "Consumes shared forward readiness boundary."},
@@ -28,8 +30,8 @@
     {"pr": 179, "role": "CURRENT_RESEARCH_CANDIDATE_SIDECAR", "status": "KEEP_CANONICAL"}
   ],
   "historical_audit_only": [
-    {"prs": [140,141,142,147,148,149,150], "family": "COT_104W_EXTREME_REVERSAL", "status": "AUDIT_ONLY", "note": "Historical candidate/robustness evidence; forward #158 is decisive."},
-    {"prs": [129,130,131,132], "family": "RATES_DOVISH_DIVERGENCE_RESEARCH", "status": "AUDIT_ONLY", "note": "Historical candidate evidence; forward #160 is decisive."},
+    {"prs": [140,141,142,147,148,149,150], "family": "COT_104W_EXTREME_REVERSAL", "status": "AUDIT_ONLY", "note": "Historical candidate/robustness evidence; forward #143/#158 are decisive."},
+    {"prs": [129,130,131], "family": "RATES_DOVISH_DIVERGENCE_RESEARCH", "status": "AUDIT_ONLY", "note": "Historical candidate evidence; forward #132/#160 are decisive."},
     {"prs": [172,173,174,175,176,177], "family": "MACRO_TURNING_2Y_FX_RESEARCH", "status": "AUDIT_ONLY", "note": "Historical candidate evidence; forward #178/#180 are decisive."},
     {"prs": [159,161], "family": "FIRST_FORWARD_RECEIPTS", "status": "AUDIT_ONLY"}
   ],
@@ -46,6 +48,7 @@
     "Maintain PIT inputs and shared readiness",
     "Accumulate unseen forward evidence in COT / Rates / Macro Turning",
     "Use Forward Control Room as the canonical research status surface",
-    "Then perform repository lineage cleanup and full dashboard integration"
+    "Close/archive only PRs explicitly classified as audit-only, falsified, superseded, or completed research",
+    "Then perform full dashboard integration"
   ]
 }
