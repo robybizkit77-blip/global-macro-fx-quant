@@ -1,0 +1,55 @@
+name: Dashboard Research State Adapter V1
+
+on:
+  push:
+    branches:
+      - validation-dashboard-research-state-adapter-v1-2026-10-12
+  pull_request:
+    paths:
+      - 'validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json'
+      - 'validation/RESEARCH_PUBLICATION_GATE_CONTRACT_V1_2026-10-12.json'
+      - 'validation/build_research_publication_manifest_v1.py'
+      - 'validation/DASHBOARD_RESEARCH_STATE_ADAPTER_CONTRACT_V1_2026-10-12.json'
+      - 'validation/build_dashboard_research_state_adapter_v1.py'
+      - '.github/workflows/dashboard-research-state-adapter-v1.yml'
+
+jobs:
+  adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build research publication manifest
+        run: |
+          mkdir -p artifacts/dashboard-research-state-v1
+          python validation/build_research_publication_manifest_v1.py \
+            --registry validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json \
+            --contract validation/RESEARCH_PUBLICATION_GATE_CONTRACT_V1_2026-10-12.json \
+            --output artifacts/dashboard-research-state-v1/research_publication_manifest.json
+      - name: Build dashboard-safe research state
+        run: |
+          python validation/build_dashboard_research_state_adapter_v1.py \
+            --manifest artifacts/dashboard-research-state-v1/research_publication_manifest.json \
+            --contract validation/DASHBOARD_RESEARCH_STATE_ADAPTER_CONTRACT_V1_2026-10-12.json \
+            --output artifacts/dashboard-research-state-v1/dashboard_research_state.json
+      - name: Assert context cannot affect decision engine
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('artifacts/dashboard-research-state-v1/dashboard_research_state.json'))
+          assert x['guardrails']['pair_bias_unchanged_by_context'] is True
+          assert x['guardrails']['currency_score_unchanged_by_context'] is True
+          assert x['guardrails']['sizing_unchanged_by_context'] is True
+          assert x['guardrails']['context_decision_weight_zero'] is True
+          assert all(c['decision_weight'] == 0 for c in x['context_cards'])
+          if not x['decision_signals']:
+              assert x['research_signal_state'] == 'WITHHELD'
+          print(json.dumps(x['counts'], sort_keys=True))
+          print(x['research_signal_state'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-research-state-${{ github.run_id }}
+          path: artifacts/dashboard-research-state-v1/
