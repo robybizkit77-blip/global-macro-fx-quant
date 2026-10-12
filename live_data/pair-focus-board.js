@@ -83,7 +83,12 @@
       signatures[pair]={fav:frame.fav??null,quality:frame.quality??null,setup:frame.setup??null,group:c.group};
     }
 
+    const research=window.__GMFQ_RESEARCH_STATE||{};
+    const researchSafe=research.decision_weight===0 && research.may_modify_pair_bias!==true && research.may_modify_sizing!==true;
+    const fingerprint=JSON.stringify({signatures,researchSafe,researchWeight:research.decision_weight??0});
+
     let board=document.getElementById(BOARD_ID);
+    if(board?.dataset?.gmfqFocusFingerprint===fingerprint) return;
     if(!board){
       board=document.createElement('section');
       board.id=BOARD_ID;
@@ -92,8 +97,6 @@
       else host.prepend(board);
     }
 
-    const research=window.__GMFQ_RESEARCH_STATE||{};
-    const researchSafe=research.decision_weight===0 && research.may_modify_pair_bias!==true && research.may_modify_sizing!==true;
     board.innerHTML=`<div class="head"><div><h3>FOCUS BOARD · 28 CROSS</h3><p>Raggruppamento trasparente basato esclusivamente sulla qualità canonica già prodotta dal Pair Engine. Nessun punteggio nascosto e nessun ranking interno: ordine alfabetico dentro ogni fascia.</p></div><div class="guard">Research / Quant: ${researchSafe?'0 PESO':'WITHHELD'}</div></div><div class="grid"></div>`;
     const grid=board.querySelector('.grid');
     for(const g of GROUPS){
@@ -112,6 +115,7 @@
       }
       grid.appendChild(box);
     }
+    board.dataset.gmfqFocusFingerprint=fingerprint;
 
     window.__GMFQ_PAIR_FOCUS_BOARD_STATE=Object.freeze({
       status:'PASS_PRESENTATION_ONLY',
@@ -126,6 +130,7 @@
       changes_sizing:false,
       research_decision_weight:research.decision_weight??0,
       research_affects_classification:false,
+      idempotent_fingerprint:true,
       signatures:Object.freeze(signatures)
     });
   }
