@@ -2,15 +2,22 @@
 import copy
 import json
 from pathlib import Path
-from check_freshness_registry import validate
+from check_freshness_registry import validate, runtime_price_overlay_as_of
 
 BASE = Path('validation/FRESHNESS_REGISTRY_V1_2026-10-12.json')
+D_PATH = Path('live_data/sections/D.json')
+
+
+def validation_errors(data):
+    runtime_d = json.loads(D_PATH.read_text(encoding='utf-8'))
+    price_as_of, price_errors = runtime_price_overlay_as_of()
+    return price_errors + validate(data, runtime_d=runtime_d, price_runtime_as_of=price_as_of)
 
 
 def assert_fails(mutator, label):
     data = json.loads(BASE.read_text(encoding='utf-8'))
     mutator(data)
-    errors = validate(data)
+    errors = validation_errors(data)
     if not errors:
         raise AssertionError(f'{label}: mutation unexpectedly passed')
     print(label, 'PASS_FAIL_CLOSED', errors[0])
@@ -18,7 +25,7 @@ def assert_fails(mutator, label):
 
 def main():
     base = json.loads(BASE.read_text(encoding='utf-8'))
-    errors = validate(base)
+    errors = validation_errors(base)
     if errors:
         raise AssertionError(f'positive registry failed: {errors}')
     print('POSITIVE_REGISTRY_PASS')
@@ -29,6 +36,12 @@ def main():
         r = next(x for x in d['records'] if x['layer']=='RATES' and x['key']=='USD')
         r['status'] = 'GREEN'
     assert_fails(green_stale_rate, 'STALE_RATE_CANNOT_BE_GREEN')
+
+    def fake_price_date(d):
+        r = next(x for x in d['records'] if x['layer']=='PRICE' and x['key']=='FX_G8')
+        r['as_of'] = '2026-10-12'
+        r['status'] = 'GREEN'
+    assert_fails(fake_price_date, 'PRICE_MUST_MATCH_EFFECTIVE_RUNTIME_OVERLAY')
 
     def activate_withheld_cb(d):
         r = next(x for x in d['records'] if x['layer']=='CB_PRICING' and x['key']=='USD')
