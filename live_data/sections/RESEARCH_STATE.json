@@ -1,0 +1,44 @@
+{
+  "schema": "GMFQ_DASHBOARD_RESEARCH_STATE_V1",
+  "as_of": "2026-10-12",
+  "research_signal_state": "WITHHELD",
+  "reason": "No research entry is production-authorized.",
+  "decision_signal_count": 0,
+  "sizing_authorized_count": 0,
+  "context_only_count": 4,
+  "excluded_count": 5,
+  "decision_weight": 0,
+  "may_modify_pair_bias": false,
+  "may_modify_currency_score": false,
+  "may_modify_sizing": false,
+  "context_only": [
+    {
+      "id": "RATES_RELATIVE_2Y_REPRICING_V1",
+      "layer": "RATES",
+      "ui_label": "INFORMATIVO",
+      "status": "INFORMATIVE_ONLY",
+      "decision_weight": 0
+    },
+    {
+      "id": "RATES_DOVISH_DIVERGENCE_V1",
+      "layer": "RATES",
+      "ui_label": "IN VALIDAZIONE",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "decision_weight": 0
+    },
+    {
+      "id": "COT_104W_EXTREME_REVERSAL_80_20_V1",
+      "layer": "POSITIONING",
+      "ui_label": "IN VALIDAZIONE",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "decision_weight": 0
+    },
+    {
+      "id": "RATES_COT_FORWARD_CONFLUENCE_V1",
+      "layer": "RATES_POSITIONING",
+      "ui_label": "CONFLUENZA IN VALIDAZIONE",
+      "status": "FORWARD_CONFLUENCE_WAITING",
+      "decision_weight": 0
+    }
+  ]
+}
