@@ -5,7 +5,38 @@ const MAX_CALENDAR_LAG_DAYS=10;
 const FRESHNESS_TIME_ZONE='Europe/Rome';
 const MAX_READY_ATTEMPTS=80;
 const READY_RETRY_MS=50;
+const COT_CANONICAL_PATH='live_data/sections/V250_COT_CHART_DATA.json';
+const COT_CCYS=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+
+let canonicalCotStatus='LOADING';
+let canonicalCotAsOf=null;
+let canonicalCotError=null;
+let canonicalCotDates=null;
+
+(async()=>{
+  try{
+    const r=await fetch(COT_CANONICAL_PATH,{cache:'no-store'});
+    if(!r.ok)throw new Error(`canonical-cot-http-${r.status}`);
+    const data=await r.json();
+    const per={};
+    for(const c of COT_CCYS){
+      const dates=data?.[c]?.dates;
+      if(!Array.isArray(dates)||!dates.length)throw new Error(`canonical-cot-missing-dates:${c}`);
+      const latest=String(dates[dates.length-1]||'');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(latest))throw new Error(`canonical-cot-invalid-date:${c}:${latest}`);
+      per[c]=latest;
+    }
+    const unique=[...new Set(Object.values(per))];
+    if(unique.length!==1)throw new Error(`canonical-cot-cross-g8-date-mismatch:${JSON.stringify(per)}`);
+    canonicalCotDates=Object.freeze({...per});
+    canonicalCotAsOf=unique[0];
+    canonicalCotStatus='PASS';
+  }catch(e){
+    canonicalCotStatus='FAILED';
+    canonicalCotError=String(e&&e.message||e);
+  }
+})();
 
 function currentRomeDate(){
   try{
@@ -24,8 +55,12 @@ function calendarLag(from,to){
   return Math.max(0,Math.round((b-a)/86400000));
 }
 
-function cotAsOf(){
+function legacyCotAsOf(){
   return window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of || window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of || null;
+}
+
+function cotAsOf(){
+  return canonicalCotStatus==='PASS'?canonicalCotAsOf:null;
 }
 
 function priceGateTerminal(){
@@ -82,6 +117,13 @@ function install(attempt){
     status:'WITHHELD_NO_APPLY',
     max_calendar_lag_days:MAX_CALENDAR_LAG_DAYS,
     freshness_time_zone:FRESHNESS_TIME_ZONE,
+    provenance_source:'V250_COT_CHART_DATA',
+    canonical_dataset_path:COT_CANONICAL_PATH,
+    canonical_dataset_status:canonicalCotStatus,
+    canonical_dataset_asof:canonicalCotAsOf,
+    canonical_dataset_dates:canonicalCotDates,
+    legacy_provenance_asof:legacyCotAsOf(),
+    provenance_mismatch:!!(canonicalCotAsOf&&legacyCotAsOf()&&canonicalCotAsOf!==legacyCotAsOf()),
     changes_engine:false,
     changes_bias:false,
     changes_sizing:false,
@@ -93,18 +135,27 @@ function install(attempt){
     const asOf=cotAsOf();
     const currencyReady=typeof window.deriveCurrencyState==='function';
     const priceReady=priceGateTerminal();
-    if((!asOf||!currencyReady||!priceReady)&&attempt<MAX_READY_ATTEMPTS){
-      let reason='COT provenance not ready yet';
-      if(asOf&&!priceReady)reason='Price freshness gate not terminal yet';
-      else if(asOf&&priceReady&&!currencyReady)reason='currency state consumer not ready yet';
+    if((canonicalCotStatus==='LOADING'||!currencyReady||!priceReady)&&attempt<MAX_READY_ATTEMPTS){
+      let reason=canonicalCotStatus==='LOADING'?'Canonical COT dataset not ready yet':'COT consumer dependency not ready yet';
+      if(canonicalCotStatus==='PASS'&&!priceReady)reason='Price freshness gate not terminal yet';
+      else if(canonicalCotStatus==='PASS'&&priceReady&&!currencyReady)reason='currency state consumer not ready yet';
       window.__GMFQ_COT_FRESHNESS_GATE_STATE=Object.freeze({...state,status:'WAITING_FOR_COT_PROVENANCE',reason});
       setTimeout(()=>install(attempt+1),READY_RETRY_MS);
       return;
     }
     const reference=currentRomeDate();
-    if(!asOf||!currencyReady||!priceReady){
+    if(canonicalCotStatus!=='PASS'||!asOf||!currencyReady||!priceReady){
       state.status='WITHHELD_PROVENANCE_UNAVAILABLE';
-      state.reason=!asOf?'COT provenance unavailable after bounded wait':(!priceReady?'Price freshness dependency unavailable after bounded wait':'currency state consumer unavailable after bounded wait');
+      state.reason=canonicalCotStatus!=='PASS'?`Canonical COT dataset unavailable: ${canonicalCotError||canonicalCotStatus}`:(!asOf?'Canonical COT as-of unavailable':(!priceReady?'Price freshness dependency unavailable after bounded wait':'currency state consumer unavailable after bounded wait'));
+      state.cot_asof=asOf;
+      state.reference_asof=reference;
+      state.calendar_lag_days=null;
+      publishState(state);
+      return;
+    }
+    if(String(asOf)>String(reference)){
+      state.status='WITHHELD_PROVENANCE_UNAVAILABLE';
+      state.reason=`Canonical COT as-of ${asOf} is later than reference date ${reference}`;
       state.cot_asof=asOf;
       state.reference_asof=reference;
       state.calendar_lag_days=null;
@@ -157,14 +208,13 @@ function install(attempt){
       wrapName('cotHeatState',original=>function(c){const x=original(c)||{};return {...x,txt:x.txt?`${x.txt} · STALE`:'STALE',cls:'neu',ext:false};});
     }
 
-    const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
-    const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+    const currencies=Object.fromEntries(COT_CCYS.map(c=>[c,clone(window.deriveCurrencyState(c))]));
     state.status=stale?'PASS_WITHHELD_STALE_COT':'PASS_FRESH_COT_UNCHANGED';
     state.reason=stale?'Canonical weekly COT exceeds allowed calendar lag; warning/context outputs suppressed while raw historical COT remains visible.':'Canonical weekly COT is within freshness window.';
     state.cot_asof=asOf;
     state.reference_asof=reference;
     state.calendar_lag_days=lag;
-    state.currency_cot_risk_nonempty=ccys.filter(c=>String(currencies[c]?.cotRisk||'').trim()).length;
+    state.currency_cot_risk_nonempty=COT_CCYS.filter(c=>String(currencies[c]?.cotRisk||'').trim()).length;
     state.price_dependency_status=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status||null;
     publishState(state);
 
