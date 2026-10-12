@@ -10,6 +10,7 @@ PRICE_RUNTIME = Path('payload/part-15.txt')
 RATES_META = Path('live_data/sections/RATES_AUDIT_METADATA.json')
 MACRO_REGISTRY = Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
 LIQ_PATH = Path('live_data/sections/NATIVE_LIQ_DATA.json')
+LIQ_POLICY = Path('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 
 
@@ -34,6 +35,7 @@ def main():
     d = load(D_PATH)
     rates = load(RATES_META)
     macro = load(MACRO_REGISTRY)
+    liq_policy = load(LIQ_POLICY)
     risk_policy = load(RISK_POLICY)
     today = parse_date(reg['as_of'])
 
@@ -42,6 +44,13 @@ def main():
     latest_pair = max(pair_dates) if pair_dates else None
     overlay_as_of = price_overlay_as_of()
     price_age = (today - parse_date(overlay_as_of)).days
+
+    if liq_policy.get('status') != 'PARTIAL_POLICY_FAIL_CLOSED':
+        raise SystemExit('Liquidity source policy must remain fail-closed until all subseries are mapped')
+    liq_verified = liq_policy.get('verified') or {}
+    liq_unresolved = liq_policy.get('unresolved') or []
+    if len(liq_verified) + len(liq_unresolved) != 26:
+        raise SystemExit(f'Liquidity policy coverage mismatch: verified={len(liq_verified)} unresolved={len(liq_unresolved)}')
 
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
@@ -77,13 +86,17 @@ def main():
             'reason': 'single-series PIT path exists; detached runtime repair is deterministic but persistent apply is not yet wired',
         },
         'LIQUIDITY': {
-            'state': 'BLOCKED_SUBSERIES_POLICY_NOT_MAPPED',
+            'state': 'BLOCKED_SUBSERIES_POLICY_PARTIAL',
             'source_present': LIQ_PATH.exists(),
+            'source_policy': str(LIQ_POLICY),
             'updater': 'UNVERIFIED',
             'inventory': 'audit_liquidity_subseries_v1.py',
             'inventory_ready': True,
+            'verified_subseries': len(liq_verified),
+            'unresolved_subseries': len(liq_unresolved),
+            'total_subseries': 26,
             'publication_eligible': False,
-            'reason': 'layer contains mixed monthly/weekly/other series; freshness must be mapped per official subseries cadence before any GREEN state or updater orchestration',
+            'reason': 'official provenance/cadence mapping has started but remains incomplete; observed cadence alone cannot promote a subseries to GREEN',
         },
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
@@ -98,7 +111,7 @@ def main():
             'guard_rule': 'VIX or Brent > 1 business day behind Price => WITHHELD; pair structural direction unchanged',
             'guard_proven': True,
             'publication_eligible': False,
-            'reason': 'VIX is auditable and candidate-ready. Brent has an auditable official EIA/FRED daily source, but that source can lag beyond the existing one-business-day gate; no proxy substitution and no gate weakening are allowed.',
+            'reason': 'VIX is auditable and candidate-ready. Brent has an auditable primary EIA daily source, but that source can lag beyond the existing one-business-day gate; no proxy substitution and no gate weakening are allowed.',
         },
         'REBUILD': {
             'state': 'READY_AFTER_INPUT_GATES',
