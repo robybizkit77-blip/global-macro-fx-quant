@@ -1,0 +1,68 @@
+name: CB Priority Labeling Contract V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-labeling-contract-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-label-method:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate result-blind label contract
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/CB_PRIORITY_LABELING_CONTRACT_V1_2026-10-12.json'
+          c=json.load(open(p))
+          assert c['schema']=='GMFQ_CB_PRIORITY_LABELING_CONTRACT_V1'
+          assert c['status']=='PREDECLARED_LABEL_METHOD_NO_LABELS_OBSERVED'
+          assert c['parent_event_inventory']=={
+            'pull_request':164,
+            'head_sha':'d0604b4a60446ba0f1beb4f7e1fa76e782ad73f5',
+            'required_status':'RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
+          }
+          assert set(c['allowed_labels'])=={'INFLATION','BALANCED','LABOUR_GROWTH','FINANCIAL_STABILITY_OTHER','WITHHELD_AMBIGUOUS'}
+          d=c['document_boundary']
+          assert d['market_reaction_forbidden'] is True
+          assert d['fx_rates_cot_forbidden'] is True
+          r=c['mechanical_label_rule']
+          assert r['explicit_dominance_precedence'] is True
+          assert r['tie_break_by_market_outcome']=='forbidden'
+          assert r['tie_break_by_future_policy']=='forbidden'
+          q=c['quality_gate_before_performance']
+          assert q['minimum_events_per_central_bank']==50
+          assert q['maximum_withheld_ambiguous_share_per_central_bank']==0.20
+          assert q['dataset_sha256_sealed_before_performance'] is True
+          g=c['governance']
+          assert g['result_blind'] is True
+          assert g['labels_may_not_change_after_performance_is_seen'] is True
+          assert g['performance_test_authorized_now'] is False
+          assert g['production_signal_authorized'] is False
+          assert g['sizing_authorized'] is False
+          print('CB_PRIORITY_LABEL_METHOD_FROZEN_PASS')
+          print('PERFORMANCE_EXECUTION_STATUS=BLOCKED_PENDING_FROZEN_LABEL_DATASET')
+          PY
+      - name: Assert no labels or performance outputs exist on contract branch
+        run: |
+          set -euo pipefail
+          test ! -e validation/cb_priority_focus_history.csv
+          test ! -e validation/CB_PRIORITY_FOCUS_HISTORY_V1.json
+          test ! -e validation/G4USD_CB_PRIORITY_SHIFT_FX_RESULT_V1.json
+          python - <<'PY'
+          from pathlib import Path
+          t=Path('validation/CB_PRIORITY_LABELING_CONTRACT_V1_2026-10-12.json').read_text().lower()
+          for forbidden in ['"fx_return"','"rates_return"','"target_return"','"sharpe"','"edge_survival"']:
+              assert forbidden not in t, forbidden
+          print('RESULT_BLIND_LABEL_CONTRACT_BOUNDARY_PASS')
+          PY
+          test -z "$(git status --porcelain)"
