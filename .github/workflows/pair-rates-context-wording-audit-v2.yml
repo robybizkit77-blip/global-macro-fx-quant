@@ -1,0 +1,84 @@
+name: Pair Rates Context Wording Audit V2
+
+on:
+  push:
+    branches:
+      - 'validation-pair-rates-context-wording-audit-v2-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wording-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8126 --bind 127.0.0.1 > /tmp/gmfq-pair-wording-v2-server.log 2>&1 &
+          sleep 2
+      - name: Verify clicked-pair wording without frame changes
+        run: |
+          cat > pair-rates-context-wording-audit-v2.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const TARGETS=['AUD/JPY','AUD/NZD','CAD/CHF','EUR/AUD','EUR/USD','NZD/USD','USD/JPY'];
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8126/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const results=[];
+            for(const pair of TARGETS){
+              const before=await page.evaluate(p=>window.derivePairDecisionFrame?.(p)||null,pair);
+              const card=page.locator(`#pairs [data-pair="${pair}"]`).first();
+              if(await card.count()===0) throw new Error('Missing pair card '+pair);
+              await card.click();
+              await page.waitForTimeout(220);
+              const out=await page.evaluate(p=>{
+                const frame=window.derivePairDecisionFrame?.(p)||null;
+                const tutor=document.getElementById('gmfqPairTutor');
+                return {frame,text:String(tutor?.innerText||'').trim(),stamp:tutor?.dataset?.gmfqRatesContext||null,state:window.__GMFQ_PAIR_READING_HIERARCHY_STATE||null};
+              },pair);
+              if(!before||!out.frame) throw new Error('Missing frame '+pair);
+              const rg=out.frame?.structural?.ratesGap;
+              const ps=out.frame?.structural?.policy?.side;
+              if(!(rg?.material===true && rg?.side && ps==='TIE')) throw new Error('Unexpected target contract '+pair);
+              const bp=Math.round(Math.abs(Number(rg.bp)||0));
+              const side=String(rg.side).toUpperCase();
+              if(JSON.stringify(before)!==JSON.stringify(out.frame)) throw new Error('Decision frame changed '+pair);
+              if(!out.text.includes('Aspettative CB neutre')) throw new Error('Missing CB neutral wording '+pair+'\n'+out.text);
+              if(!out.text.includes(`2Y di livello favorisce ${side} (${bp} pb)`)) throw new Error('Missing rates context '+pair+'\n'+out.text);
+              if(!out.text.includes('non vale come seconda conferma strutturale')) throw new Error('Missing non-signal disclaimer '+pair+'\n'+out.text);
+              if(out.stamp!==`${pair}|${side}|${bp}`) throw new Error('Wrong pair stamp '+pair+': '+out.stamp);
+              if(out.state?.changes_pair_logic!==false || out.state?.changes_bias!==false || out.state?.changes_sizing!==false) throw new Error('Presentation state contract failed '+pair);
+              results.push({pair,fav:out.frame.fav,quality:out.frame.quality,rates_side:side,rates_gap_bp:bp,policy_side:ps,stamp:out.stamp,pass:true});
+            }
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            await browser.close();
+            const report={schema:'GMFQ_PAIR_RATES_CONTEXT_WORDING_AUDIT_V2',targets:results,frame_changes:false,verdict:'PASS_PRESENTATION_ONLY'};
+            fs.writeFileSync('pair-rates-context-wording-audit-v2.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+          })().catch(e=>{console.error('::error title=Pair rates wording audit v2::'+String(e.message||e));process.exit(1)});
+          EOF
+          node pair-rates-context-wording-audit-v2.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pair-rates-context-wording-audit-v2
+          path: |
+            pair-rates-context-wording-audit-v2.json
+            /tmp/gmfq-pair-wording-v2-server.log
