@@ -1,0 +1,56 @@
+name: G4USD Relative Macro Turning 2Y FX Forward Shadow V1
+
+on:
+  push:
+    branches:
+      - validation-relative-macro-turning-2y-fx-forward-shadow-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-forward-shadow:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate immutable forward-only protocol
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/G4USD_RELATIVE_MACRO_TURNING_2Y_FX_FORWARD_SHADOW_V1_2026-10-12.json'
+          c=json.load(open(p))
+          assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_FX_FORWARD_SHADOW_V1'
+          assert c['status']=='FORWARD_ONLY_WAITING'
+          assert c['candidate_result_sha256']=='2cf391fc0bad91438bf1fc87d13a9667a50faa151bd1bf1453b8d76b35bda046'
+          assert c['first_permitted_macro_signal_asof']=='2026-11-10'
+          assert c['historical_backfill_allowed'] is False
+          assert c['current_ledger']==[]
+          g=c['forward_confirmation_gate']
+          assert g=={
+            'minimum_matured_fx_events':20,
+            'minimum_currencies_represented':3,
+            'mean_signed_fx_log_return_gt':0.0,
+            'directional_accuracy_min':0.55,
+            'minimum_currencies_positive_mean':3,
+            'max_single_currency_share':0.50,
+            'both_hawkish_and_dovish_required':True,
+            'all_required':True,
+          }
+          assert c['rule_freeze']['no_price_filter'] is True
+          assert c['rule_freeze']['no_cot_filter'] is True
+          assert c['rule_freeze']['no_threshold_search'] is True
+          assert c['rule_freeze']['no_horizon_search'] is True
+          assert c['rule_freeze']['no_currency_exclusion'] is True
+          assert c['edge_certified'] is False
+          assert c['production_signal_authorized'] is False
+          assert c['sizing_authorized'] is False
+          print('FORWARD_ONLY_WAITING_FOR_UNSEEN_EVENTS')
+          PY
+      - name: Assert clean repository
+        run: test -z "$(git status --porcelain)"
