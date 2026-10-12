@@ -12,6 +12,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,9 +32,12 @@ jobs:
           cat > final-alignment-audit.js <<'EOF'
           const fs=require('fs');
           const {chromium}=require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+          const PAIRS=[];for(let i=0;i<CCYS.length;i++)for(let j=i+1;j<CCYS.length;j++)PAIRS.push(`${CCYS[i]}/${CCYS[j]}`);
+          const structural=f=>({fav:f?.fav??null,quality:f?.quality??null,setup:f?.setup??null,structural:f?.structural??null,macroSide:f?.macroSide??null,policySide:f?.policySide??null});
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage();
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
             const errors=[];
             page.on('pageerror',e=>errors.push(String(e.stack||e)));
             page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
@@ -43,62 +47,100 @@ jobs:
             await page.waitForFunction(()=>{
               const p=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
               const c=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
-              return ((p&&p!=='WAITING_FOR_PRICE_PROVENANCE')&&(c&&c!=='WAITING_FOR_COT_PROVENANCE'))||window.__GMFQ_BOOTSTRAP_ERROR;
+              const x=window.__GMFQ_COT_PROVENANCE_REALIGN_STATE?.status;
+              return ((p&&!p.startsWith('WAITING_'))&&(c&&!c.startsWith('WAITING_'))&&x)||window.__GMFQ_BOOTSTRAP_ERROR;
             },null,{timeout:120000});
-            const out=await page.evaluate(()=>{
+
+            const out=await page.evaluate(({CCYS,PAIRS})=>{
               const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
-              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
-              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
-              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
-              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
-              const currencyFailures=Object.entries(currencies).filter(([c,s])=>!s||typeof s.base!=='string'||!s.base.trim()).map(([c,s])=>({c,s}));
-              const pairFailures=Object.entries(pairFrames).filter(([p,f])=>!f||typeof f!=='object').map(([p,f])=>({p,f}));
-              const priceFailures=Object.entries(currencies).filter(([c,s])=>Number(s?.price||0)!==0||String(s?.confirmation||'').toUpperCase().includes('CONFERMA')||String(s?.confirmation||'').toUpperCase().includes('DIVERGE')).map(([c,s])=>({c,price:s?.price,confirmation:s?.confirmation}));
-              const cotFailures=Object.entries(currencies).filter(([c,s])=>String(s?.cotRisk||'').trim()!=='').map(([c,s])=>({c,cotRisk:s?.cotRisk}));
-              const pairLiqLeak=Object.entries(pairFrames).filter(([p,f])=>f?.liq!=null||f?.liquidity!=null||f?.liquidityOverlay!=null||f?.funding!=null).map(([p,f])=>({p,liq:f?.liq,liquidity:f?.liquidity,liquidityOverlay:f?.liquidityOverlay,funding:f?.funding}));
-              const hysteresis=clone(window.CB_LIQ_HYSTERESIS_STATE);
-              const audCb=hysteresis?.AUD?.cb||null;
-              const nzLiq=hysteresis?.NZD?.liquidity||null;
+              const D0=window.__GMFQ_DATA||{};
+              const currencies=Object.fromEntries(CCYS.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const pairs=Object.fromEntries(PAIRS.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const pairStructural=Object.fromEntries(PAIRS.map(p=>[p,{
+                fav:pairs[p]?.fav??null,quality:pairs[p]?.quality??null,setup:pairs[p]?.setup??null,
+                structural:pairs[p]?.structural??null,macroSide:pairs[p]?.macroSide??null,policySide:pairs[p]?.policySide??null
+              }]));
+
+              const layerObjects={
+                macroSeries:D0.MACRO_SERIES||window.MACRO_SERIES||null,
+                macroThermometer:D0.MACRO_THERMOMETER_DATA||window.MACRO_THERMOMETER_DATA||null,
+                rates:D0.NATIVE_RATES_DATA||window.NATIVE_RATES_DATA||null,
+                cb:D0.NATIVE_CB_DATA||window.NATIVE_CB_DATA||null,
+                ois:D0.OIS_DATA||window.OIS_DATA||null,
+                liquidity:D0.NATIVE_LIQ_DATA||window.NATIVE_LIQ_DATA||null,
+                cot:D0.V250_COT_CHART_DATA||window.V250_COT_CHART_DATA||null
+              };
+              const coverage={};
+              for(const [k,v] of Object.entries(layerObjects))coverage[k]=v&&typeof v==='object'?CCYS.filter(c=>v[c]!=null):[];
+
+              const cotLatest={};
+              for(const c of CCYS){const d=layerObjects.cot?.[c]?.dates;cotLatest[c]=Array.isArray(d)&&d.length?String(d[d.length-1]).slice(0,10):null;}
+
               const gateSummary={
                 price:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),
+                cotRealign:clone(window.__GMFQ_COT_PROVENANCE_REALIGN_STATE),
                 cot:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),
-                globalRisk:clone(window.__GMFQ_GLOBAL_RISK_FRESHNESS_GATE_STATE||window.__GMFQ_RISK_FRESHNESS_GATE_STATE||null),
+                risk:clone(window.__GMFQ_RISK_FRESHNESS_GATE_STATE||null),
                 post:clone(window.GMFQ_POST_GATE_FINAL_AUDIT)
               };
-              return {ccys,pairs,currencies,pairFrames,currencyFailures,pairFailures,priceFailures,cotFailures,pairLiqLeak,hysteresis,audCb,nzLiq,gateSummary,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
-            });
+              const provenance={
+                productionCot:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot||null),
+                dCotAsOf:window.D?.cotAsOf||null,
+                priceAsOf:window.GMFQ_ECB_PRICE_AUDIT?.as_of||window.D?.prices?.at?.(-1)?.Date||null
+              };
+
+              const pairContextLeaks=Object.entries(pairs).filter(([p,f])=>f?.cot!=null||f?.cotRisk!=null||f?.liq!=null||f?.liquidity!=null||f?.liquidityOverlay!=null||f?.funding!=null).map(([p,f])=>({p,cot:f?.cot,cotRisk:f?.cotRisk,liq:f?.liq,liquidity:f?.liquidity,funding:f?.funding}));
+
+              const originalCurrency=window.deriveCurrencyState;
+              const baselinePair=clone(pairStructural);
+              const neutralization={};
+              function compareWith(transform,name){
+                const wrapped=function(c){const s=clone(originalCurrency(c));return s?transform(s,c):s};
+                window.deriveCurrencyState=wrapped;try{deriveCurrencyState=wrapped}catch(e){}
+                const now=Object.fromEntries(PAIRS.map(p=>{const f=clone(window.derivePairDecisionFrame(p));return [p,{fav:f?.fav??null,quality:f?.quality??null,setup:f?.setup??null,structural:f?.structural??null,macroSide:f?.macroSide??null,policySide:f?.policySide??null}]}));
+                neutralization[name]=PAIRS.filter(p=>JSON.stringify(now[p])!==JSON.stringify(baselinePair[p])).map(p=>({p,before:baselinePair[p],after:now[p]}));
+              }
+              compareWith(s=>{s.cotRisk='';return s},'cotStructuralDiffs');
+              compareWith(s=>{s.liq=0;return s},'liquidityStructuralDiffs');
+              compareWith(s=>{s.price=0;s.confirmation='PREZZO NON RISOLUTIVO';return s},'priceStructuralDiffs');
+              window.deriveCurrencyState=originalCurrency;try{deriveCurrencyState=originalCurrency}catch(e){}
+
+              const hysteresis=clone(window.CB_LIQ_HYSTERESIS_STATE||null);
+              const dom={
+                pairConfirm:!!document.getElementById('gmfqPairConfirm'),
+                pairReverse:!!document.getElementById('gmfqPairReverse'),
+                cotBanner:document.getElementById('gmfqCotFreshnessBanner')?{display:getComputedStyle(document.getElementById('gmfqCotFreshnessBanner')).display,text:document.getElementById('gmfqCotFreshnessBanner').textContent||''}:null
+              };
+              const focus=clone(window.__GMFQ_PAIR_FOCUS_BOARD_STATE||window.GMFQ_PAIR_FOCUS_BOARD_STATE||null);
+              return {currencies,pairs,coverage,cotLatest,gateSummary,provenance,pairContextLeaks,neutralization,hysteresis,dom,focus,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            },{CCYS,PAIRS});
             await browser.close();
-            const verdict={
-              schema:'GMFQ_FINAL_ALIGNMENT_AUDIT_V1',
-              status:'PASS_FINAL_ALIGNMENT',
-              currency_count:Object.keys(out.currencies||{}).length,
-              pair_count:Object.keys(out.pairFrames||{}).length,
-              price_status:out.gateSummary?.price?.status||null,
-              cot_status:out.gateSummary?.cot?.status||null,
-              risk_status:out.gateSummary?.globalRisk?.status||null,
-              aud_cb_status:out.audCb?.status||null,
-              nzd_liq_status:out.nzLiq?.status||null,
-              currency_failures:out.currencyFailures,
-              pair_failures:out.pairFailures,
-              price_failures:out.priceFailures,
-              cot_failures:out.cotFailures,
-              pair_liquidity_leaks:out.pairLiqLeak,
-              console_errors:errors
-            };
-            fs.writeFileSync('final-alignment-audit.json',JSON.stringify({...verdict,detail:out},null,2));
+
+            const failures=[];
+            if(out.bootstrapError)failures.push('BOOTSTRAP:'+out.bootstrapError);
+            if(errors.length)failures.push('BROWSER_ERRORS:'+errors.join(' | '));
+            if(Object.keys(out.currencies||{}).length!==8)failures.push('CURRENCY_COUNT');
+            if(Object.keys(out.pairs||{}).length!==28)failures.push('PAIR_COUNT');
+            for(const c of CCYS){if(!out.currencies?.[c]||typeof out.currencies[c].base!=='string'||!out.currencies[c].base.trim())failures.push('CURRENCY_STATE:'+c);}
+            for(const p of PAIRS){if(!out.pairs?.[p]||typeof out.pairs[p]!=='object')failures.push('PAIR_FRAME:'+p);}
+            for(const k of ['macroSeries','macroThermometer','rates','cb','liquidity','cot']){if((out.coverage?.[k]||[]).length!==8)failures.push('LAYER_COVERAGE:'+k+':'+JSON.stringify(out.coverage?.[k]||[]));}
+            if((out.coverage?.ois||[]).length<4)failures.push('OIS_COVERAGE_TOO_LOW:'+JSON.stringify(out.coverage?.ois||[]));
+            if(out.gateSummary?.price?.status!=='PASS_FRESH_PRICE_UNCHANGED'||out.gateSummary?.price?.price_asof!=='2026-10-12')failures.push('PRICE_GATE:'+JSON.stringify(out.gateSummary?.price));
+            if(out.gateSummary?.cotRealign?.status!=='PASS_CANONICAL_COT_PROVENANCE_REALIGNED'||out.gateSummary?.cotRealign?.canonical_as_of!=='2026-10-06')failures.push('COT_REALIGN:'+JSON.stringify(out.gateSummary?.cotRealign));
+            if(out.gateSummary?.cot?.status!=='PASS_FRESH_COT_UNCHANGED'||out.gateSummary?.cot?.cot_asof!=='2026-10-06'||Number(out.gateSummary?.cot?.calendar_lag_days)>10)failures.push('COT_GATE:'+JSON.stringify(out.gateSummary?.cot));
+            if(!/^PASS_(FRESH|WITHHELD)/.test(String(out.gateSummary?.risk?.status||'')))failures.push('RISK_GATE:'+JSON.stringify(out.gateSummary?.risk));
+            if(new Set(Object.values(out.cotLatest||{})).size!==1||Object.values(out.cotLatest||{})[0]!=='2026-10-06')failures.push('COT_SERIES_DATES:'+JSON.stringify(out.cotLatest));
+            if(out.provenance?.productionCot?.current_as_of!=='2026-10-06'||out.provenance?.dCotAsOf!=='2026-10-06')failures.push('COT_PROVENANCE:'+JSON.stringify(out.provenance));
+            if(out.pairContextLeaks.length)failures.push('PAIR_CONTEXT_LEAK:'+JSON.stringify(out.pairContextLeaks));
+            for(const k of ['cotStructuralDiffs','liquidityStructuralDiffs','priceStructuralDiffs'])if((out.neutralization?.[k]||[]).length)failures.push(k+':'+JSON.stringify(out.neutralization[k]));
+            if(out.hysteresis?.AUD?.cb?.status==='PENDING_MARKET_CONFIRMATION')failures.push('AUD_CB_STALE_PENDING');
+            if(!out.dom?.pairConfirm||!out.dom?.pairReverse)failures.push('PAIR_DOM_MISSING:'+JSON.stringify(out.dom));
+            if(out.dom?.cotBanner&&out.dom.cotBanner.display!=='none')failures.push('COT_FRESH_BANNER_VISIBLE:'+JSON.stringify(out.dom.cotBanner));
+
+            const verdict={schema:'GMFQ_FINAL_ALIGNMENT_AUDIT_V2',status:failures.length?'FAIL_FINAL_ALIGNMENT':'PASS_FINAL_ALIGNMENT',currency_count:Object.keys(out.currencies||{}).length,pair_count:Object.keys(out.pairs||{}).length,coverage:out.coverage,price_status:out.gateSummary?.price?.status||null,cot_realign_status:out.gateSummary?.cotRealign?.status||null,cot_status:out.gateSummary?.cot?.status||null,risk_status:out.gateSummary?.risk?.status||null,cot_asof:out.gateSummary?.cot?.cot_asof||null,cot_lag_days:out.gateSummary?.cot?.calendar_lag_days??null,structural_diffs:{cot:(out.neutralization?.cotStructuralDiffs||[]).length,liquidity:(out.neutralization?.liquidityStructuralDiffs||[]).length,price:(out.neutralization?.priceStructuralDiffs||[]).length},pair_context_leaks:out.pairContextLeaks.length,failures};
+            fs.writeFileSync('final-alignment-audit.json',JSON.stringify({...verdict,detail:out,console_errors:errors},null,2));
             console.log(JSON.stringify(verdict,null,2));
-            if(out.bootstrapError)throw new Error(out.bootstrapError);
-            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
-            if(verdict.currency_count!==8)throw new Error('Expected 8 currencies');
-            if(verdict.pair_count!==28)throw new Error('Expected 28 pairs');
-            if(out.currencyFailures.length)throw new Error('Currency states incomplete: '+JSON.stringify(out.currencyFailures));
-            if(out.pairFailures.length)throw new Error('Pair frames incomplete: '+JSON.stringify(out.pairFailures));
-            if(out.priceFailures.length)throw new Error('Stale Price still operational: '+JSON.stringify(out.priceFailures));
-            if(out.cotFailures.length)throw new Error('Stale COT warning still operational: '+JSON.stringify(out.cotFailures));
-            if(out.pairLiqLeak.length)throw new Error('Liquidity leaked into pair structural frame: '+JSON.stringify(out.pairLiqLeak));
-            if(out.gateSummary?.price?.status!=='PASS_WITHHELD_STALE_PRICE')throw new Error('Unexpected Price gate: '+JSON.stringify(out.gateSummary?.price));
-            if(out.gateSummary?.cot?.status!=='PASS_WITHHELD_STALE_COT')throw new Error('Unexpected COT gate: '+JSON.stringify(out.gateSummary?.cot));
-            if(out.audCb?.status==='PENDING_MARKET_CONFIRMATION')throw new Error('AUD CB hysteresis still has stale pending diagnostic');
+            if(failures.length)throw new Error(failures.join('\n'));
           })().catch(e=>{console.error('::error title=Final alignment audit::'+String(e.stack||e));process.exit(1)});
           EOF
           node final-alignment-audit.js
