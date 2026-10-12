@@ -1,0 +1,68 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_ONE_SHOT_AUDIT_RECEIPT_V1",
+  "as_of": "2026-10-12",
+  "status": "COMPLETED_FROZEN_RESULT",
+  "run_id": 38202038479,
+  "pr_number": 141,
+  "branch_head_sha": "f4d1116aa6662f6b3a2cf1a98e629b44ada0c14d",
+  "workflow_merge_sha": "1657476cceae0334239939fab866a91731c233d0",
+  "engine_sha256": "ab9b659445da9dacd7e3ac891633a188e73ce227a9d14b33cb39160aa9af6691",
+  "artifact_id": 11725538455,
+  "artifact_name": "cot-extreme-reversal-one-shot-38202038479",
+  "artifact_zip_sha256": "4c16b6a68190878a8379a6dccae043df0acd609691e61438a4a5fec41ceabcc1",
+  "verdict": "PASS_PREDECLARED_COT_EXTREME_REVERSAL_EDGE_GATE",
+  "edge_survival": true,
+  "oos": {
+    "pooled_observations": 410,
+    "weekly_panel_observations": 117,
+    "panel_annualized_sharpe": 1.4727493054664214,
+    "directional_accuracy": 0.5341463414634147,
+    "panel_total_log_return": 0.1729400245178976,
+    "panel_max_drawdown": -0.0257104376238253,
+    "positive_currency_sharpes": 7,
+    "max_single_currency_share": 0.16585365853658537
+  },
+  "currency_oos_sharpe": {
+    "EUR": 0.31395170221137303,
+    "GBP": 0.8198696969737778,
+    "JPY": 0.4234077319657045,
+    "CHF": 1.9970683961167528,
+    "AUD": 0.4870887924120271,
+    "NZD": 0.9908527527708761,
+    "CAD": 0.8232770294808922
+  },
+  "side_diagnostics": {
+    "extreme_long_reversal": {
+      "n": 155,
+      "sharpe": 0.9101502577156974,
+      "directional_accuracy": 0.567741935483871,
+      "total_log_return": 0.23118922169147546
+    },
+    "extreme_short_reversal": {
+      "n": 255,
+      "sharpe": 0.7419598078460339,
+      "directional_accuracy": 0.5137254901960784,
+      "total_log_return": 0.30977614615088717
+    }
+  },
+  "predeclared_gates": {
+    "oos_panel_annualized_sharpe_ge_0_50": true,
+    "oos_directional_accuracy_ge_0_52": true,
+    "positive_currency_oos_sharpes_ge_5": true,
+    "minimum_oos_signal_observations_per_currency_ge_25": true,
+    "minimum_pooled_oos_signal_observations_ge_200": true,
+    "max_single_currency_share_le_0_25": true
+  },
+  "governance": {
+    "economic_one_shot_executed_once": true,
+    "rerun_after_valid_result_authorized": false,
+    "threshold_search_performed": false,
+    "currency_exclusion_performed": false,
+    "horizon_change_performed": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "requires_independent_confirmation_before_production": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
