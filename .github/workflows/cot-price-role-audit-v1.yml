@@ -25,7 +25,7 @@ jobs:
         run: |
           python3 -m http.server 8139 --bind 127.0.0.1 >/tmp/gmfq-cot-price-audit-server.log 2>&1 &
           sleep 2
-      - name: Locate pair price narrative source
+      - name: Certify canonical COT and price role contract
         run: |
           cat > audit.js <<'EOF'
           const fs=require('fs');
@@ -40,29 +40,48 @@ jobs:
             if(!r||!r.ok())throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
             const out=await page.evaluate(()=>{
-              const needles=['MERCATO GIÀ ALLINEATO','PREZZO NON RISOLUTIVO','DIVERGENZA DA MONITORARE'];
-              const hits=[];
-              [...document.scripts].forEach((s,i)=>{
-                const text=s.textContent||'';
-                for(const needle of needles){
-                  const idx=text.indexOf(needle);
-                  if(idx>=0){
-                    hits.push({scriptIndex:i,src:s.src||'INLINE',needle,context:text.slice(Math.max(0,idx-4500),Math.min(text.length,idx+4500))});
-                  }
-                }
-              });
-              return {
-                hits,
-                eurusd:window.derivePairDecisionFrame?.('EUR/USD'),
-                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
-              };
+              let src='';
+              for(const s of [...document.scripts]){
+                const t=s.textContent||'';
+                const start=t.indexOf('function derivePairDecisionFrame(pair){');
+                if(start<0) continue;
+                const end=t.indexOf('\nfunction derivePairRelativeDynamics(pair){',start);
+                if(end>start){src=t.slice(start,end);break;}
+              }
+              const frames=Object.fromEntries((D?.pairs||[]).map(x=>[x.pair,window.derivePairDecisionFrame?.(x.pair)]));
+              const structuralKeys=[...new Set(Object.values(frames).flatMap(f=>Object.keys(f?.structural||{})))].sort();
+              return {src,frames,structuralKeys,pairCount:Object.keys(frames).length,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
             });
             await browser.close();
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
-            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify({schema:'GMFQ_PAIR_PRICE_SOURCE_LOCATOR_V1',...out},null,2));
-            console.log(JSON.stringify({hitCount:out.hits.length,hits:out.hits,eurusd:out.eurusd},null,2));
-            if(!out.hits.length)process.exit(2);
+            const src=out.src;
+            const iMacro=src.indexOf('const macroSide');
+            const iPolicy=src.indexOf('const policySide');
+            const iFav=src.indexOf("let fav='—'");
+            const iCertified=src.indexOf("const certified=typeof certifiedPairForMarket");
+            const iPrice=src.indexOf("let priceReading='PREZZO NON RISOLUTIVO'");
+            const iReturn=src.indexOf('return {');
+            const structuralSlice=src.slice(Math.max(0,iFav),Math.max(iFav,iCertified));
+            const priceSlice=src.slice(Math.max(0,iCertified),Math.max(iCertified,iReturn));
+            const assertions={
+              all28Pairs:out.pairCount===28,
+              sourceLocated:src.length>0,
+              structuralKeysExact:JSON.stringify(out.structuralKeys)===JSON.stringify(['macro','policy','ratesGap']),
+              macroPolicyBeforeFavorite:iMacro>=0&&iPolicy>=0&&iFav>iMacro&&iFav>iPolicy,
+              favoriteResolvedBeforePrice:iCertified>iFav&&iPrice>iCertified,
+              cotAbsentFromStructuralDecision:!structuralSlice.toLowerCase().includes('cot'),
+              liquidityAbsentFromStructuralDecision:!structuralSlice.toLowerCase().includes('liq'),
+              priceAbsentFromStructuralDecision:!structuralSlice.toLowerCase().includes('price'),
+              pairPriceUsesCertifiedRelativeDirection:priceSlice.includes('certified.layer_directions?.price')&&priceSlice.includes('normalizePairSide(raw)'),
+              priceOnlyConfirmsOrDiverges:priceSlice.includes("priceSide===fav")&&priceSlice.includes("priceReading='MERCATO GIÀ ALLINEATO'")&&priceSlice.includes("priceReading='DIVERGENZA DA MONITORARE'"),
+              explicitContractComment:src.includes('Price, COT and Liquidity')&&src.includes('excluded from the structural direction')
+            };
+            const ok=Object.values(assertions).every(Boolean);
+            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V6',status:ok?'PASS':'FAIL',assertions,structuralKeys:out.structuralKeys,pairCount:out.pairCount,source:src};
+            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify({status:summary.status,assertions,structuralKeys:out.structuralKeys,pairCount:out.pairCount},null,2));
+            if(!ok)process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
