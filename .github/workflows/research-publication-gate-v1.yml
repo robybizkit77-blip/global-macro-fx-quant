@@ -1,0 +1,45 @@
+name: Research Publication Gate V1
+
+on:
+  push:
+    branches:
+      - validation-research-publication-gate-v1-2026-10-12
+  pull_request:
+    paths:
+      - 'validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json'
+      - 'validation/RESEARCH_PUBLICATION_GATE_CONTRACT_V1_2026-10-12.json'
+      - 'validation/build_research_publication_manifest_v1.py'
+      - '.github/workflows/research-publication-gate-v1.yml'
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build fail-closed research publication manifest
+        run: |
+          mkdir -p artifacts/research-publication-gate-v1
+          python validation/build_research_publication_manifest_v1.py \
+            --registry validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json \
+            --contract validation/RESEARCH_PUBLICATION_GATE_CONTRACT_V1_2026-10-12.json \
+            --output artifacts/research-publication-gate-v1/manifest.json
+      - name: Assert no implicit production authorization
+        run: |
+          python - <<'PY'
+          import json
+          p='artifacts/research-publication-gate-v1/manifest.json'
+          x=json.load(open(p))
+          assert x['fail_closed'] is True
+          assert x['counts']['total'] == x['counts']['decision_signals'] + x['counts']['context_only'] + x['counts']['excluded']
+          if x['counts']['decision_signals'] == 0:
+              assert x['publication_state'] == 'WITHHELD_NO_PRODUCTION_AUTHORIZED_RESEARCH_SIGNALS'
+          print(json.dumps(x['counts'], sort_keys=True))
+          print(x['publication_state'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: research-publication-gate-${{ github.run_id }}
+          path: artifacts/research-publication-gate-v1/manifest.json
