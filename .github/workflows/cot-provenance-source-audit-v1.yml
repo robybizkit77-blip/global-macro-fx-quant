@@ -6,6 +6,7 @@ on:
       - 'audit-cot-provenance-source-v1-2026-10-12'
     paths-ignore:
       - 'validation/audit/cot-provenance-runtime-output.json'
+      - 'validation/audit/cot-provenance-source-locations.txt'
 
 permissions:
   contents: write
@@ -18,6 +19,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Trace static COT provenance sources
+        run: |
+          mkdir -p validation/audit
+          {
+            echo '=== 2026-09-22 ==='
+            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' '2026-09-22' . || true
+            echo
+            echo '=== PRODUCTION_PRICE_COT_LIQ_AUDIT ==='
+            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' 'PRODUCTION_PRICE_COT_LIQ_AUDIT' . || true
+            echo
+            echo '=== FINAL_SOURCE_POLICY_AUDIT ==='
+            grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude='cot-provenance-runtime-output.json' --exclude='cot-provenance-source-locations.txt' 'FINAL_SOURCE_POLICY_AUDIT' . || true
+          } > validation/audit/cot-provenance-source-locations.txt
+          cat validation/audit/cot-provenance-source-locations.txt
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
@@ -97,12 +112,12 @@ jobs:
           })().catch(e=>{console.error('::error title=COT runtime audit::'+String(e.stack||e));process.exit(1)});
           EOF
           node cot-runtime-audit.js
-      - name: Commit runtime diagnostic
+      - name: Commit diagnostics
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add validation/audit/cot-provenance-runtime-output.json
+          git add validation/audit/cot-provenance-runtime-output.json validation/audit/cot-provenance-source-locations.txt
           if ! git diff --cached --quiet; then
-            git commit -m 'Record COT provenance runtime audit output'
+            git commit -m 'Record COT provenance source audit output'
             git push
           fi
