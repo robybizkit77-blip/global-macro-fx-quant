@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse,json,re,urllib.parse,urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from html.parser import HTMLParser
 from pathlib import Path
@@ -31,6 +32,15 @@ def mp_date(u):
     try:return date(2000+int(m.group(1)),int(m.group(2)),int(m.group(3))).isoformat()
     except ValueError:return None
 
+def verify_candidate(v):
+    ds=mp_date(v)
+    if not ds or not ('2018-01-01'<=ds<='2026-10-12'): return None
+    try: txt=get(v)
+    except Exception: return None
+    plain=re.sub(r'<[^>]+>',' ',txt)
+    if 'Monetary policy decisions' not in plain: return None
+    return ds,v
+
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--input',required=True);ap.add_argument('--output',required=True);a=ap.parse_args()
     r=json.load(open(a.input));assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
@@ -47,7 +57,7 @@ def main():
     if {y for y,_ in wanted}!={2018,2019,2020,2021,2022,2023,2024,2025,2026}:
         raise RuntimeError(f'ECB annual snippet coverage unexpected: {[y for y,_ in wanted]}')
 
-    found={}; diagnostics={}
+    diagnostics={}; candidate_year={}; all_candidates=set()
     for y,u in sorted(wanted):
         body=get(u)
         candidates=[]
@@ -56,23 +66,27 @@ def main():
             if not (host=='ecb.europa.eu' or host.endswith('.ecb.europa.eu')):continue
             if re.search(r'/press/pr/date/20(?:1[8-9]|2[0-6])/html/ecb\.mp',v,re.I):candidates.append(v)
         candidates += [urllib.parse.urljoin(u,h) for h in re.findall(r'(/press/pr/date/20(?:1[8-9]|2[0-6])/html/ecb\.mp[^"\'<>\s]*?\.en\.html)',body,re.I)]
-        verified=0
-        for v in sorted(set(candidates)):
-            ds=mp_date(v)
-            if not ds or not ds.startswith(str(y)) or ds>'2026-10-12':continue
-            # Verify target remains the contemporaneous official monetary-policy decision release.
-            try:txt=get(v)
-            except Exception:continue
-            plain=re.sub(r'<[^>]+>',' ',txt)
-            if 'Monetary policy decisions' not in plain:continue
+        candidates={v for v in candidates if (mp_date(v) or '').startswith(str(y)) and (mp_date(v) or '')<='2026-10-12'}
+        for v in candidates: candidate_year[v]=y
+        all_candidates.update(candidates)
+        diagnostics[str(y)]={'snippet_url':u,'bytes':len(body),'candidate_links':len(candidates),'verified':0}
+
+    found={}
+    # Transport-only optimization: verify the exact same candidate URLs concurrently.
+    # Economic semantics, filters, title check, dates and output remain unchanged.
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        futs={ex.submit(verify_candidate,v):v for v in sorted(all_candidates)}
+        for f in as_completed(futs):
+            z=f.result()
+            if not z: continue
+            ds,v=z; y=candidate_year[v]
             found.setdefault(ds,{
               'central_bank':'ECB','decision_date':ds,'source_url':v,
               'source_document_type':'MONETARY_POLICY_DECISIONS','official_domain_verified':True,
               'publication_timestamp':ds+'T14:15:00',
               'timestamp_provenance':'OFFICIAL_DECISION_DAY_STANDARD_14_15_LOCAL',
               'inventory_status':'INVENTORIED_OFFICIAL_DOCUMENT'})
-            verified+=1
-        diagnostics[str(y)]={'snippet_url':u,'bytes':len(body),'candidate_links':len(set(candidates)),'verified':verified}
+            diagnostics[str(y)]['verified']+=1
 
     rows=[x for x in r['events'] if x['central_bank']!='ECB'];rows.extend(found.values())
     d={}
@@ -82,7 +96,7 @@ def main():
     r['counts_by_central_bank']={k:v for k,v in counts.items() if v}
     r['source_errors']['ECB']=None if counts['ECB']>=50 else f'ECB_YEAR_SNIPPETS_COVERAGE_LT_50:{counts["ECB"]}'
     r['status']='RESULT_BLIND_EVENT_INVENTORY_COMPLETE' if all(counts[cb]>=50 for cb in cbs) and not any(r['source_errors'].values()) else 'RESULT_BLIND_EVENT_INVENTORY_PARTIAL'
-    r['ecb_transport_receipt']={'source_shell':BASE,'mechanism':'official data-snippets annual include files','annual_diagnostics':diagnostics}
+    r['ecb_transport_receipt']={'source_shell':BASE,'mechanism':'official data-snippets annual include files','verification_transport':'parallel_same_candidate_set_v1','annual_diagnostics':diagnostics}
     assert r['focus_labels_present'] is False and r['performance_data_present'] is False
     Path(a.output).write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
     print(json.dumps({'status':r['status'],'counts':counts,'ecb_verified':len(found),'annual_diagnostics':diagnostics},indent=2,sort_keys=True))
