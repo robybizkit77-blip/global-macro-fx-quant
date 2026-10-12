@@ -15,116 +15,69 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Probe official CME dated files read-only
+      - name: Probe official CME dated CSV files read-only
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/cme_probe evidence
           python3 - <<'PY'
-          import hashlib, json, os, re, subprocess, zipfile
+          import csv, hashlib, io, json, re, subprocess
           from pathlib import Path
 
-          dates = ['20260923','20260930']
-          bases = [
-              'https://www.cmegroup.com/ftp/pub/fprf',
-              'https://www.cmegroup.com/ftp/fprf',
-          ]
-          out = {
-              'schema':'GMFQ_USD_CME_WEEKLY_HISTORY_PROBE_V1',
-              'status':'PROBE_ONLY',
-              'live_data_written':False,
-              'dates':{},
-              'search_terms':['30D FED','FED FD','FED FUND','DEC26','MAR27','SEP27'],
-          }
-
+          dates=['20260923','20260930']
+          out={'schema':'GMFQ_USD_CME_WEEKLY_HISTORY_PROBE_V1','status':'PROBE_ONLY','live_data_written':False,'dates':{}}
           for d in dates:
-              rec = {'date':d,'attempts':[],'downloaded':False,'matches':[]}
-              target = Path('/tmp/cme_probe') / f'cmeg.fut.prf.{d}.xml.zip'
-              for base in bases:
-                  url = f'{base}/cmeg.fut.prf.{d}.xml.zip'
-                  p = subprocess.run([
-                      'curl','-fL','--retry','2','--connect-timeout','20','--max-time','120',
-                      '-A','Mozilla/5.0 GMFQ-validation/1.0',url,'-o',str(target)
-                  ], text=True, capture_output=True)
-                  rec['attempts'].append({'url':url,'returncode':p.returncode,'stderr_tail':p.stderr[-500:]})
-                  if p.returncode == 0 and target.exists() and target.stat().st_size > 0:
-                      rec['downloaded'] = True
-                      rec['source_url'] = url
-                      break
-              if not rec['downloaded']:
-                  out['dates'][d] = rec
-                  continue
-
-              raw = target.read_bytes()
-              rec['zip_size'] = len(raw)
-              rec['zip_sha256'] = hashlib.sha256(raw).hexdigest()
-              try:
-                  with zipfile.ZipFile(target) as z:
-                      rec['members'] = z.namelist()[:20]
-                      text_parts=[]
-                      for name in z.namelist():
-                          if name.lower().endswith(('.xml','.txt','.csv')):
-                              b=z.read(name)
-                              text_parts.append(b.decode('utf-8','replace'))
-                      text='\n'.join(text_parts)
-              except Exception as e:
-                  rec['zip_error']=repr(e)
-                  out['dates'][d]=rec
-                  continue
-
-              rec['uncompressed_chars']=len(text)
-              upper=text.upper()
-              patterns=[
-                  r'.{0,180}30D\s+FED.{0,260}',
-                  r'.{0,180}FED\s+FD.{0,260}',
-                  r'.{0,180}FEDERAL\s+FUNDS?.{0,260}',
-                  r'.{0,180}(?:DEC.?26|2026.?12).{0,260}',
-                  r'.{0,180}(?:MAR.?27|2027.?03).{0,260}',
-                  r'.{0,180}(?:SEP.?27|2027.?09).{0,260}',
+              rec={'date':d,'downloaded':False,'matches':[]}
+              urls=[
+                  f'https://www.cmegroup.com/ftp/fprf/csv/cmeg.fut.prf.{d}.csv',
+                  f'https://www.cmegroup.com/ftp/fprf/csv/cmeg.fut.prf.{d}.csv.zip',
               ]
-              snippets=[]
-              for pat in patterns:
-                  for m in re.finditer(pat, upper, flags=re.S):
-                      s=' '.join(m.group(0).split())
-                      if s not in snippets:
-                          snippets.append(s[:700])
-                      if len(snippets)>=40: break
-                  if len(snippets)>=40: break
-              rec['matches']=snippets
-              rec['has_fed_funds_text']=bool(re.search(r'30D\s+FED|FED\s+FD|FEDERAL\s+FUNDS?',upper))
-              rec['has_target_contract_tokens']=all(tok in upper for tok in ['DEC','MAR','SEP'])
-              settlement_words=['SETTLE','SETTLEMENT','SETL','SETLPRICE','SETTLEPRICE','PX_SETTLE']
-              rec['settlement_terms_found']=[w for w in settlement_words if w in upper]
+              target=Path('/tmp/cme_probe')/f'cmeg.fut.prf.{d}.csv'
+              for url in urls:
+                  p=subprocess.run(['curl','-fL','--retry','2','--connect-timeout','20','--max-time','120','-A','Mozilla/5.0 GMFQ-validation/1.0',url,'-o',str(target)],text=True,capture_output=True)
+                  rec.setdefault('attempts',[]).append({'url':url,'returncode':p.returncode,'stderr_tail':p.stderr[-500:]})
+                  if p.returncode==0 and target.exists() and target.stat().st_size>0:
+                      raw=target.read_bytes()
+                      # The first URL is plain CSV. Do not silently parse a ZIP as CSV.
+                      if raw[:2]==b'PK':
+                          rec['zip_route_seen']=url
+                          target.unlink(missing_ok=True)
+                          continue
+                      rec['downloaded']=True; rec['source_url']=url; break
+              if not rec['downloaded']:
+                  out['dates'][d]=rec; continue
+              raw=target.read_bytes(); text=raw.decode('utf-8','replace')
+              rec['size']=len(raw); rec['sha256']=hashlib.sha256(raw).hexdigest()
+              lines=text.splitlines()
+              rec['header']=lines[0][:3000] if lines else ''
+              upper=text.upper()
+              rec['has_fed_funds_text']=bool(re.search(r'30.?DAY.?FED|FEDERAL.?FUNDS|FED.?FUNDS|30D.?FED',upper))
+              settle_words=['SETTLE','SETTLEMENT','SETLPRICE','SETTLEPRICE','PX_SETTLE','FINAL SETTLEMENT']
+              rec['settlement_terms_found']=[w for w in settle_words if w in upper]
               rec['contains_any_settlement_term']=bool(rec['settlement_terms_found'])
+              # Keep only compact lines plausibly about 30-Day Fed Funds.
+              for line in lines:
+                  u=line.upper()
+                  if re.search(r'30.?DAY.?FED|FEDERAL.?FUNDS|FED.?FUNDS|30D.?FED',u):
+                      rec['matches'].append(line[:5000])
+                      if len(rec['matches'])>=20: break
+              rec['match_count']=len(rec['matches'])
+              # Check whether known current settlements from PG10 occur anywhere.
+              rec['known_pg10_prices_present']={p:(p in text) for p in ['95.8750','95.5950','95.2050']}
               out['dates'][d]=rec
 
-          d23=out['dates'].get('20260923',{})
-          d30=out['dates'].get('20260930',{})
-          if d23.get('downloaded') and d30.get('downloaded'):
-              if d23.get('has_fed_funds_text') and d30.get('has_fed_funds_text'):
-                  if d23.get('contains_any_settlement_term') and d30.get('contains_any_settlement_term'):
-                      out['status']='CANDIDATE_SETTLEMENT_ROUTE_FOUND__NEEDS_SCHEMA_PARSE_AND_PG10_CROSSCHECK'
-                  else:
-                      out['status']='OFFICIAL_DATED_FILES_FOUND__FED_FUNDS_PRESENT__NO_SETTLEMENT_FIELD_CONFIRMED'
-              else:
-                  out['status']='OFFICIAL_DATED_FILES_FOUND__FED_FUNDS_NOT_CONFIRMED'
+          d23=out['dates'].get('20260923',{}); d30=out['dates'].get('20260930',{})
+          if not (d23.get('downloaded') and d30.get('downloaded')):
+              out['status']='DATED_CSV_ROUTE_NOT_ACCESSIBLE'
+          elif d23.get('has_fed_funds_text') and d30.get('has_fed_funds_text') and d23.get('contains_any_settlement_term') and d30.get('contains_any_settlement_term'):
+              out['status']='CANDIDATE_SETTLEMENT_ROUTE_FOUND__NEEDS_EXACT_CONTRACT_PARSE'
+          elif d23.get('has_fed_funds_text') and d30.get('has_fed_funds_text'):
+              out['status']='OFFICIAL_PRODUCT_REFERENCE_ONLY__NO_SETTLEMENT_FIELD_CONFIRMED'
           else:
-              out['status']='DATED_FILE_ROUTE_NOT_ACCESSIBLE'
+              out['status']='OFFICIAL_DATED_CSV_FOUND__FED_FUNDS_NOT_CONFIRMED'
 
           Path('evidence/usd-cme-weekly-history-probe-v1.json').write_text(json.dumps(out,indent=2),encoding='utf-8')
-          print(json.dumps({
-              'status':out['status'],
-              'dates':{d:{
-                  'downloaded':r.get('downloaded'),
-                  'source_url':r.get('source_url'),
-                  'zip_size':r.get('zip_size'),
-                  'sha256':r.get('zip_sha256'),
-                  'has_fed_funds_text':r.get('has_fed_funds_text'),
-                  'settlement_terms_found':r.get('settlement_terms_found'),
-                  'match_count':len(r.get('matches',[])),
-                  'sample_matches':r.get('matches',[])[:8],
-              } for d,r in out['dates'].items()}
-          },indent=2))
+          print(json.dumps({'status':out['status'],'dates':{d:{'downloaded':r.get('downloaded'),'source_url':r.get('source_url'),'size':r.get('size'),'sha256':r.get('sha256'),'header':r.get('header'),'has_fed_funds_text':r.get('has_fed_funds_text'),'settlement_terms_found':r.get('settlement_terms_found'),'known_pg10_prices_present':r.get('known_pg10_prices_present'),'match_count':r.get('match_count'),'sample_matches':r.get('matches',[])[:4]} for d,r in out['dates'].items()}},indent=2))
           PY
 
       - name: Upload evidence
