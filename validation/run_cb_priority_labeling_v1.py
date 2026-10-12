@@ -107,17 +107,16 @@ def extract_text(data: bytes, ctype: str, url: str) -> tuple[str, str]:
 
 
 def sentences(text: str) -> list[str]:
-    out: list[str] = []
-    for para in text.split('\n'):
-        para = ' '.join(para.split()).strip()
-        if not para:
-            continue
-        chunks = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9\"“])', para)
-        for s in chunks:
-            s = ' '.join(s.split()).strip()
-            if len(s) >= 12:
-                out.append(s)
-    return out
+    # Extraction layout (HTML block tags, line wrapping, PDF page/text layout) is not
+    # a semantic sentence boundary. Normalize all extraction whitespace first, then
+    # split only on terminal punctuation. This preserves the frozen sentence-level
+    # labeling contract while preventing visual line wraps from manufacturing
+    # artificial sentence fragments.
+    normalized = ' '.join(text.split()).strip()
+    if not normalized:
+        return []
+    chunks = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9\"“])', normalized)
+    return [' '.join(s.split()).strip() for s in chunks if len(' '.join(s.split()).strip()) >= 12]
 
 
 def contains_term(s: str, term: str) -> bool:
