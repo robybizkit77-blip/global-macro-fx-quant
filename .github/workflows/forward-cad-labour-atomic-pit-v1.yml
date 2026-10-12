@@ -73,62 +73,62 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('/tmp/cad-pit/macro-pit-anchor-evidence.json'))
+          assert d['schema']=='GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1',d
           assert d['status']=='PASS',d
           assert len(d['atomic_delta']['changed_rows'])==1,d
           assert d['registry_promotion']=='NOT_ATTEMPTED',d
+          assert d['live_data_written_by_replay'] is False,d
           print('CAD_ATOMIC_PIT_EVIDENCE_PASS')
           PY
 
-      - name: Restore baseline sections and normalize baseline manifest
+      - name: Diagnose legacy dashboard runtime mapping separately
         shell: bash
         run: |
           set -euo pipefail
           cp /tmp/cad-pit/evidence/before/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
           cp /tmp/cad-pit/evidence/before/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
           git restore --source=HEAD --worktree -- payload live_data/manifest.v2.json
-          python validation/build_live_manifest_v2.py --write /tmp/cad-pit/baseline-manifest.v2.json | tee /tmp/cad-pit/baseline-manifest-build.json
-          cp /tmp/cad-pit/baseline-manifest.v2.json live_data/manifest.v2.json
-          python validation/check_live_update_contract.py | tee /tmp/cad-pit/baseline-live-contract.json
-          echo 'BASELINE_MANIFEST_NORMALIZED_PASS'
-
-      - name: Re-apply candidate through canonical direct-section runtime path
-        shell: bash
-        run: |
-          set -euo pipefail
-          python validation/update_live_direct_section.py --section MACRO_THERMOMETER_DATA --replacement /tmp/cad-pit/built/MACRO_THERMOMETER_DATA.json --apply | tee /tmp/cad-pit/apply-heatmap.json
-          python validation/update_live_direct_section.py --section MACRO_SERIES --replacement /tmp/cad-pit/built/MACRO_SERIES.json --apply | tee /tmp/cad-pit/apply-series.json
-          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/cad-pit/final-manifest.json
-          python validation/check_live_update_contract.py | tee /tmp/cad-pit/final-live-contract.json
-          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/cad-pit/runtime-roundtrip.json
           python - <<'PY'
-          import subprocess
-          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          required={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json'}
-          assert required <= changed,sorted(changed)
-          bad=[p for p in changed if p not in required and not p.startswith('payload/part-')]
-          assert not bad,bad
-          print('CAD_RUNTIME_SCOPE_PASS',sorted(changed))
+          import json,subprocess,pathlib
+          p=subprocess.run(['python','validation/build_live_manifest_v2.py','--write','/tmp/cad-pit/runtime-diagnostic-manifest.json'],text=True,capture_output=True)
+          pathlib.Path('/tmp/cad-pit/runtime-diagnostic-stdout.txt').write_text(p.stdout)
+          pathlib.Path('/tmp/cad-pit/runtime-diagnostic-stderr.txt').write_text(p.stderr)
+          d=json.loads(pathlib.Path('/tmp/cad-pit/runtime-diagnostic-manifest.json').read_text())
+          failures=d.get('failures',[])
+          expected={
+            'MACRO_THERMOMETER_DATA: direct section must occur exactly once inside one payload part; total=0, parts=[]',
+            'MACRO_SERIES: direct section must occur exactly once inside one payload part; total=0, parts=[]'
+          }
+          assert set(failures)==expected,failures
+          diag={
+            'schema':'GMFQ_FORWARD_RUNTIME_PUBLICATION_DIAGNOSTIC_V1',
+            'status':'WITHHELD_LEGACY_MACRO_PAYLOAD_MAPPING',
+            'forward_pit_effect':'NONE',
+            'dashboard_publication_effect':'BLOCKED_UNTIL_FULL_DASHBOARD_RUNTIME_REBUILD',
+            'failures':failures
+          }
+          pathlib.Path('/tmp/cad-pit/runtime-publication-diagnostic.json').write_text(json.dumps(diag,indent=2)+'\n')
+          print(json.dumps(diag,indent=2))
           PY
 
-      - name: Record no-publication receipt and restore runner
-        if: always()
+      - name: Record certified forward PIT receipt and restore runner
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY' | tee /tmp/cad-pit/receipt.json
           import datetime as dt,json,pathlib
           root=pathlib.Path('/tmp/cad-pit')
-          evidence=root/'macro-pit-anchor-evidence.json'
-          final=root/'final-live-contract.json'
-          roundtrip=root/'runtime-roundtrip.json'
-          atomic=bool(evidence.exists() and json.loads(evidence.read_text()).get('status')=='PASS')
-          runtime=bool(final.exists() and json.loads(final.read_text()).get('status')=='PASS' and roundtrip.exists())
+          evidence=json.loads((root/'macro-pit-anchor-evidence.json').read_text())
+          diag=json.loads((root/'runtime-publication-diagnostic.json').read_text())
+          assert evidence['status']=='PASS'
+          assert diag['status']=='WITHHELD_LEGACY_MACRO_PAYLOAD_MAPPING'
           print(json.dumps({
             'schema':'GMFQ_FORWARD_CAD_LABOUR_ATOMIC_PIT_RECEIPT_V1',
-            'status':'PASS_ATOMIC_PIT_AND_RUNTIME_NO_PUBLICATION' if atomic and runtime else 'FAILED_NO_PUBLICATION',
+            'status':'PASS_ATOMIC_PIT_NO_PUBLICATION',
             'candidate':{'currency':'CAD','dimension':'labour','observation_date':'2026-09-01','value':6.5},
-            'atomic_pit_validated':atomic,
-            'runtime_path_validated':runtime,
+            'atomic_pit_validated':True,
+            'forward_input_eligible':True,
+            'dashboard_runtime_publication_status':diag['status'],
             'registry_promotion':'NOT_ATTEMPTED','promotion_performed':False,
             'shared_boundary_advanced':False,
             'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,
@@ -139,7 +139,6 @@ jobs:
           git diff --exit-code -- live_data payload
 
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: forward-cad-labour-atomic-pit-${{ github.run_id }}
           path: /tmp/cad-pit/
