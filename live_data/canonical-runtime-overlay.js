@@ -6,7 +6,15 @@
     return r.json();
   };
   const resolveGlobal=(name)=>{
-    try{return (0,eval)(name);}catch(e){throw new Error(`canonical-overlay-missing-global:${name}`);}
+    try{
+      // Direct eval is intentional here: the legacy runtime declares some canonical
+      // data surfaces with top-level let/const, so they live in the browser global
+      // lexical environment rather than as window properties. We only retrieve the
+      // existing object reference; we never rebind the lexical name.
+      return eval(name);
+    }catch(e){
+      throw new Error(`canonical-overlay-missing-global:${name}`);
+    }
   };
   const syncInPlace=(target,fresh,name)=>{
     if(Array.isArray(target)){
