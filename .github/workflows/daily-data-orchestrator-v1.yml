@@ -11,6 +11,7 @@ on:
       - 'validation/repair_detached_direct_section.py'
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
+      - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -29,6 +30,7 @@ on:
       - 'validation/repair_detached_direct_section.py'
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
+      - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
       - 'validation/check_freshness_registry.py'
       - 'live_data/sections/D.json'
@@ -82,11 +84,31 @@ jobs:
           got=set(d['blocking_lanes'])
           assert expected.issubset(got), (expected, got)
           assert d['lanes']['PRICE']['candidate_pipeline_ready'] is True
+          assert d['lanes']['LIQUIDITY']['inventory_ready'] is True
+          assert d['lanes']['LIQUIDITY']['state']=='BLOCKED_SUBSERIES_POLICY_NOT_MAPPED'
+          assert d['lanes']['RISK']['guard_proven'] is True
+          assert d['lanes']['RISK']['state']=='BLOCKED_DATA_UPDATER_MISSING_GUARD_PROVEN'
           assert d['promotion_performed'] is False
           assert d['live_data_published'] is False
           assert d['gh_pages_published'] is False
           assert d['automatic_publication'] is False
           print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
+          PY
+
+      - name: Inventory Liquidity subseries without inventing freshness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/audit_liquidity_subseries_v1.py | tee /tmp/daily-orchestrator-v1/liquidity-subseries.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/daily-orchestrator-v1/liquidity-subseries.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_SUBSERIES_INVENTORY_V1', d
+          assert d['status']=='INVENTORY_COMPLETE_POLICY_NOT_MAPPED', d
+          assert d['currency_count']==8, d
+          assert d['subseries_count']>0, d
+          assert d['bias_score_sizing_effect']=='NONE', d
+          print('LIQUIDITY_SUBSERIES_INVENTORY_PASS',d['subseries_count'],'unknown=',d['unknown_cadence_count'])
           PY
 
       - name: Fetch official ECB G8 Price candidate
