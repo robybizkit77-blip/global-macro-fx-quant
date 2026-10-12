@@ -26,23 +26,21 @@
       fetchJson('live_data/sections/MACRO_SERIES.json')
     ]);
 
-    // The legacy payload exposes these as top-level lexical bindings (let/const),
-    // not as properties on window. A later classic script can reference those
-    // bindings directly, preserving the exact object identities captured by the
-    // runtime closures. We mutate data in-place and never rebind either name.
-    if(typeof MACRO_THERMOMETER_DATA==='undefined')
-      throw new Error('canonical-overlay-missing-global:MACRO_THERMOMETER_DATA');
-    if(typeof MACRO_SERIES==='undefined')
-      throw new Error('canonical-overlay-missing-global:MACRO_SERIES');
+    // index.html injects these handles immediately after the corresponding
+    // legacy lexical declarations, inside their original scope. The handles
+    // therefore point to the exact objects already captured by runtime code.
+    const thermometerTarget=window.__GMFQ_MACRO_THERMOMETER_REF;
+    const seriesTarget=window.__GMFQ_MACRO_SERIES_REF;
+    if(!thermometerTarget) throw new Error('canonical-overlay-missing-bridge:MACRO_THERMOMETER_DATA');
+    if(!seriesTarget) throw new Error('canonical-overlay-missing-bridge:MACRO_SERIES');
 
-    const thermometerTarget=MACRO_THERMOMETER_DATA;
-    const seriesTarget=MACRO_SERIES;
     syncInPlace(thermometerTarget,macroThermometer,'MACRO_THERMOMETER_DATA');
     syncInPlace(seriesTarget,macroSeries,'MACRO_SERIES');
     const state={
       status:'PASS_CANONICAL_MACRO_OVERLAY',
       sections:['MACRO_THERMOMETER_DATA','MACRO_SERIES'],
       decision_effect:'DATA_REFRESH_ONLY',
+      bridge_identity_preserved:true,
       changes_signal_rules:false,
       changes_bias_rules:false,
       changes_sizing_rules:false
