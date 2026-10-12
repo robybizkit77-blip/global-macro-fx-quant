@@ -14,20 +14,34 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Trace COT provenance and hardcoded dates
+      - name: Trace exact COT provenance assignments
         shell: bash
         run: |
           set -euo pipefail
-          {
-            echo '=== PRODUCTION_PRICE_COT_LIQ_AUDIT ==='
-            grep -RIn --exclude-dir=.git --exclude='*.map' 'PRODUCTION_PRICE_COT_LIQ_AUDIT' . || true
-            echo '=== FINAL_SOURCE_POLICY_AUDIT ==='
-            grep -RIn --exclude-dir=.git --exclude='*.map' 'FINAL_SOURCE_POLICY_AUDIT' . || true
-            echo '=== 2026-09-22 ==='
-            grep -RIn --exclude-dir=.git --exclude='*.map' '2026-09-22' live_data payload validation .github/workflows || true
-            echo '=== 2026-10-06 ==='
-            grep -RIn --exclude-dir=.git --exclude='*.map' '2026-10-06' live_data payload validation .github/workflows || true
-          } | tee /tmp/cot-provenance-trace.txt
+          python3 - <<'PY' | tee /tmp/cot-provenance-trace.txt
+          from pathlib import Path
+          roots=[Path('index.html'),Path('live_data'),Path('payload'),Path('validation')]
+          needles=['PRODUCTION_PRICE_COT_LIQ_AUDIT','FINAL_SOURCE_POLICY_AUDIT','2026-09-22','2026-10-06']
+          files=[]
+          for root in roots:
+              if root.is_file(): files.append(root)
+              elif root.exists(): files.extend(p for p in root.rglob('*') if p.is_file() and '.git' not in p.parts and 'node_modules' not in p.parts)
+          hits=[]
+          for p in files:
+              try: lines=p.read_text(encoding='utf-8').splitlines()
+              except Exception: continue
+              for i,line in enumerate(lines,1):
+                  if any(n in line for n in needles): hits.append((str(p),i,line.strip()[:1200]))
+          globals_hits=[h for h in hits if 'PRODUCTION_PRICE_COT_LIQ_AUDIT' in h[2] or 'FINAL_SOURCE_POLICY_AUDIT' in h[2]]
+          paths={h[0] for h in globals_hits}
+          selected=globals_hits+[h for h in hits if h[0] in paths and h not in globals_hits]
+          selected += [h for h in hits if (h[0].startswith(('live_data/','payload/')) or h[0]=='index.html') and h not in selected]
+          seen=set()
+          for h in selected:
+              if h in seen: continue
+              seen.add(h); print(f'{h[0]}:{h[1]}: {h[2]}')
+          print('TRACE_HITS',len(seen))
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
