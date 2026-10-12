@@ -1,0 +1,48 @@
+name: Macro Bridge Mapping Diagnostic V1
+
+on:
+  push:
+    branches: ['validation-macro-bridge-mapping-diagnostic-v1-2026-10-12']
+    paths: ['.github/workflows/macro-bridge-mapping-diagnostic-v1.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Diagnose 16 canonical mappings
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          reg=json.load(open('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'))
+          series=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          heat=json.load(open('live_data/sections/MACRO_THERMOMETER_DATA.json'))
+          rows=[]
+          for key,e in reg['series'].items():
+              c,d=key.split('.')
+              h=heat['currencies'][c][d]
+              replay=(e.get('historical_replay_evidence') or {}).get('macro_series_id')
+              ids=[r.get('id') for r in series[c]]
+              exact=f"{e['series_id']}_history_value"
+              possible=[]
+              for rid in ids:
+                  if rid==exact or (replay and rid==replay): possible.append(rid)
+              rows.append({
+                  'key':key,'registry_series_id':e.get('series_id'),'heat_series_id':h.get('series_id'),
+                  'replay_macro_series_id':replay,'exact_expected':exact,
+                  'exact_exists':exact in ids,'replay_exists':bool(replay and replay in ids),
+                  'matches':possible,
+                  'same_registry_heat':h.get('series_id')==e.get('series_id'),
+                  'frequency_ok':h.get('frequency')==e.get('frequency'),
+                  'transformation_ok':h.get('transformation')==e.get('transformation')
+              })
+          print(json.dumps(rows,indent=2,ensure_ascii=False))
+          assert len(rows)==16
+          assert all(x['same_registry_heat'] and x['frequency_ok'] and x['transformation_ok'] for x in rows)
+          print('MACRO_BRIDGE_MAPPING_DIAGNOSTIC_PASS')
+          PY
