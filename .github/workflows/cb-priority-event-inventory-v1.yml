@@ -21,7 +21,8 @@ jobs:
         run: |
           set -euo pipefail
           python validation/build_cb_priority_event_inventory_v1.py --output /tmp/cb-event-inventory-base.json
-          python validation/augment_cb_priority_event_inventory_v1.py --input /tmp/cb-event-inventory-base.json --output /tmp/cb-event-inventory.json
+          python validation/augment_cb_priority_event_inventory_v1.py --input /tmp/cb-event-inventory-base.json --output /tmp/cb-event-inventory-stage2.json
+          python validation/augment_ecb_priority_event_inventory_v1.py --input /tmp/cb-event-inventory-stage2.json --output /tmp/cb-event-inventory.json
       - name: Validate result-blind inventory
         run: |
           python - <<'PY'
