@@ -11,15 +11,14 @@ DIMS=['inflation','labour']
 
 def canon_row(c, entry):
     target=f"{entry['series_id']}_history_value"
-    # Canonical runtime IDs may carry a country/region prefix (e.g. US_CPIAUCSL_history_value)
-    # while the frozen source registry stores the authority-native series_id (e.g. CPIAUCSL).
-    # Match the exact native form first, then the uniquely-prefixed canonical form.
-    hits=[r for r in SERIES[c] if r.get('id')==target]
-    if not hits:
-        hits=[r for r in SERIES[c] if str(r.get('id','')).endswith('_'+target)]
-    if len(hits)!=1:
-        raise RuntimeError(f'{c}: expected one canonical row for {target}, got {len(hits)}')
-    return hits[0]
+    rows=SERIES[c]
+    exact=[r for r in rows if r.get('id')==target]
+    if len(exact)==1:
+        return exact[0]
+    suffix=[r for r in rows if str(r.get('id') or '').endswith('_'+target)]
+    if len(suffix)==1:
+        return suffix[0]
+    raise RuntimeError(f'{c}: expected one canonical row for {target}; exact={len(exact)} suffix={len(suffix)}')
 
 def period(v):
     s=str(v or '')
