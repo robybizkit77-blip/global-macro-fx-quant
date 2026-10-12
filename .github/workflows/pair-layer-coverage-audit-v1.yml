@@ -51,7 +51,9 @@ jobs:
               const globals=Object.keys(window).filter(k=>/GMFQ|COT|PRICE|RATE|PAIR|OIS|CB|BANK/i.test(k)).sort();
               const samplePair='EUR/USD';
               const tutor=document.getElementById('gmfqPairTutor');
-              return {currencies,pairs,globals,samplePair,sampleFrame:pairs[samplePair],pairTutorText:tutor?String(tutor.innerText||'').trim():null,audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+              const fnNames=['derivePairDecisionFrame','v271StructuralPairFrame','derivePairSetupState','derivePairDriverStructure','buildCanonicalPairState','v226PairCard'];
+              const functions=Object.fromEntries(fnNames.map(n=>[n,typeof window[n]==='function'?Function.prototype.toString.call(window[n]):null]));
+              return {currencies,pairs,globals,functions,samplePair,sampleFrame:pairs[samplePair],pairTutorText:tutor?String(tutor.innerText||'').trim():null,audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
             },{PAIRS,CCYS});
             await browser.close();
             if(runtime.bootstrapError)throw new Error(runtime.bootstrapError);
@@ -59,7 +61,13 @@ jobs:
             const pairShapes={},fieldCoverage={},structuralCoverage={},currencyCoverage={};
             for(const [p,f] of Object.entries(runtime.pairs)){ pairShapes[p]=shape(f); for(const k of own(f)) fieldCoverage[k]=(fieldCoverage[k]||0)+1; for(const k of own(f?.structural)) structuralCoverage[k]=(structuralCoverage[k]||0)+1; }
             for(const s of Object.values(runtime.currencies)) for(const k of own(s)) currencyCoverage[k]=(currencyCoverage[k]||0)+1;
-            const report={schema:'GMFQ_PAIR_LAYER_COVERAGE_AUDIT_V1',reference_date:'2026-10-12',pair_count:Object.keys(runtime.pairs).length,currency_count:Object.keys(runtime.currencies).length,pair_top_level_field_coverage:fieldCoverage,pair_structural_field_coverage:structuralCoverage,currency_field_coverage:currencyCoverage,sample_pair:runtime.samplePair,sample_pair_frame:runtime.sampleFrame,sample_pair_shape:shape(runtime.sampleFrame),sample_pair_tutor_text:runtime.pairTutorText,relevant_runtime_globals:runtime.globals,runtime_baseline_as_of:runtime.audit?.as_of||null,verdict:'EVIDENCE_ONLY'};
+            const ratesNarrativeMismatch=[];
+            for(const [p,f] of Object.entries(runtime.pairs)){
+              const rg=f?.structural?.ratesGap;
+              const policy=f?.structural?.policy;
+              if(rg?.material===true && rg?.side && policy?.side==='TIE') ratesNarrativeMismatch.push({pair:p,ratesGapBp:rg.bp,ratesSide:rg.side,policySide:policy.side,quality:f.quality,relation:f.relation});
+            }
+            const report={schema:'GMFQ_PAIR_LAYER_COVERAGE_AUDIT_V1',reference_date:'2026-10-12',pair_count:Object.keys(runtime.pairs).length,currency_count:Object.keys(runtime.currencies).length,pair_top_level_field_coverage:fieldCoverage,pair_structural_field_coverage:structuralCoverage,currency_field_coverage:currencyCoverage,sample_pair:runtime.samplePair,sample_pair_frame:runtime.sampleFrame,sample_pair_shape:shape(runtime.sampleFrame),sample_pair_tutor_text:runtime.pairTutorText,rates_policy_narrative_mismatches:ratesNarrativeMismatch,relevant_runtime_globals:runtime.globals,function_sources:runtime.functions,runtime_baseline_as_of:runtime.audit?.as_of||null,verdict:'EVIDENCE_ONLY'};
             fs.writeFileSync('pair-layer-coverage-audit.json',JSON.stringify(report,null,2));
             console.log(JSON.stringify(report,null,2));
           })().catch(e=>{console.error('::error title=Pair layer coverage audit::'+String(e.message||e));process.exit(1)});
