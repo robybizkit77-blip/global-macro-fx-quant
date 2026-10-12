@@ -1,0 +1,25 @@
+name: ECB Dynamic Endpoint Diagnostic V2
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-event-inventory-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect ECB dynamic archive transport only
+        run: python validation/diagnose_ecb_dynamic_endpoint_v2.py
+      - name: Assert result-blind diagnostic scope
+        run: |
+          test -z "$(git status --porcelain)"
+          echo RESULT_BLIND_DYNAMIC_ENDPOINT_DIAGNOSTIC_PASS

@@ -1,0 +1,100 @@
+name: CB Priority Decision Event Inventory V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-event-inventory-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  SEED_RUN_ID: '38211529952'
+  SEED_ARTIFACT: cb-priority-decision-event-inventory-38211529952
+  SEED_JSON_SHA256: 74b9e10e2fc438c88255d8b8eb0b7a3d920deca72fc05810160496ea2c708097
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download exact GREEN result-blind non-ECB seed inventory
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SEED_ARTIFACT }}
+          path: /tmp/cb-seed
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.SEED_RUN_ID }}
+      - name: Verify pinned seed identity and boundary
+        run: |
+          set -euo pipefail
+          test -f /tmp/cb-seed/cb-event-inventory.json
+          echo "$SEED_JSON_SHA256  /tmp/cb-seed/cb-event-inventory.json" | sha256sum -c -
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cb-seed/cb-event-inventory.json'))
+          assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
+          assert r['counts_by_central_bank']=={'BOC':70,'BOJ':62,'FED':74,'RBA':89}
+          assert r['source_errors']=={'BOC':None,'BOJ':None,'ECB':'ECB_OFFICIAL_ARCHIVE_COVERAGE_LT_50:NO_TRANSPORT_ERROR','FED':None,'RBA':None}
+          assert r['focus_labels_present'] is False and r['performance_data_present'] is False
+          assert r['labeling_authorized'] is False and r['performance_test_authorized'] is False
+          print('PINNED_RESULT_BLIND_NON_ECB_SEED_PASS')
+          PY
+      - name: Resolve ECB decisions from official annual page snippets
+        run: |
+          set -euo pipefail
+          python validation/augment_ecb_year_snippets_v6.py \
+            --input /tmp/cb-seed/cb-event-inventory.json \
+            --output /tmp/cb-event-inventory.json
+      - name: Validate result-blind inventory and frozen coverage gate
+        run: |
+          python - <<'PY'
+          import json,urllib.parse
+          r=json.load(open('/tmp/cb-event-inventory.json'))
+          assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
+          assert r['focus_labels_present'] is False
+          assert r['performance_data_present'] is False
+          assert r['labeling_authorized'] is False
+          assert r['performance_test_authorized'] is False
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          seen=set()
+          domains={'FED':'federalreserve.gov','ECB':'ecb.europa.eu','BOJ':'boj.or.jp','BOC':'bankofcanada.ca','RBA':'rba.gov.au'}
+          required={'central_bank','decision_date','source_url','source_document_type','official_domain_verified','publication_timestamp','timestamp_provenance','inventory_status'}
+          for x in r['events']:
+              assert required<=set(x),x
+              k=(x['central_bank'],x['decision_date']); assert k not in seen,k; seen.add(k)
+              assert x['official_domain_verified'] is True
+              host=urllib.parse.urlparse(x['source_url']).netloc.lower()
+              assert host==domains[x['central_bank']] or host.endswith('.'+domains[x['central_bank']]),x
+              assert x['decision_date']>='2018-01-01' and x['decision_date']<='2026-10-12'
+          counts={cb:sum(1 for x in r['events'] if x['central_bank']==cb) for cb in domains}
+          gate={cb:counts[cb]>=50 for cb in domains}
+          assert all(gate.values()), (counts,gate,r['source_errors'])
+          assert r['status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
+          assert r['ecb_transport_receipt']['mechanism']=='official data-snippets annual include files'
+          print(json.dumps({'status':r['status'],'counts':counts,'coverage_gate':gate,'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events']),'ecb_transport':r['ecb_transport_receipt']},indent=2,sort_keys=True))
+          PY
+      - name: Assert no labels or market outcomes entered inventory
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cb-event-inventory.json'))
+          forbidden={'focus_primary','focus_evidence','fx_return','rates_return','target_return','sharpe','edge_survival'}
+          for row in r['events']:
+              assert not (forbidden & set(row)), (forbidden & set(row),row)
+          print('RESULT_BLIND_INVENTORY_BOUNDARY_PASS')
+          PY
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cb-priority-decision-event-inventory-${{ github.run_id }}
+          path: /tmp/cb-event-inventory.json
+          if-no-files-found: error
+          retention-days: 90
