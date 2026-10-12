@@ -5,7 +5,7 @@
   "reason": "No research entry is production-authorized.",
   "decision_signal_count": 0,
   "sizing_authorized_count": 0,
-  "context_only_count": 4,
+  "context_only_count": 5,
   "excluded_count": 5,
   "decision_weight": 0,
   "may_modify_pair_bias": false,
@@ -38,6 +38,13 @@
       "layer": "RATES_POSITIONING",
       "ui_label": "CONFLUENZA IN VALIDAZIONE",
       "status": "FORWARD_CONFLUENCE_WAITING",
+      "decision_weight": 0
+    },
+    {
+      "id": "MACRO_TURNING_2Y_CONFIRMED_FX_V1",
+      "layer": "MACRO_RATES_FX",
+      "ui_label": "IN VALIDAZIONE",
+      "status": "CANDIDATE_FORWARD_WAITING",
       "decision_weight": 0
     }
   ]

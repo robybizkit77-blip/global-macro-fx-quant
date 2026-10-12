@@ -12,6 +12,7 @@ EXPECTED_FP = '3356baf0'
 EXPECTED_MODEL = '9.3-pair-attention-hierarchy'
 EXPECTED_PARTS = [PAYLOAD_DIR / f'part-{i:02d}.txt' for i in range(16)]
 DERIVED = {'V247_COT_STORIES', 'RATES_AUDIT_METADATA'}
+OVERLAY = {'MACRO_THERMOMETER_DATA', 'MACRO_SERIES'}
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -27,12 +28,9 @@ def main() -> int:
     details['manifest_schema']=manifest.get('schema')
     details['legacy_manifest_retained']=LEGACY_MANIFEST.exists()
     details['legacy_manifest_role']='historical extraction/roundtrip metadata only; not live-refresh contract'
-    if manifest.get('schema')!='GMFQ_LIVE_DATA_MANIFEST_V2':
-        failures.append('manifest v2 schema mismatch')
-    if manifest.get('status')!='PASS':
-        failures.append('manifest v2 status is not PASS')
-    if manifest.get('generated_from_current_payload') is not True:
-        failures.append('manifest v2 not generated from current payload')
+    if manifest.get('schema')!='GMFQ_LIVE_DATA_MANIFEST_V2': failures.append('manifest v2 schema mismatch')
+    if manifest.get('status')!='PASS': failures.append('manifest v2 status is not PASS')
+    if manifest.get('generated_from_current_payload') is not True: failures.append('manifest v2 not generated from current payload')
 
     parts=[]
     for p in EXPECTED_PARTS:
@@ -40,23 +38,19 @@ def main() -> int:
             failures.append(f'missing/empty payload {p.name}')
             continue
         parts.append(p.read_bytes())
-    if manifest.get('part_count')!=16 or len(parts)!=16:
-        failures.append('payload part count mismatch')
+    if manifest.get('part_count')!=16 or len(parts)!=16: failures.append('payload part count mismatch')
     runtime=b''.join(parts)
     actual_runtime_sha=sha256_bytes(runtime)
     details['runtime_sha256']=actual_runtime_sha
     details['runtime_bytes']=len(runtime)
-    if manifest.get('runtime_sha256')!=actual_runtime_sha:
-        failures.append('runtime sha256 mismatch')
-    if manifest.get('runtime_bytes')!=len(runtime):
-        failures.append('runtime byte-size mismatch')
+    if manifest.get('runtime_sha256')!=actual_runtime_sha: failures.append('runtime sha256 mismatch')
+    if manifest.get('runtime_bytes')!=len(runtime): failures.append('runtime byte-size mismatch')
 
     sections=manifest.get('sections') or []
     keys=[s.get('key') for s in sections]
-    if len(keys)!=len(set(keys)):
-        failures.append('duplicate section keys')
+    if len(keys)!=len(set(keys)): failures.append('duplicate section keys')
     section_results=[]
-    direct_count=0; derived_count=0
+    direct_count=0; derived_count=0; overlay_count=0
     for s in sections:
         key=s.get('key'); name=s.get('file'); mode=s.get('mode')
         p=SECTIONS_DIR/name if name else None
@@ -80,6 +74,11 @@ def main() -> int:
             derived_count+=1
             if mode!='DERIVED_BUILDER_REQUIRED': failures.append(f'{key}: derived mode mismatch')
             if s.get('direct_update_allowed') is not False: failures.append(f'{key}: direct update must be false')
+        elif key in OVERLAY:
+            overlay_count+=1
+            if mode!='RUNTIME_OVERLAY': failures.append(f'{key}: runtime overlay mode mismatch')
+            if s.get('direct_update_allowed') is not False: failures.append(f'{key}: generic byte replacement must be false')
+            if s.get('runtime_overlay')!='live_data/canonical-runtime-overlay.js': failures.append(f'{key}: overlay path mismatch')
         else:
             direct_count+=1
             if mode!='DIRECT_SINGLE_PART': failures.append(f'{key}: direct mode mismatch')
@@ -88,12 +87,11 @@ def main() -> int:
                 failures.append(f'{key}: direct section must occur exactly once in one payload part')
         section_results.append(row)
     details['sections']=section_results
-    if manifest.get('direct_section_count')!=direct_count:
-        failures.append('direct section count mismatch')
-    if manifest.get('derived_section_count')!=derived_count:
-        failures.append('derived section count mismatch')
-    if derived_count!=2:
-        failures.append('expected exactly two derived sections')
+    if manifest.get('direct_section_count')!=direct_count: failures.append('direct section count mismatch')
+    if manifest.get('derived_section_count')!=derived_count: failures.append('derived section count mismatch')
+    if manifest.get('overlay_section_count')!=overlay_count: failures.append('overlay section count mismatch')
+    if derived_count!=2: failures.append('expected exactly two derived sections')
+    if overlay_count!=2: failures.append('expected exactly two runtime overlay sections')
 
     if not T0.exists():
         failures.append('canonical OOS T0 missing')
@@ -102,12 +100,9 @@ def main() -> int:
         details['frozen_model_rules_version']=t0.get('model_rules_version')
         details['frozen_rules_fingerprint']=t0.get('rules_fingerprint')
         details['oos_rule']=t0.get('oos_rule')
-        if t0.get('model_rules_version')!=EXPECTED_MODEL:
-            failures.append('frozen model version mismatch')
-        if t0.get('rules_fingerprint')!=EXPECTED_FP:
-            failures.append('frozen rules fingerprint mismatch')
-        if t0.get('oos_rule')!='ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE':
-            failures.append('OOS rule mismatch')
+        if t0.get('model_rules_version')!=EXPECTED_MODEL: failures.append('frozen model version mismatch')
+        if t0.get('rules_fingerprint')!=EXPECTED_FP: failures.append('frozen rules fingerprint mismatch')
+        if t0.get('oos_rule')!='ANY_RULE_CHANGE_RESTARTS_OUT_OF_SAMPLE': failures.append('OOS rule mismatch')
 
     status='PASS' if not failures else 'FAIL'
     print(json.dumps({'status':status,'failures':failures,'details':details},indent=2))
