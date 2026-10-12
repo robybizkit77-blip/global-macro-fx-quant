@@ -97,18 +97,78 @@
     }
   }
 
+  function currentPair(){
+    const lp=String(window.lastPair||'').trim().toUpperCase();
+    if(/^[A-Z]{3}\/[A-Z]{3}$/.test(lp)) return lp;
+    const active=document.querySelector('#pairs [data-pair].active,#pairs [data-pair][aria-selected="true"],#pairs [data-pair].selected');
+    const ap=String(active?.getAttribute('data-pair')||'').trim().toUpperCase();
+    return /^[A-Z]{3}\/[A-Z]{3}$/.test(ap)?ap:null;
+  }
+
+  function replaceText(el,from,to){
+    if(!el) return false;
+    const text=String(el.textContent||'');
+    if(!text.includes(from) || text.includes(to)) return false;
+    el.textContent=text.replace(from,to);
+    return true;
+  }
+
+  function clarifyRatesContext(){
+    const tutor=document.getElementById('gmfqPairTutor');
+    const pair=currentPair();
+    if(!tutor || !pair || typeof window.derivePairDecisionFrame!=='function') return;
+    const frame=window.derivePairDecisionFrame(pair)||null;
+    const rg=frame?.structural?.ratesGap;
+    const policy=frame?.structural?.policy;
+    if(!rg || rg.material!==true || !rg.side || policy?.side!=='TIE') return;
+
+    const side=String(rg.side).toUpperCase();
+    const bp=Math.round(Math.abs(Number(rg.bp)||0));
+    const stamp=`${pair}|${side}|${bp}`;
+    if(tutor.dataset.gmfqRatesContext===stamp) return;
+
+    const drivers=[...tutor.querySelectorAll('.driver')];
+    const ratesDriver=drivers.find(d=>/^Tassi\s*\/\s*CB/i.test(String(d.querySelector('b')?.textContent||'').trim()));
+    const ratesSpan=ratesDriver?.querySelector('span');
+    if(ratesSpan){
+      ratesSpan.textContent=`Aspettative CB neutre · 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto`;
+    }
+
+    const summary=[...tutor.querySelectorAll('.txt')].find(el=>String(el.textContent||'').includes('Tassi/CB non separano le due valute'));
+    if(summary){
+      summary.textContent=`La Macro favorisce ${frame.fav}; le aspettative CB canoniche non separano le due valute. Il differenziale 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto e non vale come seconda conferma strutturale.`;
+    }
+
+    const candidates=[...tutor.querySelectorAll('div,span,b,p')];
+    for(const el of candidates){
+      replaceText(el,
+        'Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.',
+        'Solo uno tra Macro e aspettative CB canoniche separa chiaramente le due valute. Il gap 2Y di livello è visibile come contesto, non come secondo pilastro strutturale.'
+      );
+      replaceText(el,
+        'Solo uno dei due pilastri strutturali separa chiaramente le valute.',
+        'Solo uno dei due pilastri strutturali separa chiaramente le valute; il gap 2Y di livello resta contesto.'
+      );
+      replaceText(el,'vantaggio Macro/Tassi','vantaggio Macro/aspettative CB');
+    }
+
+    tutor.dataset.gmfqRatesContext=stamp;
+  }
+
   let queued=false;
   function apply(){
     queued=false;
     injectStyle();
     addGuide();
     decorate();
+    clarifyRatesContext();
     window.__GMFQ_PAIR_READING_HIERARCHY_STATE=Object.freeze({
       status:'PASS_PRESENTATION_ONLY',
       changes_engine:false,
       changes_pair_logic:false,
       changes_bias:false,
       changes_sizing:false,
+      clarifies_static_2y_as_context:true,
       guide_present:!!document.getElementById(GUIDE_ID)
     });
   }
