@@ -1,0 +1,88 @@
+name: Forward Control Room V1
+
+on:
+  push:
+    branches:
+      - validation-forward-control-room-v1-2026-10-12
+    paths:
+      - 'validation/FORWARD_CONTROL_ROOM_SOURCES_V1_2026-10-12.json'
+      - 'validation/build_forward_control_room_v1.py'
+      - '.github/workflows/forward-control-room-v1.yml'
+  pull_request:
+    branches:
+      - validation-forward-input-readiness-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  READINESS_RUN_ID: '38225967340'
+  READINESS_ARTIFACT: forward-input-readiness-38225967340
+
+jobs:
+  control-room:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download exact GREEN shared readiness receipt
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.READINESS_ARTIFACT }}
+          path: /tmp/forward-control/readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.READINESS_RUN_ID }}
+
+      - name: Build canonical read-only forward control room
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/forward-control/out
+          python validation/build_forward_control_room_v1.py \
+            --sources validation/FORWARD_CONTROL_ROOM_SOURCES_V1_2026-10-12.json \
+            --readiness /tmp/forward-control/readiness/forward-input-readiness.json \
+            --output /tmp/forward-control/out/forward-control-room.json
+
+      - name: Enforce zero decision influence and exact current state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/forward-control/out/forward-control-room.json'))
+          assert r['candidate_count']==3
+          assert r['shared_input_readiness']['max_certified_decision_point']=='2026-10-10'
+          assert r['shared_input_readiness']['next_required_decision_point']=='2026-11-10'
+          assert r['shared_input_readiness']['next_ready'] is False
+          by={x['candidate_id']:x for x in r['candidates']}
+          assert by['COT_104W_EXTREME_REVERSAL_80_20_V1']['unseen_signals']==8
+          assert by['COT_104W_EXTREME_REVERSAL_80_20_V1']['matured_primary']==0
+          assert by['RATES_DOVISH_DIVERGENCE_V1']['unseen_signals']==3
+          assert by['RATES_DOVISH_DIVERGENCE_V1']['matured_primary']==0
+          assert by['MACRO_TURNING_2Y_CONFIRMED_FX_V1']['unseen_signals']==0
+          assert by['MACRO_TURNING_2Y_CONFIRMED_FX_V1']['matured_primary']==0
+          assert all(x['decision_weight']==0 for x in r['candidates'])
+          assert r['decision_layer_effect']==r['bias_effect']==r['ranking_effect']==r['sizing_effect']=='NONE'
+          assert r['production_signal_authorized'] is False and r['sizing_authorized'] is False
+          print('FORWARD_CONTROL_ROOM_GOVERNANCE_PASS')
+          PY
+
+      - name: Prove control room is artifact-only and read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forward-control-room-${{ github.run_id }}
+          path: /tmp/forward-control/out/
+          if-no-files-found: error
+          retention-days: 90
