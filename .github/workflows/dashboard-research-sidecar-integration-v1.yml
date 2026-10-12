@@ -36,11 +36,11 @@ jobs:
           assert 'live_data/sections/RESEARCH_STATE.json' in html
           assert 'gmfq:research-state-ready' in html
           assert 'research-state-fail-closed' in html
-          # Sidecar integration must not add an extra stable-model refresh invocation.
+          # Bootstrap source must retain exactly the single intentional final refresh invocation.
           calls=len(re.findall(r'\bstableModelRefresh\s*\(\s*\)', html))
-          assert calls==2, calls  # regex replacement expression + single final refresh only
+          assert calls==1, calls
           assert '__GMFQ_RESEARCH_STATE' in html
-          print(json.dumps({'verdict':'PASS_DASHBOARD_RESEARCH_SIDECAR_INTEGRATION','context_only':4,'decision_signals':0,'decision_weight':0},indent=2))
+          print(json.dumps({'verdict':'PASS_DASHBOARD_RESEARCH_SIDECAR_INTEGRATION','context_only':4,'decision_signals':0,'decision_weight':0,'bootstrap_refresh_invocations':calls},indent=2))
           PY
       - name: Ensure no score/bias/sizing mutation surface in sidecar data
         run: |
