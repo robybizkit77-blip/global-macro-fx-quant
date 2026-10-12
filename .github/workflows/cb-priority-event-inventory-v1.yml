@@ -46,10 +46,10 @@ jobs:
           assert r['labeling_authorized'] is False and r['performance_test_authorized'] is False
           print('PINNED_RESULT_BLIND_NON_ECB_SEED_PASS')
           PY
-      - name: Resolve only ECB decisions from official monetary policy statement index
+      - name: Resolve ECB statement pages to original decision releases
         run: |
           set -euo pipefail
-          python validation/augment_ecb_statement_index_v3.py \
+          python validation/augment_ecb_statement_to_decision_v4.py \
             --input /tmp/cb-seed/cb-event-inventory.json \
             --output /tmp/cb-event-inventory.json
       - name: Validate result-blind inventory and frozen coverage gate
