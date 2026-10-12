@@ -1,0 +1,82 @@
+{
+  "schema": "GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "status": "PREDECLARED_RESULT_BLIND",
+  "purpose": "Test whether a strict-PIT relative macro turning point predicts the next monthly relative 2Y repricing before any FX outcome is joined.",
+  "result_blind_base": {
+    "sha": "839daa94e8022d7b102c8b191b51fd36df7d032d",
+    "reason": "Reuse the already-certified G4USD strict-PIT macro/rates plumbing from before the prior alignment economic result."
+  },
+  "universe": {
+    "local_currencies": ["EUR", "JPY", "CAD", "AUD"],
+    "comparison_currency": "USD",
+    "currency_exclusion_after_result": "forbidden"
+  },
+  "macro_inputs": {
+    "inflation": "existing certified strict-PIT inflation series only",
+    "labour": "existing certified strict-PIT unemployment series only",
+    "release_date_fallback_to_observation_date": false,
+    "official_nonpublication": "skip as a non-observation; do not synthesize a value",
+    "minimum_known_releases_per_series": 3
+  },
+  "turning_point_definition": {
+    "inflation_acceleration": "(latest_inflation - previous_inflation) - (previous_inflation - second_previous_inflation)",
+    "labour_acceleration": "-1 * ((latest_unemployment - previous_unemployment) - (previous_unemployment - second_previous_unemployment))",
+    "relative_inflation_acceleration": "local inflation_acceleration - USD inflation_acceleration",
+    "relative_labour_acceleration": "local labour_acceleration - USD labour_acceleration",
+    "component_weights": {"inflation": 1, "labour": 1},
+    "magnitude_threshold": null,
+    "macro_direction": {
+      "LOCAL_HAWKISH": "both relative components > 0",
+      "LOCAL_DOVISH": "both relative components < 0",
+      "NO_SIGNAL": "components disagree, either component is exactly zero, or PIT history is insufficient"
+    },
+    "threshold_search": "forbidden",
+    "weight_search": "forbidden",
+    "component_drop_after_result": "forbidden"
+  },
+  "monthly_grid": {
+    "source": "the frozen G4USD monthly reference/as-of grid already used in PR #122",
+    "signal_time": "macro direction is computed using only releases PIT-known at the current monthly as-of date",
+    "rates_outcome": "the next frozen monthly observation's change in local-minus-USD 2Y differential",
+    "same_month_rates_as_outcome": false,
+    "reason": "Force macro information to precede the primary rates outcome and avoid contemporaneous classification."
+  },
+  "primary_measurement": {
+    "signed_next_month_relative_2y_bp": "macro_sign * next_month_d_diff_2y * 100",
+    "directional_success": "signed_next_month_relative_2y_bp > 0",
+    "zero_outcome_success": false
+  },
+  "historical_validation": {
+    "split": "chronological 60/40 within each currency after eligible macro signals are constructed",
+    "primary_set": "last 40% OOS only",
+    "in_sample_role": "coverage and descriptive diagnostics only; cannot change rules",
+    "horizon_search": "forbidden",
+    "direction_search": "forbidden",
+    "currency_specific_rules": "forbidden",
+    "inflation_only_rescue": "forbidden",
+    "labour_only_rescue": "forbidden"
+  },
+  "predeclared_oos_gate": {
+    "minimum_pooled_events": 40,
+    "minimum_events_per_currency": 6,
+    "mean_signed_next_month_relative_2y_bp_gt": 0.0,
+    "directional_accuracy_min": 0.55,
+    "minimum_currencies_positive_mean": 3,
+    "max_single_currency_share": 0.40,
+    "both_local_hawkish_and_local_dovish_required": true,
+    "all_required": true
+  },
+  "interpretation_policy": {
+    "pass": "Mechanism candidate only: macro turning points appear to precede coherent relative front-end repricing; a separate frozen FX test is then allowed.",
+    "fail": "Do not proceed to FX under this hypothesis and do not rescue by changing weights, horizons, components, thresholds, or currencies."
+  },
+  "governance": {
+    "fx_outcomes_joined": false,
+    "performance_result_observed_before_freeze": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
