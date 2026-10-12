@@ -1,0 +1,87 @@
+name: COT Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-cot-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8144 --bind 127.0.0.1 > /tmp/gmfq-cot-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit COT freshness and influence read-only
+        run: |
+          cat > cot-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8144/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              return (s&&s!=='WAITING_FOR_PRICE_PROVENANCE')||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[]; for(let i=0;i<ccys.length;i++) for(let j=i+1;j<ccys.length;j++) pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const cotGlobals={};
+              for(const k of Object.keys(window).filter(k=>/cot|position|commitment/i.test(k)).sort()){
+                const v=window[k];
+                if(typeof v==='function') cotGlobals[k]={type:'function',source:Function.prototype.toString.call(v).slice(0,10000)};
+                else if(v&&typeof v==='object') cotGlobals[k]={type:'object',value:clone(v)};
+                else if(['string','number','boolean'].includes(typeof v)) cotGlobals[k]={type:typeof v,value:v};
+              }
+              const currencySummary=Object.fromEntries(ccys.map(c=>{
+                const s=currencies[c]||{};
+                return [c,{base:s.base,macro:s.macro,policy:s.policy,price:s.price,cotRisk:s.cotRisk,pct:s.pct,netoi:s.netoi,netoiSigned:s.netoiSigned,driver:s.driver,story:s.story}];
+              }));
+              const pairSummary=Object.fromEntries(pairs.map(p=>{
+                const f=pairFrames[p]||{};
+                return [p,{fav:f.fav,quality:f.quality,setup:f.setup,structural:f.structural,cot:f.cot,cotRisk:f.cotRisk,positioning:f.positioning,watch:f.watch}];
+              }));
+              const originalCurrency=window.deriveCurrencyState?.__gmfqOriginal||null;
+              const unguardedCurrencies=typeof originalCurrency==='function'?Object.fromEntries(ccys.map(c=>[c,clone(originalCurrency(c))])):{};
+              const scripts=[...document.scripts].map(s=>s.src||'INLINE').filter(Boolean);
+              return {currencies,pairFrames,currencySummary,pairSummary,cotGlobals,unguardedCurrencies,scripts,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('cot-freshness-audit.json',JSON.stringify({schema:'GMFQ_COT_FRESHNESS_AUDIT_V1',...out},null,2));
+            console.log(JSON.stringify({currencySummary:out.currencySummary,cotGlobalNames:Object.keys(out.cotGlobals),cotGlobals:out.cotGlobals,pairCotFields:Object.fromEntries(Object.entries(out.pairSummary).filter(([p,x])=>x.cot!=null||x.cotRisk!=null||x.positioning!=null))},null,2));
+          })().catch(e=>{console.error('::error title=COT freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node cot-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-freshness-audit-v1
+          path: |
+            cot-freshness-audit.json
+            /tmp/gmfq-cot-audit-server.log
