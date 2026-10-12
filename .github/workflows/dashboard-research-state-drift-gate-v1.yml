@@ -1,0 +1,39 @@
+name: Dashboard Research State Drift Gate V1
+
+on:
+  push:
+    branches:
+      - validation-dashboard-research-state-drift-gate-v1-2026-10-12
+  pull_request:
+    branches:
+      - validation-dashboard-research-status-card-v1-2026-10-12
+  workflow_dispatch:
+
+jobs:
+  no-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify committed dashboard sidecar is registry-derived
+        run: python validation/build_dashboard_research_state_v1.py --check
+      - name: Verify deterministic regeneration
+        run: |
+          python validation/build_dashboard_research_state_v1.py --output /tmp/RESEARCH_STATE.json
+          cmp --silent /tmp/RESEARCH_STATE.json live_data/sections/RESEARCH_STATE.json
+          echo PASS_DETERMINISTIC_RESEARCH_STATE_REGENERATION
+      - name: Verify promotion remains fail-closed
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          src=Path('validation/build_dashboard_research_state_v1.py').read_text()
+          tree=ast.parse(src)
+          assert 'production-authorized research detected' in src
+          assert 'separate dashboard promotion' in src
+          assert 'PRODUCTION_AUTHORIZED' in src
+          assert 'decision_weight' in src
+          print('PASS_PROMOTION_REQUIRES_SEPARATE_CONTRACT')
+          PY
