@@ -1,0 +1,122 @@
+{
+  "schema": "GMFQ_RESEARCH_CANDIDATE_REGISTRY_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Canonical research-state registry. Prevents falsified or non-certified hypotheses from being surfaced as validated dashboard signals.",
+  "allowed_statuses": ["FALSIFIED", "INFORMATIVE_ONLY", "CANDIDATE_FORWARD_WAITING", "FORWARD_CONFLUENCE_WAITING", "VALIDATED_PENDING_PROMOTION", "PRODUCTION_AUTHORIZED"],
+  "global_governance": {
+    "production_signal_authorized_by_default": false,
+    "sizing_authorized_by_default": false,
+    "falsified_hypotheses_may_not_be_relabelled_without_new_predeclared_hypothesis": true,
+    "candidate_rules_may_not_change_during_forward_validation": true,
+    "dashboard_must_show_research_status": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  },
+  "entries": [
+    {
+      "id": "RATES_RELATIVE_2Y_REPRICING_V1",
+      "layer": "RATES",
+      "status": "INFORMATIVE_ONLY",
+      "evidence_prs": [122],
+      "summary": "Relative 2Y repricing contains state information but failed the predeclared standalone edge gate.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "RATES_MACRO_CB_ALIGNMENT_V1",
+      "layer": "RATES_MACRO_CB",
+      "status": "FALSIFIED",
+      "evidence_prs": [129],
+      "summary": "Intuitive ALIGNED Rates + Macro/CB condition did not outperform and was falsified under the predeclared gate.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "RATES_CONTRADICTORY_INTENSITY_V1",
+      "layer": "RATES",
+      "status": "FALSIFIED",
+      "evidence_prs": [130],
+      "summary": "Large absolute repricing magnitude did not explain the contradictory-state effect.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "RATES_PRICE_CONFIRMATION_V1",
+      "layer": "RATES_PRICE",
+      "status": "FALSIFIED",
+      "evidence_prs": [133],
+      "summary": "Simple prior FX price confirmation of relative 2Y repricing failed to outperform divergence.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "RATES_DOVISH_DIVERGENCE_V1",
+      "layer": "RATES",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "discovery_pr": 131,
+      "forward_shadow_pr": 132,
+      "frozen_rule": "state == CONTRADICTORY and d_diff_2y < 0",
+      "universe": ["EUR", "JPY", "CAD", "AUD"],
+      "summary": "Clean historical candidate; immutable forward shadow is waiting for unseen 1M/3M outcomes.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "COT_WEEKLY_FLOW_CONTINUATION_V1",
+      "layer": "POSITIONING",
+      "status": "FALSIFIED",
+      "evidence_prs": [139],
+      "summary": "Weekly change in Legacy Non-Commercial Net/OI failed as a standalone 5-day continuation edge.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "COT_ABSOLUTE_IMBALANCE_REVERSAL_30_V1",
+      "layer": "POSITIONING",
+      "status": "FALSIFIED",
+      "evidence_prs": [146],
+      "frozen_rule": "abs(Net/OI) >= 30% -> reversal",
+      "summary": "Absolute positioning imbalance did not pass the predeclared reversal edge gate.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "COT_104W_EXTREME_REVERSAL_80_20_V1",
+      "layer": "POSITIONING",
+      "status": "CANDIDATE_FORWARD_WAITING",
+      "discovery_pr": 142,
+      "robustness_prs": [148, 150],
+      "forward_shadow_pr": 143,
+      "frozen_rule": "104W PIT-safe percentile >=80 => short local currency vs USD; <=20 => long local currency vs USD; 5 FX trading-day horizon",
+      "universe": ["EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD"],
+      "historical_evidence": {
+        "oos_observations": 410,
+        "weekly_panel_observations": 117,
+        "panel_sharpe": 1.4727493054664214,
+        "leave_one_currency_out_min_sharpe": 0.880,
+        "newey_west_lag4_tstat": 2.965,
+        "net_5bps_sharpe": 0.9745659924365947,
+        "net_10bps_sharpe": 0.4763826794067684,
+        "episode_only_observations": 44,
+        "episode_only_sharpe": 1.2523795828520823,
+        "episode_count_gate_passed": false
+      },
+      "summary": "Strong historical OOS candidate, robust across currencies/time/HAC and transaction costs; independent episode count remains below the predeclared minimum, so unseen forward validation is decisive.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    },
+    {
+      "id": "RATES_COT_FORWARD_CONFLUENCE_V1",
+      "layer": "RATES_POSITIONING",
+      "status": "FORWARD_CONFLUENCE_WAITING",
+      "forward_shadow_pr": 151,
+      "parent_candidate_prs": [132, 143],
+      "frozen_rule": "Forward-only: DOVISH_DIVERGENCE already known, then first PIT-available COT 104W percentile >=80 in same currency/reference period; both imply local currency weaker vs USD.",
+      "universe": ["EUR", "JPY", "CAD", "AUD"],
+      "historical_combination_backtest": false,
+      "summary": "Forward-only confluence candidate-generation test. Ledger intentionally starts empty and historical backfill is forbidden.",
+      "production_signal_authorized": false,
+      "sizing_authorized": false
+    }
+  ]
+}

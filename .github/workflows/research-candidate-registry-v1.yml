@@ -1,0 +1,29 @@
+name: Research Candidate Registry V1
+
+on:
+  push:
+    branches:
+      - validation-research-candidate-registry-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate research candidate registry governance
+        run: |
+          python validation/validate_research_candidate_registry_v1.py \
+            --registry validation/RESEARCH_CANDIDATE_REGISTRY_V1_2026-10-12.json \
+            --output /tmp/research-candidate-registry-receipt.json
+      - name: Upload receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-candidate-registry-${{ github.run_id }}
+          path: /tmp/research-candidate-registry-receipt.json
