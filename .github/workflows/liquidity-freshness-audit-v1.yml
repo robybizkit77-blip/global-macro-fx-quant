@@ -1,0 +1,85 @@
+name: Liquidity Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-liquidity-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8146 --bind 127.0.0.1 > /tmp/gmfq-liq-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit liquidity freshness and influence read-only
+        run: |
+          cat > liquidity-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8146/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const p=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              const c=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              return ((p&&p!=='WAITING_FOR_PRICE_PROVENANCE')&&(c&&c!=='WAITING_FOR_COT_PROVENANCE'))||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const liqGlobals={};
+              for(const k of Object.keys(window).filter(k=>/liq|liquid|funding|stress/i.test(k)).sort()){
+                const v=window[k];
+                if(typeof v==='function')liqGlobals[k]={type:'function',source:Function.prototype.toString.call(v).slice(0,12000)};
+                else if(v&&typeof v==='object')liqGlobals[k]={type:'object',value:clone(v)};
+                else if(['string','number','boolean'].includes(typeof v))liqGlobals[k]={type:typeof v,value:v};
+              }
+              const currencySummary=Object.fromEntries(ccys.map(c=>{const s=currencies[c]||{};return[c,{base:s.base,macro:s.macro,policy:s.policy,price:s.price,liq:s.liq,liquidityOverlay:s.liquidityOverlay,driver:s.driver,story:s.story}]}));
+              const pairLiqFields=Object.fromEntries(Object.entries(pairFrames).filter(([p,f])=>f?.liq!=null||f?.liquidity!=null||f?.liquidityOverlay!=null||f?.funding!=null).map(([p,f])=>[p,{fav:f.fav,quality:f.quality,setup:f.setup,structural:f.structural,liq:f.liq,liquidity:f.liquidity,liquidityOverlay:f.liquidityOverlay,funding:f.funding}]));
+              const provenance={
+                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.liquidity),
+                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT?.LIQUIDITY),
+                hysteresis:clone(window.CB_LIQ_HYSTERESIS_STATE),
+                memory:clone(window.CB_LIQ_CHANGE_MEMORY)
+              };
+              return {currencies,pairFrames,currencySummary,pairLiqFields,liqGlobals,provenance,priceGate:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),cotGate:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('liquidity-freshness-audit.json',JSON.stringify({schema:'GMFQ_LIQUIDITY_FRESHNESS_AUDIT_V1',...out},null,2));
+            console.log(JSON.stringify({currencySummary:out.currencySummary,pairLiqFields:out.pairLiqFields,liquidityGlobalNames:Object.keys(out.liqGlobals),liqGlobals:out.liqGlobals,provenance:out.provenance},null,2));
+          })().catch(e=>{console.error('::error title=Liquidity freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node liquidity-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liquidity-freshness-audit-v1
+          path: |
+            liquidity-freshness-audit.json
+            /tmp/gmfq-liq-audit-server.log
