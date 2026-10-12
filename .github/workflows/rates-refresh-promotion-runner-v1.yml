@@ -1,0 +1,95 @@
+name: Rates Refresh Promotion Runner V1
+
+on:
+  push:
+    branches:
+      - validation-rates-refresh-promotion-runner-v1-2026-10-12
+    paths:
+      - '.github/workflows/rates-refresh-promotion-runner-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Build clean Rates candidate from certified product base
+        shell: bash
+        env:
+          PRODUCT_SHA: 44b08182130299b07770b7733ea8632a7235f0a6
+          CANDIDATE_BRANCH: candidate-rates-refresh-v1-2026-10-12
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --detach "$PRODUCT_SHA"
+          git switch -c "$CANDIDATE_BRANCH"
+          mkdir -p /tmp/rates-refresh
+
+          python validation/run_rates_audit.py > /tmp/rates-refresh/audit.json
+          python validation/build_rates_candidate_from_audit.py \
+            --audit /tmp/rates-refresh/audit.json \
+            --output /tmp/rates-refresh/NATIVE_RATES_DATA.json \
+            | tee /tmp/rates-refresh/candidate-summary.json
+
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/rates-refresh/candidate-summary.json'))['status'])")
+          test "$STATUS" = "CANDIDATE_READY"
+
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/rates-refresh/NATIVE_RATES_DATA.json \
+            --apply
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(date -u +%Y-%m-%d)" \
+            --output /tmp/rates-refresh/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/rates-refresh/RATES_AUDIT_METADATA.json \
+            --apply
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json \
+            > /tmp/rates-refresh/manifest-build.json
+          python validation/check_live_update_contract.py > /tmp/rates-refresh/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-refresh/runtime-roundtrip.json
+
+          git diff --name-only | sort > /tmp/rates-refresh/changed.txt
+          cat /tmp/rates-refresh/changed.txt
+          python - <<'PY'
+          allowed={
+            'live_data/manifest.v2.json',
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/RATES_AUDIT_METADATA.json',
+            'payload/part-00.txt',
+            'payload/part-15.txt',
+          }
+          changed=set(open('/tmp/rates-refresh/changed.txt').read().splitlines())
+          if changed != allowed:
+              raise SystemExit(f'Exact scope failure: {sorted(changed)}')
+          print('RATES_REFRESH_EXACT_SCOPE_PASS')
+          PY
+
+          git add live_data/manifest.v2.json \
+                  live_data/sections/NATIVE_RATES_DATA.json \
+                  live_data/sections/RATES_AUDIT_METADATA.json \
+                  payload/part-00.txt payload/part-15.txt
+          git commit -m 'Refresh official G8 Rates inputs through latest validated observations'
+          git push --force-with-lease origin "$CANDIDATE_BRANCH"
+          git rev-parse HEAD | tee /tmp/rates-refresh/candidate-sha.txt
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-refresh-promotion-v1
+          path: /tmp/rates-refresh/
+          if-no-files-found: error
+          retention-days: 30
