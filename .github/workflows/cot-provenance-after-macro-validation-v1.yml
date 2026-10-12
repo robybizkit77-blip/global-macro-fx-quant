@@ -1,0 +1,86 @@
+name: COT Provenance After Macro Validation V1
+
+on:
+  push:
+    branches:
+      - 'validation-cot-provenance-after-macro-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify product exact scope
+        run: |
+          mapfile -t files < <(git diff --name-only db686cebd2c64212d75706dc21e3bcfccd85dbc4 be4f1e1a322c7513d4ba5972ae0d7af25c7405cc)
+          printf '%s\n' "${files[@]}"
+          test "${#files[@]}" -eq 1
+          test "${files[0]}" = "live_data/cot-freshness-gate.js"
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8145 --bind 127.0.0.1 >/tmp/gmfq-cot-after-macro.log 2>&1 &
+          sleep 2
+      - name: Validate runtime provenance and freshness
+        run: |
+          cat > validate-cot-after-macro.js <<'EOF'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8145/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              return (s&&s!=='WAITING_FOR_COT_PROVENANCE')||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const chart=window.__GMFQ_DATA?.V250_COT_CHART_DATA||{};
+              const latest=Object.fromEntries(ccys.map(c=>[c,Array.isArray(chart?.[c]?.dates)&&chart[c].dates.length?chart[c].dates[chart[c].dates.length-1]:null]));
+              return {
+                latest,
+                cotGate:window.__GMFQ_COT_FRESHNESS_GATE_STATE||null,
+                priceGate:window.__GMFQ_PRICE_FRESHNESS_GATE_STATE||null,
+                productionAsOf:window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of||null,
+                policyAsOf:window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of||null,
+                macroUSD:window.__GMFQ_DATA?.MACRO_SERIES?.USD||null,
+                macroJPY:window.__GMFQ_DATA?.MACRO_SERIES?.JPY||null,
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const dates=Object.values(out.latest);
+            if(dates.some(x=>!x))throw new Error('Missing canonical COT date');
+            if(new Set(dates).size!==1)throw new Error('Canonical COT dates not aligned: '+JSON.stringify(out.latest));
+            const asOf=dates[0];
+            if(asOf!=='2026-10-06')throw new Error('Unexpected canonical COT as-of: '+asOf);
+            if(out.productionAsOf!==asOf)throw new Error('Production provenance mismatch');
+            if(out.policyAsOf!==asOf)throw new Error('Source policy provenance mismatch');
+            if(out.cotGate?.status!=='PASS_FRESH_COT_UNCHANGED')throw new Error('COT gate not fresh: '+JSON.stringify(out.cotGate));
+            if(out.cotGate?.calendar_lag_days!==6)throw new Error('Unexpected COT lag: '+out.cotGate?.calendar_lag_days);
+            if(out.cotGate?.underlying_cot_data_mutated!==false)throw new Error('Underlying COT mutation detected');
+            if(out.cotGate?.changes_engine!==false||out.cotGate?.changes_bias!==false||out.cotGate?.changes_sizing!==false||out.cotGate?.changes_pair_structure!==false)throw new Error('Decision layer mutation detected');
+            if(out.priceGate?.status!=='PASS_FRESH_PRICE_UNCHANGED')throw new Error('Price dependency not green');
+            await browser.close();
+          })().catch(e=>{console.error('::error title=COT provenance after macro validation::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node validate-cot-after-macro.js
