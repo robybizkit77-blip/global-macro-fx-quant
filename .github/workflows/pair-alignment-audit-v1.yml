@@ -36,23 +36,53 @@ jobs:
           const {chromium}=require('playwright');
           const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
           const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
-          const REF=new Date('2026-10-12T00:00:00Z');
+          const REFERENCE_DATE='2026-10-12';
 
-          function parsePeriod(x){
-            if(!x) return null;
-            const s=String(x).trim();
-            const m=s.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/);
-            if(!m) return null;
-            const y=Number(m[1]), mo=Number(m[2]), d=m[3]?Number(m[3]):1;
-            return new Date(Date.UTC(y,mo-1,d));
+          // Point-in-time expected latest reference periods as known on REFERENCE_DATE.
+          // Quarterly source contracts must NOT be judged with a monthly age threshold.
+          // AUD inflation intentionally remains on the frozen quarterly ABS contract.
+          const EXPECTED={
+            USD:{inflation:{period:'2026-08',frequency:'monthly'},labour:{period:'2026-09',frequency:'monthly'}},
+            EUR:{inflation:{period:'2026-09',frequency:'monthly'},labour:{period:'2026-08',frequency:'monthly'}},
+            GBP:{inflation:{period:'2026-08',frequency:'monthly'},labour:{period:'2026-07',frequency:'rolling_3m_reference_end'}},
+            JPY:{inflation:{period:'2026-08',frequency:'monthly'},labour:{period:'2026-08',frequency:'monthly'}},
+            CHF:{inflation:{period:'2026-09',frequency:'monthly'},labour:{period:'2026-08',frequency:'monthly'}},
+            CAD:{inflation:{period:'2026-08',frequency:'monthly'},labour:{period:'2026-08',frequency:'monthly'}},
+            AUD:{inflation:{period:'2026-06',frequency:'quarterly_frozen_contract'},labour:{period:'2026-08',frequency:'monthly'}},
+            NZD:{inflation:{period:'2026-06',frequency:'quarterly'},labour:{period:'2026-06',frequency:'quarterly'}}
+          };
+
+          function normMonth(x){
+            const m=String(x||'').match(/^(\d{4})-(\d{2})/);
+            return m?`${m[1]}-${m[2]}`:null;
           }
-          function ageDays(x){const d=parsePeriod(x);return d?Math.floor((REF-d)/86400000):null;}
-          function macroFreshness(row){
-            const dates=[row?.inflation?.as_of,row?.labour?.as_of].filter(Boolean);
-            const ages=dates.map(ageDays).filter(Number.isFinite);
-            if(!ages.length) return {status:'UNKNOWN',oldest_days:null,dates};
-            const oldest=Math.max(...ages);
-            return {status:oldest>100?'STALE':oldest>70?'PARTIAL_STALE':'OK',oldest_days:oldest,dates};
+          function monthIndex(x){
+            const m=normMonth(x);
+            if(!m) return null;
+            const [y,mo]=m.split('-').map(Number);
+            return y*12+(mo-1);
+          }
+          function seriesFreshness(observed,contract){
+            const obs=normMonth(observed);
+            const exp=normMonth(contract?.period);
+            const oi=monthIndex(obs), ei=monthIndex(exp);
+            if(oi===null||ei===null) return {status:'UNKNOWN',observed:obs,expected:exp,frequency:contract?.frequency||null,lag_months:null};
+            const lag=ei-oi;
+            return {
+              status:lag>0?'LAGGING':lag===0?'CURRENT':'AHEAD_OF_CONTRACT',
+              observed:obs,
+              expected:exp,
+              frequency:contract?.frequency||null,
+              lag_months:lag
+            };
+          }
+          function macroFreshness(ccy,row){
+            const contract=EXPECTED[ccy]||{};
+            const inflation=seriesFreshness(row?.inflation?.as_of,contract.inflation);
+            const labour=seriesFreshness(row?.labour?.as_of,contract.labour);
+            const statuses=[inflation.status,labour.status];
+            const status=statuses.includes('LAGGING')?'STALE':statuses.includes('UNKNOWN')?'UNKNOWN':'OK';
+            return {status,inflation,labour};
           }
           function readJson(path){return JSON.parse(fs.readFileSync(path,'utf8'));}
 
@@ -62,7 +92,7 @@ jobs:
             const currencyFreshness={};
             for(const c of CCYS){
               const m=macro?.currencies?.[c]||null;
-              const mf=macroFreshness(m);
+              const mf=macroFreshness(c,m);
               const os=ois?.currencies?.[c]?.status || ois?.[c]?.status || null;
               currencyFreshness[c]={macro:mf,ois_status:os};
             }
@@ -99,7 +129,7 @@ jobs:
               const freshness=[currencyFreshness[a].macro.status,currencyFreshness[b].macro.status];
               let temporal='FRESH';
               if(freshness.includes('STALE')) temporal='STALE_INPUT';
-              else if(freshness.some(x=>x==='PARTIAL_STALE'||x==='UNKNOWN')) temporal='PARTIAL_STALE';
+              else if(freshness.includes('UNKNOWN')) temporal='UNKNOWN_INPUT';
               const oisWithheld=[currencyFreshness[a].ois_status,currencyFreshness[b].ois_status].some(x=>x==='WITHHELD');
               rows[pair]={
                 favored:f.fav,
@@ -107,36 +137,40 @@ jobs:
                 calculation:'OK',
                 temporal,
                 ois:oisWithheld?'PARTIAL_WITHHELD':'AVAILABLE_OR_NOT_REQUIRED',
-                inputs:{
-                  [a]:currencyFreshness[a],
-                  [b]:currencyFreshness[b]
-                }
+                inputs:{[a]:currencyFreshness[a],[b]:currencyFreshness[b]}
               };
             }
 
             const counts=Object.values(rows).reduce((acc,r)=>{acc[r.temporal]=(acc[r.temporal]||0)+1;return acc;},{});
+            const staleCurrencies=Object.entries(currencyFreshness).filter(([,v])=>v.macro.status==='STALE').map(([c])=>c);
             const report={
               schema:'GMFQ_PAIR_ALIGNMENT_AUDIT_V1',
-              reference_date:'2026-10-12',
+              reference_date:REFERENCE_DATE,
+              freshness_method:'PIT_EXPECTED_LATEST_PERIOD_BY_SOURCE_CONTRACT',
+              expected_period_contracts:EXPECTED,
               runtime_baseline_as_of:runtime.audit?.as_of||null,
               pair_count:Object.keys(rows).length,
               structural_status:structuralIssues.length?'FAIL':'PASS',
               structural_issues:structuralIssues,
+              stale_currencies:staleCurrencies,
               temporal_counts:counts,
               currencies:currencyFreshness,
               pairs:rows,
-              verdict:structuralIssues.length?'BLOCK':'REVIEW_FRESHNESS'
+              verdict:structuralIssues.length?'BLOCK':staleCurrencies.length?'REFRESH_REQUIRED':'PASS_ALIGNED'
             };
             fs.writeFileSync('pair-alignment-audit.json',JSON.stringify(report,null,2));
             const stale=Object.entries(rows).filter(([,r])=>r.temporal!=='FRESH');
             const md=[
               '# Pair Alignment Audit V1',
               '',
+              `- Reference date: ${REFERENCE_DATE}`,
               `- Runtime baseline as-of: ${report.runtime_baseline_as_of||'n/a'}`,
               `- 28-pair structural calculation: ${report.structural_status}`,
+              `- Freshness method: ${report.freshness_method}`,
+              `- Stale currencies: ${staleCurrencies.join(', ')||'none'}`,
               `- FRESH pairs: ${counts.FRESH||0}`,
-              `- PARTIAL_STALE pairs: ${counts.PARTIAL_STALE||0}`,
               `- STALE_INPUT pairs: ${counts.STALE_INPUT||0}`,
+              `- UNKNOWN_INPUT pairs: ${counts.UNKNOWN_INPUT||0}`,
               '',
               '## Pairs requiring freshness review',
               ...(stale.length?stale.map(([p,r])=>`- ${p}: ${r.temporal}`):['- None'])
