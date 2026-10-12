@@ -1,0 +1,73 @@
+name: Forward Rates Refresh Dry Run V1
+
+on:
+  push:
+    branches:
+      - validation-forward-rates-refresh-dry-run-v1-2026-10-12
+    paths:
+      - 'validation/forward_rates_refresh_dry_run_v1.py'
+      - '.github/workflows/forward-rates-refresh-dry-run-v1.yml'
+  pull_request:
+    branches:
+      - validation-forward-input-readiness-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
+  SAFE_TARGET_DATE: '2026-10-08'
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize immutable certified base rowsets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/forward-rates/base /tmp/forward-rates/out
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in usd eur jpy cad aud; do
+            git show "FETCH_HEAD:validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" > "/tmp/forward-rates/base/${c}_rates_2y_10y_temporal_pit_v1.csv"
+          done
+      - name: Extend all five rates histories from official sources without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=validation python validation/forward_rates_refresh_dry_run_v1.py \
+            --base-dir /tmp/forward-rates/base \
+            --target-date "$SAFE_TARGET_DATE" \
+            --output-dir /tmp/forward-rates/out
+      - name: Enforce forward-only and no publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/forward-rates/out/result.json'))
+          assert r['status']=='PASS_5_OF_5_FORWARD_EXTENSION',r
+          assert r['rates_green']==5,r
+          assert r['historical_prefix_unchanged'] is True,r
+          assert all(x['appended_rows']>=1 for x in r['currencies']),r
+          assert all(x['same_basis_2y_10y'] is True for x in r['currencies']),r
+          assert all(x['secondary_source_fallback_used'] is False for x in r['currencies']),r
+          assert r['shared_boundary_advanced'] is False,r
+          assert r['repository_write_performed'] is False,r
+          assert r['production_signal_authorized'] is False and r['sizing_authorized'] is False,r
+          print('FORWARD_RATES_REFRESH_DRY_RUN_PASS')
+          PY
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forward-rates-refresh-dry-run-${{ github.run_id }}
+          path: /tmp/forward-rates/out/
+          if-no-files-found: error
+          retention-days: 30
