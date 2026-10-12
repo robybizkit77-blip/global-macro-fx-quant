@@ -1,0 +1,121 @@
+name: Final Alignment Current Stack V2
+
+on:
+  push:
+    branches:
+      - 'validation-final-alignment-current-stack-v2-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8147 --bind 127.0.0.1 > /tmp/gmfq-final-alignment-v2-server.log 2>&1 &
+          sleep 2
+      - name: Run current-stack final alignment audit
+        run: |
+          cat > final-alignment-v2.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8147/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>{
+              const p=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              const c=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              const research=window.__GMFQ_RESEARCH_STATE;
+              return ((p&&p!=='WAITING_FOR_PRICE_PROVENANCE')&&(c&&c!=='WAITING_FOR_COT_PROVENANCE')&&research)||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const currencyFailures=Object.entries(currencies).filter(([c,s])=>!s||typeof s.base!=='string'||!s.base.trim()).map(([c,s])=>({c,s}));
+              const pairFailures=Object.entries(pairFrames).filter(([p,f])=>!f||typeof f!=='object').map(([p,f])=>({p,f}));
+              const pairLiqLeak=Object.entries(pairFrames).filter(([p,f])=>f?.liq!=null||f?.liquidity!=null||f?.liquidityOverlay!=null||f?.funding!=null).map(([p,f])=>({p}));
+              const hysteresis=clone(window.CB_LIQ_HYSTERESIS_STATE);
+              return {
+                currencies,pairFrames,currencyFailures,pairFailures,pairLiqLeak,
+                price:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),
+                cot:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),
+                risk:clone(window.__GMFQ_GLOBAL_RISK_FRESHNESS_GATE_STATE||window.__GMFQ_RISK_FRESHNESS_GATE_STATE||null),
+                research:clone(window.__GMFQ_RESEARCH_STATE),
+                focus:clone(window.__GMFQ_PAIR_FOCUS_BOARD_STATE||null),
+                hysteresis,
+                productionCot:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot||null),
+                policyCot:clone(window.FINAL_SOURCE_POLICY_AUDIT?.COT||null),
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            const verdict={
+              schema:'GMFQ_FINAL_ALIGNMENT_CURRENT_STACK_V2',
+              status:'PASS_FINAL_ALIGNMENT_CURRENT_STACK',
+              currency_count:Object.keys(out.currencies||{}).length,
+              pair_count:Object.keys(out.pairFrames||{}).length,
+              price_status:out.price?.status||null,
+              price_asof:out.price?.price_asof||null,
+              cot_status:out.cot?.status||null,
+              cot_asof:out.cot?.cot_asof||null,
+              cot_calendar_lag_days:out.cot?.calendar_lag_days??null,
+              research_state:out.research?.research_signal_state||null,
+              research_context_only_count:out.research?.context_only_count??null,
+              research_decision_weight:out.research?.decision_weight??null,
+              focus_status:out.focus?.status||null,
+              risk_status:out.risk?.status||null,
+              currency_failures:out.currencyFailures,
+              pair_failures:out.pairFailures,
+              pair_liquidity_leaks:out.pairLiqLeak,
+              console_errors:errors
+            };
+            fs.writeFileSync('final-alignment-current-stack-v2.json',JSON.stringify({...verdict,detail:out},null,2));
+            console.log(JSON.stringify(verdict,null,2));
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            if(verdict.currency_count!==8)throw new Error('Expected 8 currencies');
+            if(verdict.pair_count!==28)throw new Error('Expected 28 pairs');
+            if(out.currencyFailures.length)throw new Error('Currency states incomplete');
+            if(out.pairFailures.length)throw new Error('Pair frames incomplete');
+            if(out.pairLiqLeak.length)throw new Error('Liquidity leaked into pair structural frame');
+            if(out.price?.status!=='PASS_FRESH_PRICE_UNCHANGED')throw new Error('Price not fresh: '+JSON.stringify(out.price));
+            if(out.price?.price_asof!=='2026-10-12')throw new Error('Unexpected Price as-of: '+JSON.stringify(out.price));
+            if(out.cot?.status!=='PASS_FRESH_COT_UNCHANGED')throw new Error('COT not fresh: '+JSON.stringify(out.cot));
+            if(out.cot?.cot_asof!=='2026-10-06')throw new Error('Unexpected COT as-of: '+JSON.stringify(out.cot));
+            if(Number(out.cot?.calendar_lag_days)>10)throw new Error('COT lag exceeds freshness threshold');
+            if(out.productionCot?.current_as_of!=='2026-10-06'||out.policyCot?.current_as_of!=='2026-10-06')throw new Error('COT provenance aliases not aligned');
+            if(out.research?.research_signal_state!=='WITHHELD')throw new Error('Research state unexpectedly promoted');
+            if(Number(out.research?.decision_weight)!==0)throw new Error('Research decision weight must remain zero');
+            if(out.research?.may_modify_pair_bias!==false||out.research?.may_modify_currency_score!==false||out.research?.may_modify_sizing!==false)throw new Error('Research isolation invariant failed');
+            if(Number(out.research?.context_only_count)!==5)throw new Error('Expected 5 context-only research entries');
+            if(out.hysteresis?.AUD?.cb?.status==='PENDING_MARKET_CONFIRMATION')throw new Error('AUD CB hysteresis stale pending state returned');
+          })().catch(e=>{console.error('::error title=Final alignment current stack::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node final-alignment-v2.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-alignment-current-stack-v2
+          path: |
+            final-alignment-current-stack-v2.json
+            /tmp/gmfq-final-alignment-v2-server.log
