@@ -1,0 +1,45 @@
+{
+  "schema": "GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_PASS_AUDIT_V1",
+  "as_of": "2026-10-12",
+  "status": "PASS_PREDECLARED_MECHANISM_GATE",
+  "contract_pr": 172,
+  "engine_pr": 173,
+  "valid_engine_head": "30a89d6fc01dddb3b4c54b3a12581437a061d070",
+  "workflow_run_id": 38220431432,
+  "artifact_id": 11734126823,
+  "artifact_name": "g4usd-relative-macro-turning-2y-v1-38220431432",
+  "artifact_zip_sha256": "04fc49450498a5172de4a7b8dcffade43290536b443c834bdd722601f37ea8d4",
+  "result_json_sha256": "1cb6e8ea5e86fb5c8d6701c746fc97aeff70dcee3cef54d6ee3fe52ba8d0af7b",
+  "technical_corrections_before_valid_run": [
+    "Source-field plumbing aligned to already-certified source schemas.",
+    "Certified release dates normalized from ISO or DD/MM/YYYY into ISO before PIT ordering; no economic value, rule, threshold, weight, horizon, currency, split or gate changed.",
+    "Self-referential no-FX guard repaired without changing the economic result."
+  ],
+  "invalid_preliminary_results_policy": "All numerical outputs from earlier technical-defect runs are discarded and are not evidence.",
+  "valid_oos": {
+    "pooled_n": 66,
+    "mean_signed_next_month_relative_2y_bp": 3.810165401969698,
+    "directional_accuracy": 0.6060606060606061,
+    "hawkish_n": 32,
+    "dovish_n": 34,
+    "max_single_currency_share": 0.2727272727272727,
+    "per_currency": {
+      "AUD": {"n": 16, "mean_signed_bp": -2.543749999999992, "accuracy": 0.5},
+      "CAD": {"n": 16, "mean_signed_bp": 5.812500000000001, "accuracy": 0.6875},
+      "EUR": {"n": 16, "mean_signed_bp": 3.248182283124995, "accuracy": 0.5625},
+      "JPY": {"n": 18, "mean_signed_bp": 8.177777777777777, "accuracy": 0.6666666666666666}
+    }
+  },
+  "coverage": {
+    "AUD": {"total": 38, "is": 22, "oos": 16},
+    "CAD": {"total": 39, "is": 23, "oos": 16},
+    "EUR": {"total": 39, "is": 23, "oos": 16},
+    "JPY": {"total": 45, "is": 27, "oos": 18}
+  },
+  "all_predeclared_gates_pass": true,
+  "interpretation": "Macro turning-point acceleration is supported as a historical mechanism candidate for next-month relative 2Y repricing. This is not FX edge certification and does not authorize production or sizing.",
+  "next_authorized_research_step": "A separate frozen FX test may evaluate only post-rates-confirmation FX outcomes, with no reuse of same-month FX information for classification.",
+  "fx_edge_certified": false,
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
