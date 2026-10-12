@@ -45,13 +45,19 @@ jobs:
           assert r['labeling_authorized'] is False and r['performance_test_authorized'] is False
           print('PINNED_RESULT_BLIND_SEED_PASS')
           PY
-      - name: Rebuild only ECB and BoC from official archives/calendars
+      - name: Rebuild BoC from official annual schedules
         run: |
           set -euo pipefail
           python validation/augment_ecb_boc_official_archives_v2.py \
             --input /tmp/cb-seed/cb-event-inventory.json \
+            --output /tmp/cb-event-inventory-stage2.json
+      - name: Resolve ECB decisions from official monetary policy statement index
+        run: |
+          set -euo pipefail
+          python validation/augment_ecb_statement_index_v3.py \
+            --input /tmp/cb-event-inventory-stage2.json \
             --output /tmp/cb-event-inventory.json
-      - name: Validate result-blind inventory
+      - name: Validate result-blind inventory and frozen coverage gate
         run: |
           python - <<'PY'
           import json,urllib.parse
@@ -73,7 +79,11 @@ jobs:
               host=urllib.parse.urlparse(x['source_url']).netloc.lower()
               assert host==domains[x['central_bank']] or host.endswith('.'+domains[x['central_bank']]),x
               assert x['decision_date']>='2018-01-01' and x['decision_date']<='2026-10-12'
-          print(json.dumps({'status':r['status'],'counts':r['counts_by_central_bank'],'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events'])},indent=2,sort_keys=True))
+          counts={cb:sum(1 for x in r['events'] if x['central_bank']==cb) for cb in domains}
+          gate={cb:counts[cb]>=50 for cb in domains}
+          assert all(gate.values()), (counts,gate,r['source_errors'])
+          assert r['status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
+          print(json.dumps({'status':r['status'],'counts':counts,'coverage_gate':gate,'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events'])},indent=2,sort_keys=True))
           PY
       - name: Assert no labels or market outcomes entered inventory
         run: |
