@@ -2,6 +2,7 @@
 'use strict';
 
 const MAX_BUSINESS_LAG=1;
+const FRESHNESS_TIME_ZONE='Europe/Rome';
 const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
 
 function businessLag(from,to){
@@ -19,21 +20,15 @@ function businessLag(from,to){
   return n;
 }
 
-function productionDate(){
+function currentRomeDate(){
   try{
-    if(typeof window.currentProductionBusinessDate==='function'){
-      const x=window.currentProductionBusinessDate();
-      if(x) return String(x).slice(0,10);
-    }
+    const parts=new Intl.DateTimeFormat('en-GB',{
+      timeZone:FRESHNESS_TIME_ZONE,
+      year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(new Date());
+    const map=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+    if(map.year&&map.month&&map.day) return `${map.year}-${map.month}-${map.day}`;
   }catch(e){}
-  try{
-    if(typeof currentProductionBusinessDate==='function'){
-      const x=currentProductionBusinessDate();
-      if(x) return String(x).slice(0,10);
-    }
-  }catch(e){}
-  const last=window.LAST_DAILY_CLOSEOUT?.date;
-  if(last) return String(last).slice(0,10);
   return new Date().toISOString().slice(0,10);
 }
 
@@ -45,6 +40,7 @@ function install(){
   const state={
     status:'WITHHELD_NO_APPLY',
     max_business_lag:MAX_BUSINESS_LAG,
+    freshness_time_zone:FRESHNESS_TIME_ZONE,
     changes_engine:false,
     changes_bias:false,
     changes_sizing:false,
@@ -68,10 +64,10 @@ function install(){
     }
 
     const asOf=priceAsOf();
-    const reference=productionDate();
+    const reference=currentRomeDate();
     const lag=businessLag(asOf,reference);
     const stale=lag==null || lag>MAX_BUSINESS_LAG;
-    const staleNote=`Price WITHHELD: fixing G8 canonico ${asOf||'—'} non abbastanza recente rispetto alla data operativa ${reference||'—'}.`;
+    const staleNote=`Price WITHHELD: fixing G8 canonico ${asOf||'—'} non abbastanza recente rispetto alla data corrente ${reference||'—'} (${FRESHNESS_TIME_ZONE}).`;
 
     const guardedCurrency=function(c){
       const base=originalCurrency(c);
@@ -79,7 +75,7 @@ function install(){
       const out=clone(base)||{...base};
       out.price=0;
       out.confirmation='PREZZO NON RISOLUTIVO';
-      out.priceFreshness={status:'WITHHELD_STALE',as_of:asOf,reference_as_of:reference,business_lag:lag,max_business_lag:MAX_BUSINESS_LAG};
+      out.priceFreshness={status:'WITHHELD_STALE',as_of:asOf,reference_as_of:reference,business_lag:lag,max_business_lag:MAX_BUSINESS_LAG,time_zone:FRESHNESS_TIME_ZONE};
       if(typeof out.story==='string'){
         out.story=out.story
           .replace(/ · il prezzo diverge dalla struttura/g,' · prezzo withheld per freshness')
@@ -97,7 +93,7 @@ function install(){
       out.priceReading='PREZZO NON RISOLUTIVO';
       out.priceNote=staleNote;
       out.watch=staleNote+' Il Price resta solo una verifica e non modifica la struttura Macro + Tassi/CB.';
-      out.priceFreshness={status:'WITHHELD_STALE',as_of:asOf,reference_as_of:reference,business_lag:lag,max_business_lag:MAX_BUSINESS_LAG};
+      out.priceFreshness={status:'WITHHELD_STALE',as_of:asOf,reference_as_of:reference,business_lag:lag,max_business_lag:MAX_BUSINESS_LAG,time_zone:FRESHNESS_TIME_ZONE};
       return out;
     };
 
@@ -118,7 +114,7 @@ function install(){
     const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
 
     state.status=stale?'PASS_WITHHELD_STALE_PRICE':'PASS_FRESH_PRICE_UNCHANGED';
-    state.reason=stale?'Canonical daily G8 Price exceeds certified freshness lag; confirmation/divergence suppressed while underlying history remains visible.':'Canonical daily G8 Price is within certified freshness lag.';
+    state.reason=stale?'Canonical daily G8 Price exceeds certified freshness lag versus current Europe/Rome date; confirmation/divergence suppressed while underlying history remains visible.':'Canonical daily G8 Price is within certified freshness lag.';
     state.price_asof=asOf;
     state.reference_asof=reference;
     state.business_lag=lag;
