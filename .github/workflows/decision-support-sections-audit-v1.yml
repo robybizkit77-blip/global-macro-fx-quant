@@ -1,0 +1,76 @@
+name: Decision Support Sections Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-decision-support-sections-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8141 --bind 127.0.0.1 >/tmp/gmfq-decision-support-audit-server.log 2>&1 &
+          sleep 2
+      - name: Inspect Events Risk What Changed Top Themes wiring
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8141/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForTimeout(400);
+            const out=await page.evaluate(()=>{
+              const bodyText=(document.body.innerText||'').replace(/\s+/g,' ').trim();
+              const labels=['Event Risk','EVENT RISK','What Changed','WHAT CHANGED','Cosa è cambiato','COSA È CAMBIATO','Top Themes','TOP THEMES','Risk','RISK','News Pulse','NEWS PULSE'];
+              const labelHits=labels.filter(x=>bodyText.includes(x));
+              const elements=[...document.querySelectorAll('[id],[class]')].filter(el=>/event|risk|theme|changed|news/i.test((el.id||'')+' '+(typeof el.className==='string'?el.className:''))).slice(0,200).map(el=>({tag:el.tagName,id:el.id||null,class:typeof el.className==='string'?el.className:null,text:(el.innerText||'').replace(/\s+/g,' ').trim().slice(0,500)}));
+              const scriptHits=[];
+              for(const [i,s] of [...document.scripts].entries()){
+                const t=s.textContent||'';
+                const needles=['Event Risk','EVENT RISK','What Changed','WHAT CHANGED','Cosa è cambiato','Top Themes','TOP THEMES','News Pulse','NEWS PULSE'];
+                if(needles.some(n=>t.includes(n))){
+                  const snippets=[];
+                  for(const n of needles){const p=t.indexOf(n);if(p>=0)snippets.push({needle:n,context:t.slice(Math.max(0,p-1800),Math.min(t.length,p+2800))});}
+                  scriptHits.push({index:i,src:s.src||'INLINE',snippets});
+                }
+              }
+              const globals=Object.keys(window).filter(k=>/event|risk|theme|change|news/i.test(k)).sort().map(k=>({name:k,type:typeof window[k]})).slice(0,200);
+              return {labelHits,elements,scriptHits,globals,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const summary={schema:'GMFQ_DECISION_SUPPORT_SECTIONS_AUDIT_V1',status:'DISCOVERY_COMPLETE',...out};
+            fs.writeFileSync('decision-support-sections-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify({status:summary.status,labelHits:out.labelHits,elements:out.elements,globalNames:out.globals,scriptHitCount:out.scriptHits.length},null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: decision-support-sections-audit-v1
+          path: |
+            decision-support-sections-audit.json
+            /tmp/gmfq-decision-support-audit-server.log
