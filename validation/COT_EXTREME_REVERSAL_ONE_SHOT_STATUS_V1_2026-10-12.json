@@ -1,0 +1,11 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_ONE_SHOT_STATUS_V1",
+  "as_of": "2026-10-12",
+  "status": "IMPLEMENTATION_NOT_YET_EXECUTED",
+  "contract_branch": "validation-cot-extreme-reversal-contract-v1-2026-10-12",
+  "frozen_contract_head_used": "95ee9a736c69bdbcb84ada001add98a95987eea5",
+  "economic_result_observed": false,
+  "rerun_after_valid_result_forbidden": true,
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
