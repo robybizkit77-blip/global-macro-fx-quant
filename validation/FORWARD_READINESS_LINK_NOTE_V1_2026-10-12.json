@@ -1,0 +1,13 @@
+{
+  "schema": "GMFQ_FORWARD_READINESS_LINK_NOTE_V1",
+  "source": {
+    "workflow": "Forward Input Readiness V1",
+    "run_id": 38226865856,
+    "artifact": "forward-input-readiness-38226865856",
+    "head_sha": "23118be853d5de4d63d2534e917c915ec1c378ff"
+  },
+  "consumer": "G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_V1",
+  "rule": "consumer must read current_max_certified_decision_point from the exact readiness receipt; a literal hard-coded decision point is forbidden",
+  "production_signal_authorized": false,
+  "sizing_authorized": false
+}
