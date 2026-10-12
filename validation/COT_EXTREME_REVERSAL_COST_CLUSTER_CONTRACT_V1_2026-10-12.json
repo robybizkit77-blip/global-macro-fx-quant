@@ -1,0 +1,38 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_COST_CLUSTER_CONTRACT_V1",
+  "status": "PREDECLARED_BEFORE_COST_CLUSTER_RESULTS",
+  "candidate_rule": {
+    "lookback_weeks": 104,
+    "extreme_long_threshold_percentile": 80,
+    "extreme_short_threshold_percentile": 20,
+    "extreme_long_signal": "short_local_currency_vs_usd",
+    "extreme_short_signal": "long_local_currency_vs_usd",
+    "fx_horizon_trading_days": 5,
+    "historical_split": "same frozen 60/40 split as PR #142"
+  },
+  "stress_tests": {
+    "transaction_costs": {
+      "round_trip_bps": [2, 5, 10],
+      "method": "subtract fixed round-trip cost from each signal return before weekly equal-weight panel aggregation"
+    },
+    "signal_episode_clustering": {
+      "method": "within each currency, consecutive same-direction extreme signals whose report dates are no more than 14 calendar days apart are one episode; retain only the first observation of each episode",
+      "purpose": "remove repeated weekly observations from persistent positioning extremes"
+    }
+  },
+  "predeclared_gates": {
+    "net_5bps_panel_sharpe_ge": 0.50,
+    "net_10bps_panel_sharpe_gt": 0.0,
+    "episode_panel_sharpe_ge": 0.50,
+    "minimum_episode_observations_ge": 100
+  },
+  "governance": {
+    "candidate_rule_changed": false,
+    "forward_shadow_pr_143_changed": false,
+    "no_threshold_search": true,
+    "no_currency_exclusion": true,
+    "no_horizon_change": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false
+  }
+}
