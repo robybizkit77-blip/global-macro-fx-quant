@@ -1,0 +1,50 @@
+name: COT Abs Imbalance Reversal Contract V1
+
+on:
+  push:
+    branches:
+      - validation-cot-abs-imbalance-reversal-contract-v1-2026-10-12
+    paths:
+      - 'validation/COT_ABS_IMBALANCE_REVERSAL_EDGE_CONTRACT_V1_2026-10-12.json'
+      - '.github/workflows/cot-abs-imbalance-reversal-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate result-blind research contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/COT_ABS_IMBALANCE_REVERSAL_EDGE_CONTRACT_V1_2026-10-12.json'
+          d=json.load(open(p))
+          assert d['schema']=='GMFQ_COT_ABS_IMBALANCE_REVERSAL_EDGE_CONTRACT_V1'
+          assert d['status']=='PREDECLARED_NO_RESULTS_OBSERVED'
+          assert d['universe']['currencies']==['EUR','GBP','JPY','CHF','AUD','NZD','CAD']
+          assert d['pit_contract']['required_policy_schema']=='GMFQ_COT_ULTRACONSERVATIVE_PIT_POLICY_V1'
+          assert d['signal']['positive_extreme_threshold']==0.30
+          assert d['signal']['negative_extreme_threshold']==-0.30
+          assert d['fx_return_definition']['horizon_trading_days']==5
+          g=d['predeclared_edge_gate']
+          assert g['oos_panel_annualized_sharpe_min']==0.50
+          assert g['oos_directional_accuracy_min']==0.52
+          assert g['positive_currency_oos_sharpes_min_count']==5
+          assert g['minimum_oos_signal_observations_per_currency']==20
+          assert g['minimum_pooled_oos_signal_observations']==150
+          assert g['max_single_currency_share_of_pooled_oos']==0.30
+          assert d['governance']['failure_is_valid_result'] is True
+          assert d['governance']['production_signal_authorized'] is False
+          print('COT_ABS_IMBALANCE_REVERSAL_CONTRACT_PASS')
+          PY
+      - name: Assert no repository writes
+        run: test -z "$(git status --porcelain)"
