@@ -1,0 +1,78 @@
+name: COT Canonical Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'audit-cot-canonical-freshness-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8145 --bind 127.0.0.1 >/tmp/gmfq-cot-canonical.log 2>&1 &
+          sleep 2
+      - name: Validate canonical COT freshness resolution
+        run: |
+          cat > cot-canonical-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8145/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              return (s&&s!=='WAITING_FOR_COT_PROVENANCE')||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const gate=clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE);
+              const currency=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const frames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              const banner=document.getElementById('gmfqCotFreshnessBanner');
+              return {
+                gate,
+                currencyCotRisk: Object.fromEntries(ccys.map(c=>[c,currency[c]?.cotRisk||''])),
+                pairCount:Object.keys(frames).length,
+                bannerHidden:banner?.hidden??null,
+                bannerText:banner?.textContent||'',
+                heatEUR:typeof window.cotHeatState==='function'?clone(window.cotHeatState('EUR')):null,
+                legacyProductionAsOf:window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of||null,
+                legacyPolicyAsOf:window.FINAL_SOURCE_POLICY_AUDIT?.COT?.current_as_of||null,
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            if(out.gate?.status!=='PASS_FRESH_COT_UNCHANGED')throw new Error('COT gate not fresh: '+JSON.stringify(out.gate));
+            if(out.gate?.cot_asof!=='2026-10-06'||out.gate?.calendar_lag_days!==6)throw new Error('Canonical COT date/lag wrong: '+JSON.stringify(out.gate));
+            if(out.gate?.canonical_dataset_status!=='PASS'||out.gate?.provenance_source!=='V250_COT_CHART_DATA')throw new Error('Canonical source not certified: '+JSON.stringify(out.gate));
+            if(out.gate?.provenance_mismatch!==true||out.gate?.legacy_provenance_asof!=='2026-09-22')throw new Error('Legacy mismatch not diagnosed: '+JSON.stringify(out.gate));
+            if(out.pairCount!==28)throw new Error('Pair frame count !=28');
+            if(out.bannerHidden!==true)throw new Error('Fresh COT banner should be hidden: '+JSON.stringify({hidden:out.bannerHidden,text:out.bannerText}));
+            if(String(out.heatEUR?.txt||'').includes('STALE')||out.heatEUR?.cls==='neu'&&out.heatEUR?.ext===false)throw new Error('Fresh COT heat still neutralized: '+JSON.stringify(out.heatEUR));
+          })().catch(e=>{console.error('::error title=COT canonical freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node cot-canonical-audit.js
