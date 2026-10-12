@@ -11,7 +11,7 @@
     "must_not_change_bias_score_or_sizing": true
   },
   "records": [
-    {"layer":"PRICE","key":"FX_G8","source":"ECB reference/fixing pipeline","updater":"MISSING_DEDICATED_WORKFLOW","cadence":"DAILY_BUSINESS_DAY","as_of":"2026-09-28","max_lag_days":2,"status":"STALE","reason":"Latest embedded pair price_asof in D.json is 28 Sep 2026; runtime price is stale and no dedicated automatic updater is present.","provenance":"live_data/sections/D.json"},
+    {"layer":"PRICE","key":"FX_G8","source":"ECB euro foreign exchange reference rates runtime overlay","updater":"MISSING_DEDICATED_WORKFLOW","cadence":"DAILY_BUSINESS_DAY","as_of":"2026-09-30","max_lag_days":2,"status":"STALE","reason":"Effective dashboard Price runtime is the ECB fixing overlay in payload/part-15.txt; latest tracked overlay is 30 Sep 2026 and is stale as of the registry date.","provenance":"payload/part-15.txt"},
 
     {"layer":"RATES","key":"USD","source":"U.S. Treasury Daily Par Yield Curve","updater":"rates-daily-operational.yml","cadence":"DAILY_BUSINESS_DAY","as_of":"2026-10-06","max_lag_days":3,"status":"STALE","reason":"Main-branch audit metadata is older than freshness threshold as of registry date.","provenance":"live_data/sections/RATES_AUDIT_METADATA.json"},
     {"layer":"RATES","key":"EUR","source":"ECB AAA Svensson spot curve","updater":"rates-daily-operational.yml","cadence":"DAILY_BUSINESS_DAY","as_of":"2026-10-06","max_lag_days":3,"status":"STALE","reason":"Main-branch audit metadata is older than freshness threshold as of registry date.","provenance":"live_data/sections/RATES_AUDIT_METADATA.json"},
