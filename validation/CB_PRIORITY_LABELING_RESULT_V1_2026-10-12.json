@@ -1,0 +1,102 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_LABELING_RESULT_V1",
+  "as_of": "2026-10-12",
+  "verdict": "FAIL_PREDECLARED_LABEL_QUALITY_GATE",
+  "parent_contract": {
+    "pull_request": 165,
+    "head_sha": "2d51f8402d5fa478d6b52486a5276aba991316e3"
+  },
+  "label_engine": {
+    "pull_request": 166,
+    "head_sha": "6c833cca6824ea5aed47cf9787984a5cd8864ed9",
+    "workflow_run_id": 38216431489,
+    "artifact_id": 11731433505,
+    "artifact_name": "cb-priority-labeling-v1-38216431489",
+    "artifact_zip_sha256": "5cc5466e8f5ead6849cede7e98ea9ffa0eca10a903c90f13fcd539889305c74c"
+  },
+  "pinned_inventory": {
+    "pull_request": 164,
+    "head_sha": "ef1a5ba0c0cf673bbd509517b9c772386d3f3085",
+    "workflow_run_id": 38215654681,
+    "artifact_id": 11732506878,
+    "inventory_json_sha256": "fbe6fd5c4af09250b50741da23f9cd22eee2d0d756d3cc56035dc98283f5305a",
+    "rows": 365
+  },
+  "labeled_dataset": {
+    "sha256": "1abeb4f882d120914c7d5af5d1e9ce38f3e1906a0e314eb68d6f79b9a68bf5a9",
+    "rows": 365,
+    "duplicate_decision_events": 0,
+    "missing_required_fields_rows": 0,
+    "nonwithheld_empty_evidence_rows": 0,
+    "official_source_failures": 0,
+    "fetch_or_parse_failures_total": 0
+  },
+  "per_central_bank": {
+    "FED": {
+      "total": 74,
+      "label_counts": {"BALANCED": 47, "INFLATION": 21, "WITHHELD_AMBIGUOUS": 6},
+      "withheld_ambiguous_share": 0.08108108108108109,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "ECB": {
+      "total": 70,
+      "label_counts": {"INFLATION": 57, "WITHHELD_AMBIGUOUS": 13},
+      "withheld_ambiguous_share": 0.18571428571428572,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "BOJ": {
+      "total": 62,
+      "label_counts": {"BALANCED": 32, "INFLATION": 29, "WITHHELD_AMBIGUOUS": 1},
+      "withheld_ambiguous_share": 0.016129032258064516,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "BOC": {
+      "total": 70,
+      "label_counts": {"BALANCED": 15, "INFLATION": 48, "WITHHELD_AMBIGUOUS": 7},
+      "withheld_ambiguous_share": 0.1,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "RBA": {
+      "total": 89,
+      "label_counts": {"BALANCED": 26, "INFLATION": 23, "LABOUR_GROWTH": 5, "WITHHELD_AMBIGUOUS": 35},
+      "withheld_ambiguous_share": 0.39325842696629215,
+      "minimum_events_gate": true,
+      "withheld_share_gate": false,
+      "withheld_diagnostic": {
+        "withheld_rows": 35,
+        "topic_score_patterns": {
+          "inflation_0_labour_growth_0": 19,
+          "inflation_0_labour_growth_1": 13,
+          "inflation_1_labour_growth_0": 3
+        },
+        "all_fetch_status_ok": true,
+        "interpretation": "The failure is labelability under the frozen conservative rule, not missing source text or transport failure."
+      }
+    }
+  },
+  "quality_gate": {
+    "minimum_events_per_central_bank": 50,
+    "maximum_withheld_ambiguous_share_per_central_bank": 0.20,
+    "quality_gate_pass": false,
+    "failed_components": ["RBA_WITHHELD_AMBIGUOUS_SHARE_0.39325842696629215_GT_0.20"]
+  },
+  "scientific_interpretation": {
+    "label_method_was_frozen_before_labels": true,
+    "market_outcomes_observed": false,
+    "transport_or_parse_failure_explains_result": false,
+    "post_result_semantic_tuning_performed": false,
+    "dataset_usable_for_predeclared_performance_test": false,
+    "next_step": "Do not join FX/rates. Treat V1 as a valid failed labeling specification. Any redesigned labeling specification must be a separately versioned V2 hypothesis with explicit rationale and fresh governance, not a rescue tuning of V1."
+  },
+  "governance": {
+    "performance_test_authorized": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
