@@ -1,0 +1,84 @@
+name: AUD Native CB Propagation Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-native-cb-propagation-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8135 --bind 127.0.0.1 > /tmp/gmfq-aud-native-cb-server.log 2>&1 &
+          sleep 2
+      - name: Inspect native AUD CB object and propagation gap
+        run: |
+          cat > aud-native-cb-propagation-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8135/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const native=typeof NATIVE_CB_DATA!=='undefined'?NATIVE_CB_DATA:null;
+              const descriptors={};
+              for(const n of ['NATIVE_CB_DATA','GMFQ_AUD_POST_RBA_PRICING_AUDIT','CB_PRICING_WARNING_RESOLUTION_AUDIT']){
+                const d=Object.getOwnPropertyDescriptor(window,n);
+                descriptors[n]=d?{configurable:d.configurable,enumerable:d.enumerable,writable:d.writable,hasGetter:!!d.get,hasSetter:!!d.set}:null;
+              }
+              const candidates={};
+              for(const k of Object.keys(window).filter(k=>/AUD|RBA|CB_PRICING|NATIVE_CB/i.test(k)).sort()){
+                const v=window[k];
+                if(typeof v==='function') continue;
+                try{const s=JSON.stringify(v); if(s&&s.length<180000)candidates[k]=JSON.parse(s);}catch{}
+              }
+              return {
+                nativeAud:clone(native?.AUD),
+                nativeKeys:native?Object.keys(native):[],
+                postRba:clone(window.GMFQ_AUD_POST_RBA_PRICING_AUDIT),
+                warningResolution:clone(window.CB_PRICING_WARNING_RESOLUTION_AUDIT?.AUD),
+                finalSource:clone(window.FINAL_SOURCE_POLICY_AUDIT?.CB_PRICING?.AUD),
+                hysteresis:clone(window.CB_LIQ_HYSTERESIS_STATE?.AUD),
+                descriptors,
+                candidates,
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            const report={schema:'GMFQ_AUD_NATIVE_CB_PROPAGATION_AUDIT_V1',reference_date:'2026-10-12',...out,verdict:'EVIDENCE_ONLY'};
+            fs.writeFileSync('aud-native-cb-propagation-audit.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+          })().catch(e=>{console.error('::error title=AUD native CB propagation audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node aud-native-cb-propagation-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud-native-cb-propagation-audit-v1
+          path: |
+            aud-native-cb-propagation-audit.json
+            /tmp/gmfq-aud-native-cb-server.log
