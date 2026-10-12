@@ -2,6 +2,7 @@
 import argparse
 import datetime as dt
 import json
+import re
 from pathlib import Path
 
 ALLOWED_STATUS = {"GREEN", "STALE", "WITHHELD", "ERROR"}
@@ -15,7 +16,23 @@ def parse_date(value):
     return dt.date.fromisoformat(value)
 
 
-def validate(data, runtime_d=None):
+def runtime_price_overlay_as_of(path=Path("payload/part-15.txt")):
+    if not path.exists():
+        return None, ["Price runtime payload/part-15.txt is missing"]
+    text = path.read_text(encoding="utf-8")
+    matches = re.findall(r'<script id="gmfq-price-ecb-(\d{8})">', text)
+    if len(matches) != 1:
+        return None, [f"expected exactly one ECB Price runtime overlay, got {len(matches)}"]
+    raw = matches[0]
+    value = f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"
+    try:
+        parse_date(value)
+    except Exception as exc:
+        return None, [f"invalid ECB Price runtime overlay date: {exc}"]
+    return value, []
+
+
+def validate(data, runtime_d=None, price_runtime_as_of=None):
     errors = []
     if data.get("schema") != "GMFQ_FRESHNESS_REGISTRY_V1":
         errors.append("invalid schema")
@@ -103,36 +120,35 @@ def validate(data, runtime_d=None):
     if got_rates != required_rates:
         errors.append(f"RATES G8 mismatch: expected={sorted(required_rates)} got={sorted(got_rates)}")
 
-    required_cb = required_rates
     got_cb = {k for layer, k in seen if layer == "CB_PRICING"}
-    if got_cb != required_cb:
-        errors.append(f"CB_PRICING G8 mismatch: expected={sorted(required_cb)} got={sorted(got_cb)}")
+    if got_cb != required_rates:
+        errors.append(f"CB_PRICING G8 mismatch: expected={sorted(required_rates)} got={sorted(got_cb)}")
 
     macro_expected = {f"{ccy}_{dim}" for ccy in required_rates for dim in ("INFLATION", "LABOUR")}
     got_macro = {k for layer, k in seen if layer == "MACRO"}
     if got_macro != macro_expected:
         errors.append(f"MACRO 16-core mismatch: expected={sorted(macro_expected)} got={sorted(got_macro)}")
 
-    if runtime_d is not None:
-        price = by_ident.get(("PRICE", "FX_G8"))
-        if not price:
-            errors.append("PRICE/FX_G8 record missing")
-        else:
+    price = by_ident.get(("PRICE", "FX_G8"))
+    if not price:
+        errors.append("PRICE/FX_G8 record missing")
+    else:
+        if runtime_d is not None:
             pairs = runtime_d.get("pairs") or []
             if len(pairs) != 28:
                 errors.append(f"runtime D expected 28 pairs, got {len(pairs)}")
-            pair_dates = [p.get("price_asof") for p in pairs if p.get("price_asof")]
-            if not pair_dates:
-                errors.append("runtime D has no pair price_asof proof")
-            else:
-                latest_pair_as_of = max(pair_dates)
-                if price.get("as_of") != latest_pair_as_of:
-                    errors.append(f"PRICE registry as_of {price.get('as_of')} differs from runtime latest pair price_asof {latest_pair_as_of}")
-                if registry_date and isinstance(price.get("max_lag_days"), int):
-                    age = (registry_date - parse_date(latest_pair_as_of)).days
-                    expected_status = "GREEN" if age <= price["max_lag_days"] else "STALE"
-                    if price.get("status") != expected_status:
-                        errors.append(f"PRICE runtime age {age}d requires {expected_status}, got {price.get('status')}")
+        if not price_runtime_as_of:
+            errors.append("effective ECB Price runtime as_of is unavailable")
+        else:
+            if price.get("as_of") != price_runtime_as_of:
+                errors.append(f"PRICE registry as_of {price.get('as_of')} differs from effective ECB runtime overlay {price_runtime_as_of}")
+            if price.get("provenance") != "payload/part-15.txt":
+                errors.append("PRICE provenance must point to payload/part-15.txt effective runtime overlay")
+            if registry_date and isinstance(price.get("max_lag_days"), int):
+                age = (registry_date - parse_date(price_runtime_as_of)).days
+                expected_status = "GREEN" if age <= price["max_lag_days"] else "STALE"
+                if price.get("status") != expected_status:
+                    errors.append(f"PRICE runtime age {age}d requires {expected_status}, got {price.get('status')}")
 
     return errors
 
@@ -144,8 +160,9 @@ def main():
     data = json.loads(Path(args.path).read_text(encoding="utf-8"))
     runtime_path = Path("live_data/sections/D.json")
     runtime_d = json.loads(runtime_path.read_text(encoding="utf-8")) if runtime_path.exists() else None
-    errors = validate(data, runtime_d=runtime_d)
-    out = {"schema": data.get("schema"), "status": "PASS" if not errors else "FAIL", "record_count": len(data.get("records", [])), "errors": errors}
+    price_as_of, price_errors = runtime_price_overlay_as_of()
+    errors = price_errors + validate(data, runtime_d=runtime_d, price_runtime_as_of=price_as_of)
+    out = {"schema": data.get("schema"), "status": "PASS" if not errors else "FAIL", "record_count": len(data.get("records", [])), "effective_price_as_of": price_as_of, "errors": errors}
     print(json.dumps(out, indent=2, ensure_ascii=False))
     if errors:
         raise SystemExit(1)
