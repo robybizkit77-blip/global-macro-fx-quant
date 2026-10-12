@@ -1,0 +1,82 @@
+name: Pair Layer Coverage Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-pair-layer-coverage-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pair-layer-coverage-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8124 --bind 127.0.0.1 > /tmp/gmfq-pair-layer-server.log 2>&1 &
+          echo $! > /tmp/gmfq-pair-layer-server.pid
+          sleep 2
+      - name: Run pair layer coverage audit
+        run: |
+          cat > pair-layer-coverage-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const own=o=>o&&typeof o==='object'?Object.keys(o).sort():[];
+          const shape=(o,depth=0)=>{ if(o===null||o===undefined)return o; if(typeof o!=='object')return typeof o; if(depth>=2)return Array.isArray(o)?`array(${o.length})`:'object'; if(Array.isArray(o))return o.length?['array',shape(o[0],depth+1)]:['array']; return Object.fromEntries(Object.entries(o).map(([k,v])=>[k,shape(v,depth+1)])); };
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8124/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const runtime=await page.evaluate(({PAIRS,CCYS})=>{
+              const currencies=Object.fromEntries(CCYS.map(c=>[c,window.deriveCurrencyState?.(c)||null]));
+              const pairs=Object.fromEntries(PAIRS.map(p=>[p,window.derivePairDecisionFrame?.(p)||null]));
+              const globals=Object.keys(window).filter(k=>/GMFQ|COT|PRICE|RATE|PAIR|OIS|CB|BANK/i.test(k)).sort();
+              const samplePair='EUR/USD';
+              const tutor=document.getElementById('gmfqPairTutor');
+              const fnNames=['derivePairDecisionFrame','v271StructuralPairFrame','derivePairSetupState','derivePairDriverStructure','buildCanonicalPairState','v226PairCard'];
+              const functions=Object.fromEntries(fnNames.map(n=>[n,typeof window[n]==='function'?Function.prototype.toString.call(window[n]):null]));
+              return {currencies,pairs,globals,functions,samplePair,sampleFrame:pairs[samplePair],pairTutorText:tutor?String(tutor.innerText||'').trim():null,audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            },{PAIRS,CCYS});
+            await browser.close();
+            if(runtime.bootstrapError)throw new Error(runtime.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const pairShapes={},fieldCoverage={},structuralCoverage={},currencyCoverage={};
+            for(const [p,f] of Object.entries(runtime.pairs)){ pairShapes[p]=shape(f); for(const k of own(f)) fieldCoverage[k]=(fieldCoverage[k]||0)+1; for(const k of own(f?.structural)) structuralCoverage[k]=(structuralCoverage[k]||0)+1; }
+            for(const s of Object.values(runtime.currencies)) for(const k of own(s)) currencyCoverage[k]=(currencyCoverage[k]||0)+1;
+            const ratesNarrativeMismatch=[];
+            for(const [p,f] of Object.entries(runtime.pairs)){
+              const rg=f?.structural?.ratesGap;
+              const policy=f?.structural?.policy;
+              if(rg?.material===true && rg?.side && policy?.side==='TIE') ratesNarrativeMismatch.push({pair:p,ratesGapBp:rg.bp,ratesSide:rg.side,policySide:policy.side,quality:f.quality,relation:f.relation});
+            }
+            const report={schema:'GMFQ_PAIR_LAYER_COVERAGE_AUDIT_V1',reference_date:'2026-10-12',pair_count:Object.keys(runtime.pairs).length,currency_count:Object.keys(runtime.currencies).length,pair_top_level_field_coverage:fieldCoverage,pair_structural_field_coverage:structuralCoverage,currency_field_coverage:currencyCoverage,sample_pair:runtime.samplePair,sample_pair_frame:runtime.sampleFrame,sample_pair_shape:shape(runtime.sampleFrame),sample_pair_tutor_text:runtime.pairTutorText,rates_policy_narrative_mismatches:ratesNarrativeMismatch,relevant_runtime_globals:runtime.globals,function_sources:runtime.functions,runtime_baseline_as_of:runtime.audit?.as_of||null,verdict:'EVIDENCE_ONLY'};
+            fs.writeFileSync('pair-layer-coverage-audit.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+          })().catch(e=>{console.error('::error title=Pair layer coverage audit::'+String(e.message||e));process.exit(1)});
+          EOF
+          node pair-layer-coverage-audit.js
+      - name: Upload pair layer coverage evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pair-layer-coverage-audit-v1
+          path: |
+            pair-layer-coverage-audit.json
+            /tmp/gmfq-pair-layer-server.log
