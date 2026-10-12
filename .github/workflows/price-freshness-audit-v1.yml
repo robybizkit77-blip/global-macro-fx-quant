@@ -1,0 +1,77 @@
+name: Price Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-price-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8142 --bind 127.0.0.1 > /tmp/gmfq-price-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit price freshness read-only
+        run: |
+          cat > price-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8142/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[];
+              for(let i=0;i<ccys.length;i++) for(let j=i+1;j<ccys.length;j++) pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currencyStates=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const pairFrames=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const globals={};
+              for(const k of Object.keys(window).filter(k=>/price|spot|market|fx|quote|close/i.test(k)).sort()){
+                const v=window[k];
+                if(typeof v==='function') globals[k]={type:'function',source:Function.prototype.toString.call(v).slice(0,5000)};
+                else if(v&&typeof v==='object') globals[k]={type:'object',value:clone(v)};
+                else if(['string','number','boolean'].includes(typeof v)) globals[k]={type:typeof v,value:v};
+              }
+              const scripts=[...document.scripts].map(s=>s.src||'INLINE').filter(Boolean);
+              const stateSummary=Object.fromEntries(Object.entries(currencyStates).map(([c,s])=>[c,{price:s?.price,confirmation:s?.confirmation,base:s?.base,driver:s?.driver,story:s?.story}]));
+              const pairSummary=Object.fromEntries(Object.entries(pairFrames).map(([p,f])=>[p,{fav:f?.fav,quality:f?.quality,setup:f?.setup,price:f?.price,structural:f?.structural}]));
+              return {currencyStates,pairFrames,stateSummary,pairSummary,globals,scripts,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('price-freshness-audit.json',JSON.stringify({schema:'GMFQ_PRICE_FRESHNESS_AUDIT_V1',...out},null,2));
+            const interesting=Object.fromEntries(Object.entries(out.globals).filter(([k])=>/price|spot|quote|close/i.test(k)).slice(0,80));
+            console.log(JSON.stringify({stateSummary:out.stateSummary,interestingGlobalNames:Object.keys(interesting),interestingGlobals:interesting},null,2));
+          })().catch(e=>{console.error('::error title=Price freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node price-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: price-freshness-audit-v1
+          path: |
+            price-freshness-audit.json
+            /tmp/gmfq-price-audit-server.log
