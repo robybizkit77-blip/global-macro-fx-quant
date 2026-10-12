@@ -8,7 +8,7 @@ from pathlib import Path
 
 POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 OUT = Path('validation/risk-brent-probe.json')
-URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU'
+BASE_URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU'
 
 
 def business_days_between(start: dt.date, end: dt.date) -> int:
@@ -26,8 +26,11 @@ def business_days_between(start: dt.date, end: dt.date) -> int:
 def main():
     policy = json.loads(POLICY.read_text(encoding='utf-8'))
     cfg = policy['gate_inputs']['Brent']
-    req = urllib.request.Request(URL, headers={'User-Agent': 'global-macro-fx-quant/1.0'})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    as_of = dt.date.fromisoformat(policy['as_of'])
+    start = as_of - dt.timedelta(days=45)
+    url = f'{BASE_URL}&cosd={start.isoformat()}&coed={as_of.isoformat()}'
+    req = urllib.request.Request(url, headers={'User-Agent': 'global-macro-fx-quant/1.0'})
+    with urllib.request.urlopen(req, timeout=20) as r:
         raw = r.read().decode('utf-8-sig')
 
     rows = list(csv.DictReader(io.StringIO(raw)))
@@ -47,7 +50,6 @@ def main():
         raise SystemExit('no valid Brent observations parsed')
     parsed.sort(key=lambda x: x[0])
     latest_date, latest_value = parsed[-1]
-    as_of = dt.date.fromisoformat(policy['as_of'])
     lag = business_days_between(latest_date, as_of)
     if lag < 0:
         raise SystemExit(f'future Brent observation relative to policy as_of: {latest_date}')
@@ -60,8 +62,12 @@ def main():
             'publisher': 'U.S. Energy Information Administration via FRED',
             'series_id': 'DCOILBRENTEU',
             'name': 'Crude Oil Prices: Brent - Europe',
-            'url': URL,
+            'url': BASE_URL,
             'frequency': 'Daily',
+        },
+        'request_window': {
+            'start': start.isoformat(),
+            'end': as_of.isoformat(),
         },
         'policy_as_of': policy['as_of'],
         'latest_date': latest_date.isoformat(),
