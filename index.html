@@ -12,10 +12,10 @@
  let html=responses.join('\n');
  if(!html.includes('GMFQ_RUNTIME_VALIDATION_MANIFEST')) throw new Error('Payload v490 non validato');
 
- // Expose references to the two legacy Macro lexical bindings from inside the
- // exact scope where each binding is declared. This does not alter or rebind
- // either object; it only gives the canonical runtime overlay a stable handle.
- const exposeBinding=(source,name,refName)=>{
+ // MACRO_THERMOMETER_DATA already lives on window.__GMFQ_DATA. MACRO_SERIES
+ // is exposed only if it is a lexical binding; the bridge preserves the exact
+ // object identity captured by the legacy runtime and never rebinds the data.
+ const exposeLexicalBinding=(source,name,refName)=>{
    const re=new RegExp('\\b(?:const|let|var)\\s+'+name+'\\s*=','g');
    const matches=[...source.matchAll(re)];
    if(matches.length!==1){
@@ -29,7 +29,7 @@
      const ch=source[i];
      if(quote){
        if(escaped){escaped=false;continue;}
-       if(ch==='\\\\'){escaped=true;continue;}
+       if(ch==='\\'){escaped=true;continue;}
        if(ch===quote) quote=null;
        continue;
      }
@@ -43,8 +43,7 @@
    }
    throw new Error('Macro bridge terminatore non trovato '+name);
  };
- html=exposeBinding(html,'MACRO_THERMOMETER_DATA','__GMFQ_MACRO_THERMOMETER_REF');
- html=exposeBinding(html,'MACRO_SERIES','__GMFQ_MACRO_SERIES_REF');
+ html=exposeLexicalBinding(html,'MACRO_SERIES','__GMFQ_MACRO_SERIES_REF');
 
  let refreshCalls=0;
  html=html.replace(/\bstableModelRefresh\s*\(\s*\)/g,(m,offset,src)=>{
