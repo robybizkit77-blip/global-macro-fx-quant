@@ -1,0 +1,67 @@
+name: AUD CB Hysteresis Product Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-aud-cb-hysteresis-product-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8137 --bind 127.0.0.1 >/tmp/gmfq-aud-product-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit final AUD CB hysteresis state
+        run: |
+          cat > audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8137/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.__GMFQ_AUD_CB_HYSTERESIS_REALIGN_STATE||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForTimeout(300);
+            const out=await page.evaluate(()=>{
+              const clone=x=>JSON.parse(JSON.stringify(x));
+              const audPairs=(D?.pairs||[]).map(x=>x.pair).filter(p=>p.includes('AUD'));
+              return {
+                sidecar:clone(window.__GMFQ_AUD_CB_HYSTERESIS_REALIGN_STATE),
+                hysteresis:clone(window.CB_LIQ_HYSTERESIS_STATE?.AUD?.cb),
+                memory:clone(window.CB_LIQ_CHANGE_MEMORY?.['AUD:cb']),
+                currency:clone(window.deriveCurrencyState?.('AUD')),
+                pairCount:audPairs.length,
+                pairFrames:Object.fromEntries(audPairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))])),
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const ok=out.sidecar?.status==='PASS_REALIGNED_DIAGNOSTIC_ONLY' &&
+              out.hysteresis?.status==='NO_CHANGE' && out.hysteresis?.current===1 && out.hysteresis?.candidate===1 && out.hysteresis?.streak===0 &&
+              out.memory?.candidate==null && Number(out.memory?.streak||0)===0 && out.memory?.lastCurrent===1 &&
+              out.currency?.policy===1 && out.pairCount===7 &&
+              out.sidecar?.changes_policy===false && out.sidecar?.changes_pair_logic===false && out.sidecar?.changes_bias===false && out.sidecar?.changes_sizing===false;
+            console.log(JSON.stringify({status:ok?'PASS':'FAIL',sidecar:out.sidecar,hysteresis:out.hysteresis,memory:out.memory,policy:out.currency?.policy,pairCount:out.pairCount},null,2));
+            if(!ok)process.exit(2);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
