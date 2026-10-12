@@ -3,8 +3,7 @@ name: JPY Labour e-Stat Adapter Certification
 on:
   push:
     branches:
-      - validation-macro-jpy-labour-adapter-2026-10-08
-      - release-candidate-macro-jpy-labour-adapter-2026-10-08
+      - audit-jpy-labour-live-current-v1-2026-10-12
     paths:
       - '.github/workflows/macro-jpy-labour-estat-certification.yml'
       - 'validation/sources/jpy_estat_unemployment.py'
