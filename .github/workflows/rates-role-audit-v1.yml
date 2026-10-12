@@ -1,0 +1,86 @@
+name: Rates Role Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-rates-role-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8140 --bind 127.0.0.1 >/tmp/gmfq-rates-role-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit static rates gap and structural policy roles
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8140/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              let pairSrc='',policySrc='';
+              for(const s of [...document.scripts]){
+                const t=s.textContent||'';
+                if(!pairSrc){const a=t.indexOf('function derivePairDecisionFrame(pair){'),b=t.indexOf('\nfunction derivePairRelativeDynamics(pair){',a);if(a>=0&&b>a)pairSrc=t.slice(a,b);}
+                if(!policySrc){const a=t.indexOf('function policyFamilyPolarity(d){'),b=t.indexOf('\nfunction currencyImprovementDiagnostic(c){',a);if(a>=0&&b>a)policySrc=t.slice(a,b);}
+              }
+              const rows=(D?.pairs||[]).map(x=>x.pair).map(p=>({pair:p,frame:window.derivePairDecisionFrame?.(p)}));
+              const materialNeutral=rows.filter(x=>x.frame?.structural?.ratesGap?.material&&x.frame?.structural?.macro?.side==='TIE'&&x.frame?.structural?.policy?.side==='TIE');
+              const partialWithGap=rows.filter(x=>x.frame?.structural?.ratesGap?.material&&x.frame?.quality==='VANTAGGIO RELATIVO PARZIALE');
+              const strong=rows.filter(x=>x.frame?.quality==='CONTRASTO STRUTTURALE FORTE');
+              return {pairSrc,policySrc,rows,materialNeutral,partialWithGap,strong,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+            const pn=out.materialNeutral;
+            const pg=out.partialWithGap;
+            const assertions={
+              all28Pairs:out.rows.length===28,
+              pairSourceLocated:out.pairSrc.length>0,
+              policySourceLocated:out.policySrc.length>0,
+              staticGapThresholdExplicit:out.pairSrc.includes('Math.abs(twoYearSpreadBp)>=75'),
+              staticGapOnlyContextWhenCoreTied:pn.every(x=>x.frame?.fav==='—'&&x.frame?.quality==='SEPARAZIONE RATES MATERIALE'),
+              partialRemainsPartialDespiteMaterialGap:pg.every(x=>x.frame?.quality==='VANTAGGIO RELATIVO PARZIALE'),
+              strongRequiresMacroPolicyAlignment:out.strong.every(x=>x.frame?.structural?.macro?.side!=='TIE'&&x.frame?.structural?.macro?.side===x.frame?.structural?.policy?.side),
+              gapNeverAppearsInFavoriteAssignment:!out.pairSrc.slice(out.pairSrc.indexOf("let fav='—'"),out.pairSrc.indexOf('const certified=')).includes('rateGapSide===')&&!out.pairSrc.slice(out.pairSrc.indexOf("let fav='—'"),out.pairSrc.indexOf('const certified=')).includes('twoYearSpreadBp>'),
+              frontEndRatesPrimaryInPolicy:out.policySrc.includes('if(rates!==0) return rates')&&out.policySrc.includes('if(cb!==0) return cb'),
+              divergentFrontEndNotPromotedByCb:out.policySrc.includes("ratesLabel.includes('diverg')")&&out.policySrc.includes('return 0')
+            };
+            const ok=Object.values(assertions).every(Boolean);
+            const summary={schema:'GMFQ_RATES_ROLE_AUDIT_V1',status:ok?'PASS':'FAIL',assertions,counts:{materialNeutral:pn.length,partialWithGap:pg.length,strong:out.strong.length},materialNeutral:pn,partialWithGap:pg,strong:out.strong,pairSource:out.pairSrc,policySource:out.policySrc};
+            fs.writeFileSync('rates-role-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify({status:summary.status,assertions,counts:summary.counts,materialNeutral:pn.map(x=>({pair:x.pair,fav:x.frame.fav,quality:x.frame.quality,gap:x.frame.structural.ratesGap})),partialWithGap:pg.map(x=>({pair:x.pair,fav:x.frame.fav,quality:x.frame.quality,gap:x.frame.structural.ratesGap}))},null,2));
+            if(!ok)process.exit(2);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rates-role-audit-v1
+          path: |
+            rates-role-audit.json
+            /tmp/gmfq-rates-role-audit-server.log
