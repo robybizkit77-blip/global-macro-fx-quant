@@ -1,0 +1,67 @@
+name: COT Extreme Reversal Forward Shadow V1
+
+on:
+  push:
+    branches:
+      - validation-cot-extreme-reversal-forward-shadow-v1-2026-10-12
+    paths:
+      - 'validation/COT_EXTREME_REVERSAL_FORWARD_SHADOW_V1_2026-10-12.json'
+      - '.github/workflows/cot-extreme-reversal-forward-shadow-v1.yml'
+  pull_request:
+    branches:
+      - validation-cot-extreme-reversal-one-shot-audit-v1-2026-10-12
+    paths:
+      - 'validation/COT_EXTREME_REVERSAL_FORWARD_SHADOW_V1_2026-10-12.json'
+      - '.github/workflows/cot-extreme-reversal-forward-shadow-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freeze-forward-shadow:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate immutable forward confirmation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='validation/COT_EXTREME_REVERSAL_FORWARD_SHADOW_V1_2026-10-12.json'
+          d=json.load(open(p))
+          assert d['schema']=='GMFQ_COT_EXTREME_REVERSAL_FORWARD_SHADOW_V1'
+          assert d['status']=='FROZEN_WAITING_FOR_UNSEEN_CONFIRMATION'
+          assert d['parent_candidate']['source_pr']==142
+          assert d['parent_candidate']['historical_latest_report_date_used']=='2026-09-08'
+          s=d['frozen_signal']
+          assert s['lookback_weeks']==104
+          assert s['extreme_long_threshold_percentile']==80
+          assert s['extreme_short_threshold_percentile']==20
+          assert s['fx_horizon_trading_days']==5
+          assert d['forward_eligibility']['report_date_must_be_strictly_after']=='2026-09-08'
+          g=d['confirmation_gate']
+          assert g['minimum_matured_signal_observations']==60
+          assert g['minimum_currencies_represented']==5
+          assert g['panel_annualized_sharpe_min']==0.50
+          assert g['directional_accuracy_min']==0.52
+          assert g['positive_currency_mean_return_min_count']==4
+          assert g['max_single_currency_share']==0.30
+          assert g['both_extreme_sides_must_be_represented'] is True
+          gov=d['governance']
+          assert gov['production_signal_authorized'] is False
+          assert gov['sizing_authorized'] is False
+          assert gov['no_rescue_tuning_after_partial_forward_results'] is True
+          print('COT_EXTREME_REVERSAL_FORWARD_SHADOW_FREEZE_PASS')
+          PY
+      - name: Assert no repository writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"

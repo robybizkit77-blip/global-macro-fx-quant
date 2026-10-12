@@ -1,0 +1,64 @@
+{
+  "schema": "GMFQ_COT_EXTREME_REVERSAL_FORWARD_SHADOW_V1",
+  "as_of": "2026-10-12",
+  "status": "FROZEN_WAITING_FOR_UNSEEN_CONFIRMATION",
+  "parent_candidate": {
+    "source_pr": 142,
+    "source_result_schema": "GMFQ_COT_EXTREME_REVERSAL_ONE_SHOT_RESULT_V1",
+    "source_run_id": 38202038479,
+    "source_artifact_id": 11725538455,
+    "source_artifact_sha256": "4c16b6a68190878a8379a6dccae043df0acd609691e61438a4a5fec41ceabcc1",
+    "historical_candidate_verdict": "PASS_PREDECLARED_COT_EXTREME_REVERSAL_EDGE_GATE",
+    "historical_latest_report_date_used": "2026-09-08",
+    "historical_latest_entry_date_used": "2026-09-22",
+    "historical_latest_exit_date_used": "2026-09-29"
+  },
+  "frozen_signal": {
+    "dataset": "CFTC Legacy Futures Only - Non-Commercial",
+    "currencies": ["EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD"],
+    "raw_positioning": "(noncommercial_long - noncommercial_short) / open_interest",
+    "lookback_weeks": 104,
+    "percentile_method": "empirical midrank percentile over exactly 104 PIT-eligible report observations",
+    "extreme_long_threshold_percentile": 80,
+    "extreme_short_threshold_percentile": 20,
+    "percentile_ge_80": "SHORT_LOCAL_CURRENCY_VS_USD",
+    "percentile_le_20": "LONG_LOCAL_CURRENCY_VS_USD",
+    "otherwise": "NO_POSITION",
+    "fx_horizon_trading_days": 5,
+    "threshold_search": "forbidden",
+    "currency_exclusion": "forbidden",
+    "horizon_change": "forbidden"
+  },
+  "forward_eligibility": {
+    "report_date_must_be_strictly_after": "2026-09-08",
+    "no_backfill_from_historical_candidate_sample": true,
+    "same_ultraconservative_cot_pit_policy_required": true,
+    "same_local_currency_vs_usd_fx_orientation_required": true,
+    "signal_must_be_computable_without_future_information": true,
+    "outcome_is_recorded_only_after_fifth_subsequent_fx_trading_day_is_available": true
+  },
+  "confirmation_gate": {
+    "all_required": true,
+    "minimum_matured_signal_observations": 60,
+    "minimum_currencies_represented": 5,
+    "panel_annualized_sharpe_min": 0.50,
+    "directional_accuracy_min": 0.52,
+    "positive_currency_mean_return_min_count": 4,
+    "max_single_currency_share": 0.30,
+    "both_extreme_sides_must_be_represented": true
+  },
+  "governance": {
+    "historical_candidate_is_not_reestimated": true,
+    "no_parameter_tuning": true,
+    "no_threshold_change": true,
+    "no_currency_exclusion": true,
+    "no_horizon_change": true,
+    "no_rescue_tuning_after_partial_forward_results": true,
+    "partial_results_do_not_authorize_production": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "promotion_requires_separate_review_after_gate_pass": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
