@@ -46,10 +46,10 @@ jobs:
           assert r['labeling_authorized'] is False and r['performance_test_authorized'] is False
           print('PINNED_RESULT_BLIND_NON_ECB_SEED_PASS')
           PY
-      - name: Resolve ECB decisions from static official accounts index
+      - name: Resolve ECB decisions from official annual page snippets
         run: |
           set -euo pipefail
-          python validation/augment_ecb_accounts_global_v5.py \
+          python validation/augment_ecb_year_snippets_v6.py \
             --input /tmp/cb-seed/cb-event-inventory.json \
             --output /tmp/cb-event-inventory.json
       - name: Validate result-blind inventory and frozen coverage gate
@@ -78,7 +78,8 @@ jobs:
           gate={cb:counts[cb]>=50 for cb in domains}
           assert all(gate.values()), (counts,gate,r['source_errors'])
           assert r['status']=='RESULT_BLIND_EVENT_INVENTORY_COMPLETE'
-          print(json.dumps({'status':r['status'],'counts':counts,'coverage_gate':gate,'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events'])},indent=2,sort_keys=True))
+          assert r['ecb_transport_receipt']['mechanism']=='official data-snippets annual include files'
+          print(json.dumps({'status':r['status'],'counts':counts,'coverage_gate':gate,'source_errors':r['source_errors'],'duplicates':0,'rows':len(r['events']),'ecb_transport':r['ecb_transport_receipt']},indent=2,sort_keys=True))
           PY
       - name: Assert no labels or market outcomes entered inventory
         run: |
