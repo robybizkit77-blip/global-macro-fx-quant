@@ -1,0 +1,146 @@
+name: Forward CAD Labour Atomic PIT V1
+
+on:
+  push:
+    branches:
+      - validation-forward-cad-labour-atomic-pit-v1-2026-10-12
+    paths:
+      - '.github/workflows/forward-cad-labour-atomic-pit-v1.yml'
+  pull_request:
+    branches:
+      - validation-forward-macro-refresh-dry-run-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  SOURCE_RUN_ID: '38228472363'
+  SOURCE_ARTIFACT: forward-macro-refresh-dry-run-38228472363
+
+jobs:
+  atomic-pit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SOURCE_ARTIFACT }}
+          path: /tmp/cad-forward-source
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Resolve exact APPEND_NEW candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cad-pit
+          cp /tmp/cad-forward-source/cad/labour/candidate.json /tmp/cad-pit/candidate.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-pit/candidate.json'))
+          s=json.load(open('/tmp/cad-forward-source/cad/labour/built/summary.json'))
+          assert c['currency']=='CAD' and c['dimension']=='labour',c
+          assert c['macro_series_id']=='CA_UNEMP_RATE_history_value',c
+          assert c['observation_date']=='2026-09-01',c
+          assert abs(float(c['value'])-6.5)<1e-12,c
+          assert s['series_action']=='APPEND_NEW' and s['old_value'] is None,s
+          print('CAD_LABOUR_APPEND_NEW_CANDIDATE_PASS')
+          PY
+          python validation/build_macro_candidate.py --candidate /tmp/cad-pit/candidate.json --output-dir /tmp/cad-pit/built | tee /tmp/cad-pit/builder.json
+          git diff --exit-code -- live_data payload validation/macro
+
+      - name: Capture and verify atomic PIT anchor
+        shell: bash
+        run: |
+          set -euo pipefail
+          common=(--evidence-dir /tmp/cad-pit/evidence --currency CAD --dimension labour --macro-series-id CA_UNEMP_RATE_history_value)
+          python validation/macro_pit_anchor_contract.py capture-before "${common[@]}" | tee /tmp/cad-pit/before-capture.json
+          cp /tmp/cad-pit/built/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/cad-pit/built/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          python validation/macro_pit_anchor_contract.py capture-after "${common[@]}" --allow-live-data-dirty | tee /tmp/cad-pit/after-capture.json
+          python validation/macro_pit_anchor_contract.py verify "${common[@]}" --candidate /tmp/cad-pit/candidate.json --evidence-output /tmp/cad-pit/macro-pit-anchor-evidence.json | tee /tmp/cad-pit/verify.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cad-pit/macro-pit-anchor-evidence.json'))
+          assert d['schema']=='GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1',d
+          assert d['status']=='PASS',d
+          assert len(d['atomic_delta']['changed_rows'])==1,d
+          assert d['registry_promotion']=='NOT_ATTEMPTED',d
+          assert d['live_data_written_by_replay'] is False,d
+          print('CAD_ATOMIC_PIT_EVIDENCE_PASS')
+          PY
+
+      - name: Diagnose legacy dashboard runtime mapping separately
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/cad-pit/evidence/before/MACRO_SERIES.json live_data/sections/MACRO_SERIES.json
+          cp /tmp/cad-pit/evidence/before/MACRO_THERMOMETER_DATA.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git restore --source=HEAD --worktree -- payload live_data/manifest.v2.json
+          python - <<'PY'
+          import json,subprocess,pathlib
+          p=subprocess.run(['python','validation/build_live_manifest_v2.py','--write','/tmp/cad-pit/runtime-diagnostic-manifest.json'],text=True,capture_output=True)
+          pathlib.Path('/tmp/cad-pit/runtime-diagnostic-stdout.txt').write_text(p.stdout)
+          pathlib.Path('/tmp/cad-pit/runtime-diagnostic-stderr.txt').write_text(p.stderr)
+          d=json.loads(pathlib.Path('/tmp/cad-pit/runtime-diagnostic-manifest.json').read_text())
+          failures=d.get('failures',[])
+          expected={
+            'MACRO_THERMOMETER_DATA: direct section must occur exactly once inside one payload part; total=0, parts=[]',
+            'MACRO_SERIES: direct section must occur exactly once inside one payload part; total=0, parts=[]'
+          }
+          assert set(failures)==expected,failures
+          diag={
+            'schema':'GMFQ_FORWARD_RUNTIME_PUBLICATION_DIAGNOSTIC_V1',
+            'status':'WITHHELD_LEGACY_MACRO_PAYLOAD_MAPPING',
+            'forward_pit_effect':'NONE',
+            'dashboard_publication_effect':'BLOCKED_UNTIL_FULL_DASHBOARD_RUNTIME_REBUILD',
+            'failures':failures
+          }
+          pathlib.Path('/tmp/cad-pit/runtime-publication-diagnostic.json').write_text(json.dumps(diag,indent=2)+'\n')
+          print(json.dumps(diag,indent=2))
+          PY
+
+      - name: Record certified forward PIT receipt and restore runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' | tee /tmp/cad-pit/receipt.json
+          import datetime as dt,json,pathlib
+          root=pathlib.Path('/tmp/cad-pit')
+          evidence=json.loads((root/'macro-pit-anchor-evidence.json').read_text())
+          diag=json.loads((root/'runtime-publication-diagnostic.json').read_text())
+          assert evidence['status']=='PASS'
+          assert diag['status']=='WITHHELD_LEGACY_MACRO_PAYLOAD_MAPPING'
+          print(json.dumps({
+            'schema':'GMFQ_FORWARD_CAD_LABOUR_ATOMIC_PIT_RECEIPT_V1',
+            'status':'PASS_ATOMIC_PIT_NO_PUBLICATION',
+            'candidate':{'currency':'CAD','dimension':'labour','observation_date':'2026-09-01','value':6.5},
+            'atomic_pit_validated':True,
+            'forward_input_eligible':True,
+            'dashboard_runtime_publication_status':diag['status'],
+            'registry_promotion':'NOT_ATTEMPTED','promotion_performed':False,
+            'shared_boundary_advanced':False,
+            'live_data_published':False,'gh_pages_published':False,'automatic_publication':False,
+            'generated_at_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+          },indent=2))
+          PY
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forward-cad-labour-atomic-pit-${{ github.run_id }}
+          path: /tmp/cad-pit/
+          if-no-files-found: error
+          retention-days: 60
