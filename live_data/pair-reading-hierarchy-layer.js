@@ -144,13 +144,19 @@
       ratesSpan.textContent=`Aspettative CB neutre · 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto`;
     }
 
-    const summary=[...tutor.querySelectorAll('.txt')].find(el=>String(el.textContent||'').includes('Tassi/CB non separano le due valute'));
-    if(summary){
-      summary.textContent=`La Macro favorisce ${frame.fav}; le aspettative CB canoniche non separano le due valute. Il differenziale 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto e non vale come seconda conferma strutturale.`;
+    const textEl=document.getElementById('gmfqPairText');
+    if(textEl && String(textEl.textContent||'').includes('Tassi/CB non separano le due valute')){
+      textEl.textContent=`La Macro favorisce ${frame.fav}; le aspettative CB canoniche non separano le due valute. Il differenziale 2Y di livello favorisce ${side} (${bp} pb), ma resta contesto e non vale come seconda conferma strutturale.`;
     }
 
-    const candidates=[...tutor.querySelectorAll('div,span,b,p')];
-    for(const el of candidates){
+    const leafCandidates=[
+      document.getElementById('gmfqPairText'),
+      document.getElementById('gmfqPairConfirm'),
+      document.getElementById('gmfqPairReverse'),
+      document.getElementById('gmfqPairConclusion'),
+      ...tutor.querySelectorAll('.driver span')
+    ].filter(Boolean);
+    for(const el of leafCandidates){
       replaceText(el,
         'Solo uno tra Macro e Tassi/CB separa chiaramente le due valute. La storia esiste, ma manca ancora una seconda conferma strutturale prima di considerarla davvero pulita.',
         'Solo uno tra Macro e aspettative CB canoniche separa chiaramente le due valute. Il gap 2Y di livello è visibile come contesto, non come secondo pilastro strutturale.'
@@ -189,6 +195,7 @@
       clarifies_static_2y_as_context:true,
       pair_selection_hint:'DOM_DATA_PAIR_ONLY',
       rerender_guard:'VERIFY_TEXT_NOT_STAMP_ONLY',
+      dom_mutation_scope:'LEAF_TEXT_ONLY',
       guide_present:!!document.getElementById(GUIDE_ID)
     });
   }
