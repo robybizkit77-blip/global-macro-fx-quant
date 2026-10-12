@@ -19,18 +19,20 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import json,re
-          text=Path('index.html').read_text(encoding='utf-8')
-          pats=['CB_LIQ_HYSTERESIS_STATE','GMFQ_AUD_POST_RBA_PRICING_AUDIT','DIRECT_EXCHANGE_POST_DECISION_CURRENT','cbStructuralChangeCandidate','applyCbLiquidityHysteresis','PENDING_MARKET_CONFIRMATION']
-          out={}
-          for p in pats:
-            hits=[m.start() for m in re.finditer(re.escape(p),text)]
-            rows=[]
-            for pos in hits[:20]:
-              a=max(0,pos-3500); b=min(len(text),pos+5000)
-              rows.append(text[a:b])
-            out[p]={'count':len(hits),'contexts':rows}
+          pats=['CB_LIQ_HYSTERESIS_STATE','GMFQ_AUD_POST_RBA_PRICING_AUDIT','DIRECT_EXCHANGE_POST_DECISION_CURRENT','cbStructuralChangeCandidate','applyCbLiquidityHysteresis','PENDING_MARKET_CONFIRMATION','PENDING_POST_DECISION']
+          out={p:[] for p in pats}
+          allowed={'.html','.js','.json','.py','.mjs','.cjs'}
+          for path in Path('.').rglob('*'):
+            if not path.is_file() or path.suffix.lower() not in allowed: continue
+            if any(part in {'.git','node_modules'} for part in path.parts): continue
+            try: text=path.read_text(encoding='utf-8')
+            except: continue
+            for p in pats:
+              for m in list(re.finditer(re.escape(p),text))[:20]:
+                a=max(0,m.start()-2500); b=min(len(text),m.start()+4500)
+                out[p].append({'path':str(path),'pos':m.start(),'context':text[a:b]})
           Path('aud-hysteresis-sequence-probe.json').write_text(json.dumps(out,indent=2,ensure_ascii=False),encoding='utf-8')
-          print(json.dumps({k:v['count'] for k,v in out.items()},indent=2))
+          print(json.dumps({k:[x['path'] for x in v] for k,v in out.items()},indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
