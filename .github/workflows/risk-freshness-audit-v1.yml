@@ -1,0 +1,95 @@
+name: Risk Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-risk-freshness-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8142 --bind 127.0.0.1 >/tmp/gmfq-risk-freshness-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit global risk freshness and pair isolation
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8142/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForTimeout(400);
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const fnNames=['deriveGlobalRiskState','getCanonicalGlobalRisk','refreshGlobalRiskOverview','currencyRiskOverlay','pairRiskOverlay','riskEventIsolationIntegrity'];
+              const functions={};
+              for(const n of fnNames){try{const f=window[n];if(typeof f==='function')functions[n]=Function.prototype.toString.call(f)}catch(e){}}
+              const riskState=clone(window.deriveGlobalRiskState?.());
+              const canonicalRisk=clone(window.getCanonicalGlobalRisk?.());
+              const isolation=clone(window.riskEventIsolationIntegrity?.());
+              const recentEvents=clone(window.GMFQ_RECENT_EVENT_OVERLAY);
+              const pairList=(D?.pairs||[]).map(x=>x.pair);
+              const frames=Object.fromEntries(pairList.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const frameStructural=Object.fromEntries(Object.entries(frames).map(([p,f])=>[p,{fav:f?.fav,quality:f?.quality,structural:f?.structural}]));
+              const riskDom={
+                overview:(document.querySelector('#ov387Risk')?.innerText||'').replace(/\s+/g,' ').trim(),
+                riskSection:(document.querySelector('#risk')?.innerText||'').replace(/\s+/g,' ').trim().slice(0,5000)
+              };
+              const globals={};
+              for(const k of Object.keys(window).filter(k=>/vix|brent|risk|oil|credit|spread/i.test(k)).sort()){
+                try{
+                  const v=window[k];
+                  if(typeof v==='function') globals[k]={type:'function',source:Function.prototype.toString.call(v).slice(0,4000)};
+                  else if(v&&typeof v==='object') globals[k]={type:Array.isArray(v)?'array':'object',value:clone(v)};
+                  else if(['string','number','boolean'].includes(typeof v)) globals[k]={type:typeof v,value:v};
+                }catch(e){}
+              }
+              const dRiskLike={};
+              for(const k of Object.keys(D||{}).filter(k=>/vix|brent|risk|oil|credit|spread/i.test(k)).sort()) dRiskLike[k]=clone(D[k]);
+              let scriptContexts=[];
+              for(const [i,s] of [...document.scripts].entries()){
+                const t=s.textContent||'';
+                if(/VIX|Brent|deriveGlobalRiskState|getCanonicalGlobalRisk/.test(t)){
+                  const ix=Math.max(t.indexOf('function deriveGlobalRiskState'),t.indexOf('function getCanonicalGlobalRisk'),t.indexOf('VIX'),t.indexOf('Brent'));
+                  scriptContexts.push({index:i,src:s.src||'INLINE',context:t.slice(Math.max(0,ix-5000),Math.min(t.length,ix+12000))});
+                }
+              }
+              return {riskState,canonicalRisk,isolation,recentEvents,riskDom,globals,dRiskLike,functions,scriptContexts,frameStructural,pairCount:pairList.length,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            const summary={schema:'GMFQ_RISK_FRESHNESS_AUDIT_V1',status:'DISCOVERY_COMPLETE',...out};
+            fs.writeFileSync('risk-freshness-audit.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify({status:summary.status,pairCount:out.pairCount,riskState:out.riskState,canonicalRisk:out.canonicalRisk,isolation:out.isolation,riskDom:out.riskDom,globalNames:Object.keys(out.globals),dRiskKeys:Object.keys(out.dRiskLike),functionNames:Object.keys(out.functions)},null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risk-freshness-audit-v1
+          path: |
+            risk-freshness-audit.json
+            /tmp/gmfq-risk-freshness-audit-server.log
