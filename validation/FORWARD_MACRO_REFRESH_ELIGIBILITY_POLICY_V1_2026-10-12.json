@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_FORWARD_MACRO_REFRESH_ELIGIBILITY_POLICY_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Prevent revised current-history values from being mistaken for new point-in-time forward observations.",
+  "classifications": {
+    "NO_CHANGE_ALREADY_CANONICAL": {
+      "atomic_pit_review_eligible": false,
+      "reason": "Candidate matches the already-canonical observation/value."
+    },
+    "APPEND_NEW_ELIGIBLE_FOR_ATOMIC_PIT_REVIEW": {
+      "atomic_pit_review_eligible": true,
+      "reason": "Candidate introduces a strictly newer observation period and may proceed to the existing single-series PIT contract."
+    },
+    "REVISION_SAME_PERIOD_WITHHELD_PENDING_RELEASE_PROVENANCE": {
+      "atomic_pit_review_eligible": false,
+      "reason": "Same observation period but changed value; forward use is forbidden until release-specific revision timing/provenance is independently certified."
+    }
+  },
+  "advance_rule": {
+    "batch_promotion_forbidden": true,
+    "each_append_new_requires_atomic_single_series_pit_receipt": true,
+    "same_period_revision_cannot_advance_shared_boundary": true,
+    "partial_refresh_cannot_advance_shared_boundary": true,
+    "shared_boundary_advances_only_after_unified_readiness_recheck": true
+  },
+  "governance": {
+    "changes_historical_backtests": false,
+    "historical_backfill_allowed": false,
+    "automatic_publication": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
