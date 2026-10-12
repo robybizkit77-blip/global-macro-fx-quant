@@ -1,0 +1,51 @@
+{
+  "schema": "GMFQ_RISK_SOURCE_POLICY_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Define auditable source eligibility for the Risk overlay without changing pair direction, bias, scoring, sizing or Quant logic.",
+  "policy": {
+    "fail_closed": true,
+    "risk_is_overlay_only": true,
+    "no_proxy_substitution": true,
+    "no_inferred_provenance": true,
+    "publication_requires_all_gate_inputs_auditable": true
+  },
+  "gate_inputs": {
+    "VIX": {
+      "status": "READY",
+      "role": "PRIMARY_GATE_INPUT",
+      "source_name": "Cboe VIX Index Historical Data",
+      "source_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "publisher": "Cboe Global Markets",
+      "frequency": "DAILY_MARKET_CLOSE",
+      "field": "CLOSE",
+      "max_business_day_lag_vs_price": 1,
+      "collector": "validation/fetch_cboe_vix_candidate.py",
+      "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
+    },
+    "Brent": {
+      "status": "WITHHELD",
+      "role": "PRIMARY_GATE_INPUT",
+      "source_name": null,
+      "source_url": null,
+      "publisher": null,
+      "frequency": null,
+      "max_business_day_lag_vs_price": 1,
+      "collector": null,
+      "reason": "The embedded D.risk Brent series contains no source/provenance metadata. EIA Europe Brent Spot Price FOB is official, but its publication schedule can lag the daily Price lane beyond the existing one-business-day Risk gate. Do not weaken the gate or infer the historical source."
+    }
+  },
+  "secondary_runtime_series": {
+    "WTI": {
+      "status": "NOT_GATE_ELIGIBLE",
+      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored."
+    },
+    "Gold": {
+      "status": "NOT_GATE_ELIGIBLE",
+      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored."
+    },
+    "China CLI": {
+      "status": "OUTSIDE_DAILY_RISK_GATE",
+      "reason": "Monthly macro context series; not a daily Risk freshness input."
+    }
+  }
+}
