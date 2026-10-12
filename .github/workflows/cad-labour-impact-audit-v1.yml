@@ -1,0 +1,120 @@
+name: CAD Labour Impact Audit V1
+
+on:
+  push:
+    branches: ['audit-cad-labour-refresh-v1-2026-10-12']
+    paths: ['.github/workflows/cad-labour-impact-audit-v1.yml']
+
+permissions:
+  contents: read
+
+env:
+  BASE_SHA: '83c2e3ece37511a30160456a911211c907f223f0'
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Prepare baseline worktree and servers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git worktree add --detach /tmp/gmfq-baseline "$BASE_SHA"
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/candidate-server.log 2>&1 &
+          (cd /tmp/gmfq-baseline && python3 -m http.server 8001 --bind 127.0.0.1 >/tmp/baseline-server.log 2>&1 &)
+          sleep 2
+      - name: Compare CAD state, CAD pairs, and Focus Board
+        shell: bash
+        run: |
+          cat > cad-impact-audit.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CAD_PAIRS=['AUD/CAD','CAD/CHF','CAD/JPY','EUR/CAD','GBP/CAD','NZD/CAD','USD/CAD'];
+          const ALL_PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          function slimFrame(f){return {fav:f?.fav??null,quality:f?.quality??null,setup:f?.setup??null,macro:f?.structural?.macro??null,policy:f?.structural?.policy??null,ratesGap:f?.structural?.ratesGap??null,priceReading:f?.priceReading??null};}
+          async function snap(browser,url,label){
+            const page=await browser.newPage({viewport:{width:1440,height:1100}});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            const r=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r?.ok()) throw new Error(label+' HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true && typeof window.derivePairDecisionFrame==='function' && typeof window.deriveCurrencyState==='function',null,{timeout:120000});
+            await page.waitForFunction(()=>window.__GMFQ_PAIR_FOCUS_BOARD_STATE?.pair_count===28,null,{timeout:120000});
+            const out=await page.evaluate(async ({CAD_PAIRS,ALL_PAIRS})=>{
+              const heat=await fetch('/live_data/sections/MACRO_THERMOMETER_DATA.json',{cache:'no-store'}).then(r=>r.json());
+              const cadLabour=heat?.currencies?.CAD?.labour||null;
+              const cadState=window.deriveCurrencyState('CAD');
+              const cadPairs=Object.fromEntries(CAD_PAIRS.map(p=>[p,window.derivePairDecisionFrame(p)]));
+              const allPairs=Object.fromEntries(ALL_PAIRS.map(p=>[p,window.derivePairDecisionFrame(p)]));
+              const board=window.__GMFQ_PAIR_FOCUS_BOARD_STATE;
+              return {cadLabour,cadState,cadPairs,allPairs,board,finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT};
+            },{CAD_PAIRS,ALL_PAIRS});
+            await page.close();
+            if(consoleErrors.length||pageErrors.length) throw new Error(label+' browser errors '+JSON.stringify({consoleErrors,pageErrors}));
+            return out;
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const candidate=await snap(browser,'http://127.0.0.1:8000/','candidate');
+            const baseline=await snap(browser,'http://127.0.0.1:8001/','baseline');
+            await browser.close();
+            if(candidate.cadLabour?.latest_value!==6.5 || !String(candidate.cadLabour?.as_of||'').startsWith('2026-09')) throw new Error('Candidate CAD labour mismatch '+JSON.stringify(candidate.cadLabour));
+            if(baseline.cadLabour?.latest_value!==6.4 || !String(baseline.cadLabour?.as_of||'').startsWith('2026-08')) throw new Error('Baseline CAD labour mismatch '+JSON.stringify(baseline.cadLabour));
+            if(candidate.finalAudit?.status!=='PASS'||baseline.finalAudit?.status!=='PASS') throw new Error('Final audit not PASS');
+            if(candidate.board?.pair_count!==28||baseline.board?.pair_count!==28) throw new Error('Focus Board pair_count mismatch');
+            const cadPairDiffs={};
+            for(const p of CAD_PAIRS){
+              const a=slimFrame(baseline.cadPairs[p]), b=slimFrame(candidate.cadPairs[p]);
+              if(JSON.stringify(a)!==JSON.stringify(b)) cadPairDiffs[p]={before:a,after:b};
+            }
+            const allPairDiffs={};
+            for(const p of ALL_PAIRS){
+              const a=slimFrame(baseline.allPairs[p]), b=slimFrame(candidate.allPairs[p]);
+              if(JSON.stringify(a)!==JSON.stringify(b)) allPairDiffs[p]={before:a,after:b};
+            }
+            const boardSignatureDiffs={};
+            for(const p of ALL_PAIRS){
+              const a=baseline.board?.signatures?.[p],b=candidate.board?.signatures?.[p];
+              if(JSON.stringify(a)!==JSON.stringify(b)) boardSignatureDiffs[p]={before:a,after:b};
+            }
+            const result={
+              status:'PASS_CAD_LABOUR_IMPACT_AUDIT',
+              candidate_sha:process.env.GITHUB_SHA,
+              baseline_sha:process.env.BASE_SHA,
+              data_change:{before:{as_of:baseline.cadLabour.as_of,value:baseline.cadLabour.latest_value,percentile:baseline.cadLabour.percentile,label:baseline.cadLabour.temperature_label},after:{as_of:candidate.cadLabour.as_of,value:candidate.cadLabour.latest_value,percentile:candidate.cadLabour.percentile,label:candidate.cadLabour.temperature_label}},
+              cad_currency_state:{before:baseline.cadState,after:candidate.cadState,changed:JSON.stringify(baseline.cadState)!==JSON.stringify(candidate.cadState)},
+              cad_pair_diff_count:Object.keys(cadPairDiffs).length,
+              cad_pair_diffs:cadPairDiffs,
+              all_pair_diff_count:Object.keys(allPairDiffs).length,
+              all_pair_diffs:allPairDiffs,
+              focus_board:{before:baseline.board.counts,after:candidate.board.counts,signature_diff_count:Object.keys(boardSignatureDiffs).length,signature_diffs:boardSignatureDiffs},
+              research_weight:candidate.board.research_decision_weight,
+              pair_count:candidate.board.pair_count
+            };
+            console.log(JSON.stringify(result,null,2));
+            require('fs').writeFileSync('/tmp/cad-labour-impact.json',JSON.stringify(result,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cad-impact-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cad-labour-impact-audit-${{ github.run_id }}
+          path: |
+            /tmp/cad-labour-impact.json
+            /tmp/candidate-server.log
+            /tmp/baseline-server.log
+          if-no-files-found: warn
+          retention-days: 60
