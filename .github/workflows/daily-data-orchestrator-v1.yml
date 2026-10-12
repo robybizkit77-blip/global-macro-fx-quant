@@ -12,6 +12,7 @@ on:
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
@@ -34,6 +35,7 @@ on:
       - 'validation/fetch_ecb_g8_price_candidate.py'
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
@@ -63,7 +65,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -90,8 +91,12 @@ jobs:
           got=set(d['blocking_lanes'])
           assert expected.issubset(got), (expected, got)
           assert d['lanes']['PRICE']['candidate_pipeline_ready'] is True
-          assert d['lanes']['LIQUIDITY']['inventory_ready'] is True
-          assert d['lanes']['LIQUIDITY']['state']=='BLOCKED_SUBSERIES_POLICY_NOT_MAPPED'
+          liq=d['lanes']['LIQUIDITY']
+          assert liq['inventory_ready'] is True
+          assert liq['state']=='BLOCKED_SUBSERIES_POLICY_PARTIAL', liq
+          assert liq['verified_subseries']==6, liq
+          assert liq['unresolved_subseries']==20, liq
+          assert liq['total_subseries']==26, liq
           assert d['lanes']['RISK']['guard_proven'] is True
           assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
           assert d['lanes']['RISK']['vix_source_status']=='READY'
@@ -101,7 +106,7 @@ jobs:
           assert d['live_data_published'] is False
           assert d['gh_pages_published'] is False
           assert d['automatic_publication'] is False
-          print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got))
+          print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got), 'LIQUIDITY', liq['verified_subseries'], '/', liq['total_subseries'])
           PY
 
       - name: Fetch official Cboe VIX candidate
@@ -151,7 +156,8 @@ jobs:
           assert d['schema']=='GMFQ_LIQUIDITY_SUBSERIES_INVENTORY_V1', d
           assert d['status']=='INVENTORY_COMPLETE_POLICY_NOT_MAPPED', d
           assert d['currency_count']==8, d
-          assert d['subseries_count']>0, d
+          assert d['subseries_count']==26, d
+          assert d['unknown_cadence_count']==0, d
           assert d['bias_score_sizing_effect']=='NONE', d
           print('LIQUIDITY_SUBSERIES_INVENTORY_PASS',d['subseries_count'],'unknown=',d['unknown_cadence_count'])
           PY
