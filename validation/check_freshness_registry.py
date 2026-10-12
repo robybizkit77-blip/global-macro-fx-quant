@@ -15,7 +15,7 @@ def parse_date(value):
     return dt.date.fromisoformat(value)
 
 
-def validate(data):
+def validate(data, runtime_d=None):
     errors = []
     if data.get("schema") != "GMFQ_FRESHNESS_REGISTRY_V1":
         errors.append("invalid schema")
@@ -39,6 +39,7 @@ def validate(data):
 
     seen = set()
     present_layers = set()
+    by_ident = {}
     for i, record in enumerate(records):
         prefix = f"records[{i}]"
         missing = REQUIRED_FIELDS - set(record)
@@ -49,6 +50,7 @@ def validate(data):
         if ident in seen:
             errors.append(f"{prefix}: duplicate identity {ident}")
         seen.add(ident)
+        by_ident[ident] = record
         present_layers.add(record["layer"])
 
         status = record["status"]
@@ -111,6 +113,27 @@ def validate(data):
     if got_macro != macro_expected:
         errors.append(f"MACRO 16-core mismatch: expected={sorted(macro_expected)} got={sorted(got_macro)}")
 
+    if runtime_d is not None:
+        price = by_ident.get(("PRICE", "FX_G8"))
+        if not price:
+            errors.append("PRICE/FX_G8 record missing")
+        else:
+            pairs = runtime_d.get("pairs") or []
+            if len(pairs) != 28:
+                errors.append(f"runtime D expected 28 pairs, got {len(pairs)}")
+            pair_dates = [p.get("price_asof") for p in pairs if p.get("price_asof")]
+            if not pair_dates:
+                errors.append("runtime D has no pair price_asof proof")
+            else:
+                latest_pair_as_of = max(pair_dates)
+                if price.get("as_of") != latest_pair_as_of:
+                    errors.append(f"PRICE registry as_of {price.get('as_of')} differs from runtime latest pair price_asof {latest_pair_as_of}")
+                if registry_date and isinstance(price.get("max_lag_days"), int):
+                    age = (registry_date - parse_date(latest_pair_as_of)).days
+                    expected_status = "GREEN" if age <= price["max_lag_days"] else "STALE"
+                    if price.get("status") != expected_status:
+                        errors.append(f"PRICE runtime age {age}d requires {expected_status}, got {price.get('status')}")
+
     return errors
 
 
@@ -119,7 +142,9 @@ def main():
     ap.add_argument("path", nargs="?", default="validation/FRESHNESS_REGISTRY_V1_2026-10-12.json")
     args = ap.parse_args()
     data = json.loads(Path(args.path).read_text(encoding="utf-8"))
-    errors = validate(data)
+    runtime_path = Path("live_data/sections/D.json")
+    runtime_d = json.loads(runtime_path.read_text(encoding="utf-8")) if runtime_path.exists() else None
+    errors = validate(data, runtime_d=runtime_d)
     out = {"schema": data.get("schema"), "status": "PASS" if not errors else "FAIL", "record_count": len(data.get("records", [])), "errors": errors}
     print(json.dumps(out, indent=2, ensure_ascii=False))
     if errors:
