@@ -1,0 +1,84 @@
+{
+  "schema_version": "GMFQ_CB_PRICING_WITHHELD_ACCESS_CLASSIFICATION_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Close source-discovery ambiguity for the four G8 central-bank-pricing currencies that remain WITHHELD. This file is governance/evidence only and does not activate runtime data.",
+  "policy": {
+    "rule": "Do not retry free-public scraping when the authoritative venue or central bank documents that the homogeneous historical settlement/OIS series requires licensed or fee-based access.",
+    "runtime_mutation": false,
+    "proxy_substitution": false,
+    "activation_requires": [
+      "homogeneous current observation",
+      "homogeneous T-1 observation",
+      "homogeneous T-5 (or validated nearest-session 1W) observation",
+      "same instrument and quote basis",
+      "source provenance and reproducible access"
+    ]
+  },
+  "currencies": {
+    "USD": {
+      "status": "WITHHELD",
+      "access_class": "LICENSE_REQUIRED",
+      "official_source": "CME/CBOT",
+      "instrument": "30-Day Federal Funds Futures (ZQ)",
+      "free_public_state": "Current/delayed settlement visibility exists, but the homogeneous historical settlement files needed for T-5 are no longer a reproducible free FTP path for the pipeline.",
+      "authoritative_evidence": [
+        "https://www.cmegroup.com/articles/faqs/access-to-cme-group-settlement-data-faq.html",
+        "https://www.cmegroup.com/market-data/real-time-and-historical-data.html",
+        "https://www.cmegroup.com/datamine/datamine-api.html"
+      ],
+      "evidence_summary": "CME states historical/settlement file access is being moved to DataMine; DataMine historical access is entitlement/authentication based and historical datasets are sold/licensed.",
+      "unlock_action": "Acquire CME DataMine entitlement (or another directly licensed official CME settlement feed) for the required ZQ contract history.",
+      "do_not_retry_free_public": true
+    },
+    "EUR": {
+      "status": "WITHHELD",
+      "access_class": "LICENSE_REQUIRED_FOR_HOMOGENEOUS_HISTORY",
+      "official_source": "Eurex",
+      "instrument": "Three-Month Euro STR Futures (FST3)",
+      "free_public_state": "Current product pages expose delayed D. Settle values, but the authoritative historical product containing settlement prices for all tradable series is Eurex Market Statistics Offline.",
+      "authoritative_evidence": [
+        "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
+        "https://www.eurex.com/ex-en/data/trading-files",
+        "https://www.mds.deutsche-boerse.com/mds-en/historical-data/eurex-file-service"
+      ],
+      "evidence_summary": "Eurex documents Market Statistics Offline as containing opening/high/low/settlement/volume/OI for currently tradable series, and the Trading Files page classifies that product as fee-based via MD+S interactive.",
+      "unlock_action": "Acquire Eurex Market Statistics Offline / MD+S access (or an equivalent directly licensed Eurex settlement feed) and validate FST3 current/T-1/T-5 on the same contract basis.",
+      "do_not_retry_free_public": true
+    },
+    "CHF": {
+      "status": "WITHHELD",
+      "access_class": "LICENSE_REQUIRED",
+      "official_source": "ICE Futures Europe",
+      "instrument": "Three Month SARON Index Futures (SA3)",
+      "free_public_state": "The public ICE contract page validates the instrument, quarterly expiries and 100-minus-rate convention; reproducible historical/EOD listed-market settlement data is delivered through ICE data services.",
+      "authoritative_evidence": [
+        "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/specs",
+        "https://developer.ice.com/fixed-income-data-services/catalog/ice-futures-europe",
+        "https://www.ice.com/fixed-income-data-services/data-and-analytics/proprietary-data"
+      ],
+      "evidence_summary": "ICE describes historical and end-of-day Futures Europe data, including settlement values, as delivered through ICE Connect, Consolidated History, Data API and Data Files under its data/licensing framework.",
+      "unlock_action": "Acquire ICE historical/EOD entitlement for SA3 settlements (or another directly licensed ICE feed) and validate homogeneous current/T-1/T-5 observations.",
+      "do_not_retry_free_public": true
+    },
+    "NZD": {
+      "status": "WITHHELD",
+      "access_class": "EXTERNAL_LICENSED_SOURCE_REQUIRED",
+      "official_source": "RBNZ / NZD OIS market",
+      "instrument": "NZD OIS linked to OCR expectations",
+      "free_public_state": "RBNZ publishes OCR, bank-bill and standard swap data, but its monetary-policy publications source the OIS-implied OCR expectation curve from Bloomberg rather than publishing a reproducible daily OIS curve itself.",
+      "authoritative_evidence": [
+        "https://www.rbnz.govt.nz/monetary-policy/monetary-policy-statement/monetary-policy-statement-filtered-listing-page/2026/sep-0209/monetary-policy-statement-september-2026/web-version",
+        "https://www.rbnz.govt.nz/monetary-policy/monetary-policy-statement/monetary-policy-statement-filtered-listing-page/2026/feb-182/monetary-policy-statement-february-2026/web-version"
+      ],
+      "evidence_summary": "RBNZ explicitly labels the OCR-expectations curve as overnight-indexed-swap pricing and cites Bloomberg as the source. The public RBNZ series are not a clean substitute for this daily OIS curve.",
+      "unlock_action": "Use a directly licensed NZD OIS source (for example Bloomberg or another institutional feed with equivalent provenance) and validate homogeneous 3M/6M/12M current/T-1/T-5 observations.",
+      "do_not_retry_free_public": true
+    }
+  },
+  "decision": {
+    "free_public_unlockable_count": 0,
+    "license_or_external_source_required_count": 4,
+    "currencies": ["USD", "EUR", "CHF", "NZD"],
+    "next_dashboard_action": "Keep all four WITHHELD and stop recurring public-source probes until a licensed source is intentionally connected. Continue dashboard/model work using ACTIVE pricing currencies and explicit missingness for the four withheld currencies."
+  }
+}
