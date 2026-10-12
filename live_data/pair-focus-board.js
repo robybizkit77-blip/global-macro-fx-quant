@@ -84,7 +84,13 @@
     }
 
     const research=window.__GMFQ_RESEARCH_STATE||{};
-    const researchSafe=research.decision_weight===0 && research.may_modify_pair_bias!==true && research.may_modify_sizing!==true;
+    const researchSafe=
+      research.research_signal_state==='WITHHELD' &&
+      research.decision_weight===0 &&
+      research.may_modify_pair_bias===false &&
+      research.may_modify_currency_score===false &&
+      research.may_modify_sizing===false &&
+      !research.load_error;
     const fingerprint=JSON.stringify({signatures,researchSafe,researchWeight:research.decision_weight??0});
 
     let board=document.getElementById(BOARD_ID);
@@ -129,6 +135,7 @@
       changes_bias:false,
       changes_sizing:false,
       research_decision_weight:research.decision_weight??0,
+      research_state_verified:researchSafe,
       research_affects_classification:false,
       idempotent_fingerprint:true,
       signatures:Object.freeze(signatures)
