@@ -52,7 +52,7 @@ jobs:
             await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
             await page.waitForFunction(()=>window.__GMFQ_RESEARCH_STATE?.research_signal_state==='WITHHELD',null,{timeout:30000});
-            await page.waitForSelector('#gmfq-research-status-card',{timeout:30000});
+            await page.waitForSelector('#gmfq-research-status-card',{state:'attached',timeout:30000});
             const result=await page.evaluate(()=>{
               const card=document.getElementById('gmfq-research-status-card');
               const themes=document.getElementById('themes');
