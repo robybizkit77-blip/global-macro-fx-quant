@@ -1,0 +1,89 @@
+name: CB Priority Shift 2Y Mechanism Engine V1
+
+on:
+  push:
+    branches:
+      - validation-cb-priority-shift-2y-mechanism-engine-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  LABEL_RUN_ID: '38217052303'
+  LABEL_ARTIFACT: 'cb-priority-labeling-v1-38217052303'
+  LABEL_DATASET_SHA256: '3cd295e0455751e81088165f88bde9d24b30bb3d6f26e0b14a7b3ce0cd5b74ca'
+  RATES_SHA: '0f4f45190fa5d5e010650026a30a0f981373ec34'
+
+jobs:
+  mechanism-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download exact sealed label dataset
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.LABEL_ARTIFACT }}
+          path: /tmp/cb-labels
+          github-token: ${{ github.token }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.LABEL_RUN_ID }}
+      - name: Verify sealed labels and fetch exact canonical rates rowsets
+        run: |
+          set -euo pipefail
+          echo "$LABEL_DATASET_SHA256  /tmp/cb-labels/CB_PRIORITY_FOCUS_HISTORY_V1.json" | sha256sum -c -
+          mkdir -p /tmp/rates
+          base="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/$RATES_SHA/validation/rates_pit_rowsets"
+          curl -fsSL --retry 3 "$base/aud_rates_2y_10y_temporal_pit_v1.csv" -o /tmp/rates/aud_rates_2y_10y_temporal_pit_v1.csv
+          curl -fsSL --retry 3 "$base/cad_rates_2y_10y_temporal_pit_v1.csv" -o /tmp/rates/cad_rates_2y_10y_temporal_pit_v1.csv
+          curl -fsSL --retry 3 "$base/jpy_rates_2y_10y_temporal_pit_v1.csv" -o /tmp/rates/jpy_rates_2y_10y_temporal_pit_v1.csv
+          echo '0959051ffea47d05f77a407e07ef7a8cd967dc38329f04323e0a6502daa8516c  /tmp/rates/aud_rates_2y_10y_temporal_pit_v1.csv' | sha256sum -c -
+          echo '6e679c5ec165f415e3329a73424afa905f14ac2e5617fa835c78c017c9b873ce  /tmp/rates/cad_rates_2y_10y_temporal_pit_v1.csv' | sha256sum -c -
+          echo 'fef75eb7bf1ac99502a7a9dd0a322421343b8927a17bdf06a8ee05223509b97f  /tmp/rates/jpy_rates_2y_10y_temporal_pit_v1.csv' | sha256sum -c -
+          echo 'SEALED_LABELS_AND_CANONICAL_RATES_HASHES_PASS'
+      - name: Execute frozen mechanism test
+        run: |
+          set -euo pipefail
+          python validation/run_cb_priority_shift_2y_mechanism_v1.py \
+            --labels /tmp/cb-labels/CB_PRIORITY_FOCUS_HISTORY_V1.json \
+            --contract validation/CB_PRIORITY_SHIFT_2Y_MECHANISM_CONTRACT_V1_2026-10-12.json \
+            --rates-dir /tmp/rates \
+            --out-dir /tmp/cb-priority-2y
+      - name: Assert FX/Sharpe/PnL boundary remains closed
+        run: |
+          python - <<'PY'
+          import json
+          p='/tmp/cb-priority-2y/CB_PRIORITY_SHIFT_2Y_MECHANISM_RESULT_V1_2026-10-12.json'
+          d=json.load(open(p))
+          assert d['fx_data_present'] is False
+          assert d['sharpe_present'] is False
+          assert d['pnl_present'] is False
+          assert d['production_signal_authorized'] is False
+          assert d['sizing_authorized'] is False
+          print('MECHANISM_ONLY_BOUNDARY_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cb-priority-shift-2y-mechanism-${{ github.run_id }}
+          path: /tmp/cb-priority-2y/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Enforce frozen mechanism gate
+        run: |
+          python - <<'PY'
+          import json
+          p='/tmp/cb-priority-2y/CB_PRIORITY_SHIFT_2Y_MECHANISM_RESULT_V1_2026-10-12.json'
+          d=json.load(open(p))
+          print(json.dumps(d,indent=2,sort_keys=True))
+          assert all(d['predeclared_gates'].values()), d['predeclared_gates']
+          assert d['verdict']=='PASS_PREDECLARED_2Y_MECHANISM_GATE'
+          print('PREDECLARED_2Y_MECHANISM_GATE_PASS')
+          print('FX_JOIN_EXECUTION_STATUS=STILL_FORBIDDEN_PENDING_SEPARATE_CONTRACT')
+          PY
+      - name: Assert clean repository
+        if: always()
+        run: test -z "$(git status --porcelain)"
