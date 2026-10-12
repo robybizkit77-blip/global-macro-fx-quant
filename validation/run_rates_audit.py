@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 
+# Validation runner touch: 2026-10-12 current-stack official Rates observation; no publication.
 ROOT=Path(__file__).resolve().parents[1]
 VAL=ROOT/'validation'
 RATES=ROOT/'live_data'/'sections'/'NATIVE_RATES_DATA.json'
