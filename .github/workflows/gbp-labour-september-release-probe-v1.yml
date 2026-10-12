@@ -1,0 +1,56 @@
+name: GBP Labour September Release Probe V1
+
+on:
+  push:
+    branches:
+      - 'validation-gbp-labour-freshness-*'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Parse September 2026 official ONS release with canonical strict-PIT parser
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-september-probe
+          python3 - <<'PY'
+          import importlib.util, json
+          from pathlib import Path
+
+          path=Path('validation/materialize_gbp_labour_strict_pit_v1.py')
+          spec=importlib.util.spec_from_file_location('gbp_strict', path)
+          mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+
+          url=f"{mod.BASE}/september2026"
+          raw,final_url=mod.fetch(url)
+          row=mod.parse_release(raw,final_url,'UK labour market',2026,7,'uklabourmarket')
+          assert row['reference_month']=='2026-07', row
+          assert row['rolling_period']=='May 2026 to July 2026', row
+          assert abs(float(row['headline_unemployment_rate_pct'])-4.9)<1e-12, row
+          assert row['release_date']=='2026-09-15', row
+          assert row['pit_status']=='STRICT_FIRST_RELEASE', row
+          evidence={
+            'schema':'GMFQ_GBP_LABOUR_SEPTEMBER_RELEASE_PROBE_V1',
+            'status':'PASS_STRICT_FIRST_RELEASE_2026_07',
+            'row':row,
+            'canonical_parser_modified':False,
+            'live_data_written':False
+          }
+          Path('/tmp/gbp-september-probe/evidence.json').write_text(json.dumps(evidence,indent=2)+'\n')
+          print(json.dumps(evidence,indent=2))
+          PY
+          git diff --exit-code -- live_data payload validation/macro validation/materialize_gbp_labour_strict_pit_v1.py
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-labour-september-release-probe-v1
+          path: /tmp/gbp-september-probe/
+          if-no-files-found: error
