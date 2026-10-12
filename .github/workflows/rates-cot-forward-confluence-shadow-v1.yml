@@ -1,0 +1,30 @@
+name: Rates COT Forward Confluence Shadow V1
+
+on:
+  push:
+    branches:
+      - validation-rates-cot-forward-confluence-shadow-v1-2026-10-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-forward-confluence-shadow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen forward confluence ledger
+        run: |
+          python validation/rates_cot_forward_confluence_shadow_v1.py \
+            --contract validation/RATES_COT_FORWARD_CONFLUENCE_SHADOW_CONTRACT_V1_2026-10-12.json \
+            --ledger validation/RATES_COT_FORWARD_CONFLUENCE_SHADOW_LEDGER_V1.json \
+            --output /tmp/rates-cot-forward-confluence-shadow-receipt.json
+      - name: Upload receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: rates-cot-forward-confluence-shadow-${{ github.run_id }}
+          path: /tmp/rates-cot-forward-confluence-shadow-receipt.json
