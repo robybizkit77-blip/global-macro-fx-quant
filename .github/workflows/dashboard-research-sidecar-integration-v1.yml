@@ -1,0 +1,54 @@
+name: Dashboard Research Sidecar Integration V1
+
+on:
+  push:
+    branches:
+      - validation-dashboard-research-sidecar-integration-v1-2026-10-12
+  pull_request:
+    branches:
+      - validation-dashboard-research-state-adapter-v1-2026-10-12
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify fail-closed research sidecar
+        run: |
+          python - <<'PY'
+          import json, pathlib, re
+          state=json.loads(pathlib.Path('live_data/sections/RESEARCH_STATE.json').read_text())
+          assert state['research_signal_state']=='WITHHELD'
+          assert state['decision_signal_count']==0
+          assert state['sizing_authorized_count']==0
+          assert state['decision_weight']==0
+          assert state['may_modify_pair_bias'] is False
+          assert state['may_modify_currency_score'] is False
+          assert state['may_modify_sizing'] is False
+          assert len(state['context_only'])==4
+          assert all(x['decision_weight']==0 for x in state['context_only'])
+          html=pathlib.Path('index.html').read_text()
+          assert 'gmfq-research-state-sidecar' in html
+          assert 'live_data/sections/RESEARCH_STATE.json' in html
+          assert 'gmfq:research-state-ready' in html
+          assert 'research-state-fail-closed' in html
+          # Sidecar integration must not add an extra stable-model refresh invocation.
+          calls=len(re.findall(r'\bstableModelRefresh\s*\(\s*\)', html))
+          assert calls==2, calls  # regex replacement expression + single final refresh only
+          assert '__GMFQ_RESEARCH_STATE' in html
+          print(json.dumps({'verdict':'PASS_DASHBOARD_RESEARCH_SIDECAR_INTEGRATION','context_only':4,'decision_signals':0,'decision_weight':0},indent=2))
+          PY
+      - name: Ensure no score/bias/sizing mutation surface in sidecar data
+        run: |
+          python - <<'PY'
+          import pathlib
+          s=pathlib.Path('live_data/sections/RESEARCH_STATE.json').read_text().lower()
+          forbidden=['pair_bias_override','currency_score_override','sizing_override','production_signal_authorized": true']
+          for token in forbidden:
+              assert token not in s, token
+          print('PASS_NO_DECISION_MUTATION_SURFACE')
+          PY
