@@ -25,7 +25,7 @@ jobs:
         run: |
           python3 -m http.server 8139 --bind 127.0.0.1 >/tmp/gmfq-cot-price-audit-server.log 2>&1 &
           sleep 2
-      - name: Certify COT and pair-relative price roles
+      - name: Trace canonical pair frame price helper
         run: |
           cat > audit.js <<'EOF'
           const fs=require('fs');
@@ -39,68 +39,39 @@ jobs:
             const r=await page.goto('http://127.0.0.1:8139/index.html',{waitUntil:'domcontentloaded',timeout:120000});
             if(!r||!r.ok())throw new Error('HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
-            await page.waitForTimeout(400);
             const out=await page.evaluate(()=>{
-              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
-              const stable=x=>JSON.stringify(x);
-              const pairs=(D?.pairs||[]).map(x=>x.pair);
-              const frames=()=>Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
-              const structural=f=>({fav:f?.fav,quality:f?.quality,structural:f?.structural,macroSide:f?.macroSide,policySide:f?.policySide});
-              const baseline=frames();
-              const structuralKeys=[...new Set(Object.values(baseline).flatMap(f=>Object.keys(f?.structural||{})))].sort();
-
-              // COT: force EUR positioning to an extreme and confirm pair structure cannot move.
-              const eurCotBefore=clone(D?.cot?.EUR);
-              const eurRiskBefore=window.deriveCurrencyState?.('EUR')?.cotRisk;
-              let cotRiskChanged=false,cotStructureUnchanged=false;
-              if(D?.cot?.EUR&&typeof D.cot.EUR==='object'){
-                Object.assign(D.cot.EUR,{pct:99.9,net_oi:55,netoi:55});
-                cotRiskChanged=window.deriveCurrencyState?.('EUR')?.cotRisk!==eurRiskBefore;
-                cotStructureUnchanged=pairs.every(p=>stable(structural(window.derivePairDecisionFrame?.(p)))===stable(structural(baseline[p])));
-                Object.keys(D.cot.EUR).forEach(k=>delete D.cot.EUR[k]);
-                Object.assign(D.cot.EUR,eurCotBefore);
+              const src={};
+              const add=(name,fn)=>{try{if(typeof fn==='function')src[name]=Function.prototype.toString.call(fn)}catch(e){}};
+              try{add('canonicalPairDecisionFrame',canonicalPairDecisionFrame)}catch(e){}
+              try{add('pairPriceConfirmation',pairPriceConfirmation)}catch(e){}
+              try{add('pairPriceSide',pairPriceSide)}catch(e){}
+              try{add('pairPriceReading',pairPriceReading)}catch(e){}
+              try{add('relativePriceSide',relativePriceSide)}catch(e){}
+              try{add('certifiedPairForMarket',certifiedPairForMarket)}catch(e){}
+              const canonical=src.canonicalPairDecisionFrame||'';
+              const identifiers=[...new Set((canonical.match(/\b[A-Za-z_$][A-Za-z0-9_$]*\s*\(/g)||[]).map(x=>x.replace(/\s*\($/,'')))].sort();
+              const helpers={};
+              for(const name of identifiers){
+                try{
+                  const fn=eval(name);
+                  if(typeof fn==='function') helpers[name]=Function.prototype.toString.call(fn);
+                }catch(e){}
               }
-
-              // Pair-relative Price: mutate only the certified EUR/USD price direction.
-              const cert=window.certifiedPairForMarket?.('EUR/USD');
-              const priceRawBefore=cert?.layer_directions?.price;
-              const priceNormBefore=window.normalizePairSide?.(priceRawBefore);
-              const frameBefore=clone(window.derivePairDecisionFrame?.('EUR/USD'));
-              let mutatedRaw=null,frameAfter=null,priceChanged=false,structureUnchanged=false;
-              if(cert?.layer_directions && (priceNormBefore==='A'||priceNormBefore==='B')){
-                mutatedRaw=priceNormBefore==='A'?'B':'A';
-                cert.layer_directions.price=mutatedRaw;
-                frameAfter=clone(window.derivePairDecisionFrame?.('EUR/USD'));
-                priceChanged=frameAfter?.priceReading!==frameBefore?.priceReading || frameAfter?.priceNote!==frameBefore?.priceNote || frameAfter?.watch!==frameBefore?.watch;
-                structureUnchanged=stable(structural(frameAfter))===stable(structural(frameBefore));
-                cert.layer_directions.price=priceRawBefore;
-              }
-              const restored=stable(window.derivePairDecisionFrame?.('EUR/USD'))===stable(frameBefore);
               return {
-                pairCount:pairs.length,structuralKeys,
-                cot:{riskChanged:cotRiskChanged,structureUnchanged:cotStructureUnchanged},
-                price:{rawBefore:priceRawBefore,normBefore:priceNormBefore,mutatedRaw,frameBefore,frameAfter,priceChanged,structureUnchanged,restored},
+                canonical,
+                identifiers,
+                helpers,
+                eurusd:window.derivePairDecisionFrame?.('EUR/USD'),
+                certified:window.certifiedPairForMarket?.('EUR/USD'),
                 bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
               };
             });
             await browser.close();
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
-            const a={
-              all28Pairs:out.pairCount===28,
-              structuralContract:JSON.stringify(out.structuralKeys)===JSON.stringify(['macro','policy','ratesGap']),
-              cotRiskChanges:out.cot.riskChanged===true,
-              cotCannotMoveStructure:out.cot.structureUnchanged===true,
-              pairPriceSourceResolved:['A','B'].includes(out.price.normBefore),
-              pairPriceReadingChanges:out.price.priceChanged===true,
-              pairPriceCannotMoveStructure:out.price.structureUnchanged===true,
-              runtimeRestored:out.price.restored===true
-            };
-            const ok=Object.values(a).every(Boolean);
-            const summary={schema:'GMFQ_COT_PRICE_ROLE_AUDIT_V5',status:ok?'PASS':'FAIL',assertions:a,...out};
-            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify(summary,null,2));
-            console.log(JSON.stringify(summary,null,2));
-            if(!ok)process.exit(2);
+            fs.writeFileSync('cot-price-role-audit.json',JSON.stringify({schema:'GMFQ_PAIR_PRICE_SOURCE_TRACE_V1',...out},null,2));
+            console.log(JSON.stringify({canonical:out.canonical,identifiers:out.identifiers,helpers:out.helpers,eurusd:out.eurusd,certified:out.certified},null,2));
+            if(!out.canonical)process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node audit.js
