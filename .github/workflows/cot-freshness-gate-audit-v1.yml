@@ -51,10 +51,20 @@ jobs:
               const pairs=[];for(let i=0;i<ccys.length;i++)for(let j=i+1;j<ccys.length;j++)pairs.push(`${ccys[i]}/${ccys[j]}`);
               const gate=clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE);
               const guardedCurrency=window.deriveCurrencyState;
-              const originalCurrency=guardedCurrency?.__gmfqOriginal;
+              const priceSettledCurrency=guardedCurrency?.__gmfqOriginal;
               const currencies=Object.fromEntries(ccys.map(c=>[c,clone(guardedCurrency(c))]));
-              const currenciesBefore=typeof originalCurrency==='function'?Object.fromEntries(ccys.map(c=>[c,clone(originalCurrency(c))])):{};
+              const currenciesBefore=typeof priceSettledCurrency==='function'?Object.fromEntries(ccys.map(c=>[c,clone(priceSettledCurrency(c))])):{};
+
+              let pairsBefore={};
+              if(typeof priceSettledCurrency==='function'){
+                window.deriveCurrencyState=priceSettledCurrency;
+                try{deriveCurrencyState=priceSettledCurrency}catch(e){}
+                pairsBefore=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+                window.deriveCurrencyState=guardedCurrency;
+                try{deriveCurrencyState=guardedCurrency}catch(e){}
+              }
               const pairsNow=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+
               const currencyFailures=Object.entries(currencies).filter(([c,s])=>String(s?.cotRisk||'').trim()!==''||s?.cotFreshness?.status!=='WITHHELD_STALE').map(([c,s])=>({c,s}));
               const currencyCoreDiffs=[];
               for(const c of ccys){
@@ -63,39 +73,59 @@ jobs:
                 const after={base:b.base,macro:b.macro,policy:b.policy,policyContext:b.policyContext,price:b.price,confirmation:b.confirmation,liq:b.liq,driver:b.driver};
                 if(JSON.stringify(before)!==JSON.stringify(after))currencyCoreDiffs.push({c,before,after});
               }
-              const rawCot=clone(window.D?.cot||{});
-              const rawCotFingerprint=Object.fromEntries(ccys.map(c=>[c,{pct:rawCot?.[c]?.pct,net_oi:rawCot?.[c]?.net_oi,chg_net_1w:rawCot?.[c]?.chg_net_1w,state_label:rawCot?.[c]?.state_label}]));
-              const expectedRaw={
-                USD:{pct:78.846154,net_oi:22.3},EUR:{pct:8.653846,net_oi:-6.4},GBP:{pct:3.846154,net_oi:-33.7},JPY:{pct:64.423077,net_oi:19},CHF:{pct:84.615385,net_oi:-20},AUD:{pct:33.653846,net_oi:-15.3},NZD:{pct:76.923077,net_oi:-11.2},CAD:{pct:65.384615,net_oi:-17.1}
-              };
-              const rawCotDiffs=[];
-              for(const c of ccys){const a=expectedRaw[c],b=rawCotFingerprint[c]||{};if(Math.abs(Number(a.pct)-Number(b.pct))>1e-6||Math.abs(Number(a.net_oi)-Number(b.net_oi))>1e-6)rawCotDiffs.push({c,expected:a,actual:b});}
-              const pairStructuralFailures=Object.entries(pairsNow).filter(([p,f])=>!f||f.fav==null||f.quality==null||f.setup==null||f.structural==null).map(([p,f])=>({p,f}));
+
+              const pairStructuralDiffs=[];
+              for(const p of pairs){
+                const a=pairsBefore[p]||{},b=pairsNow[p]||{};
+                const before={fav:a.fav,quality:a.quality,setup:a.setup,structural:a.structural,macroSide:a.macroSide,policySide:a.policySide,priceReading:a.priceReading};
+                const after={fav:b.fav,quality:b.quality,setup:b.setup,structural:b.structural,macroSide:b.macroSide,policySide:b.policySide,priceReading:b.priceReading};
+                if(JSON.stringify(before)!==JSON.stringify(after))pairStructuralDiffs.push({p,before,after});
+              }
+
+              const wrappedHeat=window.cotHeatState;
+              const originalHeat=wrappedHeat?.__gmfqOriginal;
+              const expectedHeat={USD:'P79',EUR:'P9',GBP:'P4',JPY:'P64',CHF:'P85',AUD:'P34',NZD:'P77',CAD:'P65'};
+              const heatEvidence={};
+              for(const c of ccys){
+                heatEvidence[c]={
+                  original:typeof originalHeat==='function'?clone(originalHeat(c)):null,
+                  wrapped:typeof wrappedHeat==='function'?clone(wrappedHeat(c)):null,
+                  expected:expectedHeat[c]
+                };
+              }
+              const heatFailures=Object.entries(heatEvidence).filter(([c,x])=>{
+                const originalTxt=String(x.original?.txt||'');
+                const wrappedTxt=String(x.wrapped?.txt||'');
+                return !originalTxt.startsWith(x.expected)||!wrappedTxt.includes('STALE')||x.wrapped?.cls!=='neu'||x.wrapped?.ext!==false;
+              }).map(([c,x])=>({c,...x}));
+
               const helpers={
                 early:typeof window.cotEarlyWarning==='function'?window.cotEarlyWarning('EUR'):null,
                 summary:typeof window.v224CotSummary==='function'?clone(window.v224CotSummary('EUR')):null,
                 pairRow:typeof window.v228CotRow==='function'?clone(window.v228CotRow('USD/EUR',pairsNow['USD/EUR'])):null,
                 riskClass:typeof window.v315CotRiskClass==='function'?window.v315CotRiskClass('EUR'):null,
-                heat:typeof window.cotHeatState==='function'?clone(window.cotHeatState('EUR')):null
+                heat:typeof window.cotHeatState==='function'?clone(window.cotHeatState('EUR')):null,
+                originalRiskClass:typeof window.v315CotRiskClass?.__gmfqOriginal==='function'?window.v315CotRiskClass.__gmfqOriginal('EUR'):null
               };
               const banner=document.getElementById('gmfqCotFreshnessBanner');
               const bannerText=banner?.textContent||'';
               const romeParts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
               const rm=Object.fromEntries(romeParts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
               const currentRomeDate=`${rm.year}-${rm.month}-${rm.day}`;
-              return {gate,currentRomeDate,currencies,currenciesBefore,pairsNow,currencyFailures,currencyCoreDiffs,pairStructuralFailures,rawCotFingerprint,rawCotDiffs,helpers,bannerText,provenance:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+              return {gate,currentRomeDate,currencies,currenciesBefore,pairsNow,pairsBefore,currencyFailures,currencyCoreDiffs,pairStructuralDiffs,heatEvidence,heatFailures,helpers,bannerText,provenance:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot),priceGate:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
             });
             await browser.close();
-            fs.writeFileSync('cot-freshness-gate-audit.json',JSON.stringify({schema:'GMFQ_COT_FRESHNESS_GATE_AUDIT_V1',...out,consoleErrors:errors},null,2));
-            console.log(JSON.stringify({gate:out.gate,currentRomeDate:out.currentRomeDate,currencyFailures:out.currencyFailures.length,currencyCoreDiffs:out.currencyCoreDiffs.length,pairStructuralFailures:out.pairStructuralFailures.length,rawCotDiffs:out.rawCotDiffs,helpers:out.helpers,bannerText:out.bannerText,provenance:out.provenance},null,2));
+            fs.writeFileSync('cot-freshness-gate-audit.json',JSON.stringify({schema:'GMFQ_COT_FRESHNESS_GATE_AUDIT_V2',...out,consoleErrors:errors},null,2));
+            console.log(JSON.stringify({gate:out.gate,priceGate:out.priceGate,currentRomeDate:out.currentRomeDate,currencyFailures:out.currencyFailures.length,currencyCoreDiffs:out.currencyCoreDiffs,pairStructuralDiffs:out.pairStructuralDiffs,heatFailures:out.heatFailures,heatEvidence:out.heatEvidence,helpers:out.helpers,bannerText:out.bannerText,provenance:out.provenance},null,2));
             if(out.bootstrapError)throw new Error(out.bootstrapError);
             if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
             if(out.gate?.status!=='PASS_WITHHELD_STALE_COT')throw new Error('COT gate did not withhold stale snapshot: '+JSON.stringify(out.gate));
             if(out.gate?.cot_asof!=='2026-09-22'||out.gate?.reference_asof!==out.currentRomeDate||out.gate?.calendar_lag_days!==20)throw new Error('COT freshness dates unexpected: '+JSON.stringify({gate:out.gate,currentRomeDate:out.currentRomeDate}));
+            if(out.gate?.price_dependency_status!=='PASS_WITHHELD_STALE_PRICE')throw new Error('COT gate did not wait for terminal Price gate: '+JSON.stringify(out.gate));
             if(out.currencyFailures.length)throw new Error('Currency COT failures: '+JSON.stringify(out.currencyFailures));
-            if(out.currencyCoreDiffs.length)throw new Error('Currency core changed: '+JSON.stringify(out.currencyCoreDiffs));
-            if(out.pairStructuralFailures.length)throw new Error('Pair structural frame incomplete: '+JSON.stringify(out.pairStructuralFailures));
-            if(out.rawCotDiffs.length)throw new Error('Underlying D.cot mutated: '+JSON.stringify(out.rawCotDiffs));
+            if(out.currencyCoreDiffs.length)throw new Error('Currency core changed by COT gate: '+JSON.stringify(out.currencyCoreDiffs));
+            if(out.pairStructuralDiffs.length)throw new Error('Pair structure changed by COT gate: '+JSON.stringify(out.pairStructuralDiffs));
+            if(out.heatFailures.length)throw new Error('Historical COT heat evidence unavailable or stale view not neutralized: '+JSON.stringify(out.heatFailures));
             if(out.provenance?.current_as_of!=='2026-09-22')throw new Error('COT provenance mutated: '+JSON.stringify(out.provenance));
             if(!/COT WITHHELD PER FRESHNESS/i.test(out.bannerText))throw new Error('COT stale banner missing: '+out.bannerText);
             if(!/WITHHELD/i.test(String(out.helpers.early||'')))throw new Error('cotEarlyWarning not fail-closed: '+JSON.stringify(out.helpers));
