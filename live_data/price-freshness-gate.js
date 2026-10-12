@@ -3,6 +3,8 @@
 
 const MAX_BUSINESS_LAG=1;
 const FRESHNESS_TIME_ZONE='Europe/Rome';
+const MAX_READY_ATTEMPTS=80;
+const READY_RETRY_MS=50;
 const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
 
 function businessLag(from,to){
@@ -36,7 +38,12 @@ function priceAsOf(){
   return window.GMFQ_ECB_PRICE_AUDIT?.as_of || window.D?.prices?.at?.(-1)?.Date || null;
 }
 
-function install(){
+function publishState(state){
+  window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze(state);
+  window.dispatchEvent(new CustomEvent('gmfq:price-freshness-ready',{detail:window.__GMFQ_PRICE_FRESHNESS_GATE_STATE}));
+}
+
+function install(attempt){
   const state={
     status:'WITHHELD_NO_APPLY',
     max_business_lag:MAX_BUSINESS_LAG,
@@ -45,12 +52,24 @@ function install(){
     changes_bias:false,
     changes_sizing:false,
     changes_pair_structure:false,
-    underlying_price_data_mutated:false
+    underlying_price_data_mutated:false,
+    provenance_wait_attempts:attempt
   };
   try{
-    if(typeof window.deriveCurrencyState!=='function'||typeof window.derivePairDecisionFrame!=='function'){
-      state.reason='Price consumers unavailable';
-      window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze(state);
+    const asOf=priceAsOf();
+    const consumersReady=typeof window.deriveCurrencyState==='function'&&typeof window.derivePairDecisionFrame==='function';
+    if((!asOf||!consumersReady)&&attempt<MAX_READY_ATTEMPTS){
+      window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze({...state,status:'WAITING_FOR_PRICE_PROVENANCE',reason:!asOf?'Price provenance not ready yet':'Price consumers not ready yet'});
+      setTimeout(()=>install(attempt+1),READY_RETRY_MS);
+      return;
+    }
+    if(!asOf||!consumersReady){
+      state.status='WITHHELD_PROVENANCE_UNAVAILABLE';
+      state.reason=!asOf?'Price provenance unavailable after bounded wait':'Price consumers unavailable after bounded wait';
+      state.price_asof=asOf;
+      state.reference_asof=currentRomeDate();
+      state.business_lag=null;
+      publishState(state);
       return;
     }
 
@@ -59,15 +78,17 @@ function install(){
     if(originalCurrency.__gmfqPriceFreshnessGuard===true||originalPair.__gmfqPriceFreshnessGuard===true){
       state.status='NO_APPLY_ALREADY_INSTALLED';
       state.reason='price freshness guard already installed';
-      window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze(state);
+      state.price_asof=asOf;
+      state.reference_asof=currentRomeDate();
+      state.business_lag=businessLag(asOf,state.reference_asof);
+      publishState(state);
       return;
     }
 
-    const asOf=priceAsOf();
     const reference=currentRomeDate();
     const lag=businessLag(asOf,reference);
     const stale=lag==null || lag>MAX_BUSINESS_LAG;
-    const staleNote=`Price WITHHELD: fixing G8 canonico ${asOf||'—'} non abbastanza recente rispetto alla data corrente ${reference||'—'} (${FRESHNESS_TIME_ZONE}).`;
+    const staleNote=`Price WITHHELD: fixing G8 canonico ${asOf} non abbastanza recente rispetto alla data corrente ${reference} (${FRESHNESS_TIME_ZONE}).`;
 
     const guardedCurrency=function(c){
       const base=originalCurrency(c);
@@ -120,14 +141,13 @@ function install(){
     state.business_lag=lag;
     state.currency_confirmation_counts=ccys.reduce((acc,c)=>{const x=currencies[c]?.confirmation||'NULL';acc[x]=(acc[x]||0)+1;return acc;},{});
     state.pair_price_reading_counts=pairs.reduce((acc,p)=>{const x=pairFrames[p]?.priceReading||'NULL';acc[x]=(acc[x]||0)+1;return acc;},{});
-    window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze(state);
-    window.dispatchEvent(new CustomEvent('gmfq:price-freshness-ready',{detail:window.__GMFQ_PRICE_FRESHNESS_GATE_STATE}));
+    publishState(state);
   }catch(e){
     state.reason=String(e&&e.message||e);
-    window.__GMFQ_PRICE_FRESHNESS_GATE_STATE=Object.freeze(state);
+    publishState(state);
     console.error('price-freshness-gate',e);
   }
 }
 
-install();
+install(0);
 })();
