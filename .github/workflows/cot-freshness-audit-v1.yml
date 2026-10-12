@@ -1,0 +1,120 @@
+name: COT Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-cot-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8144 --bind 127.0.0.1 > /tmp/gmfq-cot-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit and simulate stale COT context neutralization read-only
+        run: |
+          cat > cot-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8144/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status;
+              return (s&&s!=='WAITING_FOR_PRICE_PROVENANCE')||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+              const pairs=[]; for(let i=0;i<ccys.length;i++) for(let j=i+1;j<ccys.length;j++) pairs.push(`${ccys[i]}/${ccys[j]}`);
+              const currentRome=(()=>{const ps=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const m=Object.fromEntries(ps.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `${m.year}-${m.month}-${m.day}`;})();
+              const cotAsOf=window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.cot?.current_as_of||null;
+              const days=(()=>{if(!cotAsOf)return null;const a=new Date(cotAsOf+'T12:00:00Z'),b=new Date(currentRome+'T12:00:00Z');return Math.max(0,Math.round((b-a)/86400000));})();
+              const baselineCurrencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState?.(c))]));
+              const baselinePairs=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame?.(p))]));
+              const originalCurrency=window.deriveCurrencyState;
+              const guardedCurrency=function(c){
+                const s=clone(originalCurrency(c));
+                if(!s)return s;
+                s.cotRisk='';
+                s.cotFreshness={status:'WITHHELD_STALE',as_of:cotAsOf,reference_as_of:currentRome,calendar_lag_days:days,max_calendar_lag_days:10};
+                if(typeof s.story==='string'){
+                  const parts=s.story.split(' · ').filter(x=>{
+                    const t=x.toLowerCase();
+                    return !(t.includes('estremo cot')||t.includes('candidato p70')||t.includes('early warning sul posizionamento')||t.includes('concentrazione short net/oi')||t.includes('concentrazione long net/oi')||/^p\d+/.test(t));
+                  });
+                  parts.push('COT withheld per freshness');
+                  s.story=parts.join(' · ')+'.';
+                }
+                return s;
+              };
+              window.deriveCurrencyState=guardedCurrency;
+              try{deriveCurrencyState=guardedCurrency}catch(e){}
+              const simulatedCurrencies=Object.fromEntries(ccys.map(c=>[c,clone(window.deriveCurrencyState(c))]));
+              const simulatedPairs=Object.fromEntries(pairs.map(p=>[p,clone(window.derivePairDecisionFrame(p))]));
+              window.deriveCurrencyState=originalCurrency;
+              try{deriveCurrencyState=originalCurrency}catch(e){}
+              const currencyCoreDiffs=[];
+              for(const c of ccys){
+                const a=baselineCurrencies[c]||{},b=simulatedCurrencies[c]||{};
+                const before={base:a.base,macro:a.macro,policy:a.policy,policyContext:a.policyContext,price:a.price,liq:a.liq,driver:a.driver};
+                const after={base:b.base,macro:b.macro,policy:b.policy,policyContext:b.policyContext,price:b.price,liq:b.liq,driver:b.driver};
+                if(JSON.stringify(before)!==JSON.stringify(after))currencyCoreDiffs.push({c,before,after});
+              }
+              const structuralDiffs=[];
+              for(const p of pairs){
+                const a=baselinePairs[p]||{},b=simulatedPairs[p]||{};
+                const before={fav:a.fav,quality:a.quality,setup:a.setup,structural:a.structural,macroSide:a.macroSide,policySide:a.policySide,priceReading:a.priceReading};
+                const after={fav:b.fav,quality:b.quality,setup:b.setup,structural:b.structural,macroSide:b.macroSide,policySide:b.policySide,priceReading:b.priceReading};
+                if(JSON.stringify(before)!==JSON.stringify(after))structuralDiffs.push({p,before,after});
+              }
+              const cotGlobals={};
+              for(const k of Object.keys(window).filter(k=>/cot|position|commitment/i.test(k)).sort()){
+                const v=window[k];
+                if(typeof v==='function') cotGlobals[k]={type:'function',source:Function.prototype.toString.call(v).slice(0,10000)};
+                else if(v&&typeof v==='object') cotGlobals[k]={type:'object',value:clone(v)};
+                else if(['string','number','boolean'].includes(typeof v)) cotGlobals[k]={type:typeof v,value:v};
+              }
+              const currencySummary=Object.fromEntries(ccys.map(c=>{const s=baselineCurrencies[c]||{};return[c,{base:s.base,macro:s.macro,policy:s.policy,cotRisk:s.cotRisk,pct:s.pct,netoi:s.netoi,netoiSigned:s.netoiSigned,driver:s.driver,story:s.story}]}));
+              return {currentRome,cotAsOf,calendarLagDays:days,baselineCurrencies,simulatedCurrencies,baselinePairs,simulatedPairs,currencyCoreDiffs,structuralDiffs,currencySummary,cotGlobals,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            fs.writeFileSync('cot-freshness-audit.json',JSON.stringify({schema:'GMFQ_COT_FRESHNESS_AUDIT_V2',...out},null,2));
+            console.log(JSON.stringify({cotAsOf:out.cotAsOf,currentRome:out.currentRome,calendarLagDays:out.calendarLagDays,currencyCoreDiffs:out.currencyCoreDiffs,structuralDiffs:out.structuralDiffs,currencySummary:out.currencySummary,cotGlobalNames:Object.keys(out.cotGlobals)},null,2));
+            if(out.cotAsOf!=='2026-09-22') throw new Error('Unexpected canonical COT as-of: '+out.cotAsOf);
+            if(out.calendarLagDays==null||out.calendarLagDays<=10) throw new Error('Expected stale weekly COT not detected');
+            if(out.currencyCoreDiffs.length) throw new Error('COT context neutralization changed currency core: '+JSON.stringify(out.currencyCoreDiffs));
+            if(out.structuralDiffs.length) throw new Error('COT context neutralization changed pair structure: '+JSON.stringify(out.structuralDiffs));
+          })().catch(e=>{console.error('::error title=COT freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node cot-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-freshness-audit-v1
+          path: |
+            cot-freshness-audit.json
+            /tmp/gmfq-cot-audit-server.log
