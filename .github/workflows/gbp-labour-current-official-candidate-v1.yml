@@ -1,0 +1,48 @@
+name: GBP Labour Current Official Candidate V1
+
+on:
+  push:
+    branches:
+      - 'validation-gbp-labour-freshness-*'
+  workflow_dispatch:
+
+jobs:
+  current-official:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read current official ONS candidate without publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-current-official
+          python3 validation/sources/gbp_ons_core.py \
+            --dimension labour \
+            --output /tmp/gbp-current-official/candidate.json \
+            --audit-output /tmp/gbp-current-official/source-audit.json \
+            | tee /tmp/gbp-current-official/source-run.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/gbp-current-official/candidate.json').read_text())
+          a=json.loads(Path('/tmp/gbp-current-official/source-audit.json').read_text())
+          assert c['currency']=='GBP' and c['dimension']=='labour'
+          assert c['series_id']=='MGSX'
+          assert c['macro_series_id']=='UK_UNEMP_RATE_history_value'
+          assert c['observation_date'][:7]=='2026-07', c
+          assert a['latest_period'][:7]=='2026-07', a
+          assert a['candidate_only'] is True and a['live_data_written'] is False
+          print(json.dumps({'status':'CURRENT_OFFICIAL_GBP_LABOUR_2026_07_PASS','candidate':c,'audit':a},indent=2))
+          PY
+          git diff --exit-code -- live_data payload validation/macro
+      - name: Upload current-official evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbp-labour-current-official-candidate-v1
+          path: /tmp/gbp-current-official/
+          if-no-files-found: error
