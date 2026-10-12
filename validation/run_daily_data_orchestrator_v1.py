@@ -47,8 +47,8 @@ def main():
     brent_policy = risk_policy['gate_inputs']['Brent']
     if vix_policy['status'] != 'READY':
         raise SystemExit('Risk VIX source must be READY')
-    if brent_policy['status'] != 'WITHHELD':
-        raise SystemExit('Risk Brent must remain WITHHELD until an auditable daily source is selected')
+    if brent_policy['status'] != 'WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE':
+        raise SystemExit('Risk Brent must remain fail-closed while official source lag exceeds the gate')
 
     lanes = {
         'PRICE': {
@@ -86,18 +86,19 @@ def main():
             'reason': 'layer contains mixed monthly/weekly/other series; freshness must be mapped per official subseries cadence before any GREEN state or updater orchestration',
         },
         'RISK': {
-            'state': 'BLOCKED_BRENT_SOURCE_PROVENANCE_UNRESOLVED',
+            'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
             'source_policy': str(RISK_POLICY),
             'vix_source_status': vix_policy['status'],
             'vix_updater': vix_policy['collector'],
             'vix_candidate_pipeline_ready': True,
             'brent_source_status': brent_policy['status'],
-            'brent_updater': brent_policy['collector'] or 'NONE',
+            'brent_updater': brent_policy['collector'],
+            'brent_series_id': brent_policy.get('series_id'),
             'freshness_guard': 'Risk Freshness Audit V1 / GMFQ_RISK_FRESHNESS_GATE_SIM_V1',
             'guard_rule': 'VIX or Brent > 1 business day behind Price => WITHHELD; pair structural direction unchanged',
             'guard_proven': True,
             'publication_eligible': False,
-            'reason': 'official Cboe VIX candidate path is now auditable; Brent remains fail-closed because the embedded runtime has no provenance and no eligible daily source has been selected',
+            'reason': 'VIX is auditable and candidate-ready. Brent has an auditable official EIA/FRED daily source, but that source can lag beyond the existing one-business-day gate; no proxy substitution and no gate weakening are allowed.',
         },
         'REBUILD': {
             'state': 'READY_AFTER_INPUT_GATES',
