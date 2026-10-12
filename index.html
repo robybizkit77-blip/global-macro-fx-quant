@@ -58,5 +58,9 @@
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">(async()=>{try{if(window.__GMFQ_CANONICAL_OVERLAY_READY)await window.__GMFQ_CANONICAL_OVERLAY_READY;if(window.__GMFQ_CANONICAL_OVERLAY_STATE&&window.__GMFQ_CANONICAL_OVERLAY_STATE.status!==\'PASS_CANONICAL_MACRO_OVERLAY\')throw new Error(\'canonical-overlay-not-ready\');if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);window.__GMFQ_FINAL_REFRESH_ERROR=String(e&&e.message||e);}})();</scr'+'ipt>\n';
  html=html.replace(marker,canonicalOverlay+researchUi+researchBootstrap+finalRefresh+marker);
  document.open(); document.write(html); document.close();
-})().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
+})().catch(e=>{
+ window.__GMFQ_BOOTSTRAP_ERROR=String(e&&e.stack||e);
+ console.error('dashboard-bootstrap',e);
+ document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+String(e&&e.message||e)+'</pre>';
+});
 </script></body></html>
