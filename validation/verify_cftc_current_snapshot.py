@@ -3,6 +3,7 @@ from __future__ import annotations
 import json, pathlib, re, sys, urllib.request
 from datetime import datetime
 
+# Current-stack observation touch: 2026-10-12. Validation only; no publication.
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DATA=ROOT/'live_data'/'sections'/'V250_COT_CHART_DATA.json'
 
@@ -24,70 +25,32 @@ def fetch(url:str)->str:
 
 def parse_block(text:str, code:str)->dict:
     m=re.search(rf'Code-{re.escape(code)}|Code\s*#?{re.escape(code)}',text,re.I)
-    if not m:
-        raise ValueError(f'code {code} not found')
-    start=m.start()
-    nxt=re.search(r'\n\s*[A-Z0-9][^\n]{5,120}Code[-\s#]\d{6}',text[m.end():],re.I)
-    end=(m.end()+nxt.start()) if nxt else min(len(text),start+6000)
-    block=text[start:end]
-    dm=re.search(r'(?:POSITIONS AS OF|Positions as of|Futures Only,?)\s+(\d{2}/\d{2}/\d{2}|[A-Za-z]+\s+\d{1,2},\s+\d{4})',block,re.I)
-    if not dm:
-        dm=re.search(r'(\d{2}/\d{2}/\d{2})',block)
-    if not dm:
-        raise ValueError(f'{code}: date not found')
-    raw=dm.group(1)
-    if '/' in raw:
-        date=datetime.strptime(raw,'%m/%d/%y').strftime('%Y-%m-%d')
-    else:
-        date=datetime.strptime(raw,'%B %d, %Y').strftime('%Y-%m-%d')
-    om=re.search(r'OPEN INTEREST:\s*([\d,]+)',block,re.I)
-    if not om:
-        om=re.search(r'Open Interest is\s*([\d,]+)',block,re.I)
-    if not om:
-        raise ValueError(f'{code}: open interest not found')
+    if not m: raise ValueError(f'code {code} not found')
+    start=m.start(); nxt=re.search(r'\n\s*[A-Z0-9][^\n]{5,120}Code[-\s#]\d{6}',text[m.end():],re.I)
+    end=(m.end()+nxt.start()) if nxt else min(len(text),start+6000); block=text[start:end]
+    dm=re.search(r'(?:POSITIONS AS OF|Positions as of|Futures Only,?)\s+(\d{2}/\d{2}/\d{2}|[A-Za-z]+\s+\d{1,2},\s+\d{4})',block,re.I) or re.search(r'(\d{2}/\d{2}/\d{2})',block)
+    if not dm: raise ValueError(f'{code}: date not found')
+    raw=dm.group(1); date=datetime.strptime(raw,'%m/%d/%y').strftime('%Y-%m-%d') if '/' in raw else datetime.strptime(raw,'%B %d, %Y').strftime('%Y-%m-%d')
+    om=re.search(r'OPEN INTEREST:\s*([\d,]+)',block,re.I) or re.search(r'Open Interest is\s*([\d,]+)',block,re.I)
+    if not om: raise ValueError(f'{code}: open interest not found')
     oi=int(om.group(1).replace(',',''))
-    cm=re.search(r'COMMITMENTS\s*\n\s*([\d,]+)\s+([\d,]+)',block,re.I)
-    if not cm:
-        cm=re.search(r'All\s*:\s*[\d,]+:\s*([\d,]+)\s+([\d,]+)',block,re.I)
-    if not cm:
-        raise ValueError(f'{code}: non-commercial commitments not found')
+    cm=re.search(r'COMMITMENTS\s*\n\s*([\d,]+)\s+([\d,]+)',block,re.I) or re.search(r'All\s*:\s*[\d,]+:\s*([\d,]+)\s+([\d,]+)',block,re.I)
+    if not cm: raise ValueError(f'{code}: non-commercial commitments not found')
     longv=int(cm.group(1).replace(',','')); shortv=int(cm.group(2).replace(',',''))
     return {'date':date,'open_interest':oi,'long':longv,'short':shortv,'net':longv-shortv,'netoi':round((longv-shortv)/oi*100,3)}
 
 def main()->int:
-    current=json.loads(DATA.read_text())
-    pages={}
-    rows={}
+    current=json.loads(DATA.read_text()); pages={}; rows={}
     for c,(code,url) in CURRENCIES.items():
-        pages.setdefault(url,fetch(url))
-        rows[c]=parse_block(pages[url],code)
+        pages.setdefault(url,fetch(url)); rows[c]=parse_block(pages[url],code)
     dates={r['date'] for r in rows.values()}
-    if len(dates)!=1:
-        raise SystemExit('CFTC cross-market date mismatch: '+repr(rows))
+    if len(dates)!=1: raise SystemExit('CFTC cross-market date mismatch: '+repr(rows))
     mismatches=[]
     for c,row in rows.items():
-        s=current[c]
-        observed={
-            'date':s['dates'][-1],
-            'long':int(s['long'][-1]),
-            'short':int(s['short'][-1]),
-            'net':int(s['net'][-1]),
-            'netoi':round(float(s['netoi'][-1]),3),
-        }
+        s=current[c]; observed={'date':s['dates'][-1],'long':int(s['long'][-1]),'short':int(s['short'][-1]),'net':int(s['net'][-1]),'netoi':round(float(s['netoi'][-1]),3)}
         for k in ('date','long','short','net','netoi'):
-            if observed[k]!=row[k]:
-                mismatches.append({'currency':c,'field':k,'live_data':observed[k],'official':row[k]})
-    result={
-        'status':'PASS' if not mismatches else 'FAIL',
-        'source':'CFTC Legacy Futures Only current reports',
-        'as_of':next(iter(dates)),
-        'currencies':8,
-        'official':rows,
-        'mismatches':mismatches,
-        'direct_section_action':'NO_CHANGE' if not mismatches else 'BLOCK',
-    }
-    print(json.dumps(result,indent=2,ensure_ascii=False))
-    return 0 if not mismatches else 1
+            if observed[k]!=row[k]: mismatches.append({'currency':c,'field':k,'live_data':observed[k],'official':row[k]})
+    result={'status':'PASS' if not mismatches else 'FAIL','source':'CFTC Legacy Futures Only current reports','as_of':next(iter(dates)),'currencies':8,'official':rows,'mismatches':mismatches,'direct_section_action':'NO_CHANGE' if not mismatches else 'BLOCK'}
+    print(json.dumps(result,indent=2,ensure_ascii=False)); return 0 if not mismatches else 1
 
-if __name__=='__main__':
-    sys.exit(main())
+if __name__=='__main__': sys.exit(main())
