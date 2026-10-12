@@ -1,0 +1,80 @@
+name: G8 CB Hysteresis Consistency Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-g8-cb-hysteresis-consistency-audit-v1-2026-10-12'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8138 --bind 127.0.0.1 >/tmp/gmfq-g8-cb-audit-server.log 2>&1 &
+          sleep 2
+      - name: Audit G8 CB candidate versus derived hysteresis
+        run: |
+          cat > audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8138/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForTimeout(400);
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const rows=currencies.map(c=>{
+                const candidate=clone(window.cbStructuralChangeCandidate?.(c));
+                const h=clone(window.CB_LIQ_HYSTERESIS_STATE?.[c]?.cb);
+                const memory=clone(window.CB_LIQ_CHANGE_MEMORY?.[c+':cb']);
+                const currency=clone(window.deriveCurrencyState?.(c));
+                const current=h?.current;
+                let expected='UNKNOWN';
+                if(candidate?.status==='WITHHELD') expected='WITHHELD';
+                else if(candidate?.status==='PENDING_CONFIRMATION') expected='PENDING_MARKET_CONFIRMATION';
+                else if(candidate?.status==='CANDIDATE' && candidate?.candidate===current) expected='NO_CHANGE';
+                else if(candidate?.status==='CANDIDATE' && candidate?.candidate!==current) expected='PENDING_OR_ELIGIBLE_CHANGE';
+                const coherent = expected==='UNKNOWN' ? false :
+                  expected==='PENDING_OR_ELIGIBLE_CHANGE' ? ['PENDING_HYSTERESIS','AUTO_ELIGIBLE','NEEDS_REVIEW','NO_CHANGE'].includes(h?.status) :
+                  h?.status===expected;
+                return {c,candidate,hysteresis:h,memory,policy:currency?.policy,policyContext:currency?.policyContext,expected,coherent};
+              });
+              return {rows,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            const incoherent=out.rows.filter(x=>!x.coherent);
+            const summary={schema:'GMFQ_G8_CB_HYSTERESIS_CONSISTENCY_AUDIT_V1',status:incoherent.length?'REVIEW_REQUIRED':'PASS',incoherent_count:incoherent.length,rows:out.rows};
+            fs.writeFileSync('g8-cb-hysteresis-consistency.json',JSON.stringify(summary,null,2));
+            console.log(JSON.stringify(summary,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: g8-cb-hysteresis-consistency-v1
+          path: |
+            g8-cb-hysteresis-consistency.json
+            /tmp/gmfq-g8-cb-audit-server.log
