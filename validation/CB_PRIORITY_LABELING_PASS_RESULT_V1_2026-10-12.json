@@ -1,0 +1,104 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_LABELING_PASS_RESULT_V1",
+  "as_of": "2026-10-12",
+  "verdict": "PASS_PREDECLARED_LABEL_QUALITY_GATE",
+  "parent_contract": {
+    "pull_request": 165,
+    "head_sha": "2d51f8402d5fa478d6b52486a5276aba991316e3"
+  },
+  "label_engine": {
+    "pull_request": 166,
+    "head_sha": "d3c3d87546e028bbb1a375af731550cdddd4ae22",
+    "workflow_run_id": 38217052303,
+    "artifact_id": 11732474523,
+    "artifact_name": "cb-priority-labeling-v1-38217052303",
+    "artifact_zip_sha256": "b854fbe4b97f8e7ff78e10e5e07591439d0be747df9a21fece91b73b5497ca41"
+  },
+  "pinned_inventory": {
+    "pull_request": 164,
+    "head_sha": "ef1a5ba0c0cf673bbd509517b9c772386d3f3085",
+    "workflow_run_id": 38215654681,
+    "artifact_id": 11732506878,
+    "inventory_json_sha256": "fbe6fd5c4af09250b50741da23f9cd22eee2d0d756d3cc56035dc98283f5305a",
+    "rows": 365
+  },
+  "labeled_dataset": {
+    "sha256": "3cd295e0455751e81088165f88bde9d24b30bb3d6f26e0b14a7b3ce0cd5b74ca",
+    "rows": 365,
+    "duplicate_decision_events": 0,
+    "missing_required_fields_rows": 0,
+    "nonwithheld_empty_evidence_rows": 0,
+    "official_source_failures": 0,
+    "fetch_or_parse_failures_total": 0
+  },
+  "per_central_bank": {
+    "FED": {
+      "total": 74,
+      "label_counts": {"BALANCED": 48, "INFLATION": 21, "WITHHELD_AMBIGUOUS": 5},
+      "withheld_ambiguous_share": 0.06756756756756757,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "ECB": {
+      "total": 70,
+      "label_counts": {"INFLATION": 57, "WITHHELD_AMBIGUOUS": 13},
+      "withheld_ambiguous_share": 0.18571428571428572,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "BOJ": {
+      "total": 62,
+      "label_counts": {"BALANCED": 33, "INFLATION": 28, "WITHHELD_AMBIGUOUS": 1},
+      "withheld_ambiguous_share": 0.016129032258064516,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "BOC": {
+      "total": 70,
+      "label_counts": {"BALANCED": 16, "INFLATION": 47, "WITHHELD_AMBIGUOUS": 7},
+      "withheld_ambiguous_share": 0.1,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    },
+    "RBA": {
+      "total": 89,
+      "label_counts": {"BALANCED": 35, "INFLATION": 30, "LABOUR_GROWTH": 14, "WITHHELD_AMBIGUOUS": 10},
+      "withheld_ambiguous_share": 0.11235955056179775,
+      "minimum_events_gate": true,
+      "withheld_share_gate": true
+    }
+  },
+  "technical_correction_receipt": {
+    "invalid_first_run_id": 38216431489,
+    "invalid_first_audit_pull_request": 167,
+    "diagnostic_run_id": 38216862464,
+    "diagnostic_artifact_id": 11731468993,
+    "confirmed_issue": "HTML/PDF extraction layout whitespace was incorrectly treated as semantic sentence boundaries, splitting policy cue and topic terms across visual line fragments.",
+    "correction": "Normalize extraction whitespace before splitting sentences on terminal punctuation only.",
+    "semantic_vocabulary_changed": false,
+    "semantic_thresholds_changed": false,
+    "label_rules_changed": false,
+    "quality_gate_changed": false,
+    "market_data_observed": false
+  },
+  "quality_gate": {
+    "minimum_events_per_central_bank": 50,
+    "maximum_withheld_ambiguous_share_per_central_bank": 0.20,
+    "quality_gate_pass": true
+  },
+  "scientific_interpretation": {
+    "label_method_was_frozen_before_labels": true,
+    "market_outcomes_observed": false,
+    "dataset_is_sealed_before_performance_join": true,
+    "dataset_usable_for_separate_predeclared_performance_test": true,
+    "passing_quality_gate_implies_predictive_value": false
+  },
+  "governance": {
+    "performance_test_authorized_by_this_result": false,
+    "separate_performance_contract_required": true,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
