@@ -54,15 +54,16 @@ function installBanner(state){
     el.style.cssText='margin:12px 0 16px;padding:12px 14px;border:1px solid rgba(245,158,11,.42);border-radius:10px;background:rgba(245,158,11,.08);font:600 12px/1.45 system-ui;color:inherit;';
     host.insertBefore(el,host.firstChild);
   }
+  let nextText='',nextHidden=false;
   if(state.status==='PASS_WITHHELD_STALE_COT'){
-    el.textContent=`COT WITHHELD PER FRESHNESS · ultimo snapshot ${state.cot_asof||'—'} · ${state.calendar_lag_days??'—'} giorni di calendario. Percentili e Net/OI restano visibili come storico, ma warning ed estremi non sono trattati come contesto operativo corrente.`;
-    el.hidden=false;
+    nextText=`COT WITHHELD PER FRESHNESS · ultimo snapshot ${state.cot_asof||'—'} · ${state.calendar_lag_days??'—'} giorni di calendario. Percentili e Net/OI restano visibili come storico, ma warning ed estremi non sono trattati come contesto operativo corrente.`;
   }else if(state.status==='PASS_FRESH_COT_UNCHANGED'){
-    el.hidden=true;
+    nextHidden=true;
   }else{
-    el.textContent='COT WITHHELD · freshness/provenienza non certificabile. Dati non usati come warning operativo.';
-    el.hidden=false;
+    nextText='COT WITHHELD · freshness/provenienza non certificabile. Dati non usati come warning operativo.';
   }
+  if(el.textContent!==nextText)el.textContent=nextText;
+  if(el.hidden!==nextHidden)el.hidden=nextHidden;
 }
 
 function publishState(state){
