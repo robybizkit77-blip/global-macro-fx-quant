@@ -1,0 +1,62 @@
+name: Price Current Refresh Probe V1
+
+on:
+  push:
+    branches:
+      - validation-price-current-refresh-probe-v1-2026-10-12
+    paths:
+      - '.github/workflows/price-current-refresh-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Locate canonical Price state and fetch latest official ECB G8 fixing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/price-probe
+          grep -R -n --exclude-dir=.git -E 'GMFQ_ECB_PRICE_AUDIT|D\.prices|prices:[[:space:]]*\[' . > /tmp/price-probe/references.txt || true
+          python - <<'PY'
+          import json, urllib.request, xml.etree.ElementTree as ET, pathlib, re
+          url='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml'
+          req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-Price-Refresh-Probe/1.0'})
+          raw=urllib.request.urlopen(req,timeout=60).read()
+          root=ET.fromstring(raw)
+          wanted={'USD','GBP','JPY','CHF','CAD','AUD','NZD'}
+          rows=[]
+          for node in root.iter():
+              d=node.attrib.get('time')
+              if not d: continue
+              vals={'EUR':1.0}
+              for ch in list(node):
+                  c=ch.attrib.get('currency'); r=ch.attrib.get('rate')
+                  if c in wanted and r is not None: vals[c]=float(r)
+              if wanted.issubset(vals): rows.append({'Date':d,**vals})
+          rows.sort(key=lambda x:x['Date'])
+          latest=rows[-1]
+          pairs={}
+          ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
+          for i,a in enumerate(ccys):
+              for b in ccys[i+1:]:
+                  pairs[f'{a}/{b}']=latest[b]/latest[a]
+          refs=pathlib.Path('/tmp/price-probe/references.txt').read_text(errors='ignore')
+          payload={'status':'PASS','source':'ECB official euro reference rates','latest_complete_g8_date':latest['Date'],'latest_row':latest,'pair_count':len(pairs),'sample_pairs':{k:pairs[k] for k in ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD']},'reference_hits':refs.splitlines()[:200]}
+          pathlib.Path('/tmp/price-probe/result.json').write_text(json.dumps(payload,indent=2,ensure_ascii=False)+'\n')
+          print(json.dumps(payload,indent=2,ensure_ascii=False))
+          PY
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-current-refresh-probe-v1
+          path: /tmp/price-probe/
+          retention-days: 30
