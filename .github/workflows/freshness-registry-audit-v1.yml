@@ -1,0 +1,64 @@
+name: Freshness Registry Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-freshness-registry-*'
+    paths:
+      - '.github/workflows/freshness-registry-audit-v1.yml'
+      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
+      - 'validation/check_freshness_registry.py'
+      - 'validation/test_freshness_registry_failclosed.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness-registry-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate canonical freshness registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/check_freshness_registry.py | tee /tmp/freshness-registry-check.json
+
+      - name: Prove fail-closed behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=validation python3 validation/test_freshness_registry_failclosed.py | tee /tmp/freshness-registry-negative-tests.txt
+
+      - name: Prove validation-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload index.html
+          echo FRESHNESS_REGISTRY_VALIDATION_ONLY_PASS
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: freshness-registry-audit-${{ github.run_id }}
+          path: |
+            /tmp/freshness-registry-check.json
+            /tmp/freshness-registry-negative-tests.txt
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Governance note
+        if: always()
+        shell: bash
+        run: |
+          echo 'Registry is observability-only.'
+          echo 'No bias, score, sizing, Pair Engine, Quant, live_data, payload, main, or gh-pages mutation is permitted.'
+          echo 'GREEN is fail-closed: stale dated observations and records without proof are rejected.'
