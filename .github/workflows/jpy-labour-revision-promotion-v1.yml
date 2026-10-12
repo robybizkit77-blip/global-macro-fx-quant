@@ -88,6 +88,7 @@ jobs:
           python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/jpy-labour-revision/runtime-roundtrip.json
           git diff --name-only | sort > /tmp/jpy-labour-revision/changed.txt
           python - <<'PY'
+          import json
           got=set(open('/tmp/jpy-labour-revision/changed.txt').read().splitlines())
           expected={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/manifest.v2.json'}
           assert got==expected,(got,expected)
