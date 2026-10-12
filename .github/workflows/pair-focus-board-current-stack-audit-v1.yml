@@ -1,0 +1,115 @@
+name: Pair Focus Board Current Stack Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-pair-focus-board-current-stack-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8149 --bind 127.0.0.1 > /tmp/gmfq-pair-focus-board-current-stack.log 2>&1 &
+          sleep 2
+      - name: Audit current-stack Pair Focus Board
+        run: |
+          cat > pair-focus-board-current-stack-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8149/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.__GMFQ_PAIR_FOCUS_BOARD_STATE?.status==='PASS_PRESENTATION_ONLY'||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const state=clone(window.__GMFQ_PAIR_FOCUS_BOARD_STATE);
+              const research=clone(window.__GMFQ_RESEARCH_STATE);
+              const classify=q=>{
+                const quality=String(q||'').toUpperCase();
+                if(quality.includes('CONTRASTO STRUTTURALE FORTE')) return 'A';
+                if(quality.includes('VANTAGGIO RELATIVO PARZIALE')) return 'B';
+                if(quality.includes('SEPARAZIONE RATES MATERIALE')) return 'CTX';
+                return 'WAIT';
+              };
+              const pairs=Object.keys(state?.signatures||{}).sort();
+              const mismatches=[];
+              for(const pair of pairs){
+                const frame=window.derivePairDecisionFrame(pair)||{};
+                const sig=state.signatures[pair]||{};
+                const expected=classify(frame.quality);
+                if(sig.group!==expected || sig.fav!==(frame.fav??null) || sig.quality!==(frame.quality??null) || sig.setup!==(frame.setup??null)){
+                  mismatches.push({pair,expected,signature:sig,frame:{fav:frame.fav??null,quality:frame.quality??null,setup:frame.setup??null}});
+                }
+              }
+              const buttons=[...document.querySelectorAll('#gmfq-pair-focus-board [data-gmfq-focus-pair]')].map(x=>x.dataset.gmfqFocusPair).sort();
+              const board=document.getElementById('gmfq-pair-focus-board');
+              const fp1=board?.dataset?.gmfqFocusFingerprint||null;
+              const fp2=board?.dataset?.gmfqFocusFingerprint||null;
+              return {state,research,pairs,buttons,mismatches,fp1,fp2,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            });
+            await browser.close();
+            const counts=out.state?.counts||{};
+            const total=(counts.A||0)+(counts.B||0)+(counts.CTX||0)+(counts.WAIT||0);
+            const verdict={
+              schema:'GMFQ_PAIR_FOCUS_BOARD_CURRENT_STACK_AUDIT_V1',
+              status:'PASS_PAIR_FOCUS_BOARD_CURRENT_STACK',
+              pair_count:out.state?.pair_count??null,
+              bucket_counts:counts,
+              bucket_total:total,
+              research_decision_weight:out.state?.research_decision_weight??null,
+              research_state_verified:out.state?.research_state_verified??null,
+              classification_source:out.state?.classification_source??null,
+              no_hidden_score:out.state?.no_hidden_score??null,
+              research_affects_classification:out.state?.research_affects_classification??null,
+              signature_mismatch_count:out.mismatches.length,
+              dom_pair_count:out.buttons.length,
+              unique_dom_pair_count:new Set(out.buttons).size,
+              fingerprint_stable:out.fp1===out.fp2,
+              console_errors:errors
+            };
+            fs.writeFileSync('pair-focus-board-current-stack-audit.json',JSON.stringify({...verdict,detail:out},null,2));
+            console.log(JSON.stringify(verdict,null,2));
+            if(out.bootstrapError) throw new Error(out.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            if(verdict.pair_count!==28 || total!==28) throw new Error('Expected exactly 28 classified pairs');
+            if(out.pairs.length!==28) throw new Error('Expected 28 signature pairs');
+            if(out.buttons.length!==28 || new Set(out.buttons).size!==28) throw new Error('DOM board does not expose exactly 28 unique pair buttons');
+            if(out.mismatches.length) throw new Error('Focus Board signature/classification drift: '+JSON.stringify(out.mismatches));
+            if(out.state?.status!=='PASS_PRESENTATION_ONLY') throw new Error('Unexpected board state');
+            if(out.state?.classification_source!=='derivePairDecisionFrame.quality') throw new Error('Unexpected classification source');
+            if(out.state?.no_hidden_score!==true) throw new Error('Hidden-score invariant failed');
+            if(out.state?.research_affects_classification!==false) throw new Error('Research isolation invariant failed');
+            if(out.state?.research_decision_weight!==0) throw new Error('Research decision weight is non-zero');
+            if(out.state?.research_state_verified!==true) throw new Error('Research state not verified safe');
+            if(out.research?.research_signal_state!=='WITHHELD' || out.research?.decision_weight!==0) throw new Error('Research sidecar not fail-closed');
+            if(!verdict.fingerprint_stable) throw new Error('Focus Board fingerprint changed without state change');
+          })().catch(e=>{console.error('::error title=Pair Focus Board current-stack audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node pair-focus-board-current-stack-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pair-focus-board-current-stack-audit-v1
+          path: |
+            pair-focus-board-current-stack-audit.json
+            /tmp/gmfq-pair-focus-board-current-stack.log
