@@ -1,0 +1,91 @@
+{
+  "schema": "GMFQ_CB_PRIORITY_OFFICIAL_SOURCE_INVENTORY_V1",
+  "as_of": "2026-10-12",
+  "status": "RESULT_BLIND_SOURCE_DISCOVERY",
+  "history_start": "2018-01-01",
+  "purpose": "Freeze official decision-document discovery routes before any focus labels or FX/rates performance are computed.",
+  "sources": {
+    "FED": {
+      "official_domain": "federalreserve.gov",
+      "decision_document": "FOMC statement",
+      "archive_routes": [
+        "https://www.federalreserve.gov/monetarypolicy/fomc_historical_year.htm",
+        "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+      ],
+      "historical_year_pattern": "https://www.federalreserve.gov/monetarypolicy/fomchistorical{year}.htm",
+      "publication_time_rule": "official statement release time when explicitly available; otherwise next-calendar-day PIT availability",
+      "source_status": "READY_FOR_INVENTORY"
+    },
+    "ECB": {
+      "official_domain": "ecb.europa.eu",
+      "decision_document": "Monetary policy decisions",
+      "archive_routes": [
+        "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html"
+      ],
+      "publication_time_rule": "14:15 CET/CEST when stated by the official ECB decision archive; otherwise next-calendar-day PIT availability",
+      "source_status": "READY_FOR_INVENTORY"
+    },
+    "BOJ": {
+      "official_domain": "boj.or.jp",
+      "decision_document": "Statement on Monetary Policy",
+      "archive_routes": [
+        "https://www.boj.or.jp/en/mopo/mpmdeci/state_{year}/index.htm"
+      ],
+      "publication_time_rule": "official publication timestamp when available; otherwise next-calendar-day PIT availability",
+      "source_status": "READY_FOR_INVENTORY"
+    },
+    "BOC": {
+      "official_domain": "bankofcanada.ca",
+      "decision_document": "Fixed announcement date rate decision press release",
+      "archive_routes": [
+        "https://www.bankofcanada.ca/press/press-releases/"
+      ],
+      "decision_url_pattern": "https://www.bankofcanada.ca/{year}/{month}/fad-press-release-{yyyy-mm-dd}/",
+      "publication_time_rule": "scheduled policy announcements are released at the official fixed-announcement time; if an exact historical release time cannot be proven, use next-calendar-day PIT availability",
+      "source_status": "READY_FOR_INVENTORY"
+    },
+    "RBA": {
+      "official_domain": "rba.gov.au",
+      "decision_document": "Monetary Policy Decision media release",
+      "archive_routes": [
+        "https://www.rba.gov.au/media-releases/{year}/"
+      ],
+      "publication_time_rule": "official release timestamp when available; otherwise next-calendar-day PIT availability",
+      "source_status": "READY_FOR_INVENTORY"
+    }
+  },
+  "inventory_row_fields": [
+    "central_bank",
+    "decision_date",
+    "source_url",
+    "source_document_type",
+    "official_domain_verified",
+    "publication_timestamp",
+    "timestamp_provenance",
+    "inventory_status"
+  ],
+  "forbidden_during_inventory": [
+    "focus_primary",
+    "focus_evidence",
+    "FX returns",
+    "rates returns",
+    "COT",
+    "performance metrics"
+  ],
+  "quality_checks": {
+    "all_source_urls_official": true,
+    "decision_date_required": true,
+    "duplicate_decision_events_forbidden": true,
+    "document_body_not_required_for_inventory_stage": true,
+    "minimum_50_events_per_cb_applies_only_after_full_inventory_materialization": true
+  },
+  "governance": {
+    "result_blind": true,
+    "labeling_authorized": false,
+    "performance_test_authorized": false,
+    "production_signal_authorized": false,
+    "sizing_authorized": false,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
