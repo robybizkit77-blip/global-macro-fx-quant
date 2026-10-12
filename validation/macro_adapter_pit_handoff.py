@@ -32,6 +32,25 @@ def git_head() -> str | None:
         return None
 
 
+def canonical_macro_series_id(entry: dict[str, Any], rows: list[dict[str, Any]], key: str) -> str:
+    """Resolve the canonical MACRO_SERIES row without guessing prefixes.
+
+    Historical replay certification is authoritative when present because some
+    official source IDs (for example BLS/ONS identifiers) intentionally differ
+    from the stable internal history row ID.  Entries without replay evidence
+    must map exactly to <series_id>_history_value.  Any missing or ambiguous
+    mapping fails closed.
+    """
+    replay = entry.get("historical_replay_evidence") or {}
+    replay_id = replay.get("macro_series_id")
+    expected_id = replay_id if isinstance(replay_id, str) and replay_id else f"{entry['series_id']}_history_value"
+    hits = [r for r in rows if r.get("id") == expected_id]
+    if len(hits) != 1:
+        source = "historical_replay_evidence.macro_series_id" if replay_id else "series_id exact fallback"
+        raise ValueError(f"{key} canonical MACRO_SERIES mapping via {source} expected {expected_id!r}, got {len(hits)} rows")
+    return expected_id
+
+
 def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], dict[str, Any], str]:
     registry = load(REGISTRY)
     scope = registry.get("scope", {})
@@ -60,14 +79,12 @@ def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], di
 
     series, heat = load(SERIES), load(HEAT)
     h = heat["currencies"][currency][dimension]
-    hits = [r for r in series[currency] if r.get("id") == f"{entry['series_id']}_history_value"]
-    if len(hits) != 1:
-        raise ValueError(f"{key} does not map to exactly one canonical MACRO_SERIES row")
     if (h.get("series_id"), h.get("frequency"), h.get("transformation")) != (
         entry["series_id"], entry["frequency"], entry["transformation"],
     ):
         raise ValueError(f"{key} runtime contract differs from frozen registry")
-    return entry, {"adapter": adapter, "transport": transport}, hits[0]["id"]
+    expected_series = canonical_macro_series_id(entry, series[currency], key)
+    return entry, {"adapter": adapter, "transport": transport}, expected_series
 
 
 def adapter_command(adapter: pathlib.Path, currency: str, dimension: str, fixture: pathlib.Path | None, work: pathlib.Path) -> tuple[list[str], pathlib.Path, pathlib.Path]:
