@@ -1,0 +1,159 @@
+name: Pair Alignment Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-pair-alignment-*'
+  workflow_dispatch:
+
+jobs:
+  pair-alignment-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8123 --bind 127.0.0.1 > /tmp/gmfq-pair-alignment-server.log 2>&1 &
+          echo $! > /tmp/gmfq-pair-alignment-server.pid
+          sleep 2
+
+      - name: Run 28-pair alignment audit
+        run: |
+          cat > pair-alignment-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+          const REF=new Date('2026-10-12T00:00:00Z');
+
+          function parsePeriod(x){
+            if(!x) return null;
+            const s=String(x).trim();
+            const m=s.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/);
+            if(!m) return null;
+            const y=Number(m[1]), mo=Number(m[2]), d=m[3]?Number(m[3]):1;
+            return new Date(Date.UTC(y,mo-1,d));
+          }
+          function ageDays(x){const d=parsePeriod(x);return d?Math.floor((REF-d)/86400000):null;}
+          function macroFreshness(row){
+            const dates=[row?.inflation?.as_of,row?.labour?.as_of].filter(Boolean);
+            const ages=dates.map(ageDays).filter(Number.isFinite);
+            if(!ages.length) return {status:'UNKNOWN',oldest_days:null,dates};
+            const oldest=Math.max(...ages);
+            return {status:oldest>100?'STALE':oldest>70?'PARTIAL_STALE':'OK',oldest_days:oldest,dates};
+          }
+          function readJson(path){return JSON.parse(fs.readFileSync(path,'utf8'));}
+
+          (async()=>{
+            const macro=readJson('live_data/sections/MACRO_THERMOMETER_DATA.json');
+            const ois=readJson('live_data/sections/OIS_DATA.json');
+            const currencyFreshness={};
+            for(const c of CCYS){
+              const m=macro?.currencies?.[c]||null;
+              const mf=macroFreshness(m);
+              const os=ois?.currencies?.[c]?.status || ois?.[c]?.status || null;
+              currencyFreshness[c]={macro:mf,ois_status:os};
+            }
+
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const response=await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!response||!response.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const runtime=await page.evaluate(({CCYS,PAIRS})=>{
+              const currencies=Object.fromEntries(CCYS.map(c=>[c,window.deriveCurrencyState?.(c)||null]));
+              const pairs=Object.fromEntries(PAIRS.map(p=>[p,window.derivePairDecisionFrame?.(p)||null]));
+              const audit=window.GMFQ_POST_GATE_FINAL_AUDIT||null;
+              return {currencies,pairs,audit,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            },{CCYS,PAIRS});
+            await browser.close();
+            if(runtime.bootstrapError) throw new Error(runtime.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+
+            const structuralIssues=[];
+            const rows={};
+            for(const pair of PAIRS){
+              const [a,b]=pair.split('/');
+              const sa=runtime.currencies[a], sb=runtime.currencies[b], f=runtime.pairs[pair];
+              if(!sa||!sb||!f){structuralIssues.push('MISSING:'+pair);continue;}
+              const macroSide=Number(sa.macro)>Number(sb.macro)?'A':Number(sb.macro)>Number(sa.macro)?'B':'TIE';
+              const policySide=Number(sa.policy)>Number(sb.policy)?'A':Number(sb.policy)>Number(sa.policy)?'B':'TIE';
+              if(f.structural?.macro?.side!==macroSide) structuralIssues.push('MACRO_SIDE:'+pair);
+              if(f.structural?.policy?.side!==policySide) structuralIssues.push('POLICY_SIDE:'+pair);
+
+              const freshness=[currencyFreshness[a].macro.status,currencyFreshness[b].macro.status];
+              let temporal='FRESH';
+              if(freshness.includes('STALE')) temporal='STALE_INPUT';
+              else if(freshness.some(x=>x==='PARTIAL_STALE'||x==='UNKNOWN')) temporal='PARTIAL_STALE';
+              const oisWithheld=[currencyFreshness[a].ois_status,currencyFreshness[b].ois_status].some(x=>x==='WITHHELD');
+              rows[pair]={
+                favored:f.fav,
+                quality:f.quality,
+                calculation:'OK',
+                temporal,
+                ois:oisWithheld?'PARTIAL_WITHHELD':'AVAILABLE_OR_NOT_REQUIRED',
+                inputs:{
+                  [a]:currencyFreshness[a],
+                  [b]:currencyFreshness[b]
+                }
+              };
+            }
+
+            const counts=Object.values(rows).reduce((acc,r)=>{acc[r.temporal]=(acc[r.temporal]||0)+1;return acc;},{});
+            const report={
+              schema:'GMFQ_PAIR_ALIGNMENT_AUDIT_V1',
+              reference_date:'2026-10-12',
+              runtime_baseline_as_of:runtime.audit?.as_of||null,
+              pair_count:Object.keys(rows).length,
+              structural_status:structuralIssues.length?'FAIL':'PASS',
+              structural_issues:structuralIssues,
+              temporal_counts:counts,
+              currencies:currencyFreshness,
+              pairs:rows,
+              verdict:structuralIssues.length?'BLOCK':'REVIEW_FRESHNESS'
+            };
+            fs.writeFileSync('pair-alignment-audit.json',JSON.stringify(report,null,2));
+            const stale=Object.entries(rows).filter(([,r])=>r.temporal!=='FRESH');
+            const md=[
+              '# Pair Alignment Audit V1',
+              '',
+              `- Runtime baseline as-of: ${report.runtime_baseline_as_of||'n/a'}`,
+              `- 28-pair structural calculation: ${report.structural_status}`,
+              `- FRESH pairs: ${counts.FRESH||0}`,
+              `- PARTIAL_STALE pairs: ${counts.PARTIAL_STALE||0}`,
+              `- STALE_INPUT pairs: ${counts.STALE_INPUT||0}`,
+              '',
+              '## Pairs requiring freshness review',
+              ...(stale.length?stale.map(([p,r])=>`- ${p}: ${r.temporal}`):['- None'])
+            ].join('\n');
+            fs.writeFileSync('pair-alignment-audit.md',md);
+            console.log(JSON.stringify(report,null,2));
+            if(structuralIssues.length) process.exit(1);
+          })().catch(e=>{console.error('::error title=Pair alignment audit::'+String(e.message||e));process.exit(1)});
+          EOF
+          node pair-alignment-audit.js
+
+      - name: Upload pair alignment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pair-alignment-audit-v1
+          path: |
+            pair-alignment-audit.json
+            pair-alignment-audit.md
+            /tmp/gmfq-pair-alignment-server.log
