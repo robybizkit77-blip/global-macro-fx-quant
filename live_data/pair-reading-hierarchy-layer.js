@@ -131,7 +131,11 @@
     const side=String(rg.side).toUpperCase();
     const bp=Math.round(Math.abs(Number(rg.bp)||0));
     const stamp=`${pair}|${side}|${bp}`;
-    if(tutor.dataset.gmfqRatesContext===stamp) return;
+    const tutorText=String(tutor.innerText||'');
+    const wordingStillApplied=
+      tutorText.includes('Aspettative CB neutre') &&
+      tutorText.includes(`2Y di livello favorisce ${side} (${bp} pb)`);
+    if(tutor.dataset.gmfqRatesContext===stamp && wordingStillApplied) return;
 
     const drivers=[...tutor.querySelectorAll('.driver')];
     const ratesDriver=drivers.find(d=>/^Tassi\s*\/\s*CB/i.test(String(d.querySelector('b')?.textContent||'').trim()));
@@ -184,6 +188,7 @@
       changes_sizing:false,
       clarifies_static_2y_as_context:true,
       pair_selection_hint:'DOM_DATA_PAIR_ONLY',
+      rerender_guard:'VERIFY_TEXT_NOT_STAMP_ONLY',
       guide_present:!!document.getElementById(GUIDE_ID)
     });
   }
