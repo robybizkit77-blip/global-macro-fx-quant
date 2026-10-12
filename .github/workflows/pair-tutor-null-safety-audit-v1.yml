@@ -1,0 +1,85 @@
+name: Pair Tutor Null Safety Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-pair-tutor-null-safety-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-pair-tutor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8131 --bind 127.0.0.1 > /tmp/gmfq-pair-tutor-null-server.log 2>&1 &
+          sleep 2
+      - name: Inspect tutor functions and DOM dependencies
+        run: |
+          cat > inspect-pair-tutor.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1200}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8131/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const snap=await page.evaluate(()=>{
+              const tutor=window.GMFQ_PAIR_TUTOR||null;
+              const fn=(x)=>typeof x==='function'?Function.prototype.toString.call(x):null;
+              const tutorFns={};
+              if(tutor && typeof tutor==='object') for(const [k,v] of Object.entries(tutor)) if(typeof v==='function') tutorFns[k]=fn(v);
+              return {
+                tutor_type:typeof tutor,
+                tutor_keys:tutor&&typeof tutor==='object'?Object.keys(tutor):[],
+                tutor_functions:tutorFns,
+                openPairDetail:fn(window.openPairDetail),
+                renderPair:fn(window.renderPair),
+                showView:fn(window.showView),
+                pairAfter:fn(window.pairAfter),
+                existing_ids:[...document.querySelectorAll('[id]')].map(x=>x.id).filter(x=>/pair|tutor/i.test(x)).sort()
+              };
+            });
+            // Reproduce once in real view to collect DOM state immediately around failure.
+            await page.evaluate(()=>{ if(typeof window.showView==='function') window.showView('pairs'); });
+            await page.waitForTimeout(300);
+            await page.evaluate(()=>{
+              const el=document.querySelector('#pairs [data-pair="EUR/USD"]');
+              if(el) el.click();
+            });
+            await page.waitForTimeout(300);
+            const after=await page.evaluate(()=>({
+              pair_ids:[...document.querySelectorAll('[id]')].map(x=>x.id).filter(x=>/pair|tutor/i.test(x)).sort(),
+              tutor_html:document.getElementById('gmfqPairTutor')?.innerHTML||null,
+              pair_view_html:document.getElementById('pairs')?.innerHTML?.slice(0,30000)||null
+            }));
+            const report={schema:'GMFQ_PAIR_TUTOR_NULL_SAFETY_AUDIT_V1',snap,after,errors};
+            fs.writeFileSync('pair-tutor-null-safety-audit.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+            await browser.close();
+          })().catch(e=>{console.error('::error title=Pair tutor null safety audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node inspect-pair-tutor.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pair-tutor-null-safety-audit-v1
+          path: |
+            pair-tutor-null-safety-audit.json
+            /tmp/gmfq-pair-tutor-null-server.log
