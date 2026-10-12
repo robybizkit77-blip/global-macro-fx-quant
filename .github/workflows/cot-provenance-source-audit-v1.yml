@@ -1,4 +1,4 @@
-name: COT Provenance Source Audit V1
+name: COT Provenance Runtime Audit V1
 
 on:
   push:
@@ -13,11 +13,82 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate exact current-stack COT provenance
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
         run: |
-          echo '=== symbol locations ==='
-          grep -R -n -E 'PRODUCTION_PRICE_COT_LIQ_AUDIT|FINAL_SOURCE_POLICY_AUDIT|COT_CURRENT_ASOF|COT_PREV_ASOF' payload live_data index.html || true
-          echo '=== stale COT provenance/date contexts ==='
-          grep -R -n -E 'current_as_of.{0,80}2026-09-22|2026-09-22.{0,80}current_as_of|COT.{0,120}2026-09-22' payload live_data index.html || true
-          echo '=== fresh 2026-10-06 contexts ==='
-          grep -R -n '2026-10-06' payload live_data index.html | head -120 || true
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8145 --bind 127.0.0.1 >/tmp/gmfq-cot-runtime.log 2>&1 &
+          sleep 2
+      - name: Inspect runtime COT provenance and freshness
+        run: |
+          cat > /tmp/cot-runtime-audit.js <<'EOF'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8145/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok())throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            await page.waitForFunction(()=>{
+              const s=window.__GMFQ_COT_FRESHNESS_GATE_STATE?.status;
+              return (s&&s!=='WAITING_FOR_COT_PROVENANCE')||window.__GMFQ_BOOTSTRAP_ERROR;
+            },null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
+              const keys=Object.keys(window).filter(k=>/COT|SOURCE_POLICY|PRICE.*LIQ|PRODUCTION/i.test(k)).sort();
+              const candidates={};
+              for(const k of keys){
+                let v;try{v=window[k]}catch(e){continue}
+                if(v&&typeof v==='object') candidates[k]=clone(v);
+                else if(typeof v!=='function') candidates[k]=String(v);
+              }
+              const cotDataCandidates={};
+              for(const k of keys){
+                let v;try{v=window[k]}catch(e){continue}
+                if(!v||typeof v!=='object')continue;
+                const txt=JSON.stringify(v);
+                if(txt.includes('2026-10-06')||txt.includes('2026-09-22'))cotDataCandidates[k]=clone(v);
+              }
+              const deriveLatest=obj=>{
+                if(!obj||typeof obj!=='object')return null;
+                const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+                const per={};
+                for(const c of ccys){
+                  const x=obj[c];
+                  if(x&&Array.isArray(x.dates)&&x.dates.length)per[c]=x.dates[x.dates.length-1];
+                }
+                return Object.keys(per).length?per:null;
+              };
+              const latest={};
+              for(const [k,v] of Object.entries(cotDataCandidates)){
+                const x=deriveLatest(v);if(x)latest[k]=x;
+              }
+              return {
+                cotGate:clone(window.__GMFQ_COT_FRESHNESS_GATE_STATE),
+                priceGate:clone(window.__GMFQ_PRICE_FRESHNESS_GATE_STATE),
+                productionType:typeof window.PRODUCTION_PRICE_COT_LIQ_AUDIT,
+                sourcePolicyType:typeof window.FINAL_SOURCE_POLICY_AUDIT,
+                production:clone(window.PRODUCTION_PRICE_COT_LIQ_AUDIT),
+                sourcePolicy:clone(window.FINAL_SOURCE_POLICY_AUDIT),
+                keys,candidates,cotDataCandidates,latest,
+                eurHeat:typeof window.cotHeatState==='function'?clone(window.cotHeatState('EUR')):null,
+                eurHeatOriginal:typeof window.cotHeatState?.__gmfqOriginal==='function'?clone(window.cotHeatState.__gmfqOriginal('EUR')):null,
+                bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();
+            if(out.bootstrapError)throw new Error(out.bootstrapError);
+            if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
+          })().catch(e=>{console.error('::error title=COT runtime audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node /tmp/cot-runtime-audit.js
