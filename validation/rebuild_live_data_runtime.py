@@ -7,8 +7,11 @@ PAYLOAD=ROOT/'payload'
 SECTIONS=ROOT/'live_data'/'sections'
 OLD_MANIFEST=ROOT/'live_data'/'manifest.json'
 PARTS=[PAYLOAD/f'part-{i:02d}.txt' for i in range(16)]
-# These exist as live-data products but are transformed/derived before runtime use;
-# they are not safe direct byte-replacement surfaces.
+# Dedicated runtime surfaces:
+# - OVERLAY_KEYS are canonical section files applied by canonical-runtime-overlay.js.
+#   They intentionally do not need to occur byte-identically in the frozen payload.
+# - TRANSFORMED_KEYS are derived products that require dedicated builders.
+OVERLAY_KEYS={'MACRO_THERMOMETER_DATA','MACRO_SERIES'}
 TRANSFORMED_KEYS={'V247_COT_STORIES','RATES_AUDIT_METADATA'}
 
 
@@ -25,7 +28,9 @@ def build_snapshot():
     section_rows=[]; failures=[]
     for s in old.get('sections',[]):
         name=s.get('file'); key=s.get('key'); p=SECTIONS/name
-        mode='TRANSFORMED_DERIVED' if key in TRANSFORMED_KEYS else 'DIRECT_EXACT'
+        if key in OVERLAY_KEYS: mode='RUNTIME_OVERLAY'
+        elif key in TRANSFORMED_KEYS: mode='TRANSFORMED_DERIVED'
+        else: mode='DIRECT_EXACT'
         if not p.exists():
             failures.append(f'missing section {name}'); continue
         raw=p.read_bytes(); first=runtime.find(raw); count=runtime.count(raw)
@@ -38,7 +43,18 @@ def build_snapshot():
         raw=p.read_bytes(); text=raw.decode('utf-8')
         part_rows.append({'file':str(p.relative_to(ROOT)),'chars':len(text),'bytes':len(raw),'sha256':sha(raw),'runtime_start_byte':offset,'runtime_end_byte':offset+len(raw)})
         offset+=len(raw)
-    snapshot={'schema':'GMFQ_LIVE_DATA_RUNTIME_SNAPSHOT_V2','generated_from_current_payload':True,'runtime_bytes':len(runtime),'runtime_sha256':sha(runtime),'direct_update_policy':'Only DIRECT_EXACT sections may be generic byte-replaced. TRANSFORMED_DERIVED sections require dedicated builders.','sections':section_rows,'parts':part_rows,'roundtrip_method':'content-addressed exact-byte discovery for direct sections','failures':failures,'status':'PASS' if not failures else 'FAIL'}
+    snapshot={
+        'schema':'GMFQ_LIVE_DATA_RUNTIME_SNAPSHOT_V2',
+        'generated_from_current_payload':True,
+        'runtime_bytes':len(runtime),
+        'runtime_sha256':sha(runtime),
+        'direct_update_policy':'DIRECT_EXACT may be generic byte-replaced; RUNTIME_OVERLAY is applied from canonical section files at runtime; TRANSFORMED_DERIVED requires dedicated builders.',
+        'sections':section_rows,
+        'parts':part_rows,
+        'roundtrip_method':'content-addressed exact-byte discovery for DIRECT_EXACT sections; explicit runtime-overlay classification for canonical Macro sections',
+        'failures':failures,
+        'status':'PASS' if not failures else 'FAIL'
+    }
     return snapshot,runtime
 
 def main():
