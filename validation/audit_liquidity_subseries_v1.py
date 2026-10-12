@@ -39,6 +39,10 @@ def parse_period(value):
         if re.fullmatch(r'\d{2}/\d{2}/\d{4}', s):
             return ('day', dt.datetime.strptime(s, '%d/%m/%Y').date().toordinal())
 
+        # Textual date: 31 Jul 2026
+        if re.fullmatch(r'\d{1,2}\s+[A-Za-z]{3}\s+\d{4}', s):
+            return ('day', dt.datetime.strptime(s, '%d %b %Y').date().toordinal())
+
         # ISO timestamp: 2026-09-21T00:00:00.000Z
         if 'T' in s:
             iso = s.replace('Z', '+00:00')
