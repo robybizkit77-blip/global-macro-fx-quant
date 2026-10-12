@@ -1,0 +1,21 @@
+name: GBP Labour Single-Series PIT Refresh Candidate V1
+
+on:
+  push:
+    branches:
+      - 'validation-gbp-labour-freshness-*'
+    paths:
+      - 'validation/candidates/gbp_labour_2026_07_strict_pit.json'
+      - '.github/workflows/gbp-labour-single-series-pit-refresh-candidate-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-gbp-labour-july:
+    uses: ./.github/workflows/macro-single-series-pit-refresh-v1.yml
+    with:
+      refresh_scope: single_series
+      currency: GBP
+      dimension: labour
+      macro_series_id: UK_UNEMP_RATE_history_value
+      dry_run: false
+      candidate_path: validation/candidates/gbp_labour_2026_07_strict_pit.json
