@@ -1,0 +1,102 @@
+name: Bank Research Current Stack Audit V1
+
+on:
+  push:
+    branches:
+      - validation/bank-research-layer-v1-2026-10-12
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce exact current-stack scope and deterministic state
+        run: |
+          git diff --name-only 530f9f8c82ec0d720ebf3ce8c44c095a5324eb90 HEAD > /tmp/changed.txt
+          cat /tmp/changed.txt
+          python - <<'PY'
+          from pathlib import Path
+          allowed={
+            '.github/workflows/bank-research-layer-v1.yml',
+            '.github/workflows/bank-research-current-stack-audit-v1.yml',
+            'index.html',
+            'live_data/bank-research-card.js',
+            'live_data/sections/BANK_RESEARCH_STATE.json',
+            'validation/BANK_RESEARCH_LAYER_CONTRACT_V1_2026-10-12.json',
+            'validation/build_bank_research_state_v1.py',
+          }
+          changed=set(Path('/tmp/changed.txt').read_text().splitlines())
+          assert changed <= allowed, sorted(changed-allowed)
+          print('PASS_BANK_RESEARCH_EXACT_SCOPE')
+          PY
+          python validation/build_bank_research_state_v1.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('live_data/sections/BANK_RESEARCH_STATE.json').read_text())
+          assert x['state']=='INFORMATIONAL_ONLY'
+          assert x['decision_weight']==0
+          assert x['source_record_count']==8
+          assert all(x[k] is False for k in ('may_modify_pair_bias','may_modify_currency_score','may_modify_sizing','may_create_direction'))
+          assert all('impulse' not in r and 'official_bias' not in r and 'stance' not in r for r in x['records'])
+          print('PASS_BANK_RESEARCH_ZERO_WEIGHT')
+          PY
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8161 --bind 127.0.0.1 > /tmp/gmfq-bank-research-server.log 2>&1 &
+          sleep 2
+      - name: Audit Bank Research card and existing decision isolation
+        run: |
+          cat > bank-research-current-stack-audit-v1.js <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error') errors.push(m.text());});
+            page.on('pageerror',e=>errors.push(String(e)));
+            const r=await page.goto('http://127.0.0.1:8161/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r?.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.__GMFQ_BANK_RESEARCH_STATE?.state==='INFORMATIONAL_ONLY',null,{timeout:120000});
+            await page.waitForFunction(()=>window.__GMFQ_PAIR_FOCUS_BOARD_STATE?.research_state_verified===true,null,{timeout:120000});
+            await page.waitForSelector('#gmfq-bank-research-card',{state:'attached',timeout:30000});
+            const out=await page.evaluate(()=>({
+              bank:window.__GMFQ_BANK_RESEARCH_STATE,
+              card:[...document.querySelectorAll('#gmfq-bank-research-card')].map(x=>x.innerText),
+              focus:window.__GMFQ_PAIR_FOCUS_BOARD_STATE,
+              final:window.GMFQ_POST_GATE_FINAL_AUDIT,
+              bootstrap:window.__GMFQ_BOOTSTRAP_ERROR||null
+            }));
+            await browser.close();
+            if(out.bootstrap) throw new Error(out.bootstrap);
+            if(errors.length) throw new Error('browser errors: '+errors.join(' | '));
+            if(out.card.length!==1 || !out.card[0].includes('peso decisionale 0') || !out.card[0].includes('Non crea direzioni e non modifica bias, score o sizing.')) throw new Error('Bank Research card not read-only');
+            if(out.bank?.decision_weight!==0 || out.bank?.may_modify_pair_bias!==false || out.bank?.may_modify_currency_score!==false || out.bank?.may_modify_sizing!==false || out.bank?.may_create_direction!==false) throw new Error('Bank Research isolation failed');
+            if(out.bank?.records?.length!==8) throw new Error('Bank Research coverage failed');
+            if(out.focus?.pair_count!==28 || out.focus?.research_affects_classification!==false || out.focus?.research_decision_weight!==0) throw new Error('Pair Focus isolation failed');
+            if(out.final?.status!=='PASS') throw new Error('Existing final audit not PASS');
+            console.log(JSON.stringify({verdict:'PASS_BANK_RESEARCH_CURRENT_STACK',records:out.bank.records.length,pairs:out.focus.pair_count,decision_weight:out.bank.decision_weight},null,2));
+          })().catch(e=>{console.error(e);process.exit(1);});
+          JS
+          node bank-research-current-stack-audit-v1.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bank-research-current-stack-audit-v1
+          path: /tmp/gmfq-bank-research-server.log
