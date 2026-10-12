@@ -1,0 +1,30 @@
+{
+  "schema": "GMFQ_RESEARCH_PUBLICATION_GATE_CONTRACT_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Fail-closed publication policy for research-derived dashboard content. Separates context visibility from decision-signal authorization.",
+  "source_registry_schema": "GMFQ_RESEARCH_CANDIDATE_REGISTRY_V1",
+  "policy": {
+    "decision_signal_statuses": ["PRODUCTION_AUTHORIZED"],
+    "context_only_statuses": ["INFORMATIVE_ONLY", "CANDIDATE_FORWARD_WAITING", "FORWARD_CONFLUENCE_WAITING", "VALIDATED_PENDING_PROMOTION"],
+    "excluded_statuses": ["FALSIFIED"],
+    "unknown_status_behavior": "FAIL_CLOSED",
+    "production_signal_flag_required": true,
+    "sizing_flag_required_for_sizing": true,
+    "context_only_entries_must_have_zero_decision_weight": true,
+    "falsified_entries_must_not_enter_decision_or_context_layers": true
+  },
+  "output_contract": {
+    "decision_signals": "Only PRODUCTION_AUTHORIZED entries with production_signal_authorized=true",
+    "context_only": "Informative/candidate entries may be displayed with explicit research status and decision_weight=0",
+    "excluded": "FALSIFIED entries are audit-only and absent from live decision layers",
+    "sizing_authorized": "Only entries with both PRODUCTION_AUTHORIZED and sizing_authorized=true"
+  },
+  "governance": {
+    "fail_closed": true,
+    "no_implicit_promotion": true,
+    "no_status_inference_from_performance_metrics": true,
+    "dashboard_must_consume_gate_manifest_not_raw_registry_for_decision_signals": true,
+    "direct_main_write": false,
+    "auto_merge": false
+  }
+}
