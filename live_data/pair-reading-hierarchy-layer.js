@@ -11,6 +11,12 @@
     {needle:'COSA LA METTE IN DUBBIO?',kind:'invalidate'},
     {needle:'CONCLUSIONE',kind:'conclusion'}
   ];
+  let renderedPairHint=null;
+
+  function normalizePair(value){
+    const p=String(value||'').trim().toUpperCase();
+    return /^[A-Z]{3}\/[A-Z]{3}$/.test(p)?p:null;
+  }
 
   function injectStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -98,11 +104,11 @@
   }
 
   function currentPair(){
-    const lp=String(window.lastPair||'').trim().toUpperCase();
-    if(/^[A-Z]{3}\/[A-Z]{3}$/.test(lp)) return lp;
+    if(renderedPairHint) return renderedPairHint;
+    const lp=normalizePair(window.lastPair);
+    if(lp) return lp;
     const active=document.querySelector('#pairs [data-pair].active,#pairs [data-pair][aria-selected="true"],#pairs [data-pair].selected');
-    const ap=String(active?.getAttribute('data-pair')||'').trim().toUpperCase();
-    return /^[A-Z]{3}\/[A-Z]{3}$/.test(ap)?ap:null;
+    return normalizePair(active?.getAttribute('data-pair'));
   }
 
   function replaceText(el,from,to){
@@ -113,9 +119,9 @@
     return true;
   }
 
-  function clarifyRatesContext(){
+  function clarifyRatesContext(pairOverride){
     const tutor=document.getElementById('gmfqPairTutor');
-    const pair=currentPair();
+    const pair=normalizePair(pairOverride)||currentPair();
     if(!tutor || !pair || typeof window.derivePairDecisionFrame!=='function') return;
     const frame=window.derivePairDecisionFrame(pair)||null;
     const rg=frame?.structural?.ratesGap;
@@ -155,6 +161,14 @@
     tutor.dataset.gmfqRatesContext=stamp;
   }
 
+  function capturePairSelection(event){
+    const target=event.target?.closest?.('#pairs [data-pair]');
+    const pair=normalizePair(target?.getAttribute('data-pair'));
+    if(!pair) return;
+    renderedPairHint=pair;
+    requestAnimationFrame(()=>clarifyRatesContext(pair));
+  }
+
   let queued=false;
   function apply(){
     queued=false;
@@ -169,6 +183,7 @@
       changes_bias:false,
       changes_sizing:false,
       clarifies_static_2y_as_context:true,
+      pair_selection_hint:'DOM_DATA_PAIR_ONLY',
       guide_present:!!document.getElementById(GUIDE_ID)
     });
   }
@@ -180,6 +195,7 @@
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',queue,{once:true});
   else queue();
+  document.addEventListener('click',capturePairSelection,true);
   const observer=new MutationObserver(queue);
   observer.observe(document.documentElement,{subtree:true,childList:true});
   window.addEventListener('resize',queue,{passive:true});
