@@ -1,0 +1,45 @@
+name: Macro Current Sweep V1
+on:
+  push:
+    branches: [validation-macro-current-sweep-v1-2026-10-12]
+    paths:
+      - 'validation/macro_current_sweep_v1.py'
+      - '.github/workflows/macro-current-sweep-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install adapter dependencies
+        run: pip install openpyxl requests
+      - name: Run 16-series official Macro sweep
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json > /tmp/macro-before.sha256
+          python validation/macro_current_sweep_v1.py | tee /tmp/macro-current-sweep.stdout.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-current-sweep.json'))
+          assert d['status']=='PASS_READ_ONLY'
+          assert d['core_series']==16
+          assert sum(d['counts'].values())==16, d['counts']
+          assert d['writes_live_data'] is False
+          assert d['automatic_publication'] is False
+          print('MACRO_CURRENT_SWEEP_PASS',d['counts'])
+          PY
+          sha256sum -c /tmp/macro-before.sha256
+          git diff --exit-code -- live_data payload
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-current-sweep-v1
+          path: /tmp/macro-current-sweep.json
+          if-no-files-found: error
+          retention-days: 30
