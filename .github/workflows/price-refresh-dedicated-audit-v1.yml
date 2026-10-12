@@ -31,18 +31,18 @@ jobs:
             const page=await browser.newPage({viewport:{width:1400,height:1000}});
             const errs=[]; page.on('pageerror',e=>errs.push(String(e))); page.on('console',m=>{if(m.type()==='error') errs.push(m.text())});
             await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForFunction(()=>window.GMFQ_ECB_PRICE_AUDIT?.status==='PASS' && window.__GMFQ_PRICE_FRESHNESS_STATE,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_ECB_PRICE_AUDIT?.status==='PASS' && window.__GMFQ_PRICE_FRESHNESS_GATE_STATE?.status?.startsWith('PASS_'),null,{timeout:120000});
             const x=await page.evaluate((PAIRS)=>({
               ecb:window.GMFQ_ECB_PRICE_AUDIT,
-              freshness:window.__GMFQ_PRICE_FRESHNESS_STATE,
+              freshness:window.__GMFQ_PRICE_FRESHNESS_GATE_STATE,
               latest:window.D?.prices?.at(-1)||null,
               frames:Object.fromEntries(PAIRS.map(p=>{const f=window.derivePairDecisionFrame?.(p);return [p,{fav:f?.fav,quality:f?.quality,setup:f?.setup,structural:f?.structural,priceReading:f?.priceReading}] }))
             }),PAIRS);
             if(x.ecb.as_of!=='2026-10-12') throw new Error('ECB as-of '+x.ecb.as_of);
             if(x.latest?.Date!=='2026-10-12') throw new Error('latest Price '+x.latest?.Date);
             if(x.ecb.pair_count!==28) throw new Error('pair_count '+x.ecb.pair_count);
-            if(String(x.freshness.status||'').includes('WITHHELD')) throw new Error('Price still withheld '+JSON.stringify(x.freshness));
-            if(x.freshness.as_of && x.freshness.as_of!=='2026-10-12') throw new Error('freshness as-of '+x.freshness.as_of);
+            if(x.freshness.status!=='PASS_FRESH_PRICE_UNCHANGED') throw new Error('Price gate '+JSON.stringify(x.freshness));
+            if(x.freshness.price_asof!=='2026-10-12') throw new Error('freshness price_asof '+x.freshness.price_asof);
             for(const [p,f] of Object.entries(x.frames)){
               if(!f.quality || !f.structural?.macro || !f.structural?.policy || !f.structural?.ratesGap) throw new Error('bad pair '+p);
             }
