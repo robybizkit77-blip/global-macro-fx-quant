@@ -26,12 +26,12 @@
       fetchJson('live_data/sections/MACRO_SERIES.json')
     ]);
 
-    // index.html injects these handles immediately after the corresponding
-    // legacy lexical declarations, inside their original scope. The handles
-    // therefore point to the exact objects already captured by runtime code.
-    const thermometerTarget=window.__GMFQ_MACRO_THERMOMETER_REF;
+    // Thermometer is already a stable object on the legacy global data bag.
+    // Macro Series is bridged from its lexical binding by index.html so the
+    // exact object identity captured by legacy closures is preserved.
+    const thermometerTarget=window.__GMFQ_DATA?.MACRO_THERMOMETER_DATA;
     const seriesTarget=window.__GMFQ_MACRO_SERIES_REF;
-    if(!thermometerTarget) throw new Error('canonical-overlay-missing-bridge:MACRO_THERMOMETER_DATA');
+    if(!thermometerTarget) throw new Error('canonical-overlay-missing-target:MACRO_THERMOMETER_DATA');
     if(!seriesTarget) throw new Error('canonical-overlay-missing-bridge:MACRO_SERIES');
 
     syncInPlace(thermometerTarget,macroThermometer,'MACRO_THERMOMETER_DATA');
