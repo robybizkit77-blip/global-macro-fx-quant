@@ -42,39 +42,31 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
             const out=await page.evaluate(()=>{
               const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return null}};
-              const native=(typeof NATIVE_CB_DATA!=='undefined')?NATIVE_CB_DATA:null;
-              let pure=null, fnSource=null, accessible=false, err=null;
+              let pure=null, fnSource=null, err=null;
               try{
-                if(typeof cbStructuralChangeCandidate==='function'){
-                  accessible=true;
-                  fnSource=Function.prototype.toString.call(cbStructuralChangeCandidate);
-                  pure=clone(cbStructuralChangeCandidate(native?.AUD));
-                } else if(typeof window.cbStructuralChangeCandidate==='function'){
-                  accessible=true;
-                  fnSource=Function.prototype.toString.call(window.cbStructuralChangeCandidate);
-                  pure=clone(window.cbStructuralChangeCandidate(native?.AUD));
-                }
+                fnSource=Function.prototype.toString.call(cbStructuralChangeCandidate);
+                pure=clone(cbStructuralChangeCandidate('AUD'));
               }catch(e){err=String(e.stack||e)}
+              const hysteresisFunctions={};
+              for(const k of Object.keys(window).filter(k=>/hyster|changeCandidate|structuralChange/i.test(k)).sort()){
+                if(typeof window[k]==='function') hysteresisFunctions[k]=Function.prototype.toString.call(window[k]);
+              }
+              const scriptSources=[...document.scripts].map(s=>s.src||'INLINE').filter(Boolean);
               return {
-                accessible,
-                pure,
-                fnSource,
-                error:err,
-                nativeAud:clone(native?.AUD),
+                pure,fnSource,error:err,hysteresisFunctions,scriptSources,
                 hysteresisBefore:clone(window.CB_LIQ_HYSTERESIS_STATE?.AUD?.cb),
                 memoryBefore:clone(window.CB_LIQ_CHANGE_MEMORY?.['AUD:cb']),
                 currencyBefore:clone(window.deriveCurrencyState?.('AUD')),
-                pairFrames:Object.fromEntries(['AUD/USD','AUD/JPY','AUD/CAD','EUR/AUD','GBP/AUD','AUD/NZD','AUD/CHF'].map(p=>[p,clone(window.derivePairDecisionFrame?.(p))])),
                 postRba:clone(window.GMFQ_AUD_POST_RBA_PRICING_AUDIT),
+                nativeAud:clone((typeof NATIVE_CB_DATA!=='undefined')?NATIVE_CB_DATA?.AUD:null),
                 bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null
               };
             });
             await browser.close();
             if(out.bootstrapError) throw new Error(out.bootstrapError);
             if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
-            fs.writeFileSync('aud-hysteresis-pure-recalc.json',JSON.stringify({schema:'GMFQ_AUD_HYSTERESIS_PURE_RECALC_V1',...out},null,2));
-            console.log(JSON.stringify({accessible:out.accessible,pure:out.pure,hysteresisBefore:out.hysteresisBefore,memoryBefore:out.memoryBefore,currencyBefore:out.currencyBefore,error:out.error},null,2));
-            if(!out.accessible) process.exitCode=2;
+            fs.writeFileSync('aud-hysteresis-pure-recalc.json',JSON.stringify({schema:'GMFQ_AUD_HYSTERESIS_PURE_RECALC_V2',...out},null,2));
+            console.log(JSON.stringify({pure:out.pure,hysteresisBefore:out.hysteresisBefore,memoryBefore:out.memoryBefore,currencyBefore:out.currencyBefore,error:out.error,hysteresisFunctionNames:Object.keys(out.hysteresisFunctions),scriptSources:out.scriptSources},null,2));
           })().catch(e=>{console.error('::error title=AUD hysteresis pure recalc::'+String(e.stack||e));process.exit(1)});
           EOF
           node aud-hysteresis-pure-recalc.js
