@@ -8,6 +8,12 @@ on:
 
 permissions:
   contents: read
+  actions: read
+
+env:
+  SEED_RUN_ID: '38210964069'
+  SEED_ARTIFACT: cb-priority-decision-event-inventory-38210964069
+  SEED_JSON_SHA256: 537a46b1242d09bf97a2034664905c0c638908354c0f409777b8c38208f26635
 
 jobs:
   inventory:
@@ -17,12 +23,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build official decision-event inventory only
+      - name: Download exact GREEN result-blind seed inventory
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SEED_ARTIFACT }}
+          path: /tmp/cb-seed
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.SEED_RUN_ID }}
+      - name: Verify pinned seed identity and boundary
         run: |
           set -euo pipefail
-          python validation/build_cb_priority_event_inventory_v1.py --output /tmp/cb-event-inventory-base.json
-          python validation/augment_cb_priority_event_inventory_v1.py --input /tmp/cb-event-inventory-base.json --output /tmp/cb-event-inventory-stage2.json
-          python validation/augment_ecb_boc_official_archives_v2.py --input /tmp/cb-event-inventory-stage2.json --output /tmp/cb-event-inventory.json
+          test -f /tmp/cb-seed/cb-event-inventory.json
+          echo "$SEED_JSON_SHA256  /tmp/cb-seed/cb-event-inventory.json" | sha256sum -c -
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/cb-seed/cb-event-inventory.json'))
+          assert r['schema']=='GMFQ_CB_PRIORITY_DECISION_EVENT_INVENTORY_V1'
+          assert r['counts_by_central_bank']=={'BOC':35,'BOJ':62,'FED':74,'RBA':89}
+          assert r['focus_labels_present'] is False and r['performance_data_present'] is False
+          assert r['labeling_authorized'] is False and r['performance_test_authorized'] is False
+          print('PINNED_RESULT_BLIND_SEED_PASS')
+          PY
+      - name: Rebuild only ECB and BoC from official archives/calendars
+        run: |
+          set -euo pipefail
+          python validation/augment_ecb_boc_official_archives_v2.py \
+            --input /tmp/cb-seed/cb-event-inventory.json \
+            --output /tmp/cb-event-inventory.json
       - name: Validate result-blind inventory
         run: |
           python - <<'PY'
