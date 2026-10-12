@@ -1,0 +1,86 @@
+name: COT Absolute Imbalance Reversal One-Shot V1
+
+on:
+  push:
+    branches:
+      - validation-cot-abs-imbalance-reversal-one-shot-v1-2026-10-12
+    paths:
+      - 'validation/run_cot_abs_imbalance_reversal_one_shot_v1.py'
+      - '.github/workflows/cot-abs-imbalance-reversal-one-shot-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  one-shot:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen contracts before result computation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          c=json.load(open('validation/COT_ABS_IMBALANCE_REVERSAL_EDGE_CONTRACT_V1_2026-10-12.json'))
+          p=json.load(open('validation/COT_ULTRACONSERVATIVE_PIT_POLICY_V1_2026-10-11.json'))
+          x=json.load(open('validation/COT_FLOW_FX_PRICE_SOURCE_CONTRACT_V1_2026-10-11.json'))
+          assert c['status']=='PREDECLARED_NO_RESULTS_OBSERVED'
+          assert p['status']=='PREDECLARED_NO_EDGE_RESULTS_OBSERVED'
+          assert x['status']=='PREDECLARED_NO_COT_EDGE_RESULTS_OBSERVED'
+          assert c['signal']['positive_extreme_threshold']==0.30
+          assert c['signal']['negative_extreme_threshold']==-0.30
+          assert c['fx_return_definition']['horizon_trading_days']==5
+          assert c['chronology']['split_rounding']=='floor(0.60 * N) observations assigned to diagnostic segment'
+          g=c['predeclared_edge_gate']
+          assert g['oos_panel_annualized_sharpe_min']==0.50
+          assert g['oos_directional_accuracy_min']==0.52
+          assert g['positive_currency_oos_sharpes_min_count']==5
+          assert g['minimum_oos_signal_observations_per_currency']==20
+          assert g['minimum_pooled_oos_signal_observations']==150
+          assert g['max_single_currency_share_of_pooled_oos']==0.30
+          print('FROZEN_COT_ABS_IMBALANCE_CONTRACTS_VERIFIED')
+          PY
+      - name: Record engine hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cot-abs-imbalance-reversal-one-shot
+          sha256sum validation/run_cot_abs_imbalance_reversal_one_shot_v1.py | tee /tmp/cot-abs-imbalance-reversal-one-shot/engine.sha256
+      - name: Execute economic one-shot exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/run_cot_abs_imbalance_reversal_one_shot_v1.py
+      - name: Record execution metadata without economic assertions
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, pathlib
+          p=pathlib.Path('/tmp/cot-abs-imbalance-reversal-one-shot/result.json')
+          meta={'schema':'GMFQ_COT_ABS_IMBALANCE_REVERSAL_ONE_SHOT_EXECUTION_RECEIPT_V1','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'branch':os.environ.get('GITHUB_REF_NAME'),'result_file_exists':p.exists(),'production_signal_authorized':False,'sizing_authorized':False}
+          if p.exists():
+              d=json.load(open(p)); meta['verdict']=d.get('verdict'); meta['edge_survival']=d.get('edge_survival')
+          pathlib.Path('/tmp/cot-abs-imbalance-reversal-one-shot/execution_receipt.json').write_text(json.dumps(meta,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(meta,indent=2,sort_keys=True))
+          PY
+      - name: Assert no repository writes
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cot-abs-imbalance-reversal-one-shot-${{ github.run_id }}
+          path: /tmp/cot-abs-imbalance-reversal-one-shot/
+          retention-days: 90
