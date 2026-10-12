@@ -1,0 +1,94 @@
+name: Policy CB Freshness Audit V1
+
+on:
+  push:
+    branches:
+      - 'validation-policy-cb-freshness-audit-v1-2026-10-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8133 --bind 127.0.0.1 > /tmp/gmfq-policy-cb-server.log 2>&1 &
+          sleep 2
+      - name: Inspect policy and central-bank runtime provenance
+        run: |
+          cat > policy-cb-freshness-audit.js <<'EOF'
+          const fs=require('fs');
+          const {chromium}=require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const safe=(x)=>{try{return JSON.parse(JSON.stringify(x))}catch{return String(x)}};
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e.stack||e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const r=await page.goto('http://127.0.0.1:8133/index.html',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!r||!r.ok()) throw new Error('HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true||window.__GMFQ_BOOTSTRAP_ERROR,null,{timeout:120000});
+            const runtime=await page.evaluate((CCYS)=>{
+              const currencies=Object.fromEntries(CCYS.map(c=>[c,window.deriveCurrencyState?.(c)||null]));
+              const fnNames=['deriveCurrencyState','getPolicyScore','derivePolicyScore','policyScore','v271StructuralPairFrame','derivePairDecisionFrame'];
+              const functions=Object.fromEntries(fnNames.map(n=>[n,typeof window[n]==='function'?Function.prototype.toString.call(window[n]):null]));
+              const relevant={};
+              for(const k of Object.keys(window).sort()){
+                if(/CB|CENTRAL|POLICY|PRICING|RATE|OIS|BANK/i.test(k)){
+                  const v=window[k];
+                  if(typeof v!=='function' && v!==window && v!==document){
+                    try{
+                      const s=JSON.stringify(v);
+                      if(s && s.length<150000) relevant[k]=JSON.parse(s);
+                      else relevant[k]={type:typeof v,summary:s?`json_length:${s.length}`:'nonserializable'};
+                    }catch{ relevant[k]={type:typeof v}; }
+                  }
+                }
+              }
+              return {currencies,functions,relevant,audit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,bootstrapError:window.__GMFQ_BOOTSTRAP_ERROR||null};
+            },CCYS);
+            await browser.close();
+            if(runtime.bootstrapError) throw new Error(runtime.bootstrapError);
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+
+            const rows={};
+            for(const c of CCYS){
+              const s=runtime.currencies[c]||{};
+              rows[c]={policy:s.policy??null,policyContext:s.policyContext??null,driver:s.driver??null,confirmation:s.confirmation??null};
+            }
+            const report={
+              schema:'GMFQ_POLICY_CB_FRESHNESS_AUDIT_V1',
+              reference_date:'2026-10-12',
+              currencies:rows,
+              derive_currency_state_source:runtime.functions.deriveCurrencyState,
+              policy_related_function_sources:runtime.functions,
+              relevant_runtime_objects:runtime.relevant,
+              runtime_baseline_as_of:runtime.audit?.as_of||null,
+              verdict:'EVIDENCE_ONLY'
+            };
+            fs.writeFileSync('policy-cb-freshness-audit.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report,null,2));
+          })().catch(e=>{console.error('::error title=Policy CB freshness audit::'+String(e.stack||e));process.exit(1)});
+          EOF
+          node policy-cb-freshness-audit.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: policy-cb-freshness-audit-v1
+          path: |
+            policy-cb-freshness-audit.json
+            /tmp/gmfq-policy-cb-server.log
