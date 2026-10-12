@@ -1,0 +1,126 @@
+name: G4USD Dovish Divergence Forward Shadow Engine V1
+
+on:
+  push:
+    branches:
+      - validation-g4usd-dovish-divergence-forward-shadow-engine-v1-2026-10-12
+    paths:
+      - 'validation/g4usd_dovish_divergence_forward_shadow_collector_v1.py'
+      - '.github/workflows/g4usd-dovish-divergence-forward-shadow-engine-v1.yml'
+  pull_request:
+    branches:
+      - validation-g4usd-dovish-divergence-forward-shadow-v1-2026-10-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  RATES_STORE_SHA: 0f4f45190fa5d5e010650026a30a0f981373ec34
+  READINESS_RUN_ID: '38169617850'
+  READINESS_ARTIFACT: g4usd-alignment-integration-readiness-fast-v3-38169617850
+  READINESS_ARTIFACT_DIGEST: sha256:e374d43dbab1a06144799775210d743ef39741e3e48f05bbbe54b18dfcb029df
+  MAX_CERTIFIED_DECISION_POINT: '2026-10-10'
+
+jobs:
+  forward-shadow:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Materialize pinned temporal-PIT rates snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4-forward/rates
+          git fetch --depth=1 origin "$RATES_STORE_SHA"
+          for c in eur jpy cad aud usd; do
+            git checkout FETCH_HEAD -- "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv"
+            cp "validation/rates_pit_rowsets/${c}_rates_2y_10y_temporal_pit_v1.csv" "/tmp/g4-forward/rates/${c}.csv"
+          done
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd
+
+      - name: Download exact GREEN macro readiness artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.READINESS_ARTIFACT }}
+          path: /tmp/g4-forward/readiness
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: robybizkit77-blip/global-macro-fx-quant
+          run-id: ${{ env.READINESS_RUN_ID }}
+
+      - name: Normalize release-date spelling only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4-forward/macro
+          for f in /tmp/g4-forward/readiness/canonical/*.csv; do
+            b=$(basename "$f")
+            python validation/g4usd_canonical_release_date_normalizer_v1.py --source "$f" --output "/tmp/g4-forward/macro/$b"
+          done
+
+      - name: Fetch official ECB FX histories for forward outcome labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4-forward/fx
+          END=$(date -u +%F)
+          for c in USD JPY CAD AUD; do
+            curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+              "https://data-api.ecb.europa.eu/service/data/EXR/D.${c}.EUR.SP00.A?startPeriod=2026-08-01&endPeriod=${END}&format=csvdata" \
+              -o "/tmp/g4-forward/fx/${c}.csv"
+            test -s "/tmp/g4-forward/fx/${c}.csv"
+          done
+
+      - name: Collect strictly post-cutoff signals from certified snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/g4-forward/out
+          python validation/g4usd_dovish_divergence_forward_shadow_collector_v1.py \
+            --contract validation/G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_CONTRACT_V1_2026-10-11.json \
+            --rates-dir /tmp/g4-forward/rates \
+            --macro-dir /tmp/g4-forward/macro \
+            --fx-dir /tmp/g4-forward/fx \
+            --max-certified-decision-point "$MAX_CERTIFIED_DECISION_POINT" \
+            --output-ledger /tmp/g4-forward/out/ledger.json \
+            --output-snapshot /tmp/g4-forward/out/collector-snapshot.json
+
+      - name: Evaluate frozen forward gate without tuning
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/g4usd_dovish_divergence_forward_shadow_v1.py \
+            --contract validation/G4USD_DOVISH_DIVERGENCE_FORWARD_SHADOW_CONTRACT_V1_2026-10-11.json \
+            --ledger /tmp/g4-forward/out/ledger.json \
+            --output /tmp/g4-forward/out/result.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/g4-forward/out/collector-snapshot.json'))
+          r=json.load(open('/tmp/g4-forward/out/result.json'))
+          assert s['future_decision_points_after_max_certified']=='WITHHELD_INPUT_SNAPSHOT_NOT_EXTENDED'
+          assert r['production_signal_authorized'] is False
+          assert r['sizing_authorized'] is False
+          assert r['no_rescue_tuning'] is True
+          assert r['status'] in {'WAITING_FOR_UNSEEN_OBSERVATIONS','FORWARD_CONFIRMED_PENDING_PROMOTION_REVIEW','FORWARD_GATE_FAILED_NO_TUNING'}
+          print(json.dumps({'collector':s,'result':r},indent=2,sort_keys=True))
+          PY
+
+      - name: Assert repository remains clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g4usd-dovish-divergence-forward-shadow-${{ github.run_id }}
+          path: /tmp/g4-forward/out/
+          if-no-files-found: error
+          retention-days: 90
