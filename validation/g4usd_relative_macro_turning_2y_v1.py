@@ -36,16 +36,27 @@ def select_rate(rows,dp):
     return r
 
 
-def load_macro(path:Path,date_col:str,value_col:str):
+def load_macro(path:Path):
+    """Load the existing result-blind canonical adapter schema only.
+
+    Canonical columns are reference_period, release_date, value, availability_status.
+    No source-specific field inference is permitted inside the economic engine.
+    """
     out=[]
     with path.open(newline='',encoding='utf-8-sig') as f:
-        for r in csv.DictReader(f):
+        rd=csv.DictReader(f)
+        required={'reference_period','release_date','value','availability_status'}
+        missing=required-set(rd.fieldnames or [])
+        if missing: raise RuntimeError(f'noncanonical macro input {path}: missing {sorted(missing)}')
+        for r in rd:
             status=(r.get('availability_status') or '').strip()
-            value=(r.get(value_col) or '').strip()
-            rel=(r.get('release_date') or r.get('first_eligible_decision_date') or r.get('eligible_date') or '').strip()
+            value=(r.get('value') or '').strip()
+            rel=(r.get('release_date') or '').strip()
             if status in OFFICIAL_UNAVAILABLE:
                 if value or rel: raise RuntimeError(f'official-unavailable row carries data in {path}')
                 continue
+            if status!='AVAILABLE_STRICT_PIT':
+                raise RuntimeError(f'unexpected canonical availability status {status!r} in {path}')
             if not rel: raise RuntimeError(f'missing PIT release eligibility in {path}')
             if not value: raise RuntimeError(f'missing macro value in {path}')
             out.append((rel[:10],float(value)))
@@ -115,20 +126,12 @@ def main():
     c=json.load(open(a.contract,encoding='utf-8'))
     assert c['schema']=='GMFQ_G4USD_RELATIVE_MACRO_TURNING_2Y_CONTRACT_V1'
     assert c['status']=='PREDECLARED_RESULT_BLIND'
-    meta={
-      'EUR':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'JPY':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-      'CAD':('reference_month','cpi_yoy_full_precision','reference_month','unemployment_rate'),
-      'AUD':('reference_quarter','cpi_yoy','reference_month','unemployment_rate'),
-      'USD':('reference_month','cpi_yoy','reference_month','unemployment_rate'),
-    }
     rates={k:load_rates(Path(getattr(a,f'{k.lower()}_rates'))) for k in (*CCYS,'USD')}
     macro={}
     for k in (*CCYS,'USD'):
-        ic,iv,lc,lv=meta[k]
         macro[k]={
-          'inf':load_macro(Path(getattr(a,f'{k.lower()}_inflation')),ic,iv),
-          'lab':load_macro(Path(getattr(a,f'{k.lower()}_labour')),lc,lv),
+          'inf':load_macro(Path(getattr(a,f'{k.lower()}_inflation'))),
+          'lab':load_macro(Path(getattr(a,f'{k.lower()}_labour'))),
         }
 
     all_events=[]
@@ -157,7 +160,6 @@ def main():
             }
             signals.append(e)
         cut=int(len(signals)*0.60)
-        # Keep at least one OOS row when any signal exists, without changing the frozen 60/40 rule.
         if signals and cut>=len(signals): cut=len(signals)-1
         for j,e in enumerate(signals):
             e['split']='IS' if j<cut else 'OOS'
