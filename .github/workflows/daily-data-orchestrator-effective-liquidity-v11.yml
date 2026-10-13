@@ -108,3 +108,4 @@ jobs:
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
 # Retrigger marker: certify V11 at the current branch head without changing runtime policy.
+# Portability gate recertification: the base Liquidity contract now normalizes repository paths cross-platform.
