@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Revalidated against the current release-candidate head on 2026-10-13.
 import io
 import json
 import urllib.request
