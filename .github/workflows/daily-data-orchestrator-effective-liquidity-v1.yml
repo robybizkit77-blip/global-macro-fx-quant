@@ -11,11 +11,9 @@ on:
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/fetch_rba_aud_es_balances_candidate.py'
       - 'validation/apply_rba_aud_es_balances_candidate.py'
-      - 'validation/diagnose_boj_jpy_reserve_balances_v1.py'
-      - 'validation/probe_snb_chf_exact_variants_v1.py'
-      - 'validation/probe_snb_chf_credit_cube_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v1.yml'
   pull_request:
@@ -28,11 +26,9 @@ on:
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/fetch_rba_aud_es_balances_candidate.py'
       - 'validation/apply_rba_aud_es_balances_candidate.py'
-      - 'validation/diagnose_boj_jpy_reserve_balances_v1.py'
-      - 'validation/probe_snb_chf_exact_variants_v1.py'
-      - 'validation/probe_snb_chf_credit_cube_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v1.yml'
   workflow_dispatch:
@@ -129,23 +125,34 @@ jobs:
           PY
           sha256sum -c /tmp/chf-sight-runtime.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
-      - name: Probe SNB CHF credit cube without promotion
+      - name: Verify persisted SNB CHF credit blocker
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/chf-credit-runtime.before.sha256
-          python validation/probe_snb_chf_credit_cube_v1.py | tee /tmp/chf-credit-cube-probe.json
           python - <<'PY'
           import json
-          d=json.load(open('/tmp/chf-credit-cube-probe.json'))
-          assert d['schema']=='GMFQ_SNB_CHF_CREDIT_CUBE_PROBE_V1', d
-          assert d['source']['publisher']=='Swiss National Bank', d
-          assert d['source']['cube']=='bakredinausbm', d
-          assert d['parse']['candidate_count'] > 0, d
-          assert d['best_candidate'] is not None, d
-          assert d['promotion_performed'] is False, d
-          assert d['runtime_mutated'] is False, d
-          assert d['publication_performed'] is False, d
-          print('CHF_CREDIT_BEST', d['best_candidate'])
-          print('CHF_CREDIT_RUNTIME_MATCH_CERTIFIED', d['runtime_match_certified'])
+          p='validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
+          d=json.load(open(p))
+          assert d['schema']=='liquidity_chf_credit_provenance_resolution_v1', d
+          assert d['source_family']['provider']=='SNB', d
+          assert d['source_family']['cube']=='bakredinausbm', d
+          probe=d['live_cube_probe']
+          assert probe['candidate_count']==6, probe
+          b=probe['best_candidate']
+          assert b['identity']=='AV1 | A | T1 | B', b
+          assert b['overlap']==13 and b['exact']==0, b
+          assert probe['runtime_match_certified'] is False, probe
+          r=d['resolution']
+          assert r['status']=='SOURCE_FAMILY_MAPPED_EXACT_SERIES_UNRESOLVED', r
+          assert r['runtime_match_certified'] is False, r
+          assert r['automation_ready'] is False, r
+          assert r['fail_closed'] is True, r
+          op=d['operational_impact']
+          assert op['runtime_changed'] is False, op
+          assert op['publication_performed'] is False, op
+          assert op['effective_coverage_ready']==11, op
+          assert op['effective_coverage_pending']==15, op
+          assert op['effective_coverage_total']==26, op
+          print('CHF_CREDIT_PERSISTED_BLOCKER_PASS', b)
           PY
           sha256sum -c /tmp/chf-credit-runtime.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
@@ -154,6 +161,6 @@ jobs:
           echo 'Effective Liquidity coverage: 11 READY / 15 pending / 26 total'
           echo 'JPY reserve provenance blocker: persisted fail-closed evidence'
           echo 'CHF sight-deposit blocker: persisted fail-closed evidence'
-          echo 'CHF credit cube probe: read-only, no automatic promotion'
+          echo 'CHF credit blocker: persisted fail-closed evidence'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
