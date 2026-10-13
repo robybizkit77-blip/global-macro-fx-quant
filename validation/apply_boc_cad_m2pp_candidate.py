@@ -8,8 +8,18 @@ from pathlib import Path
 DEFAULT_RUNTIME = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 
 
-def next_month(ym: str) -> str:
-    y, m = map(int, ym.split('-'))
+def month_key(value: str) -> str:
+    parts = str(value).split('-')
+    if len(parts) < 2:
+        raise SystemExit(f'invalid monthly date: {value}')
+    y, m = map(int, parts[:2])
+    if not 1 <= m <= 12:
+        raise SystemExit(f'invalid monthly date: {value}')
+    return f'{y:04d}-{m:02d}'
+
+
+def next_month(value: str) -> str:
+    y, m = map(int, month_key(value).split('-'))
     if m == 12:
         return f'{y + 1:04d}-01'
     return f'{y:04d}-{m + 1:02d}'
@@ -55,16 +65,19 @@ def main():
 
     new_obs = candidate.get('new_observations') or []
     normalized = []
-    expected = next_month(str(money['last_date']))
+    expected_month = next_month(str(money['last_date']))
     for row in new_obs:
         date = str(row.get('date') or '')
         value = float(row.get('value'))
-        if date != expected:
-            raise SystemExit(f'non-contiguous CAD M2++ candidate sequence: expected {expected}, got {date}')
+        observed_month = month_key(date)
+        if observed_month != expected_month:
+            raise SystemExit(
+                f'non-contiguous CAD M2++ candidate sequence: expected month {expected_month}, got {date}'
+            )
         if value <= 0:
             raise SystemExit(f'invalid CAD M2++ candidate value on {date}: {value}')
         normalized.append((date, value))
-        expected = next_month(date)
+        expected_month = next_month(date)
 
     if bool(normalized) != bool(candidate.get('candidate_update_available')):
         raise SystemExit('candidate_update_available flag disagrees with new_observations')
