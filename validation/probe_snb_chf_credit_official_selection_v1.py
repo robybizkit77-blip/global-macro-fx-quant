@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 RUNTIME=Path('live_data/sections/NATIVE_LIQ_DATA.json')
-URL='https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?dimSel=D0(AV1),D1(T0,I,A),D2(T1,H),D3(F)&fromDate=2025-07&toDate=2026-07'
+URL='https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?dimSel=D0(AV1,AV2,AV3,AV4,AV10),D1(T0,I,A),D2(T1,H,K),D3(F,B)&fromDate=2025-07&toDate=2026-07'
 
 
 def fetch():
@@ -46,10 +46,7 @@ def parse(text):
         except ValueError:continue
         grouped[dims][m]=v
     if not grouped:raise SystemExit('SNB official selection returned no dimensioned series')
-    series=[]
-    for dims,vals in grouped.items():
-        series.append({'dimensions':{'D0':dims[0],'D1':dims[1],'D2':dims[2],'D3':dims[3]},'values':vals})
-    return rows[:header_idx+1],series
+    return [{'dimensions':{'D0':d[0],'D1':d[1],'D2':d[2],'D3':d[3]},'values':vals} for d,vals in grouped.items()]
 
 def compare(rt,vals):
     common=sorted(set(rt)&set(vals)); best=None
@@ -63,11 +60,10 @@ def compare(rt,vals):
     return best[1]
 
 def main():
-    text=fetch(); header,series=parse(text); rt=runtime(); ranked=[]
-    last=max(rt)
+    series=parse(fetch()); rt=runtime(); ranked=[]; last=max(rt)
     for s in series:
         cmp=compare(rt,s['values'])
         ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
     ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V1','url':URL,'series_count':len(series),'header_preview':header,'ranked':ranked},indent=2,ensure_ascii=False))
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V1','url':URL,'series_count':len(series),'ranked':ranked[:40]},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
