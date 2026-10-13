@@ -1,0 +1,48 @@
+name: Liquidity ECB EUR Credit Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_ecb_eur_nfc_loans_variants.py'
+      - '.github/workflows/liquidity-ecb-eur-credit-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-eur-credit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Compare official ECB variants to runtime
+        run: |
+          python validation/diagnose_ecb_eur_nfc_loans_variants.py | tee /tmp/eur-credit-diagnostic.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/eur-credit-diagnostic.json'))
+          assert d['schema']=='GMFQ_EUR_NFC_LOANS_VARIANT_DIAGNOSTIC_V1', d
+          b=d['candidates']['N_A_A20']
+          assert b['series_id']=='BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E', b
+          assert b['overlap_count'] > 0, b
+          print('EUR_CREDIT_RUNTIME_LAST', d['runtime_last_date'])
+          print('EUR_CREDIT_CANDIDATE', json.dumps(b, sort_keys=True))
+          print('EUR_CREDIT_RANKING', d['ranking_by_mean_abs_diff'])
+          PY
+      - name: Verify no runtime mutation
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'EUR corporate credit diagnostic: read-only'
+          echo 'Promotion: NONE'
+          echo 'Publication: NONE'
