@@ -107,3 +107,4 @@ jobs:
           echo 'Remaining fail-closed: CHF.liquidity, CHF.credit, JPY.liquidity'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
+# Retrigger marker: certify V11 at the current branch head without changing runtime policy.

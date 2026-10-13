@@ -83,3 +83,4 @@ jobs:
           echo 'Remaining orchestrator blockers: LIQUIDITY, RISK'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
+# Retrigger marker: certify Price V1 at the current branch head without enabling publication.
