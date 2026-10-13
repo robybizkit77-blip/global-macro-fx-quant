@@ -39,29 +39,47 @@ jobs:
           assert c['candidate_pipeline_ready'] is True and c['runtime_mutated'] is False and c['publication_performed'] is False, c
           print('EUR_M3_REVISION_AWARE_SOURCE_CONTRACT_PASS')
           PY
-      - name: Dry-run controlled apply
+      - name: Dry-run current runtime
         run: |
           python validation/apply_ecb_eur_m3_revision_aware_candidate.py --candidate /tmp/eur-m3.json > /tmp/eur-m3-dry.json
           cat /tmp/eur-m3-dry.json
-      - name: Prove controlled apply on runtime copy
+      - name: Build one-month-behind PIT replay copy
         run: |
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.eur-m3.json
-          python validation/apply_ecb_eur_m3_revision_aware_candidate.py --candidate /tmp/eur-m3.json --runtime /tmp/NATIVE_LIQ_DATA.eur-m3.json --apply > /tmp/eur-m3-apply.json
-          cat /tmp/eur-m3-apply.json
           python - <<'PY'
           import json
-          c=json.load(open('/tmp/eur-m3.json')); dry=json.load(open('/tmp/eur-m3-dry.json')); r=json.load(open('/tmp/eur-m3-apply.json'))
-          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['EUR']['money']
-          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-m3.json'))['EUR']['money']; n=len(original['dates'])
-          assert applied['dates'][:n]==original['dates'] and applied['values'][:n]==original['values'], (applied,original)
-          expected=len(c['new_observations'])
-          assert dry['applied'] is False and dry['appended_observations']==expected, dry
-          assert r['appended_observations']==expected and r['runtime_history_rewritten'] is False, r
-          if expected:
-              assert r['applied'] is True
-              assert applied['dates'][-1]==c['new_observations'][-1]['date']
-              assert float(applied['values'][-1])==float(c['new_observations'][-1]['value'])
-          print('EUR_M3_REVISION_AWARE_CONTROLLED_APPLY_PASS')
+          src='live_data/sections/NATIVE_LIQ_DATA.json'; out='/tmp/NATIVE_LIQ_DATA.eur-m3-replay.json'
+          p=json.load(open(src)); lane=p['EUR']['money']
+          assert len(lane['dates'])==len(lane['values']) and len(lane['dates'])>=2, lane
+          removed_date=str(lane['dates'][-1]); removed_value=float(lane['values'][-1])
+          lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]
+          if 'last_date' in lane: lane['last_date']=lane['dates'][-1]
+          if 'last_value' in lane: lane['last_value']=lane['values'][-1]
+          json.dump(p,open(out,'w'),separators=(',',':')); open('/tmp/eur-m3-removed.json','w').write(json.dumps({'date':removed_date,'value':removed_value}))
+          print('EUR_M3_REPLAY_TAIL_REMOVED',removed_date,removed_value)
+          PY
+      - name: Re-fetch official candidate against replay copy
+        run: |
+          python validation/fetch_ecb_eur_m3_revision_aware_candidate.py --runtime /tmp/NATIVE_LIQ_DATA.eur-m3-replay.json --out /tmp/eur-m3-replay-candidate.json
+          cat /tmp/eur-m3-replay-candidate.json
+      - name: Prove real official append on replay copy
+        run: |
+          cp /tmp/NATIVE_LIQ_DATA.eur-m3-replay.json /tmp/NATIVE_LIQ_DATA.eur-m3-applied.json
+          python validation/apply_ecb_eur_m3_revision_aware_candidate.py --candidate /tmp/eur-m3-replay-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.eur-m3-applied.json --apply > /tmp/eur-m3-replay-apply.json
+          cat /tmp/eur-m3-replay-apply.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-m3-replay.json'))['EUR']['money']
+          after=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-m3-applied.json'))['EUR']['money']
+          c=json.load(open('/tmp/eur-m3-replay-candidate.json')); r=json.load(open('/tmp/eur-m3-replay-apply.json')); removed=json.load(open('/tmp/eur-m3-removed.json'))
+          n=len(before['dates'])
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values'], (before,after)
+          assert len(c['new_observations'])==1, c
+          obs=c['new_observations'][0]
+          assert r['applied'] is True and r['appended_observations']==1 and r['runtime_history_rewritten'] is False, r
+          assert str(obs['date'])[:7]==str(removed['date'])[:7], (obs,removed)
+          assert str(after['dates'][-1])[:7]==str(obs['date'])[:7] and float(after['values'][-1])==float(obs['value']), (after,obs)
+          assert c['source']['series_key']=='BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E', c
+          print('EUR_M3_REVISION_AWARE_REAL_APPEND_REPLAY_PASS',obs)
           PY
       - name: Verify tracked runtime unchanged
         run: |
@@ -71,6 +89,6 @@ jobs:
         run: |
           echo 'EUR.money exact ECB M3 series: BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E'
           echo 'Historical current-vintage revisions: diagnostic only; stored PIT history frozen'
-          echo 'Controlled append-only apply: tested on runtime copy'
+          echo 'Real append path: re-proven by removing one stored tail month on an ephemeral copy and restoring it from official ECB data'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
