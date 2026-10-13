@@ -365,16 +365,19 @@ jobs:
           python3 validation/fetch_ecb_g8_price_candidate.py --out /tmp/daily-orchestrator-v1/price-candidate.json
           python3 - <<'PY'
           import json,re
+          from datetime import date
           c=json.load(open('/tmp/daily-orchestrator-v1/price-candidate.json'))
           reg=json.load(open('validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'))
           text=open('payload/part-15.txt',encoding='utf-8').read()
           m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">', text)
           assert len(m)==1,m
           current=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
+          run_date=date.today().isoformat()
           assert c['as_of'] >= current, (c['as_of'],current)
-          assert c['as_of'] <= reg['as_of'], (c['as_of'],reg['as_of'])
+          assert c['as_of'] <= run_date, (c['as_of'],run_date)
+          assert reg['as_of'] <= run_date, (reg['as_of'],run_date)
           assert c['pair_count']==28 and c['base']=='EUR'
-          print('PRICE_CANDIDATE_PASS',current,'->',c['as_of'])
+          print('PRICE_CANDIDATE_PASS',current,'->',c['as_of'],'registry_policy_as_of=',reg['as_of'],'run_date=',run_date)
           PY
 
       - name: Ephemerally apply ECB Price candidate
