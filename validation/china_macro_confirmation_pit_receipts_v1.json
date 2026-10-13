@@ -1,0 +1,42 @@
+{
+  "schema": "GMFQ_CHINA_MACRO_CONFIRMATION_PIT_RECEIPTS_V1",
+  "certification_source": {
+    "workflow": "China NBS Dual PIT Probe V1",
+    "run_id": 38468165037,
+    "head_sha": "21536a15c895b4298ed63afed0ab75bc7ed3d4c6",
+    "artifact_id": 11849192680,
+    "artifact_digest": "sha256:af698034427d43ec1105eeb7443d1218ae6d2463e8e06a011c4a036418bdc186"
+  },
+  "receipts": {
+    "activity": {
+      "publisher": "National Bureau of Statistics of China",
+      "series": "Manufacturing Purchasing Managers' Index",
+      "source_url": "https://www.stats.gov.cn/english/PressRelease/202610/t20261008_1965466.html",
+      "release_period": "2026-09",
+      "release_timestamp": "2026-10-01 09:30",
+      "raw_sha256": "800b86d45d8262775999a545025efb6a3721823df6264c94d50c9277f28bc856",
+      "raw_bytes": 142264,
+      "value": 50.1,
+      "prior_value": 49.8,
+      "unit": "index_pct",
+      "direction": "IMPROVING"
+    },
+    "demand": {
+      "publisher": "National Bureau of Statistics of China",
+      "series": "Total retail sales of consumer goods",
+      "source_url": "https://www.stats.gov.cn/english/PressRelease/202609/t20260916_1965341.html",
+      "release_period": "2026-08",
+      "release_timestamp": "2026-09-16 10:00",
+      "raw_sha256": "42720d273fd13533991a514cb7edd10dbed3e9c3723aeafe86d44e5789f71605",
+      "raw_bytes": 74402,
+      "value": 0.4,
+      "prior_value": 0.6,
+      "unit": "yoy_pct",
+      "direction": "WEAKENING"
+    }
+  },
+  "combined_direction": "MIXED",
+  "activation_scope": "CONTEXT_ONLY",
+  "mechanical_pair_vote": false,
+  "publication_permitted": false
+}
