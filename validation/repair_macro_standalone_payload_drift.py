@@ -63,7 +63,14 @@ def find_json_literal(text: str, key: str) -> tuple[int, int]:
         elif ch == closing:
             depth -= 1
             if depth == 0:
-                return start, i + 1
+                # Standalone JSON sections intentionally retain their terminal
+                # newline. Include any whitespace immediately following the
+                # literal so a converged repair is byte-idempotent instead of
+                # re-adding one newline on every pass.
+                end = i + 1
+                while end < len(text) and text[end].isspace():
+                    end += 1
+                return start, end
     raise RuntimeError(f"{key}: unterminated JSON literal")
 
 
