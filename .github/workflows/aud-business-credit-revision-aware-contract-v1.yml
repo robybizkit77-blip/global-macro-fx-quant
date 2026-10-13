@@ -75,6 +75,13 @@ jobs:
           cat /tmp/aud-credit-replay-apply.json
           python - <<'PY'
           import json
+          from datetime import datetime
+          def month(v):
+              s=str(v)
+              for fmt in ('%Y-%m-%d','%Y-%m','%d/%m/%Y'):
+                  try: return datetime.strptime(s,fmt).strftime('%Y-%m')
+                  except ValueError: pass
+              raise AssertionError(f'unparseable date {v!r}')
           before=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-credit-replay.json'))['AUD']['credit']
           after=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-credit-applied.json'))['AUD']['credit']
           c=json.load(open('/tmp/aud-credit-replay-candidate.json')); r=json.load(open('/tmp/aud-credit-replay-apply.json')); removed=json.load(open('/tmp/aud-credit-removed.json'))
@@ -83,7 +90,9 @@ jobs:
           assert len(c['new_observations'])>=1, c
           first=c['new_observations'][0]
           assert r['applied'] is True and r['appended_observations']==len(c['new_observations']) and r['runtime_history_rewritten'] is False, r
-          assert str(first['date'])[:7]==str(removed['date'])[:7], (first,removed)
+          assert month(first['date'])==month(removed['date'])=='2026-07', (first,removed)
+          assert float(first['value'])==1522.4, first
+          assert month(c['new_observations'][-1]['date'])=='2026-08' and float(c['new_observations'][-1]['value'])==1536.5, c
           assert c['source']['series_key']=='DLCACSFBS', c
           print('AUD_BUSINESS_CREDIT_REAL_APPEND_REPLAY_PASS',c['new_observations'])
           PY
