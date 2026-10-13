@@ -36,7 +36,7 @@ jobs:
           from pathlib import Path
           p=json.loads(Path('validation/liquidity/JPY_M3_PROVENANCE_RESOLUTION_2026-10-13.json').read_text())
           assert p['schema']=='GMFQ_LIQUIDITY_JPY_M3_PROVENANCE_RESOLUTION_V1'
-          assert p['status']=='UNIQUE_EXACT_OFFICIAL_SERIES_PROVEN_CONTROLLED_APPLY_PENDING'
+          assert p['status']=='READY_CONTROLLED_APPLY_PROVEN'
           assert p['source']['publisher']=='Bank of Japan'
           assert p['source']['database']=='MD02'
           assert p['source']['series_id']=='MAM1XAM3M3MO'
@@ -48,8 +48,11 @@ jobs:
           assert p['runtime_proof']['mae']==0.0
           assert p['runtime_proof']['max_abs_diff']==0.0
           assert p['promotion_eligible'] is True
-          assert p['automation_ready'] is False
-          assert p['controlled_apply_proven'] is False
+          assert p['automation_ready'] is True
+          assert p['controlled_apply_proven'] is True
+          assert p['fail_closed_until_controlled_apply'] is False
+          assert p['controlled_apply_run_id']==38471037234
+          assert p['controlled_apply_job_id']==115549873777
           assert p['runtime_mutated'] is False
           assert p['publication_performed'] is False
           PY
