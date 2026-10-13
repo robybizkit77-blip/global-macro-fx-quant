@@ -101,6 +101,8 @@ jobs:
           assert liq['source_mapped_subseries']==26, liq
           assert liq['source_unresolved_subseries']==0, liq
           assert liq['total_subseries']==26, liq
+          assert liq['cad_m2pp_candidate_pipeline_ready'] is True, liq
+          assert liq['cad_m2pp_collector']=='validation/fetch_boc_cad_m2pp_candidate.py', liq
           assert d['lanes']['RISK']['guard_proven'] is True
           assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
           assert d['lanes']['RISK']['vix_source_status']=='READY'
