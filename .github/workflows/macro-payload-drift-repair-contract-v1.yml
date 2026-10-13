@@ -1,0 +1,118 @@
+name: Macro Payload Drift Repair Contract V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - validation/repair_macro_standalone_payload_drift.py
+      - .github/workflows/macro-payload-drift-repair-contract-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macro-payload-drift-repair-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot tracked runtime
+        run: |
+          sha256sum \
+            live_data/sections/MACRO_THERMOMETER_DATA.json \
+            live_data/sections/MACRO_SERIES.json \
+            live_data/manifest.v2.json \
+            payload/part-*.txt > /tmp/macro-drift.before.sha256
+
+      - name: Prove drift exists and dry-run exact repair
+        run: |
+          set -euo pipefail
+          python validation/repair_macro_standalone_payload_drift.py \
+            | tee /tmp/macro-drift.dry-run.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-drift.dry-run.json'))
+          assert r['status']=='PASS' and r['apply'] is False,r
+          keys={x['key'] for x in r['targets']}
+          assert keys=={'MACRO_THERMOMETER_DATA','MACRO_SERIES'},keys
+          assert len(r['changed_payload_parts']) in {0,1,2},r
+          assert r['tracked_standalone_mutation'] is False
+          assert r['publication'] is False
+          print('MACRO_DRIFT_DRY_RUN_PASS',r['changed_payload_parts'])
+          PY
+          git diff --exit-code -- live_data payload
+
+      - name: Controlled repair on checkout only
+        run: |
+          set -euo pipefail
+          python validation/repair_macro_standalone_payload_drift.py --apply \
+            | tee /tmp/macro-drift.apply.json
+          python - <<'PY'
+          import json,subprocess
+          r=json.load(open('/tmp/macro-drift.apply.json'))
+          assert r['status']=='PASS' and r['apply'] is True,r
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={f"payload/part-{i:02d}.txt" for i in range(16)}
+          assert changed <= allowed,(sorted(changed),sorted(changed-allowed))
+          expected={f"payload/part-{i:02d}.txt" for i in r['changed_payload_parts']}
+          assert changed==expected,(sorted(changed),sorted(expected))
+          assert len(changed)<=2,changed
+          print('MACRO_REPAIR_EXACT_DIFF_SCOPE_PASS',sorted(changed))
+          PY
+
+      - name: Rebuild global manifest and require full PASS
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write /tmp/manifest.v2.rebuilt.json \
+            > /tmp/manifest.v2.rebuild.stdout.json
+          python - <<'PY'
+          import json
+          m=json.load(open('/tmp/manifest.v2.rebuilt.json'))
+          assert m['status']=='PASS',m.get('failures')
+          rows={x['key']:x for x in m['sections']}
+          for key in ('MACRO_THERMOMETER_DATA','MACRO_SERIES'):
+              r=rows[key]
+              assert r['mode']=='DIRECT_SINGLE_PART',r
+              assert r['occurrences_in_payload']==1,r
+              assert r['part'] is not None,r
+              assert r['direct_update_allowed'] is True,r
+          print('GLOBAL_MANIFEST_REBUILD_PASS', {k:rows[k]['part'] for k in ('MACRO_THERMOMETER_DATA','MACRO_SERIES')})
+          PY
+          git diff --exit-code -- live_data
+
+      - name: Prove converged Macro repair is idempotent
+        run: |
+          sha256sum payload/part-*.txt > /tmp/macro-drift.after-first.sha256
+          python validation/repair_macro_standalone_payload_drift.py --apply \
+            | tee /tmp/macro-drift.second.json
+          sha256sum payload/part-*.txt > /tmp/macro-drift.after-second.sha256
+          cmp /tmp/macro-drift.after-first.sha256 /tmp/macro-drift.after-second.sha256
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-drift.second.json'))
+          assert r['status']=='PASS' and r['apply'] is True,r
+          assert r['changed_payload_parts']==[],r
+          assert all(x['changed'] is False for x in r['targets']),r
+          print('MACRO_REPAIR_IDEMPOTENT_PASS')
+          PY
+
+      - name: Restore tracked runtime and verify zero mutation
+        run: |
+          git checkout -- payload/part-*.txt
+          sha256sum -c /tmp/macro-drift.before.sha256
+          git diff --exit-code -- live_data payload
+
+      - name: Summary
+        run: |
+          echo 'Macro standalone/payload repair contract: GREEN'
+          echo 'Targets: MACRO_THERMOMETER_DATA + MACRO_SERIES'
+          echo 'Global manifest V2 rebuild after repair: PASS'
+          echo 'Idempotence: PASS'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
