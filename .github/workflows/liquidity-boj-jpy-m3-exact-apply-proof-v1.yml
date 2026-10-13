@@ -1,0 +1,115 @@
+name: Liquidity BOJ JPY M3 Exact Apply Proof V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/fetch_boj_jpy_m3_exact_candidate.py'
+      - 'validation/apply_boj_jpy_m3_exact_candidate.py'
+      - 'validation/liquidity/JPY_M3_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - '.github/workflows/liquidity-boj-jpy-m3-exact-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  push:
+    branches:
+      - validation-jpy-m3-controlled-apply-clean-v1-2026-10-13
+    paths:
+      - 'validation/fetch_boj_jpy_m3_exact_candidate.py'
+      - 'validation/apply_boj_jpy_m3_exact_candidate.py'
+      - 'validation/liquidity/JPY_M3_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - '.github/workflows/liquidity-boj-jpy-m3-exact-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-controlled-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snapshot tracked runtime hash
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Verify persisted exact provenance
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('validation/liquidity/JPY_M3_PROVENANCE_RESOLUTION_2026-10-13.json').read_text())
+          assert p['schema']=='GMFQ_LIQUIDITY_JPY_M3_PROVENANCE_RESOLUTION_V1'
+          assert p['status']=='READY_CONTROLLED_APPLY_PROVEN'
+          assert p['source']['publisher']=='Bank of Japan'
+          assert p['source']['database']=='MD02'
+          assert p['source']['series_id']=='MAM1XAM3M3MO'
+          assert p['source']['frequency']=='MONTHLY'
+          assert p['runtime_proof']['exact_match_count']==1
+          assert p['runtime_proof']['overlap_count']==128
+          assert p['runtime_proof']['exact_count']==128
+          assert p['runtime_proof']['exact_ratio']==1.0
+          assert p['runtime_proof']['mae']==0.0
+          assert p['runtime_proof']['max_abs_diff']==0.0
+          assert p['promotion_eligible'] is True
+          assert p['automation_ready'] is True
+          assert p['controlled_apply_proven'] is True
+          assert p['fail_closed_until_controlled_apply'] is False
+          assert p['controlled_apply_run_id']==38471037234
+          assert p['controlled_apply_job_id']==115549873777
+          assert p['runtime_mutated'] is False
+          assert p['publication_performed'] is False
+          PY
+      - name: Collect exact official BOJ M3 candidate
+        run: python validation/fetch_boj_jpy_m3_exact_candidate.py --out /tmp/jpy-m3-exact-candidate.json
+      - name: Dry-run controlled apply
+        run: |
+          python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact-candidate.json > /tmp/jpy-m3-dry-run.json
+          cat /tmp/jpy-m3-dry-run.json
+      - name: Ephemeral apply on runtime copy
+        run: |
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.json
+          python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.json --apply > /tmp/jpy-m3-apply.json
+          cat /tmp/jpy-m3-apply.json
+      - name: Verify exact provenance and append-only semantics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/jpy-m3-exact-candidate.json').read_text())
+          d=json.loads(Path('/tmp/jpy-m3-dry-run.json').read_text())
+          r=json.loads(Path('/tmp/jpy-m3-apply.json').read_text())
+          o=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())['JPY']['money']
+          a=json.loads(Path('/tmp/NATIVE_LIQ_DATA.json').read_text())['JPY']['money']
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1'
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY'
+          assert c['runtime_match_confirmed'] is True
+          assert c['runtime_history_unchanged_by_current_vintage'] is True
+          assert c['runtime_overlap_count']>=128
+          assert c['runtime_exact_match_count']==c['runtime_overlap_count']
+          assert c['runtime_exact_match_ratio']==1.0
+          assert c['source']['database']=='MD02'
+          assert c['source']['series_id']=='MAM1XAM3M3MO'
+          assert c['source']['seasonal_adjustment']=='Seasonally Adjusted'
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_APPLY_RECEIPT_V1'
+          assert r['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_APPLY_RECEIPT_V1'
+          assert r['publication_performed'] is False
+          n=len(o['dates'])
+          assert a['dates'][:n]==o['dates']
+          assert a['values'][:n]==o['values']
+          assert len(a['dates'])==len(a['values'])==n+r['appended_observations']
+          if c['candidate_update_available']:
+              assert d['status']=='UPDATE_AVAILABLE' and d['applied'] is False
+              assert r['status']=='UPDATE_AVAILABLE' and r['applied'] is True
+              assert a['last_date']==c['latest_date']
+              assert float(a['last_value'])==float(c['latest_value'])
+          else:
+              assert d['status']=='NO_CHANGE' and d['applied'] is False
+              assert r['status']=='NO_CHANGE' and r['applied'] is False
+          PY
+      - name: Verify tracked runtime was not mutated
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY M3 unique BOJ provenance + append-only controlled apply proof: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
+          echo 'Bias / score / sizing effect: NONE'
