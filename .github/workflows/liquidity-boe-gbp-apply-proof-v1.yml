@@ -84,3 +84,4 @@ jobs:
           echo 'GBP BoE reserves + secured lending controlled apply proof: GREEN'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
+          echo 'Current proof trigger: 2026-10-13'
