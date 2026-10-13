@@ -1,0 +1,46 @@
+name: Liquidity Fed USD M2 Candidate V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-fed-usd-m2-candidate-v1.yml'
+      - 'validation/fetch_fed_usd_m2_candidate.py'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official Fed H6 USD M2 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_fed_usd_m2_candidate.py | tee /tmp/liquidity-usd-m2-candidate.log
+          python3 - <<'PY'
+          import json
+          c=json.load(open('validation/liquidity-usd-m2-candidate.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_USD_M2_CANDIDATE_V1', c
+          assert c['source']['series_id']=='H6/H6_M2/M2.M', c
+          assert c['runtime_match_confirmed'] is True, c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('LIQUIDITY_FED_USD_M2_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
+          PY
+      - name: Ensure no tracked runtime mutation
+        shell: bash
+        run: |
+          rm -f validation/liquidity-usd-m2-candidate.json
+          git diff --exit-code -- live_data payload
