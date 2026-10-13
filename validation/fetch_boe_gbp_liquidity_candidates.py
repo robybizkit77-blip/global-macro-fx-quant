@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import io
 import json
@@ -9,7 +10,7 @@ from pathlib import Path
 
 POLICY = Path('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
 LIQ = Path('live_data/sections/NATIVE_LIQ_DATA.json')
-OUT = Path('validation/liquidity-gbp-boe-candidates.json')
+DEFAULT_OUT = Path('validation/liquidity-gbp-boe-candidates.json')
 BASE = 'https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp'
 
 SERIES = {
@@ -117,6 +118,10 @@ def parse_csv(text, series_id):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--out', default=str(DEFAULT_OUT))
+    args = ap.parse_args()
+
     policy = json.loads(POLICY.read_text(encoding='utf-8'))
     liq = json.loads(LIQ.read_text(encoding='utf-8'))
     results = {}
@@ -150,6 +155,12 @@ def main():
         if latest_date > policy['as_of']:
             raise SystemExit(f'{policy_key}: future official observation relative to policy as_of: {latest_date}')
 
+        new_observations = [
+            {'date': date, 'value': value}
+            for date, value in observations
+            if date > runtime_date
+        ]
+
         results[policy_key] = {
             'source': {
                 'publisher': 'Bank of England',
@@ -164,7 +175,8 @@ def main():
             'runtime_match_confirmed': True,
             'latest_date': latest_date,
             'latest_value': latest_value,
-            'candidate_update_available': latest_date > runtime_date,
+            'candidate_update_available': bool(new_observations),
+            'new_observations': new_observations,
             'status': 'GREEN_SOURCE_CANDIDATE_ONLY',
         }
 
@@ -177,7 +189,8 @@ def main():
         'publication_performed': False,
         'runtime_mutated': False,
     }
-    OUT.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    out = Path(args.out)
+    out.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     print(json.dumps(receipt, indent=2, ensure_ascii=False))
 
 
