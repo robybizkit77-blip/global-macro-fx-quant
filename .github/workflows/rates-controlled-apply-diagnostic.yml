@@ -1,0 +1,52 @@
+name: Diagnose Rates Controlled Apply Local Contract
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - '.github/workflows/rates-controlled-apply-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-rates-local-apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install openpyxl
+      - name: Build candidate
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-diag
+          python validation/run_rates_audit.py | tee /tmp/rates-diag/audit.json
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/rates-diag/audit.json --output /tmp/rates-diag/NATIVE_RATES_DATA.json | tee /tmp/rates-diag/candidate-summary.json
+      - name: Apply direct Rates section
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/rates-diag/NATIVE_RATES_DATA.json --apply | tee /tmp/rates-diag/direct.json
+      - name: Build and apply Rates metadata
+        run: |
+          set -euo pipefail
+          python validation/build_rates_audit_metadata.py --audit-date "$(date -u +%Y-%m-%d)" --output /tmp/rates-diag/RATES_AUDIT_METADATA.json | tee /tmp/rates-diag/metadata.json
+          python validation/update_live_derived_sections.py --rates /tmp/rates-diag/RATES_AUDIT_METADATA.json --apply | tee /tmp/rates-diag/derived.json
+      - name: Rebuild manifest
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/rates-diag/manifest.json
+      - name: Check live update contract
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py | tee /tmp/rates-diag/live-contract.json
+      - name: Verify runtime roundtrip
+        run: |
+          set -euo pipefail
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/rates-diag/runtime-roundtrip.json
+      - name: Show diff scope
+        if: always()
+        run: git diff --name-only -- live_data payload
