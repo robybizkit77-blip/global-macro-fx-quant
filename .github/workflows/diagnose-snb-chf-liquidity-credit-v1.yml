@@ -1,0 +1,46 @@
+name: Diagnose SNB CHF Liquidity Credit V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/diagnose_snb_chf_liquidity_credit_v1.py'
+      - '.github/workflows/diagnose-snb-chf-liquidity-credit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-snb-chf-liquidity-credit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Run SNB diagnostic
+        run: |
+          python validation/diagnose_snb_chf_liquidity_credit_v1.py > /tmp/snb-chf-diagnostic.json
+          cat /tmp/snb-chf-diagnostic.json
+      - name: Enforce diagnostic-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/snb-chf-diagnostic.json'))
+          assert d['schema']=='GMFQ_SNB_CHF_LIQUIDITY_CREDIT_DIAGNOSTIC_V1', d
+          assert d['status']=='DIAGNOSTIC_ONLY', d
+          assert 'liquidity' in d and 'credit' in d, d
+          print('SNB_CHF_DIAGNOSTIC_ONLY_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'SNB CHF liquidity/credit diagnostic completed'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
