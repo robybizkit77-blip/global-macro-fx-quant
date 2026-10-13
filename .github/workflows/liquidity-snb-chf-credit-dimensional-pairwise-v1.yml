@@ -1,0 +1,48 @@
+name: Liquidity SNB CHF Credit Dimensional Pairwise V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/diagnose_snb_chf_credit_dimensional_pairwise_v1.py'
+      - '.github/workflows/liquidity-snb-chf-credit-dimensional-pairwise-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dimensional-pairwise:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Probe official SNB dimensional series and pairwise aggregations
+        run: python validation/diagnose_snb_chf_credit_dimensional_pairwise_v1.py | tee /tmp/chf-credit-dimensional-pairwise.json
+      - name: Classify without forced promotion
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/chf-credit-dimensional-pairwise.json'))
+          assert d['schema']=='GMFQ_SNB_CHF_CREDIT_DIMENSIONAL_PAIRWISE_V1',d
+          assert d['promotion_eligible'] is False and d['runtime_mutated'] is False and d['publication_performed'] is False,d
+          print('parsed=',d['parsed_series_count'],'eligible=',d['eligible_single_series_count'],'pairs=',d['pairwise_test_count'])
+          print('exact_single=',d['exact_single_match'])
+          print('exact_pairwise=',d['exact_pairwise_match'])
+          if d['top_single']: print('best_single=',d['top_single'][0])
+          if d['top_pairwise']: print('best_pairwise=',d['top_pairwise'][0])
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'CHF credit dimensional pairwise probe complete'
+          echo 'Promotion: NONE'
+          echo 'Tracked runtime mutation: NONE'
