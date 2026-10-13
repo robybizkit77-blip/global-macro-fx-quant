@@ -15,6 +15,7 @@ on:
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
@@ -40,6 +41,7 @@ on:
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
       - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
@@ -98,13 +100,19 @@ jobs:
           liq=d['lanes']['LIQUIDITY']
           assert liq['inventory_ready'] is True
           assert liq['state']=='BLOCKED_SUBSERIES_POLICY_PARTIAL', liq
-          assert liq['verified_subseries']==6, liq
-          assert liq['unresolved_subseries']==20, liq
+          assert liq['verified_subseries']==5, liq
+          assert liq['unresolved_subseries']==21, liq
+          assert liq['automation_ready_subseries']==5, liq
+          assert liq['mapping_pending_subseries']==21, liq
           assert liq['source_mapped_subseries']==26, liq
           assert liq['source_unresolved_subseries']==0, liq
           assert liq['total_subseries']==26, liq
           assert liq['cad_m2pp_candidate_pipeline_ready'] is True, liq
           assert liq['cad_m2pp_collector']=='validation/fetch_boc_cad_m2pp_candidate.py', liq
+          assert liq['eur_excess_candidate_pipeline_ready'] is True, liq
+          assert liq['eur_excess_collector']=='validation/fetch_ecb_eur_excess_liquidity_candidate.py', liq
+          assert liq['eur_m3_effective_status']=='OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING', liq
+          assert liq['eur_m3_collector_status']=='WITHHELD_UNTIL_REVISION_AWARE_CONTRACT', liq
           assert d['lanes']['RISK']['guard_proven'] is True
           assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
           assert d['lanes']['RISK']['vix_source_status']=='READY'
