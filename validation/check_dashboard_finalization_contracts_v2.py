@@ -14,6 +14,10 @@ import json
 from itertools import combinations
 from pathlib import Path
 
+from bank_research_adapter_contract_v1 import evaluate as evaluate_bank_research
+from china_macro_confirmation_contract_v1 import evaluate as evaluate_china_macro
+from long_end_decomposition_contract_v1 import evaluate as evaluate_long_end
+
 
 ROOT = Path(__file__).resolve().parents[1]
 G8 = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
@@ -106,6 +110,20 @@ def evaluate(root: Path = ROOT) -> dict:
         "blocker": "No licensed/official news feed, item identity, timestamp or refresh receipt.",
         "pair_vote": False,
     }
+    china = evaluate_china_macro()
+    long_end = evaluate_long_end()
+    bank_research = evaluate_bank_research()
+    for lane, result in (("china_macro_confirmation", china), ("long_end_decomposition", long_end), ("bank_research", bank_research)):
+        if not result["validator_green"]:
+            failures.extend(f"{lane}:{item}" for item in result["failures"])
+    planned_lanes = {
+        "china_macro_confirmation": {"status": "PLANNED/NOT WIRED", "contract_status": china["status"],
+                                     "blocker": china["activation_blocker"], "pair_vote": False},
+        "long_end_decomposition": {"status": "PLANNED/NOT WIRED", "contract_status": long_end["status"],
+                                    "blocker": "All component values remain null until their source/PIT contracts are certified.", "pair_vote": False},
+        "bank_research": {"status": "PLANNED/NOT WIRED", "contract_status": bank_research["status"],
+                          "blocker": "No licensed provenance-complete feed or reusable report artifact is certified.", "pair_vote": False},
+    }
 
     bad_pair_fields = []
     for name, frame in cert.get("pairs", {}).items():
@@ -131,13 +149,14 @@ def evaluate(root: Path = ROOT) -> dict:
             "wti": risk_lanes["WTI"],
             "gold": risk_lanes["Gold"],
             **static,
+            **planned_lanes,
         },
         "composite_28_cross": {
             "status": "PASS_WITH_WITHHELD_PROPAGATED" if not failures else "FAIL",
             "expected_pairs": len(required_pairs),
             "d_pairs": len(pair_sets),
             "cert_pairs": len(cert_sets),
-            "withheld_layers_propagated": ["ois_market_pricing_g8", "wti", "gold", "financial_conditions", "event_risk", "what_changed", "top_themes", "news_pulse"],
+            "withheld_layers_propagated": ["ois_market_pricing_g8", "wti", "gold", "financial_conditions", "event_risk", "what_changed", "top_themes", "news_pulse", "china_macro_confirmation", "long_end_decomposition", "bank_research"],
             "noncertified_pair_votes": bad_pair_fields,
         },
     }

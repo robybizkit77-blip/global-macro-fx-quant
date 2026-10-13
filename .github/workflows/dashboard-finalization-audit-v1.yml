@@ -6,6 +6,9 @@ on:
     paths:
       - 'validation/audit_dashboard_finalization_v1.py'
       - 'validation/check_dashboard_finalization_contracts_v2.py'
+      - 'validation/china_macro_confirmation_*'
+      - 'validation/long_end_decomposition_*'
+      - 'validation/bank_research_*'
       - 'live_data/**'
       - 'payload/**'
       - '.github/workflows/dashboard-finalization-audit-v1.yml'
@@ -22,6 +25,11 @@ jobs:
         run: python3 validation/audit_dashboard_finalization_v1.py --write /tmp/dashboard-finalization-audit.json
       - name: Certify withheld propagation and 28-cross composite
         run: python3 validation/check_dashboard_finalization_contracts_v2.py --write /tmp/dashboard-finalization-contract-v2.json
+      - name: Verify planned feature-complete contracts remain no-publication
+        run: |
+          python3 validation/china_macro_confirmation_contract_v1.py --write /tmp/china-macro-contract.json
+          python3 validation/long_end_decomposition_contract_v1.py --write /tmp/long-end-contract.json
+          python3 validation/bank_research_adapter_contract_v1.py --write /tmp/bank-research-contract.json
       - name: Verify manifest and runtime roundtrip
         run: |
           python3 validation/check_live_update_contract.py
@@ -43,3 +51,6 @@ jobs:
           path: |
             /tmp/dashboard-finalization-audit.json
             /tmp/dashboard-finalization-contract-v2.json
+            /tmp/china-macro-contract.json
+            /tmp/long-end-contract.json
+            /tmp/bank-research-contract.json

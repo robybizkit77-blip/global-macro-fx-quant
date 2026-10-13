@@ -1,0 +1,13 @@
+{
+  "schema": "GMFQ_LONG_END_DECOMPOSITION_SOURCE_REGISTRY_V1",
+  "status": "PLANNED/NOT_WIRED",
+  "separate_from_2y_10y_curve": true,
+  "mechanical_pair_vote": false,
+  "publication_permitted": false,
+  "components": {
+    "real_yield": {"status":"WITHHELD/EXPLICIT","runtime_value":null,"methodology":"Use an official inflation-linked 10Y constant-maturity yield where the issuer publishes a daily, reproducible series; do not infer by subtracting CPI from nominal yield.","activation_blocker":"No cross-country official, same-tenor source registry and PIT receipts."},
+    "breakeven": {"status":"WITHHELD/EXPLICIT","runtime_value":null,"methodology":"Use nominal 10Y minus matched official real 10Y only when both are same-currency, same-tenor and same-session; label as market-implied breakeven.","activation_blocker":"Depends on certified matched nominal/real source pairs and PIT alignment."},
+    "term_premium": {"status":"WITHHELD/EXPLICIT","runtime_value":null,"methodology":"Use a named published model only (for example a central-bank published ACM-style estimate); never back out residuals from the dashboard curve.","activation_blocker":"No homogeneous official/published model registry, vintage policy or historical PIT archive."},
+    "fiscal_supply": {"status":"PLANNED/NOT_WIRED","runtime_value":null,"methodology":"Context-only issuer supply/fiscal indicator from official debt-management and fiscal releases; it must not be treated as a decomposed yield component or assigned a causal sign mechanically.","activation_blocker":"No cross-country release calendar, definitions harmonisation or PIT source registry."}
+  }
+}

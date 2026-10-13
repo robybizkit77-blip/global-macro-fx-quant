@@ -11,7 +11,9 @@ OIS = ROOT / 'live_data' / 'sections' / 'OIS_DATA.json'
 G8 = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
 SOURCE_ALIASES = {
     'AUD': ['ASX'],
-    'CAD': ['Montréal Exchange', 'Montreal Exchange'],
+    # Accept the ASCII stem too: historical runtime bytes can render the
+    # accented exchange name differently, while source identity remains fixed.
+    'CAD': ['Montr', 'Montreal Exchange'],
     'GBP': ['Bank of England'],
     'JPY': ['Tokyo Financial Exchange'],
 }

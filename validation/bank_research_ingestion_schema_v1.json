@@ -1,0 +1,11 @@
+{
+  "schema": "GMFQ_BANK_RESEARCH_INGESTION_SCHEMA_V1",
+  "status": "PLANNED/NOT_WIRED",
+  "purpose": "Future licensed research ingestion with report-level provenance. No report data is represented in this repository.",
+  "required_record_fields": ["provider", "report_id", "published_at", "retrieved_at", "license_basis", "source_uri", "content_sha256", "coverage", "claims"],
+  "mechanical_pair_vote": false,
+  "publication_permitted": false,
+  "existing_artifacts_linked": [],
+  "activation_rule": "A provider-specific licensed adapter, immutable report receipt and claim extraction review must all be validated before any non-mechanical contextual display. Mechanical signals remain prohibited.",
+  "activation_blocker": "No licensed, provenance-complete bank-research feed or reusable report artifact was found in the canonical repository."
+}
