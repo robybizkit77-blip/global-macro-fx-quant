@@ -8,6 +8,7 @@ BASE = Path('validation/run_daily_data_orchestrator_v1.py')
 AUD_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json')
 EUR_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
 EUR_CREDIT_DIAGNOSTIC = Path('validation/diagnose_ecb_eur_nfc_loans_variants.py')
+USD_SLOOS_DIAGNOSTIC = Path('validation/diagnose_fed_usd_sloos_conditions_v1.py')
 BASE_POLICY = 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
 OVERLAY_VERSION = '2026-10-13-aud-es-ready'
 
@@ -93,6 +94,12 @@ def main():
     if int(eur_credit_row.get('overlap_count', 0)) <= 0:
         raise SystemExit('EUR.credit diagnostic has no runtime overlap')
 
+    usd_sloos = run_json_script(USD_SLOOS_DIAGNOSTIC)
+    if usd_sloos.get('schema') != 'GMFQ_LIQUIDITY_USD_SLOOS_MAPPING_DIAGNOSTIC_V1':
+        raise SystemExit('USD.conditions SLOOS diagnostic schema mismatch')
+    if usd_sloos.get('runtime', {}).get('lane') != 'USD.conditions':
+        raise SystemExit('USD.conditions SLOOS diagnostic target mismatch')
+
     liq['verified_subseries'] = 11
     liq['unresolved_subseries'] = 15
     liq['automation_ready_subseries'] = 11
@@ -115,6 +122,20 @@ def main():
         'mean_abs_diff': eur_credit_row.get('mean_abs_diff'),
         'max_abs_diff': eur_credit_row.get('max_abs_diff'),
         'ranking_by_mean_abs_diff': eur_credit.get('ranking_by_mean_abs_diff'),
+        'automation_ready': False,
+        'promotion_performed': False,
+        'runtime_mutated': False,
+        'publication_performed': False,
+    }
+    liq['usd_sloos_mapping_diagnostic'] = {
+        'runtime_count': usd_sloos.get('runtime', {}).get('count'),
+        'runtime_last_date': usd_sloos.get('runtime', {}).get('last_date'),
+        'runtime_last_value': usd_sloos.get('runtime', {}).get('last_value'),
+        'candidate_columns': usd_sloos.get('parse', {}).get('candidate_columns'),
+        'best_candidate': usd_sloos.get('best_candidate'),
+        'full_exact_match_count': usd_sloos.get('full_exact_match_count'),
+        'full_exact_matches': usd_sloos.get('full_exact_matches'),
+        'runtime_match_certified': usd_sloos.get('runtime_match_certified'),
         'automation_ready': False,
         'promotion_performed': False,
         'runtime_mutated': False,
