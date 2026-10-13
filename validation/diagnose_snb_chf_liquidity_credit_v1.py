@@ -2,6 +2,7 @@
 import csv
 import io
 import json
+import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
@@ -40,7 +41,6 @@ def parse_number(raw):
     if raw in (None, ''):
         return None
     s = str(raw).strip().replace("'", '').replace('\u202f', '').replace(' ', '')
-    # SNB API numeric output uses decimal points, but accept comma decimals too.
     if s.count(',') == 1 and '.' not in s:
         s = s.replace(',', '.')
     try:
@@ -69,65 +69,69 @@ def sniff_rows(text):
     except csv.Error:
         dialect = csv.excel
         dialect.delimiter = ';'
-    reader = csv.reader(io.StringIO(text), dialect=dialect)
-    rows = list(reader)
+    rows = list(csv.reader(io.StringIO(text), dialect=dialect))
     if not rows:
         raise SystemExit('SNB CSV returned no rows')
     width = max(len(r) for r in rows)
-    rows = [r + [''] * (width - len(r)) for r in rows]
-    return rows
+    return [r + [''] * (width - len(r)) for r in rows]
+
+
+def looks_like_series_key(value):
+    s = str(value or '').strip()
+    return ('@SNB.' in s) or ('{' in s and '}' in s) or bool(re.match(r'^[A-Za-z0-9_]+\{.+\}$', s))
 
 
 def parse_csv_series(text):
     rows = sniff_rows(text)
-    header = rows[0]
-    fields = [str(x).strip() for x in header]
+    fields = [str(x).strip() for x in rows[0]]
 
-    # SNB's current CSV API is wide: first column is CubeId and every other
-    # column is a timeseries key. Non-date rows below the header carry labels /
-    # units; date rows carry the observations. Support that format directly.
     if fields and fields[0].lower() == 'cubeid' and len(fields) >= 2:
+        data_start = next((i for i, row in enumerate(rows[1:], start=1) if norm_month(row[0])), None)
+        if data_start is None:
+            raise SystemExit(f'SNB wide CSV has no dated observations. Preview={rows[:12]!r}')
+
         grouped = defaultdict(dict)
-        metadata = {key: {'series_key': key, 'descriptor_rows': []} for key in fields[1:] if key}
-        for row in rows[1:]:
-            m = norm_month(row[0])
-            if m:
-                for idx, key in enumerate(fields[1:], start=1):
-                    if not key:
-                        continue
-                    value = parse_number(row[idx])
-                    if value is not None:
-                        grouped[key][m] = value
-            else:
-                label = str(row[0]).strip()
-                if not label:
+        metadata = {}
+        for col in range(1, len(fields)):
+            descriptors = []
+            exact_key = None
+            for r in range(0, data_start):
+                label = str(rows[r][0]).strip()
+                value = str(rows[r][col]).strip()
+                if value:
+                    descriptors.append({label or f'row_{r}': value})
+                    if looks_like_series_key(value):
+                        exact_key = value
+            if exact_key is None:
+                # Some SNB exports keep the cube ID in row 0 and expose the
+                # selected dimensions in subsequent metadata rows. Build a
+                # deterministic diagnostic identity instead of pretending it
+                # is a certified timeseries key.
+                base = fields[col] or f'column_{col}'
+                suffix = '|'.join(
+                    f'{next(iter(d.keys()))}={next(iter(d.values()))}'
+                    for d in descriptors[1:]
+                    if d
+                )
+                exact_key = base if not suffix else f'{base}|{suffix}'
+            values = {}
+            for row in rows[data_start:]:
+                m = norm_month(row[0])
+                if not m:
                     continue
-                for idx, key in enumerate(fields[1:], start=1):
-                    if key and str(row[idx]).strip():
-                        metadata[key]['descriptor_rows'].append({label: str(row[idx]).strip()})
+                value = parse_number(row[col])
+                if value is not None:
+                    values[m] = value
+            if values:
+                grouped[exact_key] = values
+                metadata[exact_key] = {
+                    'column_index': col,
+                    'descriptor_rows': descriptors,
+                    'certified_key_from_export': any(looks_like_series_key(next(iter(d.values()))) for d in descriptors if d),
+                }
         return fields, grouped, metadata
 
-    # Backward-compatible long-table parser if the API shape changes back.
-    dict_rows = list(csv.DictReader(io.StringIO(text), delimiter=';'))
-    if not dict_rows:
-        raise SystemExit(f'Unsupported SNB CSV format. Preview={rows[:5]!r}')
-    fields = list(dict_rows[0].keys())
-    date_col = next((f for f in fields if f.lower().strip() in {'date','datum','period','zeit'}), None)
-    value_col = next((f for f in fields if f.lower().strip() in {'value','wert','val'}), None)
-    key_col = next((f for f in fields if 'key' in f.lower()), None)
-    if not date_col or not value_col:
-        raise SystemExit(f'Could not identify SNB CSV format. Preview={rows[:8]!r}')
-    grouped = defaultdict(dict)
-    metadata = {}
-    for row in dict_rows:
-        m = norm_month(row.get(date_col))
-        value = parse_number(row.get(value_col))
-        if not m or value is None:
-            continue
-        key = str(row.get(key_col) or 'single_series')
-        grouped[key][m] = value
-        metadata[key] = {k: row.get(k) for k in fields if k not in {date_col, value_col}}
-    return fields, grouped, metadata
+    raise SystemExit(f'Unsupported SNB CSV format. Preview={rows[:12]!r}')
 
 
 def best_scale_match(runtime, official):
