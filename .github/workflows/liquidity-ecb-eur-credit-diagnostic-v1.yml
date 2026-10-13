@@ -46,3 +46,4 @@ jobs:
           echo 'EUR corporate credit diagnostic: read-only'
           echo 'Promotion: NONE'
           echo 'Publication: NONE'
+          echo 'Current proof trigger: 2026-10-13'
