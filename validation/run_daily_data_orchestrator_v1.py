@@ -115,7 +115,7 @@ def main():
             'source_unresolved_subseries': liq_source_unresolved,
             'total_subseries': liq_total,
             'publication_eligible': False,
-            'reason': '24/26 official source families are mapped, but only exact automation-ready contracts count as verified for the legacy CI gate; exact variant/key and aggregation matching remain fail-closed',
+            'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only exact automation-ready contracts count as verified for the legacy CI gate; exact variant/key, aggregation and controlled collector/apply wiring remain fail-closed',
         },
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
