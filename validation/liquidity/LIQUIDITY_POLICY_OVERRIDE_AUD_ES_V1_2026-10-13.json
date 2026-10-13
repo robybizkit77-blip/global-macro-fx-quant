@@ -1,0 +1,42 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "AUD.liquidity"
+  },
+  "effective_row": {
+    "label": "Exchange Settlement balances",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Reserve Bank of Australia",
+    "source_contract": "A3 — ES Balances and Repo Agreements / Total Exchange Settlement Balances",
+    "frequency": "DAILY_SOURCE_RUNTIME_WEEKLY_SNAPSHOT",
+    "automation_ready": true,
+    "series_mapping_status": "EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED",
+    "series_key": "AESAT",
+    "collector": "validation/fetch_rba_aud_es_balances_candidate.py",
+    "applier": "validation/apply_rba_aud_es_balances_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38371155070,
+    "runtime_snapshot_rule": "infer existing weekly weekday from recent runtime observations; append only official RBA observations on that weekday; no interpolation",
+    "historical_overlap_count": 297,
+    "historical_exact_match_count": 294,
+    "historical_exact_match_ratio": 0.9898989899,
+    "recent_20_exact": true,
+    "runtime_last_date": "2026-09-16",
+    "runtime_last_value": 173965,
+    "official_last_value_on_runtime_date": 173965,
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.rba.gov.au/statistics/tables/xls/a03.xlsx"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "Exact RBA AESAT provenance and recent runtime match were already established. Controlled apply is now proven on a temporary runtime copy with the existing weekly snapshot cadence preserved, no interpolation, append-only history, and no tracked runtime mutation.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
