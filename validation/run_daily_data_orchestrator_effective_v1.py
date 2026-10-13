@@ -7,6 +7,7 @@ from pathlib import Path
 BASE = Path('validation/run_daily_data_orchestrator_v1.py')
 AUD_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json')
 EUR_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
+EUR_CREDIT_DIAGNOSTIC = Path('validation/diagnose_ecb_eur_nfc_loans_variants.py')
 BASE_POLICY = 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
 OVERLAY_VERSION = '2026-10-13-aud-es-ready'
 
@@ -22,6 +23,22 @@ def validate_override(obj, subseries):
     if sup.get('policy') != BASE_POLICY or sup.get('subseries') != subseries:
         raise SystemExit(f'liquidity override target mismatch for {subseries}')
     return obj.get('effective_row') or {}, obj.get('coverage_delta') or {}
+
+
+def run_json_script(path):
+    proc = subprocess.run(
+        [sys.executable, str(path)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(f'{path} failed:\n{proc.stdout}')
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f'{path} emitted invalid JSON: {exc}\n{proc.stdout}')
 
 
 def main():
@@ -67,6 +84,15 @@ def main():
     if int(eur_delta.get('automation_ready_subseries', 0)) != -1 or int(eur_delta.get('mapping_pending_subseries', 0)) != 1:
         raise SystemExit('EUR M3 coverage delta drifted from fail-closed contract')
 
+    eur_credit = run_json_script(EUR_CREDIT_DIAGNOSTIC)
+    if eur_credit.get('schema') != 'GMFQ_EUR_NFC_LOANS_VARIANT_DIAGNOSTIC_V1':
+        raise SystemExit('EUR.credit diagnostic schema mismatch')
+    eur_credit_row = (eur_credit.get('candidates') or {}).get('N_A_A20') or {}
+    if eur_credit_row.get('series_id') != 'BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E':
+        raise SystemExit('EUR.credit diagnostic exact series mismatch')
+    if int(eur_credit_row.get('overlap_count', 0)) <= 0:
+        raise SystemExit('EUR.credit diagnostic has no runtime overlap')
+
     liq['verified_subseries'] = 11
     liq['unresolved_subseries'] = 15
     liq['automation_ready_subseries'] = 11
@@ -76,6 +102,24 @@ def main():
     liq['aud_es_controlled_apply_proven'] = True
     liq['aud_es_applier'] = aud_row['applier']
     liq['aud_es_apply_proof_run_id'] = aud_row.get('apply_proof_run_id')
+    liq['eur_credit_revision_diagnostic'] = {
+        'runtime_last_date': eur_credit.get('runtime_last_date'),
+        'series_id': eur_credit_row.get('series_id'),
+        'overlap_count': eur_credit_row.get('overlap_count'),
+        'exact_matches_1e6': eur_credit_row.get('exact_matches_1e6'),
+        'first_overlap': eur_credit_row.get('first_overlap'),
+        'last_overlap': eur_credit_row.get('last_overlap'),
+        'last_runtime': eur_credit_row.get('last_runtime'),
+        'last_source': eur_credit_row.get('last_source'),
+        'last_diff': eur_credit_row.get('last_diff'),
+        'mean_abs_diff': eur_credit_row.get('mean_abs_diff'),
+        'max_abs_diff': eur_credit_row.get('max_abs_diff'),
+        'ranking_by_mean_abs_diff': eur_credit.get('ranking_by_mean_abs_diff'),
+        'automation_ready': False,
+        'promotion_performed': False,
+        'runtime_mutated': False,
+        'publication_performed': False,
+    }
     liq['reason'] = (
         '26/26 official source families are mapped; 11/26 are automation-ready after applying '
         'the EUR M3 fail-closed revision override and the AUD AESAT controlled-apply promotion. '
