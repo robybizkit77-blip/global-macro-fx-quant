@@ -32,23 +32,33 @@ jobs:
           import json
           d=json.load(open('/tmp/cad-settlement-diagnostic.json'))
           assert d['schema']=='GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1', d
-          assert d['status'] in {'EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN','DIAGNOSTIC_ONLY_NO_PROMOTION'}, d
+          assert d['status'] in {
+              'EXACT_ACTUAL_MONTH_END_PROVEN',
+              'OFFICIAL_SERIES_IDENTIFIED_HISTORICAL_VINTAGE_DRIFT_PENDING',
+              'DIAGNOSTIC_ONLY_NO_PROMOTION'
+          }, d
           s=d['source_contract']
           assert s['publisher']=='Bank of Canada', s
           assert s['series_family']=='Lynx settlement balances — Actual', s
-          assert s['documented_monthly_rule']=='last Wednesday of each month', s
+          assert s['documented_monthly_display_rule']=='last Wednesday of each month', s
+          assert s['runtime_empirical_rule_candidate']=='last available official ACTUAL observation in each month', s
           assert d['promotion_performed'] is False, d
           assert d['runtime_mutated'] is False, d
           assert d['publication_performed'] is False, d
-          if d['status']=='EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN':
-              r=d['actual_result']['all_rule_scores']['last_wednesday']
-              assert r['overlap'] >= 12, r
-              assert r['exact_ratio'] >= 0.95, r
+          if d['status']=='EXACT_ACTUAL_MONTH_END_PROVEN':
               assert d['promotion_eligible'] is True, d
+              assert d['actual_result']['all_rule_scores']['last']['exact_ratio']==1.0, d
+          elif d['status']=='OFFICIAL_SERIES_IDENTIFIED_HISTORICAL_VINTAGE_DRIFT_PENDING':
+              assert d['promotion_eligible'] is False, d
+              assert d['revision_contract_pending'] is True, d
+              assert d['recent_month_end_windows']['12']['exact_ratio']==1.0, d
+              assert d['recent_month_end_windows']['24']['exact_ratio']==1.0, d
           else:
               assert d['promotion_eligible'] is False, d
           print('CAD_SETTLEMENT_DIAGNOSTIC_STATUS', d['status'])
-          print('ACTUAL_RESULT', d.get('actual_result'))
+          print('MONTH_END_FULL', d['actual_result']['all_rule_scores']['last'])
+          print('RECENT_WINDOWS', d['recent_month_end_windows'])
+          print('MONTH_END_MISMATCHES', d['actual_month_end_mismatches'])
           PY
       - name: Verify tracked runtime unchanged
         run: |
