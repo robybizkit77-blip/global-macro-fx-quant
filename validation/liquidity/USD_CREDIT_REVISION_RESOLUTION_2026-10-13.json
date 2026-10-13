@@ -1,0 +1,48 @@
+{
+  "schema": "GMFQ_LIQUIDITY_USD_CREDIT_REVISION_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "currency": "USD",
+  "subseries": "credit",
+  "status": "WITHHELD_CURRENT_VINTAGE_REVISIONS_PRESENT",
+  "source": {
+    "publisher": "Board of Governors of the Federal Reserve System",
+    "release": "H.8 Assets and Liabilities of Commercial Banks in the United States",
+    "series_id": "H8/H8/B1001NCBA",
+    "native_unit": "USD millions",
+    "runtime_unit": "USD billions",
+    "scale_to_runtime": 0.001,
+    "transport": "H8_DDP_OUTPUT_CSV"
+  },
+  "runtime": {
+    "last_date": "2026-09-09",
+    "last_value": 19866.6568
+  },
+  "proof": {
+    "workflow": "Daily Data Orchestrator Effective Liquidity V1",
+    "run_id": 38384235314,
+    "overlap_count": 77,
+    "exact_match_count": 0,
+    "exact_match_ratio": 0.0,
+    "mae_usd_billions": 2.826710389610809,
+    "recent_20_mae_usd_billions": 9.278980000000775,
+    "max_abs_diff_usd_billions": 12.973200000003999,
+    "runtime_last_official_scaled": 19879.043100000003,
+    "runtime_last_diff": -12.386300000001938,
+    "interpretation": "CURRENT_VINTAGE_REVISIONS_PRESENT"
+  },
+  "resolution": {
+    "runtime_match_certified": false,
+    "revision_aware_contract_ready": false,
+    "automation_ready": false,
+    "fail_closed": true,
+    "reason": "The official Fed series and unit conversion are established, and transport is healthy. Current-vintage H.8 observations do not reproduce the stored runtime vintage: 0 of 77 overlapping weekly observations match exactly. Appending current-vintage values to the unrevised runtime would mix vintages and contaminate changes, so the lane remains withheld until a revision-aware/PIT contract is proven."
+  },
+  "operational_impact": {
+    "runtime_mutated": false,
+    "publication_performed": false,
+    "promotion_performed": false,
+    "effective_coverage_ready": 11,
+    "effective_coverage_pending": 15,
+    "effective_coverage_total": 26
+  }
+}
