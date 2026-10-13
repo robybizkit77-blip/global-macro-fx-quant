@@ -43,7 +43,10 @@ def fetch(url):
 
 
 def find_code(ws, code):
-    for row in ws.iter_rows():
+    # RBA series identifiers are in the workbook header. Limiting the search to
+    # the first 40 rows avoids a full-sheet scan while still failing closed if
+    # the table layout changes materially.
+    for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row, 40)):
         for cell in row:
             if str(cell.value).strip() == code:
                 return cell.row, cell.column
@@ -56,9 +59,6 @@ def extract_series(wb, code):
         if not hit:
             continue
         code_row, col = hit
-        # RBA historical workbooks put dates in the first column and observations
-        # below the series-code row. Scan downward and accept only numeric values
-        # paired with parseable dates in columns to the left.
         out = {}
         for r in range(code_row + 1, ws.max_row + 1):
             val = ws.cell(r, col).value
@@ -105,10 +105,12 @@ def compare(runtime, official):
 def main():
     rt = json.loads(RUNTIME.read_text(encoding='utf-8'))
     result = {'schema': 'GMFQ_RBA_AUD_MONEY_CREDIT_DIAGNOSTIC_V1', 'status': 'DIAGNOSTIC_ONLY', 'results': {}}
-    cache = {}
     for key, spec in SOURCES.items():
-        body = cache.setdefault(spec['url'], fetch(spec['url']))
-        wb = load_workbook(io.BytesIO(body), data_only=True, read_only=True)
+        body = fetch(spec['url'])
+        # Normal mode makes repeated cell access deterministic and fast enough
+        # for these small RBA workbooks; read_only mode is pathologically slow
+        # for the random-access extraction used below.
+        wb = load_workbook(io.BytesIO(body), data_only=True, read_only=False)
         runtime = runtime_series(rt, key)
         candidates = {}
         for code in spec['codes']:
