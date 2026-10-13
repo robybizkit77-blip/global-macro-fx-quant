@@ -8,6 +8,9 @@ on:
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/run_daily_data_orchestrator_effective_v*.py'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_*'
+      - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/fetch_boc_cad_settlement_revision_aware_candidate.py'
       - 'validation/apply_boc_cad_settlement_revision_aware_candidate.py'
       - 'validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py'
@@ -51,6 +54,22 @@ jobs:
           assert d['final']=={'ready':23,'pending':3,'total':26,'remaining_fail_closed':['CHF.liquidity','CHF.credit','JPY.liquidity']}, d
           assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
           print('SAME_HEAD_GENERAL_V1_TO_V11_23_3_PASS')
+          PY
+      - name: Verify strengthened blocker evidence remains fail closed
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'))
+          s=json.load(open('validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'))
+          c=json.load(open('validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'))
+          assert j['automation_ready'] is False and j['fail_closed'] is True and j['promotion_eligible'] is False, j
+          assert j['enhanced_proof']['md08_pairwise']['exact_pairwise_matches']==0, j
+          assert j['enhanced_proof']['official_workbook_revision_window']['exact_matches']==0, j
+          assert s['automation_ready'] is False and s['fail_closed'] is True and s['promotion_eligible'] is False, s
+          assert s['enhanced_proof']['exact_pairwise_matches']==0, s
+          assert c['resolution']['automation_ready'] is False and c['resolution']['fail_closed'] is True, c
+          assert c['enhanced_proof']['exact_single_matches']==0 and c['enhanced_proof']['exact_pairwise_matches']==0, c
+          print('STRENGTHENED_REMAINING_BLOCKERS_FAIL_CLOSED_PASS')
           PY
       - name: Re-prove USD credit controlled apply on this head
         run: |
@@ -116,6 +135,7 @@ jobs:
           echo 'General + V1..V11 consolidated same-head certification: GREEN'
           echo 'Effective Liquidity: 23 READY / 3 pending / 26 total'
           echo 'Remaining fail-closed: CHF.liquidity, CHF.credit, JPY.liquidity'
+          echo 'Strengthened blocker provenance evidence: GREEN / still fail-closed'
           echo 'USD.credit controlled apply: re-proven on copy'
           echo 'CAD.liquidity current apply + PIT replay: re-proven on copy'
           echo 'Tracked runtime mutation: NONE'
