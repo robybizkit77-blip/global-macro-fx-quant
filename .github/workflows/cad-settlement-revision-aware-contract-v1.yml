@@ -47,6 +47,7 @@ jobs:
           python - <<'PY'
           import json
           c=json.load(open('/tmp/cad-current.json')); r=json.load(open('/tmp/current-apply.json'))
+          assert r['required_recent_guard_months']==12
           assert r['runtime_history_rewritten'] is False
           if c['candidate_update_available']:
               assert r['applied'] is True and r['appended_observations']>=1
@@ -77,7 +78,7 @@ jobs:
       - name: Prove real August replay and append-only apply
         run: |
           cp /tmp/runtime.replay.json /tmp/runtime.replay.before.json
-          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-replay.json --runtime /tmp/runtime.replay.json --apply > /tmp/replay-apply.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-replay.json --runtime /tmp/runtime.replay.json --required-recent-guard-months 11 --apply > /tmp/replay-apply.json
           python - <<'PY'
           import json
           c=json.load(open('/tmp/cad-replay.json')); r=json.load(open('/tmp/replay-apply.json'))
@@ -86,7 +87,8 @@ jobs:
           p=c['proof']; new=c['new_observations']
           assert p['recent_guard_months']==11 and p['recent_guard_exact_matches']==11 and p['recent_guard_pass'] is True, p
           assert new and new[0]['month']=='2026-08' and float(new[0]['value'])==74157.0, new
-          assert new[0]['source_observation_date'].startswith('2026-08-'), new[0]
+          assert new[0]['source_observation_date']=='2026-08-31', new[0]
+          assert r['required_recent_guard_months']==11
           assert r['applied'] is True and r['appended_observations']==len(new) and r['runtime_history_rewritten'] is False
           assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values']
           assert after['dates'][n]=='2026-08' and float(after['values'][n])==74157.0
