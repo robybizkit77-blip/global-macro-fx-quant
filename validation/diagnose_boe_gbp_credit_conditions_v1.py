@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import io, json, re, urllib.request, zipfile
-from datetime import datetime, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -53,20 +52,28 @@ def parse_xlsx(data):
 
 def norm(s): return re.sub(r'\s+',' ',str(s)).strip().lower()
 
-def qkey_from_value(s):
-    txt=str(s).strip()
-    m=re.search(r'(20\d{2}).*?q([1-4])', txt, re.I)
-    if m:
-        return f'{int(m.group(1)):04d}-Q{int(m.group(2))}'
-    try:
-        serial=float(txt)
-    except ValueError:
-        return None
-    if not (30000 <= serial <= 60000):
-        return None
-    d=datetime(1899,12,30)+timedelta(days=serial)
-    q=(d.month-1)//3+1
-    return f'{d.year:04d}-Q{q}'
+def build_quarters(rows, target_row):
+    nearby=[(r,v) for r,v in rows if target_row-6 <= r < target_row]
+    year_row=None; quarter_row=None
+    for r,vals in nearby:
+        year_hits=sum(bool(re.fullmatch(r'20\d{2}',str(x).strip())) for x in vals.values())
+        quarter_hits=sum(bool(re.fullmatch(r'Q[1-4]',str(x).strip(),re.I)) for x in vals.values())
+        if year_hits>=2: year_row=(r,vals)
+        if quarter_hits>=4: quarter_row=(r,vals)
+    if not year_row or not quarter_row:
+        return {}, {'year_row':year_row[0] if year_row else None,'quarter_row':quarter_row[0] if quarter_row else None}
+    years={}; current=None
+    max_col=max(max(year_row[1],default=0),max(quarter_row[1],default=0))
+    for col in range(1,max_col+1):
+        raw=str(year_row[1].get(col,'')).strip()
+        if re.fullmatch(r'20\d{2}',raw): current=int(raw)
+        if current is not None: years[col]=current
+    qmap={}
+    for col,qraw in quarter_row[1].items():
+        q=str(qraw).strip().upper()
+        if re.fullmatch(r'Q[1-4]',q) and col in years:
+            qmap[col]=f'{years[col]:04d}-{q}'
+    return qmap, {'year_row':year_row[0],'quarter_row':quarter_row[0]}
 
 def main():
     runtime=json.loads(RUNTIME.read_text())['GBP']['conditions']
@@ -80,15 +87,7 @@ def main():
     candidates=[]
     for sheet,idx,vals in hits:
         rows=book[sheet]
-        q_by_col={}
-        debug_headers=[]
-        for rno,rowvals in rows:
-            if rno >= idx: break
-            if idx-rno>12: continue
-            debug_headers.append({'row':rno,'values':rowvals})
-            for col,val in rowvals.items():
-                q=qkey_from_value(val)
-                if q: q_by_col[col]=q
+        q_by_col,header_rows=build_quarters(rows,idx)
         obs=[]
         for col,val in sorted(vals.items()):
             if col not in q_by_col: continue
@@ -100,8 +99,12 @@ def main():
         overlap=sorted(set(rmap)&set(smap))
         exact=sum(abs(rmap[d]-smap[d])<1e-9 for d in overlap)
         diffs=[abs(rmap[d]-smap[d]) for d in overlap]
-        candidates.append({'sheet':sheet,'row':idx,'observations':obs,'header_quarters':q_by_col,'debug_headers':debug_headers,'overlap':len(overlap),'exact':exact,'exact_ratio':exact/len(overlap) if overlap else 0.0,'mae':sum(diffs)/len(diffs) if diffs else None,'max_abs_diff':max(diffs) if diffs else None,'mismatches':[{'date':d,'runtime':rmap[d],'source':smap[d]} for d in overlap if abs(rmap[d]-smap[d])>=1e-9][:20]})
+        candidates.append({'sheet':sheet,'row':idx,'header_rows':header_rows,'observations':obs,'source_count':len(obs),'overlap':len(overlap),'exact':exact,'exact_ratio':exact/len(overlap) if overlap else 0.0,'mae':sum(diffs)/len(diffs) if diffs else None,'max_abs_diff':max(diffs) if diffs else None,'mismatches':[{'date':d,'runtime':rmap[d],'source':smap[d]} for d in overlap if abs(rmap[d]-smap[d])>=1e-9][:20]})
     best=max(candidates,key=lambda x:(x['exact_ratio'],x['overlap']),default=None)
-    out={'schema':'GMFQ_LIQUIDITY_GBP_CCS_DIAGNOSTIC_V1','source':{'publisher':'Bank of England','release':'2026 Q3','url':URL,'target_question':'How has the availability of credit provided to the corporate sector overall changed?','response_horizon':'Past three months'},'runtime':{'lane':'GBP.conditions','count':len(runtime['dates']),'last_date':runtime['dates'][-1],'last_value':runtime['values'][-1]},'candidate_count':len(candidates),'candidates':candidates,'best_candidate':best,'runtime_match_certified':bool(best and best['overlap']>=12 and best['exact_ratio']==1.0),'automation_ready':False,'promotion_performed':False,'runtime_mutated':False,'publication_performed':False}
+    new=[]
+    if best:
+        last=runtime['dates'][-1]
+        new=[x for x in best['observations'] if x['date']>last]
+    out={'schema':'GMFQ_LIQUIDITY_GBP_CCS_DIAGNOSTIC_V1','source':{'publisher':'Bank of England','release':'2026 Q3','url':URL,'target_question':'How has the availability of credit provided to the corporate sector overall changed?','response_horizon':'Past three months'},'runtime':{'lane':'GBP.conditions','count':len(runtime['dates']),'last_date':runtime['dates'][-1],'last_value':runtime['values'][-1]},'candidate_count':len(candidates),'candidates':candidates,'best_candidate':best,'new_observations':new,'runtime_match_certified':bool(best and best['overlap']==len(runtime['dates']) and best['exact']==len(runtime['dates']) and best['exact_ratio']==1.0),'automation_ready':False,'promotion_performed':False,'runtime_mutated':False,'publication_performed':False}
     print(json.dumps(out,indent=2))
 if __name__=='__main__': main()
