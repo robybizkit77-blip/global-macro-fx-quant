@@ -24,7 +24,9 @@ jobs:
       - name: Snapshot tracked runtime
         run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
       - name: Probe exact BOJ Tankan variants
-        run: python validation/probe_boj_jpy_tankan_lending_attitude_exact_v1.py | tee /tmp/tankan-probe.json
+        run: |
+          set -o pipefail
+          python validation/probe_boj_jpy_tankan_lending_attitude_exact_v1.py | tee /tmp/tankan-probe.json
       - name: Validate probe
         run: |
           python - <<'PY'
@@ -43,7 +45,7 @@ jobs:
               print('TANKAN_UNIQUE_EXACT',x['variant'],x['code'],x.get('name'),x.get('unit'))
           else:
               for x in d['tested_variants']:
-                  print('TANKAN_VARIANT',x['variant'],x['code'],x['overlap'],x['exact'],x['exact_ratio'],x['mae'])
+                  print('TANKAN_VARIANT',x['variant'],x['code'],x['overlap'],x['exact'],x['exact_ratio'],x['mae'],x.get('http_status'),x.get('error_body'))
           PY
       - name: Verify tracked runtime unchanged
         run: |
