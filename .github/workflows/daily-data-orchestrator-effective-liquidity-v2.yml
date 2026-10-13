@@ -87,8 +87,8 @@ jobs:
           assert c['proof']['overlap_count']==42 and c['proof']['exact_match_count']==42, c
           assert c['proof']['exact_match_ratio']==1.0, c
           assert c['new_observations']==[{'date':'2026-Q3','value':-0.1}], c
-          assert dry['status']=='UPDATE_AVAILABLE' and dry['applied'] is False, dry
-          assert r['status']=='UPDATE_AVAILABLE' and r['appended_observations']==1 and r['applied'] is True, r
+          assert dry['status']=='DRY_RUN_UPDATE_AVAILABLE' and dry['applied'] is False, dry
+          assert r['status']=='APPENDED' and r['appended_observations']==1 and r['applied'] is True, r
           n=len(original['dates'])
           assert applied['dates'][:n]==original['dates']
           assert applied['values'][:n]==original['values']
