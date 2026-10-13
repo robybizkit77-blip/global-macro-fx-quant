@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_CHINA_MACRO_CONFIRMATION_SOURCE_REGISTRY_V1",
+  "status": "READY/CONTEXT_ONLY",
+  "purpose": "Separate, minimal China macro confirmation. It is not China CLI and cannot vote in any G8 pair frame.",
+  "cli_is_not_an_input": true,
+  "mechanical_pair_vote": false,
+  "publication_permitted": false,
+  "activation_scope": "CONTEXT_ONLY",
+  "required_sources": {
+    "activity": {
+      "publisher": "National Bureau of Statistics of China",
+      "series": "Manufacturing Purchasing Managers' Index",
+      "release_basis": "Monthly official release",
+      "source_url": "https://www.stats.gov.cn/english/PressRelease/",
+      "pit_requirement": "Receipt must retain release timestamp, release-period label, source URL and immutable raw payload hash.",
+      "proxy_allowed": false
+    },
+    "demand": {
+      "publisher": "National Bureau of Statistics of China",
+      "series": "Total retail sales of consumer goods",
+      "release_basis": "Monthly official release",
+      "source_url": "https://www.stats.gov.cn/english/PressRelease/",
+      "pit_requirement": "Receipt must retain release timestamp, release-period label, source URL and immutable raw payload hash.",
+      "proxy_allowed": false
+    }
+  },
+  "direction_rule": {
+    "per_series": "IMPROVING when current > prior; WEAKENING when current < prior; STABLE when equal; WITHHELD when a strict receipt is missing or invalid.",
+    "combined": "IMPROVING only when both activity and demand are IMPROVING; WEAKENING only when both are WEAKENING; STABLE only when both are STABLE; otherwise MIXED. Any WITHHELD input makes the combined state WITHHELD.",
+    "interpretation": "China confirmation is contextual only. MIXED means the China layer provides no directional confirmation to G8 FX; it must never be converted into a mechanical pair vote."
+  },
+  "activation_rule": "Context-only activation is permitted only when both official releases are independently ingested with strict PIT receipts and the documented direction rule validates. Missing or delayed releases yield WITHHELD, never a synthetic confirmation.",
+  "receipt_set": "validation/china_macro_confirmation_pit_receipts_v1.json",
+  "activation_blocker": null
+}
