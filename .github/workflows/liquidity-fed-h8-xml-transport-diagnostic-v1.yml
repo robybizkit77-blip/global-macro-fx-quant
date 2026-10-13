@@ -1,0 +1,40 @@
+name: Liquidity Fed H8 XML Transport Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_fed_h8_xml_transport_v1.py'
+      - '.github/workflows/liquidity-fed-h8-xml-transport-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official Fed H8 full-release XML transport
+        run: python validation/diagnose_fed_h8_xml_transport_v1.py | tee /tmp/h8-xml-transport.json
+      - name: Enforce diagnostic-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/h8-xml-transport.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_USD_H8_XML_TRANSPORT_DIAGNOSTIC_V1'
+          assert d['status']=='DIAGNOSTIC_ONLY_NO_PROMOTION'
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          assert d['promotion_performed'] is False
+          print('TRANSPORT_ACCESSIBLE',d['transport_accessible'],'HITS',d['series_hit_count'],'ZIP',d['zip_size'])
+          for h in d['series_hits']:
+              print('FILE',h['file'],'SIZE',h['file_size'])
+              print(h['snippet'][:3000])
+          PY
