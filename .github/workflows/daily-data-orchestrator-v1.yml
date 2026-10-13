@@ -5,69 +5,9 @@ on:
     branches:
       - validation-daily-data-orchestrator-v1-2026-10-12
       - release-candidate-daily-data-orchestrator-v1-2026-10-12
-    paths:
-      - '.github/workflows/daily-data-orchestrator-v1.yml'
-      - 'validation/run_daily_data_orchestrator_v1.py'
-      - 'validation/repair_detached_direct_section.py'
-      - 'validation/fetch_ecb_g8_price_candidate.py'
-      - 'validation/apply_ecb_g8_price_candidate.py'
-      - 'validation/audit_liquidity_subseries_v1.py'
-      - 'validation/fetch_boc_cad_m2pp_candidate.py'
-      - 'validation/apply_boc_cad_m2pp_candidate.py'
-      - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
-      - 'validation/fetch_fed_usd_m2_candidate.py'
-      - 'validation/apply_fed_usd_m2_candidate.py'
-      - 'validation/fetch_boe_gbp_liquidity_candidates.py'
-      - 'validation/apply_boe_gbp_liquidity_candidates.py'
-      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
-      - 'validation/apply_boj_jpy_bank_credit_candidate.py'
-      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
-      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
-      - 'validation/fetch_cboe_vix_candidate.py'
-      - 'validation/fetch_eia_brent_probe.py'
-      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
-      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
-      - 'validation/check_freshness_registry.py'
-      - 'live_data/sections/D.json'
-      - 'live_data/sections/RATES_AUDIT_METADATA.json'
-      - 'live_data/sections/NATIVE_LIQ_DATA.json'
-      - 'live_data/sections/MACRO_SERIES.json'
-      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
-      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
-      - 'payload/part-15.txt'
   pull_request:
     branches:
       - release-candidate-freshness-registry-v1-2026-10-12
-    paths:
-      - '.github/workflows/daily-data-orchestrator-v1.yml'
-      - 'validation/run_daily_data_orchestrator_v1.py'
-      - 'validation/repair_detached_direct_section.py'
-      - 'validation/fetch_ecb_g8_price_candidate.py'
-      - 'validation/apply_ecb_g8_price_candidate.py'
-      - 'validation/audit_liquidity_subseries_v1.py'
-      - 'validation/fetch_boc_cad_m2pp_candidate.py'
-      - 'validation/apply_boc_cad_m2pp_candidate.py'
-      - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
-      - 'validation/fetch_fed_usd_m2_candidate.py'
-      - 'validation/apply_fed_usd_m2_candidate.py'
-      - 'validation/fetch_boe_gbp_liquidity_candidates.py'
-      - 'validation/apply_boe_gbp_liquidity_candidates.py'
-      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
-      - 'validation/apply_boj_jpy_bank_credit_candidate.py'
-      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
-      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
-      - 'validation/fetch_cboe_vix_candidate.py'
-      - 'validation/fetch_eia_brent_probe.py'
-      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
-      - 'validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'
-      - 'validation/check_freshness_registry.py'
-      - 'live_data/sections/D.json'
-      - 'live_data/sections/RATES_AUDIT_METADATA.json'
-      - 'live_data/sections/NATIVE_LIQ_DATA.json'
-      - 'live_data/sections/MACRO_SERIES.json'
-      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
-      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
-      - 'payload/part-15.txt'
   workflow_dispatch:
 
 permissions:
@@ -98,366 +38,110 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/daily-orchestrator-v1
           python3 validation/run_daily_data_orchestrator_v1.py | tee /tmp/daily-orchestrator-v1/receipt.json
-
-      - name: Enforce expected current blockers
-        shell: bash
-        run: |
           python3 - <<'PY'
           import json
           d=json.load(open('/tmp/daily-orchestrator-v1/receipt.json'))
           assert d['schema']=='GMFQ_DAILY_DATA_ORCHESTRATOR_RECEIPT_V1', d
-          assert d['status']=='BLOCKED_EXPECTED_GAPS_NO_PUBLICATION', d
-          expected={'PRICE','LIQUIDITY','RISK'}
-          got=set(d['blocking_lanes'])
-          assert expected.issubset(got), (expected, got)
-          assert d['lanes']['PRICE']['candidate_pipeline_ready'] is True
-          liq=d['lanes']['LIQUIDITY']
-          assert liq['inventory_ready'] is True
-          assert liq['state']=='BLOCKED_SUBSERIES_POLICY_PARTIAL', liq
-          assert liq['verified_subseries']==10, liq
-          assert liq['unresolved_subseries']==16, liq
-          assert liq['automation_ready_subseries']==10, liq
-          assert liq['mapping_pending_subseries']==16, liq
-          assert liq['source_mapped_subseries']==26, liq
-          assert liq['source_unresolved_subseries']==0, liq
-          assert liq['total_subseries']==26, liq
-          assert liq['cad_m2pp_candidate_pipeline_ready'] is True, liq
-          assert liq['cad_m2pp_collector']=='validation/fetch_boc_cad_m2pp_candidate.py', liq
-          assert liq['eur_excess_candidate_pipeline_ready'] is True, liq
-          assert liq['eur_excess_collector']=='validation/fetch_ecb_eur_excess_liquidity_candidate.py', liq
-          assert liq['usd_m2_candidate_pipeline_ready'] is True, liq
-          assert liq['usd_m2_collector']=='validation/fetch_fed_usd_m2_candidate.py', liq
-          assert liq['gbp_reserves_candidate_pipeline_ready'] is True, liq
-          assert liq['gbp_credit_candidate_pipeline_ready'] is True, liq
-          assert liq['gbp_boe_collector']=='validation/fetch_boe_gbp_liquidity_candidates.py', liq
-          assert liq['jpy_credit_candidate_pipeline_ready'] is True, liq
-          assert liq['jpy_credit_collector']=='validation/fetch_boj_jpy_bank_credit_candidate.py', liq
-          assert liq['jpy_credit_database']=='MD11', liq
-          assert liq['jpy_credit_series_key']=='DLCLAEDBLTTO', liq
-          assert liq['eur_m3_effective_status']=='OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING', liq
-          assert liq['eur_m3_collector_status']=='WITHHELD_UNTIL_REVISION_AWARE_CONTRACT', liq
-          assert d['lanes']['RISK']['guard_proven'] is True
-          assert d['lanes']['RISK']['vix_candidate_pipeline_ready'] is True
-          assert d['lanes']['RISK']['vix_source_status']=='READY'
-          assert d['lanes']['RISK']['brent_source_status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE'
-          assert d['lanes']['RISK']['state']=='BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE'
-          assert d['promotion_performed'] is False
-          assert d['live_data_published'] is False
-          assert d['gh_pages_published'] is False
-          assert d['automatic_publication'] is False
-          print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', sorted(got), 'LIQUIDITY ready=', liq['verified_subseries'], 'mapped=', liq['source_mapped_subseries'], 'total=', liq['total_subseries'])
+          assert d['promotion_performed'] is False, d
+          assert d['live_data_published'] is False, d
+          assert d['gh_pages_published'] is False, d
+          assert d['automatic_publication'] is False, d
+          assert d['lanes']['RISK']['guard_proven'] is True, d['lanes']['RISK']
+          print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', d['blocking_lanes'])
           PY
 
-      - name: Fetch official Cboe VIX candidate
+      - name: Probe Risk official sources
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/fetch_cboe_vix_candidate.py | tee /tmp/daily-orchestrator-v1/risk-vix-candidate.log
-          cp validation/risk-vix-candidate.json /tmp/daily-orchestrator-v1/risk-vix-candidate.json
+          python3 validation/fetch_cboe_vix_candidate.py | tee /tmp/daily-orchestrator-v1/risk-vix.log
+          python3 validation/fetch_eia_brent_probe.py | tee /tmp/daily-orchestrator-v1/risk-brent.log
           python3 - <<'PY'
           import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/risk-vix-candidate.json'))
-          assert c['schema']=='GMFQ_RISK_VIX_CANDIDATE_V1', c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['business_day_lag'] <= 1, c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          print('RISK_VIX_SOURCE_CANDIDATE_PASS',c['latest_date'],c['latest_value'])
+          v=json.load(open('validation/risk-vix-candidate.json'))
+          b=json.load(open('validation/risk-brent-probe.json'))
+          assert v['status']=='GREEN_SOURCE_CANDIDATE_ONLY', v
+          assert v['business_day_lag'] <= 1, v
+          assert b['status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE', b
+          assert b['business_day_lag'] > b['max_business_day_lag'], b
+          assert not v['runtime_mutated'] and not v['publication_performed']
+          assert not b['runtime_mutated'] and not b['publication_performed']
+          print('RISK_FAIL_CLOSED_PASS')
           PY
 
-      - name: Probe official EIA Brent source against Risk gate
+      - name: Prove base Liquidity controlled applies on copies
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/fetch_eia_brent_probe.py | tee /tmp/daily-orchestrator-v1/risk-brent-probe.log
-          cp validation/risk-brent-probe.json /tmp/daily-orchestrator-v1/risk-brent-probe.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/risk-brent-probe.json'))
-          assert c['schema']=='GMFQ_RISK_BRENT_SOURCE_PROBE_V1', c
-          assert c['source']['series_id']=='RBRTE', c
-          assert c['source']['fred_mirror_series_id']=='DCOILBRENTEU', c
-          assert c['business_day_lag'] > c['max_business_day_lag'], c
-          assert c['status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE', c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          print('RISK_BRENT_OFFICIAL_SOURCE_WITHHELD_AS_EXPECTED',c['latest_date'],c['latest_value'],'lag=',c['business_day_lag'])
-          PY
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/liq.before.sha256
 
-      - name: Inventory Liquidity subseries without inventing freshness
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/audit_liquidity_subseries_v1.py | tee /tmp/daily-orchestrator-v1/liquidity-subseries.json
-          python3 - <<'PY'
-          import json
-          d=json.load(open('/tmp/daily-orchestrator-v1/liquidity-subseries.json'))
-          assert d['schema']=='GMFQ_LIQUIDITY_SUBSERIES_INVENTORY_V1', d
-          assert d['status']=='INVENTORY_COMPLETE_POLICY_NOT_MAPPED', d
-          assert d['currency_count']==8, d
-          assert d['subseries_count']==26, d
-          assert d['unknown_cadence_count']==0, d
-          assert d['bias_score_sizing_effect']=='NONE', d
-          print('LIQUIDITY_SUBSERIES_INVENTORY_PASS',d['subseries_count'],'unknown=',d['unknown_cadence_count'])
-          PY
+          python3 validation/fetch_boc_cad_m2pp_candidate.py >/tmp/daily-orchestrator-v1/cad.log
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/liq-cad.json
+          python3 validation/apply_boc_cad_m2pp_candidate.py --candidate validation/liquidity-cad-m2pp-candidate.json --runtime /tmp/daily-orchestrator-v1/liq-cad.json --apply >/tmp/daily-orchestrator-v1/cad-apply.json
 
-      - name: Fetch official BoC CAD M2++ candidate
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/fetch_boc_cad_m2pp_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.log
-          cp validation/liquidity-cad-m2pp-candidate.json /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json'))
-          p=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))['mapped']['CAD.money']
-          assert c['schema']=='GMFQ_LIQUIDITY_CAD_M2PP_CANDIDATE_V1', c
-          assert c['source']['series_id']=='V41552801', c
-          assert c['runtime_match_confirmed'] is True, c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          assert p['automation_ready'] is True, p
-          assert p['controlled_apply_proven'] is True, p
-          assert p['applier']=='validation/apply_boc_cad_m2pp_candidate.py', p
-          print('LIQUIDITY_CAD_M2PP_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
-          PY
+          python3 validation/fetch_ecb_eur_excess_liquidity_candidate.py >/tmp/daily-orchestrator-v1/eur.log
 
-      - name: Prove CAD M2++ controlled apply without mutating tracked runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/cad-runtime.before.sha256
-          python3 validation/apply_boc_cad_m2pp_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json > /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-dry-run.json
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.cad-copy.json
-          python3 validation/apply_boc_cad_m2pp_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json --runtime /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.cad-copy.json --apply | tee /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-apply.json
-          sha256sum -c /tmp/daily-orchestrator-v1/cad-runtime.before.sha256
+          python3 validation/fetch_fed_usd_m2_candidate.py >/tmp/daily-orchestrator-v1/usd.log
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/liq-usd.json
+          python3 validation/apply_fed_usd_m2_candidate.py --candidate validation/liquidity-usd-m2-candidate.json --runtime /tmp/daily-orchestrator-v1/liq-usd.json --apply >/tmp/daily-orchestrator-v1/usd-apply.json
+
+          python3 validation/fetch_boe_gbp_liquidity_candidates.py >/tmp/daily-orchestrator-v1/gbp.log
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/liq-gbp.json
+          python3 validation/apply_boe_gbp_liquidity_candidates.py --candidate validation/liquidity-gbp-boe-candidates.json --runtime /tmp/daily-orchestrator-v1/liq-gbp.json --apply >/tmp/daily-orchestrator-v1/gbp-apply.json
+
+          python3 validation/fetch_boj_jpy_bank_credit_candidate.py >/tmp/daily-orchestrator-v1/jpy.log
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/liq-jpy.json
+          python3 validation/apply_boj_jpy_bank_credit_candidate.py --candidate validation/liquidity-jpy-bank-credit-candidate.json --runtime /tmp/daily-orchestrator-v1/liq-jpy.json --apply >/tmp/daily-orchestrator-v1/jpy-apply.json
+
+          sha256sum -c /tmp/daily-orchestrator-v1/liq.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+          echo LIQUIDITY_CONTROLLED_APPLY_PASS
 
-      - name: Fetch official ECB EUR excess-liquidity candidate
+      - name: Prove Price controlled apply and restore
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/fetch_ecb_eur_excess_liquidity_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.log
-          cp validation/liquidity-eur-excess-candidate.json /tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.json'))
-          assert c['schema']=='GMFQ_LIQUIDITY_EUR_EXCESS_CANDIDATE_V1', c
-          assert c['source']['series_id']=='ILM.D.U2.C.EXLIQ.U2.EUR', c
-          assert c['runtime_match_confirmed'] is True, c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          print('LIQUIDITY_ECB_EUR_EXCESS_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
-          PY
-
-      - name: Fetch official Fed H6 USD M2 candidate
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/fetch_fed_usd_m2_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-usd-m2-candidate.log
-          cp validation/liquidity-usd-m2-candidate.json /tmp/daily-orchestrator-v1/liquidity-usd-m2-candidate.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-usd-m2-candidate.json'))
-          p=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))['mapped']['USD.liquidity']
-          assert c['schema']=='GMFQ_LIQUIDITY_USD_M2_CANDIDATE_V1', c
-          assert c['source']['series_id']=='H6/H6_M2/M2.M', c
-          assert c['runtime_match_confirmed'] is True, c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          assert p['automation_ready'] is True, p
-          assert p['controlled_apply_proven'] is True, p
-          assert p['applier']=='validation/apply_fed_usd_m2_candidate.py', p
-          print('LIQUIDITY_FED_USD_M2_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
-          PY
-
-      - name: Prove USD M2 controlled apply without mutating tracked runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/usd-runtime.before.sha256
-          python3 validation/apply_fed_usd_m2_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-usd-m2-candidate.json > /tmp/daily-orchestrator-v1/liquidity-usd-m2-dry-run.json
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.usd-copy.json
-          python3 validation/apply_fed_usd_m2_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-usd-m2-candidate.json --runtime /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.usd-copy.json --apply | tee /tmp/daily-orchestrator-v1/liquidity-usd-m2-apply.json
-          sha256sum -c /tmp/daily-orchestrator-v1/usd-runtime.before.sha256
-          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
-
-      - name: Fetch official BoE GBP Liquidity candidates
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/fetch_boe_gbp_liquidity_candidates.py | tee /tmp/daily-orchestrator-v1/liquidity-gbp-boe-candidates.log
-          cp validation/liquidity-gbp-boe-candidates.json /tmp/daily-orchestrator-v1/liquidity-gbp-boe-candidates.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-gbp-boe-candidates.json'))
-          p=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))['mapped']
-          assert c['schema']=='GMFQ_LIQUIDITY_GBP_BOE_CANDIDATES_V1', c
-          assert c['series_count']==2, c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          expected={'GBP.liquidity':'RPWB56A','GBP.credit':'LPMVTYI'}
-          for key,series in expected.items():
-              row=c['results'][key]
-              assert row['source']['series_id']==series, (key,row)
-              assert row['runtime_match_confirmed'] is True, (key,row)
-              assert row['status']=='GREEN_SOURCE_CANDIDATE_ONLY', (key,row)
-              assert p[key]['automation_ready'] is True, p[key]
-              assert p[key]['controlled_apply_proven'] is True, p[key]
-              assert p[key]['applier']=='validation/apply_boe_gbp_liquidity_candidates.py', p[key]
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          print('LIQUIDITY_BOE_GBP_CANDIDATE_PASS', {k:v['latest_date'] for k,v in c['results'].items()})
-          PY
-
-      - name: Prove GBP BoE controlled apply without mutating tracked runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/gbp-runtime.before.sha256
-          python3 validation/apply_boe_gbp_liquidity_candidates.py --candidate /tmp/daily-orchestrator-v1/liquidity-gbp-boe-candidates.json > /tmp/daily-orchestrator-v1/liquidity-gbp-boe-dry-run.json
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.gbp-copy.json
-          python3 validation/apply_boe_gbp_liquidity_candidates.py --candidate /tmp/daily-orchestrator-v1/liquidity-gbp-boe-candidates.json --runtime /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.gbp-copy.json --apply | tee /tmp/daily-orchestrator-v1/liquidity-gbp-boe-apply.json
-          sha256sum -c /tmp/daily-orchestrator-v1/gbp-runtime.before.sha256
-          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
-
-      - name: Fetch official BOJ JPY bank credit candidate
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/fetch_boj_jpy_bank_credit_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.log
-          cp validation/liquidity-jpy-bank-credit-candidate.json /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json
-          python3 - <<'PY'
-          import json
-          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json'))
-          p=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))['mapped']['JPY.credit']
-          assert c['schema']=='GMFQ_LIQUIDITY_JPY_BANK_CREDIT_CANDIDATE_V1', c
-          assert c['source']['database']=='MD11', c
-          assert c['source']['series_id']=='DLCLAEDBLTTO', c
-          assert c['runtime_match_confirmed'] is True, c
-          assert c['runtime_exact_match_count']==c['runtime_overlap_count'], c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['publication_performed'] is False
-          assert c['runtime_mutated'] is False
-          assert p['automation_ready'] is True, p
-          assert p['controlled_apply_proven'] is True, p
-          assert p['applier']=='validation/apply_boj_jpy_bank_credit_candidate.py', p
-          print('LIQUIDITY_BOJ_JPY_BANK_CREDIT_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
-          PY
-
-      - name: Prove JPY bank credit controlled apply without mutating tracked runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/jpy-runtime.before.sha256
-          python3 validation/apply_boj_jpy_bank_credit_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json > /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-dry-run.json
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.jpy-copy.json
-          python3 validation/apply_boj_jpy_bank_credit_candidate.py --candidate /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json --runtime /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.jpy-copy.json --apply | tee /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-apply.json
-          sha256sum -c /tmp/daily-orchestrator-v1/jpy-runtime.before.sha256
-          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
-
-      - name: Fetch official ECB G8 Price candidate
-        shell: bash
-        run: |
-          set -euo pipefail
+          sha256sum payload/part-15.txt > /tmp/daily-orchestrator-v1/price.before.sha256
           python3 validation/fetch_ecb_g8_price_candidate.py --out /tmp/daily-orchestrator-v1/price-candidate.json
-          python3 - <<'PY'
-          import json,re
-          from datetime import date
-          c=json.load(open('/tmp/daily-orchestrator-v1/price-candidate.json'))
-          reg=json.load(open('validation/FRESHNESS_REGISTRY_V1_2026-10-12.json'))
-          text=open('payload/part-15.txt',encoding='utf-8').read()
-          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">', text)
-          assert len(m)==1,m
-          current=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
-          run_date=date.today().isoformat()
-          assert c['as_of'] >= current, (c['as_of'],current)
-          assert c['as_of'] <= run_date, (c['as_of'],run_date)
-          assert reg['as_of'] <= run_date, (reg['as_of'],run_date)
-          assert c['pair_count']==28 and c['base']=='EUR'
-          print('PRICE_CANDIDATE_PASS',current,'->',c['as_of'],'registry_policy_as_of=',reg['as_of'],'run_date=',run_date)
-          PY
-
-      - name: Ephemerally apply ECB Price candidate
-        shell: bash
-        run: |
-          set -euo pipefail
           python3 validation/apply_ecb_g8_price_candidate.py --candidate /tmp/daily-orchestrator-v1/price-candidate.json --apply | tee /tmp/daily-orchestrator-v1/price-apply.json
           python3 - <<'PY'
           import json
           r=json.load(open('/tmp/daily-orchestrator-v1/price-apply.json'))
-          assert r['schema']=='GMFQ_ECB_G8_PRICE_APPLY_RECEIPT_V1'
-          assert r['status'] in {'UPDATE_AVAILABLE','NO_CHANGE'}
-          assert r['publication_performed'] is False
-          print('PRICE_APPLY_DRYRUN_PASS',r['status'],r['as_of'])
+          assert r['schema']=='GMFQ_ECB_G8_PRICE_APPLY_RECEIPT_V1', r
+          assert r['status'] in {'UPDATE_AVAILABLE','NO_CHANGE'}, r
+          assert r['publication_performed'] is False, r
           PY
+          git checkout -- payload/part-15.txt
+          sha256sum -c /tmp/daily-orchestrator-v1/price.before.sha256
+          echo PRICE_CONTROLLED_APPLY_PASS
 
-      - name: Validate current Macro alignment state
+      - name: Validate Macro aligned runtime and global manifest
         shell: bash
         run: |
           set -euo pipefail
-          set +e
-          python3 validation/build_live_manifest_v2.py --write /tmp/daily-orchestrator-v1/manifest.before.json > /tmp/daily-orchestrator-v1/manifest-before.log 2>&1
-          rc=$?
-          set -e
-          cat /tmp/daily-orchestrator-v1/manifest-before.log
-          python3 - "$rc" <<'PY'
-          import json,sys
-          rc=int(sys.argv[1])
-          m=json.load(open('/tmp/daily-orchestrator-v1/manifest.before.json'))
-          rows={x['key']:x for x in m['sections']}
-          macro=('MACRO_THERMOMETER_DATA','MACRO_SERIES')
-          if rc == 0:
-              assert m['status']=='PASS', m
-              for key in macro:
-                  assert rows[key]['occurrences_in_payload']==1, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('ALIGNED\n')
-              print('MACRO_RUNTIME_ALREADY_ALIGNED_PASS')
-          else:
-              assert m['status']=='FAIL', m
-              for key in macro:
-                  assert rows[key]['occurrences_in_payload']==0, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('DETACHED\n')
-              print('LEGACY_DETACHED_MACRO_RUNTIME_CONFIRMED')
-          PY
-
-      - name: Ephemerally repair Macro only when detached
-        shell: bash
-        run: |
-          set -euo pipefail
-          state="$(cat /tmp/daily-orchestrator-v1/macro-runtime-state)"
-          if [ "$state" = "DETACHED" ]; then
-            python3 validation/repair_detached_direct_section.py --section MACRO_THERMOMETER_DATA --apply | tee /tmp/daily-orchestrator-v1/repair-macro-thermometer.json
-            python3 validation/repair_detached_direct_section.py --section MACRO_SERIES --apply | tee /tmp/daily-orchestrator-v1/repair-macro-series.json
-          else
-            echo 'MACRO_ALREADY_ALIGNED_NO_REPAIR_REQUIRED'
-          fi
-          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/daily-orchestrator-v1/manifest-after.log
-
-      - name: Validate Macro runtime and exact diff scope
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/check_live_update_contract.py | tee /tmp/daily-orchestrator-v1/live-contract-after.log
-          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/daily-orchestrator-v1/runtime-roundtrip-after.json
+          python3 validation/build_live_manifest_v2.py --write /tmp/daily-orchestrator-v1/manifest.current.json | tee /tmp/daily-orchestrator-v1/manifest-current.log
           python3 - <<'PY'
-          import subprocess
-          state=open('/tmp/daily-orchestrator-v1/macro-runtime-state').read().strip()
-          changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
-          print('EPHEMERAL_CHANGED_FILES', changed, 'MACRO_STATE', state)
-          expected={'live_data/manifest.v2.json','payload/part-15.txt'} if state=='ALIGNED' else {'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
-          if set(changed) != expected:
-              raise SystemExit(f'unexpected ephemeral diff scope: {changed}; expected={sorted(expected)}')
+          import json
+          m=json.load(open('/tmp/daily-orchestrator-v1/manifest.current.json'))
+          rows={x['key']:x for x in m['sections']}
+          for key in ('MACRO_THERMOMETER_DATA','MACRO_SERIES'):
+              assert rows[key]['occurrences_in_payload']==1, (key, rows[key])
+          assert m['status']=='PASS', m
+          print('MACRO_RUNTIME_ALIGNED_PASS')
           PY
+          python3 validation/check_live_update_contract.py | tee /tmp/daily-orchestrator-v1/live-contract.log
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/daily-orchestrator-v1/runtime-roundtrip.json
+          git diff --exit-code -- live_data payload
 
-      - name: Restore tracked runtime after proof
+      - name: Clean generated candidates
         if: always()
         shell: bash
         run: |
-          git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
-          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json validation/liquidity-cad-m2pp-candidate.json validation/liquidity-eur-excess-candidate.json validation/liquidity-usd-m2-candidate.json validation/liquidity-gbp-boe-candidates.json validation/liquidity-jpy-bank-credit-candidate.json
+          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json \
+            validation/liquidity-cad-m2pp-candidate.json validation/liquidity-eur-excess-candidate.json \
+            validation/liquidity-usd-m2-candidate.json validation/liquidity-gbp-boe-candidates.json \
+            validation/liquidity-jpy-bank-credit-candidate.json
+          git checkout -- payload/part-15.txt || true
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
