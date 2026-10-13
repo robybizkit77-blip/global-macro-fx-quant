@@ -1,0 +1,72 @@
+{
+  "schema": "GMFQ_LIQUIDITY_PROVENANCE_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "subseries": "CAD.liquidity",
+  "label": "Settlement balances",
+  "runtime_origin": {
+    "introduced_in_commit": "529acdd6026c88ecee8451e2e5bc36c740eece7d",
+    "commit_message": "Build clean live runtime release candidate",
+    "first_month": "2016-01",
+    "last_month": "2026-08",
+    "last_value": 74157.0,
+    "embedded_source_metadata_present": false,
+    "embedded_vintage_metadata_present": false
+  },
+  "official_source_resolution": {
+    "publisher": "Bank of Canada",
+    "api": "Valet",
+    "series_id": "ACTUAL",
+    "series_label": "Lynx settlement balances - actual",
+    "source_family": "Lynx settlement balances / market operations indicators",
+    "current_series_identity_assessment": "STRONGLY_IDENTIFIED_CURRENT_SERIES",
+    "monthly_runtime_rule_candidate": "LAST_AVAILABLE_OFFICIAL_OBSERVATION_IN_MONTH"
+  },
+  "historical_match_diagnostic": {
+    "runtime_months": 128,
+    "overlap_months": 128,
+    "exact_last_of_month_matches": 115,
+    "exact_match_ratio": 0.8984375,
+    "mismatch_count": 13,
+    "mismatch_months": [
+      "2016-04",
+      "2017-07",
+      "2017-10",
+      "2018-05",
+      "2019-01",
+      "2019-05",
+      "2019-11",
+      "2020-04",
+      "2020-11",
+      "2023-01",
+      "2024-04",
+      "2025-07",
+      "2025-08"
+    ],
+    "mismatch_runtime_value_matches_other_official_day_in_same_month": false,
+    "current_vintage_runtime_last_month_exact": true,
+    "diagnostic_script": "validation/diagnose_boc_cad_settlement_balances_v1.py",
+    "diagnostic_run_id": 38372449446,
+    "interpretation": "The current official ACTUAL series plus last-available-observation-in-month rule reproduces most of the runtime and the latest runtime month exactly. The 13 residual mismatches are not explained by choosing another current official daily observation in the same month. Revision/vintage history is therefore unresolved and must not be inferred."
+  },
+  "resolution": {
+    "status": "OFFICIAL_CURRENT_SERIES_IDENTIFIED_REVISION_VINTAGE_CONTRACT_PENDING",
+    "runtime_match_certified": false,
+    "aggregation_rule_certified": false,
+    "revision_vintage_contract_certified": false,
+    "candidate_pipeline_ready": false,
+    "automation_ready": false,
+    "fail_closed": true,
+    "publication_eligible": false,
+    "no_proxy_substitution": true,
+    "no_historical_rewrite": true,
+    "bias_score_sizing_effect": "NONE"
+  },
+  "effective_coverage": {
+    "automation_ready_subseries": 11,
+    "mapping_pending_subseries": 15,
+    "total_subseries": 26,
+    "coverage_change_from_this_resolution": 0
+  },
+  "runtime_mutated": false,
+  "publication_performed": false
+}
