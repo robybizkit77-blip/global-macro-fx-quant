@@ -1,0 +1,95 @@
+name: Price ECB Controlled Apply Contract V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/fetch_ecb_g8_price_candidate.py'
+      - 'validation/apply_ecb_g8_price_candidate.py'
+      - 'validation/run_daily_data_orchestrator_v1.py'
+      - 'payload/part-15.txt'
+      - '.github/workflows/price-ecb-controlled-apply-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  price-controlled-apply-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum payload/part-15.txt > /tmp/price-runtime.before.sha256
+      - name: Fetch official ECB G8 candidate
+        run: python validation/fetch_ecb_g8_price_candidate.py --out /tmp/price-candidate.json
+      - name: Enforce candidate temporal and universe contract
+        run: |
+          python - <<'PY'
+          import json,re
+          from datetime import date
+          c=json.load(open('/tmp/price-candidate.json'))
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">',text)
+          assert len(m)==1,m
+          current=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
+          assert c['schema']=='GMFQ_ECB_G8_PRICE_CANDIDATE_V1',c
+          assert c['status']=='CANDIDATE_OFFICIAL',c
+          assert c['base']=='EUR' and c['pair_count']==28,c
+          assert set(c['rates'])=={'EUR','USD','GBP','JPY','CHF','CAD','AUD','NZD'},c
+          assert float(c['rates']['EUR'])==1.0 and all(float(v)>0 for v in c['rates'].values()),c
+          assert c['as_of']>=current,(c['as_of'],current)
+          assert c['as_of']<=date.today().isoformat(),(c['as_of'],date.today().isoformat())
+          print('PRICE_CANDIDATE_CONTRACT_PASS',current,'->',c['as_of'])
+          PY
+      - name: Controlled apply on checkout
+        run: |
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-candidate.json --apply > /tmp/price-apply.json
+          cat /tmp/price-apply.json
+      - name: Enforce exact diff scope and overlay identity
+        run: |
+          python - <<'PY'
+          import json,re,subprocess
+          c=json.load(open('/tmp/price-candidate.json')); r=json.load(open('/tmp/price-apply.json'))
+          changed=subprocess.check_output(['git','diff','--name-only'],text=True).splitlines()
+          expected=[] if r['status']=='NO_CHANGE' else ['payload/part-15.txt']
+          assert changed==expected,(changed,expected,r)
+          assert r['schema']=='GMFQ_ECB_G8_PRICE_APPLY_RECEIPT_V1',r
+          assert r['as_of']==c['as_of'],(r,c)
+          assert r['publication_performed'] is False,r
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          compact=c['as_of'].replace('-','')
+          assert len(re.findall(r'<script id="gmfq-price-ecb-\d{8}">',text))==1
+          assert f'<script id="gmfq-price-ecb-{compact}">' in text
+          assert f"Date:'{c['as_of']}'" in text
+          for ccy in ('USD','GBP','JPY','CHF','CAD','AUD','NZD'):
+              assert re.search(rf'\b{ccy}:[0-9.eE+-]+',text),ccy
+          print('PRICE_EXACT_DIFF_SCOPE_PASS',changed)
+          PY
+      - name: Prove idempotent second apply
+        run: |
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-candidate.json --apply > /tmp/price-apply-second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/price-apply-second.json'))
+          assert r['status']=='NO_CHANGE',r
+          assert r['applied'] is False,r
+          assert r['publication_performed'] is False,r
+          print('PRICE_SECOND_APPLY_IDEMPOTENT_PASS')
+          PY
+      - name: Restore tracked runtime and verify zero mutation
+        if: always()
+        run: |
+          git checkout -- payload/part-15.txt
+          sha256sum -c /tmp/price-runtime.before.sha256
+          git diff --exit-code -- payload/part-15.txt
+      - name: Summary
+        run: |
+          echo 'ECB Price controlled apply contract: GREEN'
+          echo 'Exact diff scope: payload/part-15.txt only'
+          echo 'Second apply: idempotent'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
