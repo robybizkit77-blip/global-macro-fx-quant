@@ -100,7 +100,9 @@ def main():
     if liq_override.get('schema') != 'GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1':
         raise SystemExit('Liquidity EUR M3 override schema mismatch')
     supersedes = liq_override.get('supersedes') or {}
-    if supersedes.get('policy') != str(LIQ_POLICY) or supersedes.get('subseries') != 'EUR.money':
+    # The contract stores repository paths with POSIX separators; normalising
+    # here keeps the same fail-closed comparison reproducible on Windows too.
+    if supersedes.get('policy') != LIQ_POLICY.as_posix() or supersedes.get('subseries') != 'EUR.money':
         raise SystemExit('Liquidity EUR M3 override does not target the expected base policy/subseries')
     effective_m3 = liq_override.get('effective_row') or {}
     if effective_m3.get('automation_ready') is not False:
