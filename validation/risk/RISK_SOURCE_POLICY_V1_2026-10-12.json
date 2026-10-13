@@ -23,17 +23,20 @@
       "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
     },
     "Brent": {
-      "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
+      "status": "WITHHELD_HARD_SOURCE_FRESHNESS_BLOCKER",
       "role": "PRIMARY_GATE_INPUT",
       "source_name": "Europe Brent Spot Price FOB",
       "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
       "publisher": "U.S. Energy Information Administration",
       "series_id": "RBRTE",
+      "eia_api_series_id": "PET.RBRTE.D",
       "fred_mirror_series_id": "DCOILBRENTEU",
-      "frequency": "Daily",
+      "frequency": "Daily observations / batch release cadence",
       "max_business_day_lag_vs_price": 1,
       "collector": "validation/fetch_eia_brent_probe.py",
-      "reason": "An auditable primary EIA Brent source exists, but its release cadence can lag the daily Price lane beyond the existing one-business-day Risk gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. The historical canonical refresh workflow did not define a Brent collector. Do not weaken the gate or substitute a non-equivalent proxy merely to produce GREEN."
+      "hard_blocker": true,
+      "hard_blocker_confirmed_on": "2026-10-13",
+      "reason": "The canonical gate input is explicitly the EIA Europe Brent Spot Price FOB series RBRTE. EIA Open Data exposes the same underlying daily series as PET.RBRTE.D, so switching transport from the historical HTML table to the EIA API does not create a fresher independent observation stream. EIA release timing can lag the Price lane beyond the existing one-business-day gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. ICE Brent futures settlement is a different futures benchmark and therefore is not an exact semantic substitute for EIA Brent spot; it must not be used merely to force GREEN. Keep the one-business-day gate unchanged and fail closed until an official, exact-equivalent, sufficiently timely source is proven."
     }
   },
   "secondary_runtime_series": {
