@@ -1,0 +1,47 @@
+name: Liquidity BOJ JPY Reserve Pairwise Diagnostic V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/diagnose_boj_jpy_reserve_pairwise_aggregation_v1.py'
+      - '.github/workflows/liquidity-boj-jpy-reserve-pairwise-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pairwise-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Test BOJ MD08 pairwise aggregations
+        run: python validation/diagnose_boj_jpy_reserve_pairwise_aggregation_v1.py | tee /tmp/jpy-pairwise.json
+      - name: Classify result without forced promotion
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-pairwise.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_RESERVE_PAIRWISE_AGGREGATION_DIAGNOSTIC_V1', d
+          assert d['candidate_series_fetched']>0 and d['pairwise_tests']>0, d
+          assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
+          print('JPY_PAIRWISE_STATUS',d['status'])
+          print('JPY_PAIRWISE_BEST',json.dumps(d['best_candidate'],ensure_ascii=False))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY reserve pairwise BOJ MD08 diagnostic complete'
+          echo 'No promotion unless exact pairwise aggregation is proven'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
