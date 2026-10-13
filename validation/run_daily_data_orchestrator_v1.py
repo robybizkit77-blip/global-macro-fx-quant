@@ -46,11 +46,26 @@ def main():
     price_age = (today - parse_date(overlay_as_of)).days
 
     if liq_policy.get('status') != 'PARTIAL_POLICY_FAIL_CLOSED':
-        raise SystemExit('Liquidity source policy must remain fail-closed until all subseries are mapped')
-    liq_verified = liq_policy.get('verified') or {}
+        raise SystemExit('Liquidity source policy must remain fail-closed until all subseries are exact-mapped and automation-ready')
+    liq_mapped = liq_policy.get('mapped') or {}
     liq_unresolved = liq_policy.get('unresolved') or []
-    if len(liq_verified) + len(liq_unresolved) != 26:
-        raise SystemExit(f'Liquidity policy coverage mismatch: verified={len(liq_verified)} unresolved={len(liq_unresolved)}')
+    liq_cov = liq_policy.get('coverage') or {}
+    liq_total = int(liq_cov.get('total_subseries', 0))
+    liq_source_mapped = int(liq_cov.get('source_mapped_subseries', -1))
+    liq_ready = int(liq_cov.get('automation_ready_subseries', -1))
+    liq_pending = int(liq_cov.get('mapping_pending_subseries', -1))
+    liq_unresolved_count = int(liq_cov.get('unresolved_subseries', -1))
+    if liq_total != 26:
+        raise SystemExit(f'Liquidity total coverage mismatch: {liq_total}')
+    if len(liq_mapped) != liq_source_mapped or len(liq_unresolved) != liq_unresolved_count:
+        raise SystemExit('Liquidity policy declared counts do not match mapped/unresolved objects')
+    if liq_source_mapped + liq_unresolved_count != liq_total:
+        raise SystemExit('Liquidity source-mapped + unresolved coverage must equal total')
+    if liq_ready + liq_pending != liq_source_mapped:
+        raise SystemExit('Liquidity automation-ready + mapping-pending must equal source-mapped')
+    actual_ready = sum(1 for row in liq_mapped.values() if row.get('automation_ready') is True)
+    if actual_ready != liq_ready:
+        raise SystemExit(f'Liquidity automation-ready count mismatch: declared={liq_ready} actual={actual_ready}')
 
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
@@ -86,17 +101,19 @@ def main():
             'reason': 'single-series PIT path exists; detached runtime repair is deterministic but persistent apply is not yet wired',
         },
         'LIQUIDITY': {
-            'state': 'BLOCKED_SUBSERIES_POLICY_PARTIAL',
+            'state': 'BLOCKED_SUBSERIES_EXACT_MAPPING_INCOMPLETE',
             'source_present': LIQ_PATH.exists(),
             'source_policy': str(LIQ_POLICY),
             'updater': 'UNVERIFIED',
             'inventory': 'audit_liquidity_subseries_v1.py',
             'inventory_ready': True,
-            'verified_subseries': len(liq_verified),
-            'unresolved_subseries': len(liq_unresolved),
-            'total_subseries': 26,
+            'source_mapped_subseries': liq_source_mapped,
+            'automation_ready_subseries': liq_ready,
+            'mapping_pending_subseries': liq_pending,
+            'unresolved_subseries': liq_unresolved_count,
+            'total_subseries': liq_total,
             'publication_eligible': False,
-            'reason': 'official provenance/cadence mapping has started but remains incomplete; observed cadence alone cannot promote a subseries to GREEN',
+            'reason': 'official source families are mostly mapped, but provider discovery is not equivalent to an exact automation-ready series; exact variant/key and aggregation matching remain fail-closed',
         },
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
