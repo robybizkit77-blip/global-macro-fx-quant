@@ -1,0 +1,45 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "USD.conditions"
+  },
+  "effective_row": {
+    "label": "SLOOS C&I lending standards",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Board of Governors of the Federal Reserve System",
+    "source_contract": "Senior Loan Officer Opinion Survey on Bank Lending Practices / Net percentage of domestic banks tightening standards for C&I loans to large and middle-market firms",
+    "frequency": "QUARTERLY",
+    "automation_ready": true,
+    "series_mapping_status": "EXACT_SERIES_KEY_FULL_RUNTIME_MATCH_CONFIRMED",
+    "series_key": "SLOOS/SLOOS/SUBLPDCILS_N.Q",
+    "series_code": "SUBLPDCILS_N.Q",
+    "collector": "validation/fetch_fed_usd_sloos_conditions_candidate.py",
+    "applier": "validation/apply_fed_usd_sloos_conditions_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38387613455,
+    "historical_overlap_count": 43,
+    "historical_exact_match_count": 43,
+    "historical_exact_match_ratio": 1.0,
+    "runtime_history_unchanged_by_current_vintage": true,
+    "runtime_last_date": "2026-07-01",
+    "runtime_last_value": 0.0,
+    "official_last_date": "2026-07-01",
+    "official_last_value": 0.0,
+    "latest_apply_receipt_status": "NO_CHANGE",
+    "append_contract": "append only strictly contiguous quarter-start observations after the exact runtime tail; never rewrite historical observations",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.federalreserve.gov/datadownload/"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "The official Federal Reserve SLOOS DDP series is the unique full runtime match: 43/43 observations exact, zero error, current vintage unchanged. Collector and append-only applier were proven in CI on an isolated runtime copy; the current official tail equals the runtime tail, so the proof correctly produced NO_CHANGE with no tracked runtime mutation.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
