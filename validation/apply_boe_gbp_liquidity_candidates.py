@@ -22,10 +22,15 @@ def parse_date(value: str) -> date:
         return datetime.fromisoformat(raw).date()
     except ValueError:
         pass
+    for fmt in ('%d %b %Y', '%d %b %y', '%d/%b/%Y', '%d-%b-%Y'):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except ValueError:
+            pass
     try:
         return date.fromisoformat(raw)
     except ValueError as exc:
-        raise SystemExit(f'invalid ISO date: {value}') from exc
+        raise SystemExit(f'invalid date: {value}') from exc
 
 
 def normalized_date(value: str) -> str:
