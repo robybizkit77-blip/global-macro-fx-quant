@@ -23,7 +23,7 @@
       "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
     },
     "Brent": {
-      "status": "WITHHELD_HARD_SOURCE_FRESHNESS_BLOCKER",
+      "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
       "role": "PRIMARY_GATE_INPUT",
       "source_name": "Europe Brent Spot Price FOB",
       "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
