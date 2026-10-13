@@ -1,0 +1,52 @@
+{
+  "schema": "GMFQ_RISK_BRENT_SOURCE_FRESHNESS_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "status": "WITHHELD_HARD_SOURCE_FRESHNESS_BLOCKER",
+  "canonical_gate_input": {
+    "publisher": "U.S. Energy Information Administration",
+    "name": "Europe Brent Spot Price FOB",
+    "series_id": "RBRTE",
+    "eia_api_series_id": "PET.RBRTE.D",
+    "fred_mirror_series_id": "DCOILBRENTEU",
+    "unit": "USD per barrel",
+    "max_business_day_lag_vs_price": 1
+  },
+  "proof": {
+    "repository_policy": "validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json",
+    "collector": "validation/fetch_eia_brent_probe.py",
+    "semantic_identity": "EXPLICIT_EIA_BRENT_SPOT_NOT_GENERIC_BRENT_BENCHMARK",
+    "eia_html_and_api_same_underlying_series": true,
+    "transport_change_solves_freshness": false,
+    "fred_is_independent_source": false,
+    "ice_futures_exact_semantic_substitute": false,
+    "official_release_calendar_checked_on": "2026-10-13",
+    "official_release_calendar_observation": "EIA Europe Brent Spot Price FOB page showed Release Date 2026-10-07 and Next Release Date 2026-10-15, confirming that daily observations are released in batches and can exceed the one-business-day gate."
+  },
+  "rejected_shortcuts": [
+    {
+      "candidate": "EIA Open Data API PET.RBRTE.D",
+      "reason": "Same underlying EIA spot series and release cadence; a different transport does not create fresher observations."
+    },
+    {
+      "candidate": "FRED DCOILBRENTEU",
+      "reason": "Mirror of the same EIA source, not an independent timelier primary source."
+    },
+    {
+      "candidate": "ICE Brent futures settlement",
+      "reason": "Primary and timely futures benchmark, but semantically different from the canonical EIA Brent spot gate input; substituting it would violate exact-source/no-proxy policy."
+    },
+    {
+      "candidate": "Relax freshness threshold",
+      "reason": "Explicitly prohibited; the existing one-business-day Risk gate remains unchanged."
+    }
+  ],
+  "promotion_eligible": false,
+  "automation_ready": false,
+  "hard_blocker": true,
+  "fail_closed": true,
+  "runtime_mutated": false,
+  "publication_performed": false,
+  "pair_direction_effect": "NONE",
+  "bias_score_sizing_effect": "NONE",
+  "resolution": "Keep Risk WITHHELD until an official, exact-equivalent Brent spot source with <=1 business-day lag is proven. Do not substitute futures, mirrors, scraped secondary data, or weaken the freshness gate."
+}
