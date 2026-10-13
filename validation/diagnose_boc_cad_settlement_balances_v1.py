@@ -12,6 +12,8 @@ from pathlib import Path
 RUNTIME = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 OUT = Path('validation/liquidity-cad-settlement-diagnostic.json')
 BASE = 'https://www.bankofcanada.ca/valet'
+SOURCE_PAGE = 'https://www.bankofcanada.ca/rates/interest-rates/canadian-interest-rates/'
+DOCUMENTED_MONTHLY_RULE = 'last Wednesday of each month'
 
 
 def get_json(url: str):
@@ -146,26 +148,27 @@ def mismatch_details(runtime, obs):
     out = []
     for month in sorted(set(runtime) & set(by)):
         rows = by[month]
-        last_date, last_value = rows[-1]
+        wed = [(d, v) for d, v in rows if datetime.strptime(d, '%Y-%m-%d').weekday() == 2]
+        if not wed:
+            continue
+        official_date, official_value = wed[-1]
         rv = runtime[month]
-        if abs(rv - last_value) <= 1e-9:
+        if abs(rv - official_value) <= 1e-9:
             continue
         exact_daily = [{'date': d, 'value': v} for d, v in rows if abs(rv - v) <= 1e-9]
         nearest_date, nearest_value = min(rows, key=lambda x: abs(rv - x[1]))
-        tail = [{'date': d, 'value': v} for d, v in rows[-5:]]
         out.append({
             'month': month,
             'runtime_value': rv,
-            'official_last_date': last_date,
-            'official_last_value': last_value,
-            'diff_runtime_minus_last': rv - last_value,
+            'official_last_wednesday_date': official_date,
+            'official_last_wednesday_value': official_value,
+            'diff_runtime_minus_last_wednesday': rv - official_value,
             'exact_daily_matches': exact_daily,
             'nearest_daily_observation': {
                 'date': nearest_date,
                 'value': nearest_value,
                 'abs_diff': abs(rv - nearest_value),
             },
-            'last_five_official_observations': tail,
         })
     return out
 
@@ -175,6 +178,7 @@ def main():
     discovered = discover_candidates()
     results = []
     actual_mismatches = None
+    actual_result = None
     for score, sid, label, meta in discovered:
         try:
             obs = fetch_observations(sid)
@@ -186,9 +190,7 @@ def main():
         rules = monthly_rules(obs)
         rule_scores = {name: score_rule(runtime, vals) for name, vals in rules.items()}
         best_name, best = max(rule_scores.items(), key=lambda kv: (kv[1]['exact_ratio'], kv[1]['overlap'], -(kv[1]['mae'] or 1e99)))
-        if sid == 'ACTUAL':
-            actual_mismatches = mismatch_details(runtime, obs)
-        results.append({
+        result={
             'series_id': sid,
             'label': label,
             'discovery_score': score,
@@ -199,11 +201,31 @@ def main():
             'best_rule': best_name,
             'best_score': best,
             'all_rule_scores': rule_scores,
-        })
+        }
+        if sid.upper() == 'ACTUAL':
+            actual_mismatches = mismatch_details(runtime, obs)
+            actual_result = result
+        results.append(result)
     results.sort(key=lambda x: (-float((x.get('best_score') or {}).get('exact_ratio', 0)), -int((x.get('best_score') or {}).get('overlap', 0))))
+
+    last_wed = ((actual_result or {}).get('all_rule_scores') or {}).get('last_wednesday') or {}
+    proven = (
+        actual_result is not None
+        and int(last_wed.get('overlap',0)) >= 12
+        and float(last_wed.get('exact_ratio',0)) >= 0.95
+        and len(actual_mismatches or []) <= max(1, int(last_wed.get('overlap',0) * 0.05))
+    )
+
     report = {
         'schema': 'GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1',
-        'status': 'DIAGNOSTIC_ONLY_NO_PROMOTION',
+        'status': 'EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN' if proven else 'DIAGNOSTIC_ONLY_NO_PROMOTION',
+        'source_contract': {
+            'publisher': 'Bank of Canada',
+            'series_family': 'Lynx settlement balances — Actual',
+            'series_id_candidate': 'ACTUAL',
+            'source_page': SOURCE_PAGE,
+            'documented_monthly_rule': DOCUMENTED_MONTHLY_RULE,
+        },
         'runtime': {
             'label': row.get('label'),
             'count': len(runtime),
@@ -215,8 +237,10 @@ def main():
         },
         'candidate_count': len(discovered),
         'results': results[:20],
-        'actual_last_of_month_mismatches': actual_mismatches or [],
-        'actual_last_of_month_mismatch_count': len(actual_mismatches or []),
+        'actual_result': actual_result,
+        'actual_last_wednesday_mismatches': actual_mismatches or [],
+        'actual_last_wednesday_mismatch_count': len(actual_mismatches or []),
+        'promotion_eligible': proven,
         'promotion_performed': False,
         'runtime_mutated': False,
         'publication_performed': False,
