@@ -19,42 +19,45 @@
     "series_label": "Lynx settlement balances - actual",
     "source_family": "Lynx settlement balances / market operations indicators",
     "current_series_identity_assessment": "STRONGLY_IDENTIFIED_CURRENT_SERIES",
-    "monthly_runtime_rule_candidate": "LAST_AVAILABLE_OFFICIAL_OBSERVATION_IN_MONTH"
+    "monthly_runtime_rule_candidate": "LAST_AVAILABLE_OFFICIAL_OBSERVATION_IN_MONTH",
+    "documented_boc_monthly_display_rule": "LAST_WEDNESDAY_OF_MONTH"
   },
   "historical_match_diagnostic": {
     "runtime_months": 128,
     "overlap_months": 128,
     "exact_last_of_month_matches": 115,
     "exact_match_ratio": 0.8984375,
+    "mae": 11.328125,
+    "max_abs_diff": 690.0,
+    "last_wednesday_exact_matches": 47,
+    "last_wednesday_exact_ratio": 0.3671875,
     "mismatch_count": 13,
-    "mismatch_months": [
-      "2016-04",
-      "2017-07",
-      "2017-10",
-      "2018-05",
-      "2019-01",
-      "2019-05",
-      "2019-11",
-      "2020-04",
-      "2020-11",
-      "2023-01",
-      "2024-04",
-      "2025-07",
-      "2025-08"
+    "mismatch_months": ["2016-04","2017-07","2017-10","2018-05","2019-01","2019-05","2019-11","2020-04","2020-11","2023-01","2024-04","2025-07","2025-08"],
+    "recent_windows": {
+      "12m": {"exact": 12, "overlap": 12, "exact_ratio": 1.0, "mae": 0.0, "max_abs_diff": 0.0},
+      "24m": {"exact": 22, "overlap": 24, "exact_ratio": 0.9166666666666666, "mae": 28.791666666666668, "max_abs_diff": 690.0},
+      "36m": {"exact": 33, "overlap": 36, "exact_ratio": 0.9166666666666666, "mae": 19.305555555555557, "max_abs_diff": 690.0},
+      "60m": {"exact": 56, "overlap": 60, "exact_ratio": 0.9333333333333333, "mae": 11.6, "max_abs_diff": 690.0}
+    },
+    "notable_recent_mismatches": [
+      {"month": "2025-07", "runtime": 80200.0, "current_official_month_end": 80199.0, "diff": 1.0},
+      {"month": "2025-08", "runtime": 68828.0, "current_official_month_end": 68138.0, "diff": 690.0}
     ],
     "mismatch_runtime_value_matches_other_official_day_in_same_month": false,
     "current_vintage_runtime_last_month_exact": true,
     "diagnostic_script": "validation/diagnose_boc_cad_settlement_balances_v1.py",
-    "diagnostic_run_id": 38372449446,
-    "interpretation": "The current official ACTUAL series plus last-available-observation-in-month rule reproduces most of the runtime and the latest runtime month exactly. The 13 residual mismatches are not explained by choosing another current official daily observation in the same month. Revision/vintage history is therefore unresolved and must not be inferred."
+    "diagnostic_workflow": ".github/workflows/liquidity-boc-cad-settlement-diagnostic-v1.yml",
+    "diagnostic_run_id": 38377683833,
+    "interpretation": "The current official ACTUAL series plus last-available-observation-in-month rule reproduces most of the runtime and the latest 12-month window exactly, but the 24-month window still contains two mismatches and the full history contains 13. The residuals are not explained by selecting another current official daily observation in the same month. Revision/vintage or historical aggregation semantics are therefore unresolved and must not be inferred."
   },
   "resolution": {
-    "status": "OFFICIAL_CURRENT_SERIES_IDENTIFIED_REVISION_VINTAGE_CONTRACT_PENDING",
+    "status": "OFFICIAL_CURRENT_SERIES_IDENTIFIED_REVISION_VINTAGE_OR_AGGREGATION_CONTRACT_PENDING",
     "runtime_match_certified": false,
     "aggregation_rule_certified": false,
     "revision_vintage_contract_certified": false,
     "candidate_pipeline_ready": false,
     "automation_ready": false,
+    "promotion_eligible": false,
     "fail_closed": true,
     "publication_eligible": false,
     "no_proxy_substitution": true,
