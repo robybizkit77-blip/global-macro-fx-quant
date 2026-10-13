@@ -7,8 +7,11 @@ DEFAULT_RUNTIME=Path('live_data/sections/NATIVE_LIQ_DATA.json')
 SERIES_KEY='DMABMS'
 TOL=1e-9
 
+def month(v):
+    return str(v)[:7]
+
 def next_month(v):
-    y,m=map(int,str(v)[:7].split('-'))
+    y,m=map(int,month(v).split('-'))
     return f'{y+1:04d}-01' if m==12 else f'{y:04d}-{m+1:02d}'
 
 def main():
@@ -18,12 +21,17 @@ def main():
     if (c.get('source') or {}).get('series_key')!=SERIES_KEY: raise SystemExit('unexpected AUD.money series')
     pr=c.get('proof') or {}
     if pr.get('revision_aware_append_only') is not True or pr.get('historical_runtime_values_frozen') is not True or pr.get('new_observation_transform')!='ROUND_1DP': raise SystemExit('AUD.money safety/transform contract missing')
-    lane=p['AUD']['money']; dates=[str(x)[:7] for x in lane['dates']]; vals=[float(x) for x in lane['values']]
+    lane=p['AUD']['money']; dates=[month(x) for x in lane['dates']]; vals=[float(x) for x in lane['values']]
     cr=c.get('runtime') or {}
-    if cr.get('lane')!='AUD.money' or str(cr.get('last_date'))[:7]!=dates[-1] or abs(float(cr.get('last_value'))-vals[-1])>TOL or int(cr.get('count',-1))!=len(dates): raise SystemExit('candidate built against different AUD.money runtime')
+    if cr.get('lane')!='AUD.money': raise SystemExit(f"candidate lane mismatch: {cr.get('lane')!r}")
+    if month(cr.get('last_date'))!=dates[-1]: raise SystemExit(f"candidate last_date mismatch: candidate={month(cr.get('last_date'))} runtime_array={dates[-1]}")
+    # Some legacy runtime lanes carry a stale last_value metadata field even though the canonical tail is arrays[-1].
+    # The candidate is bound to the canonical dates/values arrays; validate those, and separately require internal lane metadata consistency only when it is already consistent.
+    if abs(float(cr.get('last_value'))-vals[-1])>TOL: raise SystemExit(f"candidate last_value mismatch: candidate={cr.get('last_value')} runtime_array={vals[-1]}")
+    if int(cr.get('count',-1))!=len(dates): raise SystemExit(f"candidate count mismatch: candidate={cr.get('count')} runtime={len(dates)}")
     new=[]; expected=next_month(dates[-1])
     for row in c.get('new_observations') or []:
-        dt=str(row['date'])[:7]; value=float(row['value'])
+        dt=month(row['date']); value=float(row['value'])
         if dt!=expected: raise SystemExit(f'non-contiguous AUD.money month: {dt} expected {expected}')
         if abs(value-round(value,1))>TOL: raise SystemExit('AUD.money new value not 1dp normalized')
         new.append((dt,value)); expected=next_month(dt)
@@ -33,7 +41,7 @@ def main():
     if new: target['last_date']=new[-1][0]; target['last_value']=new[-1][1]
     if target['dates'][:len(od)]!=od or target['values'][:len(ov)]!=ov: raise SystemExit('AUD.money historical rewrite attempted')
     changed=u!=p
-    r={'schema':'GMFQ_LIQUIDITY_AUD_BROAD_MONEY_REVISION_AWARE_APPLY_RECEIPT_V1','status':'UPDATE_AVAILABLE' if changed else 'NO_CHANGE','series_key':SERIES_KEY,'before_last_date':lane['last_date'],'before_last_value':lane['last_value'],'after_last_date':target['last_date'],'after_last_value':target['last_value'],'appended_observations':len(new),'applied':bool(args.apply and changed),'runtime_history_rewritten':False,'revision_aware_append_only':True,'publication_performed':False}
+    r={'schema':'GMFQ_LIQUIDITY_AUD_BROAD_MONEY_REVISION_AWARE_APPLY_RECEIPT_V1','status':'UPDATE_AVAILABLE' if changed else 'NO_CHANGE','series_key':SERIES_KEY,'before_last_date':lane.get('last_date'),'before_last_value':lane.get('last_value'),'canonical_before_last_date':dates[-1],'canonical_before_last_value':vals[-1],'after_last_date':target.get('last_date'),'after_last_value':target.get('last_value'),'appended_observations':len(new),'applied':bool(args.apply and changed),'runtime_history_rewritten':False,'revision_aware_append_only':True,'publication_performed':False}
     if args.apply and changed: rp.write_text(json.dumps(u,separators=(',',':'))+'\n',encoding='utf-8')
     print(json.dumps(r,indent=2,sort_keys=True))
 if __name__=='__main__': main()
