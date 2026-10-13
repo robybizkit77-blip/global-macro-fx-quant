@@ -1,5 +1,6 @@
 name: Liquidity BoC CAD M2++ Apply Proof V1
 
+# Isolated proof only: never mutates tracked runtime or publishes.
 on:
   push:
     branches:
