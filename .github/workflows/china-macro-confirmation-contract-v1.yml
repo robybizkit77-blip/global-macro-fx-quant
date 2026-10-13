@@ -1,0 +1,41 @@
+name: China Macro Confirmation Contract V1
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/china_macro_confirmation_contract_v1.py'
+      - 'validation/china_macro_confirmation_source_registry_v1.json'
+      - 'validation/china_macro_confirmation_pit_receipts_v1.json'
+      - '.github/workflows/china-macro-confirmation-contract-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate context-only China confirmation contract
+        run: |
+          python3 validation/china_macro_confirmation_contract_v1.py \
+            --write /tmp/china-macro-confirmation-contract-v1.json
+      - name: Enforce no mechanical FX vote or independent publication
+        run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open('/tmp/china-macro-confirmation-contract-v1.json', encoding='utf-8'))
+          assert d['status'] == 'READY/CONTEXT_ONLY'
+          assert d['validator_green'] is True
+          assert d['combined_direction'] in {'IMPROVING','WEAKENING','STABLE','MIXED'}
+          assert d['activation_scope'] == 'CONTEXT_ONLY'
+          assert d['mechanical_pair_vote'] is False
+          assert d['publication_permitted'] is False
+          assert not d['failures']
+          PY
+      - name: Upload contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: china-macro-confirmation-contract-v1
+          path: /tmp/china-macro-confirmation-contract-v1.json
