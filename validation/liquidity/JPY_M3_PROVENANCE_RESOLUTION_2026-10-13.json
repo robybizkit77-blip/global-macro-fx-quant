@@ -3,7 +3,7 @@
   "as_of": "2026-10-13",
   "subseries": "JPY.money",
   "runtime_label": "M3",
-  "status": "UNIQUE_EXACT_OFFICIAL_SERIES_PROVEN_CONTROLLED_APPLY_PENDING",
+  "status": "READY_CONTROLLED_APPLY_PROVEN",
   "source": {
     "publisher": "Bank of Japan",
     "api": "Time-Series Data Search API",
@@ -40,12 +40,15 @@
   "diagnostic_job_id": 115284851647,
   "collector": "validation/fetch_boj_jpy_m3_exact_candidate.py",
   "applier": "validation/apply_boj_jpy_m3_exact_candidate.py",
+  "controlled_apply_workflow": ".github/workflows/liquidity-boj-jpy-m3-exact-apply-proof-v1.yml",
+  "controlled_apply_run_id": 38471037234,
+  "controlled_apply_job_id": 115549873777,
   "promotion_eligible": true,
-  "automation_ready": false,
-  "controlled_apply_proven": false,
-  "fail_closed_until_controlled_apply": true,
+  "automation_ready": true,
+  "controlled_apply_proven": true,
+  "fail_closed_until_controlled_apply": false,
   "runtime_mutated": false,
   "publication_performed": false,
   "bias_score_sizing_effect": "NONE",
-  "reason": "A unique BOJ MD02 seasonally-adjusted M3 series reproduces all 128 runtime observations exactly at identity scale. Promotion remains fail-closed until the exact collector and append-only applier pass a controlled-apply proof on a temporary runtime copy."
+  "reason": "The unique BOJ MD02 seasonally-adjusted M3 series reproduces all 128 runtime observations exactly at identity scale. Collector and append-only applier passed a controlled-apply proof on the current-main runtime using only a temporary copy; tracked runtime remained unchanged."
 }
