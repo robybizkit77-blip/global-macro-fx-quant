@@ -1,0 +1,32 @@
+name: Liquidity SNB CHF Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_snb_chf_liquidity_credit_v1.py'
+      - '.github/workflows/liquidity-snb-chf-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare official SNB CHF candidates with runtime
+        run: python3 validation/diagnose_snb_chf_liquidity_credit_v1.py | tee /tmp/snb-chf-diagnostic.json
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquidity-snb-chf-diagnostic-v1-${{ github.run_id }}
+          path: /tmp/snb-chf-diagnostic.json
+          retention-days: 30
