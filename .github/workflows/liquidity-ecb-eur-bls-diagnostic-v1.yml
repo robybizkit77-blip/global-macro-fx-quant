@@ -1,0 +1,39 @@
+name: Liquidity ECB EUR BLS Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_ecb_eur_bls_conditions_v1.py'
+      - '.github/workflows/liquidity-ecb-eur-bls-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before
+      - name: Diagnose official ECB BLS series mapping
+        run: python validation/diagnose_ecb_eur_bls_conditions_v1.py | tee /tmp/eur-bls-diagnostic.json
+      - name: Enforce read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/eur-bls-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_EUR_BLS_MAPPING_DIAGNOSTIC_V1'
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          assert d['candidate_series_count'] > 0
+          print('EUR_BLS_STATUS', d['status'])
+          print('EUR_BLS_FULL_EXACT_MATCH_COUNT', d['full_exact_match_count'])
+          print('EUR_BLS_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          PY
+          sha256sum -c /tmp/runtime.before
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
