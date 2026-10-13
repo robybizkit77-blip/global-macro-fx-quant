@@ -1,0 +1,100 @@
+name: AUD Business Credit Revision Aware Contract V1
+
+on:
+  push:
+    paths:
+      - 'validation/fetch_rba_aud_business_credit_revision_aware_candidate.py'
+      - 'validation/apply_rba_aud_business_credit_revision_aware_candidate.py'
+      - '.github/workflows/aud-business-credit-revision-aware-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aud-business-credit-revision-aware-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook parser
+        run: python -m pip install --disable-pip-version-check openpyxl
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build official RBA candidate
+        run: |
+          python validation/fetch_rba_aud_business_credit_revision_aware_candidate.py --out /tmp/aud-credit.json
+          cat /tmp/aud-credit.json
+      - name: Validate source and revision contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/aud-credit.json')); p=c['proof']
+          assert c['schema']=='GMFQ_LIQUIDITY_AUD_BUSINESS_CREDIT_REVISION_AWARE_CANDIDATE_V1', c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['source']['series_key']=='DLCACSFBS', c
+          assert p['revision_aware_append_only'] is True and p['historical_runtime_values_frozen'] is True, p
+          assert p['new_observation_transform']=='ROUND_1DP' and p['overlap_count']>=60, p
+          assert p['rounded_1dp_match_count']>0 and p['current_vintage_mismatch_count_after_1dp']>0, p
+          assert c['candidate_pipeline_ready'] is True and c['runtime_mutated'] is False and c['publication_performed'] is False, c
+          print('AUD_BUSINESS_CREDIT_SOURCE_CONTRACT_PASS')
+          PY
+      - name: Dry-run current runtime
+        run: |
+          python validation/apply_rba_aud_business_credit_revision_aware_candidate.py --candidate /tmp/aud-credit.json > /tmp/aud-credit-dry.json
+          cat /tmp/aud-credit-dry.json
+      - name: Prove current controlled apply on runtime copy
+        run: |
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.aud-credit-current.json
+          python validation/apply_rba_aud_business_credit_revision_aware_candidate.py --candidate /tmp/aud-credit.json --runtime /tmp/NATIVE_LIQ_DATA.aud-credit-current.json --apply > /tmp/aud-credit-current-apply.json
+          cat /tmp/aud-credit-current-apply.json
+      - name: Build one-month-behind PIT replay copy
+        run: |
+          python - <<'PY'
+          import json
+          src='live_data/sections/NATIVE_LIQ_DATA.json'; out='/tmp/NATIVE_LIQ_DATA.aud-credit-replay.json'
+          p=json.load(open(src)); lane=p['AUD']['credit']
+          assert len(lane['dates'])==len(lane['values']) and len(lane['dates'])>=2, lane
+          removed_date=str(lane['dates'][-1]); removed_value=float(lane['values'][-1])
+          lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]
+          if 'last_date' in lane: lane['last_date']=lane['dates'][-1]
+          if 'last_value' in lane: lane['last_value']=lane['values'][-1]
+          json.dump(p,open(out,'w'),separators=(',',':'))
+          open('/tmp/aud-credit-removed.json','w').write(json.dumps({'date':removed_date,'value':removed_value}))
+          PY
+      - name: Re-fetch official candidate against replay copy
+        run: |
+          python validation/fetch_rba_aud_business_credit_revision_aware_candidate.py --runtime /tmp/NATIVE_LIQ_DATA.aud-credit-replay.json --out /tmp/aud-credit-replay-candidate.json
+          cat /tmp/aud-credit-replay-candidate.json
+      - name: Prove real official append on replay copy
+        run: |
+          cp /tmp/NATIVE_LIQ_DATA.aud-credit-replay.json /tmp/NATIVE_LIQ_DATA.aud-credit-applied.json
+          python validation/apply_rba_aud_business_credit_revision_aware_candidate.py --candidate /tmp/aud-credit-replay-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.aud-credit-applied.json --apply > /tmp/aud-credit-replay-apply.json
+          cat /tmp/aud-credit-replay-apply.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-credit-replay.json'))['AUD']['credit']
+          after=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-credit-applied.json'))['AUD']['credit']
+          c=json.load(open('/tmp/aud-credit-replay-candidate.json')); r=json.load(open('/tmp/aud-credit-replay-apply.json')); removed=json.load(open('/tmp/aud-credit-removed.json'))
+          n=len(before['dates'])
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values'], (before,after)
+          assert len(c['new_observations'])>=1, c
+          first=c['new_observations'][0]
+          assert r['applied'] is True and r['appended_observations']==len(c['new_observations']) and r['runtime_history_rewritten'] is False, r
+          assert str(first['date'])[:7]==str(removed['date'])[:7], (first,removed)
+          assert c['source']['series_key']=='DLCACSFBS', c
+          print('AUD_BUSINESS_CREDIT_REAL_APPEND_REPLAY_PASS',c['new_observations'])
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'AUD.credit exact RBA series: DLCACSFBS'
+          echo 'Revision-aware append-only with ROUND_1DP: tested'
+          echo 'Real append replay: tested on ephemeral copy'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
