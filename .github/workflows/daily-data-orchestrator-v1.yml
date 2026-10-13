@@ -431,10 +431,10 @@ jobs:
           if [ "$state" = "DETACHED" ]; then
             python3 validation/repair_detached_direct_section.py --section MACRO_THERMOMETER_DATA --apply | tee /tmp/daily-orchestrator-v1/repair-macro-thermometer.json
             python3 validation/repair_detached_direct_section.py --section MACRO_SERIES --apply | tee /tmp/daily-orchestrator-v1/repair-macro-series.json
-            python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/daily-orchestrator-v1/manifest-after.log
           else
             echo 'MACRO_ALREADY_ALIGNED_NO_REPAIR_REQUIRED'
           fi
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/daily-orchestrator-v1/manifest-after.log
 
       - name: Validate Macro runtime and exact diff scope
         shell: bash
@@ -447,7 +447,7 @@ jobs:
           state=open('/tmp/daily-orchestrator-v1/macro-runtime-state').read().strip()
           changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
           print('EPHEMERAL_CHANGED_FILES', changed, 'MACRO_STATE', state)
-          expected={'payload/part-15.txt'} if state=='ALIGNED' else {'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
+          expected={'live_data/manifest.v2.json','payload/part-15.txt'} if state=='ALIGNED' else {'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
           if set(changed) != expected:
               raise SystemExit(f'unexpected ephemeral diff scope: {changed}; expected={sorted(expected)}')
           PY
