@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
+import argparse
 import io
 import json
+import re
 import urllib.request
-from datetime import datetime, date
+import zipfile
+import xml.etree.ElementTree as ET
+from datetime import datetime, date, timedelta
 from pathlib import Path
-
-from openpyxl import load_workbook
 
 URL = 'https://www.rba.gov.au/statistics/tables/xls/a03.xlsx'
 SERIES_ID = 'AESAT'
 RUNTIME = Path('live_data/sections/NATIVE_LIQ_DATA.json')
-OUT = Path('validation/liquidity-aud-es-balances-candidate.json')
+DEFAULT_OUT = Path('validation/liquidity-aud-es-balances-candidate.json')
+NS = {'a': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+REL_NS = {'r': 'http://schemas.openxmlformats.org/package/2006/relationships'}
+DOC_REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 
 
 def norm_date(v):
@@ -26,13 +31,23 @@ def norm_date(v):
     return None
 
 
-def fetch_workbook():
+def excel_date(value):
+    try:
+        serial = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not 20000 <= serial <= 80000:
+        return None
+    return (date(1899, 12, 30) + timedelta(days=int(serial))).isoformat()
+
+
+def fetch_workbook_bytes():
     req = urllib.request.Request(URL, headers={'User-Agent': 'GMFQ-validation/1.0'})
     with urllib.request.urlopen(req, timeout=60) as r:
         body = r.read()
     if len(body) < 10000:
         raise SystemExit(f'RBA A3 workbook unexpectedly small: {len(body)} bytes')
-    return load_workbook(io.BytesIO(body), data_only=True, read_only=False)
+    return body
 
 
 def runtime_series():
@@ -47,39 +62,115 @@ def runtime_series():
     return out
 
 
-def official_series(wb):
-    for ws in wb.worksheets:
-        code_cell = None
-        for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row, 30)):
-            for cell in row:
-                if str(cell.value or '').strip() == SERIES_ID:
-                    code_cell = cell
-                    break
-            if code_cell:
-                break
-        if not code_cell:
+def shared_strings(zf):
+    path = 'xl/sharedStrings.xml'
+    if path not in zf.namelist():
+        return []
+    root = ET.fromstring(zf.read(path))
+    values = []
+    for si in root.findall('a:si', NS):
+        values.append(''.join(t.text or '' for t in si.iterfind('.//a:t', NS)))
+    return values
+
+
+def workbook_sheet_map(zf):
+    wb = ET.fromstring(zf.read('xl/workbook.xml'))
+    rels = ET.fromstring(zf.read('xl/_rels/workbook.xml.rels'))
+    targets = {r.attrib['Id']: r.attrib['Target'] for r in rels.findall('r:Relationship', REL_NS)}
+    out = {}
+    for sheet in wb.findall('a:sheets/a:sheet', NS):
+        rid = sheet.attrib.get(f'{{{DOC_REL}}}id')
+        target = targets.get(rid, '')
+        if not target:
             continue
-        col = code_cell.column
-        values = {}
-        for r in range(code_cell.row + 1, ws.max_row + 1):
-            val = ws.cell(r, col).value
-            if not isinstance(val, (int, float)):
+        if target.startswith('/'):
+            path = target.lstrip('/')
+        elif target.startswith('xl/'):
+            path = target
+        else:
+            path = 'xl/' + target.lstrip('./')
+        out[path] = sheet.attrib.get('name', path)
+    return out
+
+
+def cell_value(cell, shared):
+    ctype = cell.attrib.get('t')
+    if ctype == 'inlineStr':
+        return ''.join(t.text or '' for t in cell.iterfind('.//a:t', NS))
+    v = cell.find('a:v', NS)
+    if v is None or v.text is None:
+        return None
+    if ctype == 's':
+        try:
+            return shared[int(v.text)]
+        except (ValueError, IndexError):
+            raise SystemExit(f'invalid shared string index {v.text!r}')
+    if ctype in {'str', 'e'}:
+        return v.text
+    try:
+        return float(v.text)
+    except ValueError:
+        return v.text
+
+
+def col_name(ref):
+    m = re.match(r'([A-Z]+)', ref or '')
+    return m.group(1) if m else None
+
+
+def official_series(body):
+    with zipfile.ZipFile(io.BytesIO(body)) as zf:
+        shared = shared_strings(zf)
+        sheet_names = workbook_sheet_map(zf)
+        for path in sorted(p for p in zf.namelist() if p.startswith('xl/worksheets/sheet') and p.endswith('.xml')):
+            root = ET.fromstring(zf.read(path))
+            rows = []
+            series_col = None
+            series_row = None
+            for row in root.findall('.//a:sheetData/a:row', NS):
+                parsed = {}
+                row_num = int(row.attrib.get('r', '0') or 0)
+                for cell in row.findall('a:c', NS):
+                    col = col_name(cell.attrib.get('r'))
+                    if not col:
+                        continue
+                    value = cell_value(cell, shared)
+                    parsed[col] = value
+                    if row_num <= 40 and str(value or '').strip() == SERIES_ID:
+                        series_col = col
+                        series_row = row_num
+                rows.append((row_num, parsed))
+            if not series_col:
                 continue
-            nd = None
-            for dc in range(1, min(col, 5) + 1):
-                nd = norm_date(ws.cell(r, dc).value)
+            values = {}
+            for row_num, parsed in rows:
+                if row_num <= series_row:
+                    continue
+                val = parsed.get(series_col)
+                if not isinstance(val, (int, float)):
+                    continue
+                nd = None
+                # A3 uses the left-most date column; allow A:E defensively.
+                for col in ('A', 'B', 'C', 'D', 'E'):
+                    raw = parsed.get(col)
+                    nd = norm_date(raw) or excel_date(raw)
+                    if nd:
+                        break
                 if nd:
-                    break
-            if nd:
-                values[nd] = float(val)
-        if values:
-            return ws.title, values
+                    values[nd] = float(val)
+            if values:
+                return sheet_names.get(path, path), values
     raise SystemExit(f'RBA A3 series {SERIES_ID} not found')
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--out', default=str(DEFAULT_OUT))
+    args = parser.parse_args()
+    out_path = Path(args.out)
+
     runtime = runtime_series()
-    sheet, official = official_series(fetch_workbook())
+    sheet, official = official_series(fetch_workbook_bytes())
     common = sorted(set(runtime) & set(official))
     exact_dates = [d for d in common if abs(runtime[d] - official[d]) <= 1e-9]
     mismatches = [
@@ -131,7 +222,8 @@ def main():
         'publication_performed': False,
         'runtime_mutated': False,
     }
-    OUT.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     print(json.dumps(receipt, indent=2, ensure_ascii=False))
 
 if __name__ == '__main__':
