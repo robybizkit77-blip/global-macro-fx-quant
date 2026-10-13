@@ -1,0 +1,53 @@
+name: Risk Brent Hard-Blocker Contract V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/risk/BRENT_SOURCE_FRESHNESS_RESOLUTION_2026-10-13.json'
+      - 'validation/fetch_eia_brent_probe.py'
+      - 'validation/check_risk_brent_hard_blocker_v1.py'
+      - 'validation/run_daily_data_orchestrator_v1.py'
+      - '.github/workflows/risk-brent-hard-blocker-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-fail-closed-risk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked Risk runtime
+        run: sha256sum live_data/sections/D.json > /tmp/risk-runtime.before.sha256
+      - name: Certify exact-source hard blocker
+        run: python validation/check_risk_brent_hard_blocker_v1.py | tee /tmp/risk-brent-contract.json
+      - name: Probe official EIA transport without promoting it
+        run: |
+          python validation/fetch_eia_brent_probe.py
+          python - <<'PY'
+          import json
+          b=json.load(open('validation/risk-brent-probe.json'))
+          assert b['status']=='WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE', b
+          assert b['eligible_for_controlled_apply'] is False, b
+          assert b['runtime_mutated'] is False and b['publication_performed'] is False, b
+          assert b['source']['series_id']=='RBRTE', b
+          print('RISK_BRENT_FAIL_CLOSED_SOURCE_PROBE_PASS', b['observed_freshness_status'])
+          PY
+      - name: Prove tracked runtime unchanged and no publication
+        run: |
+          sha256sum -c /tmp/risk-runtime.before.sha256
+          git diff --exit-code -- live_data/sections/D.json payload
+          test ! -e validation/risk-brent-probe.json || rm validation/risk-brent-probe.json
+          git diff --exit-code
+          echo 'RISK_BRENT_HARD_BLOCKER_NO_RUNTIME_MUTATION_NO_PUBLICATION'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: risk-brent-hard-blocker-evidence
+          path: /tmp/risk-brent-contract.json
+          if-no-files-found: error

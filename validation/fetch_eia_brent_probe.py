@@ -4,6 +4,7 @@ import html.parser
 import json
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
@@ -69,7 +70,7 @@ def main():
     cfg = policy['gate_inputs']['Brent']
     as_of = dt.date.fromisoformat(policy['as_of'])
 
-    tmp = Path('/tmp/RBRTED.htm')
+    tmp = Path(tempfile.gettempdir()) / 'gmfq-RBRTED.htm'
     cmd = [
         'curl', '-fL', '--compressed', '--http1.1',
         '--retry', '4', '--retry-all-errors', '--retry-delay', '2',
@@ -113,7 +114,13 @@ def main():
         raise SystemExit(f'future Brent observation relative to policy as_of: {latest_date}')
 
     max_lag = int(cfg['max_business_day_lag_vs_price'])
-    status = 'GREEN_SOURCE_CANDIDATE_ONLY' if lag <= max_lag else 'WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE'
+    # A one-off fresh observation cannot certify a daily source whose official
+    # release schedule is batch-based.  Eligibility remains the audited source
+    # contract; ``observed_freshness_status`` is deliberately only a snapshot.
+    observed_freshness_status = (
+        'WITHIN_MAX_LAG_ON_THIS_OBSERVATION'
+        if lag <= max_lag else 'EXCEEDS_MAX_LAG_ON_THIS_OBSERVATION'
+    )
     result = {
         'schema': 'GMFQ_RISK_BRENT_SOURCE_PROBE_V1',
         'source': {
@@ -129,7 +136,15 @@ def main():
         'latest_value': latest_value,
         'business_day_lag': lag,
         'max_business_day_lag': max_lag,
-        'status': status,
+        'observed_freshness_status': observed_freshness_status,
+        'status': cfg['status'],
+        'eligible_for_controlled_apply': False,
+        'reason': (
+            'The point-in-time lag is observational evidence only. The EIA '
+            'spot series remains ineligible for a one-business-day daily gate '
+            'because its official batch release cadence is not timely by '
+            'contract.'
+        ),
         'publication_performed': False,
         'runtime_mutated': False,
     }

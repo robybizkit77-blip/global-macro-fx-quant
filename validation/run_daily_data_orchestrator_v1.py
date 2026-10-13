@@ -20,6 +20,7 @@ USD_M2_COLLECTOR = Path('validation/fetch_fed_usd_m2_candidate.py')
 GBP_BOE_COLLECTOR = Path('validation/fetch_boe_gbp_liquidity_candidates.py')
 JPY_CREDIT_COLLECTOR = Path('validation/fetch_boj_jpy_bank_credit_candidate.py')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
+RISK_BRENT_RESOLUTION = Path('validation/risk/BRENT_SOURCE_FRESHNESS_RESOLUTION_2026-10-13.json')
 
 
 def load(path):
@@ -86,6 +87,7 @@ def main():
     liq_policy = load(LIQ_POLICY)
     liq_override = load(LIQ_POLICY_OVERRIDE)
     risk_policy = load(RISK_POLICY)
+    risk_resolution = load(RISK_BRENT_RESOLUTION)
     today = dt.date.today()
     registry_date = parse_date(reg['as_of'])
 
@@ -192,6 +194,18 @@ def main():
         raise SystemExit('Risk VIX source must be READY')
     if brent_policy['status'] != 'WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE':
         raise SystemExit('Risk Brent must remain fail-closed while official source lag exceeds the gate')
+    if risk_resolution.get('status') != 'WITHHELD_HARD_SOURCE_FRESHNESS_BLOCKER':
+        raise SystemExit('Risk Brent hard-blocker resolution must remain fail-closed')
+    canonical_brent = risk_resolution.get('canonical_gate_input') or {}
+    proof = risk_resolution.get('proof') or {}
+    if canonical_brent.get('series_id') != brent_policy.get('series_id'):
+        raise SystemExit('Risk Brent policy/resolution series identity mismatch')
+    if canonical_brent.get('max_business_day_lag_vs_price') != brent_policy.get('max_business_day_lag_vs_price'):
+        raise SystemExit('Risk Brent policy/resolution freshness rule mismatch')
+    if proof.get('fred_is_independent_source') is not False or proof.get('ice_futures_exact_semantic_substitute') is not False:
+        raise SystemExit('Risk Brent source-substitution policy changed')
+    if risk_resolution.get('automation_ready') is not False or risk_resolution.get('promotion_eligible') is not False:
+        raise SystemExit('Risk Brent must not become automation/promotion eligible')
 
     lanes = {
         'PRICE': {
@@ -264,12 +278,14 @@ def main():
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
             'source_policy': str(RISK_POLICY),
+            'hard_blocker_resolution': str(RISK_BRENT_RESOLUTION),
             'vix_source_status': vix_policy['status'],
             'vix_updater': vix_policy['collector'],
             'vix_candidate_pipeline_ready': True,
             'brent_source_status': brent_policy['status'],
             'brent_updater': brent_policy['collector'],
             'brent_series_id': brent_policy.get('series_id'),
+            'brent_exact_equivalent_timely_source_proven': False,
             'freshness_guard': 'Risk Freshness Audit V1 / GMFQ_RISK_FRESHNESS_GATE_SIM_V1',
             'guard_rule': 'VIX or Brent > 1 business day behind Price => WITHHELD; pair structural direction unchanged',
             'guard_proven': True,
