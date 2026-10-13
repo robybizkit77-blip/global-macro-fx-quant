@@ -1,0 +1,66 @@
+name: Liquidity BOJ JPY Tankan Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boj_jpy_tankan_lending_attitude_v1.py'
+      - '.github/workflows/liquidity-boj-jpy-tankan-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Diagnose official BOJ Tankan variants
+        run: |
+          python validation/diagnose_boj_jpy_tankan_lending_attitude_v1.py | tee /tmp/jpy-tankan-diagnostic.json
+      - name: Enforce read-only diagnostic contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-tankan-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_TANKAN_LENDING_ATTITUDE_DIAGNOSTIC_V1', d
+          assert d['source']['publisher']=='Bank of Japan', d
+          assert d['source']['database']=='CO', d
+          assert d['source']['official_survey_item']=='612', d
+          assert d['runtime']['label']=='Tankan — lending attitude', d
+          assert d['runtime']['count']==42, d
+          assert d['runtime']['first_quarter']=='2016-Q1', d
+          assert d['runtime']['last_quarter']=='2026-Q2', d
+          assert d['runtime']['last_value']==13.0, d
+          assert d['metadata_candidate_count']>0, d
+          assert d['tested_series_count']>0, d
+          assert d['automation_ready'] is False, d
+          assert d['runtime_mutated'] is False, d
+          assert d['publication_performed'] is False, d
+          print('JPY_TANKAN_DIAGNOSTIC_CONTRACT_PASS')
+          if d['exact_match_count']==1:
+              b=d['exact_matches'][0]
+              t=b['best_transform']
+              assert t['overlap']==42 and t['exact']==42 and t['exact_ratio']==1.0 and t['scale']==1.0, b
+              print('JPY_TANKAN_UNIQUE_EXACT_MATCH', b['series_code'], b.get('name'), b.get('unit'))
+          else:
+              print('JPY_TANKAN_EXACT_MATCH_COUNT', d['exact_match_count'])
+              print('JPY_TANKAN_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY Tankan lending attitude diagnostic: read-only'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
