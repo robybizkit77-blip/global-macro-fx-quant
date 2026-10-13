@@ -1,0 +1,39 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "EUR.money"
+  },
+  "effective_row": {
+    "label": "M3",
+    "status": "OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING",
+    "publisher": "European Central Bank / ESCB",
+    "source_contract": "Monetary aggregate M3, stocks, working-day and seasonally adjusted",
+    "frequency": "MONTHLY",
+    "automation_ready": false,
+    "series_mapping_status": "EXACT_SERIES_IDENTITY_CONFIRMED_REVISION_HANDLING_PENDING",
+    "series_key": "BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E",
+    "evidence": {
+      "runtime_exact_match_months_2026": ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05"],
+      "current_vintage_revision_months_2026": ["2026-06", "2026-07", "2026-08"],
+      "runtime_vs_current_vintage_delta": {
+        "2026-06": 3021.0,
+        "2026-07": -1109.0,
+        "2026-08": 37.0
+      },
+      "diagnostic_commit": "cae0a478e173097f5a464c648c1ce347b369c8d4"
+    },
+    "collector_status": "WITHHELD_UNTIL_REVISION_AWARE_CONTRACT",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://data.ecb.europa.eu/data/datasets/BSI/BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": -1,
+    "mapping_pending_subseries": 1
+  },
+  "reason": "The prior N-variant mapping was disproven by official ECB runtime comparison. The Y-variant matches the stored runtime exactly for Jan-May 2026 and differs only after subsequent official revisions. It is therefore source-identified but remains fail-closed until revision/vintage semantics are explicit.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
