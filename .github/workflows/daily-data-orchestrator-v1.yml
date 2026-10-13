@@ -47,7 +47,26 @@ jobs:
           assert d['gh_pages_published'] is False, d
           assert d['automatic_publication'] is False, d
           assert d['lanes']['RISK']['guard_proven'] is True, d['lanes']['RISK']
+          assert d['lanes']['PRICE']['state']=='CONTROLLED_APPLY_PROVEN_PUBLICATION_WITHHELD', d['lanes']['PRICE']
+          assert d['blocking_lanes']==['LIQUIDITY','RISK'], d['blocking_lanes']
           print('DAILY_ORCHESTRATOR_FAIL_CLOSED_PASS', d['blocking_lanes'])
+          PY
+
+      - name: Classify final global gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/run_daily_data_orchestrator_final_gate_v1.py | tee /tmp/daily-orchestrator-v1/final-gate.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/daily-orchestrator-v1/final-gate.json'))
+          assert d['schema']=='GMFQ_DAILY_DATA_ORCHESTRATOR_FINAL_GATE_RECEIPT_V1', d
+          assert d['status']=='EXPECTED_GAP_WITHHELD' and d['publishable'] is False, d
+          assert d['ready_lanes']==['MACRO','RATES','PRICE','REBUILD'], d
+          assert [(x['lane'],x['key']) for x in d['exact_blockers']]==[
+              ('LIQUIDITY','CHF.liquidity'),('LIQUIDITY','CHF.credit'),('LIQUIDITY','JPY.liquidity'),('RISK','Brent')], d
+          assert all(d[x] is False for x in ('runtime_mutated','promotion_performed','live_data_published','gh_pages_published','automatic_publication')), d
+          print('DAILY_ORCHESTRATOR_FINAL_GATE_PASS')
           PY
 
       - name: Probe Risk official sources

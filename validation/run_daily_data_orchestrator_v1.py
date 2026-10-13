@@ -21,6 +21,7 @@ GBP_BOE_COLLECTOR = Path('validation/fetch_boe_gbp_liquidity_candidates.py')
 JPY_CREDIT_COLLECTOR = Path('validation/fetch_boj_jpy_bank_credit_candidate.py')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 RISK_BRENT_RESOLUTION = Path('validation/risk/BRENT_SOURCE_FRESHNESS_RESOLUTION_2026-10-13.json')
+PRICE_CONTROLLED_APPLY_CONTRACT = Path('validation/price/PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1_2026-10-13.json')
 
 
 def load(path):
@@ -88,6 +89,7 @@ def main():
     liq_override = load(LIQ_POLICY_OVERRIDE)
     risk_policy = load(RISK_POLICY)
     risk_resolution = load(RISK_BRENT_RESOLUTION)
+    price_contract = load(PRICE_CONTROLLED_APPLY_CONTRACT)
     today = dt.date.today()
     registry_date = parse_date(reg['as_of'])
 
@@ -96,6 +98,18 @@ def main():
     latest_pair = max(pair_dates) if pair_dates else None
     overlay_as_of = price_overlay_as_of()
     price_age = (today - parse_date(overlay_as_of)).days
+
+    if price_contract.get('schema') != 'GMFQ_PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1':
+        raise SystemExit('Price controlled-apply contract schema mismatch')
+    if price_contract.get('controlled_apply_proven') is not True or price_contract.get('automation_ready') is not True:
+        raise SystemExit('Price controlled apply must remain proven before the global gate marks Price ready')
+    if price_contract.get('persistent_publication_enabled') is not False:
+        raise SystemExit('Price persistent publication must remain explicitly withheld')
+    if price_contract.get('runtime_mutated') is not False or price_contract.get('publication_performed') is not False:
+        raise SystemExit('Price controlled-apply proof must not mutate tracked runtime or publish')
+    price_proof = price_contract.get('proof') or {}
+    if price_proof.get('exact_diff_scope') != ['payload/part-15.txt'] or price_proof.get('idempotent_second_apply') is not True:
+        raise SystemExit('Price controlled-apply proof scope/idempotence drifted')
 
     if liq_policy.get('status') != 'PARTIAL_POLICY_FAIL_CLOSED':
         raise SystemExit('Liquidity source policy must remain fail-closed until all subseries are exact-mapped and automation-ready')
@@ -209,14 +223,19 @@ def main():
 
     lanes = {
         'PRICE': {
-            'state': 'BLOCKED_STALE_APPLY_NOT_WIRED',
+            'state': 'CONTROLLED_APPLY_PROVEN_PUBLICATION_WITHHELD',
             'runtime_overlay_as_of': overlay_as_of,
             'embedded_pair_as_of': latest_pair,
             'age_days': price_age,
             'updater': 'fetch_ecb_g8_price_candidate.py + apply_ecb_g8_price_candidate.py',
             'candidate_pipeline_ready': True,
+            'controlled_apply_proven': True,
+            'controlled_apply_contract': str(PRICE_CONTROLLED_APPLY_CONTRACT),
+            'controlled_apply_run_id': price_proof.get('run_id'),
+            'idempotent_apply_proven': True,
+            'persistent_publication_enabled': False,
             'publication_eligible': False,
-            'reason': 'official ECB fetch and deterministic payload apply are available; controlled persistent apply is not yet wired',
+            'reason': 'Official ECB fetch and deterministic one-file controlled apply are proven and idempotent. Persistent publication remains separately withheld.',
         },
         'RATES': {
             'state': 'OBSERVATION_PIPELINE_READY',
