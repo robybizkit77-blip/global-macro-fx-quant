@@ -26,6 +26,7 @@ jobs:
         run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
       - name: Discover MD08 series and compare with runtime
         run: |
+          # Triggered after workflow registration; diagnostic remains read-only.
           python validation/diagnose_boj_jpy_reserve_balances_v1.py | tee /tmp/jpy-reserve-diagnostic.json
       - name: Enforce fail-closed diagnostic contract
         run: |
