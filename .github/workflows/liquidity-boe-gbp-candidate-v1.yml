@@ -1,0 +1,51 @@
+name: Liquidity BoE GBP Candidate V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-boe-gbp-candidate-v1.yml'
+      - 'validation/fetch_boe_gbp_liquidity_candidates.py'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official BoE GBP Liquidity candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_boe_gbp_liquidity_candidates.py | tee /tmp/liquidity-gbp-boe-candidates.log
+          python3 - <<'PY'
+          import json
+          c=json.load(open('validation/liquidity-gbp-boe-candidates.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_GBP_BOE_CANDIDATES_V1', c
+          assert c['series_count']==2, c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          expected={'GBP.liquidity':'RPWB56A','GBP.credit':'LPMVTYI'}
+          for key,series in expected.items():
+              row=c['results'][key]
+              assert row['source']['series_id']==series, (key,row)
+              assert row['runtime_match_confirmed'] is True, (key,row)
+              assert row['status']=='GREEN_SOURCE_CANDIDATE_ONLY', (key,row)
+          print('LIQUIDITY_BOE_GBP_CANDIDATE_PASS', {k:v['latest_date'] for k,v in c['results'].items()})
+          PY
+      - name: Ensure no tracked runtime mutation
+        shell: bash
+        run: |
+          rm -f validation/liquidity-gbp-boe-candidates.json
+          git diff --exit-code -- live_data payload
