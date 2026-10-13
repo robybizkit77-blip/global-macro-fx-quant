@@ -1,0 +1,129 @@
+name: Macro Payload Drift Branch Apply V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - .github/workflows/macro-payload-drift-branch-apply-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macro-payload-drift-branch-apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release-candidate-daily-data-orchestrator-v1-2026-10-12
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Assert branch-only execution
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = "release-candidate-daily-data-orchestrator-v1-2026-10-12"
+          test "$(git branch --show-current)" = "release-candidate-daily-data-orchestrator-v1-2026-10-12"
+          echo 'BRANCH_SCOPE_PASS'
+
+      - name: Apply proven Macro payload repair
+        run: |
+          set -euo pipefail
+          python validation/repair_macro_standalone_payload_drift.py --apply \
+            | tee /tmp/macro-branch-apply.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-branch-apply.json'))
+          assert r['status']=='PASS' and r['apply'] is True,r
+          assert r['changed_payload_parts']==[0,1],r
+          assert {x['key'] for x in r['targets']}=={'MACRO_THERMOMETER_DATA','MACRO_SERIES'},r
+          assert all(x['changed'] is True for x in r['targets']),r
+          assert r['publication'] is False,r
+          print('MACRO_BRANCH_APPLY_PASS')
+          PY
+
+      - name: Rebuild tracked manifest V2
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json \
+            > /tmp/manifest.v2.branch-apply.stdout.json
+          python - <<'PY'
+          import json
+          m=json.load(open('live_data/manifest.v2.json'))
+          assert m['status']=='PASS',m.get('failures')
+          rows={x['key']:x for x in m['sections']}
+          for key,part in [('MACRO_THERMOMETER_DATA',0),('MACRO_SERIES',1)]:
+              r=rows[key]
+              assert r['mode']=='DIRECT_SINGLE_PART',r
+              assert r['occurrences_in_payload']==1,r
+              assert r['part']==part,r
+              assert r['direct_update_allowed'] is True,r
+          print('TRACKED_MANIFEST_V2_REBUILD_PASS')
+          PY
+
+      - name: Enforce exact three-file runtime diff
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          expected={
+            'payload/part-00.txt',
+            'payload/part-01.txt',
+            'live_data/manifest.v2.json',
+          }
+          assert changed==expected,(sorted(changed),sorted(expected),sorted(changed-expected),sorted(expected-changed))
+          print('EXACT_THREE_FILE_DIFF_PASS',sorted(changed))
+          PY
+
+      - name: Prove converged state byte-idempotent
+        run: |
+          set -euo pipefail
+          sha256sum payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json > /tmp/first.sha256
+          python validation/repair_macro_standalone_payload_drift.py --apply \
+            | tee /tmp/macro-branch-second.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json \
+            > /tmp/manifest.v2.branch-second.stdout.json
+          sha256sum payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json > /tmp/second.sha256
+          cmp /tmp/first.sha256 /tmp/second.sha256
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-branch-second.json'))
+          assert r['status']=='PASS',r
+          assert r['changed_payload_parts']==[],r
+          assert all(x['changed'] is False for x in r['targets']),r
+          m=json.load(open('live_data/manifest.v2.json'))
+          assert m['status']=='PASS',m.get('failures')
+          print('BRANCH_CONVERGENCE_IDEMPOTENT_PASS')
+          PY
+
+      - name: Commit only repaired runtime receipt
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json
+          test -n "$(git diff --cached --name-only)"
+          python - <<'PY'
+          import subprocess
+          staged=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          expected={'payload/part-00.txt','payload/part-01.txt','live_data/manifest.v2.json'}
+          assert staged==expected,(sorted(staged),sorted(expected))
+          print('STAGED_SCOPE_PASS',sorted(staged))
+          PY
+          git commit -m 'Repair Macro standalone payload alignment'
+          git push origin HEAD:release-candidate-daily-data-orchestrator-v1-2026-10-12
+
+      - name: Summary
+        run: |
+          echo 'Macro payload drift persisted on PR branch: GREEN'
+          echo 'Committed files: payload/part-00.txt, payload/part-01.txt, live_data/manifest.v2.json'
+          echo 'Global manifest V2: PASS'
+          echo 'Idempotence: PASS'
+          echo 'Main: UNTOUCHED'
+          echo 'Publication: NONE'
