@@ -66,6 +66,9 @@ def main():
     actual_ready = sum(1 for row in liq_mapped.values() if row.get('automation_ready') is True)
     if actual_ready != liq_ready:
         raise SystemExit(f'Liquidity automation-ready count mismatch: declared={liq_ready} actual={actual_ready}')
+    cad_m2pp = liq_mapped.get('CAD.money') or {}
+    if cad_m2pp.get('candidate_pipeline_ready') is not True:
+        raise SystemExit('CAD.money candidate collector must be live-tested before orchestrator marks candidate readiness')
 
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
@@ -104,7 +107,7 @@ def main():
             'state': 'BLOCKED_SUBSERIES_POLICY_PARTIAL',
             'source_present': LIQ_PATH.exists(),
             'source_policy': str(LIQ_POLICY),
-            'updater': 'UNVERIFIED',
+            'updater': 'PARTIAL_CANDIDATE_PIPELINES_ONLY',
             'inventory': 'audit_liquidity_subseries_v1.py',
             'inventory_ready': True,
             'verified_subseries': liq_ready,
@@ -114,6 +117,8 @@ def main():
             'mapping_pending_subseries': liq_pending,
             'source_unresolved_subseries': liq_source_unresolved,
             'total_subseries': liq_total,
+            'cad_m2pp_candidate_pipeline_ready': True,
+            'cad_m2pp_collector': cad_m2pp.get('collector'),
             'publication_eligible': False,
             'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only exact automation-ready contracts count as verified for the legacy CI gate; exact variant/key, aggregation and controlled collector/apply wiring remain fail-closed',
         },
