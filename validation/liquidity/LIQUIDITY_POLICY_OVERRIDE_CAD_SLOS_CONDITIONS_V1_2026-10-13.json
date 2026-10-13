@@ -1,0 +1,46 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "CAD.conditions"
+  },
+  "effective_row": {
+    "label": "SLOS — condizioni credito imprese",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Bank of Canada",
+    "source_contract": "Senior Loan Officer Survey / Overall business lending conditions",
+    "frequency": "QUARTERLY",
+    "automation_ready": true,
+    "series_mapping_status": "EXACT_SERIES_KEY_FULL_RUNTIME_MATCH_CONFIRMED",
+    "series_key": "SLOS_BUS_LEND",
+    "collector": "validation/fetch_boc_cad_slos_conditions_candidate.py",
+    "applier": "validation/apply_boc_cad_slos_conditions_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "mapping_diagnostic_run_id": 38389658566,
+    "apply_proof_run_id": 38389936903,
+    "historical_overlap_count": 42,
+    "historical_exact_match_count": 42,
+    "historical_exact_match_ratio": 1.0,
+    "runtime_history_unchanged_by_current_vintage": true,
+    "identity_transform": true,
+    "runtime_last_date": "2026-04-01",
+    "runtime_last_value": -1.04,
+    "official_last_date": "2026-04-01",
+    "official_last_value": -1.04,
+    "latest_apply_receipt_status": "NO_CHANGE",
+    "append_contract": "append only strictly contiguous quarter-start observations after the exact runtime tail; identity transform only; never rewrite historical observations",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.bankofcanada.ca/valet/observations/SLOS_BUS_LEND/json"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "Bank of Canada Valet series SLOS_BUS_LEND is the unique full runtime match: 42/42 quarterly observations exact with identity transform and zero error. Collector and append-only applier were proven in CI on an isolated runtime copy in run 38389936903. The current official tail equals the runtime tail, so the controlled apply correctly produced NO_CHANGE without tracked runtime mutation or publication.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
