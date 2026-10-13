@@ -36,24 +36,52 @@
     },
     "runtime_match_certified": false
   },
+  "enhanced_proof": {
+    "diagnostic": "validation/diagnose_snb_chf_credit_dimensional_pairwise_v1.py",
+    "workflow": ".github/workflows/liquidity-snb-chf-credit-dimensional-pairwise-v1.yml",
+    "full_history_overlap_months": 127,
+    "official_dimensional_series_tested": 6,
+    "pairwise_combinations_tested": 45,
+    "exact_single_matches": 0,
+    "exact_pairwise_matches": 0,
+    "best_single": {
+      "identity": "AV1 | A | T1 | B",
+      "scale": 1.0,
+      "overlap": 127,
+      "exact": 0,
+      "exact_ratio": 0.0,
+      "mae": 14367.132647931187
+    },
+    "best_pairwise": {
+      "left": "AV1 | T0 | T1 | B",
+      "right": "AV1 | I | T1 | B",
+      "operation": "A_MINUS_B",
+      "scale": 1.0,
+      "overlap": 127,
+      "exact": 0,
+      "exact_ratio": 0.0,
+      "mae": 14367.124773915439
+    },
+    "interpretation": "The full official six-series dimensional cube and all simple pairwise identity-scale sum/difference combinations fail to reproduce the 127-month runtime history exactly."
+  },
   "resolution": {
     "status": "SOURCE_FAMILY_MAPPED_EXACT_SERIES_UNRESOLVED",
     "runtime_match_certified": false,
     "automation_ready": false,
     "fail_closed": true,
-    "reason": "The exact SNB cube is now identified and all six series returned by the relevant monthly cube slice were compared against the runtime window. None reproduces the runtime observations exactly. The best candidate still has 0 exact matches across 13 overlapping months, so no nearby SNB series may be substituted for the original runtime source."
+    "reason": "The exact SNB cube is identified. All six official dimensional series and 45 simple pairwise aggregations were tested over the full 127-month overlap. None reproduces the runtime observations exactly, so no nearby SNB series or aggregation may be substituted for the original runtime source."
   },
   "evidence_standard": {
     "repository_origin_is_not_statistical_provenance": true,
     "nearby_numeric_match_is_insufficient": true,
-    "required_to_resolve": "A verifiable exact original SNB statistical series or transformation contract that reproduces the runtime observations."
+    "required_to_resolve": "A verifiable exact original SNB statistical series, archived vintage, or transformation contract that reproduces the runtime observations."
   },
   "operational_impact": {
     "runtime_changed": false,
     "operational_policy_changed": false,
     "main_changed": false,
-    "effective_coverage_ready": 11,
-    "effective_coverage_pending": 15,
+    "effective_coverage_ready": 23,
+    "effective_coverage_pending": 3,
     "effective_coverage_total": 26,
     "publication_performed": false
   }
