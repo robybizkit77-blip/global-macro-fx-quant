@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "CAD.liquidity"
+  },
+  "effective_row": {
+    "label": "Lynx settlement balances",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Bank of Canada",
+    "dataset": "Valet ACTUAL - Lynx settlement balances actual",
+    "source_contract": "ACTUAL; official Bank of Canada Valet observations; GMFQ monthly normalization uses last available official observation in each completed calendar month",
+    "frequency": "MONTHLY_NORMALIZED_FROM_OFFICIAL_SOURCE_OBSERVATIONS",
+    "automation_ready": true,
+    "series_mapping_status": "EXACT_SERIES_ID_IDENTIFIED_REVISION_AWARE_APPEND_ONLY",
+    "series_id": "ACTUAL",
+    "normalization_rule": "LAST_AVAILABLE_OFFICIAL_OBSERVATION_IN_COMPLETED_CALENDAR_MONTH",
+    "collector": "validation/fetch_boc_cad_settlement_revision_aware_candidate.py",
+    "applier": "validation/apply_boc_cad_settlement_revision_aware_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "revision_aware_append_only": true,
+    "historical_runtime_values_frozen": true,
+    "operational_recent_guard_months": 12,
+    "operational_recent_guard_exact_matches": 12,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38408411890,
+    "apply_proof_job_id": 115334000750,
+    "historical_overlap_months": 128,
+    "historical_exact_matches": 115,
+    "historical_mismatches_frozen": 13,
+    "runtime_last_month": "2026-08",
+    "runtime_last_value": 74157.0,
+    "official_latest_completed_month": "2026-09",
+    "official_latest_completed_value": 83440.0,
+    "official_latest_completed_source_date": "2026-09-29",
+    "real_append_replay_proven": true,
+    "replay_guard_months": 11,
+    "replay_guard_exact_matches": 11,
+    "replayed_observation": {
+      "month": "2026-08",
+      "source_observation_date": "2026-08-31",
+      "value": 74157.0
+    },
+    "current_new_observation": {
+      "month": "2026-09",
+      "source_observation_date": "2026-09-29",
+      "value": 83440.0
+    },
+    "append_contract": "operational collector requires 12/12 exact recent stored months; stored history is frozen; only strictly contiguous completed calendar months after the PIT tail may be appended",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.bankofcanada.ca/valet/observations/ACTUAL/json?start_date=2016-01-01"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "Bank of Canada ACTUAL provenance is stable at the recent tail: 12/12 most recent stored months match the deterministic GMFQ completed-month normalization. Older 13/128 mismatches remain frozen as PIT history. CI proved both the current September append and a real August replay from a one-month-behind copy without rewriting any stored historical observation. Tracked runtime remained unchanged and no publication occurred.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
