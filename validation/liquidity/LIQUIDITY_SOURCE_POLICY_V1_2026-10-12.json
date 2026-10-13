@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_LIQUIDITY_SOURCE_POLICY_V1",
   "as_of": "2026-10-13",
-  "purpose": "Map verified official provenance for NATIVE_LIQ_DATA without equating provider discovery with an automation-ready exact series. Unmapped or variant-pending series remain fail-closed.",
+  "purpose": "Map verified official provenance for NATIVE_LIQ_DATA without equating provider discovery with an automation-ready exact series. Variant/key/aggregation-pending series remain fail-closed.",
   "policy": {
     "fail_closed": true,
     "observed_cadence_is_descriptive_only": true,
@@ -25,24 +25,26 @@
     "CAD.conditions": {"label":"SLOS — condizioni credito imprese","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"Bank of Canada","source_contract":"Senior Loan Officer Survey","frequency":"QUARTERLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_BUSINESS_LENDING_CONDITIONS_SERIES_KEY","source_url":"https://www.bankofcanada.ca/rates/indicators/capacity-and-inflation-pressures/senior-loan-officer-survey/"},
     "CHF.liquidity": {"label":"SNB — sight deposits","status":"OFFICIAL_PROVIDER_CONFIRMED_VARIANT_MATCH_PENDING","publisher":"Swiss National Bank","source_contract":"SNB Data Portal — Sight deposits with the SNB","frequency":"MONTHLY_SOURCE_FAMILY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_VARIANT_MATCH_TO_RUNTIME_LEVELS","candidate_series_keys":["BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,CHF,A40}","BSTA@SNB.MIRE_U.MIR.AAK.GGU{U,T,CHF,A50}"],"source_url":"https://data.snb.ch/"},
     "CHF.money": {"label":"M3","status":"OFFICIAL_SERIES_CONFIRMED","publisher":"Swiss National Bank","source_contract":"Monetary aggregates M1, M2 and M3","frequency":"MONTHLY","automation_ready":true,"series_mapping_status":"EXACT_SERIES_KEY","series_key":"EPB@SNB.snbmonagg{B,GM3}","source_url":"https://data.snb.ch/en/topics/snb/cube/snbmonagg"},
+    "CHF.credit": {"label":"Credito bancario","status":"OFFICIAL_PROVIDER_CONFIRMED_DIMENSION_MATCH_PENDING","publisher":"Swiss National Bank","source_contract":"Monthly banking statistics — credit volume / loans utilisation","frequency":"MONTHLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_CUBE_DIMENSIONS_AND_RUNTIME_VALUE_MATCH","candidate_cube":"bakredinausbm","source_url":"https://data.snb.ch/en/topics/banken/cube/bakredinausbm","api_url":"https://data.snb.ch/api/cube/bakredinausbm/data/json/en"},
     "EUR.liquidity": {"label":"Liquidità in eccesso","status":"OFFICIAL_SERIES_CONFIRMED","publisher":"European Central Bank","source_contract":"Eurosystem Excess liquidity","frequency":"DAILY","automation_ready":true,"series_mapping_status":"EXACT_SERIES_KEY","series_key":"ILM.D.U2.C.EXLIQ.U2.EUR","source_url":"https://data.ecb.europa.eu/data/datasets/ILM/ILM.D.U2.C.EXLIQ.U2.EUR"},
     "EUR.money": {"label":"M3","status":"OFFICIAL_SERIES_CONFIRMED","publisher":"European Central Bank / ESCB","source_contract":"Monetary aggregate M3, stocks","frequency":"MONTHLY","automation_ready":true,"series_mapping_status":"EXACT_SERIES_KEY","series_key":"BSI.M.U2.N.V.M30.X.1.U2.2300.Z01.E","source_url":"https://data.ecb.europa.eu/data/datasets/BSI/BSI.M.U2.N.V.M30.X.1.U2.2300.Z01.E"},
     "EUR.credit": {"label":"Prestiti imprese","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"European Central Bank / ESCB","source_contract":"MFI lending to non-financial corporations — outstanding stocks","frequency":"MONTHLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_TOTAL_NFC_STOCK_SERIES_KEY_AND_RUNTIME_MATCH","source_url":"https://data.ecb.europa.eu/data/data-categories/money-credit-and-banking/mfi-lending-private-sector/non-financial-corporations/loans"},
     "EUR.conditions": {"label":"BLS — standard credito imprese","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"European Central Bank / ESCB","source_contract":"Euro area Bank Lending Survey","frequency":"QUARTERLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_SERIES_KEY","source_url":"https://data.ecb.europa.eu/data/datasets/BLS"},
     "GBP.liquidity": {"label":"BoE — reserve balances","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"Bank of England","source_contract":"Bankstats / reserve balances","frequency":"MONTHLY_OR_HIGHER_FREQUENCY_SOURCE_FAMILY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_SERIES_KEY_AND_RUNTIME_AGGREGATION_RULE","source_url":"https://www.bankofengland.co.uk/statistics"},
+    "GBP.credit": {"label":"Credito garantito / secured lending YoY","status":"EXACT_OFFICIAL_SERIES_CONFIRMED_COLLECTOR_NOT_WIRED","publisher":"Bank of England","source_contract":"Monthly 12 month growth rate of total sterling net secured lending to individuals, seasonally adjusted","frequency":"MONTHLY","automation_ready":false,"series_mapping_status":"EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED","series_key":"LPMVTYI","runtime_match_window":"2021-01 through 2026-07","runtime_last_date":"2026-07-31","runtime_last_value":3.6,"official_last_value_on_runtime_date":3.6,"source_url":"https://www.bankofengland.co.uk/boeapps/database/"},
     "GBP.conditions": {"label":"Disponibilità credito corporate","status":"OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING","publisher":"Bank of England","source_contract":"Credit Conditions Survey — corporate credit availability","frequency":"QUARTERLY","automation_ready":false,"series_mapping_status":"PENDING_MACHINE_READABLE_SERIES_KEY_OR_STABLE_TABLE_EXTRACT","latest_verified_release":"2026-Q3","latest_release_date":"2026-10-08","source_url":"https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3"},
     "JPY.liquidity": {"label":"BoJ — reserve balances","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"Bank of Japan","source_contract":"Current account balances at the Bank of Japan / market operations statistics","frequency":"DAILY_SOURCE_FAMILY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_SERIES_CODE_AND_MONTHLY_AGGREGATION_RULE","source_url":"https://www.boj.or.jp/en/statistics/"},
     "JPY.money": {"label":"M3","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"Bank of Japan","source_contract":"Money Stock — M3","frequency":"MONTHLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_BOJ_API_SERIES_CODE","source_url":"https://www.boj.or.jp/en/statistics/money/ms/"},
     "JPY.credit": {"label":"Credito bancario","status":"OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING","publisher":"Bank of Japan","source_contract":"Deposits, Vault Cash, and Loans and Bills Discounted","frequency":"MONTHLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_BOJ_API_SERIES_CODE","source_url":"https://www.boj.or.jp/en/statistics/dl/depo/dcl/index.htm"},
     "JPY.conditions": {"label":"Tankan — lending attitude","status":"OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING","publisher":"Bank of Japan","source_contract":"Tankan — Lending Attitude of Financial Institutions (All industries)","frequency":"QUARTERLY","automation_ready":false,"series_mapping_status":"PENDING_EXACT_BOJ_API_SERIES_CODE_OR_STABLE_TABLE_EXTRACT","latest_verified_release":"2026-09","latest_value_all_enterprises":13,"source_url":"https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm"}
   },
-  "unresolved": ["CHF.credit", "GBP.credit"],
+  "unresolved": [],
   "coverage": {
     "total_subseries": 26,
-    "source_mapped_subseries": 24,
+    "source_mapped_subseries": 26,
     "automation_ready_subseries": 6,
-    "mapping_pending_subseries": 18,
-    "unresolved_subseries": 2
+    "mapping_pending_subseries": 20,
+    "unresolved_subseries": 0
   },
   "status": "PARTIAL_POLICY_FAIL_CLOSED"
 }
