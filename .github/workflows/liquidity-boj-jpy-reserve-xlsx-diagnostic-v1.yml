@@ -1,0 +1,40 @@
+name: Liquidity BOJ JPY Reserve XLSX Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boj_jpy_reserve_xlsx_v1.py'
+      - '.github/workflows/liquidity-boj-jpy-reserve-xlsx-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official BOJ monthly reserve workbooks
+        run: python validation/diagnose_boj_jpy_reserve_xlsx_v1.py | tee /tmp/jpy-reserve-xlsx-diagnostic.json
+      - name: Enforce diagnostic-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-reserve-xlsx-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_RESERVE_XLSX_DIAGNOSTIC_V1'
+          assert d['status']=='DIAGNOSTIC_ONLY_NO_PROMOTION'
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          assert d['promotion_performed'] is False
+          for m,v in d['files'].items():
+              print('MONTH',m,'exact_hits',v.get('exact_hit_count'),'nearest',[(x['value'],x['abs_diff']) for x in v.get('nearest',[])[:3]],'error',v.get('error'))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
