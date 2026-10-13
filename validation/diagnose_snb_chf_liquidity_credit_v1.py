@@ -36,6 +36,19 @@ def norm_month(v):
     return None
 
 
+def parse_number(raw):
+    if raw in (None, ''):
+        return None
+    s = str(raw).strip().replace("'", '').replace('\u202f', '').replace(' ', '')
+    # SNB API numeric output uses decimal points, but accept comma decimals too.
+    if s.count(',') == 1 and '.' not in s:
+        s = s.replace(',', '.')
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
 def runtime_series(key):
     rt = json.loads(RUNTIME.read_text(encoding='utf-8'))
     ccy, name = key.split('.')
@@ -49,47 +62,71 @@ def runtime_series(key):
     return out
 
 
-def identify_columns(fieldnames):
-    low = {f.lower().strip(): f for f in fieldnames}
-    date_col = next((f for f in fieldnames if f.lower().strip() in {'date','datum','period','zeit'}), None)
-    value_col = next((f for f in fieldnames if f.lower().strip() in {'value','wert','val'}), None)
-    key_col = next((f for f in fieldnames if 'timeseries' in f.lower().replace(' ','') and 'key' in f.lower().replace(' ','')), None)
-    if not key_col:
-        key_col = next((f for f in fieldnames if 'key' in f.lower()), None)
-    return date_col, value_col, key_col
-
-
-def parse_csv_series(text):
-    sample = text[:4096]
+def sniff_rows(text):
+    sample = text[:8192]
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters=';,\t')
     except csv.Error:
         dialect = csv.excel
         dialect.delimiter = ';'
-    rows = list(csv.DictReader(io.StringIO(text), dialect=dialect))
+    reader = csv.reader(io.StringIO(text), dialect=dialect)
+    rows = list(reader)
     if not rows:
-        raise SystemExit('SNB CSV returned no data rows')
-    fields = list(rows[0].keys())
-    date_col, value_col, key_col = identify_columns(fields)
+        raise SystemExit('SNB CSV returned no rows')
+    width = max(len(r) for r in rows)
+    rows = [r + [''] * (width - len(r)) for r in rows]
+    return rows
+
+
+def parse_csv_series(text):
+    rows = sniff_rows(text)
+    header = rows[0]
+    fields = [str(x).strip() for x in header]
+
+    # SNB's current CSV API is wide: first column is CubeId and every other
+    # column is a timeseries key. Non-date rows below the header carry labels /
+    # units; date rows carry the observations. Support that format directly.
+    if fields and fields[0].lower() == 'cubeid' and len(fields) >= 2:
+        grouped = defaultdict(dict)
+        metadata = {key: {'series_key': key, 'descriptor_rows': []} for key in fields[1:] if key}
+        for row in rows[1:]:
+            m = norm_month(row[0])
+            if m:
+                for idx, key in enumerate(fields[1:], start=1):
+                    if not key:
+                        continue
+                    value = parse_number(row[idx])
+                    if value is not None:
+                        grouped[key][m] = value
+            else:
+                label = str(row[0]).strip()
+                if not label:
+                    continue
+                for idx, key in enumerate(fields[1:], start=1):
+                    if key and str(row[idx]).strip():
+                        metadata[key]['descriptor_rows'].append({label: str(row[idx]).strip()})
+        return fields, grouped, metadata
+
+    # Backward-compatible long-table parser if the API shape changes back.
+    dict_rows = list(csv.DictReader(io.StringIO(text), delimiter=';'))
+    if not dict_rows:
+        raise SystemExit(f'Unsupported SNB CSV format. Preview={rows[:5]!r}')
+    fields = list(dict_rows[0].keys())
+    date_col = next((f for f in fields if f.lower().strip() in {'date','datum','period','zeit'}), None)
+    value_col = next((f for f in fields if f.lower().strip() in {'value','wert','val'}), None)
+    key_col = next((f for f in fields if 'key' in f.lower()), None)
     if not date_col or not value_col:
-        raise SystemExit(f'Could not identify SNB CSV date/value columns: {fields}')
+        raise SystemExit(f'Could not identify SNB CSV format. Preview={rows[:8]!r}')
     grouped = defaultdict(dict)
     metadata = {}
-    for row in rows:
+    for row in dict_rows:
         m = norm_month(row.get(date_col))
-        raw = row.get(value_col)
-        if not m or raw in (None, ''):
+        value = parse_number(row.get(value_col))
+        if not m or value is None:
             continue
-        try:
-            value = float(str(raw).replace("'", '').replace(' ', '').replace(',', '.'))
-        except ValueError:
-            continue
-        key = row.get(key_col) if key_col else None
-        if not key:
-            # Fall back to all invariant non-date/non-value dimension columns.
-            key = '|'.join(f'{k}={row.get(k)}' for k in fields if k not in {date_col, value_col})
-        grouped[str(key)][m] = value
-        metadata[str(key)] = {k: row.get(k) for k in fields if k not in {date_col, value_col}}
+        key = str(row.get(key_col) or 'single_series')
+        grouped[key][m] = value
+        metadata[key] = {k: row.get(k) for k in fields if k not in {date_col, value_col}}
     return fields, grouped, metadata
 
 
@@ -118,7 +155,7 @@ def best_scale_match(runtime, official):
             'first_common': common[0] if common else None,
             'last_common': common[-1] if common else None,
         }
-        score = (rounded, exact, -(row['mean_abs_error'] or 1e99))
+        score = (rounded, exact, -(row['mean_abs_error'] if row['mean_abs_error'] is not None else 1e99))
         if best is None or score > best[0]:
             best = (score, row)
     return best[1] if best else {'overlap': 0}
@@ -141,7 +178,7 @@ def rank_candidates(runtime, grouped, metadata):
             'official_latest_date': max(values),
             'official_latest_value_raw': values[max(values)],
         })
-    out.sort(key=lambda x: (x['rounded_1dp_exact'], x['exact'], x['overlap'], -(x['mean_abs_error'] or 1e99)), reverse=True)
+    out.sort(key=lambda x: (x['rounded_1dp_exact'], x['exact'], x['overlap'], -(x['mean_abs_error'] if x['mean_abs_error'] is not None else 1e99)), reverse=True)
     return out
 
 
