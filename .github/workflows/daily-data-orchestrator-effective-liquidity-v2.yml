@@ -1,0 +1,101 @@
+name: Daily Data Orchestrator Effective Liquidity V2
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v2.py'
+      - 'validation/run_daily_data_orchestrator_effective_v1.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_GBP_CCS_CONDITIONS_V1_2026-10-13.json'
+      - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
+      - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
+  pull_request:
+    branches:
+      - release-candidate-freshness-registry-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v2.py'
+      - 'validation/run_daily_data_orchestrator_effective_v1.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_GBP_CCS_CONDITIONS_V1_2026-10-13.json'
+      - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
+      - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-liquidity-v2-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build effective V2 receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_v2.py > /tmp/effective-v2.json
+          cat /tmp/effective-v2.json
+      - name: Enforce 14 READY / 12 pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-v2.json'))
+          liq=d['lanes']['LIQUIDITY']
+          assert liq['automation_ready_subseries']==14, liq
+          assert liq['mapping_pending_subseries']==12, liq
+          assert liq['verified_subseries']==14, liq
+          assert liq['unresolved_subseries']==12, liq
+          assert liq['total_subseries']==26, liq
+          assert liq['gbp_ccs_automation_ready'] is True, liq
+          assert liq['gbp_ccs_controlled_apply_proven'] is True, liq
+          assert liq['gbp_ccs_series_key']=='CCS_CORPORATE_AVAILABILITY_OVERALL_PAST_3M', liq
+          assert liq['gbp_ccs_collector']=='validation/fetch_boe_gbp_credit_conditions_candidate.py', liq
+          assert liq['gbp_ccs_applier']=='validation/apply_boe_gbp_credit_conditions_candidate.py', liq
+          assert liq['gbp_ccs_apply_proof_run_id']==38392358675, liq
+          assert liq['gbp_ccs_official_tail']=={'date':'2026-Q3','value':-0.1}, liq
+          o=d['effective_liquidity_overlay_v2']
+          assert o['ready']==14 and o['pending']==12 and o['total']==26, o
+          assert o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('EFFECTIVE_LIQUIDITY_V2_14_12_PASS')
+          PY
+      - name: Re-prove GBP CCS controlled apply on runtime copy
+        run: |
+          python validation/fetch_boe_gbp_credit_conditions_candidate.py --out /tmp/gbp-conditions.json
+          python validation/apply_boe_gbp_credit_conditions_candidate.py --candidate /tmp/gbp-conditions.json > /tmp/gbp-conditions-dry.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.gbp-conditions.json
+          python validation/apply_boe_gbp_credit_conditions_candidate.py --candidate /tmp/gbp-conditions.json --runtime /tmp/NATIVE_LIQ_DATA.gbp-conditions.json --apply > /tmp/gbp-conditions-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/gbp-conditions.json'))
+          dry=json.load(open('/tmp/gbp-conditions-dry.json'))
+          r=json.load(open('/tmp/gbp-conditions-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['GBP']['conditions']
+          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.gbp-conditions.json'))['GBP']['conditions']
+          assert c['proof']['overlap_count']==42 and c['proof']['exact_match_count']==42, c
+          assert c['proof']['exact_match_ratio']==1.0, c
+          assert c['new_observations']==[{'date':'2026-Q3','value':-0.1}], c
+          assert dry['status']=='DRY_RUN_UPDATE_AVAILABLE' and dry['applied'] is False, dry
+          assert r['status']=='APPENDED' and r['appended_observations']==1, r
+          n=len(original['dates'])
+          assert applied['dates'][:n]==original['dates']
+          assert applied['values'][:n]==original['values']
+          assert applied['dates'][-1]=='2026-Q3' and float(applied['values'][-1])==-0.1
+          print('GBP_CCS_CONTROLLED_APPLY_REPROOF_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'Effective Liquidity V2 coverage: 14 READY / 12 pending / 26 total'
+          echo 'GBP conditions BoE CCS controlled apply: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
