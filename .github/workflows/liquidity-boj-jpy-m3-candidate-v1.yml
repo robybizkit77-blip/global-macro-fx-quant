@@ -1,0 +1,44 @@
+name: Liquidity BOJ JPY M3 Candidate V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/fetch_boj_jpy_m3_candidate.py'
+      - '.github/workflows/liquidity-boj-jpy-m3-candidate-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official BOJ M3 candidate
+        run: python validation/fetch_boj_jpy_m3_candidate.py --out /tmp/jpy-m3-candidate.json | tee /tmp/jpy-m3.log
+      - name: Evaluate exact runtime/source contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-m3-candidate.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_M3_CANDIDATE_V1'
+          assert d['source']['database']=='MD02'
+          assert d['source']['series_id']=='MAM1NAM3M3MO'
+          assert d['publication_performed'] is False
+          assert d['runtime_mutated'] is False
+          print('STATUS',d['status'])
+          print('OVERLAP',d['runtime_overlap_count'],'EXACT',d['runtime_exact_match_count'],'MISMATCHES',d['mismatch_count'])
+          print('RUNTIME_LAST',d['runtime'])
+          print('SOURCE_LATEST',d['latest_date'],d['latest_value'])
+          if d['mismatches']:
+              print('FIRST_MISMATCHES',d['mismatches'][:10])
+          PY
+      - name: Verify tracked runtime unchanged
+        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
