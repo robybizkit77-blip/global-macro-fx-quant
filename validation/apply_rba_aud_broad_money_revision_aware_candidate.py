@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse,json
+from datetime import datetime
 from pathlib import Path
 
 DEFAULT_RUNTIME=Path('live_data/sections/NATIVE_LIQ_DATA.json')
@@ -8,7 +9,11 @@ SERIES_KEY='DMABMS'
 TOL=1e-9
 
 def month(v):
-    return str(v)[:7]
+    s=str(v or '').strip()
+    for fmt in ('%Y-%m-%d','%Y-%m','%d/%m/%Y','%b-%Y','%b %Y'):
+        try: return datetime.strptime(s,fmt).strftime('%Y-%m')
+        except ValueError: pass
+    raise SystemExit(f'unparseable AUD.money date: {v!r}')
 
 def next_month(v):
     y,m=map(int,month(v).split('-'))
@@ -25,8 +30,6 @@ def main():
     cr=c.get('runtime') or {}
     if cr.get('lane')!='AUD.money': raise SystemExit(f"candidate lane mismatch: {cr.get('lane')!r}")
     if month(cr.get('last_date'))!=dates[-1]: raise SystemExit(f"candidate last_date mismatch: candidate={month(cr.get('last_date'))} runtime_array={dates[-1]}")
-    # Some legacy runtime lanes carry a stale last_value metadata field even though the canonical tail is arrays[-1].
-    # The candidate is bound to the canonical dates/values arrays; validate those, and separately require internal lane metadata consistency only when it is already consistent.
     if abs(float(cr.get('last_value'))-vals[-1])>TOL: raise SystemExit(f"candidate last_value mismatch: candidate={cr.get('last_value')} runtime_array={vals[-1]}")
     if int(cr.get('count',-1))!=len(dates): raise SystemExit(f"candidate count mismatch: candidate={cr.get('count')} runtime={len(dates)}")
     new=[]; expected=next_month(dates[-1])
