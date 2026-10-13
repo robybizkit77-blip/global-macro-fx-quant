@@ -103,3 +103,5 @@ jobs:
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
           echo 'Bias / score / sizing effect: NONE'
+
+# trigger: validate on clean current-main branch
