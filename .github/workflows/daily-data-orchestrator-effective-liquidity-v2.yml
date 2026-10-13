@@ -10,6 +10,7 @@ on:
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_GBP_CCS_CONDITIONS_V1_2026-10-13.json'
       - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
       - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
+      - 'validation/diagnose_ecb_eur_bls_conditions_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_GBP_CCS_CONDITIONS_V1_2026-10-13.json'
       - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
       - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
+      - 'validation/diagnose_ecb_eur_bls_conditions_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
   workflow_dispatch:
@@ -89,6 +91,19 @@ jobs:
           assert applied['dates'][-1]=='2026-Q3' and float(applied['values'][-1])==-0.1
           print('GBP_CCS_CONTROLLED_APPLY_REPROOF_PASS')
           PY
+      - name: Diagnose ECB EUR BLS exact mapping without promotion
+        run: |
+          python validation/diagnose_ecb_eur_bls_conditions_v1.py | tee /tmp/eur-bls-diagnostic.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/eur-bls-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_EUR_BLS_MAPPING_DIAGNOSTIC_V1', d
+          assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
+          assert d['candidate_series_count'] > 0, d
+          print('EUR_BLS_STATUS', d['status'])
+          print('EUR_BLS_FULL_EXACT_MATCH_COUNT', d['full_exact_match_count'])
+          print('EUR_BLS_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          PY
       - name: Verify tracked runtime unchanged
         run: |
           sha256sum -c /tmp/runtime.before.sha256
@@ -97,5 +112,6 @@ jobs:
         run: |
           echo 'Effective Liquidity V2 coverage: 14 READY / 12 pending / 26 total'
           echo 'GBP conditions BoE CCS controlled apply: GREEN'
+          echo 'ECB EUR BLS diagnostic: READ-ONLY / NO PROMOTION'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
