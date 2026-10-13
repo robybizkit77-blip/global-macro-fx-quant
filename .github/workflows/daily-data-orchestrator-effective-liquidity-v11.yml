@@ -1,0 +1,109 @@
+name: Daily Data Orchestrator Effective Liquidity V11
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v11.py'
+      - 'validation/run_daily_data_orchestrator_effective_v10.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_CAD_SETTLEMENT_REVISION_AWARE_V1_2026-10-13.json'
+      - 'validation/fetch_boc_cad_settlement_revision_aware_candidate.py'
+      - 'validation/apply_boc_cad_settlement_revision_aware_candidate.py'
+      - '.github/workflows/cad-settlement-revision-aware-contract-v1.yml'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v10.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v11.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-liquidity-v11-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build effective V11 receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_v11.py > /tmp/effective-v11.json
+          cat /tmp/effective-v11.json
+      - name: Enforce 23 READY / 3 pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-v11.json')); liq=d['lanes']['LIQUIDITY']; o=d['effective_liquidity_overlay_v11']
+          assert liq['automation_ready_subseries']==23 and liq['mapping_pending_subseries']==3, liq
+          assert liq['verified_subseries']==23 and liq['unresolved_subseries']==3 and liq['total_subseries']==26, liq
+          assert liq['cad_liquidity_automation_ready'] is True and liq['cad_liquidity_controlled_apply_proven'] is True, liq
+          assert liq['cad_liquidity_revision_aware_append_only'] is True and liq['cad_liquidity_real_append_replay_proven'] is True, liq
+          assert liq['cad_liquidity_series_id']=='ACTUAL' and liq['cad_liquidity_operational_guard']=='12/12', liq
+          assert liq['cad_liquidity_official_tail']=={'month':'2026-09','source_date':'2026-09-29','value':83440.0}, liq
+          assert o['ready']==23 and o['pending']==3 and o['total']==26, o
+          assert o['remaining_fail_closed']==['CHF.liquidity','CHF.credit','JPY.liquidity'], o
+          assert o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('EFFECTIVE_LIQUIDITY_V11_23_3_PASS')
+          PY
+      - name: Re-prove CAD settlement current controlled apply
+        run: |
+          python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --out /tmp/cad-current.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.cad.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-current.json --runtime /tmp/NATIVE_LIQ_DATA.cad.json --apply > /tmp/cad-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-current.json')); r=json.load(open('/tmp/cad-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['CAD']['liquidity']
+          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.cad.json'))['CAD']['liquidity']; n=len(original['dates'])
+          assert c['proof']['recent_guard_months']==12 and c['proof']['recent_guard_exact_matches']==12 and c['proof']['recent_guard_pass'] is True, c
+          assert applied['dates'][:n]==original['dates'] and applied['values'][:n]==original['values'], (applied,original)
+          assert r['required_recent_guard_months']==12 and r['runtime_history_rewritten'] is False, r
+          assert r['applied'] is True and r['appended_observations']==1, r
+          assert r['after_last_month']=='2026-09' and abs(r['after_last_value']-83440.0)<1e-9, r
+          print('CAD_SETTLEMENT_V11_CURRENT_APPLY_REPROOF_PASS')
+          PY
+      - name: Re-prove CAD August PIT replay
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          def month(v):
+              s=str(v)
+              for fmt in ('%Y-%m','%Y-%m-%d','%d/%m/%Y'):
+                  try:return datetime.strptime(s,fmt).strftime('%Y-%m')
+                  except ValueError:pass
+              raise AssertionError(v)
+          p=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json')); lane=p['CAD']['liquidity']
+          assert month(lane['dates'][-1])=='2026-08' and float(lane['values'][-1])==74157.0
+          lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]; lane['last_date']=lane['dates'][-1]; lane['last_value']=lane['values'][-1]
+          json.dump(p,open('/tmp/cad-replay-runtime.json','w'),separators=(',',':'))
+          PY
+          python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --runtime /tmp/cad-replay-runtime.json --recent-guard-months 11 --out /tmp/cad-replay.json
+          cp /tmp/cad-replay-runtime.json /tmp/cad-replay-before.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-replay.json --runtime /tmp/cad-replay-runtime.json --required-recent-guard-months 11 --apply > /tmp/cad-replay-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-replay.json')); r=json.load(open('/tmp/cad-replay-apply.json'))
+          before=json.load(open('/tmp/cad-replay-before.json'))['CAD']['liquidity']; after=json.load(open('/tmp/cad-replay-runtime.json'))['CAD']['liquidity']; n=len(before['dates']); new=c['new_observations']
+          assert c['proof']['recent_guard_months']==11 and c['proof']['recent_guard_exact_matches']==11
+          assert new[0]=={'month':'2026-08','source_observation_date':'2026-08-31','value':74157.0}, new
+          assert new[1]=={'month':'2026-09','source_observation_date':'2026-09-29','value':83440.0}, new
+          assert r['applied'] is True and r['appended_observations']==2 and r['runtime_history_rewritten'] is False, r
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values']
+          assert after['dates'][n:n+2]==['2026-08','2026-09'] and after['values'][n:n+2]==[74157.0,83440.0]
+          print('CAD_SETTLEMENT_V11_REAL_REPLAY_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'Effective Liquidity V11 coverage: 23 READY / 3 pending / 26 total'
+          echo 'CAD settlement BoC ACTUAL controlled apply + real replay: GREEN'
+          echo 'Remaining fail-closed: CHF.liquidity, CHF.credit, JPY.liquidity'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
