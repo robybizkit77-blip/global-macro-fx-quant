@@ -59,7 +59,23 @@ def runtime_series():
         if not nd:
             raise SystemExit(f'unparseable runtime date {d!r}')
         out[nd] = float(v)
-    return out
+    if len(out) != len(row['dates']):
+        raise SystemExit('duplicate AUD.liquidity runtime dates after normalization')
+    return row, out
+
+
+def infer_weekly_snapshot_contract(runtime):
+    dates = sorted(runtime)
+    if len(dates) < 12:
+        raise SystemExit('insufficient AUD.liquidity runtime history to infer snapshot cadence')
+    recent = [datetime.strptime(x, '%Y-%m-%d').date() for x in dates[-12:]]
+    weekday = recent[-1].weekday()
+    if any(x.weekday() != weekday for x in recent[-8:]):
+        raise SystemExit('recent AUD.liquidity runtime does not preserve one weekly snapshot weekday')
+    gaps = [(b - a).days for a, b in zip(recent[-8:-1], recent[-7:])]
+    if any(g != 7 for g in gaps):
+        raise SystemExit(f'recent AUD.liquidity runtime is not strict weekly cadence: {gaps}')
+    return weekday, recent[-1].strftime('%A').upper()
 
 
 def shared_strings(zf):
@@ -150,7 +166,6 @@ def official_series(body):
                 if not isinstance(val, (int, float)):
                     continue
                 nd = None
-                # A3 uses the left-most date column; allow A:E defensively.
                 for col in ('A', 'B', 'C', 'D', 'E'):
                     raw = parsed.get(col)
                     nd = norm_date(raw) or excel_date(raw)
@@ -169,7 +184,8 @@ def main():
     args = parser.parse_args()
     out_path = Path(args.out)
 
-    runtime = runtime_series()
+    runtime_row, runtime = runtime_series()
+    snapshot_weekday, snapshot_weekday_name = infer_weekly_snapshot_contract(runtime)
     sheet, official = official_series(fetch_workbook_bytes())
     common = sorted(set(runtime) & set(official))
     exact_dates = [d for d in common if abs(runtime[d] - official[d]) <= 1e-9]
@@ -188,7 +204,16 @@ def main():
     recent = common[-20:]
     if any(abs(runtime[d] - official[d]) > 1e-9 for d in recent):
         raise SystemExit('recent 20-date AUD ES balance window is not exact')
+
     latest_official = max(official)
+    eligible_dates = [
+        d for d in sorted(official)
+        if d > runtime_last and datetime.strptime(d, '%Y-%m-%d').date().weekday() == snapshot_weekday
+    ]
+    new_observations = [{'date': d, 'value': official[d]} for d in eligible_dates]
+    latest_eligible = eligible_dates[-1] if eligible_dates else runtime_last
+    latest_eligible_value = official[latest_eligible] if eligible_dates else runtime[runtime_last]
+
     receipt = {
         'schema': 'GMFQ_LIQUIDITY_AUD_ES_BALANCES_CANDIDATE_V1',
         'status': 'GREEN_SOURCE_CANDIDATE_ONLY',
@@ -206,6 +231,15 @@ def main():
             'count': len(runtime),
             'last_date': runtime_last,
             'last_value': runtime[runtime_last],
+            'declared_last_date': runtime_row.get('last_date'),
+            'declared_last_value': runtime_row.get('last_value'),
+        },
+        'snapshot_contract': {
+            'runtime_frequency': 'WEEKLY_SNAPSHOT',
+            'weekday': snapshot_weekday,
+            'weekday_name': snapshot_weekday_name,
+            'inferred_from_recent_observations': 8,
+            'interpolation_allowed': False,
         },
         'proof': {
             'overlap_count': len(common),
@@ -218,6 +252,10 @@ def main():
         },
         'latest_date': latest_official,
         'latest_value': official[latest_official],
+        'latest_eligible_snapshot_date': latest_eligible,
+        'latest_eligible_snapshot_value': latest_eligible_value,
+        'new_observations': new_observations,
+        'candidate_update_available': bool(new_observations),
         'candidate_pipeline_ready': True,
         'publication_performed': False,
         'runtime_mutated': False,
