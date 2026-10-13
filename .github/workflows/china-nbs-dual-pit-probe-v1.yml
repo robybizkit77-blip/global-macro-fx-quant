@@ -1,0 +1,46 @@
+name: China NBS Dual PIT Probe V1
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/china_macro_confirmation_nbs_probe_v1.py'
+      - 'validation/china_macro_confirmation_source_registry_v1.json'
+      - '.github/workflows/china-nbs-dual-pit-probe-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect official NBS dual-release receipts
+        run: |
+          python3 validation/china_macro_confirmation_nbs_probe_v1.py \
+            --write /tmp/china-nbs-dual-pit-probe.json
+      - name: Verify lane remains candidate-only and fail-closed
+        run: |
+          python3 - <<'PY'
+          import json
+          p = '/tmp/china-nbs-dual-pit-probe.json'
+          d = json.load(open(p, encoding='utf-8'))
+          assert d['schema'] == 'GMFQ_CHINA_NBS_DUAL_PIT_PROBE_V1'
+          assert d['publication_permitted'] is False
+          assert d['mechanical_pair_vote'] is False
+          assert d['activation_permitted'] is False
+          assert d['status'] == 'CANDIDATE_RECEIPTS_READY'
+          assert set(d['receipts']) == {'activity', 'demand'}
+          for receipt in d['receipts'].values():
+              assert receipt['publisher'] == 'National Bureau of Statistics of China'
+              assert receipt['source_url'].startswith('https://www.stats.gov.cn/')
+              assert receipt['release_timestamp']
+              assert receipt['release_period']
+              assert receipt['raw_sha256']
+          PY
+      - name: Upload probe evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: china-nbs-dual-pit-probe-v1
+          path: /tmp/china-nbs-dual-pit-probe.json
