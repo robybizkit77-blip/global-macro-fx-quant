@@ -1,0 +1,40 @@
+name: Liquidity ECB EUR NFC Loans Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-ecb-eur-nfc-loans-diagnostic-v1.yml'
+      - 'validation/diagnose_ecb_eur_nfc_loans_variants.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare official ECB NFC-loan variants to runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/diagnose_ecb_eur_nfc_loans_variants.py | tee /tmp/eur-nfc-variants.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/eur-nfc-variants.json'))
+          assert d['schema']=='GMFQ_EUR_NFC_LOANS_VARIANT_DIAGNOSTIC_V1', d
+          assert len(d['candidates'])==4, d
+          print('EUR_NFC_VARIANT_RANKING', d['ranking_by_mean_abs_diff'])
+          for k,v in d['candidates'].items():
+              print(k, 'n=',v.get('overlap_count'), 'mae=',v.get('mean_abs_diff'), 'max=',v.get('max_abs_diff'), 'exact=',v.get('exact_matches_1e6'))
+          PY
+      - name: Ensure diagnostic is non-mutating
+        run: git diff --exit-code -- live_data payload
