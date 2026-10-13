@@ -1,0 +1,122 @@
+name: Daily Data Orchestrator Liquidity Chain Certification V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/certify_daily_data_orchestrator_liquidity_chain_v1.py'
+      - 'validation/run_daily_data_orchestrator_v1.py'
+      - 'validation/run_daily_data_orchestrator_effective_v*.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_*'
+      - 'validation/fetch_boc_cad_settlement_revision_aware_candidate.py'
+      - 'validation/apply_boc_cad_settlement_revision_aware_candidate.py'
+      - 'validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py'
+      - 'validation/apply_fed_usd_bank_credit_revision_aware_candidate.py'
+      - '.github/workflows/daily-data-orchestrator-liquidity-chain-certification-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  same-head-liquidity-chain-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook parser
+        run: python -m pip install --disable-pip-version-check openpyxl
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Replay General plus V1 through V11 receipts on this head
+        run: |
+          python validation/certify_daily_data_orchestrator_liquidity_chain_v1.py > /tmp/liquidity-chain.json
+          cat /tmp/liquidity-chain.json
+      - name: Enforce consolidated 23 READY / 3 pending certificate
+        run: |
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/liquidity-chain.json'))
+          assert d['schema']=='GMFQ_DAILY_DATA_ORCHESTRATOR_LIQUIDITY_CHAIN_CERTIFICATION_V1', d
+          assert d['head_sha']==os.environ['GITHUB_SHA'], d
+          assert d['general']=={'status':'PASS','base_ready':10,'base_pending':16,'total':26}, d
+          assert len(d['chain'])==11, d
+          expected=[(1,13,13),(2,14,12),(3,15,11),(4,16,10),(5,17,9),(6,18,8),(7,19,7),(8,20,6),(9,21,5),(10,22,4),(11,23,3)]
+          got=[(x['version'],x['ready'],x['pending']) for x in d['chain']]
+          assert got==expected, got
+          assert d['final']=={'ready':23,'pending':3,'total':26,'remaining_fail_closed':['CHF.liquidity','CHF.credit','JPY.liquidity']}, d
+          assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
+          print('SAME_HEAD_GENERAL_V1_TO_V11_23_3_PASS')
+          PY
+      - name: Re-prove USD credit controlled apply on this head
+        run: |
+          python validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py --out /tmp/usd-credit.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/usd-credit-runtime.json
+          python validation/apply_fed_usd_bank_credit_revision_aware_candidate.py --candidate /tmp/usd-credit.json --runtime /tmp/usd-credit-runtime.json --apply > /tmp/usd-credit-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/usd-credit.json')); r=json.load(open('/tmp/usd-credit-apply.json'))
+          before=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['USD']['credit']; after=json.load(open('/tmp/usd-credit-runtime.json'))['USD']['credit']; n=len(before['dates'])
+          assert c['source']['series_id']=='B1001NCBA' and c['proof']['current_vintage_mismatch_count']>0, c
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values']
+          assert r['applied'] is True and r['appended_observations']==3 and r['runtime_history_rewritten'] is False, r
+          assert r['after_last_date']=='2026-09-30' and abs(r['after_last_value']-19883.1863)<1e-9, r
+          print('SAME_HEAD_USD_CREDIT_REPROOF_PASS')
+          PY
+      - name: Re-prove CAD settlement current apply and PIT replay on this head
+        run: |
+          python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --out /tmp/cad-current.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/cad-current-runtime.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-current.json --runtime /tmp/cad-current-runtime.json --apply > /tmp/cad-current-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-current.json')); r=json.load(open('/tmp/cad-current-apply.json'))
+          assert c['proof']['recent_guard_months']==12 and c['proof']['recent_guard_exact_matches']==12 and c['proof']['recent_guard_pass'] is True, c
+          assert r['required_recent_guard_months']==12 and r['applied'] is True and r['appended_observations']==1 and r['runtime_history_rewritten'] is False, r
+          assert r['after_last_month']=='2026-09' and abs(r['after_last_value']-83440.0)<1e-9, r
+          PY
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          def month(v):
+              s=str(v)
+              for fmt in ('%Y-%m','%Y-%m-%d','%d/%m/%Y'):
+                  try:return datetime.strptime(s,fmt).strftime('%Y-%m')
+                  except ValueError:pass
+              raise AssertionError(v)
+          p=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json')); lane=p['CAD']['liquidity']
+          assert month(lane['dates'][-1])=='2026-08' and float(lane['values'][-1])==74157.0
+          lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]; lane['last_date']=lane['dates'][-1]; lane['last_value']=lane['values'][-1]
+          json.dump(p,open('/tmp/cad-replay-runtime.json','w'),separators=(',',':'))
+          PY
+          python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --runtime /tmp/cad-replay-runtime.json --recent-guard-months 11 --out /tmp/cad-replay.json
+          cp /tmp/cad-replay-runtime.json /tmp/cad-replay-before.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-replay.json --runtime /tmp/cad-replay-runtime.json --required-recent-guard-months 11 --apply > /tmp/cad-replay-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-replay.json')); r=json.load(open('/tmp/cad-replay-apply.json'))
+          before=json.load(open('/tmp/cad-replay-before.json'))['CAD']['liquidity']; after=json.load(open('/tmp/cad-replay-runtime.json'))['CAD']['liquidity']; n=len(before['dates']); new=c['new_observations']
+          assert c['proof']['recent_guard_months']==11 and c['proof']['recent_guard_exact_matches']==11, c
+          assert new[0]=={'month':'2026-08','source_observation_date':'2026-08-31','value':74157.0}, new
+          assert new[1]=={'month':'2026-09','source_observation_date':'2026-09-29','value':83440.0}, new
+          assert r['required_recent_guard_months']==11 and r['applied'] is True and r['appended_observations']==2 and r['runtime_history_rewritten'] is False, r
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values']
+          print('SAME_HEAD_CAD_SETTLEMENT_REPROOF_PASS')
+          PY
+      - name: Verify tracked runtime remained untouched
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'General + V1..V11 consolidated same-head certification: GREEN'
+          echo 'Effective Liquidity: 23 READY / 3 pending / 26 total'
+          echo 'Remaining fail-closed: CHF.liquidity, CHF.credit, JPY.liquidity'
+          echo 'USD.credit controlled apply: re-proven on copy'
+          echo 'CAD.liquidity current apply + PIT replay: re-proven on copy'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
