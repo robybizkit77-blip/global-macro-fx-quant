@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 DEFAULT_RUNTIME = Path('live_data/sections/NATIVE_LIQ_DATA.json')
@@ -15,10 +15,21 @@ CONTRACTS = {
 
 
 def parse_date(value: str) -> date:
+    raw = str(value or '').strip()
+    if not raw:
+        raise SystemExit(f'invalid date: {value}')
     try:
-        return date.fromisoformat(str(value))
+        return datetime.fromisoformat(raw).date()
+    except ValueError:
+        pass
+    try:
+        return date.fromisoformat(raw)
     except ValueError as exc:
         raise SystemExit(f'invalid ISO date: {value}') from exc
+
+
+def normalized_date(value: str) -> str:
+    return parse_date(value).isoformat()
 
 
 def month_key(value: str) -> tuple[int, int]:
@@ -51,7 +62,7 @@ def validate_sequence(policy_key: str, runtime_last_date: str, rows: list[dict])
             if (d.year, d.month) != expected_month:
                 raise SystemExit(f'{policy_key}: non-contiguous monthly sequence at {raw_date}; expected {expected_month}')
             expected_month = (d.year + 1, 1) if d.month == 12 else (d.year, d.month + 1)
-        normalized.append((raw_date, value))
+        normalized.append((d.isoformat(), value))
         prev = d
     return normalized
 
@@ -91,13 +102,13 @@ def main():
         values = list(runtime.get('values') or [])
         if len(dates) != len(values) or not dates:
             raise SystemExit(f'{policy_key}: invalid runtime arrays')
-        if str(dates[-1]) != str(runtime.get('last_date')):
+        if normalized_date(dates[-1]) != normalized_date(runtime.get('last_date')):
             raise SystemExit(f'{policy_key}: runtime last_date inconsistency')
         if abs(float(values[-1]) - float(runtime.get('last_value'))) > 1e-9:
             raise SystemExit(f'{policy_key}: runtime last_value inconsistency')
 
         cand_runtime = row.get('runtime') or {}
-        if str(cand_runtime.get('last_date')) != str(runtime.get('last_date')):
+        if normalized_date(cand_runtime.get('last_date')) != normalized_date(runtime.get('last_date')):
             raise SystemExit(f'{policy_key}: candidate built against different runtime last_date')
         if abs(float(cand_runtime.get('last_value')) - float(runtime.get('last_value'))) > 1e-9:
             raise SystemExit(f'{policy_key}: candidate built against different runtime last_value')
