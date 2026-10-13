@@ -15,6 +15,7 @@ on:
       - 'validation/fetch_rba_aud_es_balances_candidate.py'
       - 'validation/apply_rba_aud_es_balances_candidate.py'
       - 'validation/fetch_fed_usd_bank_credit_candidate.py'
+      - 'validation/diagnose_fed_usd_bank_credit_revision_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v1.yml'
   pull_request:
@@ -31,6 +32,7 @@ on:
       - 'validation/fetch_rba_aud_es_balances_candidate.py'
       - 'validation/apply_rba_aud_es_balances_candidate.py'
       - 'validation/fetch_fed_usd_bank_credit_candidate.py'
+      - 'validation/diagnose_fed_usd_bank_credit_revision_v1.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v1.yml'
   workflow_dispatch:
@@ -158,24 +160,23 @@ jobs:
           PY
           sha256sum -c /tmp/chf-credit-runtime.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
-      - name: Probe hardened Fed H8 USD bank credit transport
+      - name: Diagnose Fed H8 USD bank credit scale and revision contract
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/usd-credit-runtime.before.sha256
-          python validation/fetch_fed_usd_bank_credit_candidate.py --out /tmp/usd-bank-credit-candidate.json | tee /tmp/usd-bank-credit.stdout.json
+          python validation/diagnose_fed_usd_bank_credit_revision_v1.py | tee /tmp/usd-bank-credit-revision.json
           python - <<'PY'
           import json
-          d=json.load(open('/tmp/usd-bank-credit-candidate.json'))
-          assert d['schema']=='GMFQ_LIQUIDITY_USD_BANK_CREDIT_CANDIDATE_V1', d
+          d=json.load(open('/tmp/usd-bank-credit-revision.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_USD_BANK_CREDIT_REVISION_DIAGNOSTIC_V1', d
           assert d['source']['publisher']=='Board of Governors of the Federal Reserve System', d
           assert d['source']['series_id']=='H8/H8/B1001NCBA', d
-          assert d['source']['transport'] in {'H8_DDP_OUTPUT_CSV','H8_DDP_DOWNLOAD_TABLE'}, d
-          assert d['runtime_match_confirmed'] is True, d
-          assert d['official_runtime_value']==d['runtime']['last_value'], d
-          assert d['latest_date'] >= d['runtime']['last_date'], d
-          assert d['status']=='GREEN_SOURCE_CANDIDATE_ONLY', d
+          assert d['source']['scale_to_runtime']==0.001, d
+          assert d['proof']['overlap_count'] > 0, d
+          assert d['automation_ready'] is False, d
+          assert d['promotion_performed'] is False, d
           assert d['runtime_mutated'] is False, d
           assert d['publication_performed'] is False, d
-          print('USD_CREDIT_TRANSPORT_GREEN', d['source']['transport'], d['runtime'], d['latest_date'], d['latest_value'])
+          print('USD_CREDIT_DIAGNOSTIC', d['interpretation'], d['proof'])
           PY
           sha256sum -c /tmp/usd-credit-runtime.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
@@ -185,6 +186,6 @@ jobs:
           echo 'JPY reserve provenance blocker: persisted fail-closed evidence'
           echo 'CHF sight-deposit blocker: persisted fail-closed evidence'
           echo 'CHF credit blocker: persisted fail-closed evidence'
-          echo 'USD bank-credit transport probe: official Fed H8 only, candidate-only'
+          echo 'USD bank credit: scale/revision diagnostic only, no promotion'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
