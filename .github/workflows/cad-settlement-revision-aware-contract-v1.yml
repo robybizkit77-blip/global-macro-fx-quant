@@ -1,0 +1,100 @@
+name: CAD Settlement Revision Aware Contract V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/fetch_boc_cad_settlement_revision_aware_candidate.py'
+      - 'validation/apply_boc_cad_settlement_revision_aware_candidate.py'
+      - '.github/workflows/cad-settlement-revision-aware-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cad-settlement-revision-aware-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/runtime.current.json
+      - name: Fetch current official BoC candidate
+        run: python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --runtime /tmp/runtime.current.json --out /tmp/cad-current.json
+      - name: Enforce source and recent exact guard
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-current.json')); p=c['proof']; n=c['normalization']
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY'
+          assert c['source']['series_id']=='ACTUAL'
+          assert n['rule']=='LAST_AVAILABLE_OFFICIAL_OBSERVATION_IN_COMPLETED_CALENDAR_MONTH'
+          assert n['historical_runtime_values_frozen'] is True and n['revision_aware_append_only'] is True
+          assert p['overlap_months']==128
+          assert p['full_history_exact_matches']==115
+          assert p['full_history_mismatches']==13
+          assert p['recent_guard_months']==12 and p['recent_guard_exact_matches']==12 and p['recent_guard_pass'] is True
+          print(json.dumps(c,indent=2))
+          PY
+      - name: Controlled current apply on copy if update exists
+        run: |
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-current.json --runtime /tmp/runtime.current.json --apply > /tmp/current-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-current.json')); r=json.load(open('/tmp/current-apply.json'))
+          assert r['runtime_history_rewritten'] is False
+          if c['candidate_update_available']:
+              assert r['applied'] is True and r['appended_observations']>=1
+          else:
+              assert r['status']=='NO_CHANGE' and r['applied'] is False
+          print(json.dumps(r,indent=2))
+          PY
+      - name: Build one-month-behind PIT runtime copy
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))
+          lane=p['CAD']['liquidity']
+          assert lane['dates'][-1]=='2026-08' and float(lane['values'][-1])==74157.0
+          lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]
+          lane['last_date']=lane['dates'][-1]; lane['last_value']=lane['values'][-1]
+          json.dump(p,open('/tmp/runtime.replay.json','w'),separators=(',',':'))
+          PY
+      - name: Re-fetch against one-month-behind PIT copy
+        run: python validation/fetch_boc_cad_settlement_revision_aware_candidate.py --runtime /tmp/runtime.replay.json --out /tmp/cad-replay.json
+      - name: Prove real August replay and append-only apply
+        run: |
+          cp /tmp/runtime.replay.json /tmp/runtime.replay.before.json
+          python validation/apply_boc_cad_settlement_revision_aware_candidate.py --candidate /tmp/cad-replay.json --runtime /tmp/runtime.replay.json --apply > /tmp/replay-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/cad-replay.json')); r=json.load(open('/tmp/replay-apply.json'))
+          before=json.load(open('/tmp/runtime.replay.before.json'))['CAD']['liquidity']
+          after=json.load(open('/tmp/runtime.replay.json'))['CAD']['liquidity']; n=len(before['dates'])
+          new=c['new_observations']
+          assert new and new[0]['month']=='2026-08' and float(new[0]['value'])==74157.0, new
+          assert new[0]['source_observation_date'].startswith('2026-08-'), new[0]
+          assert r['applied'] is True and r['appended_observations']==len(new) and r['runtime_history_rewritten'] is False
+          assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values']
+          assert after['dates'][n]=='2026-08' and float(after['values'][n])==74157.0
+          print('CAD_SETTLEMENT_REAL_AUGUST_REPLAY_PASS')
+          print(json.dumps({'candidate_new':new,'apply':r},indent=2))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'CAD.liquidity BoC ACTUAL revision-aware contract: GREEN if all prior steps passed'
+          echo 'Normalization: last available official ACTUAL observation in completed calendar month'
+          echo 'Recent guard: 12/12 exact stored months'
+          echo 'Historical runtime: FROZEN'
+          echo 'Controlled apply: COPY ONLY'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
