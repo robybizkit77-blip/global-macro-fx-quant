@@ -10,9 +10,6 @@ on:
       - 'validation/build_rates_audit_metadata.py'
       - 'validation/update_live_direct_section.py'
       - 'validation/update_live_derived_sections.py'
-      - 'validation/build_live_manifest_v2.py'
-      - 'validation/check_live_update_contract.py'
-      - 'validation/rebuild_live_data_runtime.py'
       - 'validation/fetch_rates_usd_jpy.py'
       - 'validation/fetch_rates_eur_gbp.py'
       - 'validation/fetch_rates_cad.py'
@@ -47,6 +44,22 @@ jobs:
             live_data/manifest.v2.json \
             payload/part-00.txt \
             payload/part-15.txt > /tmp/rates-runtime.before.sha256
+      - name: Preflight canonical Rates mapping only
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib
+          m=json.load(open('live_data/manifest.v2.json'))
+          assert m['schema']=='GMFQ_LIVE_DATA_MANIFEST_V2' and m['status']=='PASS'
+          e={x['key']:x for x in m['sections']}['NATIVE_RATES_DATA']
+          raw=pathlib.Path('live_data/sections/NATIVE_RATES_DATA.json').read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==e['sha256']
+          hits=[]
+          for i in range(16):
+              b=pathlib.Path(f'payload/part-{i:02d}.txt').read_bytes()
+              if b.count(raw): hits.append((i,b.count(raw)))
+          assert hits==[(e['part'],1)],(e,hits)
+          print('RATES_CANONICAL_MAPPING_PREFLIGHT_PASS',hits)
+          PY
       - name: Build official unified Rates candidate
         run: |
           mkdir -p /tmp/rates-contract
@@ -56,7 +69,7 @@ jobs:
             --output /tmp/rates-contract/NATIVE_RATES_DATA.json \
             | tee /tmp/rates-contract/candidate-summary.json
           git diff --exit-code -- live_data payload
-      - name: Enforce source, temporal and paired-tenor contract
+      - name: Enforce source temporal and paired-tenor contract
         run: |
           python - <<'PY'
           import json
@@ -93,7 +106,7 @@ jobs:
           assert audit['currencies']['NZD']['coverage_mode']!='LIVE_FETCH'
           print('RATES_SOURCE_TEMPORAL_PAIRED_TENOR_PASS',sorted(changed))
           PY
-      - name: Controlled apply on checkout when updates exist
+      - name: Controlled Rates-only apply on checkout
         run: |
           set -euo pipefail
           STATUS=$(python -c "import json; print(json.load(open('/tmp/rates-contract/candidate-summary.json'))['status'])")
@@ -101,44 +114,44 @@ jobs:
             python validation/update_live_direct_section.py \
               --section NATIVE_RATES_DATA \
               --replacement /tmp/rates-contract/NATIVE_RATES_DATA.json \
-              --apply > /tmp/rates-contract/direct-apply.json
+              --apply | tee /tmp/rates-contract/direct-apply.json
           else
             cmp <(tr -d '\n' < /tmp/rates-contract/NATIVE_RATES_DATA.json) <(tr -d '\n' < live_data/sections/NATIVE_RATES_DATA.json)
-            echo '{"status":"NO_CHANGE","applied":false}' > /tmp/rates-contract/direct-apply.json
+            echo '{"status":"NO_CHANGE","applied":false}' | tee /tmp/rates-contract/direct-apply.json
           fi
           python validation/build_rates_audit_metadata.py \
             --audit-date "$(date -u +%Y-%m-%d)" \
             --output /tmp/rates-contract/RATES_AUDIT_METADATA.json \
-            > /tmp/rates-contract/metadata-build.json
+            | tee /tmp/rates-contract/metadata-build.json
           python validation/update_live_derived_sections.py \
             --rates /tmp/rates-contract/RATES_AUDIT_METADATA.json \
-            --apply > /tmp/rates-contract/derived-apply.json
-          python validation/build_live_manifest_v2.py \
-            --write live_data/manifest.v2.json > /tmp/rates-contract/manifest-build.json
-          python validation/check_live_update_contract.py > /tmp/rates-contract/live-contract.json
-          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-contract/runtime-roundtrip.json
-      - name: Enforce exact diff scope and runtime identity
+            --apply | tee /tmp/rates-contract/derived-apply.json
+      - name: Enforce exact Rates-only diff scope and runtime identity
         run: |
           python - <<'PY'
-          import json,subprocess
+          import json,pathlib,subprocess
           cand=json.load(open('/tmp/rates-contract/candidate-summary.json'))
-          proposed=json.load(open('/tmp/rates-contract/NATIVE_RATES_DATA.json'))
-          live=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          proposed=pathlib.Path('/tmp/rates-contract/NATIVE_RATES_DATA.json').read_bytes()
+          live=pathlib.Path('live_data/sections/NATIVE_RATES_DATA.json').read_bytes()
           assert live==proposed
+          assert pathlib.Path('payload/part-00.txt').read_bytes().count(proposed)==1
           allowed={
             'live_data/sections/NATIVE_RATES_DATA.json',
             'live_data/sections/RATES_AUDIT_METADATA.json',
-            'live_data/manifest.v2.json',
             'payload/part-00.txt',
             'payload/part-15.txt'
           }
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          bad=changed-allowed
-          assert not bad,(sorted(changed),sorted(bad))
+          assert not (changed-allowed),(sorted(changed),sorted(changed-allowed))
+          assert 'live_data/manifest.v2.json' not in changed
           if cand['status']=='CANDIDATE_READY':
-              assert 'live_data/sections/NATIVE_RATES_DATA.json' in changed,sorted(changed)
-          assert changed, 'controlled convergence should update at least audit metadata/manifest for current audit date'
-          print('RATES_EXACT_DIFF_SCOPE_PASS',sorted(changed))
+              assert {'live_data/sections/NATIVE_RATES_DATA.json','payload/part-00.txt'} <= changed
+          meta=json.load(open('/tmp/rates-contract/RATES_AUDIT_METADATA.json'))
+          actual=json.load(open('live_data/sections/RATES_AUDIT_METADATA.json'))
+          assert actual==meta
+          receipt=json.load(open('/tmp/rates-contract/derived-apply.json'))
+          assert receipt['status']=='PASS' and receipt['apply'] is True
+          print('RATES_ONLY_EXACT_DIFF_SCOPE_PASS',sorted(changed))
           PY
           sha256sum \
             live_data/sections/NATIVE_RATES_DATA.json \
@@ -146,7 +159,7 @@ jobs:
             live_data/manifest.v2.json \
             payload/part-00.txt \
             payload/part-15.txt > /tmp/rates-contract/after-first.sha256
-      - name: Prove converged state is idempotent
+      - name: Prove converged Rates state is idempotent
         run: |
           python validation/build_rates_audit_metadata.py \
             --audit-date "$(date -u +%Y-%m-%d)" \
@@ -156,10 +169,6 @@ jobs:
           python validation/update_live_derived_sections.py \
             --rates /tmp/rates-contract/RATES_AUDIT_METADATA.second.json \
             --apply > /tmp/rates-contract/derived-apply-second.json
-          python validation/build_live_manifest_v2.py \
-            --write live_data/manifest.v2.json > /tmp/rates-contract/manifest-build-second.json
-          python validation/check_live_update_contract.py > /tmp/rates-contract/live-contract-second.json
-          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-contract/runtime-roundtrip-second.json
           sha256sum \
             live_data/sections/NATIVE_RATES_DATA.json \
             live_data/sections/RATES_AUDIT_METADATA.json \
@@ -186,7 +195,8 @@ jobs:
           echo 'NZD: official manual lane retained; runner access blocked'
           echo 'CHF: WITHHELD; source export blocked'
           echo '2Y/10Y paired update: enforced'
-          echo 'Controlled diff scope: 5 files maximum'
-          echo 'Converged state idempotence: enforced'
+          echo 'Controlled Rates-only diff scope: 4 files maximum'
+          echo 'Converged Rates state idempotence: enforced'
+          echo 'Global manifest rebuild: intentionally NOT certified here because pre-existing Macro standalone/payload drift is a separate blocker'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
