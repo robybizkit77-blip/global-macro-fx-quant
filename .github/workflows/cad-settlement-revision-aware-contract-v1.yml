@@ -58,9 +58,16 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from datetime import datetime
+          def month(v):
+              s=str(v)
+              for fmt in ('%Y-%m','%Y-%m-%d','%d/%m/%Y'):
+                  try: return datetime.strptime(s,fmt).strftime('%Y-%m')
+                  except ValueError: pass
+              raise AssertionError(f'unparseable runtime date {v!r}')
           p=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))
           lane=p['CAD']['liquidity']
-          assert lane['dates'][-1]=='2026-08' and float(lane['values'][-1])==74157.0
+          assert month(lane['dates'][-1])=='2026-08' and float(lane['values'][-1])==74157.0
           lane['dates']=lane['dates'][:-1]; lane['values']=lane['values'][:-1]
           lane['last_date']=lane['dates'][-1]; lane['last_value']=lane['values'][-1]
           json.dump(p,open('/tmp/runtime.replay.json','w'),separators=(',',':'))
