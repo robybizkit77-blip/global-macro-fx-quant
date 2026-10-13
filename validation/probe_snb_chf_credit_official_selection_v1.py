@@ -10,13 +10,14 @@ from pathlib import Path
 RUNTIME=Path('live_data/sections/NATIVE_LIQ_DATA.json')
 D0_CODES=('AV1','AV2','AV3','AV4','AV10')
 BASE='https://data.snb.ch/api/cube/bakredinausbm/data/csv/en'
+DIMENSIONS='https://data.snb.ch/api/cube/bakredinausbm/dimensions/en'
 
 
 def url_for(d0):
     return f'{BASE}?dimSel=D0({d0}),D1(T0,I,A),D2(T1,H,K),D3(F,B)&fromDate=2025-07&toDate=2026-07'
 
-def fetch(url):
-    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-validation/1.0','Accept':'text/csv'})
+def fetch(url,accept='text/csv'):
+    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-validation/1.0','Accept':accept})
     with urllib.request.urlopen(req,timeout=90) as r:return r.read().decode('utf-8-sig')
 
 def month(v):
@@ -66,6 +67,10 @@ def compare(rt,vals):
 
 def main():
     rt=runtime(); ranked=[]; requests=[]; seen=set(); last=max(rt)
+    try:
+        dimensions=json.loads(fetch(DIMENSIONS,'application/json'))
+    except Exception as e:
+        dimensions={'_error':f'{type(e).__name__}: {e}'}
     for d0 in D0_CODES:
         url=url_for(d0)
         rec={'d0':d0,'url':url}
@@ -83,5 +88,5 @@ def main():
             ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
     ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
     if not ranked:raise SystemExit('all SNB D0 category requests returned zero usable dimensioned series')
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V3','requests':requests,'requested_d0':list(D0_CODES),'series_count':len(ranked),'ranked':ranked[:60]},indent=2,ensure_ascii=False))
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V4','dimensions_endpoint':DIMENSIONS,'dimensions_raw':dimensions,'requests':requests,'requested_d0':list(D0_CODES),'series_count':len(ranked),'ranked':ranked[:20]},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
