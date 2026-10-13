@@ -1,0 +1,47 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "EUR.conditions"
+  },
+  "effective_row": {
+    "label": "ECB Bank Lending Survey credit standards — enterprises overall",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "European Central Bank / ESCB",
+    "dataset": "BLS",
+    "source_contract": "Euro area / All banks / Credit standards / Overall / Enterprise / Past three months / Weighted net percentage",
+    "frequency": "QUARTERLY",
+    "automation_ready": true,
+    "series_mapping_status": "UNIQUE_OFFICIAL_SERIES_FULL_RUNTIME_MATCH_CONFIRMED",
+    "series_key": "BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET",
+    "title": "Credit standards-Overall-Enterprise",
+    "collector": "validation/fetch_ecb_eur_bls_conditions_candidate.py",
+    "applier": "validation/apply_ecb_eur_bls_conditions_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38395306692,
+    "historical_overlap_count": 43,
+    "historical_exact_match_count": 43,
+    "historical_exact_match_ratio": 1.0,
+    "runtime_history_unchanged_by_current_vintage": true,
+    "identity_transform": true,
+    "runtime_last_date": "2026-Q3",
+    "runtime_last_value": 7.294703918588041,
+    "official_last_date": "2026-Q3",
+    "official_last_value": 7.294703918588041,
+    "latest_apply_receipt_status": "NO_CHANGE_ON_EPHEMERAL_COPY",
+    "append_contract": "append only strictly contiguous quarterly observations after the exact runtime tail; never rewrite historical observations",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://data-api.ecb.europa.eu/service/data/BLS/Q.U2.ALL.O.E.Z.B3.ST.S.WFNET"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "The official ECB BLS dataset contains one unique series reproducing all 43 EUR.conditions runtime quarters exactly. The current vintage is unchanged through 2026-Q3 = 7.294703918588041. Collector and append-only applier were proven in CI on an isolated runtime copy; tracked runtime remained byte-identical and no publication occurred.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
