@@ -1,0 +1,50 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "JPY.conditions"
+  },
+  "effective_row": {
+    "label": "BOJ Tankan — Lending Attitude of Financial Institutions",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Bank of Japan",
+    "dataset": "Time-Series Data Search API / CO",
+    "source_contract": "D.I. / Lending Attitude / All Enterprises / All industries / Actual result",
+    "frequency": "QUARTERLY",
+    "automation_ready": true,
+    "series_mapping_status": "UNIQUE_OFFICIAL_SERIES_FULL_RUNTIME_MATCH_CONFIRMED",
+    "series_id": "TK99F0000612GCQ00000",
+    "unit": "% points",
+    "collector": "validation/fetch_boj_jpy_tankan_lending_attitude_candidate.py",
+    "applier": "validation/apply_boj_jpy_tankan_lending_attitude_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38400277145,
+    "apply_proof_job_id": 115305808836,
+    "historical_overlap_count": 42,
+    "historical_exact_match_count": 42,
+    "historical_exact_match_ratio": 1.0,
+    "unique_exact_series_count": 1,
+    "runtime_history_unchanged_by_current_vintage": true,
+    "identity_transform": true,
+    "runtime_last_date": "2026-Q2",
+    "runtime_last_value": 13.0,
+    "official_last_date": "2026-Q3",
+    "official_last_value": 13.0,
+    "latest_apply_receipt_status": "UPDATE_AVAILABLE_ON_EPHEMERAL_COPY",
+    "latest_apply_appended_observations": 1,
+    "append_contract": "append only strictly contiguous quarterly observations after the exact runtime tail; never rewrite historical observations",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=CO&startDate=201601&endDate=202604&code=TK99F0000612GCQ00000"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "The official BOJ Tankan CO series TK99F0000612GCQ00000 is the unique exact match across all 42 JPY.conditions runtime observations. The current BOJ vintage preserves the full runtime history and adds 2026-Q3 = 13. Collector and strict quarterly append-only applier passed the isolated CI controlled-apply proof on an ephemeral runtime copy; tracked runtime remained byte-identical and no publication occurred.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
