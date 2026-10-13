@@ -6,9 +6,14 @@ on:
       - release-candidate-daily-data-orchestrator-v1-2026-10-12
     paths:
       - 'validation/diagnose_boj_jpy_m3_variants_v1.py'
+      - 'validation/fetch_boj_jpy_m3_exact_candidate.py'
+      - 'validation/apply_boj_jpy_m3_exact_candidate.py'
       - '.github/workflows/liquidity-boj-jpy-m3-diagnostic-v1.yml'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   diagnose:
@@ -22,18 +27,69 @@ jobs:
         run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before
       - name: Diagnose official BOJ MD02 M3 variants
         run: python validation/diagnose_boj_jpy_m3_variants_v1.py | tee /tmp/jpy-m3-diagnostic.json
-      - name: Enforce read-only contract
+      - name: Enforce unique exact provenance
         run: |
           python - <<'PY'
           import json
           d=json.load(open('/tmp/jpy-m3-diagnostic.json'))
-          assert d['schema']=='GMFQ_LIQUIDITY_JPY_M3_VARIANT_DIAGNOSTIC_V1'
-          assert d['runtime_mutated'] is False
-          assert d['publication_performed'] is False
-          assert d['tested_series_count'] > 0
-          print('JPY_M3_STATUS', d['status'])
-          print('JPY_M3_EXACT_MATCH_COUNT', d['exact_match_count'])
-          print('JPY_M3_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_M3_VARIANT_DIAGNOSTIC_V1', d
+          assert d['status']=='UNIQUE_EXACT_MD02_M3_RUNTIME_MATCH_PROVEN', d
+          assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
+          assert d['exact_match_count']==1, d
+          b=d['best_candidate']
+          assert b['series_code']=='MAM1XAM3M3MO', b
+          t=b['best_transform']
+          assert t['scale']==1.0 and t['overlap']==128 and t['exact']==128, t
+          assert t['exact_ratio']==1.0 and t['mae']==0.0 and t['max_abs_diff']==0.0, t
+          print('JPY_M3_PROVENANCE_UNIQUE_EXACT_PASS')
           PY
+      - name: Build exact BOJ JPY M3 candidate
+        run: python validation/fetch_boj_jpy_m3_exact_candidate.py --out /tmp/jpy-m3-exact.json
+      - name: Prove controlled apply on runtime copy
+        run: |
+          python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact.json > /tmp/jpy-m3-dry.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.jpy-m3.json
+          python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact.json --runtime /tmp/NATIVE_LIQ_DATA.jpy-m3.json --apply > /tmp/jpy-m3-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/jpy-m3-exact.json'))
+          dry=json.load(open('/tmp/jpy-m3-dry.json'))
+          app=json.load(open('/tmp/jpy-m3-apply.json'))
+          before=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['JPY']['money']
+          after=json.load(open('/tmp/NATIVE_LIQ_DATA.jpy-m3.json'))['JPY']['money']
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1', c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['source']['database']=='MD02' and c['source']['series_id']=='MAM1XAM3M3MO', c
+          assert c['source']['seasonal_adjustment']=='Seasonally Adjusted', c
+          assert c['runtime_overlap_count']>=128 and c['runtime_exact_match_count']==c['runtime_overlap_count'], c
+          assert c['runtime_exact_match_ratio']==1.0 and c['runtime_history_unchanged_by_current_vintage'] is True, c
+          assert dry['series_id']=='MAM1XAM3M3MO' and app['series_id']=='MAM1XAM3M3MO', (dry,app)
+          assert dry['status'] in ('NO_CHANGE','UPDATE_AVAILABLE'), dry
+          assert app['status']==dry['status'], (dry,app)
+          assert dry['applied'] is False, dry
+          if c['candidate_update_available']:
+              assert dry['status']=='UPDATE_AVAILABLE', dry
+              assert app['applied'] is True, app
+              assert app['appended_observations']==len(c['new_observations'])>0, (app,c)
+              n=len(before['dates'])
+              assert after['dates'][:n]==before['dates'] and after['values'][:n]==before['values'], (before,after)
+              assert after['last_date']==c['latest_date'] and abs(float(after['last_value'])-float(c['latest_value']))<1e-6, (after,c)
+          else:
+              assert dry['status']=='NO_CHANGE' and app['status']=='NO_CHANGE', (dry,app)
+              assert app['applied'] is False and app['appended_observations']==0, app
+              assert after==before, (before,after)
+          print('JPY_M3_CONTROLLED_APPLY_PROOF_PASS')
+          print('JPY_M3_LATEST', c['latest_date'], c['latest_value'])
+          print('JPY_M3_NEW_OBSERVATIONS', len(c['new_observations']))
+          PY
+      - name: Enforce tracked runtime read-only
+        run: |
           sha256sum -c /tmp/runtime.before
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY M3 exact source: BOJ MD02/MAM1XAM3M3MO'
+          echo 'Provenance: unique exact runtime match'
+          echo 'Controlled apply: tested on temporary runtime only'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
