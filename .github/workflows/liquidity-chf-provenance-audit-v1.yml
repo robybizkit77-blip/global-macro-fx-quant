@@ -1,0 +1,35 @@
+name: Liquidity CHF Provenance Audit V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-chf-provenance-audit-v1.yml'
+      - 'validation/audit_chf_liquidity_provenance_v1.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit historical CHF liquidity provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/audit_chf_liquidity_provenance_v1.py | tee /tmp/chf-liquidity-provenance.json
+      - name: Upload audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquidity-chf-provenance-v1-${{ github.run_id }}
+          path: /tmp/chf-liquidity-provenance.json
+          retention-days: 30
