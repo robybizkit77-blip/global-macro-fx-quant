@@ -1,0 +1,45 @@
+name: Liquidity Fed USD Bank Credit Candidate V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-fed-usd-bank-credit-candidate-v1.yml'
+      - 'validation/fetch_fed_usd_bank_credit_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official Fed H8 USD bank credit candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_fed_usd_bank_credit_candidate.py | tee /tmp/usd-bank-credit.log
+          python3 - <<'PY'
+          import json
+          c=json.load(open('validation/liquidity-usd-bank-credit-candidate.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_USD_BANK_CREDIT_CANDIDATE_V1', c
+          assert c['source']['series_id']=='H8/H8/B1001NCBA', c
+          assert c['runtime_match_confirmed'] is True, c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('LIQUIDITY_FED_USD_BANK_CREDIT_PASS', c['runtime']['last_date'], '->', c['latest_date'], c['latest_value'])
+          PY
+      - name: Ensure no tracked runtime mutation
+        shell: bash
+        run: |
+          rm -f validation/liquidity-usd-bank-credit-candidate.json
+          git diff --exit-code -- live_data payload
