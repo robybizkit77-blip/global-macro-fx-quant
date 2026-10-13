@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import csv, io, json, urllib.parse, urllib.request
+import csv, io, json, re, urllib.parse, urllib.request
 from collections import defaultdict
 from datetime import datetime
 from itertools import combinations
@@ -28,7 +28,7 @@ def norm(v):
  return None
 
 def num(v):
- s=str(v or '').strip().replace("'",'').replace(' ','')
+ s=str(v or '').strip().replace("'",'').replace('\u202f','').replace(' ','')
  if not s:return None
  if s.count(',')==1 and '.' not in s:s=s.replace(',','.')
  try:return float(s)
@@ -39,42 +39,70 @@ def runtime(key):
  d=json.loads(RUNTIME.read_text(encoding='utf-8'))[ccy][name]
  return {norm(x):float(v) for x,v in zip(d['dates'],d['values']) if norm(x)}
 
-def parse_single(text):
- try:d=csv.Sniffer().sniff(text[:4096],delimiters=';,\t')
+def rows(text):
+ try:d=csv.Sniffer().sniff(text[:8192],delimiters=';,\t')
  except csv.Error:d=csv.excel; d.delimiter=';'
- rows=list(csv.reader(io.StringIO(text),dialect=d)); w=max(len(r) for r in rows); rows=[r+['']*(w-len(r)) for r in rows]
- start=next(i for i,r in enumerate(rows) if norm(r[0]))
- cols=[]
+ rr=list(csv.reader(io.StringIO(text),dialect=d)); w=max(len(r) for r in rr)
+ return [r+['']*(w-len(r)) for r in rr]
+
+def parse_single(text):
+ rr=rows(text); start=next(i for i,r in enumerate(rr) if norm(r[0])); w=len(rr[0]); cols=[]
  for c in range(1,w):
-  n=sum(1 for r in rows[start:] if norm(r[0]) and num(r[c]) is not None)
+  n=sum(1 for r in rr[start:] if norm(r[0]) and num(r[c]) is not None)
   if n:cols.append((n,c))
  c=max(cols)[1]; out={}
- for r in rows[start:]:
+ for r in rr[start:]:
   m=norm(r[0]); v=num(r[c])
   if m and v is not None:out[m]=v
  return out
 
+def looks_key(v):
+ s=str(v or '').strip()
+ return ('@SNB.' in s) or ('{' in s and '}' in s) or bool(re.match(r'^[A-Za-z0-9_]+\{.+\}$',s))
+
 def parse_credit(text):
+ rr=rows(text); fields=[str(x).strip() for x in rr[0]]
+ # SNB cube exports are commonly wide: metadata rows first, then one date column and one column per series.
+ if fields and fields[0].lower()=='cubeid':
+  start=next((i for i,r in enumerate(rr[1:],start=1) if norm(r[0])),None)
+  if start is None:raise SystemExit('SNB credit wide CSV has no dated rows')
+  grouped={}
+  for c in range(1,len(fields)):
+   desc=[]; exact=None
+   for i in range(start):
+    label=str(rr[i][0]).strip(); value=str(rr[i][c]).strip()
+    if value:
+     desc.append((label or f'row_{i}',value))
+     if looks_key(value):exact=value
+   if exact is None:
+    base=fields[c] or f'column_{c}'
+    suffix='|'.join(f'{k}={v}' for k,v in desc[1:])
+    exact=base if not suffix else f'{base}|{suffix}'
+   vals={}
+   for r in rr[start:]:
+    m=norm(r[0]); v=num(r[c])
+    if m and v is not None:vals[m]=v
+   if vals:grouped[exact]=vals
+  return grouped
+ # Fallback long format.
+ sio=io.StringIO(text)
  try:d=csv.Sniffer().sniff(text[:8192],delimiters=';,\t')
  except csv.Error:d=csv.excel; d.delimiter=';'
- rows=list(csv.DictReader(io.StringIO(text),dialect=d)); fields=list(rows[0])
- date=next(f for f in fields if str(f).lower().strip() in {'date','datum','period'})
- value=next(f for f in fields if str(f).lower().strip() in {'value','wert','val'})
- dims=[f for f in fields if f not in {date,value}]
- grouped=defaultdict(dict)
- for r in rows:
+ dr=list(csv.DictReader(sio,dialect=d)); fields=list(dr[0])
+ date=next((f for f in fields if str(f).lower().strip() in {'date','datum','period'}),None)
+ value=next((f for f in fields if str(f).lower().strip() in {'value','wert','val'}),None)
+ if not date or not value:raise SystemExit(f'unsupported SNB credit CSV fields={fields}')
+ dims=[f for f in fields if f not in {date,value}]; grouped=defaultdict(dict)
+ for r in dr:
   m=norm(r.get(date)); v=num(r.get(value))
   if not m or v is None:continue
-  key='|'.join(f'{f}={str(r.get(f) or "").strip()}' for f in dims)
-  grouped[key][m]=v
+  key='|'.join(f'{f}={str(r.get(f) or "").strip()}' for f in dims); grouped[key][m]=v
  return dict(grouped)
-
 def score(rt,series):
  common=sorted(set(rt)&set(series)); best=None
  for scale in (1,1e-3,1e3,1e-6,1e6):
   diffs=[rt[m]-series[m]*scale for m in common]
-  exact=sum(abs(x)<=1e-9 for x in diffs)
-  mae=sum(abs(x) for x in diffs)/len(diffs) if diffs else 1e99
+  exact=sum(abs(x)<=1e-9 for x in diffs); mae=sum(abs(x) for x in diffs)/len(diffs) if diffs else 1e99
   row={'scale':scale,'overlap':len(common),'exact':exact,'exact_ratio':exact/len(common) if common else 0.0,'mae':mae}
   rank=(row['exact_ratio'],exact,-mae)
   if best is None or rank>best[0]:best=(rank,row)
@@ -97,8 +125,7 @@ def main():
   url=SIGHT_BASE+'?'+urllib.parse.urlencode({'dimSel':dim,'fromDate':'2016-01','toDate':'2026-12'},safe='(),')
   sight[name]=parse_single(fetch(url))
  credit=parse_credit(fetch(CREDIT_URL))
- rs=pairwise(runtime('CHF.liquidity'),sight)
- rc=pairwise(runtime('CHF.credit'),credit)
+ rs=pairwise(runtime('CHF.liquidity'),sight); rc=pairwise(runtime('CHF.credit'),credit)
  out={'schema':'GMFQ_SNB_CHF_PAIRWISE_AGGREGATION_DIAGNOSTIC_V1','status':'DIAGNOSTIC_ONLY','sight_candidate_count':len(sight),'credit_candidate_count':len(credit),'sight_top':rs,'credit_top':rc,'promotion_eligible':False,'runtime_mutated':False,'publication_performed':False}
  print(json.dumps(out,indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
