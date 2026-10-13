@@ -31,13 +31,15 @@ def runtime():
     return {month(x):float(v) for x,v in zip(d['dates'],d['values'])}
 
 def parse(text):
+    if not text.strip():return []
     try:dialect=csv.Sniffer().sniff(text[:8192],delimiters=';,\t')
     except csv.Error:
         dialect=csv.excel; dialect.delimiter=';'
     rows=list(csv.reader(io.StringIO(text),dialect=dialect))
+    if not rows:return []
     width=max(len(r) for r in rows); rows=[r+['']*(width-len(r)) for r in rows]
     header_idx=next((i for i,r in enumerate(rows) if [str(x).strip() for x in r[:6]]==['Date','D0','D1','D2','D3','Value']),None)
-    if header_idx is None:raise SystemExit(f'expected SNB long-table header not found preview={rows[:20]!r}')
+    if header_idx is None:return []
     grouped=defaultdict(dict)
     for r in rows[header_idx+1:]:
         m=month(r[0])
@@ -49,7 +51,6 @@ def parse(text):
         try:v=float(raw)
         except ValueError:continue
         grouped[dims][m]=v
-    if not grouped:raise SystemExit('SNB official selection returned no dimensioned series')
     return [{'dimensions':{'D0':d[0],'D1':d[1],'D2':d[2],'D3':d[3]},'values':vals} for d,vals in grouped.items()]
 
 def compare(rt,vals):
@@ -64,15 +65,23 @@ def compare(rt,vals):
     return best[1]
 
 def main():
-    rt=runtime(); ranked=[]; urls=[]; seen=set(); last=max(rt)
+    rt=runtime(); ranked=[]; requests=[]; seen=set(); last=max(rt)
     for d0 in D0_CODES:
-        url=url_for(d0); urls.append(url)
-        for s in parse(fetch(url)):
+        url=url_for(d0)
+        rec={'d0':d0,'url':url}
+        try:
+            text=fetch(url); series=parse(text)
+            rec['status']='OK' if series else 'EMPTY'; rec['series_count']=len(series)
+        except Exception as e:
+            series=[]; rec['status']='ERROR'; rec['series_count']=0; rec['error']=f'{type(e).__name__}: {e}'
+        requests.append(rec)
+        for s in series:
             key=tuple(s['dimensions'][k] for k in ('D0','D1','D2','D3'))
             if key in seen:continue
             seen.add(key)
             cmp=compare(rt,s['values'])
             ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
     ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V2','urls':urls,'requested_d0':list(D0_CODES),'series_count':len(ranked),'ranked':ranked[:60]},indent=2,ensure_ascii=False))
+    if not ranked:raise SystemExit('all SNB D0 category requests returned zero usable dimensioned series')
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V3','requests':requests,'requested_d0':list(D0_CODES),'series_count':len(ranked),'ranked':ranked[:60]},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
