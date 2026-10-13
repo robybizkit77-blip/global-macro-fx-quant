@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_LIQUIDITY_CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "status": "WITHHELD_EXACT_VARIANT_RUNTIME_MATCH_PENDING",
+  "source": {
+    "publisher": "Swiss National Bank",
+    "source_family": "SNB Data Portal — sight deposits / monthly banking-statistics variants",
+    "cube": "BSTA.SNB.MONA_U.BIL.AKT.FMI.GGU",
+    "frequency": "MONTHLY_SOURCE_FAMILY"
+  },
+  "runtime": {
+    "lane": "CHF.liquidity",
+    "last_date": "2026-07",
+    "last_value": 420858.97054532
+  },
+  "proof": {
+    "tested_variants": 4,
+    "best_variant": {
+      "name": "U_T_T_A40",
+      "dimension_selection": "KONSOLIDIERUNGSSTUFE(U),INLANDAUSLAND(T),WAEHRUNG(T),BANKENGRUPPE(A40)",
+      "scale": 0.001,
+      "overlap": 13,
+      "exact": 0,
+      "mae": 14829.403181259619,
+      "official_value_on_runtime_last_date": 404247.6214390011
+    },
+    "other_variants_exact_matches": 0,
+    "runtime_match_certified": false
+  },
+  "promotion_eligible": false,
+  "automation_ready": false,
+  "fail_closed": true,
+  "runtime_mutated": false,
+  "publication_performed": false,
+  "evidence_workflow": "Daily Data Orchestrator Effective Liquidity V1",
+  "evidence_run_id": 38380853736
+}
