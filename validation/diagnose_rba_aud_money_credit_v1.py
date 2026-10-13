@@ -43,9 +43,6 @@ def fetch(url):
 
 
 def find_code(ws, code):
-    # RBA series identifiers are in the workbook header. Limiting the search to
-    # the first 40 rows avoids a full-sheet scan while still failing closed if
-    # the table layout changes materially.
     for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row, 40)):
         for cell in row:
             if str(cell.value).strip() == code:
@@ -79,7 +76,13 @@ def extract_series(wb, code):
 def runtime_series(rt, key):
     ccy, name = key.split('.')
     row = rt[ccy][name]
-    return {str(d)[:7]: float(v) for d, v in zip(row['dates'], row['values'])}
+    out = {}
+    for d, v in zip(row['dates'], row['values']):
+        month = norm_month(d)
+        if not month:
+            raise SystemExit(f'unparseable runtime date for {key}: {d!r}')
+        out[month] = float(v)
+    return out
 
 
 def compare(runtime, official):
@@ -107,9 +110,6 @@ def main():
     result = {'schema': 'GMFQ_RBA_AUD_MONEY_CREDIT_DIAGNOSTIC_V1', 'status': 'DIAGNOSTIC_ONLY', 'results': {}}
     for key, spec in SOURCES.items():
         body = fetch(spec['url'])
-        # Normal mode makes repeated cell access deterministic and fast enough
-        # for these small RBA workbooks; read_only mode is pathologically slow
-        # for the random-access extraction used below.
         wb = load_workbook(io.BytesIO(body), data_only=True, read_only=False)
         runtime = runtime_series(rt, key)
         candidates = {}
