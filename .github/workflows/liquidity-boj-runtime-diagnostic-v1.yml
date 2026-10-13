@@ -1,0 +1,40 @@
+name: Liquidity BOJ Runtime Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-boj-runtime-diagnostic-v1.yml'
+      - 'validation/diagnose_boj_jpy_liquidity_runtime.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare official BOJ M3 and bank credit to runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/diagnose_boj_jpy_liquidity_runtime.py | tee /tmp/boj-runtime-diagnostic.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/boj-runtime-diagnostic.json'))
+          assert d['schema']=='GMFQ_BOJ_JPY_LIQUIDITY_RUNTIME_DIAGNOSTIC_V1', d
+          assert set(d['series'])=={'money','credit'}, d
+          for k,v in d['series'].items():
+              assert v['ranking'], v
+              print('BOJ_RUNTIME_DIAGNOSTIC',k,'best=',v['ranking'][0],v['variants'][v['ranking'][0]])
+          PY
+      - name: Ensure diagnostic is non-mutating
+        run: git diff --exit-code -- live_data payload
