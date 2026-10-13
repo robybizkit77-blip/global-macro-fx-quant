@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 LIQ=Path('live_data/sections/NATIVE_LIQ_DATA.json')
-OUT=Path('validation/liquidity-jpy-bank-credit-candidate.json')
+DEFAULT_OUT=Path('validation/liquidity-jpy-bank-credit-candidate.json')
 BASE='https://www.stat-search.boj.or.jp/api/v1/getDataCode'
 DB='MD11'
 CODE='DLCLAEDBLTTO'
@@ -27,6 +28,10 @@ def fetch():
 
 
 def main():
+    ap=argparse.ArgumentParser()
+    ap.add_argument('--out',default=str(DEFAULT_OUT))
+    args=ap.parse_args()
+
     liq=json.loads(LIQ.read_text(encoding='utf-8'))
     rtrow=liq['JPY']['credit']
     rt={str(d)[:7]:float(v) for d,v in zip(rtrow['dates'],rtrow['values'])}
@@ -41,6 +46,11 @@ def main():
     if runtime_last not in src or abs(float(rtrow['last_value'])-src[runtime_last])>1e-6:
         raise SystemExit('runtime last observation does not match BOJ source')
     latest_date=max(src)
+    new_observations=[
+        {'date':d,'value':src[d]}
+        for d in sorted(src)
+        if d>runtime_last
+    ]
     result={
         'schema':'GMFQ_LIQUIDITY_JPY_BANK_CREDIT_CANDIDATE_V1',
         'source':{
@@ -51,10 +61,12 @@ def main():
         'runtime':{'last_date':runtime_last,'last_value':float(rtrow['last_value'])},
         'runtime_overlap_count':len(overlap),'runtime_exact_match_count':len(overlap),'runtime_match_confirmed':True,
         'latest_date':latest_date,'latest_value':src[latest_date],
-        'candidate_update_available':latest_date>runtime_last,
+        'candidate_update_available':bool(new_observations),
+        'new_observations':new_observations,
         'status':'GREEN_SOURCE_CANDIDATE_ONLY','publication_performed':False,'runtime_mutated':False,
     }
-    OUT.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+    out=Path(args.out)
+    out.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
     print(json.dumps(result,indent=2,ensure_ascii=False))
 
 if __name__=='__main__': main()
