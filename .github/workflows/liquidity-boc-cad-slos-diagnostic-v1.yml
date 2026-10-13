@@ -1,0 +1,47 @@
+name: Liquidity BoC CAD SLOS Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boc_cad_slos_conditions_v1.py'
+      - '.github/workflows/liquidity-boc-cad-slos-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Run CAD SLOS mapping diagnostic
+        run: python validation/diagnose_boc_cad_slos_conditions_v1.py | tee /tmp/cad-slos.json
+      - name: Enforce fail-closed diagnostic contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cad-slos.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_CAD_SLOS_MAPPING_DIAGNOSTIC_V1', d
+          assert d['source']['publisher']=='Bank of Canada', d
+          assert d['runtime']['lane']=='CAD.conditions', d
+          assert d['automation_ready'] is False, d
+          assert d['promotion_performed'] is False, d
+          assert d['runtime_mutated'] is False, d
+          assert d['publication_performed'] is False, d
+          print('CAD_SLOS_CANDIDATES', d['catalog_candidate_count'])
+          print('CAD_SLOS_FULL_EXACT', d['full_exact_match_count'])
+          print('CAD_SLOS_BEST', d['best_candidate'])
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
