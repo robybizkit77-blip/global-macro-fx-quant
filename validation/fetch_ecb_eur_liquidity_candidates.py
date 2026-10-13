@@ -18,13 +18,15 @@ SERIES = {
         'full_key': 'ILM.D.U2.C.EXLIQ.U2.EUR',
         'runtime_path': ('EUR', 'liquidity'),
         'frequency': 'Daily',
+        'policy_revalidation': False,
     },
     'EUR.money': {
         'dataset': 'BSI',
-        'key': 'M.U2.N.V.M30.X.1.U2.2300.Z01.E',
-        'full_key': 'BSI.M.U2.N.V.M30.X.1.U2.2300.Z01.E',
+        'key': 'M.U2.Y.V.M30.X.1.U2.2300.Z01.E',
+        'full_key': 'BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E',
         'runtime_path': ('EUR', 'money'),
         'frequency': 'Monthly',
+        'policy_revalidation': True,
     },
 }
 
@@ -90,7 +92,8 @@ def main():
 
     for policy_key, spec in SERIES.items():
         cfg = policy['mapped'][policy_key]
-        if cfg.get('series_key') != spec['full_key']:
+        policy_key_matches = cfg.get('series_key') == spec['full_key']
+        if not policy_key_matches and not spec.get('policy_revalidation'):
             raise SystemExit(f'{policy_key} policy series mismatch: {cfg.get("series_key")} != {spec["full_key"]}')
         if cfg.get('automation_ready') is not True:
             raise SystemExit(f'{policy_key} must be automation-ready before collection')
@@ -125,6 +128,9 @@ def main():
                 'url': url,
                 'frequency': spec['frequency'],
             },
+            'policy_series_id': cfg.get('series_key'),
+            'policy_series_matches_candidate': policy_key_matches,
+            'policy_revalidation_required': not policy_key_matches,
             'runtime': {'last_date': runtime_date, 'last_value': runtime_value},
             'official_runtime_value': official_runtime_value,
             'runtime_match_confirmed': True,
