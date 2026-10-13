@@ -1,0 +1,34 @@
+name: Liquidity RBA AUD ES Balances Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_rba_aud_es_balances_v1.py'
+      - '.github/workflows/liquidity-rba-aud-es-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook parser
+        run: python3 -m pip install --disable-pip-version-check openpyxl==3.1.5
+      - name: Compare RBA A3 ES balances with AUD runtime
+        run: python3 validation/diagnose_rba_aud_es_balances_v1.py | tee /tmp/rba-aud-es-diagnostic.json
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquidity-rba-aud-es-diagnostic-v1-${{ github.run_id }}
+          path: /tmp/rba-aud-es-diagnostic.json
+          retention-days: 30
