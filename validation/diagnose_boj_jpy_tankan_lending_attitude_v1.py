@@ -46,7 +46,6 @@ def metadata_candidates():
             continue
         text = ' '.join(str(v) for v in row.values() if isinstance(v, (str, int, float))).strip()
         low = text.lower()
-        # BOJ official Tankan survey item 612 = Lending Attitude of Financial Institutions.
         score = 0
         if 'lending attitude' in low: score += 12
         if 'financial institution' in low: score += 5
@@ -69,16 +68,20 @@ def quarter_key(raw) -> str | None:
     digits = ''.join(ch for ch in s if ch.isdigit())
     if len(digits) < 6:
         return None
-    y, m = int(digits[:4]), int(digits[4:6])
-    if m not in (3, 6, 9, 12):
+    y, p = int(digits[:4]), int(digits[4:6])
+    if p in (1, 2, 3, 4):
+        q = p
+    elif p in (3, 6, 9, 12):
+        q = ((p - 1) // 3) + 1
+    else:
         return None
-    return f'{y}-Q{((m - 1) // 3) + 1}'
+    return f'{y}-Q{q}'
 
 
 def fetch_series(code: str):
     url, obj = get_json('getDataCode', {
         'format': 'json', 'lang': 'en', 'db': DB,
-        'startDate': '201601', 'endDate': '202612', 'code': code,
+        'startDate': '201601', 'endDate': '202604', 'code': code,
     })
     if obj.get('STATUS') != 200 or len(obj.get('RESULTSET') or []) != 1:
         return url, None, None
