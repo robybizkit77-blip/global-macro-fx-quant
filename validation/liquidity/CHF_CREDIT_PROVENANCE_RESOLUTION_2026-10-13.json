@@ -1,0 +1,42 @@
+{
+  "schema": "liquidity_chf_credit_provenance_resolution_v1",
+  "as_of": "2026-10-13",
+  "currency": "CHF",
+  "subseries": "credit",
+  "runtime_snapshot": {
+    "date": "2026-07",
+    "value": 400255.9803935034,
+    "label": "Credito bancario"
+  },
+  "repository_origin": {
+    "first_introducing_commit": "529acdd6026c88ecee8451e2e5bc36c740eece7d",
+    "file": "live_data/sections/NATIVE_LIQ_DATA.json",
+    "exact_runtime_value_present": true,
+    "exact_statistical_source_reference_present": false
+  },
+  "source_family": {
+    "provider": "SNB",
+    "status": "mapped",
+    "exact_series": "unresolved"
+  },
+  "resolution": {
+    "status": "SOURCE_FAMILY_MAPPED_EXACT_SERIES_UNRESOLVED",
+    "runtime_match_certified": false,
+    "automation_ready": false,
+    "fail_closed": true,
+    "reason": "The historical commit that first introduced the runtime CHF.credit value is identified, but the introduced series contains no verifiable SNB series identifier, cube dimensions, source URL, unit metadata, or other exact statistical-series reference. A numerically nearby SNB series is insufficient evidence and must not be promoted as the runtime source without an exact provenance match."
+  },
+  "evidence_standard": {
+    "repository_origin_is_not_statistical_provenance": true,
+    "nearby_numeric_match_is_insufficient": true,
+    "required_to_resolve": "A verifiable reference tying the runtime series to the exact original SNB statistical series, including sufficient identifiers or dimensions to reproduce the runtime observations."
+  },
+  "operational_impact": {
+    "runtime_changed": false,
+    "operational_policy_changed": false,
+    "main_changed": false,
+    "effective_coverage_ready": 5,
+    "effective_coverage_pending": 21,
+    "effective_coverage_total": 26
+  }
+}
