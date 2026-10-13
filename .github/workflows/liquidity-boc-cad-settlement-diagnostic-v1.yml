@@ -1,0 +1,42 @@
+name: Liquidity BoC CAD Settlement Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boc_cad_settlement_balances_v1.py'
+      - '.github/workflows/liquidity-boc-cad-settlement-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Diagnose BoC settlement-balance mapping and aggregation
+        run: |
+          python validation/diagnose_boc_cad_settlement_balances_v1.py | tee /tmp/cad-settlement-diagnostic.json
+      - name: Enforce diagnostic-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cad-settlement-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1'
+          assert d['status']=='DIAGNOSTIC_ONLY_NO_PROMOTION'
+          assert d['promotion_performed'] is False
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          print('CAD_SETTLEMENT_DIAGNOSTIC_COMPLETE', d['runtime'])
+          for r in d['results'][:10]:
+              print(r.get('series_id'), r.get('best_rule'), r.get('best_score'))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
