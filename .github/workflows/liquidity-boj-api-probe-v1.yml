@@ -1,0 +1,37 @@
+name: Liquidity BOJ API Probe V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-boj-api-probe-v1.yml'
+      - 'validation/probe_boj_liquidity_api.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official BOJ API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/probe_boj_liquidity_api.py | tee /tmp/boj-liquidity-api-probe.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/boj-liquidity-api-probe.json'))
+          assert d['schema']=='GMFQ_BOJ_LIQUIDITY_API_PROBE_V1', d
+          assert len(d['queries'])==2, d
+          for q in d['queries']:
+              assert q['payload'], q
+              print('BOJ_API_PROBE_PASS',q['db'],q['code'],type(q['payload']).__name__)
+          PY
