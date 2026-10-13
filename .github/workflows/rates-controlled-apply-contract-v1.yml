@@ -1,0 +1,192 @@
+name: Rates Controlled Apply Contract V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - '.github/workflows/rates-controlled-apply-contract-v1.yml'
+      - 'validation/run_rates_audit.py'
+      - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/build_rates_audit_metadata.py'
+      - 'validation/update_live_direct_section.py'
+      - 'validation/update_live_derived_sections.py'
+      - 'validation/build_live_manifest_v2.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'validation/fetch_rates_usd_jpy.py'
+      - 'validation/fetch_rates_eur_gbp.py'
+      - 'validation/fetch_rates_cad.py'
+      - 'validation/fetch_rates_aud.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/RATES_AUDIT_METADATA.json'
+      - 'live_data/manifest.v2.json'
+      - 'payload/part-00.txt'
+      - 'payload/part-15.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rates-controlled-apply-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: pip install openpyxl
+      - name: Snapshot tracked runtime
+        run: |
+          sha256sum \
+            live_data/sections/NATIVE_RATES_DATA.json \
+            live_data/sections/RATES_AUDIT_METADATA.json \
+            live_data/manifest.v2.json \
+            payload/part-00.txt \
+            payload/part-15.txt > /tmp/rates-runtime.before.sha256
+      - name: Build official unified Rates candidate
+        run: |
+          mkdir -p /tmp/rates-contract
+          python validation/run_rates_audit.py > /tmp/rates-contract/audit.json
+          python validation/build_rates_candidate_from_audit.py \
+            --audit /tmp/rates-contract/audit.json \
+            --output /tmp/rates-contract/NATIVE_RATES_DATA.json \
+            | tee /tmp/rates-contract/candidate-summary.json
+          git diff --exit-code -- live_data payload
+      - name: Enforce source, temporal and paired-tenor contract
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import date
+          audit=json.load(open('/tmp/rates-contract/audit.json'))
+          cand=json.load(open('/tmp/rates-contract/candidate-summary.json'))
+          current=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          proposed=json.load(open('/tmp/rates-contract/NATIVE_RATES_DATA.json'))
+          assert audit['status']=='PASS',audit
+          assert cand['status'] in {'NO_UPDATES','CANDIDATE_READY'},cand
+          live={'USD','EUR','GBP','JPY','CAD','AUD'}
+          changed=set(cand.get('changed_currencies') or [])
+          assert changed <= live,(changed,live)
+          assert set(proposed)==set(current)=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          for c in changed:
+              s=cand['currencies'][c]
+              assert s['new_date']>s['old_date'],s
+              assert s['new_date']<=date.today().isoformat(),s
+              row=proposed[c]
+              assert row['date']==s['new_date'],(c,row,s)
+              assert float(row['2Y'])==float(s['2Y']) and float(row['10Y'])==float(s['10Y']),(c,row,s)
+              t={x['tenor']:x for x in row.get('tenors',[])}
+              assert t['2Y']['date']==t['10Y']['date']==s['new_date'],(c,t,s)
+              assert float(t['2Y']['value'])==float(s['2Y']) and float(t['10Y']['value'])==float(s['10Y']),(c,t,s)
+              h2=row['history2']; h10=row['history10']
+              assert h2['last_date']==h10['last_date']==s['new_date'],(c,h2.get('last_date'),h10.get('last_date'))
+              assert float(h2['last_value'])==float(s['2Y']) and float(h10['last_value'])==float(s['10Y']),(c,h2,h10)
+          if cand['status']=='NO_UPDATES':
+              assert proposed==current
+          else:
+              actual={c for c in current if current[c]!=proposed[c]}
+              assert actual==changed,(actual,changed)
+          assert audit['currencies']['CHF']['coverage_mode']!='LIVE_FETCH'
+          assert audit['currencies']['NZD']['coverage_mode']!='LIVE_FETCH'
+          print('RATES_SOURCE_TEMPORAL_PAIRED_TENOR_PASS',sorted(changed))
+          PY
+      - name: Controlled apply on checkout when updates exist
+        run: |
+          set -euo pipefail
+          STATUS=$(python -c "import json; print(json.load(open('/tmp/rates-contract/candidate-summary.json'))['status'])")
+          if [ "$STATUS" = "CANDIDATE_READY" ]; then
+            python validation/update_live_direct_section.py \
+              --section NATIVE_RATES_DATA \
+              --replacement /tmp/rates-contract/NATIVE_RATES_DATA.json \
+              --apply > /tmp/rates-contract/direct-apply.json
+          else
+            cmp <(tr -d '\n' < /tmp/rates-contract/NATIVE_RATES_DATA.json) <(tr -d '\n' < live_data/sections/NATIVE_RATES_DATA.json)
+            echo '{"status":"NO_CHANGE","applied":false}' > /tmp/rates-contract/direct-apply.json
+          fi
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(date -u +%Y-%m-%d)" \
+            --output /tmp/rates-contract/RATES_AUDIT_METADATA.json \
+            > /tmp/rates-contract/metadata-build.json
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/rates-contract/RATES_AUDIT_METADATA.json \
+            --apply > /tmp/rates-contract/derived-apply.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/rates-contract/manifest-build.json
+          python validation/check_live_update_contract.py > /tmp/rates-contract/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-contract/runtime-roundtrip.json
+      - name: Enforce exact diff scope and runtime identity
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          cand=json.load(open('/tmp/rates-contract/candidate-summary.json'))
+          proposed=json.load(open('/tmp/rates-contract/NATIVE_RATES_DATA.json'))
+          live=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          assert live==proposed
+          allowed={
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/RATES_AUDIT_METADATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-15.txt'
+          }
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          bad=changed-allowed
+          assert not bad,(sorted(changed),sorted(bad))
+          if cand['status']=='CANDIDATE_READY':
+              assert 'live_data/sections/NATIVE_RATES_DATA.json' in changed,sorted(changed)
+          assert changed, 'controlled convergence should update at least audit metadata/manifest for current audit date'
+          print('RATES_EXACT_DIFF_SCOPE_PASS',sorted(changed))
+          PY
+          sha256sum \
+            live_data/sections/NATIVE_RATES_DATA.json \
+            live_data/sections/RATES_AUDIT_METADATA.json \
+            live_data/manifest.v2.json \
+            payload/part-00.txt \
+            payload/part-15.txt > /tmp/rates-contract/after-first.sha256
+      - name: Prove converged state is idempotent
+        run: |
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(date -u +%Y-%m-%d)" \
+            --output /tmp/rates-contract/RATES_AUDIT_METADATA.second.json \
+            > /tmp/rates-contract/metadata-build-second.json
+          cmp /tmp/rates-contract/RATES_AUDIT_METADATA.json /tmp/rates-contract/RATES_AUDIT_METADATA.second.json
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/rates-contract/RATES_AUDIT_METADATA.second.json \
+            --apply > /tmp/rates-contract/derived-apply-second.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/rates-contract/manifest-build-second.json
+          python validation/check_live_update_contract.py > /tmp/rates-contract/live-contract-second.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-contract/runtime-roundtrip-second.json
+          sha256sum \
+            live_data/sections/NATIVE_RATES_DATA.json \
+            live_data/sections/RATES_AUDIT_METADATA.json \
+            live_data/manifest.v2.json \
+            payload/part-00.txt \
+            payload/part-15.txt > /tmp/rates-contract/after-second.sha256
+          cmp /tmp/rates-contract/after-first.sha256 /tmp/rates-contract/after-second.sha256
+          echo RATES_CONVERGED_STATE_IDEMPOTENT_PASS
+      - name: Restore tracked runtime and verify zero mutation
+        if: always()
+        run: |
+          git checkout -- \
+            live_data/sections/NATIVE_RATES_DATA.json \
+            live_data/sections/RATES_AUDIT_METADATA.json \
+            live_data/manifest.v2.json \
+            payload/part-00.txt \
+            payload/part-15.txt
+          sha256sum -c /tmp/rates-runtime.before.sha256
+          git diff --exit-code -- live_data payload
+      - name: Summary
+        run: |
+          echo 'Rates controlled apply contract: GREEN'
+          echo 'Official live fetch lanes: USD EUR GBP JPY CAD AUD'
+          echo 'NZD: official manual lane retained; runner access blocked'
+          echo 'CHF: WITHHELD; source export blocked'
+          echo '2Y/10Y paired update: enforced'
+          echo 'Controlled diff scope: 5 files maximum'
+          echo 'Converged state idempotence: enforced'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
