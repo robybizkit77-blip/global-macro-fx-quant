@@ -1,6 +1,13 @@
 name: Liquidity BOJ JPY M3 Exact Apply Proof V1
 
 on:
+  pull_request:
+    paths:
+      - 'validation/fetch_boj_jpy_m3_exact_candidate.py'
+      - 'validation/apply_boj_jpy_m3_exact_candidate.py'
+      - 'validation/liquidity/JPY_M3_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - '.github/workflows/liquidity-boj-jpy-m3-exact-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
   push:
     branches:
       - validation-jpy-m3-controlled-apply-clean-v1-2026-10-13
@@ -103,5 +110,3 @@ jobs:
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
           echo 'Bias / score / sizing effect: NONE'
-
-# trigger: validate on clean current-main branch
