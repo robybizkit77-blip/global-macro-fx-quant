@@ -11,6 +11,8 @@ RATES_META = Path('live_data/sections/RATES_AUDIT_METADATA.json')
 MACRO_REGISTRY = Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
 LIQ_PATH = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 LIQ_POLICY = Path('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
+LIQ_POLICY_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
+EUR_EXCESS_COLLECTOR = Path('validation/fetch_ecb_eur_excess_liquidity_candidate.py')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 
 
@@ -36,6 +38,7 @@ def main():
     rates = load(RATES_META)
     macro = load(MACRO_REGISTRY)
     liq_policy = load(LIQ_POLICY)
+    liq_override = load(LIQ_POLICY_OVERRIDE)
     risk_policy = load(RISK_POLICY)
     today = parse_date(reg['as_of'])
 
@@ -47,28 +50,55 @@ def main():
 
     if liq_policy.get('status') != 'PARTIAL_POLICY_FAIL_CLOSED':
         raise SystemExit('Liquidity source policy must remain fail-closed until all subseries are exact-mapped and automation-ready')
-    liq_mapped = liq_policy.get('mapped') or {}
+    if liq_override.get('schema') != 'GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1':
+        raise SystemExit('Liquidity EUR M3 override schema mismatch')
+    supersedes = liq_override.get('supersedes') or {}
+    if supersedes.get('policy') != str(LIQ_POLICY) or supersedes.get('subseries') != 'EUR.money':
+        raise SystemExit('Liquidity EUR M3 override does not target the expected base policy/subseries')
+    effective_m3 = liq_override.get('effective_row') or {}
+    if effective_m3.get('automation_ready') is not False:
+        raise SystemExit('EUR.money must remain fail-closed until revision/vintage handling is explicit')
+    if effective_m3.get('series_key') != 'BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E':
+        raise SystemExit('EUR.money effective series key must be the proven adjusted ECB M3 series')
+    if effective_m3.get('collector_status') != 'WITHHELD_UNTIL_REVISION_AWARE_CONTRACT':
+        raise SystemExit('EUR.money collector must remain withheld pending revision-aware contract')
+
+    base_mapped = liq_policy.get('mapped') or {}
+    liq_mapped = dict(base_mapped)
+    liq_mapped['EUR.money'] = effective_m3
     liq_unresolved = liq_policy.get('unresolved') or []
     liq_cov = liq_policy.get('coverage') or {}
     liq_total = int(liq_cov.get('total_subseries', 0))
     liq_source_mapped = int(liq_cov.get('source_mapped_subseries', -1))
-    liq_ready = int(liq_cov.get('automation_ready_subseries', -1))
-    liq_pending = int(liq_cov.get('mapping_pending_subseries', -1))
     liq_source_unresolved = int(liq_cov.get('unresolved_subseries', -1))
+    liq_ready = sum(1 for row in liq_mapped.values() if row.get('automation_ready') is True)
+    liq_pending = liq_source_mapped - liq_ready
+    coverage_delta = liq_override.get('coverage_delta') or {}
+    expected_ready = int(liq_cov.get('automation_ready_subseries', -1)) + int(coverage_delta.get('automation_ready_subseries', 0))
+    expected_pending = int(liq_cov.get('mapping_pending_subseries', -1)) + int(coverage_delta.get('mapping_pending_subseries', 0))
+
     if liq_total != 26:
         raise SystemExit(f'Liquidity total coverage mismatch: {liq_total}')
     if len(liq_mapped) != liq_source_mapped or len(liq_unresolved) != liq_source_unresolved:
-        raise SystemExit('Liquidity policy declared counts do not match mapped/unresolved objects')
+        raise SystemExit('Liquidity policy declared counts do not match effective mapped/unresolved objects')
     if liq_source_mapped + liq_source_unresolved != liq_total:
         raise SystemExit('Liquidity source-mapped + source-unresolved coverage must equal total')
     if liq_ready + liq_pending != liq_source_mapped:
         raise SystemExit('Liquidity automation-ready + mapping-pending must equal source-mapped')
-    actual_ready = sum(1 for row in liq_mapped.values() if row.get('automation_ready') is True)
-    if actual_ready != liq_ready:
-        raise SystemExit(f'Liquidity automation-ready count mismatch: declared={liq_ready} actual={actual_ready}')
+    if liq_ready != expected_ready or liq_pending != expected_pending:
+        raise SystemExit(
+            f'Liquidity effective coverage mismatch after override: ready={liq_ready}/{expected_ready}, '
+            f'pending={liq_pending}/{expected_pending}'
+        )
+
     cad_m2pp = liq_mapped.get('CAD.money') or {}
     if cad_m2pp.get('candidate_pipeline_ready') is not True:
         raise SystemExit('CAD.money candidate collector must be live-tested before orchestrator marks candidate readiness')
+    eur_excess = liq_mapped.get('EUR.liquidity') or {}
+    if eur_excess.get('series_key') != 'ILM.D.U2.C.EXLIQ.U2.EUR' or eur_excess.get('automation_ready') is not True:
+        raise SystemExit('EUR.liquidity source contract must remain exact and automation-ready')
+    if not EUR_EXCESS_COLLECTOR.exists():
+        raise SystemExit('EUR.liquidity candidate collector is missing')
 
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
@@ -107,6 +137,7 @@ def main():
             'state': 'BLOCKED_SUBSERIES_POLICY_PARTIAL',
             'source_present': LIQ_PATH.exists(),
             'source_policy': str(LIQ_POLICY),
+            'source_policy_override': str(LIQ_POLICY_OVERRIDE),
             'updater': 'PARTIAL_CANDIDATE_PIPELINES_ONLY',
             'inventory': 'audit_liquidity_subseries_v1.py',
             'inventory_ready': True,
@@ -119,8 +150,12 @@ def main():
             'total_subseries': liq_total,
             'cad_m2pp_candidate_pipeline_ready': True,
             'cad_m2pp_collector': cad_m2pp.get('collector'),
+            'eur_excess_candidate_pipeline_ready': True,
+            'eur_excess_collector': str(EUR_EXCESS_COLLECTOR),
+            'eur_m3_effective_status': effective_m3.get('status'),
+            'eur_m3_collector_status': effective_m3.get('collector_status'),
             'publication_eligible': False,
-            'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only exact automation-ready contracts count as verified for the legacy CI gate; exact variant/key, aggregation and controlled collector/apply wiring remain fail-closed',
+            'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only {liq_ready}/{liq_total} are currently automation-ready after fail-closing EUR M3 for revision/vintage handling; controlled collector/apply wiring remains incomplete',
         },
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
