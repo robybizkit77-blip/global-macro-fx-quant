@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import io, json, re, urllib.request, zipfile
+from datetime import datetime, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -52,11 +53,20 @@ def parse_xlsx(data):
 
 def norm(s): return re.sub(r'\s+',' ',str(s)).strip().lower()
 
-def qkey_from_text(s):
-    m=re.search(r'(20\d{2}).*?q([1-4])', str(s), re.I)
-    if not m: return None
-    y=int(m.group(1)); q=int(m.group(2)); month=1+3*(q-1)
-    return f'{y:04d}-{month:02d}-01'
+def qkey_from_value(s):
+    txt=str(s).strip()
+    m=re.search(r'(20\d{2}).*?q([1-4])', txt, re.I)
+    if m:
+        return f'{int(m.group(1)):04d}-Q{int(m.group(2))}'
+    try:
+        serial=float(txt)
+    except ValueError:
+        return None
+    if not (30000 <= serial <= 60000):
+        return None
+    d=datetime(1899,12,30)+timedelta(days=serial)
+    q=(d.month-1)//3+1
+    return f'{d.year:04d}-Q{q}'
 
 def main():
     runtime=json.loads(RUNTIME.read_text())['GBP']['conditions']
@@ -70,13 +80,14 @@ def main():
     candidates=[]
     for sheet,idx,vals in hits:
         rows=book[sheet]
-        # Search nearby preceding rows for quarter labels by column.
         q_by_col={}
+        debug_headers=[]
         for rno,rowvals in rows:
             if rno >= idx: break
             if idx-rno>12: continue
+            debug_headers.append({'row':rno,'values':rowvals})
             for col,val in rowvals.items():
-                q=qkey_from_text(val)
+                q=qkey_from_value(val)
                 if q: q_by_col[col]=q
         obs=[]
         for col,val in sorted(vals.items()):
@@ -89,7 +100,7 @@ def main():
         overlap=sorted(set(rmap)&set(smap))
         exact=sum(abs(rmap[d]-smap[d])<1e-9 for d in overlap)
         diffs=[abs(rmap[d]-smap[d]) for d in overlap]
-        candidates.append({'sheet':sheet,'row':idx,'observations':obs,'overlap':len(overlap),'exact':exact,'exact_ratio':exact/len(overlap) if overlap else 0.0,'mae':sum(diffs)/len(diffs) if diffs else None,'max_abs_diff':max(diffs) if diffs else None,'mismatches':[{'date':d,'runtime':rmap[d],'source':smap[d]} for d in overlap if abs(rmap[d]-smap[d])>=1e-9][:20]})
+        candidates.append({'sheet':sheet,'row':idx,'observations':obs,'header_quarters':q_by_col,'debug_headers':debug_headers,'overlap':len(overlap),'exact':exact,'exact_ratio':exact/len(overlap) if overlap else 0.0,'mae':sum(diffs)/len(diffs) if diffs else None,'max_abs_diff':max(diffs) if diffs else None,'mismatches':[{'date':d,'runtime':rmap[d],'source':smap[d]} for d in overlap if abs(rmap[d]-smap[d])>=1e-9][:20]})
     best=max(candidates,key=lambda x:(x['exact_ratio'],x['overlap']),default=None)
     out={'schema':'GMFQ_LIQUIDITY_GBP_CCS_DIAGNOSTIC_V1','source':{'publisher':'Bank of England','release':'2026 Q3','url':URL,'target_question':'How has the availability of credit provided to the corporate sector overall changed?','response_horizon':'Past three months'},'runtime':{'lane':'GBP.conditions','count':len(runtime['dates']),'last_date':runtime['dates'][-1],'last_value':runtime['values'][-1]},'candidate_count':len(candidates),'candidates':candidates,'best_candidate':best,'runtime_match_certified':bool(best and best['overlap']>=12 and best['exact_ratio']==1.0),'automation_ready':False,'promotion_performed':False,'runtime_mutated':False,'publication_performed':False}
     print(json.dumps(out,indent=2))
