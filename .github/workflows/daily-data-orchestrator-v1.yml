@@ -16,6 +16,7 @@ on:
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/fetch_fed_usd_m2_candidate.py'
       - 'validation/fetch_boe_gbp_liquidity_candidates.py'
+      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/fetch_cboe_vix_candidate.py'
@@ -44,6 +45,7 @@ on:
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/fetch_fed_usd_m2_candidate.py'
       - 'validation/fetch_boe_gbp_liquidity_candidates.py'
+      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
       - 'validation/fetch_cboe_vix_candidate.py'
@@ -120,6 +122,10 @@ jobs:
           assert liq['gbp_reserves_candidate_pipeline_ready'] is True, liq
           assert liq['gbp_credit_candidate_pipeline_ready'] is True, liq
           assert liq['gbp_boe_collector']=='validation/fetch_boe_gbp_liquidity_candidates.py', liq
+          assert liq['jpy_credit_candidate_pipeline_ready'] is True, liq
+          assert liq['jpy_credit_collector']=='validation/fetch_boj_jpy_bank_credit_candidate.py', liq
+          assert liq['jpy_credit_database']=='MD11', liq
+          assert liq['jpy_credit_series_key']=='DLCLAEDBLTTO', liq
           assert liq['eur_m3_effective_status']=='OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING', liq
           assert liq['eur_m3_collector_status']=='WITHHELD_UNTIL_REVISION_AWARE_CONTRACT', liq
           assert d['lanes']['RISK']['guard_proven'] is True
@@ -264,6 +270,26 @@ jobs:
           print('LIQUIDITY_BOE_GBP_CANDIDATE_PASS', {k:v['latest_date'] for k,v in c['results'].items()})
           PY
 
+      - name: Fetch official BOJ JPY bank credit candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_boj_jpy_bank_credit_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.log
+          cp validation/liquidity-jpy-bank-credit-candidate.json /tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-jpy-bank-credit-candidate.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_BANK_CREDIT_CANDIDATE_V1', c
+          assert c['source']['database']=='MD11', c
+          assert c['source']['series_id']=='DLCLAEDBLTTO', c
+          assert c['runtime_match_confirmed'] is True, c
+          assert c['runtime_exact_match_count']==c['runtime_overlap_count'], c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('LIQUIDITY_BOJ_JPY_BANK_CREDIT_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
+          PY
+
       - name: Fetch official ECB G8 Price candidate
         shell: bash
         run: |
@@ -345,7 +371,7 @@ jobs:
         shell: bash
         run: |
           git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
-          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json validation/liquidity-cad-m2pp-candidate.json validation/liquidity-eur-excess-candidate.json validation/liquidity-usd-m2-candidate.json validation/liquidity-gbp-boe-candidates.json
+          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json validation/liquidity-cad-m2pp-candidate.json validation/liquidity-eur-excess-candidate.json validation/liquidity-usd-m2-candidate.json validation/liquidity-gbp-boe-candidates.json validation/liquidity-jpy-bank-credit-candidate.json
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
