@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Candidate-only probe: never mutates runtime or publishes.
 import argparse
 import json
 import urllib.parse
