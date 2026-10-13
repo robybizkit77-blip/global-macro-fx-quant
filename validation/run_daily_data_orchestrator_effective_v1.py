@@ -7,10 +7,11 @@ from pathlib import Path
 BASE = Path('validation/run_daily_data_orchestrator_v1.py')
 AUD_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json')
 EUR_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
+USD_SLOOS_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_USD_SLOOS_CONDITIONS_V1_2026-10-13.json')
 EUR_CREDIT_DIAGNOSTIC = Path('validation/diagnose_ecb_eur_nfc_loans_variants.py')
 USD_SLOOS_DIAGNOSTIC = Path('validation/diagnose_fed_usd_sloos_conditions_v1.py')
 BASE_POLICY = 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
-OVERLAY_VERSION = '2026-10-13-aud-es-ready'
+OVERLAY_VERSION = '2026-10-13-usd-sloos-ready'
 
 
 def load(path):
@@ -59,6 +60,7 @@ def main():
 
     eur_row, eur_delta = validate_override(load(EUR_OVERRIDE), 'EUR.money')
     aud_row, aud_delta = validate_override(load(AUD_OVERRIDE), 'AUD.liquidity')
+    usd_row, usd_delta = validate_override(load(USD_SLOOS_OVERRIDE), 'USD.conditions')
 
     if eur_row.get('automation_ready') is not False:
         raise SystemExit('EUR.money must remain fail-closed')
@@ -76,12 +78,33 @@ def main():
     if not Path(aud_row['applier']).exists():
         raise SystemExit('AUD.liquidity applier file missing')
 
+    if usd_row.get('automation_ready') is not True:
+        raise SystemExit('USD.conditions effective override must be automation-ready')
+    if usd_row.get('series_key') != 'SLOOS/SLOOS/SUBLPDCILS_N.Q':
+        raise SystemExit('USD.conditions effective series mismatch')
+    if usd_row.get('controlled_apply_proven') is not True:
+        raise SystemExit('USD.conditions controlled apply proof missing')
+    if usd_row.get('historical_overlap_count') != 43 or usd_row.get('historical_exact_match_count') != 43:
+        raise SystemExit('USD.conditions full runtime exact-match proof drifted')
+    if usd_row.get('historical_exact_match_ratio') != 1.0:
+        raise SystemExit('USD.conditions runtime exact-match ratio drifted')
+    if usd_row.get('runtime_history_unchanged_by_current_vintage') is not True:
+        raise SystemExit('USD.conditions current-vintage history proof missing')
+    if usd_row.get('collector') != 'validation/fetch_fed_usd_sloos_conditions_candidate.py':
+        raise SystemExit('USD.conditions collector mismatch')
+    if usd_row.get('applier') != 'validation/apply_fed_usd_sloos_conditions_candidate.py':
+        raise SystemExit('USD.conditions applier mismatch')
+    if not Path(usd_row['collector']).exists() or not Path(usd_row['applier']).exists():
+        raise SystemExit('USD.conditions collector/applier file missing')
+
     liq = receipt['lanes']['LIQUIDITY']
-    # Base V1 already applies the EUR fail-closed override. Apply AUD delta only here.
+    # Base V1 already applies the EUR fail-closed override. Apply AUD and USD deltas here.
     if liq.get('automation_ready_subseries') != 10 or liq.get('mapping_pending_subseries') != 16:
         raise SystemExit(f'unexpected base effective liquidity coverage: {liq}')
     if int(aud_delta.get('automation_ready_subseries', 0)) != 1 or int(aud_delta.get('mapping_pending_subseries', 0)) != -1:
         raise SystemExit('AUD liquidity coverage delta must be +1 READY / -1 pending')
+    if int(usd_delta.get('automation_ready_subseries', 0)) != 1 or int(usd_delta.get('mapping_pending_subseries', 0)) != -1:
+        raise SystemExit('USD.conditions coverage delta must be +1 READY / -1 pending')
     if int(eur_delta.get('automation_ready_subseries', 0)) != -1 or int(eur_delta.get('mapping_pending_subseries', 0)) != 1:
         raise SystemExit('EUR M3 coverage delta drifted from fail-closed contract')
 
@@ -99,16 +122,29 @@ def main():
         raise SystemExit('USD.conditions SLOOS diagnostic schema mismatch')
     if usd_sloos.get('runtime', {}).get('lane') != 'USD.conditions':
         raise SystemExit('USD.conditions SLOOS diagnostic target mismatch')
+    if usd_sloos.get('runtime_match_certified') is not True:
+        raise SystemExit('USD.conditions live diagnostic no longer certifies runtime match')
+    if usd_sloos.get('full_exact_match_count') != 1:
+        raise SystemExit('USD.conditions exact mapping is no longer unique')
+    full_matches = usd_sloos.get('full_exact_matches') or []
+    if len(full_matches) != 1 or full_matches[0].get('series_id') != 'SLOOS/SLOOS/SUBLPDCILS_N.Q':
+        raise SystemExit('USD.conditions unique full match drifted')
 
-    liq['verified_subseries'] = 11
-    liq['unresolved_subseries'] = 15
-    liq['automation_ready_subseries'] = 11
-    liq['mapping_pending_subseries'] = 15
-    liq['source_policy_overrides'] = [str(EUR_OVERRIDE), str(AUD_OVERRIDE)]
+    liq['verified_subseries'] = 12
+    liq['unresolved_subseries'] = 14
+    liq['automation_ready_subseries'] = 12
+    liq['mapping_pending_subseries'] = 14
+    liq['source_policy_overrides'] = [str(EUR_OVERRIDE), str(AUD_OVERRIDE), str(USD_SLOOS_OVERRIDE)]
     liq['aud_es_automation_ready'] = True
     liq['aud_es_controlled_apply_proven'] = True
     liq['aud_es_applier'] = aud_row['applier']
     liq['aud_es_apply_proof_run_id'] = aud_row.get('apply_proof_run_id')
+    liq['usd_sloos_automation_ready'] = True
+    liq['usd_sloos_controlled_apply_proven'] = True
+    liq['usd_sloos_series_key'] = usd_row['series_key']
+    liq['usd_sloos_collector'] = usd_row['collector']
+    liq['usd_sloos_applier'] = usd_row['applier']
+    liq['usd_sloos_apply_proof_run_id'] = usd_row.get('apply_proof_run_id')
     liq['eur_credit_revision_diagnostic'] = {
         'runtime_last_date': eur_credit.get('runtime_last_date'),
         'series_id': eur_credit_row.get('series_id'),
@@ -136,22 +172,24 @@ def main():
         'full_exact_match_count': usd_sloos.get('full_exact_match_count'),
         'full_exact_matches': usd_sloos.get('full_exact_matches'),
         'runtime_match_certified': usd_sloos.get('runtime_match_certified'),
-        'automation_ready': False,
-        'promotion_performed': False,
+        'automation_ready': True,
+        'promotion_performed': True,
+        'controlled_apply_proven': True,
+        'apply_proof_run_id': usd_row.get('apply_proof_run_id'),
         'runtime_mutated': False,
         'publication_performed': False,
     }
     liq['reason'] = (
-        '26/26 official source families are mapped; 11/26 are automation-ready after applying '
-        'the EUR M3 fail-closed revision override and the AUD AESAT controlled-apply promotion. '
-        'The remaining 15 stay fail-closed until their exact apply/revision/aggregation contracts are proven.'
+        '26/26 official source families are mapped; 12/26 are automation-ready after applying '
+        'the EUR M3 fail-closed revision override plus the AUD AESAT and USD SLOOS controlled-apply promotions. '
+        'The remaining 14 stay fail-closed until their exact apply/revision/aggregation contracts are proven.'
     )
     receipt['effective_liquidity_overlay'] = {
         'schema': 'GMFQ_DAILY_DATA_ORCHESTRATOR_EFFECTIVE_LIQUIDITY_OVERLAY_V1',
         'version': OVERLAY_VERSION,
         'base_receipt_schema': receipt.get('schema'),
-        'ready': 11,
-        'pending': 15,
+        'ready': 12,
+        'pending': 14,
         'total': 26,
         'runtime_mutated': False,
         'publication_performed': False,
