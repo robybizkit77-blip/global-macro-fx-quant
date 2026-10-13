@@ -28,14 +28,14 @@ SERIES = {
 }
 
 
-def normalize_runtime_date(value):
-    return str(value or '').strip()
-
-
-def normalize_boe_date(text):
+def normalize_date(text):
     raw = str(text or '').strip()
     if not raw:
         return ''
+    try:
+        return datetime.fromisoformat(raw).date().isoformat()
+    except ValueError:
+        pass
     for fmt in ('%d %b %Y', '%d %b %y', '%d/%b/%Y', '%d-%b-%Y'):
         try:
             return datetime.strptime(raw, fmt).date().isoformat()
@@ -84,7 +84,7 @@ def parse_csv(text):
             continue
         if len(row) <= max(idx.values()):
             continue
-        date = normalize_boe_date(row[date_col])
+        date = normalize_date(row[date_col])
         if not date or len(date) < 10:
             continue
         for code in wanted:
@@ -119,7 +119,7 @@ def main():
             raise SystemExit(f'{policy_key} must be exact-mapped before collection')
 
         runtime = liq['GBP'][spec['runtime_key']]
-        runtime_date = normalize_runtime_date(runtime['last_date'])
+        runtime_date = normalize_date(runtime['last_date'])
         runtime_value = float(runtime['last_value'])
         observations = parsed[spec['series_id']]
 
