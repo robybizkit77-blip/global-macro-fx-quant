@@ -1,0 +1,71 @@
+name: Daily Data Orchestrator Effective Liquidity V9
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v9.py'
+      - 'validation/run_daily_data_orchestrator_effective_v8.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_BUSINESS_CREDIT_REVISION_AWARE_V1_2026-10-13.json'
+      - 'validation/fetch_rba_aud_business_credit_revision_aware_candidate.py'
+      - 'validation/apply_rba_aud_business_credit_revision_aware_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v9.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-liquidity-v9-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install workbook parser
+        run: python -m pip install --disable-pip-version-check openpyxl
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build effective V9 receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_v9.py > /tmp/effective-v9.json
+          cat /tmp/effective-v9.json
+      - name: Enforce 21 READY / 5 pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-v9.json')); liq=d['lanes']['LIQUIDITY']; o=d['effective_liquidity_overlay_v9']
+          assert liq['automation_ready_subseries']==21 and liq['mapping_pending_subseries']==5, liq
+          assert liq['verified_subseries']==21 and liq['unresolved_subseries']==5 and liq['total_subseries']==26, liq
+          assert liq['aud_credit_automation_ready'] is True and liq['aud_credit_controlled_apply_proven'] is True, liq
+          assert liq['aud_credit_revision_aware_append_only'] is True and liq['aud_credit_real_append_replay_proven'] is True, liq
+          assert liq['aud_credit_series_key']=='DLCACSFBS' and liq['aud_credit_official_tail']=={'date':'2026-08','value':1536.5}, liq
+          assert o['ready']==21 and o['pending']==5 and o['total']==26 and o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('EFFECTIVE_LIQUIDITY_V9_21_5_PASS')
+          PY
+      - name: Re-prove AUD credit current controlled apply on runtime copy
+        run: |
+          python validation/fetch_rba_aud_business_credit_revision_aware_candidate.py --out /tmp/aud-credit.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.aud-credit.json
+          python validation/apply_rba_aud_business_credit_revision_aware_candidate.py --candidate /tmp/aud-credit.json --runtime /tmp/NATIVE_LIQ_DATA.aud-credit.json --apply > /tmp/aud-credit-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/aud-credit.json')); r=json.load(open('/tmp/aud-credit-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['AUD']['credit']; applied=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-credit.json'))['AUD']['credit']; n=len(original['dates'])
+          assert applied['dates'][:n]==original['dates'] and applied['values'][:n]==original['values'], (applied,original)
+          assert len(c['new_observations'])==1 and c['new_observations'][0]=={'date':'2026-08','value':1536.5}, c
+          assert r['applied'] is True and r['appended_observations']==1 and r['runtime_history_rewritten'] is False, r
+          print('AUD_CREDIT_V9_CONTROLLED_APPLY_REPROOF_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'Effective Liquidity V9 coverage: 21 READY / 5 pending / 26 total'
+          echo 'AUD business credit revision-aware controlled apply: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
