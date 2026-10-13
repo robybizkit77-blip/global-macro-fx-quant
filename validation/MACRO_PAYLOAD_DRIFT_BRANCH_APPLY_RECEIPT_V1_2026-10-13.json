@@ -1,0 +1,31 @@
+{
+  "schema": "GMFQ_MACRO_PAYLOAD_DRIFT_BRANCH_APPLY_RECEIPT_V1",
+  "date": "2026-10-13",
+  "branch": "release-candidate-daily-data-orchestrator-v1-2026-10-12",
+  "apply_commit": "16cb2cc37fe60e14b0e4a1ad870605b5cc5e30a7",
+  "parent_commit": "d5ed8b68ff429773b410ca6c380f22aa9eb9d814",
+  "commit_message": "Repair Macro standalone payload alignment",
+  "author": "github-actions[bot]",
+  "runtime_scope": [
+    "payload/part-00.txt",
+    "payload/part-01.txt",
+    "live_data/manifest.v2.json"
+  ],
+  "runtime_scope_count": 3,
+  "macro_sections": [
+    "MACRO_THERMOMETER_DATA",
+    "MACRO_SERIES"
+  ],
+  "pre_apply_contract": {
+    "repair_contract": "GREEN",
+    "global_manifest_rebuild": "PASS",
+    "idempotent_second_apply": true,
+    "restore_byte_identical": true
+  },
+  "post_apply_observation": {
+    "apply_commit_scope_exact": true,
+    "main_touched": false,
+    "publication_enabled": false,
+    "note": "Pull-request workflows on the bot-authored apply commit were marked action_required with zero jobs; this receipt commit exists only to trigger a fresh post-apply certification suite on the same runtime state."
+  }
+}
