@@ -13,6 +13,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
+      - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
@@ -37,6 +38,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
+      - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
       - 'validation/fetch_cboe_vix_candidate.py'
       - 'validation/fetch_eia_brent_probe.py'
@@ -186,6 +188,24 @@ jobs:
           print('LIQUIDITY_CAD_M2PP_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
           PY
 
+      - name: Fetch official ECB EUR excess-liquidity candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_ecb_eur_excess_liquidity_candidate.py | tee /tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.log
+          cp validation/liquidity-eur-excess-candidate.json /tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-eur-excess-candidate.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_EUR_EXCESS_CANDIDATE_V1', c
+          assert c['source']['series_id']=='ILM.D.U2.C.EXLIQ.U2.EUR', c
+          assert c['runtime_match_confirmed'] is True, c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['publication_performed'] is False
+          assert c['runtime_mutated'] is False
+          print('LIQUIDITY_ECB_EUR_EXCESS_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
+          PY
+
       - name: Fetch official ECB G8 Price candidate
         shell: bash
         run: |
@@ -267,7 +287,7 @@ jobs:
         shell: bash
         run: |
           git checkout -- live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt payload/part-15.txt || true
-          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json validation/liquidity-cad-m2pp-candidate.json
+          rm -f validation/risk-vix-candidate.json validation/risk-brent-probe.json validation/liquidity-cad-m2pp-candidate.json validation/liquidity-eur-excess-candidate.json
           git diff --exit-code -- live_data payload
 
       - name: Upload orchestrator evidence
