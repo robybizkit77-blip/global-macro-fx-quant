@@ -413,13 +413,13 @@ jobs:
               assert m['status']=='PASS', m
               for key in macro:
                   assert rows[key]['occurrences_in_payload']==1, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('ALIGNED\\n')
+              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('ALIGNED\n')
               print('MACRO_RUNTIME_ALREADY_ALIGNED_PASS')
           else:
               assert m['status']=='FAIL', m
               for key in macro:
                   assert rows[key]['occurrences_in_payload']==0, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('DETACHED\\n')
+              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('DETACHED\n')
               print('LEGACY_DETACHED_MACRO_RUNTIME_CONFIRMED')
           PY
 
