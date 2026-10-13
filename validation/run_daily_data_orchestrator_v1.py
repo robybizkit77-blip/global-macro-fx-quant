@@ -2,6 +2,8 @@
 import datetime as dt
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 REGISTRY = Path('validation/FRESHNESS_REGISTRY_V1_2026-10-12.json')
@@ -34,6 +36,35 @@ def price_overlay_as_of():
     if len(m) != 1:
         raise SystemExit(f'expected exactly one ECB Price runtime overlay, got {len(m)}')
     return f'{m[0][0:4]}-{m[0][4:6]}-{m[0][6:8]}'
+
+
+def prove_aud_es_candidate():
+    out = Path('/tmp/gmfq-aud-es-candidate.json')
+    proc = subprocess.run(
+        [sys.executable, str(AUD_ES_COLLECTOR), '--out', str(out)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(f'AUD ES candidate proof failed:\n{proc.stdout}')
+    candidate = load(out)
+    if candidate.get('schema') != 'GMFQ_LIQUIDITY_AUD_ES_BALANCES_CANDIDATE_V1':
+        raise SystemExit('AUD ES candidate schema mismatch')
+    if candidate.get('status') != 'GREEN_SOURCE_CANDIDATE_ONLY':
+        raise SystemExit('AUD ES candidate source proof is not GREEN')
+    source = candidate.get('source') or {}
+    proof = candidate.get('proof') or {}
+    if source.get('series_id') != 'AESAT':
+        raise SystemExit('AUD ES candidate did not prove RBA AESAT')
+    if float(proof.get('exact_match_ratio', 0)) < 0.98:
+        raise SystemExit('AUD ES candidate historical exact-match ratio below 98%')
+    if proof.get('recent_20_exact') is not True or proof.get('runtime_last_matches_official') is not True:
+        raise SystemExit('AUD ES candidate recent/runtime-last exact proof failed')
+    if candidate.get('publication_performed') is not False or candidate.get('runtime_mutated') is not False:
+        raise SystemExit('AUD ES candidate must not publish or mutate runtime')
+    return candidate
 
 
 def main():
@@ -104,6 +135,7 @@ def main():
         raise SystemExit('AUD.liquidity must remain candidate-only until controlled apply is wired')
     if not AUD_ES_COLLECTOR.exists():
         raise SystemExit('AUD.liquidity RBA candidate collector is missing')
+    aud_es_live = prove_aud_es_candidate()
 
     cad_m2pp = liq_mapped.get('CAD.money') or {}
     if cad_m2pp.get('candidate_pipeline_ready') is not True:
@@ -191,6 +223,10 @@ def main():
             'aud_es_candidate_pipeline_ready': True,
             'aud_es_collector': str(AUD_ES_COLLECTOR),
             'aud_es_series_key': aud_es.get('series_key'),
+            'aud_es_live_proof': True,
+            'aud_es_runtime_last_date': (aud_es_live.get('runtime') or {}).get('last_date'),
+            'aud_es_latest_official_date': aud_es_live.get('latest_date'),
+            'aud_es_latest_official_value': aud_es_live.get('latest_value'),
             'cad_m2pp_candidate_pipeline_ready': True,
             'cad_m2pp_collector': cad_m2pp.get('collector'),
             'eur_excess_candidate_pipeline_ready': True,
