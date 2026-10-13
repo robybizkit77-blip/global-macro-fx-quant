@@ -11,6 +11,8 @@ on:
       - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
       - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
       - 'validation/diagnose_ecb_eur_bls_conditions_v1.py'
+      - 'validation/fetch_ecb_eur_bls_conditions_candidate.py'
+      - 'validation/apply_ecb_eur_bls_conditions_candidate.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
   pull_request:
@@ -23,6 +25,8 @@ on:
       - 'validation/fetch_boe_gbp_credit_conditions_candidate.py'
       - 'validation/apply_boe_gbp_credit_conditions_candidate.py'
       - 'validation/diagnose_ecb_eur_bls_conditions_v1.py'
+      - 'validation/fetch_ecb_eur_bls_conditions_candidate.py'
+      - 'validation/apply_ecb_eur_bls_conditions_candidate.py'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v2.yml'
   workflow_dispatch:
@@ -83,8 +87,8 @@ jobs:
           assert c['proof']['overlap_count']==42 and c['proof']['exact_match_count']==42, c
           assert c['proof']['exact_match_ratio']==1.0, c
           assert c['new_observations']==[{'date':'2026-Q3','value':-0.1}], c
-          assert dry['status']=='DRY_RUN_UPDATE_AVAILABLE' and dry['applied'] is False, dry
-          assert r['status']=='APPENDED' and r['appended_observations']==1, r
+          assert dry['status']=='UPDATE_AVAILABLE' and dry['applied'] is False, dry
+          assert r['status']=='UPDATE_AVAILABLE' and r['appended_observations']==1 and r['applied'] is True, r
           n=len(original['dates'])
           assert applied['dates'][:n]==original['dates']
           assert applied['values'][:n]==original['values']
@@ -100,9 +104,41 @@ jobs:
           assert d['schema']=='GMFQ_LIQUIDITY_EUR_BLS_MAPPING_DIAGNOSTIC_V1', d
           assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
           assert d['candidate_series_count'] > 0, d
-          print('EUR_BLS_STATUS', d['status'])
-          print('EUR_BLS_FULL_EXACT_MATCH_COUNT', d['full_exact_match_count'])
-          print('EUR_BLS_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          assert d['full_exact_match_count']==1, d
+          assert d['best_candidate']['series_key']=='BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET', d
+          assert d['best_candidate']['best_transform']['sign']==1.0, d
+          assert d['best_candidate']['best_transform']['overlap']==43, d
+          assert d['best_candidate']['best_transform']['exact']==43, d
+          print('EUR_BLS_UNIQUE_43_43_MAPPING_PASS')
+          PY
+      - name: Prove ECB EUR BLS controlled apply on runtime copy
+        run: |
+          python validation/fetch_ecb_eur_bls_conditions_candidate.py --out /tmp/eur-bls.json
+          python validation/apply_ecb_eur_bls_conditions_candidate.py --candidate /tmp/eur-bls.json > /tmp/eur-bls-dry.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.eur-bls.json
+          python validation/apply_ecb_eur_bls_conditions_candidate.py --candidate /tmp/eur-bls.json --runtime /tmp/NATIVE_LIQ_DATA.eur-bls.json --apply > /tmp/eur-bls-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/eur-bls.json'))
+          dry=json.load(open('/tmp/eur-bls-dry.json'))
+          r=json.load(open('/tmp/eur-bls-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['EUR']['conditions']
+          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-bls.json'))['EUR']['conditions']
+          assert c['source']['series_key']=='BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET', c
+          assert c['proof']['overlap_count']==43 and c['proof']['exact_match_count']==43, c
+          assert c['proof']['exact_match_ratio']==1.0, c
+          assert c['proof']['runtime_history_unchanged_by_current_vintage'] is True, c
+          assert c['proof']['identity_transform'] is True, c
+          assert dry['applied'] is False, dry
+          assert r['runtime_history_rewritten'] is False, r
+          n=len(original['dates'])
+          assert applied['dates'][:n]==original['dates']
+          assert applied['values'][:n]==original['values']
+          if c['new_observations']:
+              assert r['applied'] is True and r['appended_observations']==len(c['new_observations']), r
+          else:
+              assert r['status']=='NO_CHANGE' and r['applied'] is False and r['appended_observations']==0, r
+          print('EUR_BLS_CONTROLLED_APPLY_PROOF_PASS', c['latest_date'], c['latest_value'], c['new_observations'])
           PY
       - name: Verify tracked runtime unchanged
         run: |
@@ -112,6 +148,6 @@ jobs:
         run: |
           echo 'Effective Liquidity V2 coverage: 14 READY / 12 pending / 26 total'
           echo 'GBP conditions BoE CCS controlled apply: GREEN'
-          echo 'ECB EUR BLS diagnostic: READ-ONLY / NO PROMOTION'
+          echo 'ECB EUR BLS mapping + controlled apply: PROOF ONLY / NO PROMOTION YET'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
