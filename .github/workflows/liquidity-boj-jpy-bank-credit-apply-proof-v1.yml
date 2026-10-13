@@ -12,7 +12,7 @@ on:
       - validation-jpy-bank-credit-controlled-apply-clean-v1-2026-10-13
     paths:
       - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
-      - 'validation/apply_boj_jpy-bank-credit-candidate.py'
+      - 'validation/apply_boj_jpy_bank_credit_candidate.py'
       - '.github/workflows/liquidity-boj-jpy-bank-credit-apply-proof-v1.yml'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
   workflow_dispatch:
