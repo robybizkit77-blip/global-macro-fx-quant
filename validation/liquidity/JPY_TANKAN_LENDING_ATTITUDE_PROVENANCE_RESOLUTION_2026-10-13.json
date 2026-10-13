@@ -1,0 +1,43 @@
+{
+  "schema": "GMFQ_LIQUIDITY_JPY_TANKAN_LENDING_ATTITUDE_PROVENANCE_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "status": "UNIQUE_EXACT_OFFICIAL_SERIES_PROVEN_CONTROLLED_APPLY_PENDING",
+  "runtime_slot": "JPY.conditions",
+  "runtime_label": "Tankan — lending attitude",
+  "source": {
+    "publisher": "Bank of Japan",
+    "api": "Time-Series Data Search API",
+    "database": "CO",
+    "series_id": "TK99F0000612GCQ00000",
+    "name": "D.I./Lending Attitude/All Enterprises/All industries/Actual result",
+    "unit": "% points",
+    "frequency": "QUARTERLY",
+    "official_survey_item": "612",
+    "official_survey_item_name": "Lending Attitude of Financial Institutions"
+  },
+  "proof": {
+    "diagnostic": "validation/probe_boj_jpy_tankan_lending_attitude_exact_v1.py",
+    "workflow_run_id": 38399929479,
+    "workflow_job_id": 115304623135,
+    "tested_variant_count": 4,
+    "exact_match_count": 1,
+    "overlap_count": 42,
+    "exact_count": 42,
+    "exact_ratio": 1.0,
+    "mae": 0.0,
+    "max_abs_diff": 0.0,
+    "first_quarter": "2016-Q1",
+    "last_runtime_quarter": "2026-Q2",
+    "runtime_last_value": 13.0,
+    "current_official_last_quarter": "2026-Q3",
+    "current_official_last_value": 13.0,
+    "source_last_update": 20261002
+  },
+  "promotion_eligible": true,
+  "automation_ready": false,
+  "controlled_apply_proven": false,
+  "fail_closed": true,
+  "runtime_mutated": false,
+  "publication_performed": false,
+  "bias_score_sizing_effect": "NONE"
+}
