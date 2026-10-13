@@ -1,0 +1,39 @@
+name: Liquidity BOJ JPY M3 Diagnostic V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boj_jpy_m3_variants_v1.py'
+      - '.github/workflows/liquidity-boj-jpy-m3-diagnostic-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before
+      - name: Diagnose official BOJ MD02 M3 variants
+        run: python validation/diagnose_boj_jpy_m3_variants_v1.py | tee /tmp/jpy-m3-diagnostic.json
+      - name: Enforce read-only contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-m3-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_M3_VARIANT_DIAGNOSTIC_V1'
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          assert d['tested_series_count'] > 0
+          print('JPY_M3_STATUS', d['status'])
+          print('JPY_M3_EXACT_MATCH_COUNT', d['exact_match_count'])
+          print('JPY_M3_BEST', json.dumps(d.get('best_candidate'), ensure_ascii=False))
+          PY
+          sha256sum -c /tmp/runtime.before
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
