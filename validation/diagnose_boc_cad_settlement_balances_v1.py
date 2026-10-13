@@ -91,18 +91,22 @@ def fetch_observations(series_id: str):
         except (TypeError, ValueError):
             continue
         out.append((d, fv))
-    return out
+    return sorted(out)
 
 
-def monthly_rules(obs):
+def group_by_month(obs):
     by = defaultdict(list)
     for d, v in obs:
         by[d[:7]].append((d, v))
+    return {m: sorted(rows) for m, rows in by.items()}
+
+
+def monthly_rules(obs):
+    by = group_by_month(obs)
     out = {}
     for name in ('last', 'first', 'mean', 'median', 'last_wednesday'):
         vals = {}
         for m, rows in by.items():
-            rows = sorted(rows)
             if name == 'last':
                 vals[m] = rows[-1][1]
             elif name == 'first':
@@ -137,10 +141,40 @@ def score_rule(runtime, derived):
     }
 
 
+def mismatch_details(runtime, obs):
+    by = group_by_month(obs)
+    out = []
+    for month in sorted(set(runtime) & set(by)):
+        rows = by[month]
+        last_date, last_value = rows[-1]
+        rv = runtime[month]
+        if abs(rv - last_value) <= 1e-9:
+            continue
+        exact_daily = [{'date': d, 'value': v} for d, v in rows if abs(rv - v) <= 1e-9]
+        nearest_date, nearest_value = min(rows, key=lambda x: abs(rv - x[1]))
+        tail = [{'date': d, 'value': v} for d, v in rows[-5:]]
+        out.append({
+            'month': month,
+            'runtime_value': rv,
+            'official_last_date': last_date,
+            'official_last_value': last_value,
+            'diff_runtime_minus_last': rv - last_value,
+            'exact_daily_matches': exact_daily,
+            'nearest_daily_observation': {
+                'date': nearest_date,
+                'value': nearest_value,
+                'abs_diff': abs(rv - nearest_value),
+            },
+            'last_five_official_observations': tail,
+        })
+    return out
+
+
 def main():
     row, runtime = runtime_series()
     discovered = discover_candidates()
     results = []
+    actual_mismatches = None
     for score, sid, label, meta in discovered:
         try:
             obs = fetch_observations(sid)
@@ -152,6 +186,8 @@ def main():
         rules = monthly_rules(obs)
         rule_scores = {name: score_rule(runtime, vals) for name, vals in rules.items()}
         best_name, best = max(rule_scores.items(), key=lambda kv: (kv[1]['exact_ratio'], kv[1]['overlap'], -(kv[1]['mae'] or 1e99)))
+        if sid == 'ACTUAL':
+            actual_mismatches = mismatch_details(runtime, obs)
         results.append({
             'series_id': sid,
             'label': label,
@@ -179,6 +215,8 @@ def main():
         },
         'candidate_count': len(discovered),
         'results': results[:20],
+        'actual_last_of_month_mismatches': actual_mismatches or [],
+        'actual_last_of_month_mismatch_count': len(actual_mismatches or []),
         'promotion_performed': False,
         'runtime_mutated': False,
         'publication_performed': False,
