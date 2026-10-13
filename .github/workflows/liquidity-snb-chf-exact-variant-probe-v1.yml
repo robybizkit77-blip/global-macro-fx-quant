@@ -1,0 +1,35 @@
+name: Liquidity SNB CHF Exact Variant Probe V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/probe_snb_chf_exact_variants_v1.py'
+      - '.github/workflows/liquidity-snb-chf-exact-variant-probe-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe exact SNB CHF variants and credit dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/probe_snb_chf_exact_variants_v1.py | tee /tmp/snb-chf-exact-variant-probe.json
+      - name: Upload probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquidity-snb-chf-exact-variant-probe-v1-${{ github.run_id }}
+          path: /tmp/snb-chf-exact-variant-probe.json
+          retention-days: 30
