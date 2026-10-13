@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_LIQUIDITY_PROVENANCE_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "subseries": "USD.credit",
+  "label": "Total bank credit",
+  "official_source": {
+    "publisher": "Federal Reserve Board",
+    "release": "H.8 Assets and Liabilities of Commercial Banks in the United States",
+    "series_id": "B1001NCBA",
+    "seasonal_adjustment": "SA",
+    "frequency": "WEEKLY",
+    "transport": "official full-release SDMX/XML ZIP",
+    "url": "https://www.federalreserve.gov/datadownload/Output.aspx?filetype=zip&rel=H8",
+    "transport_status": "STABLE_IN_CI",
+    "official_value_unit": "USD million",
+    "runtime_value_unit": "USD billion",
+    "raw_to_runtime_scale": 0.001
+  },
+  "evidence": {
+    "transport_proof_run_id": 38373907388,
+    "candidate_run_id": 38374376510,
+    "runtime_overlap_count": 300,
+    "current_vintage_exact_match_count": 69,
+    "current_vintage_mismatch_count": 231,
+    "runtime_last_date": "2026-09-09",
+    "runtime_last_value": 19866.6568,
+    "runtime_last_matches_current_vintage": false,
+    "latest_official_date": "2026-09-30",
+    "latest_official_value_runtime_unit": 19883.1863,
+    "new_official_observations_after_runtime": 3,
+    "transport_blocker_resolved": true,
+    "unit_contract_resolved": true,
+    "revision_vintage_blocker_resolved": false,
+    "candidate_collector": "validation/fetch_fed_h8_usd_bank_credit_xml_candidate.py"
+  },
+  "resolution": {
+    "status": "OFFICIAL_SERIES_AND_TRANSPORT_IDENTIFIED_REVISION_VINTAGE_CONTRACT_PENDING",
+    "series_identity_certified": true,
+    "transport_certified": true,
+    "unit_conversion_certified": true,
+    "runtime_current_vintage_match_certified": false,
+    "revision_vintage_contract_certified": false,
+    "candidate_pipeline_ready": false,
+    "automation_ready": false,
+    "fail_closed": true,
+    "publication_eligible": false,
+    "no_historical_rewrite": true,
+    "bias_score_sizing_effect": "NONE"
+  },
+  "effective_coverage": {
+    "automation_ready_subseries": 11,
+    "mapping_pending_subseries": 15,
+    "total_subseries": 26,
+    "coverage_change_from_this_resolution": 0
+  },
+  "runtime_mutated": false,
+  "publication_performed": false
+}
