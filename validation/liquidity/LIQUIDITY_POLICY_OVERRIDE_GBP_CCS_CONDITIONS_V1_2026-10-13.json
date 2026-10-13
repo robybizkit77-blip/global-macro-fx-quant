@@ -1,0 +1,45 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "GBP.conditions"
+  },
+  "effective_row": {
+    "label": "Credit Conditions Survey corporate credit availability",
+    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY",
+    "publisher": "Bank of England",
+    "source_contract": "Credit Conditions Survey / Corporate annex / availability of credit provided to the corporate sector overall / Past three months",
+    "frequency": "QUARTERLY",
+    "automation_ready": true,
+    "series_mapping_status": "UNIQUE_OFFICIAL_ROW_FULL_RUNTIME_MATCH_CONFIRMED",
+    "series_key": "CCS_CORPORATE_AVAILABILITY_OVERALL_PAST_3M",
+    "collector": "validation/fetch_boe_gbp_credit_conditions_candidate.py",
+    "applier": "validation/apply_boe_gbp_credit_conditions_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38392358675,
+    "historical_overlap_count": 42,
+    "historical_exact_match_count": 42,
+    "historical_exact_match_ratio": 1.0,
+    "runtime_history_unchanged_by_current_vintage": true,
+    "identity_transform": true,
+    "runtime_last_date": "2026-Q2",
+    "runtime_last_value": 0.0,
+    "official_last_date": "2026-Q3",
+    "official_last_value": -0.1,
+    "latest_apply_receipt_status": "APPENDED_ON_EPHEMERAL_COPY",
+    "append_contract": "append only strictly contiguous quarterly observations after the exact runtime tail; never rewrite historical observations",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/credit-conditions-survey/2026/ccs-2026-q3-annex.xlsx"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "The official Bank of England 2026 Q3 Credit Conditions Survey annex contains one unique corporate-sector overall credit-availability row. The current vintage reproduces all 42 runtime quarters exactly with zero error and adds one strictly contiguous new observation, 2026-Q3 = -0.1. Collector and append-only applier were proven in CI on an isolated runtime copy; tracked runtime was unchanged and no publication occurred.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
