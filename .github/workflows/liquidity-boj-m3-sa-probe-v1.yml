@@ -1,0 +1,38 @@
+name: Liquidity BOJ M3 SA Probe V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - '.github/workflows/liquidity-boj-m3-sa-probe-v1.yml'
+      - 'validation/probe_boj_m3_sa_variant.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare BOJ M3 seasonal variants to runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/probe_boj_m3_sa_variant.py | tee /tmp/boj-m3-sa-probe.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/boj-m3-sa-probe.json'))
+          assert d['schema']=='GMFQ_BOJ_M3_SA_VARIANT_PROBE_V1', d
+          for code,row in d['candidates'].items():
+              print('BOJ_M3_VARIANT',code,row)
+          PY
+      - name: Ensure probe is non-mutating
+        run: git diff --exit-code -- live_data payload
