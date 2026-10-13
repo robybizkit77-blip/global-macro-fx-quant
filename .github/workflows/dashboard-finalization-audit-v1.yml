@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'validation/audit_dashboard_finalization_v1.py'
+      - 'validation/check_dashboard_finalization_contracts_v2.py'
       - 'live_data/**'
       - 'payload/**'
       - '.github/workflows/dashboard-finalization-audit-v1.yml'
@@ -19,6 +20,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run full dashboard inventory
         run: python3 validation/audit_dashboard_finalization_v1.py --write /tmp/dashboard-finalization-audit.json
+      - name: Certify withheld propagation and 28-cross composite
+        run: python3 validation/check_dashboard_finalization_contracts_v2.py --write /tmp/dashboard-finalization-contract-v2.json
       - name: Verify manifest and runtime roundtrip
         run: |
           python3 validation/check_live_update_contract.py
@@ -37,4 +40,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: dashboard-finalization-audit
-          path: /tmp/dashboard-finalization-audit.json
+          path: |
+            /tmp/dashboard-finalization-audit.json
+            /tmp/dashboard-finalization-contract-v2.json

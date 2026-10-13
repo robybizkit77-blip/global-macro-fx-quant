@@ -14,6 +14,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from check_dashboard_finalization_contracts_v2 import evaluate as evaluate_finalization_v2
+
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE = ROOT / "live_data" / "sections"
@@ -25,6 +27,7 @@ VALID = {
     "PRESENT+NOT VALIDATED",
     "PLANNED/NOT WIRED",
     "WITHHELD/HARD BLOCKER",
+    "WITHHELD/EXPLICIT",
     "OUT OF SCOPE BY DESIGN",
 }
 
@@ -66,6 +69,9 @@ def main() -> int:
     ois = read_json(LIVE / "OIS_DATA.json")
     liq = read_json(LIVE / "NATIVE_LIQ_DATA.json")
     workflow_text = WORKFLOW.read_text(encoding="utf-8")
+    contracts_v2 = evaluate_finalization_v2(ROOT)
+    if not contracts_v2["validator_green"]:
+        failures.extend(f"finalization_v2:{x}" for x in contracts_v2["failures"])
 
     if manifest.get("status") != "PASS":
         failures.append("manifest_v2_not_pass")
@@ -109,11 +115,11 @@ def main() -> int:
             "CB decision/source checks embedded in the canonical runtime and lane receipts",
             "cb-pricing-daily-operational.yml; daily-data-orchestrator-v1.yml",
             "Central-bank panel and CERT53.central_bank_realized_direction", "Realized policy is distinct from forward market pricing."),
-        row("Market pricing / OIS", "PRESENT+NOT VALIDATED",
+        row("Market pricing / OIS", "WITHHELD/EXPLICIT",
             "live_data/sections/OIS_DATA.json; NATIVE_CB_DATA.market_pricing",
             "Source readiness exists, but OIS_DATA.status is PARTIAL_REAL_INGEST",
             "cb-pricing-active-orchestrator.yml; cb-pricing-daily-operational.yml",
-            "OIS panel; pair frames explicitly label non-comparable forward pricing WITHHELD", "Partial currency coverage and secondary/stale quotations prevent a full relative 28-cross signal."),
+            "OIS panel; pair frames explicitly label non-comparable forward pricing WITHHELD", "Explicitly withheld by V2 contract: partial G8 coverage prevents a comparable relative 28-cross signal."),
         row("Bank research", "OUT OF SCOPE BY DESIGN",
             "No bank-research dataset, adapter or UI section in this branch",
             "No contract", "None", "None", "The repository does not claim this as a sourced lane; no proxy is substituted."),
@@ -127,10 +133,10 @@ def main() -> int:
             "validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json",
             "daily-data-orchestrator-v1.yml",
             "Liquidity/credit secondary context", "Exact withheld input: CHF.credit."),
-        row("Financial conditions", "PRESENT+NOT VALIDATED",
+        row("Financial conditions", "WITHHELD/EXPLICIT",
             "Secondary-sector narratives in CERT53 and payload runtime",
             "No standalone cross-country FCI source registry, PIT contract or final-gate lane",
-            "None", "Macro Lab / pair secondary context", "Displayed as context/early warning, not as a certified relative factor."),
+            "dashboard finalization contracts V2", "Macro Lab / pair secondary context", "Explicitly withheld from pair voting: no homogeneous FCI source registry or PIT contract."),
         row("Global risk: VIX", "PRESENT+VALIDATED",
             "D.json.risk.VIX",
             "validation/fetch_cboe_vix_candidate.py",
@@ -140,14 +146,14 @@ def main() -> int:
             "validation/check_risk_brent_hard_blocker_v1.py; RISK_SOURCE_POLICY_V1",
             "risk-brent-hard-blocker-contract-v1.yml; daily-data-orchestrator-v1.yml",
             "Risk panel / marketContext", "Canonical EIA spot does not meet the one-business-day freshness gate; no equivalent proxy is used."),
-        row("Global risk: WTI", "PRESENT+NOT VALIDATED",
+        row("Global risk: WTI", "WITHHELD/EXPLICIT",
             "D.json.risk.WTI",
             "No WTI official-source freshness/PIT contract found",
-            "None", "marketContext and risk UI", "It is visualized, but absent from the risk certification workflow."),
-        row("Global risk: Gold", "PRESENT+NOT VALIDATED",
+            "dashboard finalization contracts V2", "marketContext and risk UI", "Runtime value is context-only; no official source identity and freshness/PIT contract exists."),
+        row("Global risk: Gold", "WITHHELD/EXPLICIT",
             "D.json.risk.Gold",
             "No gold official-source freshness/PIT contract found",
-            "None", "marketContext and risk UI", "It is visualized as context; no validated source lane is wired."),
+            "dashboard finalization contracts V2", "marketContext and risk UI", "Runtime value is context-only; no official source identity and freshness/PIT contract exists."),
         row("Global risk: China proxy / China macro confirmation", "PLANNED/NOT WIRED",
             "D.json.risk['China CLI'] only",
             "No China CLI/PMI source registry, release contract or confirmation rule found",
@@ -160,26 +166,26 @@ def main() -> int:
             "D.json.prices and Price runtime overlay",
             "PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1_2026-10-13.json",
             "price-ecb-controlled-apply-contract-v1.yml; daily-data-orchestrator-v1.yml", "Pair cards and CERT53.price_state", "Controlled apply is proven; automatic publication remains disabled."),
-        row("Event risk", "PRESENT+NOT VALIDATED",
+        row("Event risk", "WITHHELD/EXPLICIT",
             "EVENT_TEMPLATES in payload runtime",
             "Risk/event isolation test proves non-contamination only; no economic-calendar source contract",
-            "None", "Event Risk cards", "Presentation/expectation guide, not a certified live calendar feed."),
-        row("What Changed", "PRESENT+NOT VALIDATED",
+            "dashboard finalization contracts V2", "Event Risk cards", "Template is verified as static UI guidance, explicitly withheld as a live calendar feed."),
+        row("What Changed", "WITHHELD/EXPLICIT",
             "live_data/sections/WHAT_CHANGED.json",
             "Manifest integrity only; no dedicated freshness/content provenance contract",
-            "None", "What Changed ribbon/cards", "Data is delivered to UI but lacks its own finalization lane."),
-        row("Top Themes", "PRESENT+NOT VALIDATED",
+            "dashboard finalization contracts V2", "What Changed ribbon/cards", "Snapshot hash is recorded, but no deterministic builder/current-input lineage exists."),
+        row("Top Themes", "WITHHELD/EXPLICIT",
             "live_data/sections/TOP_THEMES.json",
             "Manifest integrity only; no dedicated source/provenance contract",
-            "None", "Top Themes section", "Narrative is present but not certified as regenerated from current inputs."),
-        row("News Pulse", "PRESENT+NOT VALIDATED",
+            "dashboard finalization contracts V2", "Top Themes section", "Snapshot hash is recorded, but no deterministic builder/current-input lineage exists."),
+        row("News Pulse", "WITHHELD/EXPLICIT",
             "Runtime NEWS/NP arrays in payload",
             "No news-source registry, timestamp contract or live refresh validator",
-            "None", "News Pulse section", "Runtime display is present; it is not a validated live-news pipeline."),
-        row("Pair logic across 28 G8 crosses", "PRESENT+NOT VALIDATED",
+            "dashboard finalization contracts V2", "News Pulse section", "Explicitly withheld: no feed identity, timestamp or refresh receipt."),
+        row("Pair logic across 28 G8 crosses", "PRESENT+VALIDATED",
             "CERT53.json.pairs (28); D.json.pairs/pairStates (28)",
-            "Runtime isolation checks and manifest integrity; no dedicated 28-cross current-input certification lane",
-            "engine-logic-audit.yml", "Pair decision frames and dashboard pair cards", "All 28 are present, but their composite wiring is not covered by the final orchestrator as a separate release gate."),
+            "validation/check_dashboard_finalization_contracts_v2.py; exact G8 universe + withheld propagation",
+            "dashboard-finalization-audit-v1.yml", "Pair decision frames and dashboard pair cards", "Dedicated composite gate verifies all 28 frames and rejects non-certified mechanical votes; publication stays false."),
         row("Rebuild / manifest", "PRESENT+VALIDATED",
             "live_data/manifest.v2.json and 16 payload parts",
             "check_live_update_contract.py; rebuild_live_data_runtime.py --verify-only",
@@ -206,30 +212,32 @@ def main() -> int:
             "ois_status": ois.get("status"),
             "liquidity_statuses": statuses,
             "risk_workflow_scope": ["VIX", "Brent"],
+            "finalization_contract_v2": contracts_v2,
             "runtime_sha256": hashlib.sha256(payload_bytes).hexdigest(),
         },
         "classification_counts": counts,
         "matrix": matrix,
-        "closed_residuals": [
+        "resolved_this_revision": [
+            "OIS, WTI, Gold, Financial Conditions, Event Risk, What Changed, Top Themes and News Pulse have explicit fail-closed status and cannot cast a pair vote.",
+            "28-cross composite contract proves the exact G8 cross universe and withheld propagation.",
+        ],
+        "remaining_blockers": [
             "CHF.liquidity official provenance/mapping",
             "CHF.credit official provenance/mapping",
             "JPY.liquidity official provenance/mapping",
             "Brent timely semantically-equivalent official source or approved gate change",
-            "WTI, Gold and China CLI official source + freshness/PIT contracts",
             "China macro confirmation (separate from CLI) source and rule",
             "Long-end decomposition: real yield, breakeven, term premium and fiscal/supply methodology",
             "Full comparable OIS/market-pricing coverage for the G8 universe",
-            "Dedicated provenance/freshness lanes for Financial Conditions, Event Risk, What Changed, Top Themes and News Pulse",
-            "Dedicated 28-cross composite integration certification after the preceding dependencies are resolved",
             "Explicit release approval before any publication is enabled",
         ],
         "minimum_path_to_green": [
             "Resolve the four existing hard blockers without proxies.",
-            "Either certify WTI/Gold/China from declared official/public sources or label them WITHHELD in the UI and exclude them from finalization scope.",
+            "Keep WTI/Gold/Financial Conditions/Event/What Changed/Top Themes/News Pulse fail-closed unless their separate source contracts are added; they cannot affect the decision lane.",
             "Choose and implement the long-end decomposition methodology; keep null values until it has a source/PIT contract.",
             "Promote OIS only when each active currency has comparable, time-aligned forward data.",
-            "Add provenance/freshness contracts for narrative/event/news sections or explicitly move them outside the release-critical dashboard.",
-            "Run a final 28-cross integration contract, then require a manual release approval; do not auto-publish from this audit.",
+            "Obtain a live calendar/news/narrative lineage only if those UI components are to become release-critical; otherwise retain their explicit withheld status.",
+            "Require a manual release approval; do not auto-publish from this audit.",
         ],
     }
     output = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
