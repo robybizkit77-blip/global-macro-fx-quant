@@ -21,22 +21,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Snapshot tracked runtime hash
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
       - name: Diagnose BoC settlement-balance mapping and aggregation
         run: |
           python validation/diagnose_boc_cad_settlement_balances_v1.py | tee /tmp/cad-settlement-diagnostic.json
-      - name: Enforce diagnostic-only contract
+      - name: Enforce fail-closed diagnostic contract
         run: |
           python - <<'PY'
           import json
           d=json.load(open('/tmp/cad-settlement-diagnostic.json'))
-          assert d['schema']=='GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1'
-          assert d['status']=='DIAGNOSTIC_ONLY_NO_PROMOTION'
-          assert d['promotion_performed'] is False
-          assert d['runtime_mutated'] is False
-          assert d['publication_performed'] is False
-          print('CAD_SETTLEMENT_DIAGNOSTIC_COMPLETE', d['runtime'])
-          for r in d['results'][:10]:
-              print(r.get('series_id'), r.get('best_rule'), r.get('best_score'))
+          assert d['schema']=='GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1', d
+          assert d['status'] in {'EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN','DIAGNOSTIC_ONLY_NO_PROMOTION'}, d
+          s=d['source_contract']
+          assert s['publisher']=='Bank of Canada', s
+          assert s['series_family']=='Lynx settlement balances — Actual', s
+          assert s['documented_monthly_rule']=='last Wednesday of each month', s
+          assert d['promotion_performed'] is False, d
+          assert d['runtime_mutated'] is False, d
+          assert d['publication_performed'] is False, d
+          if d['status']=='EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN':
+              r=d['actual_result']['all_rule_scores']['last_wednesday']
+              assert r['overlap'] >= 12, r
+              assert r['exact_ratio'] >= 0.95, r
+              assert d['promotion_eligible'] is True, d
+          else:
+              assert d['promotion_eligible'] is False, d
+          print('CAD_SETTLEMENT_DIAGNOSTIC_STATUS', d['status'])
+          print('ACTUAL_RESULT', d.get('actual_result'))
           PY
       - name: Verify tracked runtime unchanged
-        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
