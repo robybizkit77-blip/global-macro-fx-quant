@@ -22,8 +22,15 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def assignment_pattern(key: str) -> re.Pattern[str]:
+    # Runtime assignments are legacy JS and are not guaranteed to use
+    # const/let/var. Match the exact identifier followed by '=' while
+    # excluding longer identifiers. This still fails closed if not unique.
+    return re.compile(rf"(?<![A-Za-z0-9_$]){re.escape(key)}(?![A-Za-z0-9_$])\s*=\s*")
+
+
 def find_json_literal(text: str, key: str) -> tuple[int, int]:
-    pattern = re.compile(rf"\b(?:const|let|var)\s+{re.escape(key)}\s*=\s*")
+    pattern = assignment_pattern(key)
     matches = list(pattern.finditer(text))
     if len(matches) != 1:
         raise RuntimeError(f"{key}: expected exactly one assignment in selected payload part, found {len(matches)}")
@@ -61,7 +68,7 @@ def find_json_literal(text: str, key: str) -> tuple[int, int]:
 
 
 def locate_key(parts: list[str], key: str) -> int:
-    pattern = re.compile(rf"\b(?:const|let|var)\s+{re.escape(key)}\s*=")
+    pattern = assignment_pattern(key)
     hits = [i for i, text in enumerate(parts) if pattern.search(text)]
     if len(hits) != 1:
         raise RuntimeError(f"{key}: expected assignment in exactly one payload part, found parts={hits}")
