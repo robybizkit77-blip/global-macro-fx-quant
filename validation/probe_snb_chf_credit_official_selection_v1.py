@@ -8,11 +8,15 @@ from datetime import datetime
 from pathlib import Path
 
 RUNTIME=Path('live_data/sections/NATIVE_LIQ_DATA.json')
-URL='https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?dimSel=D0(AV1,AV2,AV3,AV4,AV10),D1(T0,I,A),D2(T1,H,K),D3(F,B)&fromDate=2025-07&toDate=2026-07'
+D0_CODES=('AV1','AV2','AV3','AV4','AV10')
+BASE='https://data.snb.ch/api/cube/bakredinausbm/data/csv/en'
 
 
-def fetch():
-    req=urllib.request.Request(URL,headers={'User-Agent':'GMFQ-validation/1.0','Accept':'text/csv'})
+def url_for(d0):
+    return f'{BASE}?dimSel=D0({d0}),D1(T0,I,A),D2(T1,H,K),D3(F,B)&fromDate=2025-07&toDate=2026-07'
+
+def fetch(url):
+    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ-validation/1.0','Accept':'text/csv'})
     with urllib.request.urlopen(req,timeout=90) as r:return r.read().decode('utf-8-sig')
 
 def month(v):
@@ -60,10 +64,15 @@ def compare(rt,vals):
     return best[1]
 
 def main():
-    series=parse(fetch()); rt=runtime(); ranked=[]; last=max(rt)
-    for s in series:
-        cmp=compare(rt,s['values'])
-        ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
+    rt=runtime(); ranked=[]; urls=[]; seen=set(); last=max(rt)
+    for d0 in D0_CODES:
+        url=url_for(d0); urls.append(url)
+        for s in parse(fetch(url)):
+            key=tuple(s['dimensions'][k] for k in ('D0','D1','D2','D3'))
+            if key in seen:continue
+            seen.add(key)
+            cmp=compare(rt,s['values'])
+            ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
     ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V1','url':URL,'series_count':len(series),'ranked':ranked[:40]},indent=2,ensure_ascii=False))
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V2','urls':urls,'requested_d0':list(D0_CODES),'series_count':len(ranked),'ranked':ranked[:60]},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
