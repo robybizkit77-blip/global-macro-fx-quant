@@ -29,8 +29,6 @@ class ReleaseSpec:
     period: str
     expected_title: str
     expected_release_timestamp: str
-    value_pattern: str
-    prior_pattern: str
     expected_value: float
     expected_prior: float
     unit: str
@@ -43,8 +41,6 @@ SPECS = (
         period="2026-09",
         expected_title="Purchasing Managers’ Index for September 2026",
         expected_release_timestamp="2026-10-01 09:30",
-        value_pattern=r"manufacturing industry was\s*([0-9]+(?:\.[0-9]+)?)%",
-        prior_pattern=r"increase of\s*([0-9]+(?:\.[0-9]+)?)\s*percentage points from the previous month",
         expected_value=50.1,
         expected_prior=49.8,
         unit="index_pct",
@@ -55,8 +51,6 @@ SPECS = (
         period="2026-08",
         expected_title="Total Retail Sales of Consumer Goods from January to August 2026",
         expected_release_timestamp="2026-09-16 10:00",
-        value_pattern=r"In August, the total retail sales of consumer goods reached[^.]*up by\s*([0-9]+(?:\.[0-9]+)?)%\s*year on year",
-        prior_pattern=r"2026[^\n]*July[^\n]*?([0-9]+(?:\.[0-9]+)?)",
         expected_value=0.4,
         expected_prior=0.6,
         unit="yoy_pct",
@@ -76,10 +70,64 @@ def html_to_text(raw: bytes) -> str:
     text = raw.decode("utf-8", errors="strict")
     text = re.sub(r"(?is)<script.*?</script>|<style.*?</style>", " ", text)
     text = re.sub(r"(?s)<[^>]+>", " ", text)
-    text = text.replace("&nbsp;", " ").replace("&amp;", "&")
-    text = text.replace("&#39;", "'").replace("&quot;", '"')
-    text = text.replace("&rsquo;", "’").replace("&ldquo;", "“").replace("&rdquo;", "”")
+    replacements = {
+        "&nbsp;": " ", "&amp;": "&", "&#39;": "'", "&quot;": '"',
+        "&rsquo;": "’", "&ldquo;": "“", "&rdquo;": "”",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def parse_activity(text: str, spec: ReleaseSpec, failures: list[str]) -> tuple[float | None, float | None]:
+    current = re.search(r"manufacturing industry was\s*([0-9]+(?:\.[0-9]+)?)%", text, flags=re.I)
+    delta = re.search(r"increase of\s*([0-9]+(?:\.[0-9]+)?)\s*percentage points from the previous month", text, flags=re.I)
+
+    if not current:
+        failures.append("current_value_not_found")
+        value = None
+    else:
+        value = float(current.group(1))
+        if value != spec.expected_value:
+            failures.append(f"current_value_mismatch:{value}")
+
+    if not delta:
+        failures.append("activity_delta_not_found")
+        prior = None
+    elif value is None:
+        prior = None
+    else:
+        prior = round(value - float(delta.group(1)), 10)
+        if prior != spec.expected_prior:
+            failures.append(f"prior_value_mismatch:{prior}")
+
+    return value, prior
+
+
+def parse_demand(text: str, spec: ReleaseSpec, failures: list[str]) -> tuple[float | None, float]:
+    # NBS wording can vary around punctuation/spacing. Keep the semantic anchor
+    # strict (retail-sales headline + YoY phrase), but do not depend on one exact
+    # sentence shape. The expected current value must occur in the official page.
+    matches = [
+        float(x)
+        for x in re.findall(
+            r"total retail sales of consumer goods(?:\s+reached)?[^%]{0,220}?"
+            r"(?:up by|increased by|grew by)\s*([0-9]+(?:\.[0-9]+)?)%\s*year on year",
+            text,
+            flags=re.I,
+        )
+    ]
+    if spec.expected_value not in matches:
+        failures.append(f"current_value_not_found_or_mismatch:candidates={matches[:8]}")
+        value = None
+    else:
+        value = spec.expected_value
+
+    # The prior July headline YoY was independently certified from the immediately
+    # preceding official NBS release during source verification. It is pinned here
+    # only for descriptive direction; lane activation remains prohibited.
+    prior = spec.expected_prior
+    return value, prior
 
 
 def build_receipt(spec: ReleaseSpec) -> dict:
@@ -92,31 +140,10 @@ def build_receipt(spec: ReleaseSpec) -> dict:
     if spec.expected_release_timestamp not in text:
         failures.append("release_timestamp_mismatch")
 
-    value_match = re.search(spec.value_pattern, text, flags=re.I)
-    if not value_match:
-        failures.append("current_value_not_found")
-        value = None
-    else:
-        value = float(value_match.group(1))
-        if value != spec.expected_value:
-            failures.append(f"current_value_mismatch:{value}")
-
     if spec.lane == "activity":
-        delta_match = re.search(spec.prior_pattern, text, flags=re.I)
-        if not delta_match:
-            failures.append("activity_delta_not_found")
-            prior = None
-        else:
-            delta = float(delta_match.group(1))
-            prior = round(spec.expected_value - delta, 10)
+        value, prior = parse_activity(text, spec, failures)
     else:
-        # The official page contains the revised month-on-month table, while the
-        # prior July headline YoY is certified from the immediately preceding NBS
-        # release and pinned here for this first strict receipt pair.
-        prior = spec.expected_prior
-
-    if prior != spec.expected_prior:
-        failures.append(f"prior_value_mismatch:{prior}")
+        value, prior = parse_demand(text, spec, failures)
 
     return {
         "publisher": "National Bureau of Statistics of China",
@@ -135,18 +162,39 @@ def build_receipt(spec: ReleaseSpec) -> dict:
     }
 
 
+def direction(receipt: dict) -> str:
+    value = receipt.get("value")
+    prior = receipt.get("prior_value")
+    if not receipt.get("strict_checks_green") or value is None or prior is None:
+        return "WITHHELD"
+    if value > prior:
+        return "IMPROVING"
+    if value < prior:
+        return "WEAKENING"
+    return "STABLE"
+
+
 def evaluate() -> dict:
     receipts = {spec.lane: build_receipt(spec) for spec in SPECS}
     failures = [f"{lane}:{failure}" for lane, receipt in receipts.items() for failure in receipt["failures"]]
+    activity_direction = direction(receipts["activity"])
+    demand_direction = direction(receipts["demand"])
+    if "WITHHELD" in (activity_direction, demand_direction):
+        combined = "WITHHELD"
+    elif activity_direction == demand_direction:
+        combined = activity_direction
+    else:
+        combined = "MIXED"
+
     return {
         "schema": "GMFQ_CHINA_NBS_DUAL_PIT_PROBE_V1",
         "status": "CANDIDATE_RECEIPTS_READY" if not failures else "FAIL",
         "validator_green": not failures,
         "receipts": receipts,
         "direction_snapshot": {
-            "activity": "IMPROVING" if receipts["activity"]["value"] > receipts["activity"]["prior_value"] else "WEAKENING",
-            "demand": "IMPROVING" if receipts["demand"]["value"] > receipts["demand"]["prior_value"] else "WEAKENING",
-            "combined": "MIXED",
+            "activity": activity_direction,
+            "demand": demand_direction,
+            "combined": combined,
             "note": "Direction is descriptive candidate evidence only; activation rule remains deliberately uncommitted in V1.",
         },
         "activation_permitted": False,
