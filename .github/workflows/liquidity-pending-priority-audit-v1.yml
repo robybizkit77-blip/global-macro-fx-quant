@@ -1,0 +1,44 @@
+name: Liquidity Pending Priority Audit V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/audit_liquidity_pending_priority_v1.py'
+      - '.github/workflows/liquidity-pending-priority-audit-v1.yml'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build effective pending priority audit
+        run: python validation/audit_liquidity_pending_priority_v1.py | tee /tmp/pending.json
+      - name: Enforce effective coverage and print ranked pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/pending.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_PENDING_PRIORITY_AUDIT_V1'
+          assert d['effective_ready']==11, d
+          assert d['effective_pending']==15, d
+          assert d['total']==26, d
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          for x in d['pending']:
+              print(x['priority_score'],x['subseries'],x['status'],x['series_mapping_status'],x['runtime_last_date'],x['runtime_last_value'])
+          PY
+      - name: Verify runtime unchanged
+        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
