@@ -36,6 +36,10 @@ def sheet_names(z):
   p=t.lstrip('/') if t.startswith('/') else (t if t.startswith('xl/') else 'xl/'+t.lstrip('./'))
   out[p]=s.attrib.get('name',p)
  return out
+def exact_reserve_label(value):
+ if not isinstance(value,str):return False
+ parts=[' '.join(x.strip().lower().split()) for x in value.replace('\r','\n').split('\n') if x.strip()]
+ return 'reserve balances' in parts
 def reserve_row(body):
  with zipfile.ZipFile(io.BytesIO(body)) as z:
   ss=shared(z); names=sheet_names(z); candidates=[]
@@ -46,15 +50,13 @@ def reserve_row(body):
     for c in row.findall('a:c',NS):
      v=cv(c,ss)
      if v is not None:vals.append((c.attrib.get('r'),v))
-    text=' '.join(str(v) for _,v in vals if isinstance(v,str)).lower()
-    if 'reserve balances' not in text:continue
+    if not any(exact_reserve_label(v) for _,v in vals):continue
     nums=[(ref,float(v)) for ref,v in vals if isinstance(v,(int,float))]
     if nums:candidates.append({'sheet':names.get(p,p),'row':int(row.attrib.get('r','0')),'values':nums,'raw':vals})
-  if not candidates:raise RuntimeError('Reserve balances row not found')
-  # Prefer Final_Figures and the first numeric column (E in observed 2026 workbooks).
+  if not candidates:raise RuntimeError('Exact Reserve balances row not found')
   candidates.sort(key=lambda x:(0 if 'final' in x['sheet'].lower() or '確報' in x['sheet'] else 1,x['row']))
   r=candidates[0]; ref,val=r['values'][0]
-  return {'sheet':r['sheet'],'row':r['row'],'cell':ref,'value':val,'all_numeric':r['values']}
+  return {'sheet':r['sheet'],'row':r['row'],'cell':ref,'value':val,'all_numeric':r['values'],'label_match':'EXACT_RESERVE_BALANCES'}
 def runtime_2026():
  d=json.loads(RUNTIME.read_text(encoding='utf-8'))['JPY']['liquidity']
  return {str(dt)[:7]:float(v) for dt,v in zip(d['dates'],d['values']) if str(dt).startswith('2026-')}
@@ -64,9 +66,9 @@ def main():
   key=f'2026-{m:02d}'; url=BASE.format(month=m)
   try:
    rr=reserve_row(fetch(url)); rv=rt.get(key); diff=None if rv is None else rv-rr['value']; pct=None if rv is None else diff/rr['value']*100
-   rows.append({'month':key,'runtime':rv,'official':rr['value'],'diff':diff,'abs_diff':None if diff is None else abs(diff),'pct_diff':pct,'sheet':rr['sheet'],'row':rr['row'],'cell':rr['cell'],'url':url})
+   rows.append({'month':key,'runtime':rv,'official':rr['value'],'diff':diff,'abs_diff':None if diff is None else abs(diff),'pct_diff':pct,'sheet':rr['sheet'],'row':rr['row'],'cell':rr['cell'],'label_match':rr['label_match'],'url':url})
   except Exception as e:rows.append({'month':key,'error':repr(e),'url':url})
  valid=[r for r in rows if r.get('runtime') is not None and r.get('official') is not None]
- out={'schema':'GMFQ_LIQUIDITY_JPY_RESERVE_XLSX_REVISION_WINDOW_V1','status':'DIAGNOSTIC_ONLY','rows':rows,'overlap':len(valid),'exact':sum(abs(r['diff'])<=1e-9 for r in valid),'mae':sum(r['abs_diff'] for r in valid)/len(valid) if valid else None,'max_abs_diff':max((r['abs_diff'] for r in valid),default=None),'max_abs_pct':max((abs(r['pct_diff']) for r in valid),default=None),'semantic_row_stable':bool(valid and all('reserve' in str(r.get('sheet','')).lower() or r.get('row') for r in valid)),'promotion_eligible':False,'runtime_mutated':False,'publication_performed':False}
+ out={'schema':'GMFQ_LIQUIDITY_JPY_RESERVE_XLSX_REVISION_WINDOW_V1','status':'DIAGNOSTIC_ONLY','rows':rows,'overlap':len(valid),'exact':sum(abs(r['diff'])<=1e-9 for r in valid),'mae':sum(r['abs_diff'] for r in valid)/len(valid) if valid else None,'max_abs_diff':max((r['abs_diff'] for r in valid),default=None),'max_abs_pct':max((abs(r['pct_diff']) for r in valid),default=None),'semantic_row_stable':bool(valid and all(r.get('label_match')=='EXACT_RESERVE_BALANCES' for r in valid)),'promotion_eligible':False,'runtime_mutated':False,'publication_performed':False}
  print(json.dumps(out,indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
