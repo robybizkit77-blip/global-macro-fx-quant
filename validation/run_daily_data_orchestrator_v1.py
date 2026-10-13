@@ -15,6 +15,7 @@ LIQ_POLICY_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M
 EUR_EXCESS_COLLECTOR = Path('validation/fetch_ecb_eur_excess_liquidity_candidate.py')
 USD_M2_COLLECTOR = Path('validation/fetch_fed_usd_m2_candidate.py')
 GBP_BOE_COLLECTOR = Path('validation/fetch_boe_gbp_liquidity_candidates.py')
+JPY_CREDIT_COLLECTOR = Path('validation/fetch_boj_jpy_bank_credit_candidate.py')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 
 
@@ -118,6 +119,16 @@ def main():
     if not GBP_BOE_COLLECTOR.exists():
         raise SystemExit('GBP BoE candidate collector is missing')
 
+    jpy_credit = liq_mapped.get('JPY.credit') or {}
+    if jpy_credit.get('candidate_pipeline_ready') is not True:
+        raise SystemExit('JPY.credit candidate collector must be live-tested before orchestrator marks candidate readiness')
+    if jpy_credit.get('database') != 'MD11' or jpy_credit.get('series_key') != 'DLCLAEDBLTTO':
+        raise SystemExit('JPY.credit must retain exact BOJ MD11 / DLCLAEDBLTTO mapping')
+    if jpy_credit.get('series_mapping_status') != 'EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED':
+        raise SystemExit('JPY.credit runtime/source mapping must remain exact')
+    if not JPY_CREDIT_COLLECTOR.exists():
+        raise SystemExit('JPY.credit BOJ candidate collector is missing')
+
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
     if vix_policy['status'] != 'READY':
@@ -175,6 +186,10 @@ def main():
             'gbp_reserves_candidate_pipeline_ready': True,
             'gbp_credit_candidate_pipeline_ready': True,
             'gbp_boe_collector': str(GBP_BOE_COLLECTOR),
+            'jpy_credit_candidate_pipeline_ready': True,
+            'jpy_credit_collector': str(JPY_CREDIT_COLLECTOR),
+            'jpy_credit_database': jpy_credit.get('database'),
+            'jpy_credit_series_key': jpy_credit.get('series_key'),
             'eur_m3_effective_status': effective_m3.get('status'),
             'eur_m3_collector_status': effective_m3.get('collector_status'),
             'publication_eligible': False,
