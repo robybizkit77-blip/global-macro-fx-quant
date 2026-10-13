@@ -1,0 +1,120 @@
+{
+  "schema": "GMFQ_OIS_G8_SOURCE_AUDIT_V2",
+  "as_of_audit": "2026-10-13",
+  "scope": "G8 central-bank market-pricing only; no proxy, no interpolation, no publication authorization.",
+  "certification_standard": {
+    "observations_required": ["current", "previous_complete_official_session", "source_specific_T_minus_5"],
+    "required_fields": ["source_identity", "instrument", "quotation_unit", "deterministic_3m_6m_12m_mapping", "as_of", "publication_or_settlement_time", "raw_receipt_or_hash", "meeting_path", "change_1d_bp", "change_1w_bp"],
+    "relative_comparability": "All eight currencies must pass the same no-proxy, homogeneous-basis and PIT requirements before the 28-cross OIS layer can vote.",
+    "publication_permitted": false
+  },
+  "currencies": {
+    "AUD": {
+      "status": "ACTIVE",
+      "source_identity": "ASX Futures end-of-day settlement, 30 Day Interbank Cash Rate futures (IB)",
+      "source_url": "https://www.asx.com.au/markets/trade-our-derivatives-market/market-prices",
+      "quotation_unit": "100 minus annualised cash-rate expectation, percent",
+      "tenor_mapping": "Direct deterministic quarterly futures buckets; no interpolation.",
+      "as_of_runtime": "2026-09-30",
+      "historical_availability": "Official daily settlement history used for current, prior session and certified weekly reference.",
+      "pit_freshness": "Validated in runtime; source-specific T-5 reference and change fields present.",
+      "licensing_reproducibility": "Official exchange settlement source; receipt path implemented in existing ASX adapter.",
+      "relative_signal_eligible": true
+    },
+    "CAD": {
+      "status": "ACTIVE",
+      "source_identity": "Montréal Exchange public Market Review, Three-Month CORRA Futures (CRA)",
+      "source_url": "https://www.m-x.ca/en/trading/data/market-review",
+      "quotation_unit": "100 minus compounded CORRA, percent",
+      "tenor_mapping": "Direct Dec-26 / Mar-27 / Sep-27 quarterly buckets; no interpolation.",
+      "as_of_runtime": "2026-09-29",
+      "historical_availability": "Official Market Review IDs 6187, 6191 and 6192 provide certified weekly, T-1 and current observations.",
+      "pit_freshness": "Validated in runtime; changes are computed from same-basis official records.",
+      "licensing_reproducibility": "Public official exchange records; existing MX adapter stores review identifiers.",
+      "relative_signal_eligible": true
+    },
+    "GBP": {
+      "status": "ACTIVE",
+      "source_identity": "Bank of England estimated sterling OIS forward curve based on SONIA",
+      "source_url": "https://www.bankofengland.co.uk/statistics/yield-curves",
+      "quotation_unit": "Annualised continuously compounded instantaneous forward rate, percent",
+      "tenor_mapping": "Exact official 3M, 6M and 12M short-end forward-curve columns; no interpolation.",
+      "as_of_runtime": "2026-09-29",
+      "historical_availability": "Official daily archive workbook provides 22 Sep, 28 Sep and 29 Sep rows.",
+      "pit_freshness": "Validated in runtime; 22 Sep is the homogeneous five-business-day reference.",
+      "licensing_reproducibility": "Public central-bank archive; existing BoE adapter records workbook, sheet and run provenance.",
+      "relative_signal_eligible": true
+    },
+    "JPY": {
+      "status": "ACTIVE",
+      "source_identity": "Tokyo Financial Exchange, Three-month TONA Futures",
+      "source_url": "https://www.tfx.co.jp/eng/markets/interest-rate/",
+      "quotation_unit": "100 minus compounded TONA, percent",
+      "tenor_mapping": "Direct Dec-26 / Mar-27 / Sep-27 quarterly buckets; no interpolation.",
+      "as_of_runtime": "2026-09-29",
+      "historical_availability": "Official TFX observations exist for 24 Sep, 28 Sep and 29 Sep.",
+      "pit_freshness": "Validated in runtime; nearest eligible official session on or before target is used for weekly reference.",
+      "licensing_reproducibility": "Official exchange observations; existing TFX adapter preserves source-specific reference rule.",
+      "relative_signal_eligible": true
+    },
+    "USD": {
+      "status": "WITHHELD",
+      "source_identity": "CME/CBOT, 30-Day Federal Funds Futures (ZQ); CME also lists SOFR products but they are not a substitute without a separately approved mapping.",
+      "source_url": "https://www.cmegroup.com/market-data/daily-settlements.html",
+      "quotation_unit": "100 minus average effective federal funds rate, percent",
+      "tenor_mapping": "Would require frozen same-contract ZQ buckets mapped deterministically to 3M/6M/12M; no mapping is activated.",
+      "as_of_runtime": null,
+      "historical_availability": "Current snapshot and T-1 reconstruction were validated; homogeneous official T-5 settlement receipt remains unavailable to this environment.",
+      "pit_freshness": "FAIL_CLOSED: no reproducible source-defined T-5 receipt/publication timing for all required contracts.",
+      "licensing_reproducibility": "CME states daily settlements and historical data are accessed through DataMine; the required historical settlement access is Datamine-routed/blocked here.",
+      "activation_condition": "Record official same-basis ZQ settlements for current, T-1 and source-specific T-5, with publication timestamp/receipt and immutable hashes; then run double materialization.",
+      "relative_signal_eligible": false
+    },
+    "EUR": {
+      "status": "WITHHELD",
+      "source_identity": "Eurex, Three-Month Euro STR Futures (FST3)",
+      "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
+      "quotation_unit": "100 minus compounded €STR, index points / percent",
+      "tenor_mapping": "Would require frozen FST3 contract buckets for 3M/6M/12M; no mapping is activated.",
+      "as_of_runtime": null,
+      "historical_availability": "The product endpoint documents daily-settlement methodology and displays current/delayed quotes; free daily statistics for target dates do not include contract settlement prices.",
+      "pit_freshness": "FAIL_CLOSED: historical query parameters did not reproduce target-date settlement snapshots or publication times.",
+      "licensing_reproducibility": "An authorized Eurex settlement-history entitlement/export is required for exact historical EOD records.",
+      "activation_condition": "Obtain entitled or public official FST3 EOD settlement records for current, T-1 and source-specific T-5 with contract identifiers, timestamps and hashes; then run double materialization.",
+      "relative_signal_eligible": false
+    },
+    "CHF": {
+      "status": "WITHHELD",
+      "source_identity": "ICE Futures Europe, Three Month SARON Index Futures (SA3)",
+      "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/expiry",
+      "quotation_unit": "100 minus compounded SARON, percent",
+      "tenor_mapping": "Would require frozen SA3 quarterly buckets for 3M/6M/12M; no mapping is activated.",
+      "as_of_runtime": null,
+      "historical_availability": "Public ICE expiry page provides contract metadata and final settlement dates, not daily historical EOD settlement observations.",
+      "pit_freshness": "FAIL_CLOSED: no reproducible public current/T-1/T-5 SA3 settlement receipts on one basis.",
+      "licensing_reproducibility": "ICE historical EOD listed-market data is distributed via ICE data/report services; a licensed export is required.",
+      "activation_condition": "Obtain licensed official SA3 EOD settlements for required buckets on current, T-1 and source-specific T-5, with receipt/timestamp/hash; then run double materialization.",
+      "relative_signal_eligible": false
+    },
+    "NZD": {
+      "status": "WITHHELD",
+      "source_identity": "Reserve Bank of New Zealand / NZD OIS market, OCR expectations",
+      "source_url": "https://www.rbnz.govt.nz/monetary-policy/monetary-policy-statement/monetary-policy-statements/2026/feb-182/monetary-policy-statement-february-2026/web-version",
+      "quotation_unit": "OCR-linked OIS fixed rate, percent; no public curve observation available for use.",
+      "tenor_mapping": "No official/licensed homogeneous NZD OIS curve was supplied; 90-day bank-bill futures and standard bank-bill swaps are explicitly excluded.",
+      "as_of_runtime": null,
+      "historical_availability": "RBNZ publications describe OIS expectations and cite Bloomberg for displayed market expectations; RBNZ public B2 does not publish a reusable OIS curve.",
+      "pit_freshness": "FAIL_CLOSED: there are no current/T-1/T-5 official or directly licensed OIS receipts in the repository.",
+      "licensing_reproducibility": "Requires an approved directly licensed NZD OIS provider with redistribution/storage rights and immutable daily receipts.",
+      "activation_condition": "Onboard licensed NZD OIS curve with contract-level rights, current/T-1/source-specific-T-5 data, timestamps/hashes and deterministic 3M/6M/12M mapping; then run double materialization.",
+      "relative_signal_eligible": false
+    }
+  },
+  "result": {
+    "active": ["GBP", "JPY", "CAD", "AUD"],
+    "withheld": ["USD", "EUR", "CHF", "NZD"],
+    "g8_fully_comparable": false,
+    "relative_pair_vote": false,
+    "publication_permitted": false
+  }
+}

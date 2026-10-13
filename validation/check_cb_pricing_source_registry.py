@@ -7,6 +7,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / 'validation' / 'cb_pricing' / 'CB_PRICING_SOURCE_STATUS_2026-10-08.json'
+AUDIT = ROOT / 'validation' / 'cb_pricing' / 'OIS_G8_SOURCE_AUDIT_V2_2026-10-13.json'
 OIS = ROOT / 'live_data' / 'sections' / 'OIS_DATA.json'
 G8 = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
 SOURCE_ALIASES = {
@@ -26,11 +27,14 @@ def main() -> int:
         failures.append('missing canonical CB pricing source registry')
     if not OIS.exists():
         failures.append('missing OIS_DATA.json')
+    if not AUDIT.exists():
+        failures.append('missing OIS G8 source audit')
     if failures:
         print(json.dumps({'status':'FAIL','failures':failures},indent=2)); return 2
 
     registry=json.loads(REGISTRY.read_text())
     ois=json.loads(OIS.read_text())
+    audit=json.loads(AUDIT.read_text())
     reg_ccy=registry.get('currencies') or {}
     live_ccy=ois.get('currencies') or {}
 
@@ -38,6 +42,9 @@ def main() -> int:
         failures.append(f'registry currency set mismatch: {sorted(reg_ccy)}')
     if sorted(live_ccy) != sorted(G8):
         failures.append(f'OIS currency set mismatch: {sorted(live_ccy)}')
+    audit_ccy=audit.get('currencies') or {}
+    if sorted(audit_ccy) != sorted(G8):
+        failures.append(f'audit currency set mismatch: {sorted(audit_ccy)}')
 
     rows={}
     for ccy in G8:
@@ -53,6 +60,16 @@ def main() -> int:
             continue
         if actual != expected:
             failures.append(f'{ccy}: runtime status {actual!r} != registry {expected!r}')
+        audited=audit_ccy.get(ccy) or {}
+        if audited.get('status') != expected:
+            failures.append(f'{ccy}: audit status {audited.get("status")!r} != registry {expected!r}')
+        for field in ('source_identity','quotation_unit','tenor_mapping','historical_availability','pit_freshness','licensing_reproducibility','relative_signal_eligible'):
+            if field not in audited:
+                failures.append(f'{ccy}: audit missing {field}')
+        if expected == 'ACTIVE' and audited.get('relative_signal_eligible') is not True:
+            failures.append(f'{ccy}: ACTIVE audit must be relatively eligible')
+        if expected == 'WITHHELD' and audited.get('relative_signal_eligible') is not False:
+            failures.append(f'{ccy}: WITHHELD audit must not be relatively eligible')
 
         horizons=live.get('horizons') or {}
         validation=live.get('validation') or {}
@@ -102,6 +119,11 @@ def main() -> int:
         failures.append('registry active membership mismatch')
     if len(declared_withheld) != len(set(declared_withheld)) or set(declared_withheld) != set(withheld):
         failures.append('registry withheld membership mismatch')
+    result=audit.get('result') or {}
+    if result.get('active') != active or result.get('withheld') != withheld:
+        failures.append('audit result membership mismatch')
+    if result.get('g8_fully_comparable') is not False or result.get('relative_pair_vote') is not False:
+        failures.append('partial G8 audit must remain non-comparable and non-voting')
 
     status='PASS' if not failures else 'FAIL'
     details['rows']=rows
