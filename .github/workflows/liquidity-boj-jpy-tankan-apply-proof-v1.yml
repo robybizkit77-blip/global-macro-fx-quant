@@ -1,0 +1,115 @@
+name: Liquidity BOJ JPY Tankan Apply Proof V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/fetch_boj_jpy_tankan_lending_attitude_candidate.py'
+      - 'validation/apply_boj_jpy_tankan_lending_attitude_candidate.py'
+      - 'validation/liquidity/JPY_TANKAN_LENDING_ATTITUDE_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - '.github/workflows/liquidity-boj-jpy-tankan-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-controlled-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime hash
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Verify persisted exact provenance
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('validation/liquidity/JPY_TANKAN_LENDING_ATTITUDE_PROVENANCE_RESOLUTION_2026-10-13.json').read_text())
+          assert p['schema']=='GMFQ_LIQUIDITY_JPY_TANKAN_LENDING_ATTITUDE_PROVENANCE_RESOLUTION_V1'
+          assert p['status']=='UNIQUE_EXACT_OFFICIAL_SERIES_PROVEN_CONTROLLED_APPLY_PENDING'
+          assert p['runtime_slot']=='JPY.conditions'
+          assert p['source']['publisher']=='Bank of Japan'
+          assert p['source']['database']=='CO'
+          assert p['source']['series_id']=='TK99F0000612GCQ00000'
+          assert p['source']['frequency']=='QUARTERLY'
+          assert p['source']['official_survey_item']=='612'
+          assert p['proof']['workflow_run_id']==38399929479
+          assert p['proof']['workflow_job_id']==115304623135
+          assert p['proof']['tested_variant_count']==4
+          assert p['proof']['exact_match_count']==1
+          assert p['proof']['overlap_count']==42
+          assert p['proof']['exact_count']==42
+          assert p['proof']['exact_ratio']==1.0
+          assert p['proof']['mae']==0.0 and p['proof']['max_abs_diff']==0.0
+          assert p['proof']['current_official_last_quarter']=='2026-Q3'
+          assert p['proof']['current_official_last_value']==13.0
+          assert p['promotion_eligible'] is True
+          assert p['automation_ready'] is False
+          assert p['controlled_apply_proven'] is False
+          assert p['runtime_mutated'] is False and p['publication_performed'] is False
+          print('JPY_TANKAN_PROVENANCE_PASS')
+          PY
+      - name: Collect exact official BOJ Tankan candidate
+        run: python validation/fetch_boj_jpy_tankan_lending_attitude_candidate.py --out /tmp/jpy-tankan-candidate.json
+      - name: Dry-run controlled apply
+        run: |
+          python validation/apply_boj_jpy_tankan_lending_attitude_candidate.py --candidate /tmp/jpy-tankan-candidate.json > /tmp/jpy-tankan-dry-run.json
+          cat /tmp/jpy-tankan-dry-run.json
+      - name: Ephemeral apply on runtime copy
+        run: |
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.json
+          python validation/apply_boj_jpy_tankan_lending_attitude_candidate.py --candidate /tmp/jpy-tankan-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.json --apply > /tmp/jpy-tankan-apply.json
+          cat /tmp/jpy-tankan-apply.json
+      - name: Verify exact provenance and quarterly append-only semantics
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/jpy-tankan-candidate.json'))
+          d=json.load(open('/tmp/jpy-tankan-dry-run.json'))
+          r=json.load(open('/tmp/jpy-tankan-apply.json'))
+          o=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['JPY']['conditions']
+          a=json.load(open('/tmp/NATIVE_LIQ_DATA.json'))['JPY']['conditions']
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_TANKAN_LENDING_ATTITUDE_CANDIDATE_V1'
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY'
+          assert c['runtime_match_confirmed'] is True
+          assert c['runtime_history_unchanged_by_current_vintage'] is True
+          assert c['runtime_overlap_count']==42
+          assert c['runtime_exact_match_count']==42
+          assert c['runtime_exact_match_ratio']==1.0
+          assert c['source']['database']=='CO'
+          assert c['source']['series_id']=='TK99F0000612GCQ00000'
+          assert c['source']['name']=='D.I./Lending Attitude/All Enterprises/All industries/Actual result'
+          assert c['source']['unit']=='% points' and c['source']['frequency']=='QUARTERLY'
+          assert c['latest_date']=='2026-Q3' and c['latest_value']==13.0
+          assert c['new_observations']==[{'date':'2026-Q3','value':13.0}]
+          assert c['candidate_update_available'] is True
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_TANKAN_LENDING_ATTITUDE_APPLY_RECEIPT_V1'
+          assert d['status']=='UPDATE_AVAILABLE' and d['applied'] is False
+          assert d['appended_observations']==1
+          assert r['status']=='UPDATE_AVAILABLE' and r['applied'] is True
+          assert r['appended_observations']==1
+          assert r['after_last_date']=='2026-Q3' and r['after_last_value']==13.0
+          n=len(o['dates'])
+          assert n==42
+          assert a['dates'][:n]==o['dates'] and a['values'][:n]==o['values']
+          assert len(a['dates'])==len(a['values'])==43
+          assert a['dates'][-1]=='2026-Q3' and float(a['values'][-1])==13.0
+          assert a['last_date']=='2026-Q3' and float(a['last_value'])==13.0
+          print('JPY_TANKAN_CONTROLLED_APPLY_PASS')
+          PY
+      - name: Verify tracked runtime was not mutated
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY Tankan unique BOJ provenance + quarterly append-only controlled apply proof: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
+          echo 'Bias / score / sizing effect: NONE'
