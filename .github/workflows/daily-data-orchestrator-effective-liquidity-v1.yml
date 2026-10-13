@@ -9,6 +9,7 @@ on:
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_USD_SLOOS_CONDITIONS_V1_2026-10-13.json'
       - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
@@ -31,6 +32,7 @@ on:
       - 'validation/run_daily_data_orchestrator_v1.py'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_USD_SLOOS_CONDITIONS_V1_2026-10-13.json'
       - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
       - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
@@ -62,25 +64,31 @@ jobs:
         run: |
           python validation/run_daily_data_orchestrator_effective_v1.py > /tmp/effective-receipt.json
           cat /tmp/effective-receipt.json
-      - name: Enforce 11 READY / 15 pending
+      - name: Enforce 12 READY / 14 pending
         run: |
           python - <<'PY'
           import json
           d=json.load(open('/tmp/effective-receipt.json'))
           liq=d['lanes']['LIQUIDITY']
-          assert liq['automation_ready_subseries']==11, liq
-          assert liq['mapping_pending_subseries']==15, liq
-          assert liq['verified_subseries']==11, liq
-          assert liq['unresolved_subseries']==15, liq
+          assert liq['automation_ready_subseries']==12, liq
+          assert liq['mapping_pending_subseries']==14, liq
+          assert liq['verified_subseries']==12, liq
+          assert liq['unresolved_subseries']==14, liq
           assert liq['total_subseries']==26, liq
           assert liq['aud_es_automation_ready'] is True, liq
           assert liq['aud_es_controlled_apply_proven'] is True, liq
           assert liq['aud_es_applier']=='validation/apply_rba_aud_es_balances_candidate.py', liq
-          assert d['effective_liquidity_overlay']['ready']==11
-          assert d['effective_liquidity_overlay']['pending']==15
+          assert liq['usd_sloos_automation_ready'] is True, liq
+          assert liq['usd_sloos_controlled_apply_proven'] is True, liq
+          assert liq['usd_sloos_series_key']=='SLOOS/SLOOS/SUBLPDCILS_N.Q', liq
+          assert liq['usd_sloos_collector']=='validation/fetch_fed_usd_sloos_conditions_candidate.py', liq
+          assert liq['usd_sloos_applier']=='validation/apply_fed_usd_sloos_conditions_candidate.py', liq
+          assert liq['usd_sloos_apply_proof_run_id']==38387613455, liq
+          assert d['effective_liquidity_overlay']['ready']==12
+          assert d['effective_liquidity_overlay']['pending']==14
           assert d['effective_liquidity_overlay']['runtime_mutated'] is False
           assert d['effective_liquidity_overlay']['publication_performed'] is False
-          print('EFFECTIVE_LIQUIDITY_11_15_PASS')
+          print('EFFECTIVE_LIQUIDITY_12_14_PASS')
           PY
       - name: Re-prove AUD controlled apply on runtime copy
         run: |
@@ -250,10 +258,8 @@ jobs:
           op=d['operational_impact']
           assert op['runtime_changed'] is False, op
           assert op['publication_performed'] is False, op
-          assert op['effective_coverage_ready']==11, op
-          assert op['effective_coverage_pending']==15, op
           assert op['effective_coverage_total']==26, op
-          print('CHF_CREDIT_PERSISTED_BLOCKER_PASS', b)
+          print('CHF_CREDIT_PERSISTED_BLOCKER_PASS', b, 'historical_coverage=', op.get('effective_coverage_ready'), op.get('effective_coverage_pending'))
           PY
           sha256sum -c /tmp/chf-credit-runtime.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
@@ -279,7 +285,7 @@ jobs:
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
       - name: Summary
         run: |
-          echo 'Effective Liquidity coverage: 11 READY / 15 pending / 26 total'
+          echo 'Effective Liquidity coverage: 12 READY / 14 pending / 26 total'
           echo 'GBP BoE controlled apply proof: executed on isolated runtime copy'
           echo 'USD SLOOS controlled apply proof: executed on isolated runtime copy'
           echo 'JPY reserve provenance blocker: persisted fail-closed evidence'
