@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  macro-payload-drift-branch-apply:
+  converge-macro-orchestrator-contract:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -24,37 +24,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Assert branch-only execution
+      - name: Assert branch-only execution and aligned Macro runtime
+        shell: bash
         run: |
           set -euo pipefail
           test "${GITHUB_REF_NAME}" = "release-candidate-daily-data-orchestrator-v1-2026-10-12"
           test "$(git branch --show-current)" = "release-candidate-daily-data-orchestrator-v1-2026-10-12"
-          echo 'BRANCH_SCOPE_PASS'
-
-      - name: Apply proven Macro payload repair
-        run: |
-          set -euo pipefail
-          python validation/repair_macro_standalone_payload_drift.py --apply \
-            | tee /tmp/macro-branch-apply.json
-          python - <<'PY'
+          python3 validation/build_live_manifest_v2.py --write /tmp/manifest.current.json >/tmp/manifest.current.log
+          python3 - <<'PY'
           import json
-          r=json.load(open('/tmp/macro-branch-apply.json'))
-          assert r['status']=='PASS' and r['apply'] is True,r
-          assert r['changed_payload_parts']==[0,1],r
-          assert {x['key'] for x in r['targets']}=={'MACRO_THERMOMETER_DATA','MACRO_SERIES'},r
-          assert all(x['changed'] is True for x in r['targets']),r
-          assert r['publication'] is False,r
-          print('MACRO_BRANCH_APPLY_PASS')
-          PY
-
-      - name: Rebuild tracked manifest V2
-        run: |
-          set -euo pipefail
-          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json \
-            > /tmp/manifest.v2.branch-apply.stdout.json
-          python - <<'PY'
-          import json
-          m=json.load(open('live_data/manifest.v2.json'))
+          m=json.load(open('/tmp/manifest.current.json'))
           assert m['status']=='PASS',m.get('failures')
           rows={x['key']:x for x in m['sections']}
           for key,part in [('MACRO_THERMOMETER_DATA',0),('MACRO_SERIES',1)]:
@@ -62,68 +41,107 @@ jobs:
               assert r['mode']=='DIRECT_SINGLE_PART',r
               assert r['occurrences_in_payload']==1,r
               assert r['part']==part,r
-              assert r['direct_update_allowed'] is True,r
-          print('TRACKED_MANIFEST_V2_REBUILD_PASS')
+          print('MACRO_RUNTIME_ALIGNED_PASS')
           PY
+          git diff --exit-code -- live_data payload
 
-      - name: Enforce exact three-file runtime diff
+      - name: Patch stale V1 Macro detached-state assumption
+        shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
+          python3 - <<'PY'
+          from pathlib import Path
+          path=Path('.github/workflows/daily-data-orchestrator-v1.yml')
+          text=path.read_text(encoding='utf-8')
+          start='      - name: Prove current Macro sections are detached from runtime\n'
+          end='      - name: Restore tracked runtime after proof\n'
+          assert text.count(start)==1, text.count(start)
+          assert text.count(end)==1, text.count(end)
+          a=text.index(start)
+          b=text.index(end,a)
+          replacement=r'''      - name: Validate current Macro alignment state
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python3 validation/build_live_manifest_v2.py --write /tmp/daily-orchestrator-v1/manifest.before.json > /tmp/daily-orchestrator-v1/manifest-before.log 2>&1
+          rc=$?
+          set -e
+          cat /tmp/daily-orchestrator-v1/manifest-before.log
+          python3 - "$rc" <<'PY'
+          import json,sys
+          rc=int(sys.argv[1])
+          m=json.load(open('/tmp/daily-orchestrator-v1/manifest.before.json'))
+          rows={x['key']:x for x in m['sections']}
+          macro=('MACRO_THERMOMETER_DATA','MACRO_SERIES')
+          if rc == 0:
+              assert m['status']=='PASS', m
+              for key in macro:
+                  assert rows[key]['occurrences_in_payload']==1, (key, rows[key])
+              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('ALIGNED\n')
+              print('MACRO_RUNTIME_ALREADY_ALIGNED_PASS')
+          else:
+              assert m['status']=='FAIL', m
+              for key in macro:
+                  assert rows[key]['occurrences_in_payload']==0, (key, rows[key])
+              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('DETACHED\n')
+              print('LEGACY_DETACHED_MACRO_RUNTIME_CONFIRMED')
+          PY
+
+      - name: Ephemerally repair Macro only when detached
+        shell: bash
+        run: |
+          set -euo pipefail
+          state="$(cat /tmp/daily-orchestrator-v1/macro-runtime-state)"
+          if [ "$state" = "DETACHED" ]; then
+            python3 validation/repair_detached_direct_section.py --section MACRO_THERMOMETER_DATA --apply | tee /tmp/daily-orchestrator-v1/repair-macro-thermometer.json
+            python3 validation/repair_detached_direct_section.py --section MACRO_SERIES --apply | tee /tmp/daily-orchestrator-v1/repair-macro-series.json
+            python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/daily-orchestrator-v1/manifest-after.log
+          else
+            echo 'MACRO_ALREADY_ALIGNED_NO_REPAIR_REQUIRED'
+          fi
+
+      - name: Validate Macro runtime and exact diff scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/check_live_update_contract.py | tee /tmp/daily-orchestrator-v1/live-contract-after.log
+          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/daily-orchestrator-v1/runtime-roundtrip-after.json
+          python3 - <<'PY'
           import subprocess
-          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          expected={
-            'payload/part-00.txt',
-            'payload/part-01.txt',
-            'live_data/manifest.v2.json',
-          }
-          assert changed==expected,(sorted(changed),sorted(expected),sorted(changed-expected),sorted(expected-changed))
-          print('EXACT_THREE_FILE_DIFF_PASS',sorted(changed))
+          state=open('/tmp/daily-orchestrator-v1/macro-runtime-state').read().strip()
+          changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
+          print('EPHEMERAL_CHANGED_FILES', changed, 'MACRO_STATE', state)
+          expected={'payload/part-15.txt'} if state=='ALIGNED' else {'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
+          if set(changed) != expected:
+              raise SystemExit(f'unexpected ephemeral diff scope: {changed}; expected={sorted(expected)}')
           PY
 
-      - name: Prove converged state byte-idempotent
+'''
+          path.write_text(text[:a]+replacement+text[b:],encoding='utf-8')
+          PY
+
+      - name: Enforce exact one-file patch scope
+        shell: bash
         run: |
           set -euo pipefail
-          sha256sum payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json > /tmp/first.sha256
-          python validation/repair_macro_standalone_payload_drift.py --apply \
-            | tee /tmp/macro-branch-second.json
-          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json \
-            > /tmp/manifest.v2.branch-second.stdout.json
-          sha256sum payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json > /tmp/second.sha256
-          cmp /tmp/first.sha256 /tmp/second.sha256
-          python - <<'PY'
-          import json
-          r=json.load(open('/tmp/macro-branch-second.json'))
-          assert r['status']=='PASS',r
-          assert r['changed_payload_parts']==[],r
-          assert all(x['changed'] is False for x in r['targets']),r
-          m=json.load(open('live_data/manifest.v2.json'))
-          assert m['status']=='PASS',m.get('failures')
-          print('BRANCH_CONVERGENCE_IDEMPOTENT_PASS')
-          PY
+          test "$(git diff --name-only)" = ".github/workflows/daily-data-orchestrator-v1.yml"
+          git diff --check
 
-      - name: Commit only repaired runtime receipt
+      - name: Commit V1 aligned-state contract repair
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json
-          test -n "$(git diff --cached --name-only)"
-          python - <<'PY'
-          import subprocess
-          staged=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
-          expected={'payload/part-00.txt','payload/part-01.txt','live_data/manifest.v2.json'}
-          assert staged==expected,(sorted(staged),sorted(expected))
-          print('STAGED_SCOPE_PASS',sorted(staged))
-          PY
-          git commit -m 'Repair Macro standalone payload alignment'
+          git add .github/workflows/daily-data-orchestrator-v1.yml
+          test "$(git diff --cached --name-only)" = ".github/workflows/daily-data-orchestrator-v1.yml"
+          git commit -m 'Accept aligned Macro runtime in Daily Orchestrator V1'
           git push origin HEAD:release-candidate-daily-data-orchestrator-v1-2026-10-12
 
       - name: Summary
         run: |
-          echo 'Macro payload drift persisted on PR branch: GREEN'
-          echo 'Committed files: payload/part-00.txt, payload/part-01.txt, live_data/manifest.v2.json'
-          echo 'Global manifest V2: PASS'
-          echo 'Idempotence: PASS'
+          echo 'Macro runtime: ALIGNED / UNCHANGED'
+          echo 'Daily Orchestrator V1 stale detached-state assumption: PATCHED'
           echo 'Main: UNTOUCHED'
           echo 'Publication: NONE'
