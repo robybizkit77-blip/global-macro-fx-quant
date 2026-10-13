@@ -10,6 +10,7 @@ on:
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
   push:
     branches:
+      - main
       - validation-jpy-m3-controlled-apply-clean-v1-2026-10-13
     paths:
       - 'validation/fetch_boj_jpy_m3_exact_candidate.py'
