@@ -86,7 +86,8 @@ def main():
     liq_policy = load(LIQ_POLICY)
     liq_override = load(LIQ_POLICY_OVERRIDE)
     risk_policy = load(RISK_POLICY)
-    today = parse_date(reg['as_of'])
+    today = dt.date.today()
+    registry_date = parse_date(reg['as_of'])
 
     pairs = d.get('pairs', [])
     pair_dates = sorted({p.get('price_asof') for p in pairs if p.get('price_asof')})
@@ -293,8 +294,10 @@ def main():
         'automatic_publication': False,
     }
 
-    if overlay_as_of > reg['as_of']:
-        raise SystemExit('price runtime overlay has future observation relative to registry')
+    if parse_date(overlay_as_of) > today:
+        raise SystemExit('price runtime overlay has future observation relative to run date')
+    if registry_date > today:
+        raise SystemExit('freshness registry snapshot is future-dated relative to run date')
     if len(pairs) != 28:
         raise SystemExit(f'expected 28 FX pairs, got {len(pairs)}')
     if receipt['status'] == 'READY_FOR_CONTROLLED_APPLY':
