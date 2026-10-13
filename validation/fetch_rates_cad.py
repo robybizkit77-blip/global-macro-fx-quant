@@ -2,6 +2,7 @@
 import json, urllib.request
 from pathlib import Path
 
+# Rates controlled-apply recertification marker 2026-10-13; no source or transform change.
 URL='https://www.bankofcanada.ca/valet/observations/group/bond_yields_benchmark/json'
 SERIES_2Y='BD.CDN.2YR.DQ.YLD'
 SERIES_10Y='BD.CDN.10YR.DQ.YLD'
