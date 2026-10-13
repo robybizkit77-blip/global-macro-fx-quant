@@ -6,10 +6,12 @@ on:
     paths:
       - 'validation/run_daily_data_orchestrator_effective_v10.py'
       - 'validation/run_daily_data_orchestrator_effective_v9.py'
+      - 'validation/run_daily_data_orchestrator_effective_v11.py'
       - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_USD_BANK_CREDIT_REVISION_AWARE_V1_2026-10-13.json'
       - 'validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py'
       - 'validation/apply_fed_usd_bank_credit_revision_aware_candidate.py'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v9.yml'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v11.yml'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
       - '.github/workflows/daily-data-orchestrator-effective-liquidity-v10.yml'
   workflow_dispatch:
