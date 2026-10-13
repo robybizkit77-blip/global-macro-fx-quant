@@ -31,11 +31,41 @@
     "diagnostic": "validation/diagnose_boj_jpy_reserve_balances_v1.py",
     "certified_workflow": ".github/workflows/daily-data-orchestrator-effective-liquidity-v1.yml"
   },
+  "enhanced_proof": {
+    "md08_pairwise": {
+      "diagnostic": "validation/diagnose_boj_jpy_reserve_pairwise_aggregation_v1.py",
+      "workflow": ".github/workflows/liquidity-boj-jpy-reserve-pairwise-diagnostic-v1.yml",
+      "tested_pairwise_combinations": 8440,
+      "exact_pairwise_matches": 0,
+      "best_pairwise_exact_ratio": 0.0,
+      "best_pairwise_mae": 34912.62886597938
+    },
+    "official_workbook_revision_window": {
+      "diagnostic": "validation/diagnose_boj_jpy_reserve_xlsx_revision_window_v1.py",
+      "workflow": ".github/workflows/liquidity-boj-jpy-reserve-xlsx-revision-window-v1.yml",
+      "semantic_label": "Reserve balances",
+      "semantic_label_match": "EXACT",
+      "months_tested": 8,
+      "window": "2026-01/2026-08",
+      "exact_matches": 0,
+      "mae": 29493.625,
+      "max_abs_pct_diff": 2.1491206877112567,
+      "august_runtime": 3905822.0,
+      "august_official_workbook": 3905362.0,
+      "august_abs_diff": 460.0,
+      "interpretation": "The official BOJ workbook row is semantically aligned and numerically close to the runtime in 2026, but closeness does not establish the runtime's original statistical provenance or vintage contract."
+    },
+    "repository_origin": {
+      "first_introducing_commit": "529acdd6026c88ecee8451e2e5bc36c740eece7d",
+      "origin_type": "extracted_from_preexisting_monolithic_runtime",
+      "explicit_statistical_source_reference_present": false
+    }
+  },
   "promotion_eligible": false,
   "automation_ready": false,
   "fail_closed": true,
   "runtime_mutated": false,
   "publication_performed": false,
   "bias_score_sizing_effect": "NONE",
-  "reason": "All 93 MD08 candidates were tested against the 128-month runtime history; the best candidate produced zero exact matches, so no official BOJ series may be substituted or promoted without a new provenance proof."
+  "reason": "No exact BOJ MD08 single series or pairwise aggregation reproduces the 128-month runtime history. The official BOJ workbook 'Reserve balances' row is semantically aligned and close over the 2026 window, but the repository does not preserve an explicit original statistical-source or vintage contract. Numeric closeness alone is insufficient for promotion, so JPY.liquidity remains fail-closed."
 }
