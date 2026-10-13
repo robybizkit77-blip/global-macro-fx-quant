@@ -1,0 +1,113 @@
+name: Daily Data Orchestrator Effective Liquidity V6
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v6.py'
+      - 'validation/run_daily_data_orchestrator_effective_v5.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_NFC_CREDIT_REVISION_AWARE_V1_2026-10-13.json'
+      - 'validation/fetch_ecb_eur_nfc_loans_revision_aware_candidate.py'
+      - 'validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v6.yml'
+  pull_request:
+    branches:
+      - release-candidate-freshness-registry-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v6.py'
+      - 'validation/run_daily_data_orchestrator_effective_v5.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_NFC_CREDIT_REVISION_AWARE_V1_2026-10-13.json'
+      - 'validation/fetch_ecb_eur_nfc_loans_revision_aware_candidate.py'
+      - 'validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v6.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-liquidity-v6-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build effective V6 receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_v6.py > /tmp/effective-v6.json
+          cat /tmp/effective-v6.json
+      - name: Enforce 18 READY / 8 pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-v6.json'))
+          liq=d['lanes']['LIQUIDITY']
+          assert liq['automation_ready_subseries']==18, liq
+          assert liq['mapping_pending_subseries']==8, liq
+          assert liq['verified_subseries']==18, liq
+          assert liq['unresolved_subseries']==8, liq
+          assert liq['total_subseries']==26, liq
+          assert liq['eur_credit_automation_ready'] is True, liq
+          assert liq['eur_credit_controlled_apply_proven'] is True, liq
+          assert liq['eur_credit_revision_aware_append_only'] is True, liq
+          assert liq['eur_credit_series_key']=='BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E', liq
+          assert liq['eur_credit_collector']=='validation/fetch_ecb_eur_nfc_loans_revision_aware_candidate.py', liq
+          assert liq['eur_credit_applier']=='validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py', liq
+          assert liq['eur_credit_apply_proof_run_id']==38402698569, liq
+          assert liq['eur_credit_official_tail']=={'date':'2026-08','value':5462800.13649583}, liq
+          o=d['effective_liquidity_overlay_v6']
+          assert o['ready']==18 and o['pending']==8 and o['total']==26, o
+          assert o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('EFFECTIVE_LIQUIDITY_V6_18_8_PASS')
+          PY
+      - name: Re-prove ECB EUR credit revision-aware controlled apply on runtime copy
+        run: |
+          python validation/fetch_ecb_eur_nfc_loans_revision_aware_candidate.py --out /tmp/eur-credit.json
+          python validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py --candidate /tmp/eur-credit.json > /tmp/eur-credit-dry.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.eur-credit.json
+          python validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py --candidate /tmp/eur-credit.json --runtime /tmp/NATIVE_LIQ_DATA.eur-credit.json --apply > /tmp/eur-credit-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/eur-credit.json'))
+          dry=json.load(open('/tmp/eur-credit-dry.json'))
+          r=json.load(open('/tmp/eur-credit-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['EUR']['credit']
+          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-credit.json'))['EUR']['credit']
+          n=len(original['dates'])
+          assert c['source']['series_key']=='BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E', c
+          p=c['proof']
+          assert p['revision_aware_append_only'] is True, p
+          assert p['historical_runtime_values_frozen'] is True, p
+          assert p['identity_transform_for_new_observations'] is True, p
+          assert p['overlap_count']>=12 and p['exact_match_count']>0, p
+          assert applied['dates'][:n]==original['dates'], (applied,original)
+          assert applied['values'][:n]==original['values'], (applied,original)
+          assert dry['applied'] is False, dry
+          expected=len(c['new_observations'])
+          assert dry['appended_observations']==expected, (dry,c)
+          assert r['appended_observations']==expected, (r,c)
+          assert r['runtime_history_rewritten'] is False, r
+          if expected:
+              assert r['applied'] is True and r['status']=='UPDATE_AVAILABLE', r
+              assert applied['dates'][-1]==c['new_observations'][-1]['date'], (applied,c)
+              assert float(applied['values'][-1])==float(c['new_observations'][-1]['value']), (applied,c)
+          else:
+              assert r['applied'] is False and r['status']=='NO_CHANGE', r
+          print('EUR_CREDIT_REVISION_AWARE_CONTROLLED_APPLY_REPROOF_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'Effective Liquidity V6 coverage: 18 READY / 8 pending / 26 total'
+          echo 'EUR credit ECB revision-aware append-only controlled apply: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
