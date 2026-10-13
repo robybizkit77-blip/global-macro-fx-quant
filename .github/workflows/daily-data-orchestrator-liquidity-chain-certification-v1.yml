@@ -15,6 +15,7 @@ on:
       - 'validation/apply_boc_cad_settlement_revision_aware_candidate.py'
       - 'validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py'
       - 'validation/apply_fed_usd_bank_credit_revision_aware_candidate.py'
+      - '.github/workflows/daily-data-orchestrator-v1.yml'
       - '.github/workflows/daily-data-orchestrator-liquidity-chain-certification-v1.yml'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
   workflow_dispatch:
