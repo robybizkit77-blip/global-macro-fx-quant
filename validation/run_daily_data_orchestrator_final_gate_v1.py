@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-\"\"\"Classify the certified daily lanes without authorising any runtime write or publication.\"\"\"
+"""Classify the certified daily lanes without authorising any runtime write or publication."""
 from __future__ import annotations
 
 import json
