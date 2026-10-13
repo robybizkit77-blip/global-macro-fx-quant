@@ -6,6 +6,7 @@ on:
       - release-candidate-daily-data-orchestrator-v1-2026-10-12
     paths:
       - 'validation/diagnose_rba_aud_es_balances_v1.py'
+      - 'validation/fetch_rba_aud_es_balances_candidate.py'
       - '.github/workflows/liquidity-rba-aud-es-diagnostic-v1.yml'
       - 'live_data/sections/NATIVE_LIQ_DATA.json'
   workflow_dispatch:
@@ -26,9 +27,31 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check openpyxl==3.1.5
       - name: Compare RBA A3 ES balances with AUD runtime
         run: python3 validation/diagnose_rba_aud_es_balances_v1.py | tee /tmp/rba-aud-es-diagnostic.json
-      - name: Upload diagnostic
+      - name: Prove RBA A3 AESAT candidate-only collector
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/fetch_rba_aud_es_balances_candidate.py | tee /tmp/rba-aud-es-candidate.log
+          cp validation/liquidity-aud-es-balances-candidate.json /tmp/rba-aud-es-candidate.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/rba-aud-es-candidate.json'))
+          assert c['schema']=='GMFQ_LIQUIDITY_AUD_ES_BALANCES_CANDIDATE_V1', c
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
+          assert c['source']['series_id']=='AESAT', c
+          assert c['proof']['exact_match_ratio'] >= 0.98, c
+          assert c['proof']['recent_20_exact'] is True, c
+          assert c['proof']['runtime_last_matches_official'] is True, c
+          assert c['publication_performed'] is False, c
+          assert c['runtime_mutated'] is False, c
+          print('LIQUIDITY_RBA_AUD_ES_CANDIDATE_PASS', c['runtime']['last_date'], '->', c['latest_date'], c['latest_value'])
+          PY
+      - name: Upload diagnostic and candidate evidence
         uses: actions/upload-artifact@v4
         with:
           name: liquidity-rba-aud-es-diagnostic-v1-${{ github.run_id }}
-          path: /tmp/rba-aud-es-diagnostic.json
+          path: |
+            /tmp/rba-aud-es-diagnostic.json
+            /tmp/rba-aud-es-candidate.json
+            /tmp/rba-aud-es-candidate.log
           retention-days: 30
