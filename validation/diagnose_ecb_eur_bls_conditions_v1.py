@@ -20,14 +20,13 @@ def qkey(v):
     if '-Q' in s:
         return s[:7]
     if len(s)>=7 and s[4]=='-':
-        # preserve monthly-like values only if runtime itself uses them; BLS should be quarterly
         return s[:7]
     return s
 
 
 def fetch_all():
     qs=urllib.parse.urlencode({'format':'csvdata','startPeriod':'2016-Q1'})
-    url=BASE+'/?'+qs
+    url=BASE+'?'+qs
     req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/csv,application/vnd.sdmx.data+csv;version=2.0.0'})
     with urllib.request.urlopen(req,timeout=120) as r:
         text=r.read().decode('utf-8-sig')
