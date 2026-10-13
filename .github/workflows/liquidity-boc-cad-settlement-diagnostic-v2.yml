@@ -1,0 +1,47 @@
+name: Liquidity BoC CAD Settlement Diagnostic V2
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/diagnose_boc_cad_settlement_balances_v1.py'
+      - '.github/workflows/liquidity-boc-cad-settlement-diagnostic-v2.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime hash
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Run BoC CAD settlement diagnostic
+        run: python validation/diagnose_boc_cad_settlement_balances_v1.py | tee /tmp/cad-settlement-diagnostic.json
+      - name: Enforce diagnostic-only fail-closed contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/cad-settlement-diagnostic.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1', d
+          assert d['status'] in {'EXACT_ACTUAL_MONTH_END_PROVEN','OFFICIAL_SERIES_IDENTIFIED_HISTORICAL_VINTAGE_DRIFT_PENDING','DIAGNOSTIC_ONLY_NO_PROMOTION'}, d
+          assert d['source_contract']['publisher']=='Bank of Canada', d
+          assert d['promotion_performed'] is False, d
+          assert d['runtime_mutated'] is False, d
+          assert d['publication_performed'] is False, d
+          print('CAD_SETTLEMENT_DIAGNOSTIC_STATUS', d['status'])
+          print('ACTUAL_RESULT', d.get('actual_result'))
+          print('RECENT_WINDOWS', d.get('recent_month_end_windows'))
+          print('MISMATCH_COUNT', d.get('actual_month_end_mismatch_count'))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
