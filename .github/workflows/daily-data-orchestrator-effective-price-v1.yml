@@ -1,0 +1,85 @@
+name: Daily Data Orchestrator Effective Price V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_price_v1.py'
+      - 'validation/run_daily_data_orchestrator_effective_v11.py'
+      - 'validation/price/PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1_2026-10-13.json'
+      - 'validation/fetch_ecb_g8_price_candidate.py'
+      - 'validation/apply_ecb_g8_price_candidate.py'
+      - '.github/workflows/price-ecb-controlled-apply-contract-v1.yml'
+      - '.github/workflows/daily-data-orchestrator-effective-price-v1.yml'
+      - 'payload/part-15.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-price-v1-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum payload/part-15.txt > /tmp/price-runtime.before.sha256
+      - name: Build effective Price receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_price_v1.py > /tmp/effective-price-v1.json
+          cat /tmp/effective-price-v1.json
+      - name: Enforce Price promotion with Liquidity 23 / 3 preserved
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-price-v1.json')); p=d['lanes']['PRICE']; liq=d['lanes']['LIQUIDITY']; o=d['effective_price_overlay_v1']
+          assert p['state']=='CONTROLLED_APPLY_PROVEN_PUBLICATION_WITHHELD',p
+          assert p['controlled_apply_proven'] is True and p['automation_ready'] is True,p
+          assert p['persistent_publication_enabled'] is False and p['publication_eligible'] is False,p
+          assert p['exact_diff_scope']==['payload/part-15.txt'] and p['idempotent_apply_proven'] is True,p
+          assert liq['automation_ready_subseries']==23 and liq['mapping_pending_subseries']==3 and liq['total_subseries']==26,liq
+          assert d['blocking_lanes']==['LIQUIDITY','RISK'],d['blocking_lanes']
+          assert o['remaining_blocking_lanes']==['LIQUIDITY','RISK'],o
+          assert o['liquidity_ready']==23 and o['liquidity_pending']==3,o
+          assert o['runtime_mutated'] is False and o['publication_performed'] is False,o
+          print('EFFECTIVE_PRICE_V1_CONTROLLED_APPLY_PASS')
+          PY
+      - name: Re-prove current ECB controlled apply on checkout
+        run: |
+          python validation/fetch_ecb_g8_price_candidate.py --out /tmp/price-candidate.json
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-candidate.json --apply > /tmp/price-apply.json
+          python - <<'PY'
+          import json,re,subprocess
+          c=json.load(open('/tmp/price-candidate.json')); r=json.load(open('/tmp/price-apply.json'))
+          changed=subprocess.check_output(['git','diff','--name-only'],text=True).splitlines()
+          expected=[] if r['status']=='NO_CHANGE' else ['payload/part-15.txt']
+          assert changed==expected,(changed,expected)
+          assert r['as_of']==c['as_of'] and r['publication_performed'] is False,r
+          text=open('payload/part-15.txt',encoding='utf-8').read(); compact=c['as_of'].replace('-','')
+          assert f'<script id="gmfq-price-ecb-{compact}">' in text
+          assert len(re.findall(r'<script id="gmfq-price-ecb-\d{8}">',text))==1
+          print('PRICE_CURRENT_CONTROLLED_APPLY_REPROOF_PASS',c['as_of'],changed)
+          PY
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-candidate.json --apply > /tmp/price-apply-second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/price-apply-second.json'))
+          assert r['status']=='NO_CHANGE' and r['applied'] is False and r['publication_performed'] is False,r
+          print('PRICE_CURRENT_IDEMPOTENCE_REPROOF_PASS')
+          PY
+      - name: Restore tracked runtime and verify zero mutation
+        if: always()
+        run: |
+          git checkout -- payload/part-15.txt
+          sha256sum -c /tmp/price-runtime.before.sha256
+          git diff --exit-code -- payload/part-15.txt
+      - name: Summary
+        run: |
+          echo 'Effective Price V1: controlled apply GREEN / persistent publication WITHHELD'
+          echo 'Liquidity: 23 READY / 3 pending'
+          echo 'Remaining orchestrator blockers: LIQUIDITY, RISK'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
