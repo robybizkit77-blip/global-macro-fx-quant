@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import io
 import json
-import re
 import urllib.request
 import zipfile
 import xml.etree.ElementTree as ET
@@ -68,21 +67,15 @@ def parse_workbook(body,target):
         shared=shared_strings(zf); names=sheet_map(zf)
         for path in sorted(p for p in zf.namelist() if p.startswith('xl/worksheets/sheet') and p.endswith('.xml')):
             root=ET.fromstring(zf.read(path))
-            rows=[]
             for row in root.findall('.//a:sheetData/a:row',NS):
-                vals=[]
+                rn=int(row.attrib.get('r','0') or 0); vals=[]
                 for c in row.findall('a:c',NS):
                     val=cell_value(c,shared)
                     if val is not None: vals.append({'ref':c.attrib.get('r'),'value':val})
-                if vals: rows.append((int(row.attrib.get('r','0') or 0),vals))
-            for rn,vals in rows:
-                nums=[]
                 for item in vals:
-                    if isinstance(item['value'],(int,float)):
-                        nums.append((item['ref'],float(item['value'])))
-                for ref,val in nums:
-                    diff=abs(val-target)
-                    rec={'sheet':names.get(path,path),'row':rn,'cell':ref,'value':val,'abs_diff':diff,'row_values':vals}
+                    if not isinstance(item['value'],(int,float)): continue
+                    val=float(item['value']); diff=abs(val-target)
+                    rec={'sheet':names.get(path,path),'row':rn,'cell':item['ref'],'value':val,'abs_diff':diff,'row_values':vals}
                     if diff<=1e-9:hits.append(rec)
                     nearest.append(rec)
     nearest.sort(key=lambda x:x['abs_diff'])
