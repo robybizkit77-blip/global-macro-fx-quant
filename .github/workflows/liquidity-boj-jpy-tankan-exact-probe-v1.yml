@@ -1,0 +1,51 @@
+name: Liquidity BOJ JPY Tankan Exact Probe V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/probe_boj_jpy_tankan_lending_attitude_exact_v1.py'
+      - '.github/workflows/liquidity-boj-jpy-tankan-exact-probe-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Probe exact BOJ Tankan variants
+        run: python validation/probe_boj_jpy_tankan_lending_attitude_exact_v1.py | tee /tmp/tankan-probe.json
+      - name: Validate probe
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/tankan-probe.json'))
+          assert d['schema']=='GMFQ_BOJ_JPY_TANKAN_LENDING_ATTITUDE_EXACT_PROBE_V1', d
+          assert d['runtime_count']==42, d
+          assert d['runtime_first']=='2016-Q1' and d['runtime_last']=='2026-Q2', d
+          assert d['runtime_last_value']==13.0, d
+          assert len(d['tested_variants'])==4, d
+          assert d['runtime_mutated'] is False and d['publication_performed'] is False, d
+          print('TANKAN_EXACT_MATCH_COUNT',d['exact_match_count'])
+          if d['exact_match_count']==1:
+              x=d['exact_matches'][0]
+              assert x['overlap']==42 and x['exact']==42 and x['exact_ratio']==1.0, x
+              print('TANKAN_UNIQUE_EXACT',x['variant'],x['code'],x.get('name'),x.get('unit'))
+          else:
+              for x in d['tested_variants']:
+                  print('TANKAN_VARIANT',x['variant'],x['code'],x['overlap'],x['exact'],x['exact_ratio'],x['mae'])
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
