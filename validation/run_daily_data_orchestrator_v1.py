@@ -12,6 +12,7 @@ MACRO_REGISTRY = Path('validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json')
 LIQ_PATH = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 LIQ_POLICY = Path('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
 LIQ_POLICY_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
+AUD_ES_COLLECTOR = Path('validation/fetch_rba_aud_es_balances_candidate.py')
 EUR_EXCESS_COLLECTOR = Path('validation/fetch_ecb_eur_excess_liquidity_candidate.py')
 USD_M2_COLLECTOR = Path('validation/fetch_fed_usd_m2_candidate.py')
 GBP_BOE_COLLECTOR = Path('validation/fetch_boe_gbp_liquidity_candidates.py')
@@ -93,6 +94,16 @@ def main():
             f'Liquidity effective coverage mismatch after override: ready={liq_ready}/{expected_ready}, '
             f'pending={liq_pending}/{expected_pending}'
         )
+
+    aud_es = liq_mapped.get('AUD.liquidity') or {}
+    if aud_es.get('candidate_pipeline_ready') is not True:
+        raise SystemExit('AUD.liquidity candidate collector must be live-tested before orchestrator marks candidate readiness')
+    if aud_es.get('series_key') != 'AESAT' or aud_es.get('series_mapping_status') != 'EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED':
+        raise SystemExit('AUD.liquidity must retain exact RBA A3/AESAT mapping')
+    if aud_es.get('automation_ready') is not False:
+        raise SystemExit('AUD.liquidity must remain candidate-only until controlled apply is wired')
+    if not AUD_ES_COLLECTOR.exists():
+        raise SystemExit('AUD.liquidity RBA candidate collector is missing')
 
     cad_m2pp = liq_mapped.get('CAD.money') or {}
     if cad_m2pp.get('candidate_pipeline_ready') is not True:
@@ -177,6 +188,9 @@ def main():
             'mapping_pending_subseries': liq_pending,
             'source_unresolved_subseries': liq_source_unresolved,
             'total_subseries': liq_total,
+            'aud_es_candidate_pipeline_ready': True,
+            'aud_es_collector': str(AUD_ES_COLLECTOR),
+            'aud_es_series_key': aud_es.get('series_key'),
             'cad_m2pp_candidate_pipeline_ready': True,
             'cad_m2pp_collector': cad_m2pp.get('collector'),
             'eur_excess_candidate_pipeline_ready': True,
