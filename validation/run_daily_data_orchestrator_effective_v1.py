@@ -8,6 +8,7 @@ BASE = Path('validation/run_daily_data_orchestrator_v1.py')
 AUD_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_ES_V1_2026-10-13.json')
 EUR_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
 BASE_POLICY = 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+OVERLAY_VERSION = '2026-10-13-aud-es-ready'
 
 
 def load(path):
@@ -82,6 +83,7 @@ def main():
     )
     receipt['effective_liquidity_overlay'] = {
         'schema': 'GMFQ_DAILY_DATA_ORCHESTRATOR_EFFECTIVE_LIQUIDITY_OVERLAY_V1',
+        'version': OVERLAY_VERSION,
         'base_receipt_schema': receipt.get('schema'),
         'ready': 11,
         'pending': 15,
