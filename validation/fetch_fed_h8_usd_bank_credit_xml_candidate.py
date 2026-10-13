@@ -41,20 +41,31 @@ def parse_series(body):
         raw = zf.read('H8_data.xml')
     source = {}
     metadata = None
-    # Stream parse the large XML without holding a second tree copy in memory.
-    for event, elem in ET.iterparse(io.BytesIO(raw), events=('end',)):
+    in_target = False
+    # Capture observations while inside the target Series. This avoids clearing Obs
+    # elements before the parent Series end event is reached.
+    for event, elem in ET.iterparse(io.BytesIO(raw), events=('start', 'end')):
         tag = elem.tag.rsplit('}', 1)[-1]
-        if tag == 'Series' and elem.attrib.get('SERIES_NAME') == SERIES:
-            metadata = dict(elem.attrib)
-            for child in elem.iter():
-                if child.tag.rsplit('}', 1)[-1] != 'Obs':
-                    continue
-                d = child.attrib.get('TIME_PERIOD')
-                v = child.attrib.get('OBS_VALUE')
-                if d and v not in (None, ''):
-                    source[d] = float(v)
-            break
-        elem.clear()
+        if event == 'start' and tag == 'Series':
+            in_target = elem.attrib.get('SERIES_NAME') == SERIES
+            if in_target:
+                metadata = dict(elem.attrib)
+            continue
+        if event == 'end' and in_target and tag == 'Obs':
+            d = elem.attrib.get('TIME_PERIOD')
+            v = elem.attrib.get('OBS_VALUE')
+            if d and v not in (None, ''):
+                source[d] = float(v)
+            elem.clear()
+            continue
+        if event == 'end' and tag == 'Series':
+            if in_target:
+                break
+            in_target = False
+            elem.clear()
+            continue
+        if event == 'end' and not in_target:
+            elem.clear()
     if metadata is None or not source:
         raise SystemExit(f'Fed H8 series {SERIES} not found in official XML')
     if metadata.get('FREQ') != '19' or metadata.get('SA') != 'SA' or metadata.get('ITEM') != '1001':
@@ -96,7 +107,7 @@ def main():
     last_value = float(row.get('last_value'))
     last_match = runtime_last in source and abs(last_value - source[runtime_last]) <= 1e-6
     recent = overlap[-20:]
-    recent_exact = all(abs(rt[d] - source[d]) <= 1e-6 for d in recent)
+    recent_exact = len(recent) == 20 and all(abs(rt[d] - source[d]) <= 1e-6 for d in recent)
     latest = max(source)
     new = [{'date': d, 'value': source[d]} for d in sorted(source) if d > runtime_last]
 
