@@ -1,0 +1,40 @@
+name: Dashboard Finalization Audit V1
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/audit_dashboard_finalization_v1.py'
+      - 'live_data/**'
+      - 'payload/**'
+      - '.github/workflows/dashboard-finalization-audit-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run full dashboard inventory
+        run: python3 validation/audit_dashboard_finalization_v1.py --write /tmp/dashboard-finalization-audit.json
+      - name: Verify manifest and runtime roundtrip
+        run: |
+          python3 validation/check_live_update_contract.py
+          python3 validation/rebuild_live_data_runtime.py --verify-only
+      - name: Verify existing final gate remains publication-withheld
+        run: |
+          python3 validation/run_daily_data_orchestrator_final_gate_v1.py > /tmp/final-gate.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/final-gate.json'))
+          assert d['publishable'] is False
+          assert d['live_data_published'] is False
+          assert d['gh_pages_published'] is False
+          print('PUBLICATION_WITHHELD_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-finalization-audit
+          path: /tmp/dashboard-finalization-audit.json

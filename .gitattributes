@@ -1,0 +1,5 @@
+# The runtime and live-data manifests are content-addressed byte contracts.
+# Never let a platform line-ending conversion change their hashes.
+payload/*.txt text eol=lf
+live_data/*.json text eol=lf
+live_data/sections/*.json text eol=lf
