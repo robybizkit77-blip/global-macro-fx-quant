@@ -143,15 +143,37 @@ def score_rule(runtime, derived):
     }
 
 
-def mismatch_details(runtime, obs):
+def recent_window_scores(runtime, derived):
+    common=sorted(set(runtime)&set(derived))
+    out={}
+    for n in (12,24,36,60):
+        months=common[-n:] if len(common)>=n else common
+        diffs=[runtime[m]-derived[m] for m in months]
+        exact=sum(1 for x in diffs if abs(x)<=1e-9)
+        out[str(n)]={
+            'overlap':len(months),
+            'exact':exact,
+            'exact_ratio': exact/len(months) if months else 0.0,
+            'mae': sum(abs(x) for x in diffs)/len(diffs) if diffs else None,
+            'max_abs_diff': max((abs(x) for x in diffs),default=None),
+            'first_month': months[0] if months else None,
+            'last_month': months[-1] if months else None,
+        }
+    return out
+
+
+def mismatch_details(runtime, obs, rule='last'):
     by = group_by_month(obs)
     out = []
     for month in sorted(set(runtime) & set(by)):
         rows = by[month]
-        wed = [(d, v) for d, v in rows if datetime.strptime(d, '%Y-%m-%d').weekday() == 2]
-        if not wed:
-            continue
-        official_date, official_value = wed[-1]
+        if rule=='last':
+            official_date, official_value = rows[-1]
+        else:
+            wed=[(d,v) for d,v in rows if datetime.strptime(d,'%Y-%m-%d').weekday()==2]
+            if not wed:
+                continue
+            official_date, official_value=wed[-1]
         rv = runtime[month]
         if abs(rv - official_value) <= 1e-9:
             continue
@@ -160,9 +182,9 @@ def mismatch_details(runtime, obs):
         out.append({
             'month': month,
             'runtime_value': rv,
-            'official_last_wednesday_date': official_date,
-            'official_last_wednesday_value': official_value,
-            'diff_runtime_minus_last_wednesday': rv - official_value,
+            'official_date': official_date,
+            'official_value': official_value,
+            'diff_runtime_minus_official': rv - official_value,
             'exact_daily_matches': exact_daily,
             'nearest_daily_observation': {
                 'date': nearest_date,
@@ -177,8 +199,8 @@ def main():
     row, runtime = runtime_series()
     discovered = discover_candidates()
     results = []
-    actual_mismatches = None
-    actual_result = None
+    actual_obs=None
+    actual_result=None
     for score, sid, label, meta in discovered:
         try:
             obs = fetch_observations(sid)
@@ -203,28 +225,43 @@ def main():
             'all_rule_scores': rule_scores,
         }
         if sid.upper() == 'ACTUAL':
-            actual_mismatches = mismatch_details(runtime, obs)
-            actual_result = result
+            actual_obs=obs
+            actual_result=result
+            result['last_rule_recent_windows']=recent_window_scores(runtime,rules['last'])
         results.append(result)
     results.sort(key=lambda x: (-float((x.get('best_score') or {}).get('exact_ratio', 0)), -int((x.get('best_score') or {}).get('overlap', 0))))
 
-    last_wed = ((actual_result or {}).get('all_rule_scores') or {}).get('last_wednesday') or {}
-    proven = (
+    last_score=((actual_result or {}).get('all_rule_scores') or {}).get('last') or {}
+    last_windows=(actual_result or {}).get('last_rule_recent_windows') or {}
+    last_mismatches=mismatch_details(runtime,actual_obs,'last') if actual_obs else []
+    wed_mismatches=mismatch_details(runtime,actual_obs,'last_wednesday') if actual_obs else []
+
+    exact_month_end = (
         actual_result is not None
-        and int(last_wed.get('overlap',0)) >= 12
-        and float(last_wed.get('exact_ratio',0)) >= 0.95
-        and len(actual_mismatches or []) <= max(1, int(last_wed.get('overlap',0) * 0.05))
+        and int(last_score.get('overlap',0)) >= 24
+        and float(last_score.get('exact_ratio',0)) == 1.0
     )
+    recent_exact = (
+        (last_windows.get('24') or {}).get('exact_ratio') == 1.0
+        and (last_windows.get('12') or {}).get('exact_ratio') == 1.0
+    )
+    if exact_month_end:
+        status='EXACT_ACTUAL_MONTH_END_PROVEN'
+    elif recent_exact and last_score.get('exact_ratio',0) >= 0.85:
+        status='OFFICIAL_SERIES_IDENTIFIED_HISTORICAL_VINTAGE_DRIFT_PENDING'
+    else:
+        status='DIAGNOSTIC_ONLY_NO_PROMOTION'
 
     report = {
         'schema': 'GMFQ_LIQUIDITY_CAD_SETTLEMENT_DIAGNOSTIC_V1',
-        'status': 'EXACT_ACTUAL_LAST_WEDNESDAY_PROVEN' if proven else 'DIAGNOSTIC_ONLY_NO_PROMOTION',
+        'status': status,
         'source_contract': {
             'publisher': 'Bank of Canada',
             'series_family': 'Lynx settlement balances — Actual',
             'series_id_candidate': 'ACTUAL',
             'source_page': SOURCE_PAGE,
-            'documented_monthly_rule': DOCUMENTED_MONTHLY_RULE,
+            'documented_monthly_display_rule': DOCUMENTED_MONTHLY_RULE,
+            'runtime_empirical_rule_candidate':'last available official ACTUAL observation in each month',
         },
         'runtime': {
             'label': row.get('label'),
@@ -238,9 +275,12 @@ def main():
         'candidate_count': len(discovered),
         'results': results[:20],
         'actual_result': actual_result,
-        'actual_last_wednesday_mismatches': actual_mismatches or [],
-        'actual_last_wednesday_mismatch_count': len(actual_mismatches or []),
-        'promotion_eligible': proven,
+        'actual_month_end_mismatches': last_mismatches,
+        'actual_month_end_mismatch_count': len(last_mismatches),
+        'actual_last_wednesday_mismatch_count': len(wed_mismatches),
+        'recent_month_end_windows': last_windows,
+        'promotion_eligible': exact_month_end,
+        'revision_contract_pending': status=='OFFICIAL_SERIES_IDENTIFIED_HISTORICAL_VINTAGE_DRIFT_PENDING',
         'promotion_performed': False,
         'runtime_mutated': False,
         'publication_performed': False,
