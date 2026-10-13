@@ -13,6 +13,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
+      - 'validation/apply_boc_cad_m2pp_candidate.py'
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/fetch_fed_usd_m2_candidate.py'
       - 'validation/fetch_boe_gbp_liquidity_candidates.py'
@@ -42,6 +43,7 @@ on:
       - 'validation/apply_ecb_g8_price_candidate.py'
       - 'validation/audit_liquidity_subseries_v1.py'
       - 'validation/fetch_boc_cad_m2pp_candidate.py'
+      - 'validation/apply_boc_cad_m2pp_candidate.py'
       - 'validation/fetch_ecb_eur_excess_liquidity_candidate.py'
       - 'validation/fetch_fed_usd_m2_candidate.py'
       - 'validation/fetch_boe_gbp_liquidity_candidates.py'
@@ -106,10 +108,10 @@ jobs:
           liq=d['lanes']['LIQUIDITY']
           assert liq['inventory_ready'] is True
           assert liq['state']=='BLOCKED_SUBSERIES_POLICY_PARTIAL', liq
-          assert liq['verified_subseries']==5, liq
-          assert liq['unresolved_subseries']==21, liq
-          assert liq['automation_ready_subseries']==5, liq
-          assert liq['mapping_pending_subseries']==21, liq
+          assert liq['verified_subseries']==6, liq
+          assert liq['unresolved_subseries']==20, liq
+          assert liq['automation_ready_subseries']==6, liq
+          assert liq['mapping_pending_subseries']==20, liq
           assert liq['source_mapped_subseries']==26, liq
           assert liq['source_unresolved_subseries']==0, liq
           assert liq['total_subseries']==26, liq
@@ -202,14 +204,35 @@ jobs:
           python3 - <<'PY'
           import json
           c=json.load(open('/tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json'))
+          p=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))['mapped']['CAD.money']
           assert c['schema']=='GMFQ_LIQUIDITY_CAD_M2PP_CANDIDATE_V1', c
           assert c['source']['series_id']=='V41552801', c
           assert c['runtime_match_confirmed'] is True, c
           assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
           assert c['publication_performed'] is False
           assert c['runtime_mutated'] is False
+          assert p['automation_ready'] is True, p
+          assert p['controlled_apply_proven'] is True, p
+          assert p['applier']=='validation/apply_boc_cad_m2pp_candidate.py', p
           print('LIQUIDITY_CAD_M2PP_CANDIDATE_PASS',c['runtime']['last_date'],'->',c['latest_date'],c['latest_value'])
           PY
+
+      - name: Prove CAD M2++ controlled apply without mutating tracked runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/daily-orchestrator-v1/cad-runtime.before.sha256
+          python3 validation/apply_boc_cad_m2pp_candidate.py \
+            --candidate /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json \
+            > /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-dry-run.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.cad-copy.json
+          python3 validation/apply_boc_cad_m2pp_candidate.py \
+            --candidate /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-candidate.json \
+            --runtime /tmp/daily-orchestrator-v1/NATIVE_LIQ_DATA.cad-copy.json \
+            --apply \
+            | tee /tmp/daily-orchestrator-v1/liquidity-cad-m2pp-apply.json
+          sha256sum -c /tmp/daily-orchestrator-v1/cad-runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
 
       - name: Fetch official ECB EUR excess-liquidity candidate
         shell: bash
