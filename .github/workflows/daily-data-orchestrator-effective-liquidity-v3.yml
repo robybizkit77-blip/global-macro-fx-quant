@@ -1,0 +1,102 @@
+name: Daily Data Orchestrator Effective Liquidity V3
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v3.py'
+      - 'validation/run_daily_data_orchestrator_effective_v2.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_BLS_CONDITIONS_V1_2026-10-13.json'
+      - 'validation/fetch_ecb_eur_bls_conditions_candidate.py'
+      - 'validation/apply_ecb_eur_bls_conditions_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v3.yml'
+  pull_request:
+    branches:
+      - release-candidate-freshness-registry-v1-2026-10-12
+    paths:
+      - 'validation/run_daily_data_orchestrator_effective_v3.py'
+      - 'validation/run_daily_data_orchestrator_effective_v2.py'
+      - 'validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_BLS_CONDITIONS_V1_2026-10-13.json'
+      - 'validation/fetch_ecb_eur_bls_conditions_candidate.py'
+      - 'validation/apply_ecb_eur_bls_conditions_candidate.py'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - '.github/workflows/daily-data-orchestrator-effective-liquidity-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  effective-liquidity-v3-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Build effective V3 receipt
+        run: |
+          python validation/run_daily_data_orchestrator_effective_v3.py > /tmp/effective-v3.json
+          cat /tmp/effective-v3.json
+      - name: Enforce 15 READY / 11 pending
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/effective-v3.json'))
+          liq=d['lanes']['LIQUIDITY']
+          assert liq['automation_ready_subseries']==15, liq
+          assert liq['mapping_pending_subseries']==11, liq
+          assert liq['verified_subseries']==15, liq
+          assert liq['unresolved_subseries']==11, liq
+          assert liq['total_subseries']==26, liq
+          assert liq['eur_bls_automation_ready'] is True, liq
+          assert liq['eur_bls_controlled_apply_proven'] is True, liq
+          assert liq['eur_bls_series_key']=='BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET', liq
+          assert liq['eur_bls_collector']=='validation/fetch_ecb_eur_bls_conditions_candidate.py', liq
+          assert liq['eur_bls_applier']=='validation/apply_ecb_eur_bls_conditions_candidate.py', liq
+          assert liq['eur_bls_apply_proof_run_id']==38395306692, liq
+          assert liq['eur_bls_official_tail']=={'date':'2026-Q3','value':7.294703918588041}, liq
+          o=d['effective_liquidity_overlay_v3']
+          assert o['ready']==15 and o['pending']==11 and o['total']==26, o
+          assert o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('EFFECTIVE_LIQUIDITY_V3_15_11_PASS')
+          PY
+      - name: Re-prove ECB EUR BLS controlled apply on runtime copy
+        run: |
+          python validation/fetch_ecb_eur_bls_conditions_candidate.py --out /tmp/eur-bls.json
+          python validation/apply_ecb_eur_bls_conditions_candidate.py --candidate /tmp/eur-bls.json > /tmp/eur-bls-dry.json
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.eur-bls.json
+          python validation/apply_ecb_eur_bls_conditions_candidate.py --candidate /tmp/eur-bls.json --runtime /tmp/NATIVE_LIQ_DATA.eur-bls.json --apply > /tmp/eur-bls-apply.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/eur-bls.json'))
+          dry=json.load(open('/tmp/eur-bls-dry.json'))
+          r=json.load(open('/tmp/eur-bls-apply.json'))
+          original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['EUR']['conditions']
+          applied=json.load(open('/tmp/NATIVE_LIQ_DATA.eur-bls.json'))['EUR']['conditions']
+          assert c['source']['series_key']=='BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET', c
+          assert c['proof']['overlap_count']==43 and c['proof']['exact_match_count']==43, c
+          assert c['proof']['exact_match_ratio']==1.0, c
+          assert c['proof']['runtime_history_unchanged_by_current_vintage'] is True, c
+          assert c['proof']['identity_transform'] is True, c
+          assert c['latest_date']=='2026-Q3' and abs(float(c['latest_value'])-7.294703918588041)<1e-12, c
+          assert c['new_observations']==[], c
+          assert dry['status']=='NO_CHANGE' and dry['applied'] is False, dry
+          assert r['status']=='NO_CHANGE' and r['applied'] is False and r['appended_observations']==0, r
+          assert applied==original, (applied, original)
+          print('EUR_BLS_CONTROLLED_APPLY_REPROOF_PASS')
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'Effective Liquidity V3 coverage: 15 READY / 11 pending / 26 total'
+          echo 'EUR conditions ECB BLS controlled apply: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
