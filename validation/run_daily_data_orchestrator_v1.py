@@ -13,6 +13,8 @@ LIQ_PATH = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 LIQ_POLICY = Path('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
 LIQ_POLICY_OVERRIDE = Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_EUR_M3_V1_2026-10-13.json')
 EUR_EXCESS_COLLECTOR = Path('validation/fetch_ecb_eur_excess_liquidity_candidate.py')
+USD_M2_COLLECTOR = Path('validation/fetch_fed_usd_m2_candidate.py')
+GBP_BOE_COLLECTOR = Path('validation/fetch_boe_gbp_liquidity_candidates.py')
 RISK_POLICY = Path('validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json')
 
 
@@ -94,11 +96,27 @@ def main():
     cad_m2pp = liq_mapped.get('CAD.money') or {}
     if cad_m2pp.get('candidate_pipeline_ready') is not True:
         raise SystemExit('CAD.money candidate collector must be live-tested before orchestrator marks candidate readiness')
+
     eur_excess = liq_mapped.get('EUR.liquidity') or {}
     if eur_excess.get('series_key') != 'ILM.D.U2.C.EXLIQ.U2.EUR' or eur_excess.get('automation_ready') is not True:
         raise SystemExit('EUR.liquidity source contract must remain exact and automation-ready')
     if not EUR_EXCESS_COLLECTOR.exists():
         raise SystemExit('EUR.liquidity candidate collector is missing')
+
+    usd_m2 = liq_mapped.get('USD.liquidity') or {}
+    if usd_m2.get('series_key') != 'H6/H6_M2/M2.M' or usd_m2.get('series_mapping_status') != 'EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED':
+        raise SystemExit('USD.liquidity must retain the exact Fed H.6 M2 mapping')
+    if not USD_M2_COLLECTOR.exists():
+        raise SystemExit('USD.liquidity Fed H.6 candidate collector is missing')
+
+    gbp_reserves = liq_mapped.get('GBP.liquidity') or {}
+    gbp_credit = liq_mapped.get('GBP.credit') or {}
+    if gbp_reserves.get('series_key') != 'RPWB56A' or gbp_reserves.get('series_mapping_status') != 'EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED':
+        raise SystemExit('GBP.liquidity must retain exact BoE RPWB56A mapping')
+    if gbp_credit.get('series_key') != 'LPMVTYI' or gbp_credit.get('series_mapping_status') != 'EXACT_SERIES_KEY_RUNTIME_MATCH_CONFIRMED':
+        raise SystemExit('GBP.credit must retain exact BoE LPMVTYI mapping')
+    if not GBP_BOE_COLLECTOR.exists():
+        raise SystemExit('GBP BoE candidate collector is missing')
 
     vix_policy = risk_policy['gate_inputs']['VIX']
     brent_policy = risk_policy['gate_inputs']['Brent']
@@ -152,10 +170,15 @@ def main():
             'cad_m2pp_collector': cad_m2pp.get('collector'),
             'eur_excess_candidate_pipeline_ready': True,
             'eur_excess_collector': str(EUR_EXCESS_COLLECTOR),
+            'usd_m2_candidate_pipeline_ready': True,
+            'usd_m2_collector': str(USD_M2_COLLECTOR),
+            'gbp_reserves_candidate_pipeline_ready': True,
+            'gbp_credit_candidate_pipeline_ready': True,
+            'gbp_boe_collector': str(GBP_BOE_COLLECTOR),
             'eur_m3_effective_status': effective_m3.get('status'),
             'eur_m3_collector_status': effective_m3.get('collector_status'),
             'publication_eligible': False,
-            'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only {liq_ready}/{liq_total} are currently automation-ready after fail-closing EUR M3 for revision/vintage handling; controlled collector/apply wiring remains incomplete',
+            'reason': f'{liq_source_mapped}/{liq_total} official source families are mapped, but only {liq_ready}/{liq_total} are currently automation-ready after fail-closing EUR M3 for revision/vintage handling; additional exact source collectors are candidate-only until controlled apply wiring exists',
         },
         'RISK': {
             'state': 'BLOCKED_BRENT_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE',
