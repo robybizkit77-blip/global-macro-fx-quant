@@ -44,71 +44,81 @@ def normalize_date(text):
     return raw
 
 
-def fetch_csv():
+def boe_date(iso_date):
+    return datetime.fromisoformat(iso_date).strftime('%d/%b/%Y')
+
+
+def fetch_csv(series_id, policy_as_of):
     params = {
         'csv.x': 'yes',
         'Datefrom': '01/Jan/2026',
-        'Dateto': 'now',
-        'SeriesCodes': ','.join(spec['series_id'] for spec in SERIES.values()),
+        'Dateto': boe_date(policy_as_of),
+        'SeriesCodes': series_id,
         'UsingCodes': 'Y',
         'CSVF': 'TN',
         'VPD': 'Y',
         'VFD': 'N',
     }
     url = BASE + '?' + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers={'User-Agent': 'global-macro-fx-quant/1.0'})
+    req = urllib.request.Request(
+        url,
+        headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)',
+            'Accept': 'text/csv,text/plain,*/*',
+        },
+    )
     with urllib.request.urlopen(req, timeout=45) as response:
         text = response.read().decode('utf-8-sig', errors='replace')
     return url, text
 
 
-def parse_csv(text):
+def parse_csv(text, series_id):
     rows = list(csv.reader(io.StringIO(text)))
-    wanted = [spec['series_id'] for spec in SERIES.values()]
     header_idx = None
-    header = None
+    series_col = None
+    date_col = 0
     for i, row in enumerate(rows):
         cells = [str(x).strip() for x in row]
-        if all(code in cells for code in wanted):
+        if series_id in cells:
             header_idx = i
-            header = cells
+            series_col = cells.index(series_id)
+            for j, cell in enumerate(cells):
+                if cell.upper() in {'DATE', 'TIME_PERIOD', 'TIME PERIOD'}:
+                    date_col = j
+                    break
             break
     if header_idx is None:
-        raise SystemExit(f'could not locate BoE CSV header containing {wanted}')
+        sample = ' | '.join(','.join(r[:5]) for r in rows[:5])
+        raise SystemExit(f'could not locate BoE CSV header for {series_id}; sample={sample[:800]}')
 
-    idx = {code: header.index(code) for code in wanted}
-    date_col = 0
-    parsed = {code: [] for code in wanted}
+    parsed = []
     for row in rows[header_idx + 1:]:
-        if not row:
-            continue
-        if len(row) <= max(idx.values()):
+        if not row or len(row) <= max(series_col, date_col):
             continue
         date = normalize_date(row[date_col])
-        if not date or len(date) < 10:
+        raw = str(row[series_col]).strip().replace(',', '')
+        if not date or len(date) < 10 or raw.lower() in ('', '..', 'n/a'):
             continue
-        for code in wanted:
-            raw = str(row[idx[code]]).strip().replace(',', '')
-            if raw in ('', '..', 'n/a'):
-                continue
-            try:
-                value = float(raw)
-            except ValueError:
-                continue
-            parsed[code].append((date, value))
+        try:
+            value = float(raw)
+        except ValueError:
+            continue
+        parsed.append((date, value))
 
-    for code in wanted:
-        if not parsed[code]:
-            raise SystemExit(f'no parseable BoE observations for {code}')
-        parsed[code].sort(key=lambda x: x[0])
-    return parsed
+    if not parsed:
+        raise SystemExit(f'no parseable BoE observations for {series_id}')
+    parsed.sort(key=lambda x: x[0])
+    dedup = {}
+    for date, value in parsed:
+        if date in dedup and abs(dedup[date] - value) > 1e-9:
+            raise SystemExit(f'conflicting BoE observations for {series_id} on {date}')
+        dedup[date] = value
+    return sorted(dedup.items())
 
 
 def main():
     policy = json.loads(POLICY.read_text(encoding='utf-8'))
     liq = json.loads(LIQ.read_text(encoding='utf-8'))
-    url, text = fetch_csv()
-    parsed = parse_csv(text)
     results = {}
 
     for policy_key, spec in SERIES.items():
@@ -121,8 +131,9 @@ def main():
         runtime = liq['GBP'][spec['runtime_key']]
         runtime_date = normalize_date(runtime['last_date'])
         runtime_value = float(runtime['last_value'])
-        observations = parsed[spec['series_id']]
 
+        url, text = fetch_csv(spec['series_id'], policy['as_of'])
+        observations = parse_csv(text, spec['series_id'])
         matches = [value for date, value in observations if date == runtime_date]
         if len(matches) != 1:
             raise SystemExit(f'{policy_key}: expected one official observation for runtime date {runtime_date}, got {len(matches)}')
