@@ -127,7 +127,7 @@ def main():
     if usd_sloos.get('full_exact_match_count') != 1:
         raise SystemExit('USD.conditions exact mapping is no longer unique')
     full_matches = usd_sloos.get('full_exact_matches') or []
-    if len(full_matches) != 1 or full_matches[0].get('series_id') != 'SLOOS/SLOOS/SUBLPDCILS_N.Q':
+    if len(full_matches) != 1 or 'SLOOS/SLOOS/SUBLPDCILS_N.Q' not in (full_matches[0].get('metadata') or []):
         raise SystemExit('USD.conditions unique full match drifted')
 
     liq['verified_subseries'] = 12
