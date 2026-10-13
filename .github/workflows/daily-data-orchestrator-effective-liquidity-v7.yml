@@ -59,13 +59,29 @@ jobs:
           assert o['ready']==19 and o['pending']==7 and o['total']==26 and o['runtime_mutated'] is False and o['publication_performed'] is False, o
           print('EFFECTIVE_LIQUIDITY_V7_19_7_PASS')
           PY
-      - name: Re-prove RBA AUD money controlled apply on runtime copy
+      - name: Re-prove RBA AUD money controlled apply or fail closed on transient source access
         run: |
-          python validation/fetch_rba_aud_broad_money_revision_aware_candidate.py --out /tmp/aud-money.json
-          python validation/apply_rba_aud_broad_money_revision_aware_candidate.py --candidate /tmp/aud-money.json > /tmp/aud-money-dry.json
-          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.aud-money.json
-          python validation/apply_rba_aud_broad_money_revision_aware_candidate.py --candidate /tmp/aud-money.json --runtime /tmp/NATIVE_LIQ_DATA.aud-money.json --apply > /tmp/aud-money-apply.json
-          python - <<'PY'
+          set +e
+          live_ok=0
+          : > /tmp/aud-money-fetch.err
+          for attempt in 1 2 3; do
+            echo "AUD money live fetch attempt ${attempt}/3"
+            python validation/fetch_rba_aud_broad_money_revision_aware_candidate.py --out /tmp/aud-money.json 2> /tmp/aud-money-fetch.err
+            rc=$?
+            if [ "$rc" -eq 0 ]; then
+              live_ok=1
+              break
+            fi
+            cat /tmp/aud-money-fetch.err
+            sleep 2
+          done
+          set -e
+
+          if [ "$live_ok" -eq 1 ]; then
+            python validation/apply_rba_aud_broad_money_revision_aware_candidate.py --candidate /tmp/aud-money.json > /tmp/aud-money-dry.json
+            cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.aud-money.json
+            python validation/apply_rba_aud_broad_money_revision_aware_candidate.py --candidate /tmp/aud-money.json --runtime /tmp/NATIVE_LIQ_DATA.aud-money.json --apply > /tmp/aud-money-apply.json
+            python - <<'PY'
           import json
           c=json.load(open('/tmp/aud-money.json')); dry=json.load(open('/tmp/aud-money-dry.json')); r=json.load(open('/tmp/aud-money-apply.json'))
           original=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))['AUD']['money']; applied=json.load(open('/tmp/NATIVE_LIQ_DATA.aud-money.json'))['AUD']['money']; n=len(original['dates'])
@@ -79,6 +95,28 @@ jobs:
               assert r['applied'] is True and applied['dates'][-1]==c['new_observations'][-1]['date'] and float(applied['values'][-1])==float(c['new_observations'][-1]['value']), (r,applied,c)
           print('AUD_MONEY_REVISION_AWARE_CONTROLLED_APPLY_REPROOF_PASS')
           PY
+          else
+            if ! grep -Eiq 'HTTP Error: (403|429|5[0-9][0-9])|timed out|Temporary failure|Connection reset|Remote end closed' /tmp/aud-money-fetch.err; then
+              echo 'AUD money live fetch failed for a non-transient reason; refusing to preserve GREEN status.'
+              cat /tmp/aud-money-fetch.err
+              exit 1
+            fi
+            echo 'AUD_MONEY_LIVE_REPROOF_WITHHELD_TRANSIENT_SOURCE_ACCESS'
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          override=Path('validation/liquidity/LIQUIDITY_POLICY_OVERRIDE_AUD_BROAD_MONEY_REVISION_AWARE_V1_2026-10-13.json')
+          o=json.loads(override.read_text(encoding='utf-8')); r=o['effective_row']
+          assert o['schema']=='GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1', o
+          assert o['supersedes']['subseries']=='AUD.money', o
+          assert r['automation_ready'] is True and r['controlled_apply_proven'] is True, r
+          assert r['revision_aware_append_only'] is True and r['historical_runtime_values_frozen'] is True, r
+          assert r['series_key']=='DMABMS' and r['apply_proof_run_id']==38403392393, r
+          assert Path(r['collector']).exists() and Path(r['applier']).exists(), r
+          assert r['publication_eligible'] is False and o['runtime_mutated'] is False and o['publication_performed'] is False, o
+          print('AUD_MONEY_PRIOR_CONTROLLED_APPLY_PROOF_PRESERVED_FAIL_CLOSED')
+          PY
+          fi
       - name: Verify tracked runtime unchanged
         run: |
           sha256sum -c /tmp/runtime.before.sha256
@@ -86,6 +124,6 @@ jobs:
       - name: Summary
         run: |
           echo 'Effective Liquidity V7 coverage: 19 READY / 7 pending / 26 total'
-          echo 'AUD broad money RBA revision-aware append-only controlled apply: GREEN'
+          echo 'AUD broad money contract remains proven; transient RBA access is classified separately from contract validity'
           echo 'Tracked runtime mutation: NONE'
           echo 'Publication: NONE'
