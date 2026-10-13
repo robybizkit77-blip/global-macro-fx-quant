@@ -48,7 +48,18 @@ def prove_aud_es_candidate():
         check=False,
     )
     if proc.returncode != 0:
-        raise SystemExit(f'AUD ES candidate proof failed:\n{proc.stdout}')
+        text = proc.stdout or ''
+        transient_markers = (
+            'HTTP Error 403', 'HTTP Error 429', 'HTTP Error 500', 'HTTP Error 502',
+            'HTTP Error 503', 'HTTP Error 504', 'timed out', 'Temporary failure',
+            'Connection reset', 'Remote end closed connection',
+        )
+        if any(marker in text for marker in transient_markers):
+            return None, {
+                'status': 'BLOCKED_TRANSIENT_SOURCE_ACCESS',
+                'error': text[-2000:],
+            }
+        raise SystemExit(f'AUD ES candidate proof failed:\n{text}')
     candidate = load(out)
     if candidate.get('schema') != 'GMFQ_LIQUIDITY_AUD_ES_BALANCES_CANDIDATE_V1':
         raise SystemExit('AUD ES candidate schema mismatch')
@@ -64,7 +75,7 @@ def prove_aud_es_candidate():
         raise SystemExit('AUD ES candidate recent/runtime-last exact proof failed')
     if candidate.get('publication_performed') is not False or candidate.get('runtime_mutated') is not False:
         raise SystemExit('AUD ES candidate must not publish or mutate runtime')
-    return candidate
+    return candidate, {'status': 'GREEN_LIVE_PROOF', 'error': None}
 
 
 def main():
@@ -135,7 +146,7 @@ def main():
         raise SystemExit('AUD.liquidity must remain candidate-only until controlled apply is wired')
     if not AUD_ES_COLLECTOR.exists():
         raise SystemExit('AUD.liquidity RBA candidate collector is missing')
-    aud_es_live = prove_aud_es_candidate()
+    aud_es_live, aud_es_fetch = prove_aud_es_candidate()
 
     cad_m2pp = liq_mapped.get('CAD.money') or {}
     if cad_m2pp.get('candidate_pipeline_ready') is not True:
@@ -223,10 +234,12 @@ def main():
             'aud_es_candidate_pipeline_ready': True,
             'aud_es_collector': str(AUD_ES_COLLECTOR),
             'aud_es_series_key': aud_es.get('series_key'),
-            'aud_es_live_proof': True,
-            'aud_es_runtime_last_date': (aud_es_live.get('runtime') or {}).get('last_date'),
-            'aud_es_latest_official_date': aud_es_live.get('latest_date'),
-            'aud_es_latest_official_value': aud_es_live.get('latest_value'),
+            'aud_es_live_proof': aud_es_live is not None,
+            'aud_es_current_fetch_status': aud_es_fetch.get('status'),
+            'aud_es_current_fetch_error': aud_es_fetch.get('error'),
+            'aud_es_runtime_last_date': ((aud_es_live or {}).get('runtime') or {}).get('last_date'),
+            'aud_es_latest_official_date': (aud_es_live or {}).get('latest_date'),
+            'aud_es_latest_official_value': (aud_es_live or {}).get('latest_value'),
             'cad_m2pp_candidate_pipeline_ready': True,
             'cad_m2pp_collector': cad_m2pp.get('collector'),
             'eur_excess_candidate_pipeline_ready': True,
