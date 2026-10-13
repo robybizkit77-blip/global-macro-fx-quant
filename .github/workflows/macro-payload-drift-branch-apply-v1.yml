@@ -47,9 +47,12 @@ jobs:
 
       - name: Patch stale V1 Macro detached-state assumption
         shell: bash
+        env:
+          REPLACEMENT_B64: "ICAgICAgLSBuYW1lOiBWYWxpZGF0ZSBjdXJyZW50IE1hY3JvIGFsaWdubWVudCBzdGF0ZQogICAgICAgIHNoZWxsOiBiYXNoCiAgICAgICAgcnVuOiB8CiAgICAgICAgICBzZXQgLWV1byBwaXBlZmFpbAogICAgICAgICAgc2V0ICtlCiAgICAgICAgICBweXRob24zIHZhbGlkYXRpb24vYnVpbGRfbGl2ZV9tYW5pZmVzdF92Mi5weSAtLXdyaXRlIC90bXAvZGFpbHktb3JjaGVzdHJhdG9yLXYxL21hbmlmZXN0LmJlZm9yZS5qc29uID4gL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvbWFuaWZlc3QtYmVmb3JlLmxvZyAyPiYxCiAgICAgICAgICByYz0kPwogICAgICAgICAgc2V0IC1lCiAgICAgICAgICBjYXQgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvbWFuaWZlc3QtYmVmb3JlLmxvZwogICAgICAgICAgcHl0aG9uMyAtICIkcmMiIDw8J1BZJwogICAgICAgICAgaW1wb3J0IGpzb24sc3lzCiAgICAgICAgICByYz1pbnQoc3lzLmFyZ3ZbMV0pCiAgICAgICAgICBtPWpzb24ubG9hZChvcGVuKCcvdG1wL2RhaWx5LW9yY2hlc3RyYXRvci12MS9tYW5pZmVzdC5iZWZvcmUuanNvbicpKQogICAgICAgICAgcm93cz17eFsna2V5J106eCBmb3IgeCBpbiBtWydzZWN0aW9ucyddfQogICAgICAgICAgbWFjcm89KCdNQUNST19USEVSTU9NRVRFUl9EQVRBJywnTUFDUk9fU0VSSUVTJykKICAgICAgICAgIGlmIHJjID09IDA6CiAgICAgICAgICAgICAgYXNzZXJ0IG1bJ3N0YXR1cyddPT0nUEFTUycsIG0KICAgICAgICAgICAgICBmb3Iga2V5IGluIG1hY3JvOgogICAgICAgICAgICAgICAgICBhc3NlcnQgcm93c1trZXldWydvY2N1cnJlbmNlc19pbl9wYXlsb2FkJ109PTEsIChrZXksIHJvd3Nba2V5XSkKICAgICAgICAgICAgICBvcGVuKCcvdG1wL2RhaWx5LW9yY2hlc3RyYXRvci12MS9tYWNyby1ydW50aW1lLXN0YXRlJywndycpLndyaXRlKCdBTElHTkVEXFxuJykKICAgICAgICAgICAgICBwcmludCgnTUFDUk9fUlVOVElNRV9BTFJFQURZX0FMSUdORURfUEFTUycpCiAgICAgICAgICBlbHNlOgogICAgICAgICAgICAgIGFzc2VydCBtWydzdGF0dXMnXT09J0ZBSUwnLCBtCiAgICAgICAgICAgICAgZm9yIGtleSBpbiBtYWNybzoKICAgICAgICAgICAgICAgICAgYXNzZXJ0IHJvd3Nba2V5XVsnb2NjdXJyZW5jZXNfaW5fcGF5bG9hZCddPT0wLCAoa2V5LCByb3dzW2tleV0pCiAgICAgICAgICAgICAgb3BlbignL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvbWFjcm8tcnVudGltZS1zdGF0ZScsJ3cnKS53cml0ZSgnREVUQUNIRURcXG4nKQogICAgICAgICAgICAgIHByaW50KCdMRUdBQ1lfREVUQUNIRURfTUFDUk9fUlVOVElNRV9DT05GSVJNRUQnKQogICAgICAgICAgUFkKCiAgICAgIC0gbmFtZTogRXBoZW1lcmFsbHkgcmVwYWlyIE1hY3JvIG9ubHkgd2hlbiBkZXRhY2hlZAogICAgICAgIHNoZWxsOiBiYXNoCiAgICAgICAgcnVuOiB8CiAgICAgICAgICBzZXQgLWV1byBwaXBlZmFpbAogICAgICAgICAgc3RhdGU9IiQoY2F0IC90bXAvZGFpbHktb3JjaGVzdHJhdG9yLXYxL21hY3JvLXJ1bnRpbWUtc3RhdGUpIgogICAgICAgICAgaWYgWyAiJHN0YXRlIiA9ICJERVRBQ0hFRCIgXTsgdGhlbgogICAgICAgICAgICBweXRob24zIHZhbGlkYXRpb24vcmVwYWlyX2RldGFjaGVkX2RpcmVjdF9zZWN0aW9uLnB5IC0tc2VjdGlvbiBNQUNST19USEVSTU9NRVRFUl9EQVRBIC0tYXBwbHkgfCB0ZWUgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvcmVwYWlyLW1hY3JvLXRoZXJtb21ldGVyLmpzb24KICAgICAgICAgICAgcHl0aG9uMyB2YWxpZGF0aW9uL3JlcGFpcl9kZXRhY2hlZF9kaXJlY3Rfc2VjdGlvbi5weSAtLXNlY3Rpb24gTUFDUk9fU0VSSUVTIC0tYXBwbHkgfCB0ZWUgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvcmVwYWlyLW1hY3JvLXNlcmllcy5qc29uCiAgICAgICAgICAgIHB5dGhvbjMgdmFsaWRhdGlvbi9idWlsZF9saXZlX21hbmlmZXN0X3YyLnB5IC0td3JpdGUgbGl2ZV9kYXRhL21hbmlmZXN0LnYyLmpzb24gfCB0ZWUgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvbWFuaWZlc3QtYWZ0ZXIubG9nCiAgICAgICAgICBlbHNlCiAgICAgICAgICAgIGVjaG8gJ01BQ1JPX0FMUkVBRFlfQUxJR05FRF9OT19SRVBBSVJfUkVRVUlSRUQnCiAgICAgICAgICBmaQoKICAgICAgLSBuYW1lOiBWYWxpZGF0ZSBNYWNybyBydW50aW1lIGFuZCBleGFjdCBkaWZmIHNjb3BlCiAgICAgICAgc2hlbGw6IGJhc2gKICAgICAgICBydW46IHwKICAgICAgICAgIHNldCAtZXVvIHBpcGVmYWlsCiAgICAgICAgICBweXRob24zIHZhbGlkYXRpb24vY2hlY2tfbGl2ZV91cGRhdGVfY29udHJhY3QucHkgfCB0ZWUgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvbGl2ZS1jb250cmFjdC1hZnRlci5sb2cKICAgICAgICAgIHB5dGhvbjMgdmFsaWRhdGlvbi9yZWJ1aWxkX2xpdmVfZGF0YV9ydW50aW1lLnB5IC0tdmVyaWZ5LW9ubHkgfCB0ZWUgL3RtcC9kYWlseS1vcmNoZXN0cmF0b3ItdjEvcnVudGltZS1yb3VuZHRyaXAtYWZ0ZXIuanNvbgogICAgICAgICAgcHl0aG9uMyAtIDw8J1BZJwogICAgICAgICAgaW1wb3J0IHN1YnByb2Nlc3MKICAgICAgICAgIHN0YXRlPW9wZW4oJy90bXAvZGFpbHktb3JjaGVzdHJhdG9yLXYxL21hY3JvLXJ1bnRpbWUtc3RhdGUnKS5yZWFkKCkuc3RyaXAoKQogICAgICAgICAgY2hhbmdlZD1zdWJwcm9jZXNzLmNoZWNrX291dHB1dChbJ2dpdCcsJ2RpZmYnLCctLW5hbWUtb25seSddLCB0ZXh0PVRydWUpLnNwbGl0bGluZXMoKQogICAgICAgICAgcHJpbnQoJ0VQSEVNRVJBTF9DSEFOR0VEX0ZJTEVTJywgY2hhbmdlZCwgJ01BQ1JPX1NUQVRFJywgc3RhdGUpCiAgICAgICAgICBleHBlY3RlZD17J3BheWxvYWQvcGFydC0xNS50eHQnfSBpZiBzdGF0ZT09J0FMSUdORUQnIGVsc2UgeydsaXZlX2RhdGEvbWFuaWZlc3QudjIuanNvbicsJ3BheWxvYWQvcGFydC0wMC50eHQnLCdwYXlsb2FkL3BhcnQtMDEudHh0JywncGF5bG9hZC9wYXJ0LTE1LnR4dCd9CiAgICAgICAgICBpZiBzZXQoY2hhbmdlZCkgIT0gZXhwZWN0ZWQ6CiAgICAgICAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmJ3VuZXhwZWN0ZWQgZXBoZW1lcmFsIGRpZmYgc2NvcGU6IHtjaGFuZ2VkfTsgZXhwZWN0ZWQ9e3NvcnRlZChleHBlY3RlZCl9JykKICAgICAgICAgIFBZCgo="
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64,os
           from pathlib import Path
           path=Path('.github/workflows/daily-data-orchestrator-v1.yml')
           text=path.read_text(encoding='utf-8')
@@ -59,65 +62,7 @@ jobs:
           assert text.count(end)==1, text.count(end)
           a=text.index(start)
           b=text.index(end,a)
-          replacement=r'''      - name: Validate current Macro alignment state
-        shell: bash
-        run: |
-          set -euo pipefail
-          set +e
-          python3 validation/build_live_manifest_v2.py --write /tmp/daily-orchestrator-v1/manifest.before.json > /tmp/daily-orchestrator-v1/manifest-before.log 2>&1
-          rc=$?
-          set -e
-          cat /tmp/daily-orchestrator-v1/manifest-before.log
-          python3 - "$rc" <<'PY'
-          import json,sys
-          rc=int(sys.argv[1])
-          m=json.load(open('/tmp/daily-orchestrator-v1/manifest.before.json'))
-          rows={x['key']:x for x in m['sections']}
-          macro=('MACRO_THERMOMETER_DATA','MACRO_SERIES')
-          if rc == 0:
-              assert m['status']=='PASS', m
-              for key in macro:
-                  assert rows[key]['occurrences_in_payload']==1, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('ALIGNED\n')
-              print('MACRO_RUNTIME_ALREADY_ALIGNED_PASS')
-          else:
-              assert m['status']=='FAIL', m
-              for key in macro:
-                  assert rows[key]['occurrences_in_payload']==0, (key, rows[key])
-              open('/tmp/daily-orchestrator-v1/macro-runtime-state','w').write('DETACHED\n')
-              print('LEGACY_DETACHED_MACRO_RUNTIME_CONFIRMED')
-          PY
-
-      - name: Ephemerally repair Macro only when detached
-        shell: bash
-        run: |
-          set -euo pipefail
-          state="$(cat /tmp/daily-orchestrator-v1/macro-runtime-state)"
-          if [ "$state" = "DETACHED" ]; then
-            python3 validation/repair_detached_direct_section.py --section MACRO_THERMOMETER_DATA --apply | tee /tmp/daily-orchestrator-v1/repair-macro-thermometer.json
-            python3 validation/repair_detached_direct_section.py --section MACRO_SERIES --apply | tee /tmp/daily-orchestrator-v1/repair-macro-series.json
-            python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json | tee /tmp/daily-orchestrator-v1/manifest-after.log
-          else
-            echo 'MACRO_ALREADY_ALIGNED_NO_REPAIR_REQUIRED'
-          fi
-
-      - name: Validate Macro runtime and exact diff scope
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 validation/check_live_update_contract.py | tee /tmp/daily-orchestrator-v1/live-contract-after.log
-          python3 validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/daily-orchestrator-v1/runtime-roundtrip-after.json
-          python3 - <<'PY'
-          import subprocess
-          state=open('/tmp/daily-orchestrator-v1/macro-runtime-state').read().strip()
-          changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
-          print('EPHEMERAL_CHANGED_FILES', changed, 'MACRO_STATE', state)
-          expected={'payload/part-15.txt'} if state=='ALIGNED' else {'live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','payload/part-15.txt'}
-          if set(changed) != expected:
-              raise SystemExit(f'unexpected ephemeral diff scope: {changed}; expected={sorted(expected)}')
-          PY
-
-'''
+          replacement=base64.b64decode(os.environ['REPLACEMENT_B64']).decode('utf-8')
           path.write_text(text[:a]+replacement+text[b:],encoding='utf-8')
           PY
 
