@@ -23,10 +23,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compare official SNB CHF candidates with runtime
-        run: python3 validation/diagnose_snb_chf_liquidity_credit_v1.py | tee /tmp/snb-chf-diagnostic.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/diagnose_snb_chf_liquidity_credit_v1.py | tee /tmp/snb-chf-diagnostic.json
       - name: Upload diagnostic
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: liquidity-snb-chf-diagnostic-v1-${{ github.run_id }}
           path: /tmp/snb-chf-diagnostic.json
+          if-no-files-found: warn
           retention-days: 30
