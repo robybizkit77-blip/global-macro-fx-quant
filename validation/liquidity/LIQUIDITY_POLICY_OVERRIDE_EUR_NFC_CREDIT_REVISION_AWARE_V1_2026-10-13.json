@@ -1,0 +1,53 @@
+{
+  "schema": "GMFQ_LIQUIDITY_POLICY_OVERRIDE_V1",
+  "as_of": "2026-10-13",
+  "supersedes": {
+    "policy": "validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json",
+    "subseries": "EUR.credit"
+  },
+  "effective_row": {
+    "label": "Prestiti imprese",
+    "status": "AUTOMATION_CONTRACT_PROVEN_REVISION_AWARE_CONTROLLED_APPLY",
+    "publisher": "European Central Bank / ESCB",
+    "dataset": "BSI",
+    "source_contract": "MFI lending to non-financial corporations — outstanding stocks, MFIs excluding Eurosystem, non-seasonally adjusted",
+    "frequency": "MONTHLY",
+    "automation_ready": true,
+    "series_mapping_status": "EXACT_SERIES_KEY_CONFIRMED_REVISION_AWARE_APPEND_ONLY",
+    "series_key": "BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E",
+    "unit": "EUR",
+    "collector": "validation/fetch_ecb_eur_nfc_loans_revision_aware_candidate.py",
+    "applier": "validation/apply_ecb_eur_nfc_loans_revision_aware_candidate.py",
+    "candidate_pipeline_ready": true,
+    "controlled_apply_proven": true,
+    "revision_aware_append_only": true,
+    "historical_runtime_values_frozen": true,
+    "identity_transform_for_new_observations": true,
+    "live_tested_in_ci": true,
+    "apply_proof_run_id": 38402698569,
+    "apply_proof_job_id": 115314124085,
+    "historical_overlap_count": 31,
+    "historical_exact_match_count": 29,
+    "historical_exact_match_ratio": 0.9354838709677419,
+    "historical_revision_mismatch_count": 2,
+    "runtime_last_date": "2026-07",
+    "runtime_last_value": 5481083.172910931,
+    "current_vintage_value_on_runtime_last_date": 5480043.97421093,
+    "current_vintage_diff_on_runtime_last_date": 1039.198700000532,
+    "official_last_date": "2026-08",
+    "official_last_value": 5462800.13649583,
+    "latest_apply_receipt_status": "UPDATE_AVAILABLE_ON_EPHEMERAL_COPY",
+    "latest_apply_appended_observations": 1,
+    "append_contract": "append only strictly contiguous monthly observations after the stored PIT runtime tail; current-vintage revisions to already stored dates are diagnostic only and can never rewrite historical runtime values",
+    "publication_eligible": false,
+    "bias_score_sizing_effect": "NONE",
+    "source_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.U2.N.A.A20.A.1.U2.2240.Z01.E"
+  },
+  "coverage_delta": {
+    "automation_ready_subseries": 1,
+    "mapping_pending_subseries": -1
+  },
+  "reason": "The exact ECB BSI NFC-loans series is identified and live-tested. Across the 31-month overlap used by the proof, 29 observations match the stored runtime exactly and 2 differ because the current ECB vintage revised 2026-06 and 2026-07. The automation contract is therefore explicitly revision-aware: stored PIT history is immutable and only strictly contiguous observations after the stored tail may be appended. CI run 38402698569 proved one safe append, 2026-08 = 5462800.13649583, on an ephemeral runtime copy with the complete historical prefix unchanged. Tracked runtime remained byte-identical and no publication occurred.",
+  "runtime_mutated": false,
+  "publication_performed": false
+}
