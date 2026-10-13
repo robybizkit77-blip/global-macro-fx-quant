@@ -14,6 +14,7 @@ RUNTIME = Path('live_data/sections/NATIVE_LIQ_DATA.json')
 DEFAULT_OUT = Path('validation/liquidity-usd-bank-credit-h8-xml-candidate.json')
 URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?filetype=zip&rel=H8'
 SERIES = 'B1001NCBA'
+RAW_TO_RUNTIME_SCALE = 0.001  # official H.8 values are USD millions; runtime stores USD billions
 
 
 def norm_date(v):
@@ -39,11 +40,9 @@ def fetch_zip():
 def parse_series(body):
     with zipfile.ZipFile(io.BytesIO(body)) as zf:
         raw = zf.read('H8_data.xml')
-    source = {}
+    source_raw = {}
     metadata = None
     in_target = False
-    # Capture observations while inside the target Series. This avoids clearing Obs
-    # elements before the parent Series end event is reached.
     for event, elem in ET.iterparse(io.BytesIO(raw), events=('start', 'end')):
         tag = elem.tag.rsplit('}', 1)[-1]
         if event == 'start' and tag == 'Series':
@@ -55,7 +54,7 @@ def parse_series(body):
             d = elem.attrib.get('TIME_PERIOD')
             v = elem.attrib.get('OBS_VALUE')
             if d and v not in (None, ''):
-                source[d] = float(v)
+                source_raw[d] = float(v)
             elem.clear()
             continue
         if event == 'end' and tag == 'Series':
@@ -66,11 +65,12 @@ def parse_series(body):
             continue
         if event == 'end' and not in_target:
             elem.clear()
-    if metadata is None or not source:
+    if metadata is None or not source_raw:
         raise SystemExit(f'Fed H8 series {SERIES} not found in official XML')
     if metadata.get('FREQ') != '19' or metadata.get('SA') != 'SA' or metadata.get('ITEM') != '1001':
         raise SystemExit(f'unexpected H8 metadata for {SERIES}: {metadata}')
-    return metadata, source
+    source = {d: v * RAW_TO_RUNTIME_SCALE for d, v in source_raw.items()}
+    return metadata, source_raw, source
 
 
 def runtime_series():
@@ -90,16 +90,14 @@ def main():
     args = ap.parse_args()
 
     row, parsed = runtime_series()
-    metadata, source = parse_series(fetch_zip())
+    metadata, source_raw, source = parse_series(fetch_zip())
 
-    # If runtime is day-resolved, require exact-date matching. If it is monthly,
-    # fail closed rather than inventing an aggregation rule.
     if any(len(d) == 7 for d, _, _ in parsed):
         raise SystemExit('USD.credit runtime is monthly; no weekly-to-monthly aggregation rule is certified')
     rt = {d: v for d, v, _ in parsed}
     overlap = sorted(set(rt) & set(source))
     mismatches = [
-        {'date': d, 'runtime': rt[d], 'official': source[d], 'diff': rt[d] - source[d]}
+        {'date': d, 'runtime': rt[d], 'official_raw_millions': source_raw[d], 'official_runtime_unit_billions': source[d], 'diff': rt[d] - source[d]}
         for d in overlap if abs(rt[d] - source[d]) > 1e-6
     ]
     exact = len(overlap) - len(mismatches)
@@ -109,7 +107,10 @@ def main():
     recent = overlap[-20:]
     recent_exact = len(recent) == 20 and all(abs(rt[d] - source[d]) <= 1e-6 for d in recent)
     latest = max(source)
-    new = [{'date': d, 'value': source[d]} for d in sorted(source) if d > runtime_last]
+    new = [
+        {'date': d, 'value': source[d], 'official_raw_millions': source_raw[d]}
+        for d in sorted(source) if d > runtime_last
+    ]
 
     green = len(overlap) >= 52 and last_match and recent_exact
     result = {
@@ -123,7 +124,10 @@ def main():
             'transport': 'official full-release SDMX/XML ZIP',
             'frequency': 'WEEKLY',
             'seasonal_adjustment': 'SA',
-            'unit_multiplier': metadata.get('UNIT_MULT'),
+            'xml_unit_multiplier': metadata.get('UNIT_MULT'),
+            'official_value_unit': 'USD million',
+            'runtime_value_unit': 'USD billion',
+            'raw_to_runtime_scale': RAW_TO_RUNTIME_SCALE,
         },
         'runtime': {'count': len(rt), 'last_date': runtime_last, 'last_value': last_value},
         'proof': {
@@ -133,10 +137,12 @@ def main():
             'mismatches': mismatches[:40],
             'runtime_last_matches_official': last_match,
             'recent_20_exact': recent_exact,
+            'unit_scale_contract_exact': exact == len(overlap),
         },
         'runtime_match_confirmed': green,
         'latest_date': latest,
         'latest_value': source[latest],
+        'latest_official_raw_millions': source_raw[latest],
         'candidate_update_available': bool(new),
         'new_observations': new,
         'runtime_mutated': False,
