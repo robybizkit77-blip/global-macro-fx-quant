@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import urllib.request
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
@@ -31,27 +32,31 @@ def parse(text):
         dialect=csv.excel; dialect.delimiter=';'
     rows=list(csv.reader(io.StringIO(text),dialect=dialect))
     width=max(len(r) for r in rows); rows=[r+['']*(width-len(r)) for r in rows]
-    start=next((i for i,r in enumerate(rows) if month(r[0])),None)
-    if start is None:raise SystemExit(f'no dated rows preview={rows[:20]!r}')
-    out=[]
-    for c in range(1,width):
-        desc=[(str(rows[r][0]).strip(),str(rows[r][c]).strip()) for r in range(start) if str(rows[r][c]).strip()]
-        vals={}
-        for r in rows[start:]:
-            m=month(r[0]); raw=str(r[c]).strip().replace("'",'').replace(' ','')
-            if not m or not raw:continue
-            if raw.count(',')==1 and '.' not in raw:raw=raw.replace(',','.')
-            try:vals[m]=float(raw)
-            except ValueError:continue
-        if vals:out.append({'column':c,'metadata':desc,'values':vals})
-    return rows[:start],out
+    header_idx=next((i for i,r in enumerate(rows) if [str(x).strip() for x in r[:6]]==['Date','D0','D1','D2','D3','Value']),None)
+    if header_idx is None:raise SystemExit(f'expected SNB long-table header not found preview={rows[:20]!r}')
+    grouped=defaultdict(dict)
+    for r in rows[header_idx+1:]:
+        m=month(r[0])
+        if not m:continue
+        dims=tuple(str(x).strip() for x in r[1:5])
+        raw=str(r[5]).strip().replace("'",'').replace(' ','')
+        if not raw:continue
+        if raw.count(',')==1 and '.' not in raw:raw=raw.replace(',','.')
+        try:v=float(raw)
+        except ValueError:continue
+        grouped[dims][m]=v
+    if not grouped:raise SystemExit('SNB official selection returned no dimensioned series')
+    series=[]
+    for dims,vals in grouped.items():
+        series.append({'dimensions':{'D0':dims[0],'D1':dims[1],'D2':dims[2],'D3':dims[3]},'values':vals})
+    return rows[:header_idx+1],series
 
 def compare(rt,vals):
     common=sorted(set(rt)&set(vals)); best=None
     for scale in (1,1e-3,1e3,1e-6,1e6):
         exact=sum(abs(rt[m]-vals[m]*scale)<=1e-9 for m in common)
         r1=sum(abs(rt[m]-round(vals[m]*scale,1))<=1e-9 for m in common)
-        mae=sum(abs(rt[m]-vals[m]*scale for m in common)) if False else sum(abs(rt[m]-vals[m]*scale) for m in common)/(len(common) or 1)
+        mae=sum(abs(rt[m]-vals[m]*scale) for m in common)/(len(common) or 1)
         row={'scale':scale,'overlap':len(common),'exact':exact,'rounded_1dp_exact':r1,'mae':mae}
         score=(r1,exact,-mae)
         if best is None or score>best[0]:best=(score,row)
@@ -59,9 +64,10 @@ def compare(rt,vals):
 
 def main():
     text=fetch(); header,series=parse(text); rt=runtime(); ranked=[]
+    last=max(rt)
     for s in series:
-        cmp=compare(rt,s['values']); last=max(rt)
-        ranked.append({'column':s['column'],'metadata':s['metadata'],**cmp,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
+        cmp=compare(rt,s['values'])
+        ranked.append({'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
     ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V1','url':URL,'column_count':len(series),'header_preview':header,'ranked':ranked},indent=2,ensure_ascii=False))
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V1','url':URL,'series_count':len(series),'header_preview':header,'ranked':ranked},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
