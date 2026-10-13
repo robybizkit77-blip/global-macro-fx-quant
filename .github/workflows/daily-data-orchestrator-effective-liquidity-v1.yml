@@ -104,11 +104,12 @@ jobs:
           assert dry['schema']=='GMFQ_LIQUIDITY_GBP_BOE_APPLY_RECEIPT_V1', dry
           assert r['schema']=='GMFQ_LIQUIDITY_GBP_BOE_APPLY_RECEIPT_V1', r
           assert dry['publication_performed'] is False and r['publication_performed'] is False
+          assert dry['applied'] is False and r['applied'] is True
           mapping={'GBP.liquidity':'liquidity','GBP.credit':'credit'}
           expected_series={'GBP.liquidity':'RPWB56A','GBP.credit':'LPMVTYI'}
           for key,runtime_key in mapping.items():
               row=c['results'][key]
-              assert row['series_id']==expected_series[key], row
+              assert row['source']['series_id']==expected_series[key], row
               assert row['runtime_match_confirmed'] is True, row
               assert row['latest_date'] >= row['runtime']['last_date'], row
               o=original['GBP'][runtime_key]
@@ -123,7 +124,6 @@ jobs:
                   assert float(a['last_value'])==float(row['latest_value']), (key,a['last_value'],row['latest_value'])
               else:
                   assert r['results'][key]['appended_observations']==0, r['results'][key]
-          assert r['runtime_mutated'] is True
           print('GBP_CONTROLLED_APPLY_PROOF_PASS')
           print(json.dumps({'candidates': c['results'], 'receipt': r['results']}, indent=2))
           PY
