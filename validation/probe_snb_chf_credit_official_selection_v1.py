@@ -50,39 +50,20 @@ def parse(text):
         grouped[dims][m]=v
     return [{'dimensions':{'D0':d[0],'D1':d[1],'D2':d[2],'D3':d[3]},'values':vals} for d,vals in grouped.items()]
 
-def compare(rt,vals):
-    common=sorted(set(rt)&set(vals)); best=None
-    for scale in (1,1e-3,1e3,1e-6,1e6):
-        exact=sum(abs(rt[m]-vals[m]*scale)<=1e-9 for m in common)
-        r1=sum(abs(rt[m]-round(vals[m]*scale,1))<=1e-9 for m in common)
-        mae=sum(abs(rt[m]-vals[m]*scale) for m in common)/(len(common) or 1)
-        row={'scale':scale,'overlap':len(common),'exact':exact,'rounded_1dp_exact':r1,'mae':mae}
-        score=(r1,exact,-mae)
-        if best is None or score>best[0]:best=(score,row)
-    return best[1]
-
 def d0_items(dimensions):
     for d in dimensions.get('dimensions',[]):
         if d.get('id')=='D0':return [(x['id'],x.get('name')) for x in d.get('dimensionItems',[])]
     raise SystemExit('SNB dimensions metadata missing D0')
 
 def main():
-    rt=runtime(); ranked=[]; requests=[]; last=max(rt)
-    dimensions=json.loads(fetch(DIMENSIONS,'application/json'))
-    categories=d0_items(dimensions)
-    # Atomic canonical credit definition first: total domestic+foreign, total loans, utilisation.
-    for d0,label in categories:
-        url=f'{BASE}?dimSel=D0({d0}),D1(T0),D2(T1),D3(F)&fromDate=2025-07&toDate=2026-07'
-        rec={'d0':d0,'label':label,'url':url}
-        try:
-            series=parse(fetch(url)); rec['status']='OK' if series else 'EMPTY'; rec['series_count']=len(series)
-        except Exception as e:
-            series=[]; rec['status']='ERROR'; rec['series_count']=0; rec['error']=f'{type(e).__name__}: {e}'
-        requests.append(rec)
-        for s in series:
-            cmp=compare(rt,s['values'])
-            ranked.append({'bank_category_label':label,'dimensions':s['dimensions'],**cmp,'runtime_last_date':last,'runtime_last':rt[last],'official_on_runtime_last_raw':s['values'].get(last),'official_latest_date':max(s['values']),'official_latest_raw':s['values'][max(s['values'])]})
-    ranked.sort(key=lambda x:(x['rounded_1dp_exact'],x['exact'],x['overlap'],-x['mae']),reverse=True)
-    if not ranked:raise SystemExit('all atomic SNB CHF credit category requests returned zero usable series')
-    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_OFFICIAL_SELECTION_PROBE_V5','dimensions_endpoint':DIMENSIONS,'bank_categories':categories,'definition':{'D1':'T0 Total domestic and foreign','D2':'T1 Total loans','D3':'F Utilisation'},'requests':requests,'series_count':len(ranked),'ranked':ranked},indent=2,ensure_ascii=False))
+    rt=runtime(); last=max(rt); dimensions=json.loads(fetch(DIMENSIONS,'application/json'))
+    url=f'{BASE}?fromDate={last}&toDate={last}'
+    series=parse(fetch(url))
+    rows=[]
+    for s in series:
+        raw=s['values'].get(last)
+        if raw is None:continue
+        rows.append({'dimensions':s['dimensions'],'official_raw':raw,'abs_diff_vs_runtime_scale1':abs(raw-rt[last]),'abs_diff_vs_runtime_scale_1e3':abs(raw*1e-3-rt[last])})
+    rows.sort(key=lambda x:min(x['abs_diff_vs_runtime_scale1'],x['abs_diff_vs_runtime_scale_1e3']))
+    print(json.dumps({'schema':'GMFQ_SNB_CHF_CREDIT_UNFILTERED_MONTH_PROBE_V1','url':url,'runtime_last_date':last,'runtime_last':rt[last],'bank_categories_metadata':d0_items(dimensions),'series_count':len(rows),'distinct_d0':sorted({r['dimensions']['D0'] for r in rows}),'closest':rows[:30]},indent=2,ensure_ascii=False))
 if __name__=='__main__':main()
