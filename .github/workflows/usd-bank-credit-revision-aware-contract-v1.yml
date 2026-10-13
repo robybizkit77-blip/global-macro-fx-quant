@@ -1,0 +1,87 @@
+name: USD Bank Credit Revision Aware Contract V1
+
+on:
+  push:
+    branches: [release-candidate-daily-data-orchestrator-v1-2026-10-12]
+    paths:
+      - 'validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py'
+      - 'validation/apply_fed_usd_bank_credit_revision_aware_candidate.py'
+      - '.github/workflows/usd-bank-credit-revision-aware-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  usd-bank-credit-revision-aware-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/runtime.copy.json
+      - name: Fetch official Fed H8 revision-aware candidate
+        run: python validation/fetch_fed_usd_bank_credit_revision_aware_candidate.py --out /tmp/usd-credit.json
+      - name: Enforce source and PIT contract
+        run: |
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/usd-credit.json'))
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY'
+          assert c['source']['series_id']=='B1001NCBA'
+          assert c['source']['raw_to_runtime_scale']==0.001
+          p=c['proof']
+          assert p['overlap_count']>=52
+          assert p['current_vintage_mismatch_count']>0
+          assert p['revision_aware_append_only'] is True
+          assert p['historical_runtime_values_frozen'] is True
+          assert c['candidate_update_available'] is True
+          assert len(c['new_observations'])>=1
+          print('USD_CREDIT_REVISION_AWARE_SOURCE_CONTRACT_PASS')
+          PY
+      - name: Dry-run append-only apply
+        run: |
+          python validation/apply_fed_usd_bank_credit_revision_aware_candidate.py --candidate /tmp/usd-credit.json --runtime /tmp/runtime.copy.json > /tmp/dry.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/dry.json'))
+          assert r['status']=='UPDATE_AVAILABLE'
+          assert r['applied'] is False
+          assert r['appended_observations']>=1
+          assert r['runtime_history_rewritten'] is False
+          PY
+      - name: Controlled apply on runtime copy
+        run: |
+          cp /tmp/runtime.copy.json /tmp/runtime.preapply.json
+          python validation/apply_fed_usd_bank_credit_revision_aware_candidate.py --candidate /tmp/usd-credit.json --runtime /tmp/runtime.copy.json --apply > /tmp/apply.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/runtime.preapply.json'))
+          after=json.load(open('/tmp/runtime.copy.json'))
+          r=json.load(open('/tmp/apply.json'))
+          assert r['applied'] is True
+          assert r['runtime_history_rewritten'] is False
+          b=before['USD']['credit']; a=after['USD']['credit']
+          n=len(b['dates'])
+          assert a['dates'][:n]==b['dates']
+          assert a['values'][:n]==b['values']
+          assert len(a['dates'])==n+r['appended_observations']
+          assert a['last_date']==r['after_last_date']
+          print(json.dumps(r,indent=2))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'USD.credit Fed H8 revision-aware contract: GREEN'
+          echo 'Historical runtime: FROZEN'
+          echo 'Controlled apply: COPY ONLY'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
