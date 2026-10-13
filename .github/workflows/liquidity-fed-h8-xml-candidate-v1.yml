@@ -1,0 +1,44 @@
+name: Liquidity Fed H8 XML Candidate V1
+
+on:
+  push:
+    branches:
+      - release-candidate-daily-data-orchestrator-v1-2026-10-12
+    paths:
+      - 'validation/fetch_fed_h8_usd_bank_credit_xml_candidate.py'
+      - '.github/workflows/liquidity-fed-h8-xml-candidate-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch official Fed H8 XML bank credit candidate
+        run: python validation/fetch_fed_h8_usd_bank_credit_xml_candidate.py --out /tmp/usd-bank-credit-candidate.json | tee /tmp/usd-bank-credit.log
+      - name: Evaluate runtime/source contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/usd-bank-credit-candidate.json'))
+          assert d['schema']=='GMFQ_LIQUIDITY_USD_BANK_CREDIT_H8_XML_CANDIDATE_V1'
+          assert d['source']['series_id']=='B1001NCBA'
+          assert d['source']['transport']=='official full-release SDMX/XML ZIP'
+          assert d['runtime_mutated'] is False
+          assert d['publication_performed'] is False
+          print('STATUS',d['status'])
+          print('PROOF',d['proof'])
+          print('RUNTIME',d['runtime'])
+          print('LATEST',d['latest_date'],d['latest_value'])
+          print('NEW_COUNT',len(d['new_observations']))
+          PY
+      - name: Verify tracked runtime unchanged
+        run: git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
