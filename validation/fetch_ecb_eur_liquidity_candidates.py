@@ -69,8 +69,7 @@ def parse_rows(rows, frequency):
             value = float(value_raw)
         except ValueError:
             continue
-        date = normalize_date(date_raw, frequency)
-        parsed.append((date, value))
+        parsed.append((normalize_date(date_raw, frequency), value))
     if not parsed:
         raise SystemExit('ECB CSV contained no parseable observations')
     dedup = {}
@@ -83,6 +82,33 @@ def parse_rows(rows, frequency):
 
 def close_enough(a, b):
     return abs(a - b) <= max(1e-6, abs(b) * 1e-9)
+
+
+def runtime_map(runtime, frequency):
+    dates = runtime.get('dates') or []
+    values = runtime.get('values') or []
+    if len(dates) != len(values):
+        raise SystemExit('runtime dates/values length mismatch')
+    return {normalize_date(d, frequency): float(v) for d, v in zip(dates, values)}
+
+
+def comparison_window(runtime, parsed, frequency):
+    rmap = runtime_map(runtime, frequency)
+    smap = dict(parsed)
+    shared = sorted(set(rmap).intersection(smap))
+    rows = []
+    for date in shared[-8:]:
+        rv = rmap[date]
+        sv = smap[date]
+        delta = rv - sv
+        rows.append({
+            'date': date,
+            'runtime': rv,
+            'source_current': sv,
+            'delta': delta,
+            'delta_ppm': (delta / sv * 1_000_000.0) if sv else None,
+        })
+    return rows
 
 
 def main():
@@ -108,7 +134,10 @@ def main():
         if len(matches) != 1:
             raise SystemExit(f'{policy_key}: expected one official observation for runtime date {runtime_date}, got {len(matches)}')
         official_runtime_value = matches[0]
+        diagnostics = comparison_window(runtime, parsed, spec['frequency'])
         if not close_enough(official_runtime_value, runtime_value):
+            if policy_key == 'EUR.money':
+                print('EUR_M3_REVISION_DIAGNOSTIC ' + json.dumps(diagnostics, separators=(',', ':')))
             raise SystemExit(
                 f'{policy_key}: runtime/source mismatch on {runtime_date}: '
                 f'runtime={runtime_value}, source={official_runtime_value}'
@@ -133,6 +162,7 @@ def main():
             'policy_revalidation_required': not policy_key_matches,
             'runtime': {'last_date': runtime_date, 'last_value': runtime_value},
             'official_runtime_value': official_runtime_value,
+            'comparison_window': diagnostics,
             'runtime_match_confirmed': True,
             'latest_date': latest_date,
             'latest_value': latest_value,
