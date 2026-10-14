@@ -1,0 +1,115 @@
+name: Macro Payload Drift Controlled Apply V1
+
+on:
+  push:
+    branches:
+      - repair-macro-standalone-payload-drift-v1-2026-10-14
+    paths:
+      - 'validation/repair_macro_standalone_payload_drift.py'
+      - '.github/workflows/macro-payload-drift-controlled-apply-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  controlled-apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Require exact repair branch
+        run: |
+          test "$GITHUB_REF_NAME" = 'repair-macro-standalone-payload-drift-v1-2026-10-14'
+
+      - name: Dry-run exact repair
+        run: |
+          set -euo pipefail
+          python validation/repair_macro_standalone_payload_drift.py | tee /tmp/macro-drift-dry.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-drift-dry.json'))
+          assert r['status']=='PASS' and r['apply'] is False, r
+          assert {x['key'] for x in r['targets']}=={'MACRO_THERMOMETER_DATA','MACRO_SERIES'}, r
+          assert set(r['changed_payload_parts']) <= {0,1}, r
+          assert r['tracked_standalone_mutation'] is False and r['publication'] is False, r
+          print('MACRO_DRIFT_DRY_RUN_PASS', r['changed_payload_parts'])
+          PY
+          git diff --exit-code
+
+      - name: Apply repair on branch checkout
+        run: |
+          set -euo pipefail
+          python validation/repair_macro_standalone_payload_drift.py --apply | tee /tmp/macro-drift-apply.json
+          python - <<'PY'
+          import json, subprocess
+          r=json.load(open('/tmp/macro-drift-apply.json'))
+          assert r['status']=='PASS' and r['apply'] is True, r
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          expected={f"payload/part-{i:02d}.txt" for i in r['changed_payload_parts']}
+          assert changed==expected, (sorted(changed), sorted(expected))
+          assert changed <= {'payload/part-00.txt','payload/part-01.txt'}, changed
+          print('MACRO_PAYLOAD_EXACT_SCOPE_PASS', sorted(changed))
+          PY
+
+      - name: Rebuild manifest for repaired payload
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write /tmp/manifest.v2.rebuilt.json > /tmp/manifest-rebuild.out
+          python - <<'PY'
+          import json
+          m=json.load(open('/tmp/manifest.v2.rebuilt.json'))
+          assert m['status']=='PASS', m.get('failures')
+          rows={x['key']:x for x in m['sections']}
+          for key in ('MACRO_THERMOMETER_DATA','MACRO_SERIES'):
+              r=rows[key]
+              assert r['mode']=='DIRECT_SINGLE_PART' and r['occurrences_in_payload']==1, r
+          print('MACRO_MANIFEST_REBUILD_PASS')
+          PY
+          cp /tmp/manifest.v2.rebuilt.json live_data/manifest.v2.json
+
+      - name: Verify converged current checkout
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py > /tmp/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/runtime-roundtrip.json
+          python validation/repair_macro_standalone_payload_drift.py --apply > /tmp/macro-second.json
+          python - <<'PY'
+          import json
+          l=json.load(open('/tmp/live-contract.json'))
+          r=json.load(open('/tmp/runtime-roundtrip.json'))
+          s=json.load(open('/tmp/macro-second.json'))
+          assert l['status']=='PASS', l
+          assert r['status']=='PASS' and r['noop_roundtrip_byte_identical'] is True, r
+          assert s['changed_payload_parts']==[] and all(not x['changed'] for x in s['targets']), s
+          print('MACRO_REPAIR_CONVERGED_PASS')
+          PY
+
+      - name: Commit only repaired runtime metadata to repair branch
+        run: |
+          set -euo pipefail
+          changed=$(git diff --name-only | sort)
+          echo "$changed"
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'payload/part-00.txt','payload/part-01.txt','live_data/manifest.v2.json'}
+          assert changed <= allowed, (sorted(changed), sorted(changed-allowed))
+          assert 'live_data/manifest.v2.json' in changed, changed
+          assert changed & {'payload/part-00.txt','payload/part-01.txt'}, changed
+          PY
+          git fetch origin repair-macro-standalone-payload-drift-v1-2026-10-14
+          test "$(git rev-parse origin/repair-macro-standalone-payload-drift-v1-2026-10-14)" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json
+          git commit -m 'Repair Macro standalone payload alignment on current main base'
+          git push origin HEAD:repair-macro-standalone-payload-drift-v1-2026-10-14
+
+      - name: No publication
+        run: echo 'MACRO_REPAIR_BRANCH_APPLY_NO_PUBLICATION'

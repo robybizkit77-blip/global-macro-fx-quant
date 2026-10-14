@@ -1,0 +1,53 @@
+name: Macro Payload Drift Post-Apply Certification V1
+
+on:
+  push:
+    branches:
+      - repair-macro-standalone-payload-drift-v1-2026-10-14
+      - main
+    paths:
+      - 'payload/part-00.txt'
+      - 'payload/part-01.txt'
+      - 'live_data/manifest.v2.json'
+      - '.github/workflows/macro-payload-drift-postapply-certification-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify manifest and runtime roundtrip
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py | tee /tmp/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/runtime-roundtrip.json
+      - name: Verify Macro payload is converged without mutation
+        run: |
+          set -euo pipefail
+          sha256sum payload/part-00.txt payload/part-01.txt live_data/manifest.v2.json > /tmp/before.sha256
+          python validation/repair_macro_standalone_payload_drift.py | tee /tmp/macro-drift.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-drift.json'))
+          assert r['status']=='PASS' and r['apply'] is False, r
+          assert r['changed_payload_parts']==[], r
+          assert all(x['changed'] is False for x in r['targets']), r
+          print('MACRO_PAYLOAD_CONVERGED_NOOP_PASS')
+          PY
+          sha256sum -c /tmp/before.sha256
+          git diff --exit-code -- live_data payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-payload-drift-postapply-evidence
+          path: |
+            /tmp/live-contract.json
+            /tmp/runtime-roundtrip.json
+            /tmp/macro-drift.json
+          if-no-files-found: error
