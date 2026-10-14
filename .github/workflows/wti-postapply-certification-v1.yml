@@ -1,0 +1,122 @@
+name: WTI Post-Apply Certification V1
+
+on:
+  push:
+    branches:
+      - validation-wti-direct-eia-controlled-apply-v1-2026-10-14
+      - main
+    paths:
+      - 'live_data/sections/D.json'
+      - 'payload/part-00.txt'
+      - 'live_data/manifest.v2.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-wti-current:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+
+      - name: Resolve WTI data commit under certification
+        run: |
+          DATA_COMMIT="$(git log -1 --format=%H -- live_data/sections/D.json)"
+          test -n "$DATA_COMMIT"
+          git cat-file -e "$DATA_COMMIT^"
+          echo "DATA_COMMIT=$DATA_COMMIT" >> "$GITHUB_ENV"
+          git show --no-patch --format='%H %s' "$DATA_COMMIT"
+
+      - name: Validate exact data diff scope on branch
+        if: github.ref_name != 'main'
+        run: |
+          git diff --name-only "$DATA_COMMIT^" "$DATA_COMMIT" | sort > /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          echo WTI_DATA_COMMIT_EXACT_SCOPE_PASS
+
+      - name: Validate semantic data change is WTI-only on branch
+        if: github.ref_name != 'main'
+        run: |
+          git show "$DATA_COMMIT^":live_data/sections/D.json > /tmp/D.parent.json
+          git show "$DATA_COMMIT":live_data/sections/D.json > /tmp/D.data.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.parent.json'))
+          after=json.load(open('/tmp/D.data.json'))
+          br=dict(before['risk']); ar=dict(after['risk'])
+          old=br.pop('WTI'); new=ar.pop('WTI')
+          assert br==ar, 'non-WTI risk data changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.WTI changed'
+          assert len(old.get('dates',[]))==3, old
+          assert len(new['dates'])>6000
+          assert new['source']=='U.S. Energy Information Administration'
+          assert new['series_id']=='RWTC'
+          assert new['fred_mirror_series_id']=='DCOILWTICO'
+          assert new['last_date']==new['dates'][-1]
+          assert new['last_value']==new['values'][-1]
+          print('WTI_DATA_COMMIT_SEMANTIC_SCOPE_PASS', len(old['dates']), '->', len(new['dates']), new['last_date'])
+          PY
+
+      - name: Fetch current direct EIA candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/fetch_eia_wti_candidate_v1.py --out /tmp/wti-candidate.json | tee /tmp/wti-source-receipt.json
+
+      - name: Certify runtime equals latest officially published EIA WTI
+        run: |
+          python - <<'PY'
+          import json, math
+          d=json.load(open('live_data/sections/D.json'))
+          c=json.load(open('/tmp/wti-candidate.json'))
+          w=d['risk']['WTI']
+          assert w['last_date']==c['latest_date'], (w['last_date'], c['latest_date'])
+          assert math.isclose(float(w['last_value']), float(c['latest_value']), rel_tol=0, abs_tol=1e-9)
+          assert len(w['dates'])==c['observation_count']
+          assert w['dates'][0]==c['first_date']
+          assert w['source']=='U.S. Energy Information Administration'
+          assert w['series_id']=='RWTC'
+          assert w['fred_mirror_series_id']=='DCOILWTICO'
+          print('WTI_RUNTIME_CURRENT_TO_LATEST_PUBLISHED_EIA_PASS', w['last_date'], w['last_value'], len(w['dates']))
+          PY
+
+      - name: Certify canonical live-update contract
+        run: |
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('WTI_POSTAPPLY_LIVE_CONTRACT_PASS')
+          PY
+
+      - name: Prove replacement is idempotent
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/apply_eia_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.second.json > /tmp/wti-idempotence.json
+          cmp -s live_data/sections/D.json /tmp/D.wti.second.json
+          echo WTI_POSTAPPLY_IDEMPOTENCE_PASS
+
+      - name: Publication remains withheld
+        run: echo WTI_POSTAPPLY_CERTIFIED_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wti-postapply-certification-v1
+          path: |
+            /tmp/wti-source-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/wti-idempotence.json
+            /tmp/changed.txt
+          if-no-files-found: warn
