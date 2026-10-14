@@ -108,3 +108,4 @@ jobs:
         run: echo WTI_PERSISTENT_APPLY_COMMIT_ONLY_NO_PUBLICATION
 
       # Direct official EIA transport; same WTI Cushing spot benchmark previously mirrored by FRED DCOILWTICO.
+      # Rerun pinned to the updated Risk source policy.
