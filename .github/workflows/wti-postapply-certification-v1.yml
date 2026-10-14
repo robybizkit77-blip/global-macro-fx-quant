@@ -1,0 +1,148 @@
+name: WTI Post-Apply Certification V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-rebuild-v1-2026-10-14
+      - main
+    paths:
+      - 'live_data/sections/D.json'
+      - 'payload/part-00.txt'
+      - 'live_data/manifest.v2.json'
+      - '.github/workflows/wti-postapply-certification-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-wti-current:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+
+      - name: Install XLS reader
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input 'xlrd==2.0.1'
+
+      - name: Resolve WTI data commit under certification
+        run: |
+          set -euo pipefail
+          DATA_COMMIT="$(git log -1 --format=%H -- live_data/sections/D.json)"
+          test -n "$DATA_COMMIT"
+          git cat-file -e "$DATA_COMMIT^"
+          echo "DATA_COMMIT=$DATA_COMMIT" >> "$GITHUB_ENV"
+          git show --no-patch --format='%H %s' "$DATA_COMMIT"
+
+      - name: Validate exact data diff scope on non-main certification
+        if: github.ref_name != 'main'
+        run: |
+          set -euo pipefail
+          git diff --name-only "$DATA_COMMIT^" "$DATA_COMMIT" | sort > /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          echo WTI_DATA_COMMIT_EXACT_SCOPE_PASS
+
+      - name: Validate semantic change is WTI-only on non-main certification
+        if: github.ref_name != 'main'
+        run: |
+          set -euo pipefail
+          git show "$DATA_COMMIT^":live_data/sections/D.json > /tmp/D.parent.json
+          git show "$DATA_COMMIT":live_data/sections/D.json > /tmp/D.data-commit.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.parent.json'))
+          after=json.load(open('/tmp/D.data-commit.json'))
+          br=dict(before['risk']); ar=dict(after['risk'])
+          bw=br.pop('WTI'); aw=ar.pop('WTI')
+          assert br==ar, 'non-WTI risk data changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.WTI changed'
+          assert len(bw.get('dates',[]))==3, 'expected contaminated three-point pre-state'
+          assert len(aw['dates'])>=500
+          assert aw['source']=='U.S. Energy Information Administration'
+          assert aw['benchmark_key']=='RWTC'
+          assert aw['historical_fred_series_id']=='DCOILWTICO'
+          assert aw['frequency']=='Daily'
+          assert aw['dates']==sorted(aw['dates'])
+          assert len(aw['dates'])==len(set(aw['dates']))==len(aw['values'])
+          assert aw['dates'][0] <= '2016-01-31'
+          assert aw['last_date']==aw['dates'][-1]
+          assert float(aw['last_value'])==float(aw['values'][-1])
+          print('WTI_DATA_COMMIT_SEMANTIC_SCOPE_PASS', len(bw.get('dates',[])), '->', len(aw['dates']), aw['last_date'], aw['last_value'])
+          PY
+
+      - name: Fetch official EIA reference
+        run: |
+          set -euo pipefail
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_eia_direct_wti_candidate_v1.py \
+            --as-of "$AS_OF" --out /tmp/wti-candidate.json > /tmp/wti-source-receipt.json
+
+      - name: Certify runtime equals official EIA history
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, math
+          d=json.load(open('live_data/sections/D.json'))
+          c=json.load(open('/tmp/wti-candidate.json'))
+          w=d['risk']['WTI']
+          obs=c['observations']
+          dates=[x['date'] for x in obs]
+          values=[float(x['value']) for x in obs]
+          assert w['source']=='U.S. Energy Information Administration'
+          assert w['benchmark_key']=='RWTC'
+          assert w['historical_fred_series_id']=='DCOILWTICO'
+          assert w['frequency']=='Daily'
+          assert w['dates']==dates
+          assert len(w['values'])==len(values)
+          assert all(math.isclose(float(a), b, rel_tol=0, abs_tol=1e-9) for a,b in zip(w['values'],values))
+          assert w['last_date']==c['last_date']==dates[-1]
+          assert math.isclose(float(w['last_value']), float(c['last_value']), rel_tol=0, abs_tol=1e-9)
+          print('WTI_RUNTIME_OFFICIAL_EIA_PASS', w['last_date'], w['last_value'], 'n=', len(w['dates']))
+          PY
+
+      - name: Certify canonical live-update contract
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('WTI_POSTAPPLY_LIVE_CONTRACT_PASS')
+          PY
+
+      - name: Prove rebuild is idempotent
+        run: |
+          set -euo pipefail
+          python validation/apply_eia_direct_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.second.json > /tmp/wti-idempotence.json
+          cmp -s live_data/sections/D.json /tmp/D.wti.second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/wti-idempotence.json'))
+          assert r['overlap_mismatch_count']==0, r
+          assert r['runtime_before_observation_count']==r['result_observation_count'], r
+          print('WTI_POSTAPPLY_IDEMPOTENCE_PASS')
+          PY
+
+      - name: Publication remains withheld
+        run: echo WTI_POSTAPPLY_CERTIFIED_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wti-postapply-certification-v1
+          path: |
+            /tmp/wti-source-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/wti-idempotence.json
+            /tmp/changed.txt
+          if-no-files-found: warn
