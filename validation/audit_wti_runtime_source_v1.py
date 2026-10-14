@@ -78,7 +78,7 @@ def main() -> None:
 
     tmp = Path(tempfile.gettempdir()) / 'DCOILWTICO-current.csv'
     subprocess.run([
-        'curl','-fL','--compressed','--retry','5','--retry-all-errors','--retry-delay','2',
+        'curl','-fL','--http1.1','--compressed','--retry','5','--retry-all-errors','--retry-delay','2',
         '--connect-timeout','20','--max-time','180','-A','Mozilla/5.0',FRED_URL,'-o',str(tmp)
     ], check=True)
     text = tmp.read_text(encoding='utf-8-sig')
