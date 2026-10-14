@@ -66,8 +66,35 @@ def main():
     if len(overlap)<120:
         raise SystemExit(f'insufficient JPY M3 runtime/source overlap: {len(overlap)}')
     mismatches=[{'date':d,'runtime':rt[d],'source':src[d]} for d in overlap if abs(rt[d]-src[d])>1e-6]
+    # The persistent writer is append-only.  A revised official vintage is a
+    # valid source response but it is *not* a valid append candidate: appending
+    # its next point would mix vintages in the live runtime.  Emit a durable,
+    # machine-readable veto instead of silently accepting or rewriting history.
     if mismatches:
-        raise SystemExit(f'BOJ JPY M3 current vintage rewrites runtime history: {mismatches[:10]}')
+        result={
+            'schema':'GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1',
+            'status':'WITHHELD_HISTORY_REVISION',
+            'source':{
+                'publisher':'Bank of Japan','api':'Time-Series Data Search API / getDataCode',
+                'database':DB,'series_id':CODE,'url':url,
+                'name':row.get('NAME_OF_TIME_SERIES'),'unit':row.get('UNIT'),'frequency':row.get('FREQUENCY'),
+                'seasonal_adjustment':'Seasonally Adjusted',
+            },
+            'runtime':{'count':len(rt),'last_date':runtime_last,'last_value':float(rtrow['last_value'])},
+            'runtime_overlap_count':len(overlap),'runtime_exact_match_count':len(overlap)-len(mismatches),
+            'runtime_exact_match_ratio':(len(overlap)-len(mismatches))/len(overlap),
+            'runtime_match_confirmed':False,
+            'runtime_history_unchanged_by_current_vintage':False,
+            'history_revision_detected':True,
+            'history_revision_mismatches':mismatches,
+            'latest_date':max(src),'latest_value':src[max(src)],
+            'candidate_update_available':False,'new_observations':[],
+            'fail_closed':True,'publication_performed':False,'runtime_mutated':False,
+        }
+        out=Path(args.out)
+        out.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+        print(json.dumps(result,indent=2,ensure_ascii=False))
+        return
     runtime_last=month(rtrow['last_date'])
     if runtime_last not in src or abs(float(rtrow['last_value'])-src[runtime_last])>1e-6:
         raise SystemExit('JPY M3 runtime last observation does not match BOJ exact series')

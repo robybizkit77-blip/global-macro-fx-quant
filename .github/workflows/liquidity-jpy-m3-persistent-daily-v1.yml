@@ -82,17 +82,23 @@ jobs:
           import json
           c=json.load(open('/tmp/liquidity-jpy-m3-persistent/candidate.json'))
           assert c['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1', c
-          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY', c
-          assert c['runtime_match_confirmed'] is True, c
-          assert c['runtime_history_unchanged_by_current_vintage'] is True, c
-          assert c['runtime_exact_match_count']==c['runtime_overlap_count']>=128, c
-          assert c['runtime_exact_match_ratio']==1.0, c
           s=c['source']
           assert (s['publisher'],s['database'],s['series_id'],s['frequency']) == ('Bank of Japan','MD02','MAM1XAM3M3MO','MONTHLY'), s
           assert s['seasonal_adjustment']=='Seasonally Adjusted', s
-          print('JPY_M3_EXACT_CANDIDATE_PASS')
+          if c['status']=='GREEN_SOURCE_CANDIDATE_ONLY':
+              assert c['runtime_match_confirmed'] is True, c
+              assert c['runtime_history_unchanged_by_current_vintage'] is True, c
+              assert c['runtime_exact_match_count']==c['runtime_overlap_count']>=128, c
+              assert c['runtime_exact_match_ratio']==1.0, c
+              print('JPY_M3_EXACT_CANDIDATE_PASS')
+          else:
+              assert c['status']=='WITHHELD_HISTORY_REVISION', c
+              assert c['fail_closed'] is True and c['candidate_update_available'] is False, c
+              assert c['runtime_mutated'] is False and c['publication_performed'] is False, c
+              assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
+              print('JPY_M3_HISTORY_REVISION_VETO_PASS')
           PY
-          STATUS="$(python -c "import json; c=json.load(open('/tmp/liquidity-jpy-m3-persistent/candidate.json')); print('UPDATE_AVAILABLE' if c['candidate_update_available'] else 'NO_CHANGE')")"
+          STATUS="$(python -c "import json; c=json.load(open('/tmp/liquidity-jpy-m3-persistent/candidate.json')); print('UPDATE_AVAILABLE' if c['status']=='GREEN_SOURCE_CANDIDATE_ONLY' and c['candidate_update_available'] else ('NO_CHANGE' if c['status']=='GREEN_SOURCE_CANDIDATE_ONLY' else c['status']))")"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           git diff --exit-code -- live_data payload
 
@@ -157,7 +163,7 @@ jobs:
           PY
 
       - name: Validate no-change identity
-        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_CHANGE'
+        if: steps.gate.outputs.should_run == 'true' && (steps.candidate.outputs.status == 'NO_CHANGE' || steps.candidate.outputs.status == 'WITHHELD_HISTORY_REVISION')
         shell: bash
         run: |
           set -euo pipefail
@@ -165,7 +171,7 @@ jobs:
           python validation/rebuild_live_data_runtime.py --verify-only > /tmp/liquidity-jpy-m3-persistent/runtime-roundtrip.json
           python validation/check_liquidity_remaining_blockers_v1.py > /tmp/liquidity-jpy-m3-persistent/withheld-after.json
           git diff --exit-code -- live_data payload
-          echo JPY_M3_PERSISTENT_NO_CHANGE_IDENTITY_PASS
+          echo JPY_M3_PERSISTENT_NO_MUTATION_IDENTITY_PASS
 
       - name: Validation branch restores runtime
         if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
