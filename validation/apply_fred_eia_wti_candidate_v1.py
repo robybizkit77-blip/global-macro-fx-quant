@@ -19,6 +19,11 @@ def main() -> None:
     candidate = json.loads(Path(args.candidate).read_text(encoding="utf-8"))
     if candidate.get("schema") != "GMFQ_RISK_WTI_CANDIDATE_V1" or candidate.get("status") != "GREEN_OFFICIAL_SOURCE_CANDIDATE":
         raise SystemExit("candidate schema/status mismatch")
+    src = candidate.get("source") or {}
+    if src.get("publisher") != "U.S. Energy Information Administration" or src.get("series_id") != "RWTC":
+        raise SystemExit("candidate source identity mismatch")
+    if src.get("legacy_api_series_id") != "PET.RWTC.D" or src.get("fred_mirror_series_id") != "DCOILWTICO":
+        raise SystemExit("candidate source equivalence metadata mismatch")
     observations = candidate.get("observations")
     if not isinstance(observations, list) or not observations:
         raise SystemExit("candidate observations missing")
@@ -39,7 +44,7 @@ def main() -> None:
     if len(source) != len(observations):
         raise SystemExit("candidate has duplicate dates")
 
-    # The current truncated runtime must overlap the recovered canonical source.
+    # The current truncated runtime must overlap the official EIA source exactly.
     overlap = [day for day in dates if day in source]
     if not overlap:
         raise SystemExit("runtime WTI has no overlap with canonical source")
@@ -48,8 +53,6 @@ def main() -> None:
     if not math.isclose(float(values[idx]), source[anchor], rel_tol=0, abs_tol=1e-9):
         raise SystemExit(f"WTI overlap anchor mismatch on {anchor}: runtime={values[idx]} source={source[anchor]}")
 
-    # Rebuild the complete canonical series from 2016 forward. This deliberately replaces
-    # only D.risk.WTI, because the existing runtime is explicitly known to be truncated.
     source_dates = sorted(source)
     new_dates = source_dates
     new_values = [source[x] for x in source_dates]
@@ -60,8 +63,11 @@ def main() -> None:
     risk["WTI"] = {
         "dates": new_dates,
         "values": new_values,
-        "source": "U.S. EIA via FRED",
-        "series_id": "DCOILWTICO",
+        "source": "U.S. Energy Information Administration",
+        "source_url": "https://www.eia.gov/dnav/pet/hist/RWTCD.htm",
+        "series_id": "RWTC",
+        "legacy_api_series_id": "PET.RWTC.D",
+        "fred_mirror_series_id": "DCOILWTICO",
         "frequency": "Daily",
         "last_date": new_dates[-1],
         "last_value": new_values[-1],
@@ -80,7 +86,8 @@ def main() -> None:
         "result_first_date": new_dates[0],
         "result_last_date": new_dates[-1],
         "result_last_value": new_values[-1],
-        "source": "U.S. EIA via FRED / DCOILWTICO",
+        "source": "U.S. EIA / RWTC / PET.RWTC.D",
+        "fred_mirror_reference": "DCOILWTICO",
         "other_risk_keys_preserved": True,
         "publication_performed": False,
     }
