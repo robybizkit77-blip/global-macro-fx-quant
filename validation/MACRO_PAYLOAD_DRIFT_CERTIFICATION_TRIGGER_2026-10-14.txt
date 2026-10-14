@@ -1,0 +1,2 @@
+GMFQ Macro payload drift repair certification trigger.
+No runtime, model, bias, score, sizing, or publication effect.
