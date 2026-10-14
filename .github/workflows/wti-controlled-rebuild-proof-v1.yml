@@ -1,0 +1,136 @@
+name: WTI Controlled Rebuild Proof V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-rebuild-v1-2026-10-14
+    paths:
+      - 'validation/fetch_fred_wti_candidate_v1.py'
+      - 'validation/apply_fred_wti_candidate_v1.py'
+      - '.github/workflows/wti-controlled-rebuild-proof-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/fetch_fred_wti_candidate_v1.py'
+      - 'validation/apply_fred_wti_candidate_v1.py'
+      - '.github/workflows/wti-controlled-rebuild-proof-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-wti-controlled-rebuild:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Snapshot canonical runtime
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/D.json > /tmp/D.before.sha256
+          sha256sum payload/part-00.txt > /tmp/part00.before.sha256
+          sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
+          cp live_data/sections/D.json /tmp/D.before.json
+
+      - name: Fetch canonical WTI candidate
+        run: |
+          set -euo pipefail
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_fred_wti_candidate_v1.py --as-of "$AS_OF" --out /tmp/wti-candidate.json | tee /tmp/wti-source-receipt.json
+
+      - name: Build deterministic WTI replacement
+        run: |
+          set -euo pipefail
+          python validation/apply_fred_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.replacement.json | tee /tmp/wti-apply-receipt.json
+
+      - name: Prove semantic diff is WTI-only
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.before.json'))
+          after=json.load(open('/tmp/D.wti.replacement.json'))
+          assert set(before)==set(after), 'top-level D keys changed'
+          br=dict(before['risk']); ar=dict(after['risk'])
+          bw=br.pop('WTI'); aw=ar.pop('WTI')
+          assert br==ar, 'a non-WTI risk series changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.WTI changed'
+          assert aw['source']=='U.S. EIA via FRED'
+          assert aw['series_id']=='DCOILWTICO'
+          assert aw['frequency']=='Daily'
+          assert len(aw['dates'])==len(aw['values']) and len(aw['dates'])>=500
+          assert aw['dates']==sorted(aw['dates'])
+          assert len(aw['dates'])==len(set(aw['dates']))
+          assert aw['dates'][0] <= '2016-01-31'
+          assert aw['last_date']==aw['dates'][-1]
+          assert float(aw['last_value'])==float(aw['values'][-1])
+          print('WTI_SEMANTIC_DIFF_ONLY_PASS', bw.get('last_date'), '->', aw['last_date'], len(bw.get('dates',[])), '->', len(aw['dates']))
+          PY
+
+      - name: Dry-run canonical direct-section updater
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.wti.replacement.json | tee /tmp/wti-direct-update-dryrun.json
+
+      - name: Apply in ephemeral checkout and rebuild manifest
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.wti.replacement.json \
+            --apply | tee /tmp/wti-direct-update-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          cat /tmp/live-update-contract.json
+
+      - name: Verify exact tracked diff scope
+        run: |
+          set -euo pipefail
+          git diff --name-only | sort > /tmp/changed.txt
+          cat /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Prove second rebuild is idempotent
+        run: |
+          set -euo pipefail
+          python validation/apply_fred_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.second.json | tee /tmp/wti-second-rebuild-receipt.json
+          cmp -s live_data/sections/D.json /tmp/D.wti.second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/wti-second-rebuild-receipt.json'))
+          assert r['overlap_mismatch_count']==0, r
+          assert r['full_rebuild_from_canonical_source'] is True
+          print('WTI_IDEMPOTENT_SECOND_REBUILD_PASS')
+          PY
+
+      - name: Prove no publication
+        run: |
+          set -euo pipefail
+          git status --short
+          echo WTI_CONTROLLED_REBUILD_PROOF_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wti-controlled-rebuild-proof-v1
+          path: |
+            /tmp/wti-source-receipt.json
+            /tmp/wti-apply-receipt.json
+            /tmp/wti-direct-update-dryrun.json
+            /tmp/wti-direct-update-apply.json
+            /tmp/wti-second-rebuild-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/changed.txt
+          if-no-files-found: error
