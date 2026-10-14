@@ -12,7 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 SERIES_PATH = ROOT / "live_data" / "sections" / "MACRO_SERIES.json"
 HEATMAP_PATH = ROOT / "live_data" / "sections" / "MACRO_THERMOMETER_DATA.json"
-SOURCE = "Statistics Bureau of Japan / CPI"
+SOURCE = "Statistics Bureau of Japan / e-Stat"
 SOURCE_URL = "https://www.stat.go.jp/english/"
 
 MONTHS = {
