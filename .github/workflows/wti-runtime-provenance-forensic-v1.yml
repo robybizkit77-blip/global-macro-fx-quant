@@ -1,0 +1,57 @@
+name: WTI Runtime Provenance Forensic V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-apply-v1-2026-10-14
+    paths:
+      - 'validation/audit_wti_runtime_provenance_v1.py'
+      - '.github/workflows/wti-runtime-provenance-forensic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  forensic-wti-provenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Materialize historical deterministic WTI snapshot
+        run: |
+          set -euo pipefail
+          SNAP_COMMIT=d2c701abfc21935979a7b30e3e1fb9555e2e8d08
+          git cat-file -e "$SNAP_COMMIT^{commit}"
+          git show "$SNAP_COMMIT:data/sources/DCOILWTICO_2016_2026.csv.gz.b64" > /tmp/wti-snapshot.b64
+          test -s /tmp/wti-snapshot.b64
+          echo WTI_HISTORICAL_SNAPSHOT_MATERIALIZED
+
+      - name: Fetch direct official EIA WTI history
+        run: |
+          set -euo pipefail
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_fred_eia_wti_candidate_v1.py --as-of "$AS_OF" --out /tmp/wti-eia-candidate.json | tee /tmp/eia-source-receipt.json
+
+      - name: Compare runtime snapshot and official EIA
+        run: |
+          set -euo pipefail
+          python validation/audit_wti_runtime_provenance_v1.py \
+            --snapshot /tmp/wti-snapshot.b64 \
+            --eia-candidate /tmp/wti-eia-candidate.json \
+            --out /tmp/wti-forensic-receipt.json | tee /tmp/wti-forensic-stdout.json
+
+      - name: Prove read-only execution
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo WTI_FORENSIC_READ_ONLY_PASS
+
+      - name: Upload forensic receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: wti-runtime-provenance-forensic-v1
+          path: /tmp/wti-forensic-receipt.json
+          if-no-files-found: error
