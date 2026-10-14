@@ -16,7 +16,7 @@ env:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,43 +29,114 @@ jobs:
       - name: Install adapter dependencies
         run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
 
-      - name: Reproduce JPY inflation pre-capture state
+      - name: Reproduce full sequence through JPY inflation capture-before
         shell: bash
         run: |
           set -euo pipefail
-          work=/tmp/jpy-inflation-dirty-probe
-          mkdir -p "$work"
+          root=/tmp/jpy-inflation-sequence-probe
+          mkdir -p "$root"
+          : > "$root/status.txt"
 
-          echo '=== STATUS AT START ===' | tee "$work/status.txt"
-          git status --porcelain=v1 | tee -a "$work/status.txt"
+          snapshot() {
+            echo "=== $1 ===" | tee -a "$root/status.txt"
+            git status --porcelain=v1 | tee -a "$root/status.txt"
+          }
 
-          python validation/macro_adapter_pit_handoff.py \
-            --currency JPY --dimension inflation \
-            --output "$work/candidate.json" \
-            --audit-output "$work/adapter-audit.json"
+          run_series() {
+            c="$1"
+            d="$2"
+            key="${c}_${d}"
+            work="$root/$key"
+            mkdir -p "$work/evidence"
 
-          echo '=== STATUS AFTER ADAPTER ===' | tee -a "$work/status.txt"
-          git status --porcelain=v1 | tee -a "$work/status.txt"
+            snapshot "$key START"
 
-          python validation/build_macro_candidate.py \
-            --candidate "$work/candidate.json" \
-            --output-dir "$work/built" > "$work/builder.json"
+            python validation/macro_adapter_pit_handoff.py \
+              --currency "$c" --dimension "$d" \
+              --output "$work/candidate.json" \
+              --audit-output "$work/adapter-audit.json"
+            snapshot "$key AFTER ADAPTER"
 
-          echo '=== STATUS AFTER BUILDER ===' | tee -a "$work/status.txt"
-          git status --porcelain=v1 | tee -a "$work/status.txt"
+            python validation/build_macro_candidate.py \
+              --candidate "$work/candidate.json" \
+              --output-dir "$work/built" > "$work/builder.json"
+            snapshot "$key AFTER BUILDER"
 
-          python - <<'PY' > "$work/result.json"
-          import json, subprocess
-          dirty=subprocess.check_output(['git','status','--porcelain=v1'], text=True).splitlines()
-          print(json.dumps({'status':'PASS' if not dirty else 'DIRTY','dirty_paths':dirty}, indent=2))
-          PY
+            set +e
+            python validation/macro_pit_anchor_contract.py capture-before \
+              --currency "$c" --dimension "$d" \
+              --candidate-dir "$work/built" \
+              --evidence-dir "$work/evidence" \
+              >"$work/capture-before.stdout" 2>"$work/capture-before.stderr"
+            rc=$?
+            set -e
+            echo "$rc" > "$work/capture-before.rc"
+            snapshot "$key AFTER CAPTURE-BEFORE rc=$rc"
 
-          cat "$work/result.json"
+            if [ "$rc" -ne 0 ]; then
+              echo "$key" > "$root/failed-series.txt"
+              return "$rc"
+            fi
+
+            python validation/macro_pit_anchor_contract.py apply \
+              --currency "$c" --dimension "$d" \
+              --candidate-dir "$work/built" \
+              --evidence-dir "$work/evidence" \
+              >"$work/apply.stdout" 2>"$work/apply.stderr"
+            snapshot "$key AFTER APPLY"
+
+            python validation/macro_pit_anchor_contract.py capture-after \
+              --currency "$c" --dimension "$d" \
+              --candidate-dir "$work/built" \
+              --evidence-dir "$work/evidence" \
+              >"$work/capture-after.stdout" 2>"$work/capture-after.stderr"
+            snapshot "$key AFTER CAPTURE-AFTER"
+
+            python validation/macro_pit_anchor_contract.py verify \
+              --currency "$c" --dimension "$d" \
+              --candidate-dir "$work/built" \
+              --evidence-dir "$work/evidence" \
+              >"$work/verify.stdout" 2>"$work/verify.stderr"
+            snapshot "$key AFTER VERIFY"
+
+            python validation/macro_pit_anchor_contract.py restore \
+              --currency "$c" --dimension "$d" \
+              --candidate-dir "$work/built" \
+              --evidence-dir "$work/evidence" \
+              >"$work/restore.stdout" 2>"$work/restore.stderr"
+            snapshot "$key AFTER RESTORE"
+          }
+
+          snapshot "REPO START"
+          failed=0
+          for spec in \
+            'USD inflation' 'USD labour' \
+            'EUR inflation' 'EUR labour' \
+            'GBP inflation' 'GBP labour' \
+            'JPY inflation'; do
+            set -- $spec
+            if ! run_series "$1" "$2"; then
+              failed=1
+              break
+            fi
+          done
+
+          snapshot "FINAL"
+          if [ "$failed" -eq 1 ]; then
+            key=$(cat "$root/failed-series.txt")
+            echo "=== FAILURE $key ===" | tee "$root/result.txt"
+            echo "capture-before rc:" | tee -a "$root/result.txt"
+            cat "$root/$key/capture-before.rc" | tee -a "$root/result.txt"
+            echo "stderr:" | tee -a "$root/result.txt"
+            cat "$root/$key/capture-before.stderr" | tee -a "$root/result.txt"
+            exit 0
+          fi
+          echo 'SEQUENCE_COMPLETED' | tee "$root/result.txt"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: jpy-inflation-dirty-probe-${{ github.run_id }}
-          path: /tmp/jpy-inflation-dirty-probe/
+          name: jpy-inflation-sequence-probe-${{ github.run_id }}
+          path: /tmp/jpy-inflation-sequence-probe/
           if-no-files-found: error
           retention-days: 3
