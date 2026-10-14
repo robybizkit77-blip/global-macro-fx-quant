@@ -9,6 +9,7 @@ on:
       - 'payload/part-00.txt'
       - 'payload/part-01.txt'
       - 'live_data/manifest.v2.json'
+      - '.github/workflows/macro-payload-drift-postapply-certification-v1.yml'
   workflow_dispatch:
 
 permissions:
