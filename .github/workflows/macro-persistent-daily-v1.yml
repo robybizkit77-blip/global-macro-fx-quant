@@ -85,6 +85,37 @@ jobs:
           PY
           )"
 
+              freshness="$(python - <<PY
+          import json
+          from pathlib import Path
+          candidate=json.load(open('$work/candidate.json'))
+          rows=json.load(open('live_data/sections/MACRO_SERIES.json'))['$ccy']
+          hits=[r for r in rows if isinstance(r,dict) and r.get('id')==candidate['macro_series_id']]
+          if len(hits)!=1:
+              raise SystemExit(f"$key canonical target count={len(hits)}")
+          dates=hits[0].get('dates') or []
+          if not dates:
+              raise SystemExit('$key canonical target has no dates')
+          candidate_month=str(candidate['observation_date'])[:7]
+          canonical_month=str(dates[-1])[:7]
+          stale=candidate_month < canonical_month
+          status='NO_UPDATE_STALE_OFFICIAL_SOURCE' if stale else 'ACTIONABLE'
+          receipt={
+              'status':status,
+              'candidate_date':candidate['observation_date'],
+              'canonical_latest_date':dates[-1],
+              'actionable':not stale,
+          }
+          Path('$work/freshness.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
+          print(status)
+          PY
+          )"
+
+              if [ "$freshness" = "NO_UPDATE_STALE_OFFICIAL_SOURCE" ]; then
+                echo "$key NO_UPDATE_STALE_OFFICIAL_SOURCE"
+                continue
+              fi
+
               python validation/build_macro_candidate.py \
                 --candidate "$work/candidate.json" \
                 --output-dir "$work/built" > "$work/builder.json"
