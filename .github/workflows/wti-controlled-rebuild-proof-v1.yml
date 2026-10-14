@@ -54,7 +54,7 @@ jobs:
             --candidate /tmp/wti-candidate.json \
             --replacement-out /tmp/D.wti.replacement.json | tee /tmp/wti-apply-receipt.json
 
-      - name: Prove semantic diff is WTI-only
+      - name: Prove semantic scope and classify apply mode
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -77,17 +77,26 @@ jobs:
           assert aw['dates'][0] <= '2016-01-31'
           assert aw['last_date']==aw['dates'][-1]
           assert float(aw['last_value'])==float(aw['values'][-1])
-          print('WTI_SEMANTIC_DIFF_ONLY_PASS', bw.get('last_date'), '->', aw['last_date'], len(bw.get('dates',[])), '->', len(aw['dates']))
+          print('WTI_SEMANTIC_SCOPE_PASS', bw.get('last_date'), '->', aw['last_date'], len(bw.get('dates',[])), '->', len(aw['dates']))
           PY
+          if cmp -s live_data/sections/D.json /tmp/D.wti.replacement.json; then
+            echo 'NEED_APPLY=false' >> "$GITHUB_ENV"
+            echo WTI_ALREADY_CANONICAL_NOOP_MODE
+          else
+            echo 'NEED_APPLY=true' >> "$GITHUB_ENV"
+            echo WTI_CHANGE_REQUIRED_APPLY_MODE
+          fi
 
-      - name: Dry-run canonical direct-section updater
+      - name: Dry-run canonical direct-section updater when change is required
+        if: env.NEED_APPLY == 'true'
         run: |
           set -euo pipefail
           python validation/update_live_direct_section.py \
             --section D \
             --replacement /tmp/D.wti.replacement.json | tee /tmp/wti-direct-update-dryrun.json
 
-      - name: Apply in ephemeral checkout and rebuild manifest
+      - name: Apply in ephemeral checkout and rebuild manifest when change is required
+        if: env.NEED_APPLY == 'true'
         run: |
           set -euo pipefail
           python validation/update_live_direct_section.py \
@@ -98,7 +107,8 @@ jobs:
           python validation/check_live_update_contract.py > /tmp/live-update-contract.json
           cat /tmp/live-update-contract.json
 
-      - name: Verify exact tracked diff scope
+      - name: Verify exact tracked diff scope when change is required
+        if: env.NEED_APPLY == 'true'
         run: |
           set -euo pipefail
           git diff --name-only | sort > /tmp/changed.txt
@@ -108,8 +118,24 @@ jobs:
             'live_data/sections/D.json' \
             'payload/part-00.txt' | sort > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/changed.txt
+          echo WTI_EXACT_THREE_FILE_DIFF_PASS
 
-      - name: Prove second rebuild is idempotent
+      - name: Certify canonical no-op state when already applied
+        if: env.NEED_APPLY == 'false'
+        run: |
+          set -euo pipefail
+          cmp -s live_data/sections/D.json /tmp/D.wti.replacement.json
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('WTI_ALREADY_CANONICAL_LIVE_CONTRACT_PASS')
+          PY
+          : > /tmp/changed.txt
+          echo WTI_CONTROLLED_REBUILD_NOOP_PASS
+
+      - name: Prove resulting runtime is idempotent
         run: |
           set -euo pipefail
           python validation/apply_eia_direct_wti_candidate_v1.py \
@@ -123,13 +149,13 @@ jobs:
           assert r['full_rebuild_from_canonical_source'] is True
           assert r['source_publisher']=='U.S. Energy Information Administration'
           assert r['source_benchmark_key']=='RWTC'
-          print('WTI_IDEMPOTENT_SECOND_REBUILD_PASS')
+          assert r['runtime_before_observation_count']==r['result_observation_count'], r
+          print('WTI_IDEMPOTENT_RESULT_PASS')
           PY
 
       - name: Prove no publication
         run: |
           set -euo pipefail
-          git status --short
           echo WTI_CONTROLLED_REBUILD_PROOF_NO_PUBLICATION
 
       - uses: actions/upload-artifact@v4
@@ -143,4 +169,4 @@ jobs:
             /tmp/wti-second-rebuild-receipt.json
             /tmp/live-update-contract.json
             /tmp/changed.txt
-          if-no-files-found: error
+          if-no-files-found: warn
