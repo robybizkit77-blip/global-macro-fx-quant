@@ -1,0 +1,192 @@
+name: Macro Persistent Daily V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-persistent-daily-v1.yml'
+      - 'validation/macro_adapter_pit_handoff.py'
+      - 'validation/macro_pit_anchor_contract.py'
+      - 'validation/build_macro_candidate.py'
+      - 'validation/update_live_direct_section.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-persistent-daily-v1.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '35 6 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macro-persistent-daily-main
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  persist-macro:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install adapter dependencies
+        run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
+
+      - name: Snapshot baseline and registry contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-persistent
+          git rev-parse HEAD > /tmp/macro-persistent/base-sha
+          cp live_data/sections/MACRO_SERIES.json /tmp/macro-persistent/MACRO_SERIES.before.json
+          cp live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/macro-persistent/MACRO_THERMOMETER_DATA.before.json
+          cp live_data/manifest.v2.json /tmp/macro-persistent/manifest.before.json
+          python validation/macro/check_macro_source_registry.py > /tmp/macro-persistent/registry.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/macro-persistent/registry.json'))
+          assert d['status']=='PASS', d
+          print('MACRO_REGISTRY_PASS')
+          PY
+
+      - name: Fetch, PIT-verify and apply all 16 core series sequentially
+        id: refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          updated=0
+          for ccy in USD EUR GBP JPY CHF CAD AUD NZD; do
+            for dim in inflation labour; do
+              key="${ccy}_${dim}"
+              work="/tmp/macro-persistent/${key}"
+              mkdir -p "$work"
+
+              python validation/macro_adapter_pit_handoff.py \
+                --currency "$ccy" --dimension "$dim" \
+                --output "$work/candidate.json" \
+                --audit-output "$work/adapter-audit.json"
+
+              series_id="$(python - <<PY
+          import json
+          print(json.load(open('$work/candidate.json'))['macro_series_id'])
+          PY
+          )"
+
+              python validation/build_macro_candidate.py \
+                --candidate "$work/candidate.json" \
+                --output-dir "$work/built" > "$work/builder.json"
+
+              if cmp -s "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json && \
+                 cmp -s "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json; then
+                echo "$key NO_UPDATE"
+                continue
+              fi
+
+              evidence="$work/evidence"
+              python validation/macro_pit_anchor_contract.py capture-before \
+                --evidence-dir "$evidence" --currency "$ccy" --dimension "$dim" --macro-series-id "$series_id"
+
+              cp "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+              cp "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+
+              python validation/macro_pit_anchor_contract.py capture-after \
+                --evidence-dir "$evidence" --currency "$ccy" --dimension "$dim" --macro-series-id "$series_id" --allow-live-data-dirty
+
+              python validation/macro_pit_anchor_contract.py verify \
+                --evidence-dir "$evidence" --currency "$ccy" --dimension "$dim" --macro-series-id "$series_id" \
+                --candidate "$work/candidate.json" --evidence-output "$work/pit-evidence.json"
+
+              python - <<PY
+          import json
+          d=json.load(open('$work/pit-evidence.json'))
+          assert d['status']=='PASS', d
+          assert len(d['atomic_delta']['changed_rows'])==1, d
+          print('$key PIT_PASS')
+          PY
+
+              cp "$evidence/before/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+              cp "$evidence/before/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+
+              python validation/update_live_direct_section.py \
+                --section MACRO_THERMOMETER_DATA \
+                --replacement "$work/built/MACRO_THERMOMETER_DATA.json" --apply > "$work/apply-heat.json"
+              python validation/update_live_direct_section.py \
+                --section MACRO_SERIES \
+                --replacement "$work/built/MACRO_SERIES.json" --apply > "$work/apply-series.json"
+
+              updated=$((updated+1))
+            done
+          done
+          echo "updated=$updated" >> "$GITHUB_OUTPUT"
+          echo "MACRO_SERIES_UPDATED=$updated"
+
+      - name: Final runtime gates and exact scope
+        if: steps.refresh.outputs.updated != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/macro-persistent/manifest.json
+          python validation/check_live_update_contract.py > /tmp/macro-persistent/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/macro-persistent/runtime-roundtrip.json
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={
+            'live_data/sections/MACRO_SERIES.json',
+            'live_data/sections/MACRO_THERMOMETER_DATA.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-01.txt',
+          }
+          if not changed or not changed.issubset(allowed):
+              raise SystemExit(f'Macro exact-scope violation: {sorted(changed)}')
+          if 'live_data/sections/MACRO_SERIES.json' not in changed or 'live_data/sections/MACRO_THERMOMETER_DATA.json' not in changed:
+              raise SystemExit(f'Macro core sections missing from diff: {sorted(changed)}')
+          print('MACRO_FINAL_SCOPE_PASS', sorted(changed))
+          PY
+
+      - name: Validation branch restores runtime
+        if: github.ref != 'refs/heads/main' && always()
+        shell: bash
+        run: |
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
+
+      - name: Commit validated Macro update to main with remote-head lease
+        if: github.ref == 'refs/heads/main' && steps.refresh.outputs.updated != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="$(cat /tmp/macro-persistent/base-sha)"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$BASE" || { echo 'main moved during Macro refresh' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt
+          git diff --cached --quiet && { echo 'No Macro update to commit'; exit 0; }
+          git commit -m 'Refresh daily Macro runtime from official sources'
+          git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+
+      - name: Confirm no-change case
+        if: steps.refresh.outputs.updated == '0'
+        run: git diff --exit-code -- live_data payload
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-persistent-evidence-${{ github.run_id }}
+          path: /tmp/macro-persistent/
+          if-no-files-found: warn
+          retention-days: 30
