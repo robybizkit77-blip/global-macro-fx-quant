@@ -7,7 +7,9 @@
     "risk_is_overlay_only": true,
     "no_proxy_substitution": true,
     "no_inferred_provenance": true,
-    "publication_requires_all_gate_inputs_auditable": true
+    "risk_overlay_requires_all_gate_inputs_auditable": true,
+    "dashboard_publication_blocked_by_risk_overlay": false,
+    "degraded_overlay_must_be_explicitly_withheld": true
   },
   "gate_inputs": {
     "VIX": {
@@ -36,7 +38,7 @@
       "collector": "validation/fetch_eia_brent_probe.py",
       "hard_blocker": true,
       "hard_blocker_confirmed_on": "2026-10-13",
-      "reason": "The canonical gate input is explicitly the EIA Europe Brent Spot Price FOB series RBRTE. EIA Open Data exposes the same underlying daily series as PET.RBRTE.D, so switching transport from the historical HTML table to the EIA API does not create a fresher independent observation stream. EIA release timing can lag the Price lane beyond the existing one-business-day gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. ICE Brent futures settlement is a different futures benchmark and therefore is not an exact semantic substitute for EIA Brent spot; it must not be used merely to force GREEN. Keep the one-business-day gate unchanged and fail closed until an official, exact-equivalent, sufficiently timely source is proven."
+      "reason": "The canonical gate input is explicitly the EIA Europe Brent Spot Price FOB series RBRTE. EIA Open Data exposes the same underlying daily series as PET.RBRTE.D, so switching transport from the historical HTML table to the EIA API does not create a fresher independent observation stream. EIA release timing can lag the Price lane beyond the existing one-business-day gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. ICE Brent futures settlement is a different futures benchmark and therefore is not an exact semantic substitute for EIA Brent spot; it must not be used merely to force GREEN. Keep the one-business-day gate unchanged and fail closed inside the Risk overlay until an official, exact-equivalent, sufficiently timely source is proven. This blocker does not block publication of otherwise healthy core dashboard lanes."
     }
   },
   "secondary_runtime_series": {
@@ -62,7 +64,7 @@
     },
     "Gold": {
       "status": "NOT_GATE_ELIGIBLE",
-      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored."
+      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored. Gold is a secondary runtime series and does not block core dashboard publication."
     },
     "China CLI": {
       "status": "OUTSIDE_DAILY_RISK_GATE",
