@@ -89,7 +89,7 @@ def previous_month(period: str) -> str:
 def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(" ", strip=True)
-    title_match = re.search(r"(20\d{2})年[^\d]{0,20}(\d{1,2})月分結果", text)
+    title_match = re.search(r"(20\d{2})年.{0,40}?(\d{1,2})月分結果", text)
     if not title_match:
         raise ValueError("cannot resolve latest Labour Force Survey reference month from official page")
     latest_period = f"{int(title_match.group(1)):04d}-{int(title_match.group(2)):02d}"
