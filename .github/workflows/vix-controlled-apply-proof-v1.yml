@@ -1,0 +1,124 @@
+name: VIX Controlled Apply Proof V1
+
+on:
+  push:
+    branches:
+      - validation-vix-controlled-apply-v1-2026-10-14
+    paths:
+      - 'validation/fetch_cboe_vix_candidate_v2.py'
+      - 'validation/apply_cboe_vix_candidate_v1.py'
+      - '.github/workflows/vix-controlled-apply-proof-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/fetch_cboe_vix_candidate_v2.py'
+      - 'validation/apply_cboe_vix_candidate_v1.py'
+      - '.github/workflows/vix-controlled-apply-proof-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-vix-controlled-apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Snapshot canonical runtime
+        run: |
+          sha256sum live_data/sections/D.json > /tmp/D.before.sha256
+          sha256sum payload/part-00.txt > /tmp/part00.before.sha256
+          sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
+          cp live_data/sections/D.json /tmp/D.before.json
+
+      - name: Fetch official Cboe VIX candidate
+        run: |
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_cboe_vix_candidate_v2.py --as-of "$AS_OF" --out /tmp/vix-candidate.json | tee /tmp/vix-source-receipt.json
+
+      - name: Build deterministic VIX replacement
+        run: |
+          python validation/apply_cboe_vix_candidate_v1.py \
+            --candidate /tmp/vix-candidate.json \
+            --replacement-out /tmp/D.vix.replacement.json | tee /tmp/vix-apply-receipt.json
+
+      - name: Prove semantic diff is VIX-only
+        run: |
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.before.json'))
+          after=json.load(open('/tmp/D.vix.replacement.json'))
+          assert set(before)==set(after), 'top-level D keys changed'
+          br=dict(before['risk']); ar=dict(after['risk'])
+          bv=br.pop('VIX'); av=ar.pop('VIX')
+          assert br==ar, 'a non-VIX risk series changed'
+          b2=dict(before); a2=dict(after)
+          b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.VIX changed'
+          assert av['dates'][:len(bv['dates'])]==bv['dates'], 'VIX historical dates prefix changed'
+          assert av['values'][:len(bv['values'])]==bv['values'], 'VIX historical values prefix changed'
+          assert len(av['dates'])==len(av['values'])
+          assert av['last_date']==av['dates'][-1]
+          assert av['last_value']==av['values'][-1]
+          print('VIX_SEMANTIC_DIFF_ONLY_PASS', bv['last_date'], '->', av['last_date'], len(bv['dates']), '->', len(av['dates']))
+          PY
+
+      - name: Dry-run canonical direct-section updater
+        run: |
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.vix.replacement.json | tee /tmp/vix-direct-update-dryrun.json
+
+      - name: Apply in ephemeral checkout and rebuild manifest
+        run: |
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.vix.replacement.json \
+            --apply | tee /tmp/vix-direct-update-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          cat /tmp/live-update-contract.json
+
+      - name: Verify exact tracked diff scope
+        run: |
+          git diff --name-only | sort > /tmp/changed.txt
+          cat /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Prove second apply is idempotent
+        run: |
+          python validation/apply_cboe_vix_candidate_v1.py \
+            --candidate /tmp/vix-candidate.json \
+            --replacement-out /tmp/D.vix.second.json | tee /tmp/vix-second-apply-receipt.json
+          cmp -s live_data/sections/D.json /tmp/D.vix.second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/vix-second-apply-receipt.json'))
+          assert r['appended_observation_count']==0, r
+          print('VIX_IDEMPOTENT_SECOND_APPLY_PASS')
+          PY
+
+      - name: Prove no publication and preserve audit evidence
+        run: |
+          test -f /tmp/vix-candidate.json
+          test -f /tmp/vix-apply-receipt.json
+          echo VIX_CONTROLLED_APPLY_PROOF_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vix-controlled-apply-proof-v1
+          path: |
+            /tmp/vix-source-receipt.json
+            /tmp/vix-apply-receipt.json
+            /tmp/vix-direct-update-dryrun.json
+            /tmp/vix-direct-update-apply.json
+            /tmp/vix-second-apply-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/changed.txt
+          if-no-files-found: error
