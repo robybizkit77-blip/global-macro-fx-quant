@@ -1,98 +1,106 @@
 name: VIX Persistent Apply V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py']
   push:
-    branches:
-      - validation-vix-controlled-apply-v1-2026-10-14
-    paths:
-      - '.github/workflows/vix-persistent-apply-v1.yml'
+    branches: [main]
+    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py']
   workflow_dispatch:
+  schedule:
+    # UTC duplicates cover CET/CEST; the local gate admits only 23:15/23:45 Rome time.
+    - cron: '15 21 * * 1-5'
+    - cron: '45 21 * * 1-5'
+    - cron: '15 22 * * 1-5'
+    - cron: '45 22 * * 1-5'
 
-permissions:
-  contents: write
+permissions: {contents: write}
+concurrency: {group: vix-persistent-apply-v1, cancel-in-progress: false}
 
 jobs:
   persist-vix-current:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-          persist-credentials: true
-
-      - name: Fetch current official Cboe candidate
+        with: {fetch-depth: 2, persist-credentials: true}
+      - name: Rome schedule gate
+        id: gate
+        shell: bash
         run: |
-          AS_OF="$(date -u +%F)"
-          python validation/fetch_cboe_vix_candidate_v2.py --as-of "$AS_OF" --out /tmp/vix-candidate.json | tee /tmp/vix-source-receipt.json
-
-      - name: Build and validate VIX-only replacement
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          if [[ "${{ github.event_name }}" != schedule || " 23:15 23:45 " == *" $hhmm "* ]]; then echo 'should_run=true' >> "$GITHUB_OUTPUT"; else echo 'should_run=false' >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.should_run == 'true'
+        with: {python-version: '3.12'}
+      - name: Snapshot baseline
+        if: steps.gate.outputs.should_run == 'true'
         run: |
-          cp live_data/sections/D.json /tmp/D.before.json
-          python validation/apply_cboe_vix_candidate_v1.py \
-            --candidate /tmp/vix-candidate.json \
-            --replacement-out /tmp/D.vix.replacement.json | tee /tmp/vix-apply-receipt.json
+          mkdir -p /tmp/vix-persistent
+          git rev-parse HEAD > /tmp/vix-persistent/base-sha
+          cp live_data/sections/D.json /tmp/vix-persistent/D.before.json
+      - name: Fetch official Cboe candidate and build replacement
+        id: candidate
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          set -euo pipefail
+          python validation/fetch_cboe_vix_candidate_v2.py --as-of "$(date -u +%F)" --out /tmp/vix-persistent/candidate.json | tee /tmp/vix-persistent/source-receipt.json
+          python validation/apply_cboe_vix_candidate_v1.py --candidate /tmp/vix-persistent/candidate.json --replacement-out /tmp/vix-persistent/D.replacement.json | tee /tmp/vix-persistent/apply-receipt.json
           python - <<'PY'
           import json
-          before=json.load(open('/tmp/D.before.json'))
-          after=json.load(open('/tmp/D.vix.replacement.json'))
-          br=dict(before['risk']); ar=dict(after['risk'])
-          bv=br.pop('VIX'); av=ar.pop('VIX')
-          assert br==ar, 'non-VIX risk data changed'
-          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
-          assert b2==a2, 'data outside D.risk.VIX changed'
-          assert av['dates'][:len(bv['dates'])]==bv['dates']
-          assert av['values'][:len(bv['values'])]==bv['values']
-          r=json.load(open('/tmp/vix-apply-receipt.json'))
-          assert r['appended_observation_count'] > 0, r
-          print('VIX_PERSISTENT_APPLY_SEMANTIC_SCOPE_PASS', r['runtime_anchor_date'], '->', r['result_last_date'])
+          c=json.load(open('/tmp/vix-persistent/candidate.json')); r=json.load(open('/tmp/vix-persistent/apply-receipt.json'))
+          assert c['status']=='GREEN_OFFICIAL_SOURCE_CANDIDATE' and c['source']['publisher']=='Cboe Global Markets',c
+          assert c['business_day_lag']<=c['max_business_day_lag'] and r['other_risk_keys_preserved'] is True,(c,r)
           PY
-
-      - name: Apply direct section and rebuild canonical manifest
+          if cmp -s live_data/sections/D.json /tmp/vix-persistent/D.replacement.json; then echo 'status=NO_CHANGE' >> "$GITHUB_OUTPUT"; else echo 'status=UPDATE_AVAILABLE' >> "$GITHUB_OUTPUT"; fi
+      - name: Apply update, rebuild runtime and validate exact scope
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE'
         run: |
-          python validation/update_live_direct_section.py --section D --replacement /tmp/D.vix.replacement.json --apply
-          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
-          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          set -euo pipefail
+          python validation/update_live_direct_section.py --section D --replacement /tmp/vix-persistent/D.replacement.json --apply > /tmp/vix-persistent/direct-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/vix-persistent/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/vix-persistent/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/vix-persistent/runtime-roundtrip.json
           python - <<'PY'
-          import json
-          r=json.load(open('/tmp/live-update-contract.json'))
-          assert r['status']=='PASS', r
-          print('VIX_PERSISTENT_APPLY_LIVE_CONTRACT_PASS')
+          import json,subprocess
+          before=json.load(open('/tmp/vix-persistent/D.before.json')); after=json.load(open('live_data/sections/D.json'))
+          br=dict(before['risk']); ar=dict(after['risk']); bv=br.pop('VIX'); av=ar.pop('VIX')
+          assert br==ar and {**before,'risk':br}=={**after,'risk':ar}
+          assert av['dates'][:len(bv['dates'])]==bv['dates'] and av['values'][:len(bv['values'])]==bv['values'] and len(av['dates'])>len(bv['dates'])
+          assert json.load(open('/tmp/vix-persistent/live-contract.json'))['status']=='PASS'
+          assert set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())=={'live_data/sections/D.json','live_data/manifest.v2.json','payload/part-00.txt'}
           PY
-
-      - name: Enforce exact tracked diff scope
+      - name: Validate no-change identity
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_CHANGE'
         run: |
-          git diff --name-only | sort > /tmp/changed.txt
-          printf '%s\n' \
-            'live_data/manifest.v2.json' \
-            'live_data/sections/D.json' \
-            'payload/part-00.txt' | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/changed.txt
-
-      - name: Prove idempotence before commit
+          set -euo pipefail
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          cmp -s live_data/sections/D.json /tmp/vix-persistent/D.replacement.json
+          git diff --exit-code -- live_data payload
+      - name: Validation branch restores runtime
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
         run: |
-          python validation/apply_cboe_vix_candidate_v1.py --candidate /tmp/vix-candidate.json --replacement-out /tmp/D.vix.second.json > /tmp/vix-second-receipt.json
-          cmp -s live_data/sections/D.json /tmp/D.vix.second.json
-          python - <<'PY'
-          import json
-          r=json.load(open('/tmp/vix-second-receipt.json'))
-          assert r['appended_observation_count']==0, r
-          print('VIX_PERSISTENT_APPLY_IDEMPOTENT_PASS')
-          PY
-
-      - name: Commit with remote-head lease
-        env:
-          TARGET_BRANCH: validation-vix-controlled-apply-v1-2026-10-14
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
+      - name: Persist to main with remote-head lease
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref == 'refs/heads/main'
         run: |
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/D.json payload/part-00.txt live_data/manifest.v2.json
-          git diff --cached --quiet && { echo 'No persistent VIX changes to commit'; exit 1; }
+          set -euo pipefail
+          BASE="$(cat /tmp/vix-persistent/base-sha)"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$BASE"
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/D.json live_data/manifest.v2.json payload/part-00.txt
+          git diff --cached --quiet && exit 0
           git commit -m 'Refresh VIX runtime from official Cboe close'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
-
-      - name: No publication side effect
-        run: echo VIX_PERSISTENT_APPLY_COMMIT_ONLY_NO_PUBLICATION
+          git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.should_run == 'true'
+        with:
+          name: vix-persistent-${{ github.run_id }}
+          path: /tmp/vix-persistent/
+          if-no-files-found: warn
+          retention-days: 30
