@@ -6,6 +6,9 @@ on:
       - rates-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/rates-persistent-daily-v1.yml'
   workflow_dispatch:
   schedule:
     # Europe/Rome target windows: 07:20, 08:00, 09:00 on working days.
