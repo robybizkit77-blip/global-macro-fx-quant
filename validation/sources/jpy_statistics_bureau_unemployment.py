@@ -51,7 +51,32 @@ def fetch_html() -> str:
         headers={"User-Agent": "global-macro-fx-quant/1.0 (+official-statistics-reader)"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", errors="strict")
+        raw = resp.read()
+        header_charset = resp.headers.get_content_charset()
+
+    encodings: list[str] = []
+    if header_charset:
+        encodings.append(header_charset)
+
+    meta_match = re.search(br"charset\s*=\s*['\"]?\s*([A-Za-z0-9._-]+)", raw[:8192], flags=re.IGNORECASE)
+    if meta_match:
+        encodings.append(meta_match.group(1).decode("ascii", errors="strict"))
+
+    # Statistics Bureau pages may be served in legacy Japanese encodings.
+    # Decode strictly and fail closed if none of the declared/known encodings fit.
+    encodings.extend(["utf-8", "cp932", "shift_jis"])
+    tried: list[str] = []
+    for encoding in encodings:
+        normalized = encoding.strip()
+        if not normalized or normalized.lower() in {e.lower() for e in tried}:
+            continue
+        tried.append(normalized)
+        try:
+            return raw.decode(normalized, errors="strict")
+        except (LookupError, UnicodeDecodeError):
+            continue
+
+    raise UnicodeError(f"cannot decode Statistics Bureau JPY labour page; tried={tried}")
 
 
 def previous_month(period: str) -> str:
