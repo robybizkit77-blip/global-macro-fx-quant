@@ -1,0 +1,166 @@
+name: CB Pricing Persistent Daily V1
+
+on:
+  push:
+    branches:
+      - main
+      - cb-pricing-persistent-daily-v1-2026-10-14
+    paths:
+      - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # Europe/Rome retries: 06:00, 06:30, 07:00 on working days.
+    - cron: '0 4 * * 1-5'
+    - cron: '0 5 * * 1-5'
+    - cron: '30 4 * * 1-5'
+    - cron: '30 5 * * 1-5'
+    - cron: '0 6 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cb-pricing-persistent-daily-v1
+  cancel-in-progress: false
+
+jobs:
+  persist-cb-pricing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - name: Rome schedule gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          allowed='06:00 06:30 07:00'
+          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
+            echo 'should_run=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'should_run=false' >> "$GITHUB_OUTPUT"
+          fi
+          echo "event=${{ github.event_name }} rome_time=$hhmm"
+
+      - name: Install source parser dependencies
+        if: steps.gate.outputs.should_run == 'true'
+        run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
+
+      - name: Run certified all-currency dry-run preflight
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          CB_DAILY_WORKDIR=/tmp/cb-pricing-persistent bash validation/cb_pricing/run_active_cb_pricing_daily.sh
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/cb-pricing-persistent/DAILY_RECEIPT.json'))
+          assert d['status']=='ALL_GREEN_NO_PUBLICATION',d
+          assert d['working_tree_clean'] is True,d
+          assert sorted(d['currencies'])==['AUD','CAD','GBP','JPY'],d
+          assert all(d['currencies'][c]['status']=='GREEN' for c in ('AUD','CAD','GBP','JPY')),d
+          print('CB_PRICING_PERSISTENT_PREFLIGHT_PASS')
+          PY
+          git diff --exit-code -- live_data payload
+
+      - name: Snapshot baseline
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          cp live_data/sections/OIS_DATA.json /tmp/cb-pricing-persistent/OIS.before.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/cb-pricing-persistent/NATIVE.before.json
+          cp payload/part-00.txt /tmp/cb-pricing-persistent/part-00.before.txt
+          cp live_data/manifest.v2.json /tmp/cb-pricing-persistent/manifest.before.json
+
+      - name: Apply all four validated candidates
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_aud_asx_ib_candidate.py --candidate /tmp/cb-pricing-persistent/AUD.candidate.json > /tmp/cb-pricing-persistent/AUD.apply.json
+          python3 validation/cb_pricing/apply_cad_mx_corra_candidate.py --candidate /tmp/cb-pricing-persistent/CAD.candidate.json > /tmp/cb-pricing-persistent/CAD.apply.json
+          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/cb-pricing-persistent/GBP.candidate.json > /tmp/cb-pricing-persistent/GBP.apply.json
+          python3 validation/cb_pricing/apply_jpy_tfx_tona_candidate.py --candidate /tmp/cb-pricing-persistent/JPY.candidate.json > /tmp/cb-pricing-persistent/JPY.apply.json
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/cb-pricing-persistent/manifest-build.json
+          python3 validation/check_cb_pricing_source_registry.py > /tmp/cb-pricing-persistent/registry.json
+          python3 validation/check_live_update_contract.py > /tmp/cb-pricing-persistent/live-contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only > /tmp/cb-pricing-persistent/runtime-roundtrip.json
+
+      - name: Enforce semantic and tracked scope
+        id: scope
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,subprocess
+          bo=json.load(open('/tmp/cb-pricing-persistent/OIS.before.json'))
+          ao=json.load(open('live_data/sections/OIS_DATA.json'))
+          bn=json.load(open('/tmp/cb-pricing-persistent/NATIVE.before.json'))
+          an=json.load(open('live_data/sections/NATIVE_CB_DATA.json'))
+          co=sorted(k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k])
+          cn=sorted(k for k in bn if bn[k]!=an[k])
+          allowed_ccy=['AUD','CAD','GBP','JPY']
+          assert set(co).issubset(allowed_ccy),co
+          assert set(cn).issubset(allowed_ccy),cn
+          assert co==cn,(co,cn)
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed=['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt']
+          assert set(changed).issubset(allowed),(changed,allowed)
+          c=json.load(open('/tmp/cb-pricing-persistent/live-contract.json'))
+          r=json.load(open('/tmp/cb-pricing-persistent/runtime-roundtrip.json'))
+          assert c['status']=='PASS',c
+          assert r['status']=='PASS' and r.get('noop_roundtrip_byte_identical') is True,r
+          print('CB_PRICING_PERSISTENT_SCOPE_PASS',co,changed)
+          open('/tmp/cb-pricing-persistent/changed.flag','w').write('yes\n' if changed else 'no\n')
+          PY
+          echo "changed=$(cat /tmp/cb-pricing-persistent/changed.flag)" >> "$GITHUB_OUTPUT"
+
+      - name: Validation branch restores runtime
+        if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'yes' && github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt
+          git diff --exit-code -- live_data payload
+          echo CB_PRICING_PERSISTENT_VALIDATION_ONLY_PASS
+
+      - name: Commit validated CB Pricing update to main with remote-head lease
+        if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'yes' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          TARGET_BRANCH: main
+        run: |
+          set -euo pipefail
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt
+          git diff --cached --quiet && { echo 'No CB Pricing changes to persist'; exit 0; }
+          git commit -m 'Refresh daily CB pricing runtime from official market sources'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_BRANCH"
+          echo CB_PRICING_PERSISTENT_MAIN_UPDATE_PUSHED
+
+      - name: Confirm clean no-change case
+        if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'no'
+        run: git diff --exit-code -- live_data payload
+
+      - name: Upload CB Pricing evidence
+        if: always() && steps.gate.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cb-pricing-persistent-daily-${{ github.run_id }}
+          path: /tmp/cb-pricing-persistent/
+          if-no-files-found: warn
+          retention-days: 30
