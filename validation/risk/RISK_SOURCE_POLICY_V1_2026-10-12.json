@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_RISK_SOURCE_POLICY_V1",
-  "as_of": "2026-10-12",
+  "as_of": "2026-10-14",
   "purpose": "Define auditable source eligibility for the Risk overlay without changing pair direction, bias, scoring, sizing or Quant logic.",
   "policy": {
     "fail_closed": true,
@@ -41,14 +41,18 @@
   },
   "secondary_runtime_series": {
     "WTI": {
-      "status": "SOURCE_RECOVERED_NOT_PRIMARY_GATE",
-      "source_name": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
-      "publisher": "U.S. EIA via FRED",
-      "series_id": "DCOILWTICO",
+      "status": "SOURCE_RESOLVED_DIRECT_OFFICIAL_EIA",
+      "source_name": "Cushing, OK WTI Spot Price FOB (Dollars per Barrel)",
+      "publisher": "U.S. Energy Information Administration",
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RWTCD.htm",
+      "series_id": "RWTC",
+      "legacy_api_series_id": "PET.RWTC.D",
+      "fred_mirror_series_id": "DCOILWTICO",
       "frequency": "Daily",
       "historical_contract_commit": "ad954db44b99f7a1f0a9538b684593cc3a1e5596",
       "historical_workflow": ".github/workflows/canonical-data-refresh-v274.yml",
-      "reason": "The repository history contains an explicit canonical daily FRED/EIA collector and provenance fields for WTI. Current D.risk is truncated, so WTI can be rebuilt from the recovered canonical source contract but remains outside the existing VIX/Brent primary freshness gate."
+      "collector": "validation/fetch_fred_eia_wti_candidate_v1.py",
+      "reason": "Repository history established the same EIA Cushing WTI spot benchmark through the FRED DCOILWTICO mirror. The current pipeline now reads the official EIA daily history directly as RWTC / legacy PET.RWTC.D, eliminating the mirror transport while preserving the exact benchmark semantics. WTI remains a secondary Risk runtime series and is not silently promoted into the VIX/Brent primary freshness gate."
     },
     "Gold": {
       "status": "NOT_GATE_ELIGIBLE",
