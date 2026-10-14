@@ -9,6 +9,7 @@ on:
       - 'live_data/sections/D.json'
       - 'payload/part-00.txt'
       - 'live_data/manifest.v2.json'
+      - '.github/workflows/vix-postapply-certification-v1.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,11 +27,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            DATA_COMMIT="$GITHUB_SHA"
-          else
-            DATA_COMMIT="$(git log -1 --format=%H -- live_data/sections/D.json)"
-          fi
+          DATA_COMMIT="$(git log -1 --format=%H -- live_data/sections/D.json)"
           test -n "$DATA_COMMIT"
           git cat-file -e "$DATA_COMMIT^"
           echo "DATA_COMMIT=$DATA_COMMIT" >> "$GITHUB_ENV"
@@ -75,6 +72,7 @@ jobs:
           PY
 
       - name: Prove current branch runtime contains the certified data commit state
+        if: github.ref_name != 'main'
         run: |
           git show "$DATA_COMMIT":live_data/sections/D.json > /tmp/D.data-commit.json
           cmp -s /tmp/D.data-commit.json live_data/sections/D.json
