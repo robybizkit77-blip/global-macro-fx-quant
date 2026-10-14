@@ -1,4 +1,5 @@
 name: Liquidity JPY M3 Persistent Daily V1
+# Candidate receipts bind every permitted BOJ revision to its old runtime value.
 
 on:
   pull_request:
