@@ -4,11 +4,21 @@ name: Liquidity JPY M3 Persistent Daily V1
 
 on:
   pull_request:
-    branches: [main]
-    paths: ['.github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml', 'validation/fetch_boj_jpy_m3_exact_candidate.py', 'validation/apply_boj_jpy_m3_exact_candidate.py', 'validation/check_liquidity_remaining_blockers_v1.py', 'live_data/sections/NATIVE_LIQ_DATA.json']
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml
+      - validation/fetch_boj_jpy_m3_exact_candidate.py
+      - validation/apply_boj_jpy_m3_exact_candidate.py
+      - validation/check_liquidity_remaining_blockers_v1.py
+      - live_data/sections/NATIVE_LIQ_DATA.json
   push:
-    branches: [main]
-    paths: ['.github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml', 'validation/fetch_boj_jpy_m3_exact_candidate.py', 'validation/apply_boj_jpy_m3_exact_candidate.py']
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml
+      - validation/fetch_boj_jpy_m3_exact_candidate.py
+      - validation/apply_boj_jpy_m3_exact_candidate.py
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1-5'
@@ -16,8 +26,12 @@ on:
     - cron: '30 0 * * 1-5'
     - cron: '30 1 * * 1-5'
 
-permissions: {contents: write}
-concurrency: {group: liquidity-jpy-m3-persistent-daily-v1, cancel-in-progress: false}
+permissions:
+  contents: write
+
+concurrency:
+  group: liquidity-jpy-m3-persistent-daily-v1
+  cancel-in-progress: false
 
 jobs:
   persist-jpy-m3:
@@ -25,15 +39,22 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 2, persist-credentials: true}
+        with:
+          fetch-depth: 2
+          persist-credentials: true
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
+        with:
+          python-version: '3.12'
       - name: Rome schedule gate
         id: gate
         shell: bash
         run: |
           hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != schedule || " 02:00 02:30 " == *" $hhmm "* ]]; then echo should_run=true >> "$GITHUB_OUTPUT"; else echo should_run=false >> "$GITHUB_OUTPUT"; fi
+          if [[ "${{ github.event_name }}" != schedule || " 02:00 02:30 " == *" $hhmm "* ]]; then
+            echo should_run=true >> "$GITHUB_OUTPUT"
+          else
+            echo should_run=false >> "$GITHUB_OUTPUT"
+          fi
       - name: Snapshot baseline and withholding contract
         if: steps.gate.outputs.should_run == 'true'
         run: |
@@ -105,11 +126,16 @@ jobs:
           BASE="$(cat /tmp/jpy-m3/base-sha)"
           git fetch origin main --no-tags
           test "$(git rev-parse origin/main)" = "$BASE" || { echo 'main moved during JPY M3 refresh' >&2; exit 1; }
-          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- live_data/sections/NATIVE_LIQ_DATA.json live_data/manifest.v2.json payload/part-00.txt
           git diff --cached --quiet && exit 0
           git commit -m 'Refresh JPY M3 liquidity runtime from Bank of Japan revisions'
           git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
       - uses: actions/upload-artifact@v4
         if: always() && steps.gate.outputs.should_run == 'true'
-        with: {name: liquidity-jpy-m3-persistent-${{ github.run_id }}, path: /tmp/jpy-m3/, if-no-files-found: warn, retention-days: 30}
+        with:
+          name: liquidity-jpy-m3-persistent-${{ github.run_id }}
+          path: /tmp/jpy-m3/
+          if-no-files-found: warn
+          retention-days: 30
