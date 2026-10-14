@@ -30,8 +30,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as td:
         csv_path = Path(td) / 'DCOILWTICO.csv'
         cmd = [
-            'curl', '--http1.1', '-fL', '--compressed', '--retry', '5', '--retry-all-errors',
-            '--retry-delay', '3', '--connect-timeout', '20', '--max-time', '180',
+            'curl', '--http1.1', '-fL', '--compressed', '--retry', '2', '--retry-all-errors',
+            '--retry-delay', '2', '--retry-max-time', '90', '--connect-timeout', '15', '--max-time', '45',
             '-A', 'Mozilla/5.0', url, '-o', str(csv_path),
         ]
         subprocess.run(cmd, check=True)
