@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import calendar
 import json
 import re
 import urllib.request
@@ -87,48 +86,59 @@ def previous_month(period: str) -> str:
 def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(" ", strip=True)
+
     title_match = re.search(r"(20\d{2})年.{0,40}?(\d{1,2})月分結果", text)
     if not title_match:
         raise ValueError("cannot resolve latest Labour Force Survey reference month from official page")
     latest_period = f"{int(title_match.group(1)):04d}-{int(title_match.group(2)):02d}"
-
-    # The Statistics Bureau has changed table markup over time. Anchor on the
-    # first unemployment-rate label after the release title and require that it
-    # occurs before the narrative points section. The later narrative value is
-    # still cross-checked independently below.
-    row_pos = text.find("完全失業率", title_match.end())
-    points_pos = text.find("ポイント", title_match.end())
-    if row_pos < 0 or points_pos < 0 or row_pos >= points_pos:
-        raise ValueError("official page does not expose the headline unemployment table row before points")
-    target_row = text[row_pos:points_pos]
-
-    values = [float(x) for x in re.findall(r"(\d+(?:\.\d+)?)\s*[％%]", target_row)]
-    if len(values) < 2:
-        raise ValueError(f"need at least two unemployment-rate observations in official row: {target_row!r}")
-    latest_value, prior_value = values[-1], values[-2]
     prior_period = previous_month(latest_period)
 
     narrative_match = re.search(
-        r"完全失業率\s*[（(]\s*季節調整値\s*[）)]\s*は\s*(\d+(?:\.\d+)?)\s*[％%]",
+        r"完全失業率\s*[（(]\s*季節調整値\s*[）)]\s*は\s*"
+        r"(?P<latest>\d+(?:\.\d+)?)\s*[％%]\s*[。.]?\s*"
+        r"(?:(?:前月に比べ\s*(?P<delta>\d+(?:\.\d+)?)\s*ポイントの(?P<direction>上昇|低下))|(?P<flat>前月と同率))",
         text,
     )
     if not narrative_match:
-        raise ValueError("official page lacks seasonally-adjusted unemployment narrative cross-check")
-    narrative_value = float(narrative_match.group(1))
-    if abs(narrative_value - latest_value) > 1e-12:
-        raise ValueError(
-            f"official unemployment table/narrative mismatch: table={latest_value} narrative={narrative_value}"
-        )
+        raise ValueError("official page lacks canonical seasonally-adjusted unemployment narrative and monthly comparison")
+
+    latest_value = float(narrative_match.group("latest"))
+    direction = narrative_match.group("direction")
+    delta_text = narrative_match.group("delta")
+    is_flat = narrative_match.group("flat") is not None
+
+    if is_flat:
+        delta = 0.0
+        prior_value = latest_value
+        change_label = "UNCHANGED"
+    elif direction and delta_text:
+        delta = float(delta_text)
+        if direction == "上昇":
+            prior_value = latest_value - delta
+            change_label = "UP"
+        elif direction == "低下":
+            prior_value = latest_value + delta
+            change_label = "DOWN"
+        else:
+            raise ValueError(f"unsupported unemployment change direction: {direction!r}")
+    else:
+        raise ValueError("unemployment narrative matched without a usable monthly change")
+
+    prior_value = round(prior_value, 10)
+    signed_delta = round(latest_value - prior_value, 10)
+    if abs(abs(signed_delta) - delta) > 1e-9:
+        raise ValueError("unemployment narrative delta reconstruction failed")
 
     audit = {
         "latest_period": latest_period,
         "latest_value": latest_value,
         "prior_period": prior_period,
         "prior_value": prior_value,
-        "delta": round(latest_value - prior_value, 10),
+        "delta": signed_delta,
+        "change": change_label,
         "headline": "Unemployment rate, seasonally adjusted, Japan, both sexes, age 15+",
-        "table_row": target_row,
-        "narrative_cross_check": narrative_value,
+        "narrative": narrative_match.group(0),
+        "narrative_cross_check": latest_value,
     }
     return latest_period, latest_value, prior_period, prior_value, audit
 
@@ -153,7 +163,7 @@ def build_candidate(html: str) -> tuple[dict[str, Any], dict[str, Any]]:
         "source_url": SOURCE_URL,
         "candidate_only": True,
         "live_data_written": False,
-        "transport": "OFFICIAL_DIRECT_HTML",
+        "transport": "OFFICIAL_DIRECT_HTML_NARRATIVE",
     })
     return candidate, audit
 
