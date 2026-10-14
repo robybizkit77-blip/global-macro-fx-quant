@@ -86,33 +86,47 @@ jobs:
           )"
 
               freshness="$(python - <<PY
-          import json
+          import json, math
           from pathlib import Path
           candidate=json.load(open('$work/candidate.json'))
-          rows=json.load(open('live_data/sections/MACRO_SERIES.json'))['$ccy']
+          series=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          heat=json.load(open('live_data/sections/MACRO_THERMOMETER_DATA.json'))
+          rows=series['$ccy']
           hits=[r for r in rows if isinstance(r,dict) and r.get('id')==candidate['macro_series_id']]
           if len(hits)!=1:
               raise SystemExit(f"$key canonical target count={len(hits)}")
-          dates=hits[0].get('dates') or []
-          if not dates:
-              raise SystemExit('$key canonical target has no dates')
+          row=hits[0]
+          dates=row.get('dates') or []
+          values=row.get('values') or []
+          if not dates or len(dates)!=len(values):
+              raise SystemExit('$key canonical target has invalid dates/values')
           candidate_month=str(candidate['observation_date'])[:7]
           canonical_month=str(dates[-1])[:7]
-          stale=candidate_month < canonical_month
-          status='NO_UPDATE_STALE_OFFICIAL_SOURCE' if stale else 'ACTIONABLE'
+          if candidate_month < canonical_month:
+              status='NO_UPDATE_STALE_OFFICIAL_SOURCE'
+          elif candidate_month == canonical_month:
+              series_value=float(candidate.get('series_value',candidate['value']))
+              heat_value=float(candidate['value'])
+              canonical_series=float(values[-1])
+              canonical_heat=float(heat['currencies']['$ccy']['$dim']['latest_value'])
+              same_series=math.isclose(series_value,canonical_series,rel_tol=0.0,abs_tol=1e-12)
+              same_heat=math.isclose(heat_value,canonical_heat,rel_tol=0.0,abs_tol=1e-12)
+              status='NO_UPDATE_CANONICAL_MATCH' if same_series and same_heat else 'ACTIONABLE'
+          else:
+              status='ACTIONABLE'
           receipt={
               'status':status,
               'candidate_date':candidate['observation_date'],
               'canonical_latest_date':dates[-1],
-              'actionable':not stale,
+              'actionable':status=='ACTIONABLE',
           }
           Path('$work/freshness.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
           print(status)
           PY
           )"
 
-              if [ "$freshness" = "NO_UPDATE_STALE_OFFICIAL_SOURCE" ]; then
-                echo "$key NO_UPDATE_STALE_OFFICIAL_SOURCE"
+              if [ "$freshness" != "ACTIONABLE" ]; then
+                echo "$key $freshness"
                 continue
               fi
 
