@@ -104,3 +104,5 @@ jobs:
 
       - name: No publication side effect
         run: echo WTI_PERSISTENT_APPLY_COMMIT_ONLY_NO_PUBLICATION
+
+      # Re-run marker: FRED transport pinned to HTTP/1.1; source semantics unchanged.
