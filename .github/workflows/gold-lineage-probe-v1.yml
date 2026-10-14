@@ -1,0 +1,66 @@
+name: Gold Lineage Probe V1
+
+on:
+  push:
+    branches:
+      - validation-gold-lineage-probe-v1-2026-10-14
+    paths:
+      - '.github/workflows/gold-lineage-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-gold-lineage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract current Gold runtime object
+        run: |
+          set -euo pipefail
+          python - <<'PY' | tee /tmp/gold-current.json
+          import json
+          d=json.load(open('live_data/sections/D.json'))
+          risk=d.get('risk', {})
+          matches={k:v for k,v in risk.items() if 'gold' in k.lower()}
+          print(json.dumps({'risk_keys': sorted(risk.keys()), 'gold_matches': matches}, indent=2, ensure_ascii=False))
+          if not matches:
+              raise SystemExit('No Gold-like key found in D.risk')
+          PY
+
+      - name: Trace Gold changes through D runtime history
+        run: |
+          set -euo pipefail
+          git log --all --date=iso-strict --format='%H|%P|%ad|%an|%s' -S'Gold' -- live_data/sections/D.json > /tmp/gold-D-lineage.txt || true
+          git log --all --date=iso-strict --format='%H|%P|%ad|%an|%s' -S'GOLD' -- live_data/sections/D.json >> /tmp/gold-D-lineage.txt || true
+          awk '!seen[$0]++' /tmp/gold-D-lineage.txt > /tmp/gold-D-lineage.dedup.txt
+          mv /tmp/gold-D-lineage.dedup.txt /tmp/gold-D-lineage.txt
+          cat /tmp/gold-D-lineage.txt
+
+      - name: Trace Gold references in repository history
+        run: |
+          set -euo pipefail
+          git log --all --date=iso-strict --format='%H|%P|%ad|%an|%s' -S'Gold' -- . ':!live_data/sections/D.json' > /tmp/gold-repo-lineage.txt || true
+          git log --all --date=iso-strict --format='%H|%P|%ad|%an|%s' -S'GOLD' -- . ':!live_data/sections/D.json' >> /tmp/gold-repo-lineage.txt || true
+          awk '!seen[$0]++' /tmp/gold-repo-lineage.txt > /tmp/gold-repo-lineage.dedup.txt
+          mv /tmp/gold-repo-lineage.dedup.txt /tmp/gold-repo-lineage.txt
+          head -100 /tmp/gold-repo-lineage.txt
+
+      - name: Prove read-only
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo GOLD_LINEAGE_PROBE_READ_ONLY_PASS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gold-lineage-probe-v1
+          path: |
+            /tmp/gold-current.json
+            /tmp/gold-D-lineage.txt
+            /tmp/gold-repo-lineage.txt
+          if-no-files-found: error
