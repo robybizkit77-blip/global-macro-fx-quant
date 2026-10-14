@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_RISK_SOURCE_POLICY_V1",
-  "as_of": "2026-10-12",
+  "as_of": "2026-10-14",
   "purpose": "Define auditable source eligibility for the Risk overlay without changing pair direction, bias, scoring, sizing or Quant logic.",
   "policy": {
     "fail_closed": true,
@@ -19,8 +19,8 @@
       "frequency": "DAILY_MARKET_CLOSE",
       "field": "CLOSE",
       "max_business_day_lag_vs_price": 1,
-      "collector": "validation/fetch_cboe_vix_candidate.py",
-      "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
+      "collector": "validation/fetch_cboe_vix_candidate_v2.py",
+      "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV. The V2 collector is the exact collector certified and promoted on main by PR #235."
     },
     "Brent": {
       "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
@@ -41,14 +41,26 @@
   },
   "secondary_runtime_series": {
     "WTI": {
-      "status": "SOURCE_RECOVERED_NOT_PRIMARY_GATE",
-      "source_name": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
-      "publisher": "U.S. EIA via FRED",
-      "series_id": "DCOILWTICO",
-      "frequency": "Daily",
+      "status": "SOURCE_READY_NOT_PRIMARY_GATE",
+      "source_name": "Cushing, OK WTI Spot Price FOB",
+      "publisher": "U.S. Energy Information Administration",
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RWTCD.htm",
+      "direct_series_code": "RWTC",
+      "fred_mirror_series_id": "DCOILWTICO",
+      "frequency": "Daily observations / EIA batch release cadence",
+      "collector": "validation/fetch_eia_wti_candidate_v1.py",
       "historical_contract_commit": "ad954db44b99f7a1f0a9538b684593cc3a1e5596",
       "historical_workflow": ".github/workflows/canonical-data-refresh-v274.yml",
-      "reason": "The repository history contains an explicit canonical daily FRED/EIA collector and provenance fields for WTI. Current D.risk is truncated, so WTI can be rebuilt from the recovered canonical source contract but remains outside the existing VIX/Brent primary freshness gate."
+      "primary_gate_input": false,
+      "freshness_semantics": "RUNTIME_CURRENT means current to the latest observation officially published by EIA; WTI is not held to the VIX/Brent primary one-business-day gate.",
+      "audit_receipt": {
+        "run_id": 38525428951,
+        "head_sha": "e03026738c300a7def9a895a28d81a1a70186211",
+        "result": "CURRENT_RUNTIME_PLACEHOLDER_NONCANONICAL",
+        "runtime_points_checked": 3,
+        "mismatch_count": 3
+      },
+      "reason": "Direct EIA history is the canonical primary transport for Cushing WTI spot. The prior FRED DCOILWTICO contract remains useful as a mirror/provenance reference but is not treated as an independent source. The existing three-point D.risk.WTI placeholder was proven noncanonical against direct EIA on 2026-10-14 and must be replaced rather than appended to."
     },
     "Gold": {
       "status": "NOT_GATE_ELIGIBLE",
