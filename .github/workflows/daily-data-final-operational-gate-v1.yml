@@ -1,0 +1,83 @@
+name: Daily Data Final Operational Gate V1
+
+on:
+  push:
+    branches:
+      - main
+      - promotion-final-operational-gate-v1-2026-10-14
+    paths:
+      - 'validation/run_daily_data_orchestrator_final_gate_v1.py'
+      - 'validation/check_price_controlled_apply_contract_v1.py'
+      - 'validation/check_liquidity_remaining_blockers_v1.py'
+      - 'validation/check_risk_brent_hard_blocker_v1.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'validation/price/**'
+      - 'validation/liquidity/**'
+      - 'validation/risk/**'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/manifest.v2.json'
+      - 'payload/**'
+      - '.github/workflows/daily-data-final-operational-gate-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/run_daily_data_orchestrator_final_gate_v1.py'
+      - 'validation/check_price_controlled_apply_contract_v1.py'
+      - 'validation/check_liquidity_remaining_blockers_v1.py'
+      - 'validation/check_risk_brent_hard_blocker_v1.py'
+      - 'validation/check_live_update_contract.py'
+      - 'validation/rebuild_live_data_runtime.py'
+      - 'validation/price/**'
+      - 'validation/liquidity/**'
+      - 'validation/risk/**'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/manifest.v2.json'
+      - 'payload/**'
+      - '.github/workflows/daily-data-final-operational-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked runtime surfaces
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/liq.before.sha256
+          sha256sum live_data/sections/D.json > /tmp/d.before.sha256
+          sha256sum payload/part-15.txt > /tmp/price.before.sha256
+      - name: Run autonomous final gate
+        run: python validation/run_daily_data_orchestrator_final_gate_v1.py | tee /tmp/final-gate.json
+      - name: Verify publication remains withheld and runtime unchanged
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/final-gate.json'))
+          assert d['operational_state']=='READY_WITH_DOCUMENTED_EXPECTED_GAPS', d
+          assert d['publishable'] is False and d['publication_state']=='WITHHELD', d
+          assert d['live_data_published'] is False and d['gh_pages_published'] is False, d
+          assert [(x['lane'],x['key']) for x in d['exact_blockers']]==[
+            ('LIQUIDITY','CHF.liquidity'),
+            ('LIQUIDITY','CHF.credit'),
+            ('LIQUIDITY','JPY.liquidity'),
+            ('RISK','Brent'),
+          ], d
+          print('FINAL_OPERATIONAL_GATE_EXPECTED_GAPS_PASS')
+          PY
+          sha256sum -c /tmp/liq.before.sha256
+          sha256sum -c /tmp/d.before.sha256
+          sha256sum -c /tmp/price.before.sha256
+          git diff --exit-code -- live_data payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daily-data-final-operational-gate
+          path: /tmp/final-gate.json
+          if-no-files-found: error
