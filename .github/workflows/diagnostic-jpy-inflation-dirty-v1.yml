@@ -1,0 +1,71 @@
+name: Diagnostic JPY Inflation Dirty V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostic-jpy-inflation-dirty-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install adapter dependencies
+        run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
+
+      - name: Reproduce JPY inflation pre-capture state
+        shell: bash
+        run: |
+          set -euo pipefail
+          work=/tmp/jpy-inflation-dirty-probe
+          mkdir -p "$work"
+
+          echo '=== STATUS AT START ===' | tee "$work/status.txt"
+          git status --porcelain=v1 | tee -a "$work/status.txt"
+
+          python validation/macro_adapter_pit_handoff.py \
+            --currency JPY --dimension inflation \
+            --output "$work/candidate.json" \
+            --audit-output "$work/adapter-audit.json"
+
+          echo '=== STATUS AFTER ADAPTER ===' | tee -a "$work/status.txt"
+          git status --porcelain=v1 | tee -a "$work/status.txt"
+
+          python validation/build_macro_candidate.py \
+            --candidate "$work/candidate.json" \
+            --output-dir "$work/built" > "$work/builder.json"
+
+          echo '=== STATUS AFTER BUILDER ===' | tee -a "$work/status.txt"
+          git status --porcelain=v1 | tee -a "$work/status.txt"
+
+          python - <<'PY' > "$work/result.json"
+          import json, subprocess
+          dirty=subprocess.check_output(['git','status','--porcelain=v1'], text=True).splitlines()
+          print(json.dumps({'status':'PASS' if not dirty else 'DIRTY','dirty_paths':dirty}, indent=2))
+          PY
+
+          cat "$work/result.json"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jpy-inflation-dirty-probe-${{ github.run_id }}
+          path: /tmp/jpy-inflation-dirty-probe/
+          if-no-files-found: error
+          retention-days: 3
