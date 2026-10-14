@@ -1,0 +1,72 @@
+name: Gold Source Forensic Probe V1
+
+on:
+  push:
+    branches:
+      - validation-gold-lineage-probe-v1-2026-10-14
+    paths:
+      - '.github/workflows/gold-source-forensic-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-gold-source-lineage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search exact Gold literals and source labels across reachable history
+        run: |
+          set -euo pipefail
+          : > /tmp/gold-literal-hits.txt
+          for needle in '4349.94' '4325.03' '4282.98'; do
+            echo "=== $needle ===" >> /tmp/gold-literal-hits.txt
+            git log --all --format='%H|%ad|%an|%s' --date=iso-strict -S"$needle" -- . >> /tmp/gold-literal-hits.txt || true
+          done
+          cat /tmp/gold-literal-hits.txt
+
+      - name: Inspect likely introduction commits and parents
+        run: |
+          set -euo pipefail
+          : > /tmp/gold-context.txt
+          for sha in \
+            142785d96839dd3ae201697cdcf27a5cecf551ea \
+            92ea6570f4f1250ae0f1cede12847d43e98f142d \
+            529acdd6026c88ecee8451e2e5bc36c740eece7d \
+            3da2434ade53723714edaa100d0cea43dc32d38b \
+            59bb5cc47833326331ed2af58939c1d207536754; do
+            echo "===== COMMIT $sha =====" >> /tmp/gold-context.txt
+            git show --stat --oneline --no-renames "$sha" >> /tmp/gold-context.txt 2>&1 || true
+            echo "-- exact value/source grep in tree --" >> /tmp/gold-context.txt
+            git grep -n -I -E '4349\.94|4325\.03|4282\.98|Reuters|LBMA|XAU|spot gold|Gold Price' "$sha" -- . >> /tmp/gold-context.txt 2>&1 || true
+          done
+          sed -n '1,500p' /tmp/gold-context.txt
+
+      - name: Search repository source/validation history for Gold provenance vocabulary
+        run: |
+          set -euo pipefail
+          : > /tmp/gold-provenance-hits.txt
+          for term in Reuters LBMA XAU GOLDAMGBD228NLBM GOLDPMGBD228NLBM; do
+            echo "=== $term ===" >> /tmp/gold-provenance-hits.txt
+            git log --all --format='%H|%ad|%an|%s' --date=iso-strict -S"$term" -- validation data .github live_data payload >> /tmp/gold-provenance-hits.txt 2>/dev/null || true
+          done
+          awk '!seen[$0]++' /tmp/gold-provenance-hits.txt | head -300 | tee /tmp/gold-provenance-hits.dedup.txt
+
+      - name: Prove read-only
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo GOLD_SOURCE_FORENSIC_PROBE_READ_ONLY_PASS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gold-source-forensic-probe-v1
+          path: |
+            /tmp/gold-literal-hits.txt
+            /tmp/gold-context.txt
+            /tmp/gold-provenance-hits.dedup.txt
+          if-no-files-found: error
