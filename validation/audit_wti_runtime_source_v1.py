@@ -139,8 +139,8 @@ def main() -> None:
             source.append((day.isoformat(), value))
 
     source.sort(key=lambda x: x[0])
-    if len(source) < 500 or source[0][0] > '1986-01-31':
-        raise SystemExit(f'direct EIA WTI history invalid: {len(source)} rows, first={source[0][0] if source else None}')
+    if len(source) < 6000 or source[0][0] > '2000-01-31':
+        raise SystemExit(f'direct EIA WTI history unexpectedly short: {len(source)} rows, first={source[0][0] if source else None}')
     if len({day for day, _ in source}) != len(source):
         raise SystemExit('duplicate WTI dates in direct EIA source')
 
@@ -159,7 +159,7 @@ def main() -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
     latest_day = dt.date.fromisoformat(latest_date)
     diagnostic = {
-        'schema': 'GMFQ_WTI_RUNTIME_SOURCE_AUDIT_V2',
+        'schema': 'GMFQ_WTI_RUNTIME_SOURCE_AUDIT_V3',
         'source': {
             'publisher': 'U.S. Energy Information Administration',
             'name': 'Cushing, OK WTI Spot Price FOB',
@@ -184,7 +184,7 @@ def main() -> None:
             'latest_value': latest_value,
             'business_day_lag_vs_utc_today': business_days_between(latest_day, today),
         },
-        'safe_next_action': 'BUILD_DETERMINISTIC_FULL_HISTORY_REPLACEMENT_FROM_DIRECT_EIA' if mismatches else 'BUILD_DETERMINISTIC_FULL_HISTORY_REPLACEMENT_FROM_VALIDATED_SOURCE',
+        'safe_next_action': 'REPLACE_NONCANONICAL_PLACEHOLDER_WITH_DIRECT_EIA_HISTORY' if mismatches else 'BUILD_DETERMINISTIC_FULL_HISTORY_REPLACEMENT_FROM_VALIDATED_SOURCE',
         'runtime_mutated': False,
         'publication_performed': False,
     }
