@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1",
+  "as_of": "2026-10-13",
+  "source": {
+    "publisher": "European Central Bank",
+    "series_family": "euro foreign exchange reference rates",
+    "base": "EUR",
+    "currency_count": 8,
+    "derived_pair_count": 28
+  },
+  "collector": "validation/fetch_ecb_g8_price_candidate.py",
+  "applier": "validation/apply_ecb_g8_price_candidate.py",
+  "target": "payload/part-15.txt",
+  "proof": {
+    "workflow": ".github/workflows/price-ecb-controlled-apply-contract-v1.yml",
+    "run_id": 38412538367,
+    "job_id": 115348323488,
+    "proof_head_sha": "c6f204b13be676d4a15f17f82524e52124536f91",
+    "candidate_as_of": "2026-10-13",
+    "candidate_status": "CANDIDATE_OFFICIAL",
+    "controlled_apply": true,
+    "exact_diff_scope": [
+      "payload/part-15.txt"
+    ],
+    "idempotent_second_apply": true,
+    "tracked_runtime_restored": true,
+    "publication_performed": false
+  },
+  "controlled_apply_proven": true,
+  "persistent_publication_enabled": false,
+  "automation_ready": true,
+  "runtime_mutated": false,
+  "publication_performed": false,
+  "reason": "Official ECB candidate fetch and deterministic payload application are proven with a one-file diff scope, monotonic date guard, 28-cross universe contract, idempotent re-apply and tracked-runtime restoration. Automatic persistent publication remains separately withheld until an explicit write/publish workflow is authorized."
+}
