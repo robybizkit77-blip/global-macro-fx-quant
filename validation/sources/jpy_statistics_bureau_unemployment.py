@@ -62,8 +62,6 @@ def fetch_html() -> str:
     if meta_match:
         encodings.append(meta_match.group(1).decode("ascii", errors="strict"))
 
-    # Statistics Bureau pages may be served in legacy Japanese encodings.
-    # Decode strictly and fail closed if none of the declared/known encodings fit.
     encodings.extend(["utf-8", "cp932", "shift_jis"])
     tried: list[str] = []
     for encoding in encodings:
@@ -94,16 +92,15 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
         raise ValueError("cannot resolve latest Labour Force Survey reference month from official page")
     latest_period = f"{int(title_match.group(1)):04d}-{int(title_match.group(2)):02d}"
 
-    marker_match = re.search(r"月次\s*[（(]\s*季節調整値\s*[）)]", text)
-    if not marker_match:
-        raise ValueError("official page lacks monthly seasonally-adjusted table marker")
-    marker_pos = marker_match.end()
-    row_pos = text.find("完全失業率", marker_pos)
-    if row_pos < 0:
-        raise ValueError("official page does not contain the headline unemployment-rate row after monthly marker")
-    points_pos = text.find("ポイント", row_pos)
-    row_end = points_pos if points_pos >= 0 else min(len(text), row_pos + 500)
-    target_row = text[row_pos:row_end]
+    # The Statistics Bureau has changed table markup over time. Anchor on the
+    # first unemployment-rate label after the release title and require that it
+    # occurs before the narrative points section. The later narrative value is
+    # still cross-checked independently below.
+    row_pos = text.find("完全失業率", title_match.end())
+    points_pos = text.find("ポイント", title_match.end())
+    if row_pos < 0 or points_pos < 0 or row_pos >= points_pos:
+        raise ValueError("official page does not expose the headline unemployment table row before points")
+    target_row = text[row_pos:points_pos]
 
     values = [float(x) for x in re.findall(r"(\d+(?:\.\d+)?)\s*[％%]", target_row)]
     if len(values) < 2:
@@ -111,8 +108,6 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
     latest_value, prior_value = values[-1], values[-2]
     prior_period = previous_month(latest_period)
 
-    # Cross-check against the narrative point, which explicitly describes the
-    # seasonally adjusted headline rate. This makes layout changes fail closed.
     narrative_match = re.search(
         r"完全失業率\s*[（(]\s*季節調整値\s*[）)]\s*は\s*(\d+(?:\.\d+)?)\s*[％%]",
         text,
@@ -138,7 +133,7 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
     return latest_period, latest_value, prior_period, prior_value, audit
 
 
-def build_candidate(html: str) -> tuple[dict[str, Any], dict[str,Any]]:
+def build_candidate(html: str) -> tuple[dict[str, Any], dict[str, Any]]:
     latest_period, latest_value, _, _, audit = parse_official_page(html)
     macro_series_id, heat_series_id, frequency, transformation = resolve_ids()
     candidate = {
