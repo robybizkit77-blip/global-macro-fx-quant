@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
@@ -24,6 +25,13 @@ def load(rel):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--capture-forward-decision', action='store_true', help='Append an observational Core snapshot only after all existing gates pass.')
+    parser.add_argument('--decision-cutoff', help='ISO-8601 cutoff with offset; required with --capture-forward-decision.')
+    parser.add_argument('--run-id', help='Stable run identifier; required with --capture-forward-decision.')
+    args = parser.parse_args()
+    if args.capture_forward_decision and (not args.decision_cutoff or not args.run_id):
+        raise SystemExit('--capture-forward-decision requires --decision-cutoff and --run-id')
     price = run_json([sys.executable, 'validation/check_price_controlled_apply_contract_v1.py'])
     liquidity = run_json([sys.executable, 'validation/check_liquidity_remaining_blockers_v1.py'])
     risk = run_json([sys.executable, 'validation/check_risk_brent_hard_blocker_v1.py'])
@@ -95,7 +103,16 @@ def main():
         'live_data_published': False,
         'gh_pages_published': False,
         'automatic_publication': False,
+        'forward_decision_logger': {'requested': args.capture_forward_decision, 'observational_only': True},
     }
+    if args.capture_forward_decision:
+        logger = run_json([
+            sys.executable, 'validation/forward/log_core_decision_v1.py',
+            '--decision-cutoff', args.decision_cutoff, '--run-id', args.run_id,
+        ])
+        if logger.get('status') != 'PASS' or logger.get('observational_only') is not True:
+            raise SystemExit(f'Forward decision logger failed: {logger}')
+        receipt['forward_decision_logger']['receipt'] = logger
     print(json.dumps(receipt, indent=2, ensure_ascii=False, sort_keys=True))
 
 

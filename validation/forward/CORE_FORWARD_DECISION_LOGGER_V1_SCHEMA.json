@@ -1,0 +1,26 @@
+{
+  "schema": "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1",
+  "version": "1.0.0",
+  "scope": "forward_only_observational_capture",
+  "storage": {
+    "decisions": "validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl",
+    "outcomes": "validation/forward/outcomes/CORE_DECISION_OUTCOMES_V1.jsonl",
+    "receipts": "validation/forward/receipts/"
+  },
+  "identity": ["snapshot_id", "decision_cutoff", "run_id", "pair"],
+  "invariants": [
+    "Decision snapshots are append-only canonical UTF-8 LF JSONL records.",
+    "A rerun with the same decision_cutoff, run_id and pair is idempotent and may not duplicate a record.",
+    "Every usable input has available_at <= decision_cutoff; an unknown or late input is persisted as WITHHELD.",
+    "Decision snapshots never contain a forward return, outcome, cost realization or target label.",
+    "Outcomes are appended in a separate store and joined only by snapshot_id.",
+    "The logger is observational: it must not alter Core scoring, bias, sizing, eligibility, pair state or dashboard output."
+  ],
+  "required_snapshot_fields": [
+    "snapshot_id", "decision_cutoff", "run_id", "source_commit", "pair", "base_currency", "quote_currency",
+    "thesis_strength", "trade_attractiveness", "core_signal", "core_score", "inputs", "withheld_flags",
+    "source_provenance", "rules_fingerprint", "schema_version", "snapshot_sha256"
+  ],
+  "outcome_horizons": ["1D", "3D", "1W", "2W", "1M", "3M"],
+  "historical_replay": "FORBIDDEN: this contract begins with forward captures on 2026-10-14 and does not authorize CORE_REPLAY_V1 reconstruction."
+}
