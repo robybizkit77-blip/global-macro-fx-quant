@@ -114,7 +114,7 @@ jobs:
               assert d['status']=='NO_CHANGE' and d['applied'] is False
               assert r['status']=='NO_CHANGE' and r['applied'] is False
           PY
-      - name: Verify history-revision veto is fail-closed
+      - name: Verify source veto is fail-closed
         if: steps.candidate.outputs.green != 'true'
         run: |
           python - <<'PY'
@@ -122,11 +122,15 @@ jobs:
           from pathlib import Path
           c=json.loads(Path('/tmp/jpy-m3-exact-candidate.json').read_text())
           assert c['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1', c
-          assert c['status']=='WITHHELD_HISTORY_REVISION', c
+          assert c['status'] in {'WITHHELD_HISTORY_REVISION','WITHHELD_SOURCE_UNAVAILABLE'}, c
           assert c['fail_closed'] is True and c['candidate_update_available'] is False, c
           assert c['runtime_mutated'] is False and c['publication_performed'] is False, c
-          assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
-          print('JPY_M3_HISTORY_REVISION_FAIL_CLOSED_PASS')
+          if c['status']=='WITHHELD_HISTORY_REVISION':
+              assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
+              print('JPY_M3_HISTORY_REVISION_FAIL_CLOSED_PASS')
+          else:
+              assert c['source']['source_available'] is False and c['source_error_type'], c
+              print('JPY_M3_SOURCE_UNAVAILABLE_FAIL_CLOSED_PASS')
           PY
       - name: Verify tracked runtime was not mutated
         run: |

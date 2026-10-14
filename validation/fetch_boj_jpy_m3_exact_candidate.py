@@ -61,7 +61,30 @@ def main():
     if len(rtrow.get('dates') or [])!=len(rtrow.get('values') or []) or not rtrow.get('dates'):
         raise SystemExit('invalid JPY.money runtime arrays')
     rt={month(d):float(v) for d,v in zip(rtrow['dates'],rtrow['values'])}
-    url,row,src=fetch()
+    try:
+        url,row,src=fetch()
+    except Exception as exc:
+        # Transport failure is never permission to reuse a proxy or mutate the
+        # live series.  Return a typed veto so scheduled runs remain auditable.
+        result={
+            'schema':'GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1',
+            'status':'WITHHELD_SOURCE_UNAVAILABLE',
+            'source':{
+                'publisher':'Bank of Japan','api':'Time-Series Data Search API / getDataCode',
+                'database':DB,'series_id':CODE,
+                'name':EXPECTED_NAME,'unit':EXPECTED_UNIT,'frequency':EXPECTED_FREQUENCY,
+                'seasonal_adjustment':'Seasonally Adjusted','source_available':False,
+            },
+            'runtime':{'count':len(rt),'last_date':runtime_last,'last_value':float(rtrow['last_value'])},
+            'runtime_match_confirmed':False,'runtime_history_unchanged_by_current_vintage':False,
+            'candidate_update_available':False,'new_observations':[],
+            'fail_closed':True,'source_error_type':type(exc).__name__,
+            'publication_performed':False,'runtime_mutated':False,
+        }
+        out=Path(args.out)
+        out.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+        print(json.dumps(result,indent=2,ensure_ascii=False))
+        return
     overlap=sorted(set(rt)&set(src))
     if len(overlap)<120:
         raise SystemExit(f'insufficient JPY M3 runtime/source overlap: {len(overlap)}')

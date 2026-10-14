@@ -92,11 +92,15 @@ jobs:
               assert c['runtime_exact_match_ratio']==1.0, c
               print('JPY_M3_EXACT_CANDIDATE_PASS')
           else:
-              assert c['status']=='WITHHELD_HISTORY_REVISION', c
+              assert c['status'] in {'WITHHELD_HISTORY_REVISION','WITHHELD_SOURCE_UNAVAILABLE'}, c
               assert c['fail_closed'] is True and c['candidate_update_available'] is False, c
               assert c['runtime_mutated'] is False and c['publication_performed'] is False, c
-              assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
-              print('JPY_M3_HISTORY_REVISION_VETO_PASS')
+              if c['status']=='WITHHELD_HISTORY_REVISION':
+                  assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
+                  print('JPY_M3_HISTORY_REVISION_VETO_PASS')
+              else:
+                  assert c['source']['source_available'] is False and c['source_error_type'], c
+                  print('JPY_M3_SOURCE_UNAVAILABLE_VETO_PASS')
           PY
           STATUS="$(python -c "import json; c=json.load(open('/tmp/liquidity-jpy-m3-persistent/candidate.json')); print('UPDATE_AVAILABLE' if c['status']=='GREEN_SOURCE_CANDIDATE_ONLY' and c['candidate_update_available'] else ('NO_CHANGE' if c['status']=='GREEN_SOURCE_CANDIDATE_ONLY' else c['status']))")"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
@@ -163,7 +167,7 @@ jobs:
           PY
 
       - name: Validate no-change identity
-        if: steps.gate.outputs.should_run == 'true' && (steps.candidate.outputs.status == 'NO_CHANGE' || steps.candidate.outputs.status == 'WITHHELD_HISTORY_REVISION')
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status != 'UPDATE_AVAILABLE'
         shell: bash
         run: |
           set -euo pipefail
