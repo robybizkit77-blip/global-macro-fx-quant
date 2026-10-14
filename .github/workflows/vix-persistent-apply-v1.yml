@@ -1,0 +1,98 @@
+name: VIX Persistent Apply V1
+
+on:
+  push:
+    branches:
+      - validation-vix-controlled-apply-v1-2026-10-14
+    paths:
+      - '.github/workflows/vix-persistent-apply-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  persist-vix-current:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - name: Fetch current official Cboe candidate
+        run: |
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_cboe_vix_candidate_v2.py --as-of "$AS_OF" --out /tmp/vix-candidate.json | tee /tmp/vix-source-receipt.json
+
+      - name: Build and validate VIX-only replacement
+        run: |
+          cp live_data/sections/D.json /tmp/D.before.json
+          python validation/apply_cboe_vix_candidate_v1.py \
+            --candidate /tmp/vix-candidate.json \
+            --replacement-out /tmp/D.vix.replacement.json | tee /tmp/vix-apply-receipt.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.before.json'))
+          after=json.load(open('/tmp/D.vix.replacement.json'))
+          br=dict(before['risk']); ar=dict(after['risk'])
+          bv=br.pop('VIX'); av=ar.pop('VIX')
+          assert br==ar, 'non-VIX risk data changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.VIX changed'
+          assert av['dates'][:len(bv['dates'])]==bv['dates']
+          assert av['values'][:len(bv['values'])]==bv['values']
+          r=json.load(open('/tmp/vix-apply-receipt.json'))
+          assert r['appended_observation_count'] > 0, r
+          print('VIX_PERSISTENT_APPLY_SEMANTIC_SCOPE_PASS', r['runtime_anchor_date'], '->', r['result_last_date'])
+          PY
+
+      - name: Apply direct section and rebuild canonical manifest
+        run: |
+          python validation/update_live_direct_section.py --section D --replacement /tmp/D.vix.replacement.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('VIX_PERSISTENT_APPLY_LIVE_CONTRACT_PASS')
+          PY
+
+      - name: Enforce exact tracked diff scope
+        run: |
+          git diff --name-only | sort > /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Prove idempotence before commit
+        run: |
+          python validation/apply_cboe_vix_candidate_v1.py --candidate /tmp/vix-candidate.json --replacement-out /tmp/D.vix.second.json > /tmp/vix-second-receipt.json
+          cmp -s live_data/sections/D.json /tmp/D.vix.second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/vix-second-receipt.json'))
+          assert r['appended_observation_count']==0, r
+          print('VIX_PERSISTENT_APPLY_IDEMPOTENT_PASS')
+          PY
+
+      - name: Commit with remote-head lease
+        env:
+          TARGET_BRANCH: validation-vix-controlled-apply-v1-2026-10-14
+        run: |
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/D.json payload/part-00.txt live_data/manifest.v2.json
+          git diff --cached --quiet && { echo 'No persistent VIX changes to commit'; exit 1; }
+          git commit -m 'Refresh VIX runtime from official Cboe close'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: No publication side effect
+        run: echo VIX_PERSISTENT_APPLY_COMMIT_ONLY_NO_PUBLICATION
