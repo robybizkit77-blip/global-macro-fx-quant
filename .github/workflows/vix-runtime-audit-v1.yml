@@ -1,0 +1,40 @@
+name: VIX Runtime Audit V1
+
+on:
+  push:
+    branches:
+      - validation-vix-runtime-audit-v1-2026-10-14
+    paths:
+      - 'validation/audit_vix_runtime_v1.py'
+      - '.github/workflows/vix-runtime-audit-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/audit_vix_runtime_v1.py'
+      - '.github/workflows/vix-runtime-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-vix-runtime:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snapshot tracked runtime
+        run: |
+          sha256sum live_data/sections/D.json > /tmp/d.before.sha256
+          sha256sum payload/part-00.txt > /tmp/part00.before.sha256
+      - name: Audit VIX runtime structure
+        run: python validation/audit_vix_runtime_v1.py | tee /tmp/vix-runtime-audit.json
+      - name: Prove read-only execution
+        run: |
+          sha256sum -c /tmp/d.before.sha256
+          sha256sum -c /tmp/part00.before.sha256
+          git diff --exit-code -- live_data/sections/D.json payload/part-00.txt
+          echo VIX_RUNTIME_AUDIT_READ_ONLY_PASS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vix-runtime-audit-v1
+          path: /tmp/vix-runtime-audit.json
+          if-no-files-found: error
