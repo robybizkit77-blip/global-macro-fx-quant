@@ -54,7 +54,11 @@ def main():
                 raise SystemExit(f'Rates missing {ccy}.{field}')
 
     macro = load('live_data/sections/MACRO_SERIES.json')
-    macro_count = len(macro) if isinstance(macro, dict) else len(macro or [])
+    if not isinstance(macro, dict) or sorted(macro.keys()) != expected_ccy:
+        raise SystemExit(f'Macro G8 universe drift: {sorted(macro.keys()) if isinstance(macro, dict) else type(macro).__name__}')
+    if any(not isinstance(macro[ccy], list) for ccy in expected_ccy):
+        raise SystemExit('Macro currency buckets must be lists of canonical series')
+    macro_count = sum(len(macro[ccy]) for ccy in expected_ccy)
     if macro_count < 16:
         raise SystemExit(f'Macro canonical series unexpectedly sparse: {macro_count}')
 
@@ -75,7 +79,7 @@ def main():
         'withheld_lanes': ['LIQUIDITY', 'RISK'],
         'exact_blockers': exact_blockers,
         'lane_receipts': {
-            'MACRO': {'series_count': macro_count, 'present': True},
+            'MACRO': {'currency_count': len(macro), 'series_count': macro_count, 'g8_universe_exact': True},
             'RATES': {'currency_count': len(rates), 'g8_universe_exact': True},
             'PRICE': price,
             'LIQUIDITY': liquidity,
