@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -82,7 +83,9 @@ def adapter_command(adapter: pathlib.Path, currency: str, dimension: str, fixtur
         if fixture:
             cmd += ["--fixture", str(fixture)]
         return cmd, out_dir / f"{dimension}-candidate.json", out_dir / "source-audit.json"
-    if target == ("JPY", "labour") and adapter.name == "jpy_estat_unemployment.py":
+    if target == ("JPY", "labour") and adapter.name in {
+        "jpy_estat_unemployment.py", "jpy_statistics_bureau_unemployment.py"
+    }:
         cmd += ["--output", str(raw), "--audit-output", str(audit)]
     elif target == ("JPY", "inflation") and adapter.name == "jpy_statistics_bureau_cpi.py":
         cmd += ["--output", str(raw), "--audit-output", str(audit)]
@@ -117,6 +120,24 @@ def main() -> int:
     fixture = args.fixture.resolve() if args.fixture else None
     if fixture and not fixture.is_file():
         raise ValueError(f"fixture missing: {fixture}")
+
+    # e-Stat's live API requires an application ID. For the same official JPY
+    # headline labour series, the Statistics Bureau publishes the monthly
+    # seasonally-adjusted unemployment rate directly on its public results
+    # page. When no e-Stat credential is available, use that official direct
+    # transport rather than weakening the gate or silently skipping JPY labour.
+    if (
+        currency == "JPY"
+        and args.dimension == "labour"
+        and fixture is None
+        and not os.environ.get("E_STAT_APP_ID", "").strip()
+        and route["adapter"].endswith("jpy_estat_unemployment.py")
+    ):
+        route = {
+            "adapter": "validation/sources/jpy_statistics_bureau_unemployment.py",
+            "transport": "OFFICIAL_DIRECT",
+        }
+
     work = args.output.parent / ".adapter-pit-work"
     work.mkdir(parents=True, exist_ok=True)
     raw, adapter_audit = run_adapter(ROOT / route["adapter"], currency, args.dimension, fixture, work)
