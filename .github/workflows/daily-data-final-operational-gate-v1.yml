@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - validation-final-operational-gate-clean-v1-2026-10-14
+      - operational-degraded-overlays-v1-2026-10-14
     paths:
       - 'validation/run_daily_data_orchestrator_final_gate_v1.py'
       - 'validation/check_price_controlled_apply_contract_v1.py'
@@ -58,21 +59,24 @@ jobs:
         run: |
           set -euo pipefail
           python validation/run_daily_data_orchestrator_final_gate_v1.py | tee /tmp/final-gate.json
-      - name: Verify publication remains withheld and runtime unchanged
+      - name: Verify core is publishable while degraded overlays remain withheld and runtime unchanged
         run: |
           python - <<'PY'
           import json
           d=json.load(open('/tmp/final-gate.json'))
+          assert d['status']=='READY_WITH_DEGRADED_OVERLAYS', d
           assert d['operational_state']=='READY_WITH_DOCUMENTED_EXPECTED_GAPS', d
-          assert d['publishable'] is False and d['publication_state']=='WITHHELD', d
+          assert d['publishable'] is True and d['publication_state']=='ELIGIBLE_WITH_WITHHELD_OVERLAYS', d
+          assert d['publication_policy']=='CORE_LANES_MAY_PUBLISH_WHILE_NON_CORE_OVERLAYS_FAIL_CLOSED', d
           assert d['live_data_published'] is False and d['gh_pages_published'] is False, d
-          assert [(x['lane'],x['key']) for x in d['exact_blockers']]==[
-            ('LIQUIDITY','CHF.liquidity'),
-            ('LIQUIDITY','CHF.credit'),
-            ('LIQUIDITY','JPY.liquidity'),
-            ('RISK','Brent'),
+          assert [(x['lane'],x['key'],x['state']) for x in d['exact_blockers']]==[
+            ('LIQUIDITY','CHF.liquidity','WITHHELD_OVERLAY_ONLY'),
+            ('LIQUIDITY','CHF.credit','WITHHELD_OVERLAY_ONLY'),
+            ('LIQUIDITY','JPY.liquidity','WITHHELD_OVERLAY_ONLY'),
+            ('RISK','Brent','WITHHELD_OVERLAY_ONLY'),
           ], d
-          print('FINAL_OPERATIONAL_GATE_EXPECTED_GAPS_PASS')
+          assert d['lane_receipts']['RISK']['blocks_core_dashboard_publication'] is False, d
+          print('FINAL_OPERATIONAL_GATE_DEGRADED_OVERLAYS_PASS')
           PY
           sha256sum -c /tmp/liq.before.sha256
           sha256sum -c /tmp/d.before.sha256
