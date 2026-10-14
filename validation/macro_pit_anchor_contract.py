@@ -25,8 +25,6 @@ SERIES_REL = pathlib.Path("live_data/sections/MACRO_SERIES.json")
 HEAT_REL = pathlib.Path("live_data/sections/MACRO_THERMOMETER_DATA.json")
 SERIES_NAME, HEAT_NAME = SERIES_REL.name, HEAT_REL.name
 REGISTRY_REL = pathlib.Path("validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json")
-# A refresh may change live_data only.  Changes to any of these paths between
-# captures invalidate the anchor rather than silently changing replay rules.
 PROTECTED_PATHS = (
     pathlib.Path("validation/build_macro_candidate.py"),
     pathlib.Path("validation/macro"),
@@ -71,9 +69,6 @@ def protected_fingerprints() -> dict[str, str]:
 
 
 def dirty_paths() -> list[str]:
-    # Porcelain status uses two state columns followed by a separator, but a
-    # staged/unstaged combination may carry more than one separating space.
-    # Strip the remainder rather than slicing a presumed fixed separator.
     return [line[2:].strip() for line in git("status", "--porcelain").splitlines() if line]
 
 
@@ -186,6 +181,13 @@ def validate_atomic_delta(before_series: dict, after_series: dict, before_heat: 
 
 
 def candidate_from_after(after_series: dict, after_heat: dict, target: dict) -> dict:
+    """Reconstruct the exact builder input represented by the AFTER artifacts.
+
+    Macro uses a split-value contract when an official source supplies an
+    underlying level/index for the historical series and a transformed value
+    for the heatmap (for example CPI index + YoY inflation).  Reconstruct both
+    values instead of pretending the series row and heatmap carry one value.
+    """
     c, d, series_id = target["currency"], target["dimension"], target["macro_series_id"]
     rows = row_map(after_series[c])
     row = rows.get(series_id)
@@ -196,14 +198,24 @@ def candidate_from_after(after_series: dict, after_heat: dict, target: dict) -> 
     heat = after_heat.get("currencies", {}).get(c, {}).get(d)
     if not isinstance(heat, dict):
         raise ValueError("target after heatmap entry missing")
+    obs_date = heat.get("as_of")
+    heat_value = heat.get("latest_value")
+    if obs_date in (None, "") or heat_value is None:
+        raise ValueError("target after heatmap missing as_of/latest_value")
     candidate = {
-        "currency": c, "dimension": d, "macro_series_id": series_id,
-        "observation_date": row["last_date"], "value": row["last_value"],
-        "source": heat["source"], "series_id": heat["series_id"],
-        "frequency": heat["frequency"], "transformation": heat["transformation"],
+        "currency": c,
+        "dimension": d,
+        "macro_series_id": series_id,
+        "observation_date": obs_date,
+        "value": heat_value,
+        "series_value": row["last_value"],
+        "source": heat["source"],
+        "series_id": heat["series_id"],
+        "frequency": heat["frequency"],
+        "transformation": heat["transformation"],
     }
     if row.get("unit") is not None:
-        candidate["unit"] = row["unit"]
+        candidate["series_unit"] = row["unit"]
     return candidate
 
 
@@ -239,7 +251,9 @@ def verify(args: argparse.Namespace) -> int:
     candidate = candidate_from_after(after_series, after_heat, target)
     if args.candidate:
         supplied = load(pathlib.Path(args.candidate))
-        keys = ("currency", "dimension", "macro_series_id", "observation_date", "value", "source", "series_id", "frequency", "transformation")
+        keys = ["currency", "dimension", "macro_series_id", "observation_date", "value", "source", "series_id", "frequency", "transformation"]
+        if "series_value" in supplied or supplied.get("value") != candidate.get("series_value"):
+            keys.append("series_value")
         mismatch = {k: (supplied.get(k), candidate.get(k)) for k in keys if supplied.get(k) != candidate.get(k)}
         if mismatch:
             raise ValueError(f"candidate does not describe AFTER artifact: {mismatch}")
@@ -260,13 +274,23 @@ def verify(args: argparse.Namespace) -> int:
     live_written = live_before != live_after
     exact_series, exact_heat = replay_series == after_series, replay_heat == after_heat
     evidence = {
-        "schema": "GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1", "status": "PASS" if exact_series and exact_heat and not live_written else "FAIL",
-        "target": target, "candidate": candidate,
-        "anchor": {"before_git_head": before_meta["git_head"], "after_git_head": after_meta["git_head"],
-                   "before_sha256": before_meta["artifacts"], "after_sha256": after_meta["artifacts"]},
-        "atomic_delta": delta, "macro_series_exact_match": exact_series, "heatmap_exact_match": exact_heat,
-        "live_data_written_by_replay": live_written, "engine_or_source_infrastructure_changed": False,
-        "registry_promotion": "NOT_ATTEMPTED", "builder_summary": builder_summary,
+        "schema": "GMFQ_MACRO_PIT_ANCHOR_EVIDENCE_V1",
+        "status": "PASS" if exact_series and exact_heat and not live_written else "FAIL",
+        "target": target,
+        "candidate": candidate,
+        "anchor": {
+            "before_git_head": before_meta["git_head"],
+            "after_git_head": after_meta["git_head"],
+            "before_sha256": before_meta["artifacts"],
+            "after_sha256": after_meta["artifacts"],
+        },
+        "atomic_delta": delta,
+        "macro_series_exact_match": exact_series,
+        "heatmap_exact_match": exact_heat,
+        "live_data_written_by_replay": live_written,
+        "engine_or_source_infrastructure_changed": False,
+        "registry_promotion": "NOT_ATTEMPTED",
+        "builder_summary": builder_summary,
     }
     output = pathlib.Path(args.evidence_output).resolve() if args.evidence_output else evidence_dir / "macro_pit_anchor_evidence.json"
     dump(output, evidence)
