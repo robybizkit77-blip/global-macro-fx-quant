@@ -44,8 +44,6 @@ def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], di
     if currency not in scope.get("currencies", []) or dimension not in scope.get("dimensions", []):
         raise ValueError(f"{key} lies outside the core registry scope")
 
-    # A certified direct adapter supersedes a mirror/intermediary named on the
-    # legacy entry.  Never silently route through the legacy transport.
     certified = entry.get("certified_adapter")
     if certified:
         if certified.get("transport_class") != "OFFICIAL_DIRECT" or not certified.get("read_only"):
@@ -60,9 +58,11 @@ def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], di
 
     series, heat = load(SERIES), load(HEAT)
     h = heat["currencies"][currency][dimension]
-    hits = [r for r in series[currency] if r.get("id") == f"{entry['series_id']}_history_value"]
+    replay = entry.get("historical_replay_evidence") or {}
+    canonical_series_id = replay.get("macro_series_id") or f"{entry['series_id']}_history_value"
+    hits = [r for r in series[currency] if r.get("id") == canonical_series_id]
     if len(hits) != 1:
-        raise ValueError(f"{key} does not map to exactly one canonical MACRO_SERIES row")
+        raise ValueError(f"{key} does not map to exactly one canonical MACRO_SERIES row: {canonical_series_id}")
     if (h.get("series_id"), h.get("frequency"), h.get("transformation")) != (
         entry["series_id"], entry["frequency"], entry["transformation"],
     ):
@@ -71,13 +71,7 @@ def registered_target(currency: str, dimension: str) -> tuple[dict[str, Any], di
 
 
 def adapter_command(adapter: pathlib.Path, currency: str, dimension: str, fixture: pathlib.Path | None, work: pathlib.Path) -> tuple[list[str], pathlib.Path, pathlib.Path]:
-    """Translate a registered target into its adapter's actual CLI contract.
-
-    Source adapters pre-date this bridge and do not share one CLI.  Keep that
-    difference here instead of teaching an official source adapter bridge-only
-    flags.  The dispatch is deliberately keyed by target, so an adapter cannot
-    accidentally be invoked for a dimension it does not implement.
-    """
+    """Translate a registered target into its adapter's actual CLI contract."""
     raw = work / "adapter-candidate.json"
     audit = work / "adapter-audit.json"
     cmd = [sys.executable, str(adapter)]
@@ -88,9 +82,6 @@ def adapter_command(adapter: pathlib.Path, currency: str, dimension: str, fixtur
         if fixture:
             cmd += ["--fixture", str(fixture)]
         return cmd, out_dir / f"{dimension}-candidate.json", out_dir / "source-audit.json"
-    # These official Japanese adapters each represent one fixed target and do
-    # not accept --dimension.  Passing the generic flag was the original
-    # bridge failure for JPY.labour.
     if target == ("JPY", "labour") and adapter.name == "jpy_estat_unemployment.py":
         cmd += ["--output", str(raw), "--audit-output", str(audit)]
     elif target == ("JPY", "inflation") and adapter.name == "jpy_statistics_bureau_cpi.py":
