@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_LIQUIDITY_CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_V1",
+  "as_of": "2026-10-13",
+  "status": "WITHHELD_EXACT_VARIANT_RUNTIME_MATCH_PENDING",
+  "source": {
+    "publisher": "Swiss National Bank",
+    "source_family": "SNB Data Portal — sight deposits / monthly banking-statistics variants",
+    "cube": "BSTA.SNB.MONA_U.BIL.AKT.FMI.GGU",
+    "frequency": "MONTHLY_SOURCE_FAMILY"
+  },
+  "runtime": {
+    "lane": "CHF.liquidity",
+    "last_date": "2026-07",
+    "last_value": 420858.97054532
+  },
+  "proof": {
+    "tested_variants": 4,
+    "best_variant": {
+      "name": "U_T_T_A40",
+      "dimension_selection": "KONSOLIDIERUNGSSTUFE(U),INLANDAUSLAND(T),WAEHRUNG(T),BANKENGRUPPE(A40)",
+      "scale": 0.001,
+      "overlap": 13,
+      "exact": 0,
+      "mae": 14829.403181259619,
+      "official_value_on_runtime_last_date": 404247.6214390011
+    },
+    "other_variants_exact_matches": 0,
+    "runtime_match_certified": false
+  },
+  "enhanced_proof": {
+    "pairwise_diagnostic": "validation/diagnose_snb_chf_pairwise_aggregation_v1.py",
+    "workflow": ".github/workflows/liquidity-snb-chf-pairwise-diagnostic-v1.yml",
+    "official_variant_count": 4,
+    "full_overlap_months": 127,
+    "exact_pairwise_matches": 0,
+    "best_pairwise": {
+      "left": "U_T_CHF_A40",
+      "right": "U_I_CHF_A40",
+      "operation": "SUM",
+      "scale": 0.001,
+      "overlap": 127,
+      "exact": 0,
+      "exact_ratio": 0.0,
+      "mae": 472290.46
+    },
+    "interpretation": "Neither an official single SNB variant nor a simple identity-scale sum/difference aggregation reproduces the runtime history."
+  },
+  "promotion_eligible": false,
+  "automation_ready": false,
+  "fail_closed": true,
+  "runtime_mutated": false,
+  "publication_performed": false,
+  "evidence_workflow": "Daily Data Orchestrator Effective Liquidity V1",
+  "evidence_run_id": 38380853736,
+  "reason": "Four official SNB variants and their simple pairwise aggregations were tested without an exact runtime match. No nearby variant or aggregation may be substituted without explicit original provenance or an exact transformation contract."
+}
