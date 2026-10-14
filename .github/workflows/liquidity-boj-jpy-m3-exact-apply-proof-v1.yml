@@ -58,17 +58,27 @@ jobs:
           assert p['publication_performed'] is False
           PY
       - name: Collect exact official BOJ M3 candidate
-        run: python validation/fetch_boj_jpy_m3_exact_candidate.py --out /tmp/jpy-m3-exact-candidate.json
+        id: candidate
+        run: |
+          python validation/fetch_boj_jpy_m3_exact_candidate.py --out /tmp/jpy-m3-exact-candidate.json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          c=json.load(open('/tmp/jpy-m3-exact-candidate.json'))
+          print('green=' + str(c.get('status')=='GREEN_SOURCE_CANDIDATE_ONLY').lower())
+          PY
       - name: Dry-run controlled apply
+        if: steps.candidate.outputs.green == 'true'
         run: |
           python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact-candidate.json > /tmp/jpy-m3-dry-run.json
           cat /tmp/jpy-m3-dry-run.json
       - name: Ephemeral apply on runtime copy
+        if: steps.candidate.outputs.green == 'true'
         run: |
           cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.json
           python validation/apply_boj_jpy_m3_exact_candidate.py --candidate /tmp/jpy-m3-exact-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.json --apply > /tmp/jpy-m3-apply.json
           cat /tmp/jpy-m3-apply.json
       - name: Verify exact provenance and append-only semantics
+        if: steps.candidate.outputs.green == 'true'
         run: |
           python - <<'PY'
           import json
@@ -103,6 +113,24 @@ jobs:
           else:
               assert d['status']=='NO_CHANGE' and d['applied'] is False
               assert r['status']=='NO_CHANGE' and r['applied'] is False
+          PY
+      - name: Verify source veto is fail-closed
+        if: steps.candidate.outputs.green != 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/jpy-m3-exact-candidate.json').read_text())
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_M3_EXACT_CANDIDATE_V1', c
+          assert c['status'] in {'WITHHELD_HISTORY_REVISION','WITHHELD_SOURCE_UNAVAILABLE'}, c
+          assert c['fail_closed'] is True and c['candidate_update_available'] is False, c
+          assert c['runtime_mutated'] is False and c['publication_performed'] is False, c
+          if c['status']=='WITHHELD_HISTORY_REVISION':
+              assert c['history_revision_detected'] is True and c['history_revision_mismatches'], c
+              print('JPY_M3_HISTORY_REVISION_FAIL_CLOSED_PASS')
+          else:
+              assert c['source']['source_available'] is False and c['source_error_type'], c
+              print('JPY_M3_SOURCE_UNAVAILABLE_FAIL_CLOSED_PASS')
           PY
       - name: Verify tracked runtime was not mutated
         run: |
