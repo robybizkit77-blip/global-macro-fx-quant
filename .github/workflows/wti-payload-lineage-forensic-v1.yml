@@ -1,0 +1,39 @@
+name: WTI Payload Lineage Forensic V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-apply-v1-2026-10-14
+    paths:
+      - 'validation/audit_wti_payload_lineage_v1.py'
+      - '.github/workflows/wti-payload-lineage-forensic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trace-wti-lineage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Trace exact anomalous WTI triple on main first-parent lineage
+        run: |
+          set -euo pipefail
+          python validation/audit_wti_payload_lineage_v1.py | tee /tmp/wti-payload-lineage-stdout.json
+
+      - name: Prove read-only execution
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo WTI_PAYLOAD_LINEAGE_FORENSIC_READ_ONLY_PASS
+
+      - name: Upload lineage receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: wti-payload-lineage-forensic-v1
+          path: /tmp/wti-payload-lineage-receipt.json
+          if-no-files-found: error
