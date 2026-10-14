@@ -1,0 +1,74 @@
+name: WTI Post-Apply Certification V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'live_data/sections/D.json'
+      - 'payload/part-00.txt'
+      - 'live_data/manifest.v2.json'
+      - 'validation/fetch_fred_eia_wti_candidate_v1.py'
+      - 'validation/apply_fred_eia_wti_candidate_v1.py'
+      - '.github/workflows/wti-postapply-certification-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-wti-current:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Fetch current canonical WTI source
+        run: |
+          set -euo pipefail
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_fred_eia_wti_candidate_v1.py --as-of "$AS_OF" --out /tmp/wti-candidate.json | tee /tmp/wti-source-receipt.json
+
+      - name: Certify exact WTI runtime against source
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, math
+          c=json.load(open('/tmp/wti-candidate.json'))
+          d=json.load(open('live_data/sections/D.json'))
+          w=d['risk']['WTI']
+          obs=c['observations']
+          dates=[x['date'] for x in obs]
+          values=[float(x['value']) for x in obs]
+          assert w['source']=='U.S. EIA via FRED', w.get('source')
+          assert w['series_id']=='DCOILWTICO', w.get('series_id')
+          assert w['frequency']=='Daily', w.get('frequency')
+          assert len(w['dates']) >= 500, len(w['dates'])
+          assert w['dates'][0] <= '2016-01-31', w['dates'][0]
+          assert w['dates']==dates, (w['dates'][-3:], dates[-3:])
+          assert len(w['values'])==len(values)
+          for i,(a,b) in enumerate(zip(w['values'],values)):
+              assert math.isclose(float(a),b,rel_tol=0,abs_tol=1e-9), (i,a,b)
+          assert w['last_date']==dates[-1]
+          assert math.isclose(float(w['last_value']),values[-1],rel_tol=0,abs_tol=1e-9)
+          print('WTI_RUNTIME_EXACT_SOURCE_MATCH_PASS', dates[0], '->', dates[-1], len(dates))
+          PY
+
+      - name: Certify live-data roundtrip and manifest
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py | tee /tmp/live-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-contract.json'))
+          assert r['status']=='PASS', r
+          PY
+          python validation/build_live_manifest_v2.py --write /tmp/manifest.v2.expected.json >/tmp/manifest-build.json
+          cmp -s live_data/manifest.v2.json /tmp/manifest.v2.expected.json
+          echo WTI_LIVE_ROUNDTRIP_MANIFEST_PASS
+
+      - name: Prove no certification mutation or publication
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo WTI_POSTAPPLY_CERTIFICATION_NO_MUTATION_NO_PUBLICATION
