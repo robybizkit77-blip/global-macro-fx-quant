@@ -1,0 +1,131 @@
+name: WTI Direct EIA Controlled Apply Proof V1
+
+on:
+  push:
+    branches:
+      - validation-wti-direct-eia-controlled-apply-v1-2026-10-14
+    paths:
+      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/fetch_eia_wti_candidate_v1.py'
+      - 'validation/apply_eia_wti_candidate_v1.py'
+      - '.github/workflows/wti-direct-eia-controlled-apply-proof-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/risk/RISK_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/fetch_eia_wti_candidate_v1.py'
+      - 'validation/apply_eia_wti_candidate_v1.py'
+      - '.github/workflows/wti-direct-eia-controlled-apply-proof-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-wti-full-replacement:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Snapshot canonical runtime
+        run: |
+          sha256sum live_data/sections/D.json > /tmp/D.before.sha256
+          sha256sum payload/part-00.txt > /tmp/part00.before.sha256
+          sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
+          cp live_data/sections/D.json /tmp/D.before.json
+
+      - name: Fetch direct official EIA WTI candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/fetch_eia_wti_candidate_v1.py --out /tmp/wti-candidate.json | tee /tmp/wti-source-receipt.json
+
+      - name: Build deterministic full-history WTI replacement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/apply_eia_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.replacement.json | tee /tmp/wti-apply-receipt.json
+
+      - name: Prove semantic diff is WTI-only
+        run: |
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.before.json'))
+          after=json.load(open('/tmp/D.wti.replacement.json'))
+          br=dict(before['risk']); ar=dict(after['risk'])
+          old=br.pop('WTI'); new=ar.pop('WTI')
+          assert br==ar, 'a non-WTI risk series changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.WTI changed'
+          assert len(old.get('dates',[]))==3, old
+          assert len(new['dates'])>6000, len(new['dates'])
+          assert new['source']=='U.S. Energy Information Administration'
+          assert new['series_id']=='RWTC'
+          assert new['fred_mirror_series_id']=='DCOILWTICO'
+          assert new['last_date']==new['dates'][-1]
+          assert new['last_value']==new['values'][-1]
+          assert len(new['dates'])==len(new['values'])
+          print('WTI_SEMANTIC_DIFF_ONLY_PASS', len(old['dates']), '->', len(new['dates']), new['first_date'] if 'first_date' in new else new['dates'][0], new['last_date'])
+          PY
+
+      - name: Dry-run canonical direct-section updater
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.wti.replacement.json | tee /tmp/wti-direct-update-dryrun.json
+
+      - name: Apply in ephemeral checkout and rebuild manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement /tmp/D.wti.replacement.json \
+            --apply | tee /tmp/wti-direct-update-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('WTI_LIVE_UPDATE_CONTRACT_PASS')
+          PY
+
+      - name: Verify exact tracked data diff scope
+        run: |
+          git diff --name-only | sort > /tmp/changed.txt
+          cat /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Prove second replacement is idempotent
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/apply_eia_wti_candidate_v1.py \
+            --candidate /tmp/wti-candidate.json \
+            --replacement-out /tmp/D.wti.second.json | tee /tmp/wti-second-apply-receipt.json
+          cmp -s live_data/sections/D.json /tmp/D.wti.second.json
+          echo WTI_IDEMPOTENT_SECOND_APPLY_PASS
+
+      - name: Prove no publication
+        run: echo WTI_CONTROLLED_APPLY_PROOF_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wti-direct-eia-controlled-apply-proof-v1
+          path: |
+            /tmp/wti-source-receipt.json
+            /tmp/wti-apply-receipt.json
+            /tmp/wti-direct-update-dryrun.json
+            /tmp/wti-direct-update-apply.json
+            /tmp/wti-second-apply-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/changed.txt
+          if-no-files-found: error
