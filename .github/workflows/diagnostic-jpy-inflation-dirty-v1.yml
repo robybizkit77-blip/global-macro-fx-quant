@@ -29,7 +29,7 @@ jobs:
       - name: Install adapter dependencies
         run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
 
-      - name: Probe JPY labour adapter and fallback contract
+      - name: Probe JPY labour adapter and live page structure
         shell: bash
         run: |
           set -euo pipefail
@@ -44,22 +44,47 @@ jobs:
             echo "STATUS_BEFORE_END"
           } > "$root/environment.txt"
 
+          python - <<'PY' > "$root/page-structure.txt" 2>&1
+          import importlib.util
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+
+          path = Path('validation/sources/jpy_statistics_bureau_unemployment.py')
+          spec = importlib.util.spec_from_file_location('jpy_labour_source', path)
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          html = mod.fetch_html()
+          soup = BeautifulSoup(html, 'html.parser')
+          text = soup.get_text(' ', strip=True)
+
+          print('html_len=', len(html))
+          print('text_len=', len(text))
+          for needle in ['2026年', '完全失業率', '季節調整値', 'ポイント', '月次']:
+              print(f'{needle!r}: html={html.find(needle)} text={text.find(needle)}')
+          print('tables=', len(soup.find_all('table')))
+          print('iframes=', [(x.get('src'), x.get('title')) for x in soup.find_all('iframe')])
+          print('frames=', [(x.get('src'), x.get('title')) for x in soup.find_all('frame')])
+          print('scripts_src=', [x.get('src') for x in soup.find_all('script') if x.get('src')][-20:])
+          print('--- TEXT AROUND TITLE ---')
+          p = text.find('2026年')
+          print(repr(text[max(0,p-250):p+1800]))
+          print('--- HTML AROUND UNEMPLOYMENT-LIKE TOKENS ---')
+          for needle in ['失業', 'roudou', 'table']:
+              p = html.find(needle)
+              print(needle, p, repr(html[max(0,p-300):p+1200]) if p >= 0 else '')
+          print('--- LINKS NEAR MAIN CONTENT ---')
+          for a in soup.find_all('a'):
+              label = ' '.join(a.stripped_strings)
+              href = a.get('href')
+              if any(k in label for k in ['結果', '概要', '時系列', '原表']) or (href and 'sokuhou' in href):
+                  print(repr(label), repr(href))
+          PY
+
           python - <<'PY' > "$root/fallback-contract.txt" 2>&1
-          import json
           from pathlib import Path
           p=Path('live_data/source_contracts/macro_history/jpy_labour_estat_contract_v1.json')
           print(f'path={p}')
           print(f'exists={p.exists()}')
-          if p.exists():
-              obj=json.loads(p.read_text())
-              rows=obj.get('rows') if isinstance(obj, dict) else None
-              print(f'top_type={type(obj).__name__}')
-              print(f'keys={sorted(obj.keys()) if isinstance(obj, dict) else None}')
-              print(f'rows_type={type(rows).__name__ if rows is not None else None}')
-              print(f'rows_count={len(rows) if isinstance(rows, list) else None}')
-              if isinstance(rows, list) and rows:
-                  print(f'first_row_keys={sorted(rows[0].keys()) if isinstance(rows[0], dict) else None}')
-                  print(f'last_row_keys={sorted(rows[-1].keys()) if isinstance(rows[-1], dict) else None}')
           PY
 
           set +e
@@ -86,9 +111,9 @@ jobs:
             echo "STDERR_BEGIN"
             cat "$root/stderr.txt"
             echo "STDERR_END"
-            echo "FALLBACK_CONTRACT_BEGIN"
-            cat "$root/fallback-contract.txt"
-            echo "FALLBACK_CONTRACT_END"
+            echo "PAGE_STRUCTURE_BEGIN"
+            cat "$root/page-structure.txt"
+            echo "PAGE_STRUCTURE_END"
           } | tee "$root/result.txt"
 
           exit 0
