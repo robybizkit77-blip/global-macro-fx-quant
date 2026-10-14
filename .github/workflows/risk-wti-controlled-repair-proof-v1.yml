@@ -1,0 +1,128 @@
+name: Risk WTI Controlled Repair Proof V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-repair-v1-2026-10-14
+    paths:
+      - 'validation/risk/build_wti_dcoilwtico_candidate_v1.py'
+      - '.github/workflows/risk-wti-controlled-repair-proof-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/risk/build_wti_dcoilwtico_candidate_v1.py'
+      - '.github/workflows/risk-wti-controlled-repair-proof-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-wti-repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Capture tracked baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain > /tmp/status.before
+          test ! -s /tmp/status.before
+          sha256sum live_data/sections/D.json payload/part-*.txt > /tmp/hashes.before
+
+      - name: Build official WTI candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/risk/build_wti_dcoilwtico_candidate_v1.py | tee /tmp/wti-candidate-receipt.json
+          test -s validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json
+
+      - name: Prove direct-section mapping without apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json \
+            | tee /tmp/wti-direct-dry-run.json
+
+      - name: Apply only inside runner workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section D \
+            --replacement validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json \
+            --apply | tee /tmp/wti-direct-apply.json
+          rm validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json
+
+      - name: Verify exact diff scope and WTI-only semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          names=[x for x in subprocess.check_output(['git','diff','--name-only'],text=True).splitlines() if x]
+          if 'live_data/sections/D.json' not in names:
+              raise SystemExit('D.json did not change')
+          payload=[x for x in names if x.startswith('payload/part-') and x.endswith('.txt')]
+          if len(payload)!=1 or len(names)!=2:
+              raise SystemExit(f'unexpected diff scope: {names}')
+          old=json.loads(subprocess.check_output(['git','show','HEAD:live_data/sections/D.json'],text=True))
+          new=json.loads(Path('live_data/sections/D.json').read_text())
+          old_wti=old.get('risk',{}).get('WTI')
+          new_wti=new.get('risk',{}).get('WTI')
+          if not isinstance(old_wti,dict) or not isinstance(new_wti,dict):
+              raise SystemExit('WTI object missing')
+          old2=json.loads(json.dumps(old,sort_keys=True)); new2=json.loads(json.dumps(new,sort_keys=True))
+          old2['risk']['WTI']='__WTI__'; new2['risk']['WTI']='__WTI__'
+          if old2!=new2:
+              raise SystemExit('semantic drift outside D.risk.WTI')
+          if new_wti.get('series_id')!='DCOILWTICO' or new_wti.get('source')!='U.S. EIA via FRED':
+              raise SystemExit('WTI canonical provenance missing')
+          receipt={
+            'schema':'GMFQ_WTI_CONTROLLED_REPAIR_PROOF_V1',
+            'status':'PASS',
+            'exact_diff_scope':names,
+            'changed_payload_part':payload[0],
+            'semantic_change_only':'D.risk.WTI',
+            'series_id':'DCOILWTICO',
+            'source':'U.S. EIA via FRED',
+            'last_date':new_wti.get('last_date'),
+            'last_value':new_wti.get('last_value'),
+            'persistent_runtime_mutated':False,
+            'publication_performed':False,
+          }
+          Path('/tmp/wti-proof-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt,indent=2))
+          PY
+
+      - name: Prove idempotent candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp live_data/sections/D.json /tmp/D.after-first.json
+          python validation/risk/build_wti_dcoilwtico_candidate_v1.py >/tmp/wti-second-build.json
+          cmp -s live_data/sections/D.json validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json
+          rm validation/risk/WTI_DCOILWTICO_CANDIDATE_V1.json
+          cmp -s live_data/sections/D.json /tmp/D.after-first.json
+
+      - name: Restore tracked runtime and prove no persistent mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -- live_data/sections/D.json payload/part-*.txt
+          sha256sum live_data/sections/D.json payload/part-*.txt > /tmp/hashes.after
+          diff -u /tmp/hashes.before /tmp/hashes.after
+          test -z "$(git status --porcelain)"
+
+      - name: Upload WTI proof receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: wti-controlled-repair-proof-v1
+          path: |
+            /tmp/wti-candidate-receipt.json
+            /tmp/wti-direct-dry-run.json
+            /tmp/wti-direct-apply.json
+            /tmp/wti-proof-receipt.json
