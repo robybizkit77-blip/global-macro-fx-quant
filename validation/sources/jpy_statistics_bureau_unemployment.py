@@ -94,10 +94,10 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
         raise ValueError("cannot resolve latest Labour Force Survey reference month from official page")
     latest_period = f"{int(title_match.group(1)):04d}-{int(title_match.group(2)):02d}"
 
-    monthly_marker = "月次（季節調整値）"
-    marker_pos = text.find(monthly_marker)
-    if marker_pos < 0:
+    marker_match = re.search(r"月次\s*[（(]\s*季節調整値\s*[）)]", text)
+    if not marker_match:
         raise ValueError("official page lacks monthly seasonally-adjusted table marker")
+    marker_pos = marker_match.end()
     row_pos = text.find("完全失業率", marker_pos)
     if row_pos < 0:
         raise ValueError("official page does not contain the headline unemployment-rate row after monthly marker")
@@ -113,7 +113,10 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
 
     # Cross-check against the narrative point, which explicitly describes the
     # seasonally adjusted headline rate. This makes layout changes fail closed.
-    narrative_match = re.search(r"完全失業率（季節調整値）は\s*(\d+(?:\.\d+)?)\s*[％%]", text)
+    narrative_match = re.search(
+        r"完全失業率\s*[（(]\s*季節調整値\s*[）)]\s*は\s*(\d+(?:\.\d+)?)\s*[％%]",
+        text,
+    )
     if not narrative_match:
         raise ValueError("official page lacks seasonally-adjusted unemployment narrative cross-check")
     narrative_value = float(narrative_match.group(1))
@@ -135,7 +138,7 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
     return latest_period, latest_value, prior_period, prior_value, audit
 
 
-def build_candidate(html: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def build_candidate(html: str) -> tuple[dict[str, Any], dict[str,Any]]:
     latest_period, latest_value, _, _, audit = parse_official_page(html)
     macro_series_id, heat_series_id, frequency, transformation = resolve_ids()
     candidate = {
