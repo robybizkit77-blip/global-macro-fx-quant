@@ -1,5 +1,6 @@
 name: Liquidity JPY M3 Persistent Daily V1
 # Candidate receipts bind every permitted BOJ revision to its old runtime value.
+# PR synchronization also exercises the validation-branch runtime-restore guard.
 
 on:
   pull_request:
