@@ -1,0 +1,49 @@
+name: Liquidity Remaining Blockers Contract V1
+
+on:
+  push:
+    branches:
+      - main
+      - promotion-liquidity-blocker-evidence-v1-2026-10-14
+    paths:
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/check_liquidity_remaining_blockers_v1.py'
+      - '.github/workflows/liquidity-remaining-blockers-contract-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json'
+      - 'validation/check_liquidity_remaining_blockers_v1.py'
+      - '.github/workflows/liquidity-remaining-blockers-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot tracked Liquidity runtime
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/liquidity.before.sha256
+      - name: Certify exact remaining blockers
+        run: python validation/check_liquidity_remaining_blockers_v1.py | tee /tmp/liquidity-blockers.json
+      - name: Verify no runtime or payload mutation
+        run: |
+          sha256sum -c /tmp/liquidity.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json payload
+          echo 'LIQUIDITY_23_READY_3_WITHHELD_NO_RUNTIME_MUTATION_NO_PUBLICATION'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liquidity-remaining-blockers-evidence
+          path: /tmp/liquidity-blockers.json
+          if-no-files-found: error
