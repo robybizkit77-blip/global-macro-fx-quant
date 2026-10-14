@@ -94,14 +94,16 @@ def parse_official_page(html: str) -> tuple[str, float, str, float, dict[str, An
         raise ValueError("cannot resolve latest Labour Force Survey reference month from official page")
     latest_period = f"{int(title_match.group(1)):04d}-{int(title_match.group(2)):02d}"
 
-    target_row = None
-    for tr in soup.find_all("tr"):
-        row_text = " ".join(tr.stripped_strings)
-        if "完全失業率" in row_text:
-            target_row = row_text
-            break
-    if not target_row:
-        raise ValueError("official page does not contain the headline unemployment-rate row")
+    monthly_marker = "月次（季節調整値）"
+    marker_pos = text.find(monthly_marker)
+    if marker_pos < 0:
+        raise ValueError("official page lacks monthly seasonally-adjusted table marker")
+    row_pos = text.find("完全失業率", marker_pos)
+    if row_pos < 0:
+        raise ValueError("official page does not contain the headline unemployment-rate row after monthly marker")
+    points_pos = text.find("ポイント", row_pos)
+    row_end = points_pos if points_pos >= 0 else min(len(text), row_pos + 500)
+    target_row = text[row_pos:row_end]
 
     values = [float(x) for x in re.findall(r"(\d+(?:\.\d+)?)\s*[％%]", target_row)]
     if len(values) < 2:
