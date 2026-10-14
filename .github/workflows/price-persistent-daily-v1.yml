@@ -1,0 +1,161 @@
+name: Price Persistent Daily V1
+
+on:
+  push:
+    branches:
+      - main
+      - price-persistent-daily-v1-2026-10-14
+    paths:
+      - '.github/workflows/price-persistent-daily-v1.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/price-persistent-daily-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # Europe/Rome retries after the ECB reference-rate publication window.
+    # Duplicate UTC entries cover CET/CEST; the local gate admits only 17:10, 17:40, 18:10.
+    - cron: '10 15 * * 1-5'
+    - cron: '10 16 * * 1-5'
+    - cron: '40 15 * * 1-5'
+    - cron: '40 16 * * 1-5'
+    - cron: '10 17 * * 1-5'
+    - cron: '10 18 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: price-persistent-daily-v1
+  cancel-in-progress: false
+
+jobs:
+  persist-price:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - name: Rome schedule gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          allowed='17:10 17:40 18:10'
+          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
+            echo 'should_run=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'should_run=false' >> "$GITHUB_OUTPUT"
+          fi
+          echo "event=${{ github.event_name }} rome_time=$hhmm"
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.should_run == 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Fetch and validate official ECB Price candidate
+        id: candidate
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/price-persistent
+          python validation/fetch_ecb_g8_price_candidate.py --out /tmp/price-persistent/candidate.json > /tmp/price-persistent/fetch.txt
+          python - <<'PY'
+          import json,re
+          from datetime import date
+          c=json.load(open('/tmp/price-persistent/candidate.json'))
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">',text)
+          assert len(m)==1,m
+          current=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
+          assert c['schema']=='GMFQ_ECB_G8_PRICE_CANDIDATE_V1',c
+          assert c['status']=='CANDIDATE_OFFICIAL',c
+          assert c['base']=='EUR' and c['pair_count']==28,c
+          assert set(c['rates'])=={'EUR','USD','GBP','JPY','CHF','CAD','AUD','NZD'},c
+          assert float(c['rates']['EUR'])==1.0 and all(float(v)>0 for v in c['rates'].values()),c
+          assert c['as_of']>=current,(c['as_of'],current)
+          assert c['as_of']<=date.today().isoformat(),(c['as_of'],date.today().isoformat())
+          print('PRICE_PERSISTENT_CANDIDATE_PASS',current,'->',c['as_of'])
+          PY
+          git diff --exit-code -- payload/part-15.txt
+
+      - name: Apply candidate and classify result
+        id: apply
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-persistent/candidate.json --apply > /tmp/price-persistent/apply.json
+          cat /tmp/price-persistent/apply.json
+          STATUS="$(python -c "import json; print(json.load(open('/tmp/price-persistent/apply.json'))['status'])")"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          test "$STATUS" = 'NO_CHANGE' -o "$STATUS" = 'UPDATE_AVAILABLE'
+
+      - name: Validate no-change identity
+        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'NO_CHANGE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- payload/part-15.txt
+          echo PRICE_PERSISTENT_NO_CHANGE_PASS
+
+      - name: Validate update scope and idempotence
+        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only)" = 'payload/part-15.txt'
+          python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-persistent/candidate.json --apply > /tmp/price-persistent/apply-second.json
+          python - <<'PY'
+          import json,re
+          c=json.load(open('/tmp/price-persistent/candidate.json'))
+          r=json.load(open('/tmp/price-persistent/apply-second.json'))
+          assert r['status']=='NO_CHANGE' and r['applied'] is False,r
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          compact=c['as_of'].replace('-','')
+          assert len(re.findall(r'<script id="gmfq-price-ecb-\d{8}">',text))==1
+          assert f'<script id="gmfq-price-ecb-{compact}">' in text
+          print('PRICE_PERSISTENT_SCOPE_AND_IDEMPOTENCE_PASS')
+          PY
+
+      - name: Validation branch leaves runtime unchanged
+        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -- payload/part-15.txt
+          git diff --exit-code -- payload/part-15.txt
+          echo PRICE_PERSISTENT_VALIDATION_ONLY_PASS
+
+      - name: Commit validated Price update to main with remote-head lease
+        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          TARGET_BRANCH: main
+        run: |
+          set -euo pipefail
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add payload/part-15.txt
+          git diff --cached --quiet && { echo 'No Price changes to persist'; exit 0; }
+          git commit -m 'Refresh daily FX Price runtime from official ECB fixing'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_BRANCH"
+          echo PRICE_PERSISTENT_MAIN_UPDATE_PUSHED
+
+      - name: Upload Price evidence
+        if: always() && steps.gate.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-persistent-daily-${{ github.run_id }}
+          path: /tmp/price-persistent/
+          if-no-files-found: warn
+          retention-days: 30
