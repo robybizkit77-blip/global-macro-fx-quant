@@ -48,30 +48,33 @@ def main() -> None:
     if dates != sorted(dates) or len(dates) != len(set(dates)):
         raise SystemExit('runtime WTI dates not unique/monotonic')
 
+    declared_last_date = wti.get('last_date')
+    declared_last_value = wti.get('last_value')
+    if declared_last_date is not None and declared_last_date != dates[-1]:
+        raise SystemExit(f'contradictory WTI last_date metadata: declared={declared_last_date} array={dates[-1]}')
+    if declared_last_value is not None and not math.isclose(float(declared_last_value), float(values[-1]), rel_tol=0, abs_tol=1e-12):
+        raise SystemExit(f'contradictory WTI last_value metadata: declared={declared_last_value} array={values[-1]}')
+    if wti.get('series_id') is not None and wti.get('series_id') != cfg['series_id']:
+        raise SystemExit(f'contradictory WTI series_id metadata: {wti.get("series_id")}')
+    if wti.get('source') is not None and wti.get('source') != cfg['publisher']:
+        raise SystemExit(f'contradictory WTI source metadata: {wti.get("source")}')
+    if wti.get('frequency') is not None and wti.get('frequency') != cfg['frequency']:
+        raise SystemExit(f'contradictory WTI frequency metadata: {wti.get("frequency")}')
+
     runtime_header = {
-        'schema': 'GMFQ_WTI_RUNTIME_PRECHECK_V1',
+        'schema': 'GMFQ_WTI_RUNTIME_PRECHECK_V2',
         'observation_count': len(dates),
         'first_array_date': dates[0],
         'last_array_date': dates[-1],
         'last_array_value': values[-1],
-        'declared_last_date': wti.get('last_date'),
-        'declared_last_value': wti.get('last_value'),
+        'declared_last_date': declared_last_date,
+        'declared_last_value': declared_last_value,
         'source_field': wti.get('source'),
         'series_id_field': wti.get('series_id'),
         'frequency_field': wti.get('frequency'),
+        'metadata_complete': all(wti.get(k) is not None for k in ('last_date','last_value','source','series_id','frequency')),
     }
     print(json.dumps(runtime_header, indent=2, ensure_ascii=False), flush=True)
-
-    last_date_ok = wti.get('last_date') == dates[-1]
-    try:
-        last_value_ok = math.isclose(float(wti.get('last_value')), float(values[-1]), rel_tol=0, abs_tol=1e-12)
-    except (TypeError, ValueError):
-        last_value_ok = False
-    if not last_date_ok or not last_value_ok:
-        raise SystemExit(
-            'runtime WTI last_date/last_value drift: '
-            + json.dumps({'last_date_ok': last_date_ok, 'last_value_ok': last_value_ok, **runtime_header}, ensure_ascii=False)
-        )
 
     tmp = Path(tempfile.gettempdir()) / 'DCOILWTICO-current.csv'
     subprocess.run([
@@ -96,7 +99,7 @@ def main() -> None:
     source.sort(key=lambda x: x[0])
     if len(source) < 500 or source[0][0] > '2016-01-31':
         raise SystemExit(f'WTI canonical download invalid: {len(source)} rows, first={source[0][0] if source else None}')
-    if len({d for d, _ in source}) != len(source):
+    if len({day for day, _ in source}) != len(source):
         raise SystemExit('duplicate WTI dates in source')
 
     source_map = dict(source)
@@ -128,6 +131,7 @@ def main() -> None:
             'first_date': dates[0],
             'last_date': dates[-1],
             'last_value': values[-1],
+            'metadata_complete': runtime_header['metadata_complete'],
             'source_field': wti.get('source'),
             'series_id_field': wti.get('series_id'),
             'frequency_field': wti.get('frequency'),
