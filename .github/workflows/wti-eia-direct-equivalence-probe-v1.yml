@@ -1,0 +1,71 @@
+name: WTI EIA Direct Equivalence Probe V1
+
+on:
+  push:
+    branches:
+      - validation-wti-controlled-rebuild-v1-2026-10-14
+    paths:
+      - 'validation/probe_eia_direct_wti_equivalence_v1.py'
+      - '.github/workflows/wti-eia-direct-equivalence-probe-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-eia-direct-equivalence:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install XLS reader
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input 'xlrd==2.0.1'
+
+      - name: Fetch official EIA direct XLS
+        run: |
+          set -euo pipefail
+          curl -fL --compressed --retry 2 --retry-all-errors --retry-delay 2 \
+            --retry-max-time 90 --connect-timeout 15 --max-time 45 \
+            -A 'Mozilla/5.0' \
+            'https://www.eia.gov/dnav/pet/hist_xls/RWTCd.xls' \
+            -o /tmp/RWTCd.xls
+          test -s /tmp/RWTCd.xls
+          file /tmp/RWTCd.xls
+
+      - name: Recover historical canonical FRED snapshot
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin d2c701abfc21935979a7b30e3e1fb9555e2e8d08
+          git show d2c701abfc21935979a7b30e3e1fb9555e2e8d08:data/sources/DCOILWTICO_2016_2026.csv.gz.b64 \
+            | base64 -d | gzip -dc > /tmp/DCOILWTICO_2016_2026.csv
+          test -s /tmp/DCOILWTICO_2016_2026.csv
+          head -3 /tmp/DCOILWTICO_2016_2026.csv
+
+      - name: Prove EIA direct equals canonical historical FRED mirror
+        run: |
+          set -euo pipefail
+          AS_OF="$(date -u +%F)"
+          python validation/probe_eia_direct_wti_equivalence_v1.py \
+            --eia-xls /tmp/RWTCd.xls \
+            --fred-snapshot-csv /tmp/DCOILWTICO_2016_2026.csv \
+            --as-of "$AS_OF" \
+            --candidate-out /tmp/wti-eia-direct-candidate.json \
+            | tee /tmp/wti-eia-direct-equivalence-receipt.json
+
+      - name: Verify read-only proof
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          echo WTI_EIA_DIRECT_EQUIVALENCE_PROBE_READ_ONLY_PASS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wti-eia-direct-equivalence-probe-v1
+          path: |
+            /tmp/wti-eia-direct-equivalence-receipt.json
+            /tmp/wti-eia-direct-candidate.json
+          if-no-files-found: error
