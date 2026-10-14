@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Fetch current canonical WTI source
+      - name: Fetch current canonical EIA WTI source
         run: |
           set -euo pipefail
           AS_OF="$(date -u +%F)"
@@ -40,8 +40,14 @@ jobs:
           obs=c['observations']
           dates=[x['date'] for x in obs]
           values=[float(x['value']) for x in obs]
-          assert w['source']=='U.S. EIA via FRED', w.get('source')
-          assert w['series_id']=='DCOILWTICO', w.get('series_id')
+          assert c['source']['publisher']=='U.S. Energy Information Administration'
+          assert c['source']['series_id']=='RWTC'
+          assert c['source']['legacy_api_series_id']=='PET.RWTC.D'
+          assert c['source']['fred_mirror_series_id']=='DCOILWTICO'
+          assert w['source']=='U.S. Energy Information Administration', w.get('source')
+          assert w['series_id']=='RWTC', w.get('series_id')
+          assert w['legacy_api_series_id']=='PET.RWTC.D'
+          assert w['fred_mirror_series_id']=='DCOILWTICO'
           assert w['frequency']=='Daily', w.get('frequency')
           assert len(w['dates']) >= 500, len(w['dates'])
           assert w['dates'][0] <= '2016-01-31', w['dates'][0]
@@ -51,7 +57,7 @@ jobs:
               assert math.isclose(float(a),b,rel_tol=0,abs_tol=1e-9), (i,a,b)
           assert w['last_date']==dates[-1]
           assert math.isclose(float(w['last_value']),values[-1],rel_tol=0,abs_tol=1e-9)
-          print('WTI_RUNTIME_EXACT_SOURCE_MATCH_PASS', dates[0], '->', dates[-1], len(dates))
+          print('WTI_RUNTIME_EXACT_EIA_SOURCE_MATCH_PASS', dates[0], '->', dates[-1], len(dates))
           PY
 
       - name: Certify live-data roundtrip and manifest
