@@ -61,6 +61,7 @@ def main():
     if len(rtrow.get('dates') or [])!=len(rtrow.get('values') or []) or not rtrow.get('dates'):
         raise SystemExit('invalid JPY.money runtime arrays')
     rt={month(d):float(v) for d,v in zip(rtrow['dates'],rtrow['values'])}
+    runtime_last=month(rtrow['last_date'])
     try:
         url,row,src=fetch()
     except (Exception, SystemExit) as exc:
@@ -118,7 +119,6 @@ def main():
         out.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
         print(json.dumps(result,indent=2,ensure_ascii=False))
         return
-    runtime_last=month(rtrow['last_date'])
     if runtime_last not in src or abs(float(rtrow['last_value'])-src[runtime_last])>1e-6:
         raise SystemExit('JPY M3 runtime last observation does not match BOJ exact series')
     latest_date=max(src)
