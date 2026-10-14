@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_RISK_SOURCE_POLICY_V1",
-  "as_of": "2026-10-12",
+  "as_of": "2026-10-14",
   "purpose": "Define auditable source eligibility for the Risk overlay without changing pair direction, bias, scoring, sizing or Quant logic.",
   "policy": {
     "fail_closed": true,
@@ -41,14 +41,24 @@
   },
   "secondary_runtime_series": {
     "WTI": {
-      "status": "SOURCE_RECOVERED_NOT_PRIMARY_GATE",
-      "source_name": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
-      "publisher": "U.S. EIA via FRED",
-      "series_id": "DCOILWTICO",
+      "status": "READY_SECONDARY_RUNTIME",
+      "role": "SECONDARY_RUNTIME_SERIES_NOT_PRIMARY_GATE",
+      "source_name": "Cushing, OK WTI Spot Price FOB (Dollars per Barrel)",
+      "source_url": "https://www.eia.gov/dnav/pet/hist_xls/RWTCd.xls",
+      "publisher": "U.S. Energy Information Administration",
+      "benchmark_key": "RWTC",
       "frequency": "Daily",
+      "collector": "validation/fetch_eia_direct_wti_candidate_v1.py",
+      "historical_fred_mirror_series_id": "DCOILWTICO",
       "historical_contract_commit": "ad954db44b99f7a1f0a9538b684593cc3a1e5596",
       "historical_workflow": ".github/workflows/canonical-data-refresh-v274.yml",
-      "reason": "The repository history contains an explicit canonical daily FRED/EIA collector and provenance fields for WTI. Current D.risk is truncated, so WTI can be rebuilt from the recovered canonical source contract but remains outside the existing VIX/Brent primary freshness gate."
+      "direct_source_equivalence_run": 38531702336,
+      "equivalence_overlap_count": 2682,
+      "equivalence_mismatch_count": 0,
+      "controlled_rebuild_proof_run": 38531988401,
+      "persistent_rebuild_run": 38532219525,
+      "runtime_data_commit": "c7acf8ebe8c9fc01ae4157f6517257994465a4f2",
+      "reason": "WTI is now rebuilt as a complete secondary runtime series from the official EIA Cushing spot history. The direct EIA benchmark was proven numerically equivalent to the recovered historical FRED mirror across 2,682 overlapping observations with zero mismatches. The prior three-point runtime was independently shown to be contaminated and was replaced by a guarded full rebuild. WTI remains outside the existing VIX/Brent primary freshness gate and does not change pair direction, scoring or publication eligibility."
     },
     "Gold": {
       "status": "NOT_GATE_ELIGIBLE",
