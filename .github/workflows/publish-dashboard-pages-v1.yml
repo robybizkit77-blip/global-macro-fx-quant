@@ -20,6 +20,7 @@ on:
       - 'Price Persistent Daily V1'
       - 'Rates Persistent Daily V1'
       - 'COT Persistent Weekly V1'
+      - 'Liquidity JPY M3 Persistent Daily V1'
     types: [completed]
   workflow_dispatch:
 
