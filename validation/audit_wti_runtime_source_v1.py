@@ -136,8 +136,6 @@ def main() -> None:
             day = start + dt.timedelta(days=offset)
             if day.weekday() >= 5:
                 continue
-            if value <= 0:
-                raise SystemExit(f'invalid direct EIA WTI value {value} on {day}')
             source.append((day.isoformat(), value))
 
     source.sort(key=lambda x: x[0])
