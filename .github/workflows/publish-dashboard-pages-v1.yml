@@ -1,0 +1,122 @@
+name: Publish Dashboard Pages V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-dashboard-pages-v1.yml'
+      - 'index.html'
+      - 'payload/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-dashboard-pages-v1.yml'
+      - 'index.html'
+      - 'payload/**'
+  workflow_run:
+    workflows:
+      - 'Macro Persistent Daily V1'
+      - 'CB Pricing Persistent Daily V1'
+      - 'Price Persistent Daily V1'
+      - 'Rates Persistent Daily V1'
+      - 'COT Persistent Weekly V1'
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-dashboard-pages-v1
+  cancel-in-progress: false
+
+jobs:
+  publish-pages:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify current dashboard runtime before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/check_live_update_contract.py > /tmp/pages-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/pages-runtime-roundtrip.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          contract=json.load(open('/tmp/pages-live-contract.json'))
+          runtime=json.load(open('/tmp/pages-runtime-roundtrip.json'))
+          assert contract['status']=='PASS', contract
+          assert runtime['status']=='PASS', runtime
+          assert runtime.get('noop_roundtrip_byte_identical') is True, runtime
+
+          index=Path('index.html').read_text(encoding='utf-8')
+          parts=[Path(f'payload/part-{i:02d}.txt') for i in range(16)]
+          missing=[str(p) for p in parts if not p.is_file()]
+          assert not missing, missing
+          for p in parts:
+              assert str(p).replace('\\','/') in index, p
+          payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+          assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
+          assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
+          print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
+          PY
+
+      - name: Validate publication scope only
+        if: github.event_name == 'pull_request'
+        run: echo DASHBOARD_PUBLICATION_VALIDATION_ONLY_PASS
+
+      - name: Publish index and payload to gh-pages with lease
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          REMOTE_SHA="$(git rev-parse origin/gh-pages)"
+          rm -rf /tmp/gmfq-pages
+          git worktree add --detach /tmp/gmfq-pages origin/gh-pages
+
+          rm -rf /tmp/gmfq-pages/payload
+          mkdir -p /tmp/gmfq-pages/payload
+          cp index.html /tmp/gmfq-pages/index.html
+          cp payload/part-*.txt /tmp/gmfq-pages/payload/
+
+          cd /tmp/gmfq-pages
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'index.html',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          if not changed:
+              print('DASHBOARD_PAGES_ALREADY_CURRENT')
+          elif not changed.issubset(allowed):
+              raise SystemExit(f'Pages exact-scope violation: {sorted(changed)}')
+          else:
+              print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed))
+          PY
+
+          if git diff --quiet -- index.html payload; then
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- index.html payload
+          git commit -m "Publish dashboard runtime from main ${GITHUB_SHA}"
+
+          REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during publication' >&2; exit 1; }
+          git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
+          echo DASHBOARD_PAGES_PUBLISHED
