@@ -1,0 +1,62 @@
+{
+  "schema": "GMFQ_RISK_SOURCE_POLICY_V1",
+  "as_of": "2026-10-12",
+  "purpose": "Define auditable source eligibility for the Risk overlay without changing pair direction, bias, scoring, sizing or Quant logic.",
+  "policy": {
+    "fail_closed": true,
+    "risk_is_overlay_only": true,
+    "no_proxy_substitution": true,
+    "no_inferred_provenance": true,
+    "publication_requires_all_gate_inputs_auditable": true
+  },
+  "gate_inputs": {
+    "VIX": {
+      "status": "READY",
+      "role": "PRIMARY_GATE_INPUT",
+      "source_name": "Cboe VIX Index Historical Data",
+      "source_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "publisher": "Cboe Global Markets",
+      "frequency": "DAILY_MARKET_CLOSE",
+      "field": "CLOSE",
+      "max_business_day_lag_vs_price": 1,
+      "collector": "validation/fetch_cboe_vix_candidate.py",
+      "reason": "Cboe publishes the VIX Index history as an official daily-updated CSV."
+    },
+    "Brent": {
+      "status": "WITHHELD_OFFICIAL_SOURCE_TOO_SLOW_FOR_GATE",
+      "role": "PRIMARY_GATE_INPUT",
+      "source_name": "Europe Brent Spot Price FOB",
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+      "publisher": "U.S. Energy Information Administration",
+      "series_id": "RBRTE",
+      "eia_api_series_id": "PET.RBRTE.D",
+      "fred_mirror_series_id": "DCOILBRENTEU",
+      "frequency": "Daily observations / batch release cadence",
+      "max_business_day_lag_vs_price": 1,
+      "collector": "validation/fetch_eia_brent_probe.py",
+      "hard_blocker": true,
+      "hard_blocker_confirmed_on": "2026-10-13",
+      "reason": "The canonical gate input is explicitly the EIA Europe Brent Spot Price FOB series RBRTE. EIA Open Data exposes the same underlying daily series as PET.RBRTE.D, so switching transport from the historical HTML table to the EIA API does not create a fresher independent observation stream. EIA release timing can lag the Price lane beyond the existing one-business-day gate. FRED DCOILBRENTEU is only a mirror of the same EIA series. ICE Brent futures settlement is a different futures benchmark and therefore is not an exact semantic substitute for EIA Brent spot; it must not be used merely to force GREEN. Keep the one-business-day gate unchanged and fail closed until an official, exact-equivalent, sufficiently timely source is proven."
+    }
+  },
+  "secondary_runtime_series": {
+    "WTI": {
+      "status": "SOURCE_RECOVERED_NOT_PRIMARY_GATE",
+      "source_name": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
+      "publisher": "U.S. EIA via FRED",
+      "series_id": "DCOILWTICO",
+      "frequency": "Daily",
+      "historical_contract_commit": "ad954db44b99f7a1f0a9538b684593cc3a1e5596",
+      "historical_workflow": ".github/workflows/canonical-data-refresh-v274.yml",
+      "reason": "The repository history contains an explicit canonical daily FRED/EIA collector and provenance fields for WTI. Current D.risk is truncated, so WTI can be rebuilt from the recovered canonical source contract but remains outside the existing VIX/Brent primary freshness gate."
+    },
+    "Gold": {
+      "status": "NOT_GATE_ELIGIBLE",
+      "reason": "Present in D.risk but only a short runtime history is embedded and no auditable source metadata is stored."
+    },
+    "China CLI": {
+      "status": "OUTSIDE_DAILY_RISK_GATE",
+      "reason": "Monthly macro context series; not a daily Risk freshness input."
+    }
+  }
+}
