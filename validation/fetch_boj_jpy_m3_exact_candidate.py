@@ -72,7 +72,6 @@ def main():
     runtime={'count':len(money.get('dates') or []),'last_date':month(money['last_date']),'last_value':float(money['last_value'])}
     try: url,row,src=fetch(); result=build(liq,url,row,src)
     except Exception as exc: result=veto('WITHHELD_SOURCE_UNAVAILABLE',runtime,'source or provenance contract unavailable',source_error_type=type(exc).__name__)
-    Path(args.out).write_text(json.dumps(result,indent=2,ensure_ascii=False)+'
-',encoding='utf-8'); print(json.dumps(result,indent=2,ensure_ascii=False))
+    Path(args.out).write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'); print(json.dumps(result,indent=2,ensure_ascii=False))
 
 if __name__=='__main__': main()
