@@ -22,15 +22,20 @@ jobs:
           sha256sum live_data/sections/D.json > /tmp/D.before.sha256
           sha256sum payload/part-00.txt > /tmp/part00.before.sha256
       - name: Audit WTI runtime against canonical FRED/EIA source
-        run: python validation/audit_wti_runtime_source_v1.py | tee /tmp/wti-runtime-source-audit.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/audit_wti_runtime_source_v1.py | tee /tmp/wti-runtime-source-audit.json
       - name: Prove read-only execution
+        if: always()
         run: |
           sha256sum -c /tmp/D.before.sha256
           sha256sum -c /tmp/part00.before.sha256
           git diff --exit-code -- live_data/sections/D.json payload/part-00.txt
           echo WTI_RUNTIME_SOURCE_AUDIT_READ_ONLY_PASS
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: wti-runtime-source-audit-v1
           path: /tmp/wti-runtime-source-audit.json
-          if-no-files-found: error
+          if-no-files-found: warn
