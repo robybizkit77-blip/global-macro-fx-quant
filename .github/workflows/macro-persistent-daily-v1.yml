@@ -49,6 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/macro-persistent
+          : > /tmp/macro-persistent/updates.txt
           git rev-parse HEAD > /tmp/macro-persistent/base-sha
           cp live_data/sections/MACRO_SERIES.json /tmp/macro-persistent/MACRO_SERIES.before.json
           cp live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/macro-persistent/MACRO_THERMOMETER_DATA.before.json
@@ -61,7 +62,7 @@ jobs:
           print('MACRO_REGISTRY_PASS')
           PY
 
-      - name: Fetch, PIT-verify and apply all 16 core series sequentially
+      - name: Fetch and PIT-verify all 16 core series independently
         id: refresh
         shell: bash
         run: |
@@ -118,19 +119,47 @@ jobs:
 
               cp "$evidence/before/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
               cp "$evidence/before/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+              git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
 
-              python validation/update_live_direct_section.py \
-                --section MACRO_THERMOMETER_DATA \
-                --replacement "$work/built/MACRO_THERMOMETER_DATA.json" --apply > "$work/apply-heat.json"
-              python validation/update_live_direct_section.py \
-                --section MACRO_SERIES \
-                --replacement "$work/built/MACRO_SERIES.json" --apply > "$work/apply-series.json"
-
+              echo "$key" >> /tmp/macro-persistent/updates.txt
               updated=$((updated+1))
             done
           done
           echo "updated=$updated" >> "$GITHUB_OUTPUT"
           echo "MACRO_SERIES_UPDATED=$updated"
+
+      - name: Compose all PIT-verified updates and apply atomically
+        if: steps.refresh.outputs.updated != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          compose=/tmp/macro-persistent/composed
+          mkdir -p "$compose/current"
+          cp live_data/sections/MACRO_SERIES.json "$compose/current/MACRO_SERIES.json"
+          cp live_data/sections/MACRO_THERMOMETER_DATA.json "$compose/current/MACRO_THERMOMETER_DATA.json"
+
+          while read -r key; do
+            [ -n "$key" ] || continue
+            work="/tmp/macro-persistent/${key}"
+            rm -rf "$compose/next"
+            python validation/build_macro_candidate.py \
+              --candidate "$work/candidate.json" \
+              --series-input "$compose/current/MACRO_SERIES.json" \
+              --heatmap-input "$compose/current/MACRO_THERMOMETER_DATA.json" \
+              --output-dir "$compose/next" > "$work/compose-builder.json"
+            cp "$compose/next/MACRO_SERIES.json" "$compose/current/MACRO_SERIES.json"
+            cp "$compose/next/MACRO_THERMOMETER_DATA.json" "$compose/current/MACRO_THERMOMETER_DATA.json"
+          done < /tmp/macro-persistent/updates.txt
+
+          python validation/update_live_direct_section.py \
+            --section MACRO_THERMOMETER_DATA \
+            --replacement "$compose/current/MACRO_THERMOMETER_DATA.json" --apply \
+            > /tmp/macro-persistent/apply-heat.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/macro-persistent/manifest-after-heat.json
+          python validation/update_live_direct_section.py \
+            --section MACRO_SERIES \
+            --replacement "$compose/current/MACRO_SERIES.json" --apply \
+            > /tmp/macro-persistent/apply-series.json
 
       - name: Final runtime gates and exact scope
         if: steps.refresh.outputs.updated != '0'
@@ -152,7 +181,8 @@ jobs:
           }
           if not changed or not changed.issubset(allowed):
               raise SystemExit(f'Macro exact-scope violation: {sorted(changed)}')
-          if 'live_data/sections/MACRO_SERIES.json' not in changed or 'live_data/sections/MACRO_THERMOMETER_DATA.json' not in changed:
+          required={'live_data/sections/MACRO_SERIES.json','live_data/sections/MACRO_THERMOMETER_DATA.json'}
+          if not required.issubset(changed):
               raise SystemExit(f'Macro core sections missing from diff: {sorted(changed)}')
           print('MACRO_FINAL_SCOPE_PASS', sorted(changed))
           PY
