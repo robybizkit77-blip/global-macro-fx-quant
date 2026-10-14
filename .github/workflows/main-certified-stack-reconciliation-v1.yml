@@ -1,0 +1,60 @@
+name: Main Certified Stack Reconciliation V1
+
+on:
+  push:
+    branches:
+      - validation-main-certified-stack-reconciliation-v1-2026-10-14
+    paths:
+      - 'validation/audit_main_vs_certified_stack_v1.py'
+      - '.github/workflows/main-certified-stack-reconciliation-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/audit_main_vs_certified_stack_v1.py'
+      - '.github/workflows/main-certified-stack-reconciliation-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout candidate main branch
+        uses: actions/checkout@v4
+        with:
+          path: main-checkout
+          fetch-depth: 1
+
+      - name: Checkout certified release-candidate stack
+        uses: actions/checkout@v4
+        with:
+          ref: release-candidate-daily-data-orchestrator-v1-2026-10-12
+          path: certified-checkout
+          fetch-depth: 1
+
+      - name: Snapshot both checkouts
+        run: |
+          git -C main-checkout rev-parse HEAD
+          git -C certified-checkout rev-parse HEAD
+          git -C main-checkout status --porcelain
+          git -C certified-checkout status --porcelain
+
+      - name: Run reconciliation audit
+        run: |
+          python3 main-checkout/validation/audit_main_vs_certified_stack_v1.py \
+            --main-dir main-checkout \
+            --certified-dir certified-checkout \
+            --out /tmp/main-certified-stack-reconciliation.json
+          cat /tmp/main-certified-stack-reconciliation.json
+
+      - name: Verify no runtime or payload mutation
+        run: |
+          git -C main-checkout diff --exit-code -- live_data payload
+          git -C certified-checkout diff --exit-code -- live_data payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: main-certified-stack-reconciliation
+          path: /tmp/main-certified-stack-reconciliation.json
+          if-no-files-found: error
