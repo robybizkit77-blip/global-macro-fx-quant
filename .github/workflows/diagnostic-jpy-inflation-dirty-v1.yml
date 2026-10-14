@@ -1,0 +1,162 @@
+name: Diagnostic JPY Inflation Dirty V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostic-jpy-inflation-dirty-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install adapter dependencies
+        run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
+
+      - name: Reproduce production sequence through JPY inflation
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=/tmp/jpy-inflation-sequence-probe
+          mkdir -p "$root"
+          : > "$root/status.txt"
+
+          snapshot() {
+            echo "=== $1 ===" | tee -a "$root/status.txt"
+            git status --porcelain=v1 | tee -a "$root/status.txt"
+          }
+
+          run_series() {
+            c="$1"
+            d="$2"
+            key="${c}_${d}"
+            work="$root/$key"
+            mkdir -p "$work"
+
+            snapshot "$key START"
+
+            python validation/macro_adapter_pit_handoff.py \
+              --currency "$c" --dimension "$d" \
+              --output "$work/candidate.json" \
+              --audit-output "$work/adapter-audit.json"
+
+            series_id="$(python - <<PY
+import json
+print(json.load(open('$work/candidate.json'))['macro_series_id'])
+PY
+)"
+            echo "$series_id" > "$work/series-id.txt"
+            snapshot "$key AFTER ADAPTER"
+
+            python validation/build_macro_candidate.py \
+              --candidate "$work/candidate.json" \
+              --output-dir "$work/built" > "$work/builder.json"
+            snapshot "$key AFTER BUILDER"
+
+            if cmp -s "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json && \
+               cmp -s "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json; then
+              echo "NO_UPDATE" > "$work/result.txt"
+              return 0
+            fi
+
+            evidence="$work/evidence"
+            set +e
+            python validation/macro_pit_anchor_contract.py capture-before \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" \
+              >"$work/capture-before.stdout" 2>"$work/capture-before.stderr"
+            rc=$?
+            set -e
+            echo "$rc" > "$work/capture-before.rc"
+            snapshot "$key AFTER CAPTURE-BEFORE rc=$rc"
+            if [ "$rc" -ne 0 ]; then
+              echo "$key" > "$root/failed-series.txt"
+              return "$rc"
+            fi
+
+            cp "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+            cp "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+            snapshot "$key AFTER COPY"
+
+            set +e
+            python validation/macro_pit_anchor_contract.py capture-after \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" --allow-live-data-dirty \
+              >"$work/capture-after.stdout" 2>"$work/capture-after.stderr"
+            rc=$?
+            set -e
+            echo "$rc" > "$work/capture-after.rc"
+            if [ "$rc" -ne 0 ]; then
+              echo "$key:capture-after" > "$root/failed-series.txt"
+              return "$rc"
+            fi
+
+            set +e
+            python validation/macro_pit_anchor_contract.py verify \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" \
+              --candidate "$work/candidate.json" --evidence-output "$work/pit-evidence.json" \
+              >"$work/verify.stdout" 2>"$work/verify.stderr"
+            rc=$?
+            set -e
+            echo "$rc" > "$work/verify.rc"
+            if [ "$rc" -ne 0 ]; then
+              echo "$key:verify" > "$root/failed-series.txt"
+              return "$rc"
+            fi
+
+            cp "$evidence/before/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+            cp "$evidence/before/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+            git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json
+            snapshot "$key AFTER RESTORE"
+            echo "PASS" > "$work/result.txt"
+          }
+
+          snapshot "REPO START"
+          failed=0
+          for spec in \
+            'USD inflation' 'USD labour' \
+            'EUR inflation' 'EUR labour' \
+            'GBP inflation' 'GBP labour' \
+            'JPY inflation'; do
+            set -- $spec
+            if ! run_series "$1" "$2"; then
+              failed=1
+              break
+            fi
+          done
+
+          snapshot "FINAL"
+          if [ "$failed" -eq 1 ]; then
+            key=$(cat "$root/failed-series.txt")
+            echo "=== FAILURE $key ===" | tee "$root/result.txt"
+            base="${key%%:*}"
+            stage="${key#*:}"
+            if [ "$base" = "$stage" ]; then stage="capture-before"; fi
+            echo "stage=$stage" | tee -a "$root/result.txt"
+            cat "$root/$base/$stage.rc" 2>/dev/null | tee -a "$root/result.txt" || true
+            cat "$root/$base/$stage.stderr" 2>/dev/null | tee -a "$root/result.txt" || true
+            exit 0
+          fi
+          echo 'SEQUENCE_COMPLETED' | tee "$root/result.txt"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jpy-inflation-sequence-probe-${{ github.run_id }}
+          path: /tmp/jpy-inflation-sequence-probe/
+          if-no-files-found: error
+          retention-days: 3
