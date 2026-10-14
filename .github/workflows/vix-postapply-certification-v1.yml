@@ -1,0 +1,134 @@
+name: VIX Post-Apply Certification V1
+
+on:
+  push:
+    branches:
+      - validation-vix-controlled-apply-v1-2026-10-14
+      - main
+    paths:
+      - 'live_data/sections/D.json'
+      - 'payload/part-00.txt'
+      - 'live_data/manifest.v2.json'
+      - '.github/workflows/vix-postapply-certification-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-vix-current:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+
+      - name: Resolve the VIX data commit under certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATA_COMMIT="$(git log -1 --format=%H -- live_data/sections/D.json)"
+          test -n "$DATA_COMMIT"
+          git cat-file -e "$DATA_COMMIT^"
+          echo "DATA_COMMIT=$DATA_COMMIT" >> "$GITHUB_ENV"
+          echo "VIX_DATA_COMMIT=$DATA_COMMIT"
+          git show --no-patch --format='%H %s' "$DATA_COMMIT"
+
+      - name: Validate exact data diff scope on non-main certification
+        if: github.ref_name != 'main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "$DATA_COMMIT^" "$DATA_COMMIT" | sort > /tmp/changed.txt
+          printf '%s\n' \
+            'live_data/manifest.v2.json' \
+            'live_data/sections/D.json' \
+            'payload/part-00.txt' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          echo VIX_DATA_COMMIT_EXACT_SCOPE_PASS
+
+      - name: Validate semantic change is VIX-only on non-main certification
+        if: github.ref_name != 'main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show "$DATA_COMMIT^":live_data/sections/D.json > /tmp/D.parent.json
+          git show "$DATA_COMMIT":live_data/sections/D.json > /tmp/D.data-commit.json
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/D.parent.json'))
+          after=json.load(open('/tmp/D.data-commit.json'))
+          br=dict(before['risk']); ar=dict(after['risk'])
+          bv=br.pop('VIX'); av=ar.pop('VIX')
+          assert br==ar, 'non-VIX risk data changed'
+          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
+          assert b2==a2, 'data outside D.risk.VIX changed'
+          assert av['dates'][:len(bv['dates'])]==bv['dates'], 'historical VIX date prefix changed'
+          assert av['values'][:len(bv['values'])]==bv['values'], 'historical VIX value prefix changed'
+          assert len(av['dates'])>len(bv['dates']), 'VIX data commit did not append history'
+          assert av['last_date']==av['dates'][-1]
+          assert av['last_value']==av['values'][-1]
+          print('VIX_DATA_COMMIT_SEMANTIC_SCOPE_PASS', bv['last_date'], '->', av['last_date'], len(bv['dates']), '->', len(av['dates']))
+          PY
+
+      - name: Prove current branch runtime contains the certified data commit state
+        if: github.ref_name != 'main'
+        run: |
+          git show "$DATA_COMMIT":live_data/sections/D.json > /tmp/D.data-commit.json
+          cmp -s /tmp/D.data-commit.json live_data/sections/D.json
+          echo VIX_CURRENT_HEAD_CONTAINS_CERTIFIED_DATA_STATE_PASS
+
+      - name: Fetch official Cboe reference for certification
+        run: |
+          AS_OF="$(date -u +%F)"
+          python validation/fetch_cboe_vix_candidate_v2.py --as-of "$AS_OF" --out /tmp/vix-candidate.json > /tmp/vix-source-receipt.json
+
+      - name: Certify runtime equals latest official Cboe close
+        run: |
+          python - <<'PY'
+          import json, math
+          d=json.load(open('live_data/sections/D.json'))
+          c=json.load(open('/tmp/vix-candidate.json'))
+          v=d['risk']['VIX']
+          assert v['last_date']==c['latest_date'], (v['last_date'], c['latest_date'])
+          assert math.isclose(float(v['last_value']), float(c['latest_value']), rel_tol=0, abs_tol=1e-9), (v['last_value'], c['latest_value'])
+          assert v['dates'][-1]==v['last_date']
+          assert v['values'][-1]==v['last_value']
+          assert len(v['dates'])==len(v['values'])
+          assert c['business_day_lag'] <= c['max_business_day_lag']
+          print('VIX_RUNTIME_CURRENT_OFFICIAL_CBOE_PASS', v['last_date'], v['last_value'], 'n=', len(v['dates']))
+          PY
+
+      - name: Certify canonical live-update contract
+        run: |
+          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/live-update-contract.json'))
+          assert r['status']=='PASS', r
+          print('VIX_POSTAPPLY_LIVE_CONTRACT_PASS')
+          PY
+
+      - name: Prove apply is now idempotent
+        run: |
+          python validation/apply_cboe_vix_candidate_v1.py --candidate /tmp/vix-candidate.json --replacement-out /tmp/D.vix.second.json > /tmp/vix-idempotence.json
+          cmp -s live_data/sections/D.json /tmp/D.vix.second.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/vix-idempotence.json'))
+          assert r['appended_observation_count']==0, r
+          print('VIX_POSTAPPLY_IDEMPOTENCE_PASS')
+          PY
+
+      - name: Publication remains withheld
+        run: echo VIX_POSTAPPLY_CERTIFIED_NO_PUBLICATION
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vix-postapply-certification-v1
+          path: |
+            /tmp/vix-source-receipt.json
+            /tmp/live-update-contract.json
+            /tmp/vix-idempotence.json
+            /tmp/changed.txt
+          if-no-files-found: warn
