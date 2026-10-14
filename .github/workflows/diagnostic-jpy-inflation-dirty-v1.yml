@@ -56,11 +56,7 @@ jobs:
               --output "$work/candidate.json" \
               --audit-output "$work/adapter-audit.json"
 
-            series_id="$(python - <<PY
-import json
-print(json.load(open('$work/candidate.json'))['macro_series_id'])
-PY
-)"
+            series_id="$(python -c "import json; print(json.load(open('$work/candidate.json'))['macro_series_id'])")"
             echo "$series_id" > "$work/series-id.txt"
             snapshot "$key AFTER ADAPTER"
 
