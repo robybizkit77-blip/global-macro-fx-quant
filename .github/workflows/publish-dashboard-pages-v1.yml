@@ -21,6 +21,8 @@ on:
       - 'Rates Persistent Daily V1'
       - 'COT Persistent Weekly V1'
       - 'Liquidity JPY M3 Persistent Daily V1'
+      - 'VIX Persistent Apply V1'
+      - 'WTI Persistent Rebuild V1'
     types: [completed]
   workflow_dispatch:
 

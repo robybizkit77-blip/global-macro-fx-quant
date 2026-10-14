@@ -1,120 +1,109 @@
 name: WTI Persistent Rebuild V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py']
   push:
-    branches:
-      - validation-wti-controlled-rebuild-v1-2026-10-14
-    paths:
-      - '.github/workflows/wti-persistent-rebuild-v1.yml'
+    branches: [main]
+    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py']
   workflow_dispatch:
+  schedule:
+    # UTC duplicates cover CET/CEST; the local gate admits only 00:15/00:45 Rome time.
+    - cron: '15 22 * * 1-5'
+    - cron: '45 22 * * 1-5'
+    - cron: '15 23 * * 1-5'
+    - cron: '45 23 * * 1-5'
 
-permissions:
-  contents: write
+permissions: {contents: write}
+concurrency: {group: wti-persistent-rebuild-v1, cancel-in-progress: false}
 
 jobs:
   persist-wti-current:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-          persist-credentials: true
-
+        with: {fetch-depth: 2, persist-credentials: true}
+      - name: Rome schedule gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          if [[ "${{ github.event_name }}" != schedule || " 00:15 00:45 " == *" $hhmm "* ]]; then echo 'should_run=true' >> "$GITHUB_OUTPUT"; else echo 'should_run=false' >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.should_run == 'true'
+        with: {python-version: '3.12'}
       - name: Install XLS reader
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m pip install --disable-pip-version-check --no-input 'xlrd==2.0.1'
+      - name: Snapshot baseline
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          mkdir -p /tmp/wti-persistent
+          git rev-parse HEAD > /tmp/wti-persistent/base-sha
+          cp live_data/sections/D.json /tmp/wti-persistent/D.before.json
+      - name: Fetch official EIA candidate and build replacement
+        id: candidate
+        if: steps.gate.outputs.should_run == 'true'
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input 'xlrd==2.0.1'
-
-      - name: Fetch current official EIA candidate
-        run: |
-          set -euo pipefail
-          AS_OF="$(date -u +%F)"
-          python validation/fetch_eia_direct_wti_candidate_v1.py \
-            --as-of "$AS_OF" --out /tmp/wti-candidate.json | tee /tmp/wti-source-receipt.json
-
-      - name: Build and validate WTI-only full replacement
-        run: |
-          set -euo pipefail
-          cp live_data/sections/D.json /tmp/D.before.json
-          python validation/apply_eia_direct_wti_candidate_v1.py \
-            --candidate /tmp/wti-candidate.json \
-            --replacement-out /tmp/D.wti.replacement.json | tee /tmp/wti-apply-receipt.json
+          python validation/fetch_eia_direct_wti_candidate_v1.py --as-of "$(date -u +%F)" --out /tmp/wti-persistent/candidate.json | tee /tmp/wti-persistent/source-receipt.json
+          python validation/apply_eia_direct_wti_candidate_v1.py --candidate /tmp/wti-persistent/candidate.json --replacement-out /tmp/wti-persistent/D.replacement.json | tee /tmp/wti-persistent/apply-receipt.json
           python - <<'PY'
           import json
-          before=json.load(open('/tmp/D.before.json'))
-          after=json.load(open('/tmp/D.wti.replacement.json'))
-          br=dict(before['risk']); ar=dict(after['risk'])
-          bw=br.pop('WTI'); aw=ar.pop('WTI')
-          assert br==ar, 'non-WTI risk data changed'
-          b2=dict(before); a2=dict(after); b2['risk']=br; a2['risk']=ar
-          assert b2==a2, 'data outside D.risk.WTI changed'
-          r=json.load(open('/tmp/wti-apply-receipt.json'))
-          assert r['runtime_before_observation_count']==3, r
-          assert r['overlap_mismatch_count']==3, r
-          assert r['result_observation_count']>=500, r
-          assert r['source_publisher']=='U.S. Energy Information Administration', r
-          assert r['source_benchmark_key']=='RWTC', r
-          assert aw['source']=='U.S. Energy Information Administration'
-          assert aw['benchmark_key']=='RWTC'
-          assert aw['historical_fred_series_id']=='DCOILWTICO'
-          print('WTI_PERSISTENT_REBUILD_SEMANTIC_SCOPE_PASS', r['runtime_before_observation_count'], '->', r['result_observation_count'], r['result_last_date'])
+          c=json.load(open('/tmp/wti-persistent/candidate.json')); r=json.load(open('/tmp/wti-persistent/apply-receipt.json'))
+          assert c['status']=='GREEN_OFFICIAL_SOURCE_CANDIDATE' and c['publisher']=='U.S. Energy Information Administration' and c['benchmark_key']=='RWTC',c
+          assert r['source_publisher']=='U.S. Energy Information Administration' and r['source_benchmark_key']=='RWTC',r
           PY
-
-      - name: Apply direct section and rebuild canonical manifest
+          if cmp -s live_data/sections/D.json /tmp/wti-persistent/D.replacement.json; then echo 'status=NO_CHANGE' >> "$GITHUB_OUTPUT"; else echo 'status=UPDATE_AVAILABLE' >> "$GITHUB_OUTPUT"; fi
+      - name: Apply update, rebuild runtime and validate exact scope
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE'
         run: |
           set -euo pipefail
-          python validation/update_live_direct_section.py \
-            --section D --replacement /tmp/D.wti.replacement.json --apply > /tmp/wti-direct-update-apply.json
-          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/manifest-rebuild.json
-          python validation/check_live_update_contract.py > /tmp/live-update-contract.json
+          python validation/update_live_direct_section.py --section D --replacement /tmp/wti-persistent/D.replacement.json --apply > /tmp/wti-persistent/direct-apply.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/wti-persistent/manifest-rebuild.json
+          python validation/check_live_update_contract.py > /tmp/wti-persistent/live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/wti-persistent/runtime-roundtrip.json
           python - <<'PY'
-          import json
-          r=json.load(open('/tmp/live-update-contract.json'))
-          assert r['status']=='PASS', r
-          print('WTI_PERSISTENT_REBUILD_LIVE_CONTRACT_PASS')
+          import json,subprocess
+          before=json.load(open('/tmp/wti-persistent/D.before.json')); after=json.load(open('live_data/sections/D.json'))
+          br=dict(before['risk']); ar=dict(after['risk']); br.pop('WTI'); ar.pop('WTI')
+          assert br==ar and {**before,'risk':br}=={**after,'risk':ar}
+          assert after['risk']['WTI']['benchmark_key']=='RWTC'
+          assert json.load(open('/tmp/wti-persistent/live-contract.json'))['status']=='PASS'
+          assert set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())=={'live_data/sections/D.json','live_data/manifest.v2.json','payload/part-00.txt'}
           PY
-
-      - name: Enforce exact tracked diff scope
+      - name: Validate no-change identity
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_CHANGE'
         run: |
           set -euo pipefail
-          git diff --name-only | sort > /tmp/changed.txt
-          printf '%s\n' \
-            'live_data/manifest.v2.json' \
-            'live_data/sections/D.json' \
-            'payload/part-00.txt' | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/changed.txt
-          echo WTI_PERSISTENT_REBUILD_EXACT_SCOPE_PASS
-
-      - name: Prove idempotence before commit
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          cmp -s live_data/sections/D.json /tmp/wti-persistent/D.replacement.json
+          git diff --exit-code -- live_data payload
+      - name: Validation branch restores runtime
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
+        run: |
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
+      - name: Persist to main with remote-head lease
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
-          python validation/apply_eia_direct_wti_candidate_v1.py \
-            --candidate /tmp/wti-candidate.json \
-            --replacement-out /tmp/D.wti.second.json > /tmp/wti-second-receipt.json
-          cmp -s live_data/sections/D.json /tmp/D.wti.second.json
-          python - <<'PY'
-          import json
-          r=json.load(open('/tmp/wti-second-receipt.json'))
-          assert r['overlap_mismatch_count']==0, r
-          assert r['runtime_before_observation_count']==r['result_observation_count'], r
-          print('WTI_PERSISTENT_REBUILD_IDEMPOTENT_PASS')
-          PY
-
-      - name: Commit with remote-head lease
-        env:
-          TARGET_BRANCH: validation-wti-controlled-rebuild-v1-2026-10-14
-        run: |
-          set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/D.json payload/part-00.txt live_data/manifest.v2.json
-          git diff --cached --quiet && { echo 'No persistent WTI changes to commit'; exit 1; }
+          BASE="$(cat /tmp/wti-persistent/base-sha)"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$BASE"
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/D.json live_data/manifest.v2.json payload/part-00.txt
+          git diff --cached --quiet && exit 0
           git commit -m 'Rebuild WTI runtime from official EIA spot history'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
-
-      - name: No publication side effect
-        run: echo WTI_PERSISTENT_REBUILD_COMMIT_ONLY_NO_PUBLICATION
+          git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.should_run == 'true'
+        with:
+          name: wti-persistent-${{ github.run_id }}
+          path: /tmp/wti-persistent/
+          if-no-files-found: warn
+          retention-days: 30
