@@ -9,6 +9,7 @@ on:
       - 'live_data/sections/D.json'
       - 'payload/part-00.txt'
       - 'live_data/manifest.v2.json'
+      - '.github/workflows/wti-postapply-certification-v1.yml'
   workflow_dispatch:
 
 permissions:
