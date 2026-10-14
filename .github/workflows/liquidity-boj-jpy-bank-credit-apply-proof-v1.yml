@@ -1,0 +1,82 @@
+name: Liquidity BOJ JPY Bank Credit Apply Proof V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
+      - 'validation/apply_boj_jpy_bank_credit_candidate.py'
+      - '.github/workflows/liquidity-boj-jpy-bank-credit-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  push:
+    branches:
+      - main
+      - validation-jpy-bank-credit-controlled-apply-clean-v1-2026-10-13
+    paths:
+      - 'validation/fetch_boj_jpy_bank_credit_candidate.py'
+      - 'validation/apply_boj_jpy_bank_credit_candidate.py'
+      - '.github/workflows/liquidity-boj-jpy-bank-credit-apply-proof-v1.yml'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-controlled-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snapshot tracked runtime hash
+        run: sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/runtime.before.sha256
+      - name: Collect official BOJ candidate
+        run: python validation/fetch_boj_jpy_bank_credit_candidate.py --out /tmp/jpy-bank-credit-candidate.json
+      - name: Dry-run controlled apply
+        run: |
+          python validation/apply_boj_jpy_bank_credit_candidate.py --candidate /tmp/jpy-bank-credit-candidate.json > /tmp/jpy-bank-credit-dry-run.json
+          cat /tmp/jpy-bank-credit-dry-run.json
+      - name: Ephemeral apply on runtime copy
+        run: |
+          cp live_data/sections/NATIVE_LIQ_DATA.json /tmp/NATIVE_LIQ_DATA.json
+          python validation/apply_boj_jpy_bank_credit_candidate.py --candidate /tmp/jpy-bank-credit-candidate.json --runtime /tmp/NATIVE_LIQ_DATA.json --apply > /tmp/jpy-bank-credit-apply.json
+          cat /tmp/jpy-bank-credit-apply.json
+      - name: Verify append-only semantics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('/tmp/jpy-bank-credit-candidate.json').read_text())
+          d=json.loads(Path('/tmp/jpy-bank-credit-dry-run.json').read_text())
+          r=json.loads(Path('/tmp/jpy-bank-credit-apply.json').read_text())
+          o=json.loads(Path('live_data/sections/NATIVE_LIQ_DATA.json').read_text())['JPY']['credit']
+          a=json.loads(Path('/tmp/NATIVE_LIQ_DATA.json').read_text())['JPY']['credit']
+          assert c['schema']=='GMFQ_LIQUIDITY_JPY_BANK_CREDIT_CANDIDATE_V1'
+          assert c['status']=='GREEN_SOURCE_CANDIDATE_ONLY'
+          assert c['runtime_match_confirmed'] is True
+          assert c['source']['database']=='MD11'
+          assert c['source']['series_id']=='DLCLAEDBLTTO'
+          assert d['schema']=='GMFQ_LIQUIDITY_JPY_BANK_CREDIT_APPLY_RECEIPT_V1'
+          assert d['applied'] is False
+          assert r['schema']=='GMFQ_LIQUIDITY_JPY_BANK_CREDIT_APPLY_RECEIPT_V1'
+          assert r['publication_performed'] is False
+          n=len(o['dates'])
+          assert a['dates'][:n]==o['dates']
+          assert a['values'][:n]==o['values']
+          assert len(a['dates'])==len(a['values'])==n+r['appended_observations']
+          if c['candidate_update_available']:
+              assert d['status']=='UPDATE_AVAILABLE'
+              assert r['status']=='UPDATE_AVAILABLE' and r['applied'] is True
+              assert a['last_date']==c['latest_date']
+              assert float(a['last_value'])==float(c['latest_value'])
+          else:
+              assert d['status']=='NO_CHANGE'
+              assert r['status']=='NO_CHANGE' and r['applied'] is False
+          PY
+      - name: Verify tracked runtime was not mutated
+        run: |
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json
+      - name: Summary
+        run: |
+          echo 'JPY bank credit official provenance + append-only controlled apply proof: GREEN'
+          echo 'Tracked runtime mutation: NONE'
+          echo 'Publication: NONE'
