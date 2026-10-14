@@ -63,7 +63,7 @@ def main():
     rt={month(d):float(v) for d,v in zip(rtrow['dates'],rtrow['values'])}
     try:
         url,row,src=fetch()
-    except Exception as exc:
+    except (Exception, SystemExit) as exc:
         # Transport failure is never permission to reuse a proxy or mutate the
         # live series.  Return a typed veto so scheduled runs remain auditable.
         result={
