@@ -3,6 +3,7 @@ name: Rates Persistent Daily V1
 on:
   push:
     branches:
+      - main
       - rates-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
