@@ -47,8 +47,31 @@ def main() -> None:
         raise SystemExit('invalid runtime WTI dates/values arrays')
     if dates != sorted(dates) or len(dates) != len(set(dates)):
         raise SystemExit('runtime WTI dates not unique/monotonic')
-    if wti.get('last_date') != dates[-1] or not math.isclose(float(wti.get('last_value')), float(values[-1]), rel_tol=0, abs_tol=1e-12):
-        raise SystemExit('runtime WTI last_date/last_value drift')
+
+    runtime_header = {
+        'schema': 'GMFQ_WTI_RUNTIME_PRECHECK_V1',
+        'observation_count': len(dates),
+        'first_array_date': dates[0],
+        'last_array_date': dates[-1],
+        'last_array_value': values[-1],
+        'declared_last_date': wti.get('last_date'),
+        'declared_last_value': wti.get('last_value'),
+        'source_field': wti.get('source'),
+        'series_id_field': wti.get('series_id'),
+        'frequency_field': wti.get('frequency'),
+    }
+    print(json.dumps(runtime_header, indent=2, ensure_ascii=False), flush=True)
+
+    last_date_ok = wti.get('last_date') == dates[-1]
+    try:
+        last_value_ok = math.isclose(float(wti.get('last_value')), float(values[-1]), rel_tol=0, abs_tol=1e-12)
+    except (TypeError, ValueError):
+        last_value_ok = False
+    if not last_date_ok or not last_value_ok:
+        raise SystemExit(
+            'runtime WTI last_date/last_value drift: '
+            + json.dumps({'last_date_ok': last_date_ok, 'last_value_ok': last_value_ok, **runtime_header}, ensure_ascii=False)
+        )
 
     tmp = Path(tempfile.gettempdir()) / 'DCOILWTICO-current.csv'
     subprocess.run([
