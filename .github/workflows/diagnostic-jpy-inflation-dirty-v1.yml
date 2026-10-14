@@ -29,7 +29,7 @@ jobs:
       - name: Install adapter dependencies
         run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
 
-      - name: Reproduce full sequence through JPY inflation capture-before
+      - name: Reproduce exact Macro loop through JPY inflation
         shell: bash
         run: |
           set -euo pipefail
@@ -47,7 +47,7 @@ jobs:
             d="$2"
             key="${c}_${d}"
             work="$root/$key"
-            mkdir -p "$work/evidence"
+            mkdir -p "$work"
 
             snapshot "$key START"
 
@@ -57,54 +57,61 @@ jobs:
               --audit-output "$work/adapter-audit.json"
             snapshot "$key AFTER ADAPTER"
 
+            series_id="$(python - <<PY
+          import json
+          print(json.load(open('$work/candidate.json'))['macro_series_id'])
+          PY
+          )"
+            echo "$series_id" > "$work/macro-series-id.txt"
+
             python validation/build_macro_candidate.py \
               --candidate "$work/candidate.json" \
               --output-dir "$work/built" > "$work/builder.json"
             snapshot "$key AFTER BUILDER"
 
+            if cmp -s "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json && \
+               cmp -s "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json; then
+              echo NO_UPDATE > "$work/outcome.txt"
+              snapshot "$key NO_UPDATE"
+              return 0
+            fi
+
+            evidence="$work/evidence"
             set +e
             python validation/macro_pit_anchor_contract.py capture-before \
-              --currency "$c" --dimension "$d" \
-              --candidate-dir "$work/built" \
-              --evidence-dir "$work/evidence" \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" \
               >"$work/capture-before.stdout" 2>"$work/capture-before.stderr"
             rc=$?
             set -e
             echo "$rc" > "$work/capture-before.rc"
             snapshot "$key AFTER CAPTURE-BEFORE rc=$rc"
-
             if [ "$rc" -ne 0 ]; then
               echo "$key" > "$root/failed-series.txt"
+              echo capture-before > "$root/failed-stage.txt"
               return "$rc"
             fi
 
-            python validation/macro_pit_anchor_contract.py apply \
-              --currency "$c" --dimension "$d" \
-              --candidate-dir "$work/built" \
-              --evidence-dir "$work/evidence" \
-              >"$work/apply.stdout" 2>"$work/apply.stderr"
-            snapshot "$key AFTER APPLY"
+            cp "$work/built/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+            cp "$work/built/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+            snapshot "$key AFTER COPY BUILT"
 
             python validation/macro_pit_anchor_contract.py capture-after \
-              --currency "$c" --dimension "$d" \
-              --candidate-dir "$work/built" \
-              --evidence-dir "$work/evidence" \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" --allow-live-data-dirty \
               >"$work/capture-after.stdout" 2>"$work/capture-after.stderr"
             snapshot "$key AFTER CAPTURE-AFTER"
 
             python validation/macro_pit_anchor_contract.py verify \
-              --currency "$c" --dimension "$d" \
-              --candidate-dir "$work/built" \
-              --evidence-dir "$work/evidence" \
+              --evidence-dir "$evidence" --currency "$c" --dimension "$d" --macro-series-id "$series_id" \
+              --candidate "$work/candidate.json" --evidence-output "$work/pit-evidence.json" \
               >"$work/verify.stdout" 2>"$work/verify.stderr"
             snapshot "$key AFTER VERIFY"
 
-            python validation/macro_pit_anchor_contract.py restore \
-              --currency "$c" --dimension "$d" \
-              --candidate-dir "$work/built" \
-              --evidence-dir "$work/evidence" \
-              >"$work/restore.stdout" 2>"$work/restore.stderr"
-            snapshot "$key AFTER RESTORE"
+            cp "$evidence/before/MACRO_SERIES.json" live_data/sections/MACRO_SERIES.json
+            cp "$evidence/before/MACRO_THERMOMETER_DATA.json" live_data/sections/MACRO_THERMOMETER_DATA.json
+            git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json \
+              >"$work/post-restore-diff.stdout" 2>"$work/post-restore-diff.stderr"
+            snapshot "$key AFTER RESTORE+DIFF"
+            echo PIT_PASS > "$work/outcome.txt"
           }
 
           snapshot "REPO START"
@@ -124,11 +131,15 @@ jobs:
           snapshot "FINAL"
           if [ "$failed" -eq 1 ]; then
             key=$(cat "$root/failed-series.txt")
-            echo "=== FAILURE $key ===" | tee "$root/result.txt"
-            echo "capture-before rc:" | tee -a "$root/result.txt"
-            cat "$root/$key/capture-before.rc" | tee -a "$root/result.txt"
-            echo "stderr:" | tee -a "$root/result.txt"
-            cat "$root/$key/capture-before.stderr" | tee -a "$root/result.txt"
+            stage=$(cat "$root/failed-stage.txt")
+            {
+              echo "FAILURE=$key"
+              echo "STAGE=$stage"
+              echo "RC=$(cat "$root/$key/capture-before.rc")"
+              echo 'STDERR_BEGIN'
+              cat "$root/$key/capture-before.stderr"
+              echo 'STDERR_END'
+            } | tee "$root/result.txt"
             exit 0
           fi
           echo 'SEQUENCE_COMPLETED' | tee "$root/result.txt"
