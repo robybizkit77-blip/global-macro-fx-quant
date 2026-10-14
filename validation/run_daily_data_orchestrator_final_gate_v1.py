@@ -63,18 +63,19 @@ def main():
         raise SystemExit(f'Macro canonical series unexpectedly sparse: {macro_count}')
 
     exact_blockers = [
-        {'lane': 'LIQUIDITY', 'key': key, 'state': 'EXPECTED_GAP_WITHHELD'}
+        {'lane': 'LIQUIDITY', 'key': key, 'state': 'WITHHELD_OVERLAY_ONLY'}
         for key in liquidity['exact_blockers']
     ] + [
-        {'lane': 'RISK', 'key': 'Brent', 'state': 'EXPECTED_GAP_WITHHELD'}
+        {'lane': 'RISK', 'key': 'Brent', 'state': 'WITHHELD_OVERLAY_ONLY'}
     ]
 
     receipt = {
         'schema': 'GMFQ_DAILY_DATA_ORCHESTRATOR_FINAL_GATE_RECEIPT_V1',
-        'status': 'EXPECTED_GAP_WITHHELD',
+        'status': 'READY_WITH_DEGRADED_OVERLAYS',
         'operational_state': 'READY_WITH_DOCUMENTED_EXPECTED_GAPS',
-        'publishable': False,
-        'publication_state': 'WITHHELD',
+        'publishable': True,
+        'publication_state': 'ELIGIBLE_WITH_WITHHELD_OVERLAYS',
+        'publication_policy': 'CORE_LANES_MAY_PUBLISH_WHILE_NON_CORE_OVERLAYS_FAIL_CLOSED',
         'ready_lanes': ['MACRO', 'RATES', 'PRICE', 'REBUILD'],
         'withheld_lanes': ['LIQUIDITY', 'RISK'],
         'exact_blockers': exact_blockers,
