@@ -1,0 +1,46 @@
+name: Price Controlled Apply Evidence V1
+
+on:
+  push:
+    branches:
+      - main
+      - promotion-price-controlled-apply-evidence-v1-2026-10-14
+    paths:
+      - 'validation/price/PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1_2026-10-13.json'
+      - 'validation/check_price_controlled_apply_contract_v1.py'
+      - '.github/workflows/price-controlled-apply-evidence-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/price/PRICE_ECB_CONTROLLED_APPLY_CONTRACT_V1_2026-10-13.json'
+      - 'validation/check_price_controlled_apply_contract_v1.py'
+      - '.github/workflows/price-controlled-apply-evidence-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot Price target and runtime
+        run: |
+          sha256sum payload/part-15.txt > /tmp/price.before.sha256
+          sha256sum live_data/sections/D.json > /tmp/runtime.before.sha256
+      - name: Certify Price controlled-apply evidence
+        run: python validation/check_price_controlled_apply_contract_v1.py | tee /tmp/price-contract.json
+      - name: Verify no Price/runtime mutation and no publication
+        run: |
+          sha256sum -c /tmp/price.before.sha256
+          sha256sum -c /tmp/runtime.before.sha256
+          git diff --exit-code -- payload/part-15.txt live_data/sections/D.json
+          echo 'PRICE_CONTROLLED_APPLY_EVIDENCE_NO_RUNTIME_MUTATION_NO_PUBLICATION'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: price-controlled-apply-evidence
+          path: /tmp/price-contract.json
+          if-no-files-found: error
