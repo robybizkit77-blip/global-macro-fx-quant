@@ -43,6 +43,13 @@ def main():
         raise SystemExit('Brent must not become promotion or automation eligible')
     if resolution.get('runtime_mutated') is not False or resolution.get('publication_performed') is not False:
         raise SystemExit('Brent evidence must not mutate runtime or publish')
+    risk_policy = policy.get('policy', {})
+    if risk_policy.get('risk_is_overlay_only') is not True:
+        raise SystemExit('Risk must remain overlay-only')
+    if risk_policy.get('dashboard_publication_blocked_by_risk_overlay') is not False:
+        raise SystemExit('Risk overlay must not block otherwise healthy core dashboard publication')
+    if risk_policy.get('degraded_overlay_must_be_explicitly_withheld') is not True:
+        raise SystemExit('Degraded Risk overlay must remain explicitly withheld')
 
     receipt = {
         'schema': 'GMFQ_RISK_BRENT_HARD_BLOCKER_CONTRACT_RECEIPT_V1',
@@ -57,7 +64,9 @@ def main():
         'runtime_sha256_before_after': sha256(RUNTIME),
         'runtime_mutated': False,
         'publication_performed': False,
-        'next_global_gate': 'Daily Data Orchestrator V1 (BLOCKED_EXPECTED_GAPS_NO_PUBLICATION; Risk remains fail-closed)',
+        'scope': 'RISK_OVERLAY_ONLY',
+        'blocks_core_dashboard_publication': False,
+        'next_global_gate': 'Daily Data Orchestrator V1 (CORE_PUBLISHABLE_WITH_RISK_OVERLAY_WITHHELD)',
     }
     print(json.dumps(receipt, indent=2, ensure_ascii=False))
 
