@@ -6,9 +6,21 @@ import re
 import urllib.request
 
 CHAINS = {
-    "USD": ("https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/", "ZQV2026", "CBOT:ZQV2026"),
-    "EUR": ("https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/", "FST3U2026", "EUREX:FST3U2026"),
-    "CHF": ("https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/", "SA3U2026", "ICEEUR:SA3U2026"),
+    "USD": {
+        "url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
+        "anchor": "ZQV2026",
+        "scanner_candidates": ["CBOT:ZQV2026", "CBOT:ZQ1!"],
+    },
+    "EUR": {
+        "url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
+        "anchor": "FST3U2026",
+        "scanner_candidates": ["EUREX:FST3U2026", "EUREX:FFST3U2026", "EUREX:FST31!"],
+    },
+    "CHF": {
+        "url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
+        "anchor": "SA3U2026",
+        "scanner_candidates": ["ICEEUR:SA3U2026", "ICEEUR:FSA3U2026", "ICEEUR:SA31!"],
+    },
 }
 
 HEADERS = {
@@ -33,7 +45,7 @@ def scan(symbols: list[str]) -> dict[str, dict]:
         "symbols": {"tickers": symbols, "query": {"types": []}},
         "columns": COLUMNS,
         "sort": {"sortBy": "name", "sortOrder": "asc"},
-        "range": [0, len(symbols) - 1],
+        "range": [0, max(0, len(symbols) - 1)],
     }
     req = urllib.request.Request(
         SCANNER_URL,
@@ -54,36 +66,41 @@ def scan(symbols: list[str]) -> dict[str, dict]:
 
 def main():
     out = {}
-    symbols = []
-    for ccy, (url, anchor, symbol) in CHAINS.items():
-        html = fetch(url)
-        idx = html.find(anchor)
+    candidates = []
+    for ccy, spec in CHAINS.items():
+        html = fetch(spec["url"])
+        idx = html.find(spec["anchor"])
         excerpt = ""
         if idx >= 0:
-            excerpt = re.sub(r"\s+", " ", html[max(0, idx-300):idx+800])
+            excerpt = re.sub(r"\s+", " ", html[max(0, idx-250):idx+650])
         out[ccy] = {
-            "status": "PASS" if idx >= 0 else "ANCHOR_NOT_FOUND",
-            "bytes": len(html.encode("utf-8")),
-            "anchor": anchor,
+            "anchor": spec["anchor"],
             "anchor_found": idx >= 0,
-            "full_symbol": symbol,
-            "excerpt": excerpt[:500],
+            "bytes": len(html.encode("utf-8")),
+            "excerpt": excerpt[:450],
+            "scanner_candidates": spec["scanner_candidates"],
+            "scanner_matches": {},
         }
-        symbols.append(symbol)
+        candidates.extend(spec["scanner_candidates"])
     if not all(x["anchor_found"] for x in out.values()):
         raise SystemExit("One or more TradingView chains are not server-visible on runner")
 
-    quotes = scan(symbols)
-    for ccy, (_, _, symbol) in CHAINS.items():
-        q = quotes.get(symbol)
-        if not q:
-            raise SystemExit(f"{ccy}: scanner did not return {symbol}")
-        close = q.get("close")
-        if close is None or not (50.0 < float(close) < 120.0):
-            raise SystemExit(f"{ccy}: implausible scanner close {close}")
-        out[ccy]["scanner"] = q
+    quotes = scan(candidates)
+    for ccy, spec in CHAINS.items():
+        matches = {s: quotes[s] for s in spec["scanner_candidates"] if s in quotes}
+        out[ccy]["scanner_matches"] = matches
+        usable = []
+        for symbol, q in matches.items():
+            close = q.get("close")
+            if close is not None and 50.0 < float(close) < 120.0:
+                usable.append(symbol)
+        out[ccy]["usable_symbols"] = usable
+        out[ccy]["status"] = "PASS" if usable else "NO_USABLE_SCANNER_SYMBOL"
 
     print(json.dumps(out, ensure_ascii=False, sort_keys=True))
+    failed = [ccy for ccy, row in out.items() if row["status"] != "PASS"]
+    if failed:
+        raise SystemExit("No usable scanner symbol for: " + ",".join(failed))
 
 
 if __name__ == "__main__":
