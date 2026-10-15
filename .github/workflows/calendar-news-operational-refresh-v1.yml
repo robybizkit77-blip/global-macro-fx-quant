@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
-      TRADING_ECONOMICS_API_KEY: ${{ secrets.TRADING_ECONOMICS_API_KEY }}
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -81,7 +81,11 @@ jobs:
           assert {e['ccy'] for e in macro}=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
           assert all(str(e['quality']).startswith('OFFICIAL_') for e in macro)
           assert all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro)
-          assert con['rules']['teforecast_is_never_used_as_consensus'] is True
+          assert con['provider']=='FMP'
+          assert con['provider_field']=='estimate'
+          assert con['rules']['estimate_field_is_consensus_only'] is True
+          assert con['rules']['actual_not_used_as_pre_release_consensus'] is True
+          assert con['rules']['official_calendar_remains_primary'] is True
           assert con['rules']['never_change_release_date'] is True
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1'
           assert news['status']=='ACTIVE_DETERMINISTIC_LAYERS'
