@@ -11,12 +11,25 @@ s = json.loads(SNAPSHOT.read_text())
 
 assert c["status"] == "INFORMATIONAL_ONLY"
 assert c["governance"]["official_runtime_untouched"] is True
+assert s["official_lanes_untouched"] is True
 for key in ("core_score_effect","bias_effect","sizing_effect","pair_engine_effect","forward_logger_effect"):
     assert s["governance"][key] == "NONE"
+assert s["governance"]["backtest_eligible_as_official"] is False
+
 assert s["lanes"]["JPY.reserve_balances"]["status"] == "ESTIMATED_ACTIVE"
 assert s["lanes"]["JPY.reserve_balances"]["absolute_difference"] == 460.0
 assert s["lanes"]["CHF.credit"]["confidence"] == "B/C"
 assert s["lanes"]["CHF.sight_deposits"]["confidence"] == "C"
-assert s["lanes"]["BRENT.market_proxy"]["value"] is None
-assert s["lanes"]["BRENT.market_proxy"]["status"] == "MARKET_PROXY_READY_NO_LIVE_VALUE"
+
+brent = s["lanes"]["BRENT.market_proxy"]
+assert brent["status"] in {"MARKET_PROXY_READY_NO_LIVE_VALUE", "MARKET_PROXY_ACTIVE_SECONDARY"}
+if brent["status"] == "MARKET_PROXY_READY_NO_LIVE_VALUE":
+    assert brent.get("value") is None
+else:
+    assert brent.get("value") is not None and brent["value"] > 0
+    assert brent.get("change_1d_pct") is not None
+    assert brent.get("official_canonical_untouched") is True
+    assert brent.get("vendor_symbol") == "BZ=F"
+    assert "Yahoo Finance" in brent.get("source", "")
+
 print("PASS residual estimated gaps V1")
