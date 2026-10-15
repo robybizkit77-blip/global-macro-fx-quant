@@ -1,0 +1,77 @@
+name: Brent Market Proxy Refresh V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - brent-live-market-proxy-v1-2026-10-15
+    paths:
+      - validation/estimated/refresh_brent_market_proxy_v1.py
+      - live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+      - .github/workflows/brent-market-proxy-refresh-v1.yml
+  schedule:
+    - cron: '20 22 * * 1-5'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Refresh Brent secondary market proxy
+        run: |
+          set -euo pipefail
+          python validation/estimated/refresh_brent_market_proxy_v1.py
+
+      - name: Validate governance and output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text())
+          assert d['schema']=='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'
+          assert d['official_lanes_untouched'] is True
+          lane=d['lanes']['BRENT.market_proxy']
+          assert lane['status']=='MARKET_PROXY_ACTIVE_SECONDARY'
+          assert lane['value'] is not None and lane['value']>0
+          assert lane['change_1d_pct'] is not None
+          assert lane['official_canonical_untouched'] is True
+          assert lane['vendor_symbol']=='BZ=F'
+          assert 'Yahoo Finance' in lane['source']
+          gov=d['governance']
+          assert gov['core_score_effect']=='NONE'
+          assert gov['bias_effect']=='NONE'
+          assert gov['sizing_effect']=='NONE'
+          assert gov['pair_engine_effect']=='NONE'
+          assert gov['forward_logger_effect']=='NONE'
+          assert gov['backtest_eligible_as_official'] is False
+          print('BRENT_MARKET_PROXY_REFRESH_PASS', lane['proxy_as_of'], lane['value'], lane['change_1d_pct'], lane['change_1w_pct'])
+          PY
+
+      - name: Persist changed proxy on main only
+        if: github.ref_name == 'main'
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
+          if [ -z "$changed" ]; then echo BRENT_PROXY_NO_CHANGE; exit 0; fi
+          unexpected="$(git diff --name-only | grep -Ev '^live_data/sections/ESTIMATED_RESIDUAL_GAPS.json$' || true)"
+          test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
+          REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          LOCAL_SHA="$(git rev-parse HEAD)"
+          test "$REMOTE_SHA" = "$LOCAL_SHA" || { echo 'main moved during Brent proxy refresh' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git commit -m 'Refresh live Brent secondary market proxy'
+          git push origin HEAD:main
