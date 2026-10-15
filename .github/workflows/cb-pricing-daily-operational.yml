@@ -7,6 +7,7 @@ on:
       - release-candidate-cb-pricing-daily-operational-2026-10-08
       - validation-operational-retry-cadence-2026-10-08
       - release-candidate-operational-retry-cadence-2026-10-08
+      - promotion-eur-cb-pricing-official-eurex-v1-2026-10-15
     paths:
       - '.github/workflows/cb-pricing-daily-operational.yml'
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
@@ -16,6 +17,9 @@ on:
       - 'validation/cb_pricing/collect_cad_mx_corra.py'
       - 'validation/cb_pricing/build_cad_mx_corra_candidate.py'
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/collect_eur_eurex_fst3.py'
+      - 'validation/cb_pricing/build_eur_eurex_fst3_candidate.py'
+      - 'validation/cb_pricing/apply_eur_eurex_fst3_candidate.py'
       - 'validation/cb_pricing/collect_gbp_boe_ois.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
@@ -25,8 +29,6 @@ on:
       - 'validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'
   workflow_dispatch:
   schedule:
-    # Europe/Rome retry cadence: 06:00, 06:30, 07:00 on working days.
-    # Duplicate UTC cron entries cover CET/CEST; the local-time gate admits only the intended Rome slots.
     - cron: '0 4 * * 1-5'
     - cron: '0 5 * * 1-5'
     - cron: '30 4 * * 1-5'
@@ -90,7 +92,7 @@ jobs:
         if: steps.success-marker.outputs.cache-hit != 'true'
         run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
 
-      - name: Run all four daily source/candidate/dry-run paths
+      - name: Run all active daily source candidate and dry-run paths
         if: steps.success-marker.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -119,6 +121,8 @@ jobs:
           print(json.dumps(d,indent=2,ensure_ascii=False))
           if d['status'] != 'ALL_GREEN_NO_PUBLICATION':
               raise SystemExit(f"daily CB pricing status is {d['status']}")
+          if sorted(d['currencies']) != ['AUD','CAD','EUR','GBP','JPY']:
+              raise SystemExit(f"daily CB pricing currency coverage mismatch: {sorted(d['currencies'])}")
           if d.get('live_data_published') or d.get('gh_pages_published') or d.get('automatic_publication'):
               raise SystemExit('publication safety contract violated')
           print('CB_PRICING_DAILY_OPERATIONAL_GREEN_NO_PUBLICATION')
