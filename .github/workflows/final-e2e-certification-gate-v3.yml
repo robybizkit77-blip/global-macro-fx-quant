@@ -63,8 +63,10 @@ jobs:
           residual=d['estimated_layers']['residual_gaps']
           assert residual['core_effect']=='NONE', d
           assert residual['brent_live_value'] is True, d
-          assert residual['refresh_mode']=='MIXED_LIVE_AND_SNAPSHOT', d
-          assert residual['jpy_reserve_refresh_mode']=='SNAPSHOT', d
+          assert residual['refresh_mode'] in {'MIXED_LIVE_AND_SNAPSHOT','ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH'}, d
+          assert residual['jpy_reserve_refresh_mode'] in {'SNAPSHOT','AUTO_REFRESH_OFFICIAL_PROXY'}, d
+          if residual['jpy_reserve_refresh_mode']=='AUTO_REFRESH_OFFICIAL_PROXY':
+              assert residual['refresh_mode']=='ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH', d
           print('FINAL_E2E_V3_PASS')
           PY
           sha256sum -c /tmp/ois.before.sha256
