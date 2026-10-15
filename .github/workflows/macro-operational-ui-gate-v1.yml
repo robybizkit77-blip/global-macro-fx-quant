@@ -1,0 +1,77 @@
+name: Macro Operational UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/macro-operational-v1.js'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/macro-operational-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/macro-operational-v1.js'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/macro-operational-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/macro-operational-ui.log 2>&1 &
+          sleep 2
+      - name: Verify Macro and Inflation Labour desktop mobile
+        run: |
+          cat > macro-operational-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_MACRO_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            const state=await page.evaluate(()=>window.gmfqMacroOperationalAudit?.());
+            if(state?.schema!=='GMFQ_MACRO_OPERATIONAL_UI_V1'||state?.status!=='ACTIVE'||state?.core_effect!=='NONE') throw new Error(label+' bad Macro state '+JSON.stringify(state));
+            if(state.macro_owner_count!==1||state.inflationlabour_owner_count!==1) throw new Error(label+' owner count drift '+JSON.stringify(state));
+            if(state.coverage!==8||new Set(state.currencies||[]).size!==8) throw new Error(label+' G8 selector coverage '+JSON.stringify(state.currencies));
+            for(const c of CCYS){ for(const cat of ['Crescita','Inflazione','Lavoro']){ const x=state.macro_block_coverage?.[c]?.[cat]; if(!x||!(x.count>0)||!x.latest||!x.source) throw new Error(label+' coverage '+c+' '+cat); } }
+            await page.evaluate(()=>window.showView?.('macro'));
+            for(const wanted of ['USD','EUR','CAD']){
+              const ok=await page.evaluate(w=>{const b=document.querySelector(`#v232CurrencyCards .v232CurrencyCard[data-c="${w}"]`); if(!b)return false;b.click();return true;},wanted);
+              if(!ok) throw new Error(label+' missing Macro selector '+wanted);
+              await page.waitForTimeout(150);
+              const country=await page.evaluate(()=>String(document.getElementById('v232CountryName')?.textContent||''));
+              if(!country.includes(wanted)) throw new Error(label+' Macro selector/title desync '+wanted+' '+country);
+            }
+            await page.evaluate(()=>window.showView?.('inflationlabour'));
+            const heat=await page.evaluate(()=>({owner:document.querySelectorAll('#inflationlabour #il407Grid[data-gmfq-operational="inflationlabour"]').length,text:String(document.getElementById('inflationlabour')?.innerText||'')}));
+            if(heat.owner!==1||CCYS.some(c=>!new RegExp(`\\b${c}\\b`).test(heat.text))) throw new Error(label+' heatmap coverage/owner');
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'MACRO_OPERATIONAL_UI_PASS');
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('MACRO_OPERATIONAL_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node macro-operational-gate.js
