@@ -33,6 +33,13 @@ jobs:
           python-version: '3.12'
       - name: Static ownership contract
         run: python validation/ui/check_dashboard_ui_ownership_v1.py
+      - name: Audit Calendar News legacy dependencies
+        run: python validation/ui/audit_calendar_news_legacy_dependencies_v1.py | tee /tmp/calendar-news-legacy-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: calendar-news-legacy-dependency-audit
+          path: /tmp/calendar-news-legacy-audit.json
+          if-no-files-found: error
       - uses: actions/setup-node@v4
         with:
           node-version: 22
