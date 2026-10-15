@@ -1,7 +1,7 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
-    "consensus_available_events": 0,
+    "consensus_available_events": 1,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
@@ -11,10 +11,17 @@
   "events": [
     {
       "ccy": "USD",
-      "consensus_status": "NOT_PRESENT",
+      "consensus": "0.9%",
+      "consensus_confidence": "B",
+      "consensus_official_date_overridden": false,
+      "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+      "consensus_provider_last_update": null,
+      "consensus_status": "AVAILABLE",
+      "consensus_unit": null,
       "date": "2026-10-16",
       "event_type": "INFLATION",
       "importance": "MEDIUM",
+      "previous": "0.7%",
       "quality": "OFFICIAL_CONFIRMED",
       "reference_period": "September 2026",
       "source_family": "BLS",
@@ -422,14 +429,14 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-15T09:26:48.481676Z",
+  "generated_at_utc": "2026-10-15T09:45:35.945337Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
-    "consensus": "SECONDARY_PROVIDER_READY_NO_VALUES",
+    "consensus": "SECONDARY_ACTIVE_PARTIAL",
     "consensus_context_only": true,
     "consensus_never_changes_official_date": true,
-    "consensus_provider": "FMP",
+    "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
     "core_score_impact": 0,
     "macro_release_currencies": [
       "AUD",
