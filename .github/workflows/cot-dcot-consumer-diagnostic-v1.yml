@@ -1,0 +1,60 @@
+name: COT D.cot Consumer Diagnostic V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cot-dcot-consumer-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/cot-dcot-consumer-server.log 2>&1 &
+          sleep 2
+      - name: Enumerate D.cot consumers and structural invariants
+        run: |
+          cat > cot-dcot-consumer.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            const out=await page.evaluate(()=>{
+              const rows=[];
+              for(const k of Object.keys(window).sort()){
+                if(typeof window[k]!=='function') continue;
+                let src=''; try{src=String(window[k]);}catch(e){}
+                if(src.includes('D.cot')||src.includes('D?.cot')||src.includes("D['cot']")) rows.push({name:k,source:src.slice(0,20000)});
+              }
+              const curr={}; for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){try{curr[c]=window.deriveCurrencyState?.(c)||null}catch(e){curr[c]={error:String(e)}}}
+              const pairs={}; const cs=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']; for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const p=cs[i]+'/'+cs[j];try{pairs[p]=window.derivePairDecisionFrame?.(p)||null}catch(e){pairs[p]={error:String(e)}}}
+              return {schema:'GMFQ_COT_DCOT_CONSUMER_DIAGNOSTIC_V1',consumers:rows,currency_states:curr,pair_frames:pairs,d_cot:window.D?.cot||null};
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cot-dcot-consumer.js | tee /tmp/cot-dcot-consumer.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cot-dcot-consumer-diagnostic-v1
+          path: /tmp/cot-dcot-consumer.json
+          if-no-files-found: error
