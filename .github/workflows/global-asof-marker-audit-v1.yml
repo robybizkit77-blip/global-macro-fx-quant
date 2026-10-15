@@ -1,0 +1,44 @@
+name: Global As-of Marker Audit V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'dashboard/**'
+      - 'validation/ui/audit_global_asof_markers_v1.js'
+      - '.github/workflows/global-asof-marker-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/global-asof-server.log 2>&1 &
+          sleep 2
+      - name: Audit global as-of markers
+        run: node validation/ui/audit_global_asof_markers_v1.js | tee /tmp/global-asof-marker-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: global-asof-marker-audit-v1
+          path: |
+            /tmp/global-asof-marker-audit.json
+            /tmp/global-asof-server.log
+          if-no-files-found: error
