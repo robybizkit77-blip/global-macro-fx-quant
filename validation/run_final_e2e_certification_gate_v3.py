@@ -73,7 +73,7 @@ def main():
     run([sys.executable, "validation/estimated/test_residual_gaps_estimated_v1.py"])
 
     allowed_status = {
-        "JPY.reserve_balances": {"ESTIMATED_ACTIVE"},
+        "JPY.reserve_balances": {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"},
         "CHF.credit": {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"},
         "CHF.sight_deposits": {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"},
         "BRENT.market_proxy": {"MARKET_PROXY_ACTIVE_SECONDARY"},
@@ -94,6 +94,17 @@ def main():
             if row.get("official_canonical_untouched") is not True or "SNB official API" not in row.get("source", ""):
                 raise SystemExit(f"CHF auto-refresh proxy governance drift: {lane}")
 
+    jpy = residual["lanes"]["JPY.reserve_balances"]
+    if jpy.get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY":
+        if jpy.get("official_canonical_untouched") is not True or "Bank of Japan official" not in jpy.get("source", ""):
+            raise SystemExit("JPY reserve auto-refresh proxy governance drift")
+        anchor = jpy.get("original_runtime_validation") or {}
+        if anchor.get("period") != "2026-08" or anchor.get("absolute_difference") != 460.0:
+            raise SystemExit("JPY reserve original runtime validation anchor drift")
+        continuity = jpy.get("continuity_anchor") or {}
+        if continuity.get("period") != "2026-09" or continuity.get("expected_official_value") != 3849859.0 or continuity.get("matched") is not True:
+            raise SystemExit("JPY reserve September continuity anchor drift")
+
     gaps = load_json("validation/finalization/V1_DOCUMENTED_EXPECTED_GAPS_2026-10-15.json")
     if gaps.get("summary", {}).get("total_expected_gaps") != 7:
         raise SystemExit("official expected-gap count drift")
@@ -104,6 +115,9 @@ def main():
         residual["lanes"][lane].get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"
         for lane in ("CHF.credit", "CHF.sight_deposits")
     )
+    jpy_auto = jpy.get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"
+    all_residual_live = chf_auto and jpy_auto and brent.get("status") == "MARKET_PROXY_ACTIVE_SECONDARY"
+
     receipt = {
         "schema": "GMFQ_FINAL_E2E_CERTIFICATION_GATE_V3",
         "status": "PASS",
@@ -124,18 +138,17 @@ def main():
             },
             "residual_gaps": {
                 "status": "ALIGNED_INFORMATIONAL_ONLY",
-                "refresh_mode": "MIXED_LIVE_AND_SNAPSHOT",
+                "refresh_mode": "ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH" if all_residual_live else "MIXED_LIVE_AND_SNAPSHOT",
                 "active_numeric_proxies": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits", "BRENT.market_proxy"],
                 "brent_live_value": True,
                 "chf_official_proxy_auto_refresh": chf_auto,
-                "jpy_reserve_refresh_mode": "SNAPSHOT",
+                "jpy_reserve_refresh_mode": "AUTO_REFRESH_OFFICIAL_PROXY" if jpy_auto else "SNAPSHOT",
                 "core_effect": "NONE",
             },
         },
         "rate_beta": v2.get("rate_beta"),
         "forward_logger": v2.get("forward_logger"),
         "next_research_not_part_of_freeze": [
-            "wire reproducible live refresh for JPY reserve-balances informational proxy",
             "extend historical PIT panel for RATE_BETA backtest/OOS",
             "accumulate forward outcomes over time"
         ],
