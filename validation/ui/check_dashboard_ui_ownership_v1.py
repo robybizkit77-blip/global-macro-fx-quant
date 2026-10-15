@@ -28,6 +28,7 @@ def main() -> None:
     index = (ROOT / "index.html").read_text()
     cal = (ROOT / "dashboard/calendar-news-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
+    freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
         "dashboard/calendar-news-operational-v1.js",
@@ -42,6 +43,18 @@ def main() -> None:
     must("data-gmfq-operational=\"news\"" in cal, "news owner marker missing")
     must("GMFQ_OIS_OPERATIONAL_UI_V1" in ois, "OIS owner marker missing")
     must("v401OisBlock" in ois, "OIS mount missing")
+
+    # Editorial freshness must be sourced from the operational Calendar/News views,
+    # never from the historical payload freshness globals.
+    must("GMFQ_EDITORIAL_FRESHNESS_GUARD_V2_OPERATIONAL_AUTHORITY" in freshness, "freshness V2 schema missing")
+    must("CALENDAR_OPERATIONAL_VIEW.json" in freshness, "calendar operational freshness source missing")
+    must("NEWS_PULSE_OPERATIONAL.json" in freshness, "news operational freshness source missing")
+    must("CALENDAR_OPERATIONAL_VIEW.generated_at_utc" in freshness, "calendar authority marker missing")
+    must("NEWS_PULSE_OPERATIONAL.content_as_of" in freshness, "news authority marker missing")
+    must("legacy_authority:'NONE'" in freshness, "legacy freshness authority must be NONE")
+    must("AUXILIARY_FEED_FRESHNESS" not in freshness, "freshness guard must not read legacy AUXILIARY_FEED_FRESHNESS")
+    must("REAL_CALENDAR" not in freshness, "freshness guard must not read legacy REAL_CALENDAR")
+    must("NEWS_PULSE_STRUCT" not in freshness, "freshness guard must not read legacy NEWS_PULSE_STRUCT")
 
     must(views["calendar"]["owner_type"] == "DYNAMIC_REPLACE", "calendar owner type")
     must(views["news"]["owner_type"] == "DYNAMIC_REPLACE", "news owner type")
@@ -59,6 +72,11 @@ def main() -> None:
         "views": len(views),
         "dynamic_replace": ["calendar", "news"],
         "hybrid": ["ratesdesk"],
+        "freshness_authority": {
+            "calendar": "CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
+            "news": "NEWS_PULSE_OPERATIONAL.content_as_of",
+            "legacy": "NONE"
+        },
         "legacy_payload_policy": "PRESENT_BUT_NON_OWNER_UNTIL_MIGRATED"
     }, sort_keys=True))
 
