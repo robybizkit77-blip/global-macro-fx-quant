@@ -1,0 +1,60 @@
+{
+  "schema": "GMFQ_BETA_52W_PREREGISTERED_CONTRACT_V1",
+  "as_of": "2026-10-15",
+  "status": "RESEARCH_ONLY",
+  "purpose": "Freeze the currently recoverable beta methodology before any historical 2Y backfill or B1/B2 evaluation.",
+  "window_weeks": 52,
+  "estimator": "ROLLING_OLS_WITH_INTERCEPT",
+  "panel_frequency": "WEEKLY",
+  "required_panel_columns": [
+    "week",
+    "pair",
+    "y",
+    "x",
+    "fx_source",
+    "rates_source"
+  ],
+  "pit_rules": {
+    "official_or_already_certified_inputs_only": true,
+    "no_lookahead": true,
+    "no_future_fill": true,
+    "duplicate_pair_week_forbidden": true,
+    "missing_provenance_forbidden": true,
+    "non_finite_values_forbidden": true,
+    "date_normalization_only": "YYYY-M-D may be normalized mechanically to ISO YYYY-MM-DD; economic timestamps may not be inferred or shifted."
+  },
+  "warmup": {
+    "minimum_observations": 52,
+    "status_before_minimum": "INSUFFICIENT_HISTORY",
+    "zero_variance_x_status": "INSUFFICIENT_HISTORY"
+  },
+  "outputs": [
+    "alpha",
+    "beta",
+    "sample_depth",
+    "status"
+  ],
+  "b1": {
+    "name": "BETA_CONFIRMATION_DIVERGENCE_DIAGNOSTIC",
+    "status": "NOT_EVALUATED",
+    "implementation_authorized": false,
+    "reason": "The exact preregistered economic decision rule is not preserved in the current repository and must not be reconstructed from memory or tuned after observing data."
+  },
+  "b2": {
+    "name": "BETA_RANKING_ASYMMETRY_DIAGNOSTIC",
+    "status": "NOT_EVALUATED",
+    "implementation_authorized": false,
+    "reason": "The exact preregistered economic decision rule is not preserved in the current repository and must not be reconstructed from memory or tuned after observing data."
+  },
+  "governance": {
+    "no_hyperparameter_tuning": true,
+    "no_core_score_effect": true,
+    "no_bias_effect": true,
+    "no_sizing_effect": true,
+    "no_pair_engine_effect": true,
+    "no_forward_logger_change": true,
+    "no_runtime_payload_change": true,
+    "backtest_deferred": true,
+    "promotion_to_signal_requires_separate_oos_validation": true
+  }
+}
