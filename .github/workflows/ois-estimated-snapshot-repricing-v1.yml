@@ -1,0 +1,110 @@
+name: OIS Estimated Snapshot Repricing V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
+      - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/build_ois_operational_view_v1.py'
+      - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
+      - '.github/workflows/ois-estimated-snapshot-repricing-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
+      - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/build_ois_operational_view_v1.py'
+      - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
+      - '.github/workflows/ois-estimated-snapshot-repricing-v1.yml'
+  workflow_run:
+    workflows: ['CB Pricing Persistent Daily V1']
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '20 6 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ois-estimated-snapshot-repricing-v1
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 2
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Capture base and official OIS fingerprint
+        shell: bash
+        run: |
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+
+      - name: Rebuild estimated input and pre-snapshot operational view
+        run: |
+          python validation/cb_pricing/build_cb_pricing_estimated_v1.py
+          python validation/cb_pricing/build_ois_operational_view_v1.py
+
+      - name: Record changed estimated snapshots
+        if: github.event_name != 'pull_request'
+        run: python validation/cb_pricing/ois_estimated_snapshot_v1.py
+
+      - name: Rebuild repricing-aware operational view
+        run: python validation/cb_pricing/build_ois_operational_view_v1.py
+
+      - name: Self-test and governance checks
+        run: |
+          python validation/cb_pricing/test_cb_pricing_estimated_v1.py
+          python validation/cb_pricing/test_ois_operational_view_v1.py
+          python validation/cb_pricing/test_ois_estimated_snapshot_v1.py
+          sha256sum -c /tmp/ois.before.sha256
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          v=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          assert v['summary']=={'g8_total':8,'operational_green':8,'green_official':4,'green_estimated':4,'operational_withheld':0}, v['summary']
+          for c in ('USD','EUR','CHF','NZD'):
+              r=v['currencies'][c]
+              assert r['operational_status']=='GREEN_ESTIMATED'
+              assert r['backtest_eligible_as_official'] is False
+              for h in ('3m','6m','12m'):
+                  x=r['horizons'][h]
+                  assert 'change_1d_bp' in x and 'change_1w_bp' in x
+          print('OIS_ESTIMATED_REPRICING_GOVERNANCE_PASS')
+          PY
+
+      - name: Persist operational history and view on main
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$BASE_SHA" ]; then
+            echo "main moved during run; fail closed"
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/CB_PRICING_ESTIMATED.json \
+                  live_data/sections/OIS_OPERATIONAL_VIEW.json \
+                  validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl
+          if git diff --cached --quiet; then
+            echo 'No estimated OIS observation change.'
+            exit 0
+          fi
+          git commit -m 'Refresh estimated OIS operational repricing history'
+          git push origin HEAD:main
