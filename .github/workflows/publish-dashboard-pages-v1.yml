@@ -7,16 +7,21 @@ on:
       - '.github/workflows/publish-dashboard-pages-v1.yml'
       - 'index.html'
       - 'payload/**'
+      - 'dashboard/**'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
   push:
     branches: [main]
     paths:
       - '.github/workflows/publish-dashboard-pages-v1.yml'
       - 'index.html'
       - 'payload/**'
+      - 'dashboard/**'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
   workflow_run:
     workflows:
       - 'Macro Persistent Daily V1'
       - 'CB Pricing Persistent Daily V1'
+      - 'OIS Estimated Snapshot Repricing V1'
       - 'Price Persistent Daily V1'
       - 'Rates Persistent Daily V1'
       - 'COT Persistent Weekly V1'
@@ -75,6 +80,14 @@ jobs:
           payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
+          assert 'dashboard/ois-operational-monitor-v1.js' in index
+          asset=Path('dashboard/ois-operational-monitor-v1.js')
+          ois=Path('live_data/sections/OIS_OPERATIONAL_VIEW.json')
+          assert asset.is_file() and asset.stat().st_size>1000
+          data=json.loads(ois.read_text(encoding='utf-8'))
+          assert data['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
+          assert data['status']=='GREEN_8_OF_8'
+          assert data['summary']['operational_green']==8
           print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
           PY
 
@@ -82,7 +95,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo DASHBOARD_PUBLICATION_VALIDATION_ONLY_PASS
 
-      - name: Publish index and payload to gh-pages with lease
+      - name: Publish dashboard runtime and operational assets to gh-pages with lease
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -92,16 +105,23 @@ jobs:
           rm -rf /tmp/gmfq-pages
           git worktree add --detach /tmp/gmfq-pages origin/gh-pages
 
-          rm -rf /tmp/gmfq-pages/payload
-          mkdir -p /tmp/gmfq-pages/payload
+          rm -rf /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data
+          mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
+          cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/
+          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/
 
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          allowed={'index.html',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          allowed={
+              'index.html',
+              'dashboard/ois-operational-monitor-v1.js',
+              'live_data/sections/OIS_OPERATIONAL_VIEW.json',
+              *[f'payload/part-{i:02d}.txt' for i in range(16)]
+          }
           if not changed:
               print('DASHBOARD_PAGES_ALREADY_CURRENT')
           elif not changed.issubset(allowed):
@@ -110,13 +130,13 @@ jobs:
               print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed))
           PY
 
-          if git diff --quiet -- index.html payload; then
+          if git diff --quiet -- index.html payload dashboard live_data/sections/OIS_OPERATIONAL_VIEW.json; then
             exit 0
           fi
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- index.html payload
+          git add -- index.html payload dashboard live_data/sections/OIS_OPERATIONAL_VIEW.json
           git commit -m "Publish dashboard runtime from main ${GITHUB_SHA}"
 
           REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
