@@ -33,7 +33,7 @@
   #pairs .poTable th,#pairs .poTable td{padding:10px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;vertical-align:top}
   #pairs .poTable th{position:sticky;top:0;background:#101827;z-index:1;opacity:.9}
   #pairs .poTable tr:last-child td{border-bottom:0}
-  #pairs .pos{color:#62d69b}.neg{color:#ff7f8a}.neu{color:#a9b4c6}.warn{color:#f0b35a}
+  #pairs .pos{color:#62d69b}#pairs .neg{color:#ff7f8a}#pairs .neu{color:#a9b4c6}#pairs .warn{color:#f0b35a}
   @media(max-width:900px){#pairs .poTop{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){#pairs .poTop{grid-template-columns:1fr}#pairs .poHero{padding:14px}}
   `;
@@ -73,7 +73,6 @@
   }
   function quality(f){return QUALITY_LABEL[f?.quality]||String(f?.quality||'Da verificare');}
   function rankValue(f){return (QUALITY_SCORE[f?.quality]??-1)+(f?.structural?.ratesGap?.material?0.25:0);}
-
   function buildRows(row){
     return PAIRS.map(pair=>{
       const f=frame(pair), d=direction(pair,f), price=crossPrice(pair,row);
@@ -82,6 +81,22 @@
   }
   function card(x){return `<div class="poCard" data-pair="${x.pair}"><div class="poPair">${x.pair}</div><div class="poDir ${x.d.cls}">${x.d.text}</div><div class="poWhy">${x.quality}<br>${details(x.f)}</div><div class="poPx">Prezzo fixing: <b>${fmtPrice(x.pair,x.price)}</b></div></div>`;}
   function tableRow(x){return `<tr data-pair="${x.pair}"><td><b>${x.pair}</b></td><td class="${x.d.cls}">${x.d.text}</td><td>${x.quality}</td><td>${details(x.f)}</td><td>${fmtPrice(x.pair,x.price)}</td></tr>`;}
+
+  function operationalOwner(root){
+    let owner=root.querySelector(':scope > [data-gmfq-operational="pairs"]');
+    if(!owner){
+      owner=document.createElement('div');
+      owner.setAttribute('data-gmfq-operational','pairs');
+      root.appendChild(owner);
+    }
+    for(const child of [...root.children]){
+      if(child===owner) continue;
+      child.setAttribute('data-gmfq-legacy-non-owner','pairs');
+      child.setAttribute('aria-hidden','true');
+      child.style.display='none';
+    }
+    return owner;
+  }
 
   function render(){
     const root=document.getElementById('pairs');
@@ -92,9 +107,10 @@
     const rows=buildRows(row);
     if(rows.length!==28||rows.some(x=>!x.f||!Number.isFinite(x.price))) throw new Error('PAIR_COVERAGE_INCOMPLETE');
     const top=rows.filter(x=>x.d.side!=='NEUTRAL').sort((a,b)=>b.rank-a.rank||a.pair.localeCompare(b.pair)).slice(0,6);
-    root.innerHTML=`<style>${css}</style><div class="poWrap" data-gmfq-operational="pairs"><section class="poHero"><h2>Coppie FX</h2><div class="poSub">Le 28 coppie G8 ricalcolate dal motore corrente. Qui vedi quale valuta è favorita da Macro, banca centrale e differenziale tassi. Il prezzo è derivato dall’ultimo fixing ECB disponibile.</div><div class="poMeta"><span class="poChip">28/28 coppie</span><span class="poChip">Prezzi aggiornati al ${row.Date}</span><span class="poChip">Motore: stato corrente</span></div></section><section><h3>Contrasti più chiari adesso</h3><div class="poTop">${top.map(card).join('')}</div></section><section><h3>Tutte le coppie</h3><div class="poTableWrap"><table class="poTable"><thead><tr><th>Coppia</th><th>Lato favorito</th><th>Qualità</th><th>Perché</th><th>Fixing</th></tr></thead><tbody>${rows.map(tableRow).join('')}</tbody></table></div></section></div>`;
+    const owner=operationalOwner(root);
+    owner.innerHTML=`<style>${css}</style><div class="poWrap"><section class="poHero"><h2>Coppie FX</h2><div class="poSub">Le 28 coppie G8 ricalcolate dal motore corrente. Qui vedi quale valuta è favorita da Macro, banca centrale e differenziale tassi. Il prezzo è derivato dall’ultimo fixing ECB disponibile.</div><div class="poMeta"><span class="poChip">28/28 coppie</span><span class="poChip">Prezzi aggiornati al ${row.Date}</span><span class="poChip">Motore: stato corrente</span></div></section><section><h3>Contrasti più chiari adesso</h3><div class="poTop">${top.map(card).join('')}</div></section><section><h3>Tutte le coppie</h3><div class="poTableWrap"><table class="poTable"><thead><tr><th>Coppia</th><th>Lato favorito</th><th>Qualità</th><th>Perché</th><th>Fixing</th></tr></thead><tbody>${rows.map(tableRow).join('')}</tbody></table></div></section></div>`;
     root.dataset.gmfqPairPriceAsOf=String(row.Date);
-    window.GMFQ_PAIRS_OPERATIONAL={status:'ACTIVE',schema:'GMFQ_PAIRS_OPERATIONAL_UI_V1',core_effect:'NONE',pair_count:28,directional_count:rows.filter(x=>x.d.side!=='NEUTRAL').length,price_as_of:String(row.Date),source:'derivePairDecisionFrame + D.prices latest official ECB fixing',legacy_owner:'NON_OWNER'};
+    window.GMFQ_PAIRS_OPERATIONAL={status:'ACTIVE',schema:'GMFQ_PAIRS_OPERATIONAL_UI_V1',core_effect:'NONE',pair_count:28,directional_count:rows.filter(x=>x.d.side!=='NEUTRAL').length,price_as_of:String(row.Date),source:'derivePairDecisionFrame + D.prices latest official ECB fixing',legacy_owner:'PRESENT_HIDDEN_NON_OWNER'};
     return window.GMFQ_PAIRS_OPERATIONAL;
   }
   function boot(){
