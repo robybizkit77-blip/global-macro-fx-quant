@@ -66,14 +66,20 @@ jobs:
           set -euo pipefail
           python validation/check_live_update_contract.py > /tmp/pages-live-contract.json
           python validation/rebuild_live_data_runtime.py --verify-only > /tmp/pages-runtime-roundtrip.json
+          # Calendar is a derived operational view. Rebuild it from the checked-out
+          # official schedule + secondary context before validating/publishing so a
+          # schema promotion cannot race the persisted JSON from the prior main run.
+          python validation/build_calendar_operational_v1.py > /tmp/pages-calendar-build.json
           python - <<'PY'
           import json
           from pathlib import Path
           contract=json.load(open('/tmp/pages-live-contract.json'))
           runtime=json.load(open('/tmp/pages-runtime-roundtrip.json'))
+          calendar_build=json.load(open('/tmp/pages-calendar-build.json'))
           assert contract['status']=='PASS', contract
           assert runtime['status']=='PASS', runtime
           assert runtime.get('noop_roundtrip_byte_identical') is True, runtime
+          assert calendar_build['status']=='PASS', calendar_build
           index=Path('index.html').read_text(encoding='utf-8')
           parts=[Path(f'payload/part-{i:02d}.txt') for i in range(16)]
           missing=[str(p) for p in parts if not p.is_file()]
