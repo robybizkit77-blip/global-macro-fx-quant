@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'validation/cb_pricing/OIS_OPERATIONAL_COVERAGE_POLICY_V1_2026-10-15.json'
+      - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
+      - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
@@ -18,64 +20,71 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Snapshot official and committed operational views
+      - name: Snapshot official OIS runtime
+        run: sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+      - name: Collect current dated-futures estimates
+        run: python validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py
+      - name: Rebuild estimated and operational views
         run: |
-          sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
-          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/ois_operational.before.json
-      - name: Rebuild operational OIS view
-        run: python validation/cb_pricing/build_ois_operational_view_v1.py
-      - name: Verify committed operational view core is unchanged
+          python validation/cb_pricing/build_cb_pricing_estimated_v1.py
+          python validation/cb_pricing/build_ois_operational_view_v1.py
+      - name: Verify operational semantics and dated-contract policy
         run: |
           python - <<'PY'
           import json
-
-          before=json.load(open('/tmp/ois_operational.before.json'))
-          after=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
-
-          def strip_additive_metadata(obj):
-              if isinstance(obj, dict):
-                  return {
-                      k: strip_additive_metadata(v)
-                      for k, v in obj.items()
-                      if k not in {
-                          'change_1d_bp',
-                          'change_1w_bp',
-                          'repricing_reference',
-                          'input_mode',
-                          'method_id',
-                      }
-                  }
-              if isinstance(obj, list):
-                  return [strip_additive_metadata(x) for x in obj]
-              return obj
-
-          assert strip_additive_metadata(before) == strip_additive_metadata(after), 'non-additive operational OIS semantic drift'
-          assert after['status']=='GREEN_8_OF_8'
-          assert after['summary']=={
+          official=json.load(open('live_data/sections/OIS_DATA.json'))['currencies']
+          view=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
+          assert view['status']=='GREEN_8_OF_8'
+          assert view['summary']=={
               'g8_total':8,
               'operational_green':8,
               'green_official':4,
               'green_estimated':4,
               'operational_withheld':0,
           }
-          for c in ('USD','EUR','CHF','NZD'):
-              row=after['currencies'][c]
+          for c in ('AUD','CAD','GBP','JPY'):
+              row=view['currencies'][c]
+              src=official[c]
+              assert src['status']=='ACTIVE', (c,src)
+              assert row['operational_status']=='GREEN_OFFICIAL', (c,row)
+              assert row['official_status']=='ACTIVE'
+              assert row['backtest_eligible_as_official'] is True
+              assert row['as_of']==src['as_of']
+              assert row['policy_rate']==src['policy_rate']
+              assert row['source']==src['source']
+              assert row['horizons']==src['horizons']
+          for c in ('USD','EUR','CHF'):
+              row=view['currencies'][c]
+              assert official[c]['status']=='WITHHELD'
               assert row['operational_status']=='GREEN_ESTIMATED'
+              assert row['official_status']=='WITHHELD'
+              assert row['input_mode']=='LIVE_SECONDARY_OVERLAY'
+              assert row['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2'
               assert row['backtest_eligible_as_official'] is False
-              assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'
               assert row['repricing_reference']['homogeneous_method_required'] is True
-              assert row['method_id'] in {'NATIVE_CB_ESTIMATED_V1','TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'}
+              assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'
               for h in ('3m','6m','12m'):
-                  assert 'change_1d_bp' in row['horizons'][h]
-                  assert 'change_1w_bp' in row['horizons'][h]
-          print('PASS core determinism with additive repricing/method lineage fields')
+                  x=row['horizons'][h]
+                  assert x['rate'] is not None
+                  assert x['contract'] and '!' not in x['contract'], (c,h,x)
+                  assert x['symbol'] and '!' not in x['symbol'], (c,h,x)
+          n=view['currencies']['NZD']
+          assert official['NZD']['status']=='WITHHELD'
+          assert n['operational_status']=='GREEN_ESTIMATED'
+          assert n['input_mode']=='NATIVE_CB_FALLBACK'
+          assert n['method_id']=='NATIVE_CB_ESTIMATED_V1'
+          assert n['backtest_eligible_as_official'] is False
+          print('PASS live OIS operational semantics; dated contracts only')
           PY
       - name: Run coverage self-test
         run: python validation/cb_pricing/test_ois_operational_view_v1.py
       - name: Verify official OIS untouched
-        run: sha256sum -c /tmp/ois.before.sha256
+        run: |
+          sha256sum -c /tmp/ois.before.sha256
+          git diff --exit-code -- live_data/sections/OIS_DATA.json
