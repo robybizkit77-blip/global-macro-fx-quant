@@ -22,23 +22,31 @@ const { chromium } = require('playwright');
       if(seen.has(key)) continue; seen.add(key);
       const view=el.closest('.view,[data-view]');
       candidates.push({
-        tag:el.tagName,
-        id:el.id||null,
-        cls:String(el.className||'').slice(0,180)||null,
-        text:own.slice(0,400),
-        dates,
-        inside_view:view?.id||null,
+        tag:el.tagName,id:el.id||null,cls:String(el.className||'').slice(0,180)||null,
+        text:own.slice(0,400),dates,inside_view:view?.id||null,
         x:Math.round(b.x),y:Math.round(b.y),w:Math.round(b.width),h:Math.round(b.height),
         parent:{tag:el.parentElement?.tagName||null,id:el.parentElement?.id||null,cls:String(el.parentElement?.className||'').slice(0,160)||null}
       });
     }
+    const ctx=(el)=>{
+      if(!el) return null;
+      const p1=el.parentElement,p2=p1?.parentElement,p3=p2?.parentElement;
+      const clean=x=>(x?.innerText||'').replace(/\s+/g,' ').trim().slice(0,800);
+      return {
+        self:{tag:el.tagName,id:el.id||null,cls:String(el.className||''),text:clean(el),html:el.outerHTML.slice(0,1000)},
+        parent:{tag:p1?.tagName||null,id:p1?.id||null,cls:String(p1?.className||''),text:clean(p1)},
+        grandparent:{tag:p2?.tagName||null,id:p2?.id||null,cls:String(p2?.className||''),text:clean(p2)},
+        greatgrandparent:{tag:p3?.tagName||null,id:p3?.id||null,cls:String(p3?.className||''),text:clean(p3)}
+      };
+    };
     return {
-      schema:'GMFQ_GLOBAL_ASOF_MARKER_AUDIT_V1',
-      status:'PASS_OBSERVATIONAL',
+      schema:'GMFQ_GLOBAL_ASOF_MARKER_AUDIT_V1',status:'PASS_OBSERVATIONAL',
       price_asof:window.GMFQ_ECB_PRICE_AUDIT?.as_of||document.documentElement.getAttribute('data-price-asof')||null,
-      candidates,
-      global:candidates.filter(x=>!x.inside_view),
-      sep30:candidates.filter(x=>x.dates.some(d=>d==='2026-09-30')),
+      candidates,global:candidates.filter(x=>!x.inside_view),sep30:candidates.filter(x=>x.dates.includes('2026-09-30')),
+      overview_context:{
+        snapshot:ctx(document.getElementById('ov387Snapshot')),
+        sep30_rates:[...document.querySelectorAll('#overview .ov387RateDate')].filter(x=>(x.textContent||'').includes('2026-09-30')).map(ctx)
+      },
       errors:[]
     };
   });
