@@ -1,8 +1,10 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
+    "consensus_available_events": 0,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
+    "previous_only_events": 0,
     "upcoming_macro_events": 20,
     "upcoming_total_events": 28
   },
@@ -420,11 +422,14 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-15T08:51:22.306909Z",
-  "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V2",
+  "generated_at_utc": "2026-10-15T09:09:21.508482Z",
+  "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
-    "consensus": "SEPARATE_SECONDARY_LAYER_NOT_PRESENT",
+    "consensus": "SECONDARY_PROVIDER_READY_NO_VALUES",
+    "consensus_context_only": true,
+    "consensus_never_changes_official_date": true,
+    "consensus_provider": "TRADING_ECONOMICS",
     "core_score_impact": 0,
     "macro_release_currencies": [
       "AUD",
@@ -438,5 +443,5 @@
     ],
     "macro_release_schedule": "ACTIVE_OFFICIAL_VERIFIED_SEED"
   },
-  "status": "ACTIVE_CB_PLUS_MACRO_OFFICIAL"
+  "status": "ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT"
 }
