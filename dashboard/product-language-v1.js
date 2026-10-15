@@ -92,17 +92,36 @@
     'METODOLOGIA · PLAYBOOK','OUT-OF-SAMPLE · FORWARD VALIDATION','Forward Test Monitor'
   ];
 
+  function normalize(raw){return String(raw||'').replace(/\s+/g,' ').trim();}
   function translate(raw){
-    const t=String(raw||'').trim();
+    const t=normalize(raw);
     if(!t) return null;
     if(exact.has(t)) return exact.get(t);
     for(const [re,repl] of phrases){if(re.test(t)) return t.replace(re,repl);}
     return null;
   }
 
+  function applyElementLabels(root){
+    let changed=0;
+    const els=[root,...root.querySelectorAll('*')].filter(el=>el?.nodeType===1&&!SKIP.has(el.tagName)&&!el.matches('script,style,noscript,textarea,input,select,option'));
+    els.sort((a,b)=>a.querySelectorAll('*').length-b.querySelectorAll('*').length);
+    for(const el of els){
+      if(el.dataset?.gmfqLanguageTranslated==='true') continue;
+      const text=normalize(el.textContent);
+      const out=translate(text);
+      if(out==null||out===text) continue;
+      // Collapse markup only when the whole element is exactly one known UI label.
+      // Analytical cards/paragraphs never match this condition.
+      el.textContent=out;
+      el.dataset.gmfqLanguageTranslated='true';
+      changed++;
+    }
+    return changed;
+  }
+
   function apply(root=document.body){
     if(!root) return 0;
-    let changed=0;
+    let changed=applyElementLabels(root);
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
       const p=node.parentElement;
       if(!p||SKIP.has(p.tagName)||p.closest('script,style,noscript,textarea,input,select,option')) return NodeFilter.FILTER_REJECT;
@@ -110,13 +129,12 @@
     }});
     const nodes=[]; let n; while((n=walker.nextNode())) nodes.push(n);
     for(const node of nodes){
-      const raw=node.nodeValue;
-      const before=String(raw||'');
+      const before=String(node.nodeValue||'');
       const lead=before.match(/^\s*/)?.[0]||'';
       const trail=before.match(/\s*$/)?.[0]||'';
       const core=before.trim();
       const out=translate(core);
-      if(out!=null&&out!==core){node.nodeValue=lead+out+trail;changed++;}
+      if(out!=null&&out!==normalize(core)){node.nodeValue=lead+out+trail;changed++;}
     }
     return changed;
   }
@@ -125,7 +143,7 @@
   function schedule(){
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;apply(document.body);});
+    requestAnimationFrame(()=>{scheduled=false;apply(document.body);window.GMFQ_PRODUCT_LANGUAGE=audit();});
   }
 
   function audit(){
@@ -140,8 +158,7 @@
     obs.observe(document.body,{subtree:true,childList:true,characterData:true});
     window.__GMFQ_PRODUCT_LANGUAGE_OBSERVER=obs;
     document.documentElement.dataset.gmfqLanguage='simple-product';
-    const a=audit();
-    window.GMFQ_PRODUCT_LANGUAGE=a;
+    window.GMFQ_PRODUCT_LANGUAGE=audit();
     setTimeout(()=>{apply(document.body);window.GMFQ_PRODUCT_LANGUAGE=audit();},600);
   }
 
