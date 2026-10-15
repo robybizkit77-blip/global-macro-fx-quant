@@ -79,6 +79,7 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_PAIRS_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_CURRENCIES_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_RATESDESK_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_FORWARDDESK_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForTimeout(700);
             for(const view of VIEWS){
               await page.evaluate(v=>window.showView?.(v),view);
@@ -130,7 +131,7 @@ jobs:
             }
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
             await browser.close();
-            console.log(label,'OWNERSHIP_PASS','CURRENCIES_OPERATIONAL_PASS','TOP_THEMES_OPERATIONAL_PASS','PAIRS_OPERATIONAL_PASS','RATESDESK_OPERATIONAL_PASS','FRESHNESS_V3_OPERATIONAL_AUTHORITY_PASS');
+            console.log(label,'OWNERSHIP_PASS','CURRENCIES_OPERATIONAL_PASS','TOP_THEMES_OPERATIONAL_PASS','PAIRS_OPERATIONAL_PASS','RATESDESK_OPERATIONAL_PASS','FORWARDDESK_OPERATIONAL_PASS','FRESHNESS_V3_OPERATIONAL_AUTHORITY_PASS');
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('DASHBOARD_UI_OWNERSHIP_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
