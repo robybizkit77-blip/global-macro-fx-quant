@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_MACRO_CONSENSUS_SECONDARY_V1",
   "status": "PROVIDER_READY_NO_LIVE_VALUES",
-  "provider": "MYFXBOOK_PUBLIC_CALENDAR",
-  "provider_endpoint": "https://www.myfxbook.com/forex-economic-calendar/",
-  "provider_field": "consensus",
+  "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+  "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+  "provider_field": "forecast",
   "provider_previous_field": "previous",
   "events": [],
   "rules": {
@@ -15,6 +15,7 @@
     "estimate_field_is_consensus_only": true,
     "actual_not_used_as_pre_release_consensus": true,
     "official_calendar_remains_primary": true,
-    "public_html_secondary_source": true
+    "public_json_secondary_source": true,
+    "weekly_feed_scope": true
   }
 }
