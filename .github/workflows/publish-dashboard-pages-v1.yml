@@ -64,7 +64,7 @@ jobs:
             'dashboard/risk-operational-v1.js','dashboard/pairs-operational-v1.js',
             'dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js',
             'dashboard/macro-operational-v1.js','dashboard/ratesdesk-operational-v1.js',
-            'dashboard/editorial-freshness-guard-v1.js'
+            'dashboard/cbdesk-operational-v1.js','dashboard/editorial-freshness-guard-v1.js'
           ]
           for asset in assets:
               assert asset in index, asset
@@ -107,14 +107,14 @@ jobs:
           mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
-          for f in ois-operational-monitor-v1.js calendar-news-operational-v1.js top-themes-operational-v1.js what-changed-operational-v1.js risk-operational-v1.js pairs-operational-v1.js overview-asof-operational-v1.js currencies-operational-v1.js macro-operational-v1.js ratesdesk-operational-v1.js editorial-freshness-guard-v1.js; do cp "dashboard/$f" "/tmp/gmfq-pages/dashboard/$f"; done
+          for f in ois-operational-monitor-v1.js calendar-news-operational-v1.js top-themes-operational-v1.js what-changed-operational-v1.js risk-operational-v1.js pairs-operational-v1.js overview-asof-operational-v1.js currencies-operational-v1.js macro-operational-v1.js ratesdesk-operational-v1.js cbdesk-operational-v1.js editorial-freshness-guard-v1.js; do cp "dashboard/$f" "/tmp/gmfq-pages/dashboard/$f"; done
           for f in OIS_OPERATIONAL_VIEW.json CALENDAR_OPERATIONAL_VIEW.json NEWS_PULSE_OPERATIONAL.json MACRO_THERMOMETER_DATA.json D.json ESTIMATED_RESIDUAL_GAPS.json; do cp "live_data/sections/$f" "/tmp/gmfq-pages/live_data/sections/$f"; done
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())|set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           allowed={'index.html',
-            'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js','dashboard/risk-operational-v1.js','dashboard/pairs-operational-v1.js','dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js','dashboard/macro-operational-v1.js','dashboard/ratesdesk-operational-v1.js','dashboard/editorial-freshness-guard-v1.js',
+            'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js','dashboard/risk-operational-v1.js','dashboard/pairs-operational-v1.js','dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js','dashboard/macro-operational-v1.js','dashboard/ratesdesk-operational-v1.js','dashboard/cbdesk-operational-v1.js','dashboard/editorial-freshness-guard-v1.js',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
             *[f'payload/part-{i:02d}.txt' for i in range(16)]}
           unexpected=changed-allowed
