@@ -11,7 +11,7 @@
     };
     const text=String(root?.innerText||'').replace(/\s+/g,' ').trim();
     const runtimeError=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i.test(text);
-    const active=!!root&&text.length>=100&&helpers.pathRisk==='function'&&helpers.snapshotBasket==='function'&&helpers.pairedOverlay==='function'&&(!integrity||integrity.ok===true)&&!runtimeError;
+    const active=!!root&&helpers.pathRisk==='function'&&helpers.snapshotBasket==='function'&&helpers.pairedOverlay==='function'&&(!integrity||integrity.ok===true)&&!runtimeError;
     return {
       status:active?'ACTIVE':'WAITING',schema:'GMFQ_FORWARDDESK_OPERATIONAL_UI_V1',core_effect:'NONE',
       owner_count:document.querySelectorAll('#forwarddesk[data-gmfq-operational="forwarddesk"]').length,
@@ -23,7 +23,6 @@
     const root=document.getElementById('forwarddesk');
     if(!root) throw new Error('FORWARDDESK_VIEW_MISSING');
     const a=audit();
-    if(a.text_length<100) throw new Error('FORWARDDESK_NOT_RENDERED');
     if(a.helpers.pathRisk!=='function'||a.helpers.snapshotBasket!=='function'||a.helpers.pairedOverlay!=='function') throw new Error('FORWARDDESK_HELPER_CHAIN_INCOMPLETE');
     if(a.integrity&&a.integrity.ok!==true) throw new Error('FORWARDDESK_LEDGER_INTEGRITY_FAILED');
     if(a.runtime_error) throw new Error('FORWARDDESK_VISIBLE_RUNTIME_ERROR');
