@@ -27,6 +27,8 @@ jobs:
         run: python validation/cb_pricing/probe_eur_eurex_fst3_backend_v1.py
       - name: Extract Eurex FST3 endpoint literals
         run: python validation/cb_pricing/probe_eur_eurex_fst3_endpoint_literals_v1.py
+      - name: Probe historical FST3 busDate REST surface
+        run: python validation/cb_pricing/probe_eur_eurex_fst3_historical_busdate_v1.py
       - name: Upload diagnostic receipts
         uses: actions/upload-artifact@v4
         with:
@@ -36,4 +38,5 @@ jobs:
             validation/cb_pricing/eur_eurex_fst3_public_page_probe_receipt_v1.json
             validation/cb_pricing/eur_eurex_fst3_backend_probe_receipt_v1.json
             validation/cb_pricing/eur_eurex_fst3_endpoint_literals_probe_receipt_v1.json
+            validation/cb_pricing/eur_eurex_fst3_historical_busdate_probe_receipt_v1.json
           if-no-files-found: error
