@@ -1,0 +1,179 @@
+name: Final Visual QA V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'dashboard/**'
+      - 'live_data/**'
+      - '.github/workflows/final-visual-qa-v1.yml'
+  push:
+    branches:
+      - 'validation-final-visual-qa-*'
+      - main
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'dashboard/**'
+      - 'live_data/**'
+      - '.github/workflows/final-visual-qa-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local dashboard server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/final-visual-qa-server.log 2>&1 &
+          echo $! > /tmp/final-visual-qa-server.pid
+          sleep 2
+      - name: Audit all 16 dashboard views desktop and mobile
+        run: |
+          mkdir -p visual-qa-evidence
+          cat > final-visual-qa.js <<'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const VIEWS=['overview','wow','themes','calendar','news','risk','currencies','pairs','macro','inflationlabour','ratesdesk','cbdesk','liquiditydesk','cot','method','forwarddesk'];
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const PAIRS=['AUD/CAD','AUD/CHF','AUD/JPY','AUD/NZD','AUD/USD','CAD/CHF','CAD/JPY','CHF/JPY','EUR/AUD','EUR/CAD','EUR/CHF','EUR/GBP','EUR/JPY','EUR/NZD','EUR/USD','GBP/AUD','GBP/CAD','GBP/CHF','GBP/JPY','GBP/NZD','GBP/USD','NZD/CAD','NZD/CHF','NZD/JPY','NZD/USD','USD/CAD','USD/CHF','USD/JPY'];
+
+          async function auditViewport(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[];
+            const pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            const resp=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!resp||!resp.ok()) throw new Error(label+' HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForTimeout(500);
+
+            const base=await page.evaluate(({CCYS,PAIRS})=>{
+              const duplicateIds=[];
+              const counts={};
+              document.querySelectorAll('[id]').forEach(el=>counts[el.id]=(counts[el.id]||0)+1);
+              Object.entries(counts).filter(([,n])=>n>1).forEach(([id,n])=>duplicateIds.push({id,n}));
+              const currencyStates=CCYS.map(c=>({c,ok:!!window.deriveCurrencyState?.(c)}));
+              const pairFrames=PAIRS.map(p=>({p,ok:!!window.derivePairDecisionFrame?.(p)}));
+              return {
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                duplicateIds,
+                currencyCount:currencyStates.filter(x=>x.ok).length,
+                pairCount:pairFrames.filter(x=>x.ok).length,
+                uiIntegrity:typeof window.uiIntegrityAudit==='function'?window.uiIntegrityAudit():null
+              };
+            },{CCYS,PAIRS});
+            if(base.finalAudit?.status!=='PASS') throw new Error(label+' final canonical audit not PASS');
+            if(base.currencyCount!==8||base.pairCount!==28) throw new Error(label+` canonical coverage ${base.currencyCount}/8 currencies, ${base.pairCount}/28 pairs`);
+            if(base.duplicateIds.length) throw new Error(label+' duplicate DOM ids: '+JSON.stringify(base.duplicateIds));
+
+            const results=[];
+            for(const view of VIEWS){
+              await page.evaluate(v=>window.showView?.(v),view);
+              await page.waitForTimeout(view==='ratesdesk'?450:220);
+              const r=await page.evaluate(({view,label})=>{
+                const el=document.getElementById(view);
+                const box=el?.getBoundingClientRect();
+                const activeIds=[...document.querySelectorAll('.view.active,[data-view].active')].map(x=>x.id).filter(Boolean);
+                const style=el?getComputedStyle(el):null;
+                const text=(el?.innerText||'').replace(/\s+/g,' ').trim();
+                const badTokens=[];
+                for(const token of ['undefined','[object Object]','NaN']) if(text.includes(token)) badTokens.push(token);
+                const staleWords=(text.match(/WITHHELD|STALE|NON DISPONIBILE|MANCANTE|NULL/gi)||[]).length;
+                const graphics=el?el.querySelectorAll('canvas,svg').length:0;
+                const tables=el?el.querySelectorAll('table').length:0;
+                const buttons=el?el.querySelectorAll('button,[role="button"]').length:0;
+                const hardOverflow=[];
+                if(el){
+                  for(const n of el.querySelectorAll('*')){
+                    const cs=getComputedStyle(n);
+                    if(cs.display==='none'||cs.visibility==='hidden') continue;
+                    const b=n.getBoundingClientRect();
+                    if(b.width<=0||b.height<=0) continue;
+                    const scrollable=/auto|scroll/.test(cs.overflowX);
+                    if(!scrollable && b.right>window.innerWidth+12 && b.left<window.innerWidth) {
+                      hardOverflow.push({tag:n.tagName,id:n.id||null,cls:String(n.className||'').slice(0,80),right:Math.round(b.right),vw:window.innerWidth});
+                      if(hardOverflow.length>=8) break;
+                    }
+                  }
+                }
+                return {
+                  view,label,exists:!!el,active:!!el?.classList.contains('active'),activeIds,
+                  visible:!!el&&style?.display!=='none'&&style?.visibility!=='hidden'&&box?.width>0&&box?.height>0,
+                  box:box?{w:Math.round(box.width),h:Math.round(box.height)}:null,
+                  textLength:text.length,badTokens,staleWords,graphics,tables,buttons,
+                  documentOverflow:document.documentElement.scrollWidth-window.innerWidth,
+                  sectionOverflow:el?el.scrollWidth-el.clientWidth:null,
+                  hardOverflow,
+                  ois:view==='ratesdesk'&&typeof window.gmfqOisOperationalUiAudit==='function'?window.gmfqOisOperationalUiAudit():null
+                };
+              },{view,label});
+
+              const fatal=[];
+              if(!r.exists) fatal.push('MISSING_VIEW');
+              if(!r.active) fatal.push('NOT_ACTIVE');
+              if(!r.visible) fatal.push('NOT_VISIBLE');
+              if(r.textLength<20) fatal.push('EMPTY_OR_TOO_SHORT');
+              if(r.badTokens.length) fatal.push('BAD_TOKENS:'+r.badTokens.join(','));
+              if(r.activeIds.length!==1 || r.activeIds[0]!==view) fatal.push('ACTIVE_VIEW_OWNERSHIP:'+JSON.stringify(r.activeIds));
+              if(view==='ratesdesk' && r.ois?.ok!==true) fatal.push('OIS_MONITOR_NOT_READY');
+              if(fatal.length) throw new Error(label+' '+view+' fatal visual QA: '+fatal.join(' | '));
+
+              results.push(r);
+              const loc=page.locator('#'+view);
+              await loc.screenshot({path:`visual-qa-evidence/${label}-${view}.png`});
+            }
+
+            if(consoleErrors.length) throw new Error(label+' console errors: '+consoleErrors.join(' | '));
+            if(pageErrors.length) throw new Error(label+' page errors: '+pageErrors.join(' | '));
+
+            const summary={
+              label,viewport,views:results,
+              warning_counts:{
+                document_overflow:results.filter(r=>r.documentOverflow>12).length,
+                section_overflow:results.filter(r=>(r.sectionOverflow||0)>12).length,
+                hard_overflow:results.filter(r=>r.hardOverflow.length).length,
+                stale_or_withheld_text:results.filter(r=>r.staleWords>0).length
+              },
+              canonical:{currencies:base.currencyCount,pairs:base.pairCount,final_status:base.finalAudit?.status,ui_integrity:base.uiIntegrity?.status||null}
+            };
+            fs.writeFileSync(`visual-qa-evidence/${label}-report.json`,JSON.stringify(summary,null,2));
+            console.log(JSON.stringify(summary,null,2));
+            await browser.close();
+            return summary;
+          }
+
+          (async()=>{
+            const desktop=await auditViewport({width:1440,height:1100},'desktop');
+            const mobile=await auditViewport({width:390,height:844},'mobile');
+            const final={status:'PASS_WITH_WARNINGS_REVIEWED_BY_ARTIFACT',desktop:desktop.warning_counts,mobile:mobile.warning_counts,views:VIEWS.length,currencies:8,pairs:28};
+            fs.writeFileSync('visual-qa-evidence/final-summary.json',JSON.stringify(final,null,2));
+            console.log('FINAL_VISUAL_QA_V1',JSON.stringify(final));
+          })().catch(e=>{console.error('::error title=Final Visual QA V1::'+String(e.message||e));process.exit(1)});
+          EOF
+          node final-visual-qa.js
+      - name: Upload complete visual QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-visual-qa-v1
+          path: |
+            visual-qa-evidence/**
+            /tmp/final-visual-qa-server.log
