@@ -1,0 +1,86 @@
+name: TEMP Materialize OIS V2 Snapshots
+
+on:
+  push:
+    branches:
+      - fix-ois-dated-contracts-v2-current-main-2026-10-15
+    paths:
+      - '.github/workflows/temp-materialize-ois-v2-snapshots.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-ois-dated-contracts-v2-current-main-2026-10-15
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot official runtime
+        run: |
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+          sha256sum live_data/sections/NATIVE_CB_DATA.json > /tmp/native.before.sha256
+      - name: Build verified V2 operational snapshots
+        run: |
+          python validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py
+          python validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py
+          python validation/cb_pricing/build_cb_pricing_estimated_v1.py
+          python validation/cb_pricing/build_ois_operational_view_v1.py
+          python validation/cb_pricing/ois_estimated_snapshot_v1.py
+          python validation/cb_pricing/build_ois_operational_view_v1.py
+      - name: Verify V2 governance and official zero mutation
+        run: |
+          python validation/cb_pricing/test_cb_pricing_estimated_v1.py
+          python validation/cb_pricing/test_ois_operational_view_v1.py
+          python validation/cb_pricing/test_ois_estimated_snapshot_v1.py
+          python - <<'PY'
+          import json
+          v=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
+          assert v['summary']=={'g8_total':8,'operational_green':8,'green_official':4,'green_estimated':4,'operational_withheld':0}
+          for c in ('USD','EUR','CHF'):
+              r=v['currencies'][c]
+              assert r['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', r
+              for h in ('3m','6m','12m'):
+                  x=r['horizons'][h]
+                  assert '!' not in str(x.get('contract')), x
+                  assert '!' not in str(x.get('symbol')), x
+          n=v['currencies']['NZD']
+          assert n['method_id']=='NATIVE_CB_ESTIMATED_V1'
+          assert n['horizons']['3m']['rate']==3.0
+          assert n['horizons']['6m']['rate'] is None
+          assert n['horizons']['12m']['rate'] is None
+          assert n['market_direction_proxy']['substitutes_for_ois_level'] is False
+          print('TEMP_OIS_V2_MATERIALIZATION_VERIFIED')
+          PY
+          sha256sum -c /tmp/ois.before.sha256
+          sha256sum -c /tmp/native.before.sha256
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
+      - name: Commit verified V2 snapshots to PR branch only
+        run: |
+          set -euo pipefail
+          git fetch origin fix-ois-dated-contracts-v2-current-main-2026-10-15
+          if [ "$(git rev-parse origin/fix-ois-dated-contracts-v2-current-main-2026-10-15)" != "$BASE_SHA" ]; then
+            echo 'PR branch moved during materialization; fail closed'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json \
+                  live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json \
+                  live_data/sections/CB_PRICING_ESTIMATED.json \
+                  live_data/sections/OIS_OPERATIONAL_VIEW.json \
+                  validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl
+          if git diff --cached --quiet; then
+            echo 'No snapshot changes to materialize.'
+            exit 0
+          fi
+          git commit -m 'Materialize dated-only OIS V2 snapshots'
+          git push origin HEAD:fix-ois-dated-contracts-v2-current-main-2026-10-15
