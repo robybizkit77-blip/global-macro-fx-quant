@@ -61,18 +61,19 @@ jobs:
                 undefinedSymbols:[...text.matchAll(/\b([A-Za-z_$][\w$]*)\s+is\s+not\s+defined\b/g)].map(m=>m[1]),
                 hasReferenceError:/ReferenceError/i.test(text),
                 pathRiskHelper:typeof window.gmfqForwardPathRiskStats,
+                snapshotBasketHelper:typeof window.gmfqForwardSnapshotBasketSeries,
                 summary,
                 integrity:typeof window.forwardLedgerIntegrity==='function'?window.forwardLedgerIntegrity():null
               };
             });
             if(!out.exists||!out.visible||out.textLength<100) throw new Error(label+' Forward view not rendered');
             if(out.undefinedSymbols.length||out.hasReferenceError) throw new Error(label+' Forward visible runtime error: '+JSON.stringify(out.undefinedSymbols));
-            if(out.pathRiskHelper!=='function') throw new Error(label+' Forward path-risk helper not bridged');
+            if(out.pathRiskHelper!=='function'||out.snapshotBasketHelper!=='function') throw new Error(label+' Forward path-risk helper chain not bridged');
             if(out.integrity && out.integrity.ok!==true) throw new Error(label+' Forward ledger integrity failed');
             const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
             if(consoleErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' Forward console scope error: '+consoleErrors.join(' | '));
             if(pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' Forward page scope error: '+pageErrors.join(' | '));
-            console.log(label,'FORWARD_MONITOR_UI_PASS',JSON.stringify({textLength:out.textLength,snapshots:out.summary?.snapshots??null,outcomes:out.summary?.outcomes??null,ledger_ok:out.integrity?.ok??null,pathRiskHelper:out.pathRiskHelper}));
+            console.log(label,'FORWARD_MONITOR_UI_PASS',JSON.stringify({textLength:out.textLength,snapshots:out.summary?.snapshots??null,outcomes:out.summary?.outcomes??null,ledger_ok:out.integrity?.ok??null,pathRiskHelper:out.pathRiskHelper,snapshotBasketHelper:out.snapshotBasketHelper}));
             await browser.close();
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('FORWARD_MONITOR_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
