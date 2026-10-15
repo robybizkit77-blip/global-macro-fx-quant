@@ -17,7 +17,7 @@
     "news": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/calendar-news-operational-v1.js","required_selector":"[data-gmfq-operational=\"news\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "risk": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/risk-operational-v1.js","required_selector":"[data-gmfq-operational=\"risk\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "currencies": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
-    "pairs": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "pairs": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/pairs-operational-v1.js","required_selector":"[data-gmfq-operational=\"pairs\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "macro": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "inflationlabour": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
@@ -33,6 +33,7 @@
     "calendar": "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
     "news": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "risk": ["live_data/sections/D.json","live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"],
+    "pairs": ["derivePairDecisionFrame(runtime)","D.prices latest official ECB fixing"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
 }
