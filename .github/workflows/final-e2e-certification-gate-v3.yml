@@ -16,6 +16,15 @@ on:
       - 'live_data/sections/NATIVE_CB_DATA.json'
       - 'live_data/manifest.v2.json'
       - '.github/workflows/final-e2e-certification-gate-v3.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
+      - 'live_data/sections/CB_PRICING_ESTIMATED.json'
+      - 'validation/run_final_e2e_certification_gate_v3.py'
+      - 'validation/estimated/**'
+      - '.github/workflows/final-e2e-certification-gate-v3.yml'
   workflow_dispatch:
 
 permissions:
