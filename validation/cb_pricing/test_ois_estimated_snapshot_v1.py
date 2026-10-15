@@ -35,13 +35,13 @@ with tempfile.TemporaryDirectory() as td:
     rows = load_history(p)
     assert len(rows) == 5
 
-# A methodology switch must never be interpreted as market repricing.
+# Any methodology switch must never be interpreted as market repricing.
 base_row = json.loads(json.dumps(VIEW['currencies']['USD']))
-base_row['method_id'] = 'TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'
-base_row['source'] = 'TradingView public server-rendered contract pages · exchange-labelled futures'
+base_row['method_id'] = 'TRADINGVIEW_DATED_FUTURES_SSR_V2'
+base_row['source'] = 'TradingView public server-rendered contract pages · exchange-labelled dated futures'
 legacy_row = json.loads(json.dumps(base_row))
-legacy_row['method_id'] = 'NATIVE_CB_ESTIMATED_V1'
-legacy_row['source'] = 'legacy native source'
+legacy_row['method_id'] = 'TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'
+legacy_row['source'] = 'superseded V1 source'
 legacy_record = make_record('USD', legacy_row, '2026-10-14T08:00:00Z')
 live_record = make_record('USD', base_row, '2026-10-15T08:00:00Z')
 r = _estimated_repricing('USD', base_row, [legacy_record, live_record])
@@ -60,7 +60,7 @@ assert r['previous_reference'] is None, r
 assert r['change_1d_available'] is False, r
 assert r['horizon_changes']['3m']['change_1d_bp'] is None, r
 
-# Once a prior-session same-method snapshot exists, 1D becomes legal.
+# Once a prior-session same-method V2 snapshot exists, 1D becomes legal.
 prior_live = json.loads(json.dumps(base_row))
 prior_live['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.01
 prior_live_record = make_record('USD', prior_live, '2026-10-14T09:00:00Z')
@@ -78,4 +78,4 @@ assert r['weekly_reference'] == '2026-10-10T08:00:00Z', r
 assert r['change_1w_available'] is True, r
 assert r['horizon_changes']['3m']['change_1w_bp'] == 3.0, r
 
-print('PASS OIS estimated snapshot/repricing V1')
+print('PASS OIS estimated snapshot/repricing V2 method isolation')
