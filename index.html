@@ -26,6 +26,16 @@
  const forwardReliabilityInline="const rel=(!st.n)?{label:'In attesa',cls:'fwdNeu'}:(st.n<10)?{label:'Troppo presto',cls:'fwdWarn'}:(st.n<20)?{label:'Preliminare',cls:'fwdWarn'}:(st.n<40)?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};";
  html=html.replace(forwardReliabilityCall,forwardReliabilityInline);
 
+ // Forward path-risk compatibility: preserve the original local implementation
+ // exactly, but publish its hoisted function reference for a later legacy renderer.
+ const forwardPathRiskDef='function pathRiskStats(series){';
+ const forwardPathRiskCall='const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));';
+ const pathRiskDefMatches=html.split(forwardPathRiskDef).length-1;
+ const pathRiskCallMatches=html.split(forwardPathRiskCall).length-1;
+ if(pathRiskDefMatches!==1 || pathRiskCallMatches!==1) throw new Error('Forward path-risk scope manifest inatteso: '+pathRiskDefMatches+'/'+pathRiskCallMatches);
+ html=html.replace(forwardPathRiskDef,'window.gmfqForwardPathRiskStats=pathRiskStats;\n'+forwardPathRiskDef);
+ html=html.replace(forwardPathRiskCall,'const rs=window.gmfqForwardPathRiskStats(snapshotBasketSeries(outcomes,h));');
+
  // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
  // the immutable legacy payload for audit/rollback, but must no longer execute.
  // Current visible editorial surfaces are owned by validated operational modules.
@@ -40,7 +50,6 @@
    if(matches.length!==1) throw new Error('Legacy quarantine manifest inatteso per '+id+': '+matches.length);
    html=html.replace(re,'<!-- GMFQ_LEGACY_QUARANTINED:'+id+' -->');
  }
- // One old 30-Sep refresh block is anonymous. Quarantine it by a unique runtime fingerprint.
  const quarantinedLegacyFingerprints=[{name:'LIVE_REFRESH_20260930_AM',needle:'window.LIVE_REFRESH_20260930_AM='}];
  for(const item of quarantinedLegacyFingerprints){
    const blocks=html.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g)||[];
