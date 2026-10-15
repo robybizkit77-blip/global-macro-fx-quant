@@ -25,9 +25,10 @@
  html=html.replace(marker,finalRefresh+marker);
  const oisUi='<script id="gmfq-ois-operational-ui" src="dashboard/ois-operational-monitor-v1.js" defer></scr'+'ipt>\n';
  const calendarNews='<script id="gmfq-calendar-news-operational-ui" src="dashboard/calendar-news-operational-v1.js" defer></scr'+'ipt>\n';
+ const topThemes='<script id="gmfq-top-themes-operational-ui" src="dashboard/top-themes-operational-v1.js" defer></scr'+'ipt>\n';
  const editorialFreshness='<script id="gmfq-editorial-freshness-guard" src="dashboard/editorial-freshness-guard-v1.js" defer></scr'+'ipt>\n';
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
- html=html.replace('</body>',oisUi+calendarNews+editorialFreshness+'</body>');
+ html=html.replace('</body>',oisUi+calendarNews+topThemes+editorialFreshness+'</body>');
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
