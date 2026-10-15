@@ -1,0 +1,110 @@
+name: Premium Shell UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/premium-shell-v1.js'
+      - '.github/workflows/premium-shell-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/premium-shell-v1.js'
+      - '.github/workflows/premium-shell-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/premium-shell-ui.log 2>&1 &
+          sleep 2
+      - name: Verify premium shell desktop mobile
+        run: |
+          cat > premium-shell-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const VIEWS=['overview','wow','themes','calendar','news','risk','currencies','pairs','macro','inflationlabour','ratesdesk','cbdesk','liquiditydesk','cot','method','forwarddesk'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForTimeout(700);
+            const shell=await page.evaluate(()=>{
+              const state=window.GMFQ_PREMIUM_SHELL;
+              const body=getComputedStyle(document.body);
+              const rail=document.querySelector('[data-gmfq-premium-rail="true"]');
+              const railStyle=rail?getComputedStyle(rail):null;
+              return {
+                state,
+                design:document.documentElement.dataset.gmfqDesign,
+                version:document.documentElement.dataset.gmfqDesignVersion,
+                styleCount:document.querySelectorAll('#gmfq-premium-shell-v1-style').length,
+                bodyBg:body.backgroundColor,
+                bodyFont:body.fontFamily,
+                rail:!!rail,
+                railIsFirst:rail===document.querySelector('.shell')?.firstElementChild,
+                railBg:railStyle?.backgroundImage||railStyle?.backgroundColor||null,
+                railBorder:railStyle?.borderRightWidth||null,
+                shell:!!document.querySelector('.shell')
+              };
+            });
+            if(shell.state?.schema!=='GMFQ_PREMIUM_SHELL_V1'||shell.state?.status!=='ACTIVE'||shell.state?.core_effect!=='NONE'||shell.state?.scope!=='PRESENTATION_ONLY'||shell.state?.rail_bound!==true) throw new Error(label+' bad premium state '+JSON.stringify(shell));
+            if(shell.styleCount!==1||shell.design!=='institutional-editorial-premium'||shell.version!=='1') throw new Error(label+' premium marker drift '+JSON.stringify(shell));
+            if(!shell.shell||!shell.rail||!shell.railIsFirst) throw new Error(label+' shell/rail binding missing '+JSON.stringify(shell));
+            if(!/Inter/i.test(shell.bodyFont)) throw new Error(label+' typography drift '+shell.bodyFont);
+            if(shell.railBorder==='0px') throw new Error(label+' rail separation missing '+JSON.stringify(shell));
+
+            for(const view of VIEWS){
+              await page.evaluate(v=>window.showView?.(v),view);
+              await page.waitForTimeout(view==='ratesdesk'?350:150);
+              const snap=await page.evaluate(v=>{
+                const el=document.getElementById(v);
+                const active=[...document.querySelectorAll('.view.active,[data-view].active')].map(x=>x.id).filter(Boolean);
+                const cs=el?getComputedStyle(el):null;
+                return {exists:!!el,active,text:String(el?.innerText||'').replace(/\s+/g,' ').trim().length,maxWidth:cs?.maxWidth||null,marginLeft:cs?.marginLeft||null};
+              },view);
+              if(!snap.exists||snap.text<20) throw new Error(label+' missing/empty view '+view+' '+JSON.stringify(snap));
+              if(snap.active.length!==1||snap.active[0]!==view) throw new Error(label+' active view drift '+view+' '+JSON.stringify(snap.active));
+            }
+
+            const critical=await page.evaluate(()=>({
+              pairs:window.GMFQ_PAIRS_OPERATIONAL?.status,
+              currencies:window.GMFQ_CURRENCIES_OPERATIONAL?.status,
+              rates:window.GMFQ_RATESDESK_OPERATIONAL?.status,
+              cb:window.GMFQ_CBDESK_OPERATIONAL?.status,
+              liquidity:window.GMFQ_LIQUIDITYDESK_OPERATIONAL?.status,
+              cot:window.GMFQ_COTDESK_OPERATIONAL?.status,
+              forward:window.GMFQ_FORWARDDESK_OPERATIONAL?.status,
+              freshness:window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true
+            }));
+            for(const [k,v] of Object.entries(critical)) if(v!==true&&v!=='ACTIVE') throw new Error(label+' operational owner not healthy '+k+'='+v);
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'PREMIUM_SHELL_UI_PASS');
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('PREMIUM_SHELL_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node premium-shell-gate.js
