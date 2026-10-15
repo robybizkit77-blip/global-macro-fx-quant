@@ -1,0 +1,79 @@
+name: OIS Operational UI Proxy V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dashboard/ois-operational-monitor-v1.js'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - '.github/workflows/ois-operational-ui-proxy-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/ois-operational-monitor-v1.js'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - '.github/workflows/ois-operational-ui-proxy-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check renderer syntax
+        run: node --check dashboard/ois-operational-monitor-v1.js
+      - name: Verify NZD proxy UI contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          js=Path('dashboard/ois-operational-monitor-v1.js').read_text(encoding='utf-8')
+          view=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
+          assert view['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
+          assert view['summary']=={
+              'g8_total':8,
+              'operational_green':8,
+              'green_official':4,
+              'green_estimated':4,
+              'operational_withheld':0,
+          }
+          proxy_ccys=[c for c,r in view['currencies'].items() if r.get('market_direction_proxy')]
+          assert proxy_ccys==['NZD'], proxy_ccys
+          nzd=view['currencies']['NZD']
+          assert nzd['operational_status']=='GREEN_ESTIMATED'
+          assert nzd['input_mode']=='NATIVE_CB_FALLBACK'
+          assert nzd['method_id']=='NATIVE_CB_ESTIMATED_V1'
+          assert nzd['horizons']['3m']['rate']==3.0
+          assert nzd['horizons']['6m']['rate'] is None
+          assert nzd['horizons']['12m']['rate'] is None
+          p=nzd['market_direction_proxy']
+          assert p['status']=='LIVE_DIRECTIONAL_PROXY_READY'
+          assert p['substitutes_for_ois_level'] is False
+          assert p['policy_delta_from_proxy_allowed'] is False
+          for h in ('3m','6m','12m'):
+              x=p['horizons'][h]
+              assert x['implied_bank_bill_rate'] is not None
+              assert 'change_1d_bp' in x and 'change_1w_bp' in x
+
+          required=(
+              'market_direction_proxy',
+              'NZD_ASX_BB_DIRECTIONAL',
+              'ASX BB DIRECTIONAL',
+              'NON OIS',
+              'substitutes_for_ois_level',
+              'policy_delta_from_proxy_allowed',
+              'nzd_proxy_count',
+          )
+          missing=[token for token in required if token not in js]
+          assert not missing, missing
+          assert "if(c!=='NZD'||!p)return ''" in js
+          print('OIS_OPERATIONAL_UI_PROXY_CONTRACT_PASS')
+          PY
