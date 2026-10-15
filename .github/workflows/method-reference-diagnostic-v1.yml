@@ -1,0 +1,71 @@
+name: Method Reference Diagnostic V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/method-reference-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/method-reference-diagnostic-server.log 2>&1 &
+          sleep 2
+      - name: Audit Method reference content
+        run: |
+          cat > method-reference-diagnostic.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1100}});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('method'));
+            await page.waitForTimeout(350);
+            const out=await page.evaluate(()=>{
+              const root=document.getElementById('method');
+              const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
+              const text=norm(root?.innerText);
+              const dates=[...new Set(text.match(/\b20\d{2}[-\/]\d{1,2}(?:[-\/]\d{1,2})?\b/g)||[])];
+              const engineTerms=['payload','runtime','owner','ownership','schema','authority','WITHHELD','fail-closed','adapter','manifest','bootstrap','registry','core_effect','operational','renderer','mount','legacy'];
+              const engineHits=engineTerms.filter(t=>text.toLowerCase().includes(t.toLowerCase()));
+              const elements=[...root.querySelectorAll('*')].filter(x=>x.id||/method|model|process|layer|rule|flow/i.test(String(x.className||''))).slice(0,220).map(x=>({tag:x.tagName,id:x.id||null,cls:typeof x.className==='string'?x.className:null,text:norm(x.innerText).slice(0,260)}));
+              const headings=[...root.querySelectorAll('h1,h2,h3,h4,.title,.ttl')].map(x=>norm(x.innerText)).filter(Boolean);
+              const globals=Object.keys(window).filter(k=>/method|methodolog|modelRule|model_rule/i.test(k)).sort().slice(0,200);
+              return {schema:'GMFQ_METHOD_REFERENCE_DIAGNOSTIC_V1',text:text.slice(0,14000),text_length:text.length,dates,engine_hits:engineHits,elements,headings,globals,view_class:root?.className||null,owner_attr:root?.getAttribute('data-gmfq-operational')||null};
+            });
+            console.log(JSON.stringify(out,null,2));
+            if(!out.text||out.text_length<200) throw new Error('Method view empty/too short');
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error('Runtime scope error');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node method-reference-diagnostic.js | tee /tmp/method-reference-diagnostic.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: method-reference-diagnostic-v1
+          path: |
+            /tmp/method-reference-diagnostic.json
+            /tmp/method-reference-diagnostic-server.log
+          if-no-files-found: error
