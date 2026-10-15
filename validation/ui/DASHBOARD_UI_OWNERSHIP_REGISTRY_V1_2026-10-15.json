@@ -11,7 +11,7 @@
   },
   "views": {
     "overview": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
-    "wow": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "wow": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/what-changed-operational-v1.js","required_selector":"[data-gmfq-operational=\"wow\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "themes": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/top-themes-operational-v1.js","required_selector":"[data-gmfq-operational=\"themes\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "calendar": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/calendar-news-operational-v1.js","required_selector":"[data-gmfq-operational=\"calendar\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "news": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/calendar-news-operational-v1.js","required_selector":"[data-gmfq-operational=\"news\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
@@ -28,6 +28,7 @@
     "forwarddesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"}
   },
   "dynamic_sources": {
+    "wow": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "themes": ["live_data/sections/NEWS_PULSE_OPERATIONAL.json","live_data/sections/MACRO_THERMOMETER_DATA.json","live_data/sections/OIS_OPERATIONAL_VIEW.json"],
     "calendar": "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
     "news": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
