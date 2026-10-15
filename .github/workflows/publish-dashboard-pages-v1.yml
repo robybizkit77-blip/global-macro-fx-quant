@@ -69,19 +69,16 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-
           contract=json.load(open('/tmp/pages-live-contract.json'))
           runtime=json.load(open('/tmp/pages-runtime-roundtrip.json'))
           assert contract['status']=='PASS', contract
           assert runtime['status']=='PASS', runtime
           assert runtime.get('noop_roundtrip_byte_identical') is True, runtime
-
           index=Path('index.html').read_text(encoding='utf-8')
           parts=[Path(f'payload/part-{i:02d}.txt') for i in range(16)]
           missing=[str(p) for p in parts if not p.is_file()]
           assert not missing, missing
-          for p in parts:
-              assert str(p).replace('\\','/') in index, p
+          for p in parts: assert str(p).replace('\\','/') in index, p
           payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
@@ -92,15 +89,16 @@ jobs:
           cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
           news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text(encoding='utf-8'))
           assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1' and ois['summary']['operational_green']==8
-          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V2', cal.get('schema')
-          assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL', cal.get('status')
+          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3', cal.get('schema')
+          assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT', cal.get('status')
           assert cal['coverage']['cb_schedule_available']==8, cal['coverage']
           assert cal['coverage']['macro_ccy_coverage']==8, cal['coverage']
           assert cal['coverage']['upcoming_macro_events']>=8, cal['coverage']
-          assert cal['scope']['consensus']=='SEPARATE_SECONDARY_LAYER_NOT_PRESENT', cal['scope']
           assert cal['scope']['core_score_impact']==0, cal['scope']
+          assert cal['scope']['consensus_context_only'] is True, cal['scope']
+          assert cal['scope']['consensus_never_changes_official_date'] is True, cal['scope']
           macro=[e for e in cal['events'] if e.get('event_type')!='CENTRAL_BANK_DECISION']
-          assert macro and all(e.get('consensus_status')=='NOT_PRESENT' for e in macro), macro
+          assert macro and all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro), macro
           assert all(str(e.get('quality','')).startswith('OFFICIAL_') for e in macro), macro
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1' and news['items']
           print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
@@ -119,7 +117,6 @@ jobs:
           REMOTE_SHA="$(git rev-parse origin/gh-pages)"
           rm -rf /tmp/gmfq-pages
           git worktree add --detach /tmp/gmfq-pages origin/gh-pages
-
           mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
@@ -129,23 +126,17 @@ jobs:
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
           cp live_data/sections/CALENDAR_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/CALENDAR_OPERATIONAL_VIEW.json
           cp live_data/sections/NEWS_PULSE_OPERATIONAL.json /tmp/gmfq-pages/live_data/sections/NEWS_PULSE_OPERATIONAL.json
-
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
           tracked=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           changed=tracked|untracked
-          allowed={
-              'index.html','dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/editorial-freshness-guard-v1.js',
-              'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json',
-              *[f'payload/part-{i:02d}.txt' for i in range(16)]
-          }
+          allowed={'index.html','dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/editorial-freshness-guard-v1.js','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
           unexpected=changed-allowed
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-
           git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
