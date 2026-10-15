@@ -5,6 +5,8 @@ on:
     paths:
       - 'validation/cb_pricing/OIS_OPERATIONAL_COVERAGE_POLICY_V1_2026-10-15.json'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
+      - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
       - '.github/workflows/ois-operational-green-coverage-v1.yml'
@@ -27,14 +29,47 @@ jobs:
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/ois_operational.before.json
       - name: Rebuild operational OIS view
         run: python validation/cb_pricing/build_ois_operational_view_v1.py
-      - name: Verify committed operational view is semantically deterministic
+      - name: Verify committed operational view core is unchanged
         run: |
           python - <<'PY'
           import json
+
           before=json.load(open('/tmp/ois_operational.before.json'))
           after=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
-          assert before == after, 'operational OIS view semantic drift'
-          print('PASS semantic determinism')
+
+          def strip_repricing(obj):
+              if isinstance(obj, dict):
+                  return {
+                      k: strip_repricing(v)
+                      for k, v in obj.items()
+                      if k not in {
+                          'change_1d_bp',
+                          'change_1w_bp',
+                          'repricing_reference',
+                      }
+                  }
+              if isinstance(obj, list):
+                  return [strip_repricing(x) for x in obj]
+              return obj
+
+          assert strip_repricing(before) == strip_repricing(after), 'non-repricing operational OIS semantic drift'
+          assert after['status']=='GREEN_8_OF_8'
+          assert after['summary']=={
+              'g8_total':8,
+              'operational_green':8,
+              'green_official':4,
+              'green_estimated':4,
+              'operational_withheld':0,
+          }
+          for c in ('USD','EUR','CHF','NZD'):
+              row=after['currencies'][c]
+              assert row['operational_status']=='GREEN_ESTIMATED'
+              assert row['backtest_eligible_as_official'] is False
+              assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'
+              for h in ('3m','6m','12m'):
+                  assert 'change_1d_bp' in row['horizons'][h]
+                  assert 'change_1w_bp' in row['horizons'][h]
+          print('PASS core determinism with additive repricing fields')
           PY
       - name: Run coverage self-test
         run: python validation/cb_pricing/test_ois_operational_view_v1.py
