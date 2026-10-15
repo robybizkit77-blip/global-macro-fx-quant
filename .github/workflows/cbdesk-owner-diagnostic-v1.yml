@@ -42,39 +42,39 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
             await page.evaluate(()=>window.showView?.('cbdesk'));
             await page.waitForTimeout(350);
-            const inspect=async()=>page.evaluate(()=>{
+            const initial=await page.evaluate(()=>{
               const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
               const root=document.getElementById('cbdesk');
-              const elems=[...root.querySelectorAll('*')].filter(x=>x.id||/cb|central|policy|pricing|currency/i.test(String(x.className||''))).slice(0,180).map(x=>({tag:x.tagName,id:x.id||null,cls:typeof x.className==='string'?x.className:null,text:norm(x.innerText).slice(0,180),attrs:Object.fromEntries([...x.attributes].filter(a=>/^data-/.test(a.name)).map(a=>[a.name,a.value]))}));
               const buttons=[...root.querySelectorAll('button')].slice(0,40).map((x,i)=>({i,text:norm(x.innerText),id:x.id||null,cls:x.className||null,attrs:Object.fromEntries([...x.attributes].map(a=>[a.name,a.value]))}));
-              const globals=Object.keys(window).filter(k=>/central|cb|policy|pricing|ois/i.test(k)).sort().slice(0,300);
-              const probes={};
-              for(const k of globals){
-                if(/integrity|audit|coverage|state|pricing/i.test(k)&&typeof window[k]==='function'){
-                  try{const v=window[k]();if(v!==undefined)probes[k]=v;}catch(e){probes[k]={error:String(e)}}
-                }
-              }
-              const dataKeys=Object.keys(window.__GMFQ_DATA||{}).filter(k=>/CB|CENTRAL|POLICY|PRICING|OIS/i.test(k)).sort();
-              const data={};
-              for(const k of dataKeys){
-                const v=window.__GMFQ_DATA[k];
-                data[k]=Array.isArray(v)?{type:'array',length:v.length,sample:v.slice(0,2)}:{type:typeof v,keys:v&&typeof v==='object'?Object.keys(v).slice(0,30):null};
-              }
-              return {schema:'GMFQ_CBDESK_OWNER_DIAGNOSTIC_V1',text:norm(root?.innerText).slice(0,5000),elements:elems,buttons,globals,probes,dataKeys,data,health:typeof window.productionHealthCheck==='function'?window.productionHealthCheck():null};
+              const fnNames=['renderNativeCbDesk','selectNativeCb','v234PolicyVsMarket','v234PricingCards','v234PricingQuality','v243SimpleCb','v235PolicyRateNumber'];
+              const functions={};
+              for(const k of fnNames){functions[k]=typeof window[k]==='function'?String(window[k]).slice(0,20000):{type:typeof window[k],value:window[k]??null};}
+              const clone=v=>{try{return JSON.parse(JSON.stringify(v));}catch(e){return {error:String(e)}}};
+              const cb=clone(window.__GMFQ_DATA?.NATIVE_CB_DATA||null);
+              const ois=clone(window.__GMFQ_DATA?.OIS_DATA||null);
+              const oisUi=typeof window.gmfqOisOperationalUiAudit==='function'?window.gmfqOisOperationalUiAudit():null;
+              const policy=typeof window.corePolicyIntegrity==='function'?window.corePolicyIntegrity():null;
+              const health=typeof window.productionHealthCheck==='function'?window.productionHealthCheck():null;
+              return {schema:'GMFQ_CBDESK_OWNER_DIAGNOSTIC_V2',text:norm(root?.innerText).slice(0,4500),buttons,functions,NATIVE_CB_DATA:cb,OIS_DATA:ois,oisUi,policy,health};
             });
-            const initial=await inspect();
             const snapshots=[];
             for(const wanted of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
-              const clicked=await page.evaluate(w=>{const r=document.getElementById('cbdesk');const b=[...r.querySelectorAll('button')].find(x=>String(x.innerText||'').trim().startsWith(w)||x.dataset?.c===w||x.dataset?.ccy===w||x.dataset?.currency===w);if(!b)return false;b.click();return true;},wanted);
-              await page.waitForTimeout(120);
-              const text=await page.evaluate(()=>String(document.getElementById('cbdesk')?.innerText||'').replace(/\s+/g,' ').trim().slice(0,1200));
-              snapshots.push({wanted,clicked,text});
+              const clicked=await page.evaluate(w=>{const b=document.querySelector(`#v234CurrencyCards .v234CurrencyCard[data-c="${w}"]`);if(!b)return false;b.click();return true;},wanted);
+              await page.waitForTimeout(150);
+              const state=await page.evaluate(()=>({
+                country:String(document.getElementById('v234CountryName')?.textContent||''),
+                pricingQuality:String(document.getElementById('v234PricingQuality')?.textContent||''),
+                market:String(document.getElementById('v234Market')?.textContent||''),
+                marketWhy:String(document.getElementById('v234MarketWhy')?.textContent||''),
+                policyRead:String(document.getElementById('v234PolicyRead')?.textContent||'').slice(0,1200)
+              }));
+              snapshots.push({wanted,clicked,...state});
             }
             const out={...initial,snapshots};console.log(JSON.stringify(out,null,2));
-            if(!initial.text)throw new Error('CB Desk empty');
-            if(initial.buttons.length<8)throw new Error('CB Desk selector has fewer than 8 buttons');
-            if(snapshots.some(x=>!x.clicked))throw new Error('CB Desk selector click failed');
-            for(const s of snapshots){if(!s.text.includes(s.wanted))throw new Error('CB Desk selection did not render '+s.wanted);}
+            if(initial.buttons.filter(x=>x.attrs?.['data-c']).length!==8)throw new Error('CB G8 selector coverage');
+            if(snapshots.some(x=>!x.clicked||!x.country.includes(x.wanted)))throw new Error('CB selector/title desync');
+            if(initial.policy?.ok!==true)throw new Error('Core policy integrity failed');
+            if(initial.oisUi?.ok!==true||initial.oisUi?.summary?.operational_green!==8)throw new Error('OIS operational UI not 8/8');
             const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
             if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x)))throw new Error('Runtime scope error: '+consoleErrors.concat(pageErrors).join(' | '));
             await browser.close();
