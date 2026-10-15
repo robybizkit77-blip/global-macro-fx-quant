@@ -68,10 +68,13 @@ jobs:
             if(await page.evaluate(()=>!!document.getElementById('gmfq-calendar-news-operational-ui'))){
               await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
             }
-            await page.waitForFunction(()=>!!window.GMFQ_EDITORIAL_FRESHNESS?.evaluated_at,null,{timeout:30000});
+            await page.waitForFunction(()=>window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:30000});
             const audit=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
-            if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V1')throw new Error(label+' freshness schema missing');
+            if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V2_OPERATIONAL_AUTHORITY')throw new Error(label+' freshness schema '+audit?.schema);
+            if(audit.legacy_authority!=='NONE')throw new Error(label+' legacy freshness authority '+audit.legacy_authority);
             if(!['PASS_FAIL_CLOSED_STALE','PASS_FRESH','PASS_WITH_UNVERIFIED'].includes(audit.status))throw new Error(label+' freshness status '+audit.status);
+            if(audit.sections?.calendar?.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc')throw new Error(label+' calendar authority drift');
+            if(audit.sections?.news?.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of')throw new Error(label+' news authority drift');
             for(const id of IDS){
               const s=audit.sections?.[id];
               if(!s)throw new Error(label+' missing section state '+id);
@@ -81,11 +84,13 @@ jobs:
               const r=await page.evaluate(id=>{
                 const el=document.getElementById(id);const banner=el?.querySelector(':scope > .gmfqEditorialFreshnessBanner');
                 const box=banner?.getBoundingClientRect();
-                return {status:el?.dataset?.gmfqEditorialFreshness||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0,operational:!!el?.querySelector('[data-gmfq-operational]')};
+                return {status:el?.dataset?.gmfqEditorialFreshness||null,authority:el?.dataset?.gmfqFreshnessAuthority||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0,operational:!!el?.querySelector('[data-gmfq-operational]')};
               },id);
               if(r.operational && (id==='calendar'||id==='news') && r.status!=='FRESH')throw new Error(label+' operational section must be fresh '+id+': '+JSON.stringify(r));
+              if(id==='calendar'&&r.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc')throw new Error(label+' calendar DOM authority '+JSON.stringify(r));
+              if(id==='news'&&r.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of')throw new Error(label+' news DOM authority '+JSON.stringify(r));
               if(r.status==='STALE'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS FAIL-CLOSED')))throw new Error(label+' stale section not visibly fail-closed '+id+': '+JSON.stringify(r));
-              if(r.status==='UNVERIFIED'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS NON VERIFICABILE')))throw new Error(label+' unverified section not visibly labelled '+id+': '+JSON.stringify(r));
+              if(r.status==='UNVERIFIED'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS OPERATIVA NON VERIFICABILE')))throw new Error(label+' unverified section not visibly labelled '+id+': '+JSON.stringify(r));
               if(r.status==='FRESH'&&r.banner)throw new Error(label+' fresh section should not show freshness banner '+id);
               await page.locator('#'+id).screenshot({path:`editorial-freshness-evidence/${label}-${id}.png`});
             }
