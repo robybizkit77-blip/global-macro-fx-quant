@@ -86,6 +86,10 @@ def parse_contracts(html: str, spec: dict) -> list[dict]:
         short = m.group("short")
         if not full.startswith(spec["exchange"] + ":") or not short.startswith(spec["root"]):
             continue
+        # Continuous futures (e.g. FST31!) are not dated contracts and must
+        # never enter the 3M/6M/12M curve. Only explicit listed expiries qualify.
+        if "!" in short or "!" in full:
+            continue
         if short in seen:
             continue
         seen.add(short)
@@ -99,7 +103,7 @@ def parse_contracts(html: str, spec: dict) -> list[dict]:
         })
     rows.sort(key=lambda x: x["expiration"])
     if len(rows) < 6:
-        raise RuntimeError(f"{spec['exchange']}: only {len(rows)} contracts parsed")
+        raise RuntimeError(f"{spec['exchange']}: only {len(rows)} dated contracts parsed")
     return rows
 
 
@@ -111,8 +115,10 @@ def select_contracts(rows: list[dict], today: date) -> dict[str, dict]:
         target = today + timedelta(days=days)
         candidates = [r for r in future if r["contract"] not in used]
         if not candidates:
-            raise RuntimeError(f"No contract candidate for {horizon}")
+            raise RuntimeError(f"No dated contract candidate for {horizon}")
         row = min(candidates, key=lambda r: (abs((r["expiration"] - target).days), r["expiration"]))
+        if "!" in row["contract"] or "!" in row["symbol"]:
+            raise RuntimeError(f"continuous contract rejected for {horizon}: {row}")
         selected[horizon] = row
         used.add(row["contract"])
     return selected
@@ -121,6 +127,8 @@ def select_contracts(rows: list[dict], today: date) -> dict[str, dict]:
 def parse_quote(html: str, expected_contract: str, today: date) -> dict:
     if expected_contract not in html:
         raise RuntimeError(f"contract page does not contain {expected_contract}")
+    if "!" in expected_contract:
+        raise RuntimeError(f"continuous contract forbidden: {expected_contract}")
     m = OFFER_RE.search(html)
     if not m:
         raise RuntimeError(f"no SSR Offer quote for {expected_contract}")
@@ -152,6 +160,8 @@ def collect(today: date | None = None) -> dict:
         "currencies": {},
         "governance": {
             "informational_only": True,
+            "dated_contracts_only": True,
+            "continuous_contracts_allowed": False,
             "core_score_effect": "NONE",
             "bias_effect": "NONE",
             "sizing_effect": "NONE",
@@ -178,19 +188,19 @@ def collect(today: date | None = None) -> dict:
                 "quote_as_of": q["quote_as_of"],
                 "price_valid_until": q["price_valid_until"],
                 "business_day_lag": q["business_day_lag"],
-                "mapping": f"nearest listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation",
+                "mapping": f"nearest dated listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation",
             }
         out["currencies"][ccy] = {
             "status": "LIVE_SECONDARY_READY",
             "confidence_grade": spec["confidence"],
             "as_of": min(asofs),
             "instrument": spec["instrument"],
-            "source": "TradingView public server-rendered contract pages · exchange-labelled futures",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
             "source_url": spec["chain_url"],
             "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
             "freshness_status": "LIVE_OR_RECENT_SESSION",
             "horizons": horizons,
-            "note": "Informational futures-implied policy proxy. Contract-expiry mapping is approximate to 3M/6M/12M and does not promote official OIS certification.",
+            "note": "Informational futures-implied policy proxy using dated listed contracts only. Contract-expiry mapping is approximate to 3M/6M/12M, without interpolation; continuous futures are forbidden.",
         }
     return out
 
@@ -207,7 +217,7 @@ def main():
         "status": "PASS",
         "output": str(path),
         "currencies": {
-            c: {h: r["rate"] for h, r in row["horizons"].items()}
+            c: {h: {"rate": r["rate"], "contract": r["contract"]} for h, r in row["horizons"].items()}
             for c, row in data["currencies"].items()
         },
     }, sort_keys=True))
