@@ -1,0 +1,23 @@
+{
+  "schema": "GMFQ_MACRO_RELEASE_SOURCE_REGISTRY_V1",
+  "status": "ACTIVE_OFFICIAL_ONLY",
+  "consensus_policy": "SEPARATE_SECONDARY_LAYER_NOT_PRESENT",
+  "sources": {
+    "USD": ["BLS release calendar"],
+    "EUR": ["Eurostat release calendar"],
+    "GBP": ["ONS release calendar"],
+    "JPY": ["Statistics Bureau of Japan release schedules"],
+    "CHF": ["FSO CPI publication calendar", "SECO labour/GDP publication calendars"],
+    "CAD": ["Statistics Canada major economic release schedule"],
+    "AUD": ["Australian Bureau of Statistics future releases calendar"],
+    "NZD": ["Stats NZ release calendar and indicator pages"]
+  },
+  "rules": {
+    "official_dates_only": true,
+    "no_inferred_consensus": true,
+    "no_event_without_source_family": true,
+    "provisional_dates_must_be_labelled": true,
+    "calendar_is_context_only": true,
+    "core_score_impact": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
+  "status": "ACTIVE_VERIFIED_SEED",
+  "as_of": "2026-10-15",
+  "consensus": "NOT_INCLUDED",
+  "events": [
+    {"ccy":"USD","date":"2026-10-16","time_local":"08:30","timezone":"America/New_York","event_type":"INFLATION","title":"U.S. Import and Export Price Indexes","reference_period":"September 2026","importance":"MEDIUM","quality":"OFFICIAL_CONFIRMED","source_family":"BLS"},
+    {"ccy":"USD","date":"2026-10-30","time_local":"08:30","timezone":"America/New_York","event_type":"LABOUR_COST","title":"Employment Cost Index","reference_period":"Q3 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"BLS"},
+    {"ccy":"USD","date":"2026-11-06","time_local":"08:30","timezone":"America/New_York","event_type":"LABOUR","title":"Employment Situation","reference_period":"October 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"BLS"},
+    {"ccy":"USD","date":"2026-11-10","time_local":"08:30","timezone":"America/New_York","event_type":"INFLATION","title":"Consumer Price Index","reference_period":"October 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"BLS"},
+    {"ccy":"EUR","date":"2026-10-30","time_local":null,"timezone":"Europe/Luxembourg","event_type":"GROWTH","title":"Euro area preliminary flash GDP","reference_period":"Q3 2026","importance":"HIGH","quality":"OFFICIAL_CALENDAR","source_family":"Eurostat"},
+    {"ccy":"EUR","date":"2026-10-30","time_local":null,"timezone":"Europe/Luxembourg","event_type":"LABOUR","title":"Euro area unemployment","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_CALENDAR","source_family":"Eurostat"},
+    {"ccy":"GBP","date":"2026-10-20","time_local":"07:00","timezone":"Europe/London","event_type":"LABOUR","title":"UK Labour Market","reference_period":"October 2026 release","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"ONS"},
+    {"ccy":"GBP","date":"2026-10-21","time_local":"07:00","timezone":"Europe/London","event_type":"INFLATION","title":"Consumer price inflation, UK","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"ONS"},
+    {"ccy":"GBP","date":"2026-11-12","time_local":"07:00","timezone":"Europe/London","event_type":"GROWTH","title":"GDP first quarterly estimate, UK","reference_period":"Q3 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"ONS"},
+    {"ccy":"JPY","date":"2026-10-23","time_local":"08:30","timezone":"Asia/Tokyo","event_type":"INFLATION","title":"Japan Consumer Price Index","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_SCHEDULE_RULE","source_family":"Statistics Bureau of Japan"},
+    {"ccy":"JPY","date":"2026-10-30","time_local":"08:30","timezone":"Asia/Tokyo","event_type":"LABOUR","title":"Labour Force Survey - Basic Tabulation","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Statistics Bureau of Japan"},
+    {"ccy":"CHF","date":"2026-11-03","time_local":"08:30","timezone":"Europe/Zurich","event_type":"INFLATION","title":"Swiss Consumer Price Index","reference_period":"October 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"FSO"},
+    {"ccy":"CHF","date":"2026-11-05","time_local":null,"timezone":"Europe/Zurich","event_type":"LABOUR","title":"Swiss labour market situation","reference_period":"October 2026","importance":"MEDIUM","quality":"OFFICIAL_CONFIRMED","source_family":"SECO"},
+    {"ccy":"CHF","date":"2026-11-16","time_local":"09:00","timezone":"Europe/Zurich","event_type":"GROWTH","title":"Swiss GDP flash","reference_period":"Q3 2026","importance":"HIGH","quality":"OFFICIAL_PROVISIONAL","source_family":"SECO"},
+    {"ccy":"CAD","date":"2026-10-19","time_local":"08:30","timezone":"America/Toronto","event_type":"INFLATION","title":"Consumer Price Index","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Statistics Canada"},
+    {"ccy":"CAD","date":"2026-10-30","time_local":"08:30","timezone":"America/Toronto","event_type":"GROWTH","title":"Gross domestic product by industry","reference_period":"August 2026","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Statistics Canada"},
+    {"ccy":"AUD","date":"2026-10-28","time_local":"11:30","timezone":"Australia/Sydney","event_type":"INFLATION","title":"Consumer Price Index, Australia","reference_period":"September 2026","importance":"HIGH","quality":"OFFICIAL_CALENDAR","source_family":"ABS"},
+    {"ccy":"NZD","date":"2026-10-22","time_local":null,"timezone":"Pacific/Auckland","event_type":"INFLATION","title":"Consumers price index","reference_period":"September 2026 quarter","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Stats NZ"},
+    {"ccy":"NZD","date":"2026-11-04","time_local":null,"timezone":"Pacific/Auckland","event_type":"LABOUR","title":"Labour market statistics","reference_period":"September 2026 quarter","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Stats NZ"},
+    {"ccy":"NZD","date":"2026-12-17","time_local":null,"timezone":"Pacific/Auckland","event_type":"GROWTH","title":"Gross domestic product","reference_period":"September 2026 quarter","importance":"HIGH","quality":"OFFICIAL_CONFIRMED","source_family":"Stats NZ"}
+  ]
+}
