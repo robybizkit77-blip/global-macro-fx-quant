@@ -45,6 +45,10 @@ def main():
         raise SystemExit("registry engine state drift")
     if registry["layers"]["official_runtime"].get("fail_closed") is not True:
         raise SystemExit("official runtime is not fail-closed")
+    if registry["layers"]["cb_pricing_estimated"].get("refresh_mode") != "LIVE_OPERATIONAL_ESTIMATED_WITH_HOMOGENEOUS_REPRICING":
+        raise SystemExit("CB estimated registry refresh mode drift")
+    if registry["layers"]["residual_gap_proxies"].get("refresh_mode") != "ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH":
+        raise SystemExit("residual registry refresh mode drift")
 
     cb_contract = load_json("validation/cb_pricing/CB_PRICING_ESTIMATED_CONTRACT_V1_2026-10-15.json")
     if cb_contract.get("status") != "INFORMATIONAL_ONLY":
@@ -65,6 +69,60 @@ def main():
         raise SystemExit("CB estimated committed snapshot is semantically out of alignment with its deterministic builder")
     if ois_before != sha256("live_data/sections/OIS_DATA.json") or native_cb_before != sha256("live_data/sections/NATIVE_CB_DATA.json"):
         raise SystemExit("CB estimated validation mutated official CB/OIS inputs")
+
+    # Current operational estimated architecture: USD/EUR/CHF use live secondary
+    # exchange-labelled curves; NZD preserves the native RBNZ OIS anchor and adds
+    # an explicitly non-OIS ASX directional market-rates proxy.
+    for ccy in ("USD", "EUR", "CHF"):
+        row = cb_after_obj["currencies"][ccy]
+        if row.get("status") != "ESTIMATED_ACTIVE":
+            raise SystemExit(f"{ccy} estimated live layer not active")
+        if row.get("input_mode") != "LIVE_SECONDARY_OVERLAY":
+            raise SystemExit(f"{ccy} estimated input mode drift")
+        if row.get("method_id") != "TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1":
+            raise SystemExit(f"{ccy} estimated method drift")
+        if row.get("governance", {}).get("backtest_eligible_as_official_ois") is not False:
+            raise SystemExit(f"{ccy} estimated layer was silently promoted to official backtest input")
+
+    nzd = cb_after_obj["currencies"]["NZD"]
+    if nzd.get("status") != "ESTIMATED_PARTIAL" or nzd.get("input_mode") != "NATIVE_CB_FALLBACK":
+        raise SystemExit("NZD native OIS fallback state drift")
+    if nzd.get("method_id") != "NATIVE_CB_ESTIMATED_V1":
+        raise SystemExit("NZD native OIS method drift")
+    if (nzd.get("horizons") or {}).get("3m", {}).get("rate") != 3.0:
+        raise SystemExit("NZD native 3M OIS anchor drift")
+    if (nzd.get("horizons") or {}).get("6m", {}).get("rate") is not None or (nzd.get("horizons") or {}).get("12m", {}).get("rate") is not None:
+        raise SystemExit("NZD ASX proxy silently filled native OIS horizons")
+    nzd_proxy = nzd.get("market_direction_proxy") or {}
+    if nzd_proxy.get("status") != "LIVE_DIRECTIONAL_PROXY_READY":
+        raise SystemExit("NZD ASX directional proxy not ready")
+    if nzd_proxy.get("substitutes_for_ois_level") is not False or nzd_proxy.get("policy_delta_from_proxy_allowed") is not False:
+        raise SystemExit("NZD ASX directional proxy governance drift")
+    for horizon in ("3m", "6m", "12m"):
+        if not isinstance((nzd_proxy.get("horizons") or {}).get(horizon, {}).get("implied_bank_bill_rate"), (int, float)):
+            raise SystemExit(f"NZD ASX directional proxy missing {horizon}")
+
+    # Resolved operational view must cover all G8 while keeping the quality split explicit.
+    run([sys.executable, "validation/cb_pricing/test_ois_operational_view_v1.py"])
+    operational_ois = load_json("live_data/sections/OIS_OPERATIONAL_VIEW.json")
+    expected_summary = {
+        "g8_total": 8,
+        "operational_green": 8,
+        "green_official": 4,
+        "green_estimated": 4,
+        "operational_withheld": 0,
+    }
+    if operational_ois.get("status") != "GREEN_8_OF_8" or operational_ois.get("summary") != expected_summary:
+        raise SystemExit("OIS operational 8/8 coverage drift")
+    if operational_ois.get("official_runtime_untouched") is not True:
+        raise SystemExit("OIS operational view no longer preserves official runtime")
+    for ccy in ("AUD", "CAD", "GBP", "JPY"):
+        if operational_ois["currencies"][ccy].get("operational_status") != "GREEN_OFFICIAL":
+            raise SystemExit(f"{ccy} official operational OIS status drift")
+    for ccy in ("USD", "EUR", "CHF", "NZD"):
+        row = operational_ois["currencies"][ccy]
+        if row.get("operational_status") != "GREEN_ESTIMATED" or row.get("backtest_eligible_as_official") is not False:
+            raise SystemExit(f"{ccy} estimated operational OIS governance drift")
 
     residual_contract = load_json("validation/estimated/RESIDUAL_GAPS_ESTIMATED_CONTRACT_V1_2026-10-15.json")
     residual = load_json("live_data/sections/ESTIMATED_RESIDUAL_GAPS.json")
@@ -117,6 +175,8 @@ def main():
     )
     jpy_auto = jpy.get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"
     all_residual_live = chf_auto and jpy_auto and brent.get("status") == "MARKET_PROXY_ACTIVE_SECONDARY"
+    if not all_residual_live:
+        raise SystemExit("registry says all residual proxies live/auto-refresh but runtime does not")
 
     receipt = {
         "schema": "GMFQ_FINAL_E2E_CERTIFICATION_GATE_V3",
@@ -131,18 +191,24 @@ def main():
         "estimated_layers": {
             "cb_pricing": {
                 "status": "ALIGNED_INFORMATIONAL_ONLY",
-                "refresh_mode": "DERIVED_DYNAMIC_FROM_NATIVE_CB_DATA",
+                "refresh_mode": "LIVE_OPERATIONAL_ESTIMATED_WITH_HOMOGENEOUS_REPRICING",
                 "currencies": ["USD", "EUR", "CHF", "NZD"],
+                "live_secondary_overlay_currencies": ["USD", "EUR", "CHF"],
+                "native_ois_anchor_currencies": ["NZD"],
+                "directional_market_proxy_currencies": ["NZD"],
                 "deterministic_snapshot_aligned": True,
+                "operational_coverage": "GREEN_8_OF_8",
+                "official_green": 4,
+                "estimated_green": 4,
                 "core_effect": "NONE",
             },
             "residual_gaps": {
                 "status": "ALIGNED_INFORMATIONAL_ONLY",
-                "refresh_mode": "ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH" if all_residual_live else "MIXED_LIVE_AND_SNAPSHOT",
+                "refresh_mode": "ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH",
                 "active_numeric_proxies": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits", "BRENT.market_proxy"],
                 "brent_live_value": True,
                 "chf_official_proxy_auto_refresh": chf_auto,
-                "jpy_reserve_refresh_mode": "AUTO_REFRESH_OFFICIAL_PROXY" if jpy_auto else "SNAPSHOT",
+                "jpy_reserve_refresh_mode": "AUTO_REFRESH_OFFICIAL_PROXY",
                 "core_effect": "NONE",
             },
         },
