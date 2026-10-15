@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_DASHBOARD_UI_OWNERSHIP_REGISTRY_V1",
+  "version": "2026-10-15",
+  "status": "CANONICAL_PRE_REDESIGN",
+  "policy": {
+    "one_visible_owner_per_view": true,
+    "legacy_payload_may_remain_non_owner_during_migration": true,
+    "legacy_payload_must_not_replace_dynamic_owner": true,
+    "no_information_deletion_without_owner_migration": true,
+    "desktop_mobile_owner_parity": true
+  },
+  "views": {
+    "overview": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "wow": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "themes": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "calendar": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/calendar-news-operational-v1.js","required_selector":"[data-gmfq-operational=\"calendar\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
+    "news": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/calendar-news-operational-v1.js","required_selector":"[data-gmfq-operational=\"news\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
+    "risk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "currencies": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "pairs": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "macro": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "inflationlabour": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
+    "cbdesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "liquiditydesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "cot": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "method": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "forwarddesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"}
+  },
+  "dynamic_sources": {
+    "calendar": "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
+    "news": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
+    "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
+  }
+}
