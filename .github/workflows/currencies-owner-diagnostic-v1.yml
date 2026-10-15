@@ -1,0 +1,101 @@
+name: Currencies Owner Diagnostic V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/currencies-owner-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/currencies-owner-server.log 2>&1 &
+          sleep 2
+      - name: Inspect Currencies runtime owner and dependencies
+        run: |
+          cat > currencies-owner-diagnostic.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1100}});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('currencies'));
+            await page.waitForTimeout(700);
+            const out=await page.evaluate(()=>{
+              const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+              const fnSource=name=>typeof window[name]==='function'?Function.prototype.toString.call(window[name]).slice(0,5000):null;
+              const state={};
+              for(const c of CCYS){
+                let s=null,dyn=null;
+                try{s=window.deriveCurrencyState?.(c)||null;}catch(e){}
+                try{dyn=window.currencyDynamics?.(c)||null;}catch(e){}
+                state[c]={
+                  base:s?.base??null,macro:s?.macro??null,policy:s?.policy??null,
+                  improvementState:s?.improvementState??null,confirmation:s?.confirmation??null,
+                  dynamics:dyn?{direction:dyn.direction??null,velocity:dyn.velocity??null,acceleration:dyn.acceleration??null,turningPoint:dyn.turningPoint??dyn.turning_point??null}:null
+                };
+              }
+              const root=document.getElementById('currencies');
+              const ids=['currencyGrid','v224Headline','v224HowItIs','v224WhatMatters','v224WatchNow','v219MacroLayer','v219RatesLayer','v219CotLayer','v219PriceLayer'];
+              const mounts=Object.fromEntries(ids.map(id=>[id,(()=>{const e=document.getElementById(id);return e?{exists:true,text:(e.innerText||'').replace(/\s+/g,' ').trim().slice(0,900),display:getComputedStyle(e).display}: {exists:false};})()]));
+              const selected=document.querySelector('#currencyGrid .ccy.active')?.dataset?.c||null;
+              return {
+                schema:'GMFQ_CURRENCIES_OWNER_DIAGNOSTIC_V1',
+                ownerMarkers:[...root.querySelectorAll('[data-gmfq-operational],[data-owner]')].map(x=>({tag:x.tagName,id:x.id||null,op:x.getAttribute('data-gmfq-operational'),owner:x.getAttribute('data-owner')})),
+                selected,
+                states:state,
+                mounts,
+                functions:{
+                  renderCurrency:fnSource('renderCurrency'),
+                  renderCurrencyIntelligence:fnSource('renderCurrencyIntelligence'),
+                  deriveCurrencyState:fnSource('deriveCurrencyState'),
+                  currencyDynamics:fnSource('currencyDynamics')
+                },
+                visibleText:(root?.innerText||'').replace(/\s+/g,' ').trim().slice(0,5000)
+              };
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node currencies-owner-diagnostic.js
+      - name: Locate Currencies symbols in payload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          needles=['function renderCurrency','renderCurrency=function','renderCurrencyIntelligence','v224HowItIs','currencyGrid']
+          for needle in needles:
+              print('\n###',needle)
+              found=0
+              for p in sorted(Path('payload').glob('part-*.txt')):
+                  text=p.read_text(encoding='utf-8')
+                  start=0
+                  while True:
+                      i=text.find(needle,start)
+                      if i<0: break
+                      found+=1
+                      print('MATCH',p,'offset',i)
+                      print(text[max(0,i-700):min(len(text),i+1800)])
+                      start=i+len(needle)
+                      if found>=6: break
+                  if found>=6: break
+              print('TOTAL_SHOWN',found)
+          PY
