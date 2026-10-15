@@ -19,6 +19,23 @@
    return '(window.__GMFQ_STABLE_REFRESH_QUEUED=true)';
  });
  if(refreshCalls!==25) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
+
+ // Runtime quarantine V1: these September-era QA/mutator blocks remain in the
+ // immutable legacy payload for audit/rollback, but must no longer execute.
+ // Their former editorial surfaces are now owned by validated operational modules.
+ const quarantinedLegacyScripts=[
+   'gmfq-propagation-qa',
+   'gmfq-e2e-live-italy',
+   'gmfq-runtime-refresh-fix-20260930'
+ ];
+ for(const id of quarantinedLegacyScripts){
+   const escaped=id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   const re=new RegExp('<script\\s+id=["\\\']'+escaped+'["\\\'][^>]*>[\\s\\S]*?<\\/script>','g');
+   const matches=html.match(re)||[];
+   if(matches.length!==1) throw new Error('Legacy quarantine manifest inatteso per '+id+': '+matches.length);
+   html=html.replace(re,'<!-- GMFQ_LEGACY_QUARANTINED:'+id+' -->');
+ }
+
  const marker='<script id="gmfq-post-gate-final-audit-settlement">';
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
