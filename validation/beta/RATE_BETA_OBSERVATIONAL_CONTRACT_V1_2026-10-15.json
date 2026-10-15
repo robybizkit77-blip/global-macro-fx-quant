@@ -1,0 +1,80 @@
+{
+  "schema": "GMFQ_RATE_BETA_OBSERVATIONAL_CONTRACT_V1",
+  "as_of": "2026-10-15",
+  "status": "RESEARCH_NOT_VALIDATED",
+  "scope": "OBSERVATIONAL_ONLY",
+  "base_main_sha": "8a29973746c98380cde8747ec61470488b7884cb",
+  "purpose": "Materialize the preregistered neutral plumbing for RATE_BETA without changing Core, scoring, bias, sizing, Forward Logger, runtime, payload, or publication semantics.",
+  "model": {
+    "name": "RATE_BETA",
+    "estimator": "rolling_ols_with_intercept",
+    "window_observations": 52,
+    "frequency": "WEEKLY_ALIGNED_INPUT",
+    "dependent_variable": "fx_return",
+    "independent_variable": "delta_relative_2y_differential",
+    "formula": "fx_return ~ alpha + beta * delta_relative_2y_differential",
+    "smoothing": "FORBIDDEN",
+    "proxy_substitution": "FORBIDDEN",
+    "price_reaction_combination": "FORBIDDEN"
+  },
+  "input_contract": {
+    "format": "CSV",
+    "required_columns": [
+      "week_end",
+      "pair",
+      "fx_return",
+      "delta_rel_2y"
+    ],
+    "week_end": "Strict ISO YYYY-MM-DD. The plumbing does not resample daily observations and therefore does not invent a weekly sampling rule.",
+    "pair": "Explicit FX pair identifier; no implicit inversion is performed.",
+    "fx_return": "Pre-aligned weekly FX return produced by the certified replay/panel layer.",
+    "delta_rel_2y": "Pre-aligned weekly change in the pair-relative 2Y yield differential produced by the certified replay/panel layer.",
+    "duplicates": "FORBIDDEN per pair/week_end",
+    "missing_values": "FORBIDDEN inside an eligible OLS window",
+    "non_finite_values": "FORBIDDEN"
+  },
+  "warmup_and_fail_closed": {
+    "minimum_observations_for_first_beta": 52,
+    "minimum_observations_for_beta_change": 53,
+    "status_before_first_beta": "INSUFFICIENT_HISTORY",
+    "zero_variance_x": "BETA_UNDEFINED_ZERO_VARIANCE",
+    "invalid_input": "ERROR_FAIL_CLOSED",
+    "no_backfill_inference": true,
+    "no_lookahead": true
+  },
+  "output_contract": {
+    "per_pair_fields": [
+      "pair",
+      "observations",
+      "latest_week_end",
+      "window_observations",
+      "beta_current",
+      "beta_previous",
+      "beta_change",
+      "sample_depth",
+      "status",
+      "research_state",
+      "b1_status",
+      "b2_status",
+      "regime_status"
+    ],
+    "research_state": "RESEARCH_NOT_VALIDATED",
+    "b1_status": "NOT_EVALUATED_CANONICAL_SPEC_NOT_MATERIALIZED",
+    "b2_status": "NOT_EVALUATED_CANONICAL_SPEC_NOT_MATERIALIZED",
+    "regime_status": "NOT_CLASSIFIED_NO_CANONICAL_THRESHOLD_MATERIALIZED"
+  },
+  "governance": {
+    "backtest_enabled": false,
+    "promotion_enabled": false,
+    "hyperparameter_tuning": false,
+    "core_score_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "forward_logger_effect": "NONE",
+    "runtime_effect": "NONE",
+    "payload_effect": "NONE",
+    "dashboard_publication_effect": "NONE",
+    "b1_b2_rule": "Do not infer, rename, threshold, or evaluate B1/B2 until their canonical preregistered definitions are explicitly materialized from source evidence.",
+    "next_research_step": "Backfill certified 2Y history later, build immutable PIT-aligned FX+2Y weekly panel, then run the unchanged 52W beta and preregistered B1/B2 OOS evaluation."
+  }
+}

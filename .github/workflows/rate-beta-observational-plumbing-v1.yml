@@ -1,0 +1,41 @@
+name: RATE_BETA Observational Plumbing V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/beta/**'
+      - '.github/workflows/rate-beta-observational-plumbing-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify contract is observational only
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('validation/beta/RATE_BETA_OBSERVATIONAL_CONTRACT_V1_2026-10-15.json')
+          d = json.loads(p.read_text())
+          assert d['model']['window_observations'] == 52
+          assert d['model']['dependent_variable'] == 'fx_return'
+          assert d['model']['independent_variable'] == 'delta_relative_2y_differential'
+          assert d['model']['smoothing'] == 'FORBIDDEN'
+          assert d['model']['proxy_substitution'] == 'FORBIDDEN'
+          assert d['governance']['backtest_enabled'] is False
+          assert d['governance']['promotion_enabled'] is False
+          assert d['governance']['core_score_effect'] == 'NONE'
+          assert d['governance']['bias_effect'] == 'NONE'
+          assert d['governance']['sizing_effect'] == 'NONE'
+          assert d['governance']['forward_logger_effect'] == 'NONE'
+          PY
+      - name: Run plumbing self-test
+        run: python validation/beta/test_rate_beta_observational_v1.py
