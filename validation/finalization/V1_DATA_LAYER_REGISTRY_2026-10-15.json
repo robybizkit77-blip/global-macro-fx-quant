@@ -1,0 +1,58 @@
+{
+  "schema": "GMFQ_V1_DATA_LAYER_REGISTRY_V1",
+  "as_of": "2026-10-15",
+  "engine_state": "READY_WITH_DOCUMENTED_EXPECTED_GAPS",
+  "principle": "Certified official lanes and informational estimated/proxy lanes must remain structurally separate.",
+  "layers": {
+    "official_runtime": {
+      "role": "CORE_ELIGIBLE_WHEN_ACTIVE",
+      "sources": ["Macro", "Rates", "Price", "COT", "Liquidity", "CB Pricing", "Risk"],
+      "manifest": "live_data/manifest.v2.json",
+      "fail_closed": true
+    },
+    "cb_pricing_estimated": {
+      "role": "INFORMATIONAL_ONLY",
+      "path": "live_data/sections/CB_PRICING_ESTIMATED.json",
+      "refresh_mode": "DERIVED_DYNAMIC_FROM_NATIVE_CB_DATA",
+      "builder": "validation/cb_pricing/build_cb_pricing_estimated_v1.py",
+      "currencies": ["USD", "EUR", "CHF", "NZD"],
+      "core_effect": "NONE",
+      "backtest_eligible_as_official": false
+    },
+    "residual_gap_proxies": {
+      "role": "INFORMATIONAL_ONLY",
+      "path": "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json",
+      "refresh_mode": "SNAPSHOT_UNTIL_LIVE_COLLECTOR_EXISTS",
+      "lanes": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits", "BRENT.market_proxy"],
+      "core_effect": "NONE",
+      "backtest_eligible_as_official": false
+    },
+    "rate_beta": {
+      "role": "OBSERVATIONAL_RESEARCH_ONLY",
+      "status": "RESEARCH_NOT_VALIDATED",
+      "window_observations": 52,
+      "promotion_enabled": false,
+      "core_effect": "NONE"
+    },
+    "forward_logger": {
+      "role": "OBSERVATIONAL_VALIDATION",
+      "snapshot_count_at_v1_freeze": 28,
+      "outcomes_in_decision_snapshot": false,
+      "core_effect": "NONE"
+    }
+  },
+  "documented_expected_gaps": {
+    "official_count": 7,
+    "ids": [
+      "CHF.liquidity",
+      "CHF.credit",
+      "JPY.liquidity",
+      "USD.cb_pricing",
+      "EUR.cb_pricing",
+      "CHF.cb_pricing",
+      "NZD.cb_pricing"
+    ],
+    "remain_withheld_even_when_proxy_exists": true
+  },
+  "freeze_rule": "Estimated/proxy availability improves observability but never changes official certification status or Core eligibility without a separate validated promotion contract."
+}
