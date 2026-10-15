@@ -5,7 +5,8 @@ import json
 import tempfile
 from pathlib import Path
 
-from ois_estimated_snapshot_v1 import append_changed_snapshots, load_history
+from ois_estimated_snapshot_v1 import append_changed_snapshots, load_history, make_record
+from build_ois_operational_view_v1 import _estimated_repricing
 
 ROOT = Path(__file__).resolve().parents[2]
 VIEW = json.loads((ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
@@ -30,5 +31,30 @@ with tempfile.TemporaryDirectory() as td:
     assert r3['appended'] == 1 and r3['currencies'] == ['USD'], r3
     rows = load_history(p)
     assert len(rows) == 5
+
+# A methodology switch must never be interpreted as market repricing.
+base_row = json.loads(json.dumps(VIEW['currencies']['USD']))
+base_row['method_id'] = 'TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'
+base_row['source'] = 'TradingView public server-rendered contract pages · exchange-labelled futures'
+legacy_row = json.loads(json.dumps(base_row))
+legacy_row['method_id'] = 'NATIVE_CB_ESTIMATED_V1'
+legacy_row['source'] = 'legacy native source'
+legacy_record = make_record('USD', legacy_row, '2026-10-14T08:00:00Z')
+live_record = make_record('USD', base_row, '2026-10-15T08:00:00Z')
+r = _estimated_repricing('USD', base_row, [legacy_record, live_record])
+assert r['previous_reference'] is None, r
+assert r['weekly_reference'] is None, r
+assert r['change_1d_available'] is False, r
+assert r['change_1w_available'] is False, r
+assert all(x['change_1d_bp'] is None and x['change_1w_bp'] is None for x in r['horizon_changes'].values()), r
+
+# Once a second same-method snapshot exists, 1D becomes legal.
+prior_live = json.loads(json.dumps(base_row))
+prior_live['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.01
+prior_live_record = make_record('USD', prior_live, '2026-10-14T09:00:00Z')
+r = _estimated_repricing('USD', base_row, [legacy_record, prior_live_record, live_record])
+assert r['previous_reference'] == '2026-10-14T09:00:00Z', r
+assert r['change_1d_available'] is True, r
+assert r['horizon_changes']['3m']['change_1d_bp'] == 1.0, r
 
 print('PASS OIS estimated snapshot/repricing V1')
