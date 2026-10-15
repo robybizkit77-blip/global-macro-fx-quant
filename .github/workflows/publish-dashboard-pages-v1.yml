@@ -92,7 +92,16 @@ jobs:
           cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
           news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text(encoding='utf-8'))
           assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1' and ois['summary']['operational_green']==8
-          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V1' and cal['coverage']['cb_schedule_available']==8
+          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V2', cal.get('schema')
+          assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL', cal.get('status')
+          assert cal['coverage']['cb_schedule_available']==8, cal['coverage']
+          assert cal['coverage']['macro_ccy_coverage']==8, cal['coverage']
+          assert cal['coverage']['upcoming_macro_events']>=8, cal['coverage']
+          assert cal['scope']['consensus']=='SEPARATE_SECONDARY_LAYER_NOT_PRESENT', cal['scope']
+          assert cal['scope']['core_score_impact']==0, cal['scope']
+          macro=[e for e in cal['events'] if e.get('event_type')!='CENTRAL_BANK_DECISION']
+          assert macro and all(e.get('consensus_status')=='NOT_PRESENT' for e in macro), macro
+          assert all(str(e.get('quality','')).startswith('OFFICIAL_') for e in macro), macro
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1' and news['items']
           print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
           PY
