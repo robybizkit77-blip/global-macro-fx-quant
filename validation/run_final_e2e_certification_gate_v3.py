@@ -71,17 +71,28 @@ def main():
     if residual_contract.get("status") != "INFORMATIONAL_ONLY" or residual.get("status") != "INFORMATIONAL_ONLY":
         raise SystemExit("residual proxy layer governance drift")
     run([sys.executable, "validation/estimated/test_residual_gaps_estimated_v1.py"])
-    expected_status = {
-        "JPY.reserve_balances": "ESTIMATED_ACTIVE",
-        "CHF.credit": "ESTIMATED_ACTIVE",
-        "CHF.sight_deposits": "ESTIMATED_ACTIVE",
-        "BRENT.market_proxy": "MARKET_PROXY_READY_NO_LIVE_VALUE",
+
+    allowed_status = {
+        "JPY.reserve_balances": {"ESTIMATED_ACTIVE"},
+        "CHF.credit": {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"},
+        "CHF.sight_deposits": {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"},
+        "BRENT.market_proxy": {"MARKET_PROXY_ACTIVE_SECONDARY"},
     }
-    for lane, status in expected_status.items():
-        if residual["lanes"][lane].get("status") != status:
+    for lane, statuses in allowed_status.items():
+        if residual["lanes"][lane].get("status") not in statuses:
             raise SystemExit(f"residual proxy lane drift: {lane}")
-    if residual["lanes"]["BRENT.market_proxy"].get("value") is not None:
-        raise SystemExit("Brent proxy emitted an unvalidated numeric value")
+
+    brent = residual["lanes"]["BRENT.market_proxy"]
+    if not (isinstance(brent.get("value"), (int, float)) and brent["value"] > 0):
+        raise SystemExit("Brent secondary proxy has no valid live numeric value")
+    if brent.get("official_canonical_untouched") is not True or brent.get("vendor_symbol") != "BZ=F":
+        raise SystemExit("Brent secondary proxy governance drift")
+
+    for lane in ("CHF.credit", "CHF.sight_deposits"):
+        row = residual["lanes"][lane]
+        if row.get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY":
+            if row.get("official_canonical_untouched") is not True or "SNB official API" not in row.get("source", ""):
+                raise SystemExit(f"CHF auto-refresh proxy governance drift: {lane}")
 
     gaps = load_json("validation/finalization/V1_DOCUMENTED_EXPECTED_GAPS_2026-10-15.json")
     if gaps.get("summary", {}).get("total_expected_gaps") != 7:
@@ -89,6 +100,10 @@ def main():
     if any(row.get("status") != "WITHHELD_DOCUMENTED_EXPECTED_GAP" for row in gaps.get("gaps", [])):
         raise SystemExit("an official expected gap was silently promoted")
 
+    chf_auto = all(
+        residual["lanes"][lane].get("status") == "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"
+        for lane in ("CHF.credit", "CHF.sight_deposits")
+    )
     receipt = {
         "schema": "GMFQ_FINAL_E2E_CERTIFICATION_GATE_V3",
         "status": "PASS",
@@ -109,17 +124,18 @@ def main():
             },
             "residual_gaps": {
                 "status": "ALIGNED_INFORMATIONAL_ONLY",
-                "refresh_mode": "SNAPSHOT_UNTIL_LIVE_COLLECTOR_EXISTS",
-                "active_numeric_proxies": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits"],
-                "brent_live_value": False,
+                "refresh_mode": "MIXED_LIVE_AND_SNAPSHOT",
+                "active_numeric_proxies": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits", "BRENT.market_proxy"],
+                "brent_live_value": True,
+                "chf_official_proxy_auto_refresh": chf_auto,
+                "jpy_reserve_refresh_mode": "SNAPSHOT",
                 "core_effect": "NONE",
             },
         },
         "rate_beta": v2.get("rate_beta"),
         "forward_logger": v2.get("forward_logger"),
         "next_research_not_part_of_freeze": [
-            "wire reproducible live collectors for residual proxy snapshots",
-            "wire reproducible current Brent futures proxy",
+            "wire reproducible live refresh for JPY reserve-balances informational proxy",
             "extend historical PIT panel for RATE_BETA backtest/OOS",
             "accumulate forward outcomes over time"
         ],

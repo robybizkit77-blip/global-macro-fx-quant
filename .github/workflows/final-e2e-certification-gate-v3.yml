@@ -51,8 +51,11 @@ jobs:
           assert d['official_runtime']['silent_proxy_promotion'] is False, d
           assert d['estimated_layers']['cb_pricing']['deterministic_snapshot_aligned'] is True, d
           assert d['estimated_layers']['cb_pricing']['core_effect']=='NONE', d
-          assert d['estimated_layers']['residual_gaps']['core_effect']=='NONE', d
-          assert d['estimated_layers']['residual_gaps']['brent_live_value'] is False, d
+          residual=d['estimated_layers']['residual_gaps']
+          assert residual['core_effect']=='NONE', d
+          assert residual['brent_live_value'] is True, d
+          assert residual['refresh_mode']=='MIXED_LIVE_AND_SNAPSHOT', d
+          assert residual['jpy_reserve_refresh_mode']=='SNAPSHOT', d
           print('FINAL_E2E_V3_PASS')
           PY
           sha256sum -c /tmp/ois.before.sha256
