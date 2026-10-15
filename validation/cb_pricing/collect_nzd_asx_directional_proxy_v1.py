@@ -66,10 +66,8 @@ def _fetch(url: str) -> str:
 
 
 def _asx_contract_expiry(month: int, year: int) -> date:
-    # ASX NZ 90-day bank bill futures expire at noon on the first Wednesday
-    # after the ninth day of the settlement month.
     d = date(year, month, 10)
-    while d.weekday() != 2:  # Wednesday
+    while d.weekday() != 2:
         d += timedelta(days=1)
     return d
 
@@ -181,6 +179,7 @@ def _select_horizons(rows: list[dict], trade_date: date) -> dict[str, dict]:
             raise RuntimeError(f"ASX NZ BB: no contract candidate for {horizon}")
         row = min(candidates, key=lambda r: (abs((r["expiration"] - target).days), r["expiration"]))
         selected[horizon] = dict(row)
+        selected[horizon]["expiration"] = row["expiration"].isoformat()
         selected[horizon]["mapping"] = f"nearest listed expiry to trade_date+{days}d; no interpolation"
         used.add(row["expiry_label"])
     return selected
