@@ -1,0 +1,46 @@
+{
+  "schema": "GMFQ_RESIDUAL_GAPS_ESTIMATED_CONTRACT_V1",
+  "as_of": "2026-10-15",
+  "status": "INFORMATIONAL_ONLY",
+  "purpose": "Provide explicitly separated estimates/proxies for residual V1 gaps without changing official fail-closed lanes.",
+  "governance": {
+    "official_runtime_untouched": true,
+    "core_score_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "backtest_eligible_as_official": false,
+    "forward_logger_effect": "NONE"
+  },
+  "lanes": {
+    "JPY.reserve_balances": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "A/B",
+      "source": "Bank of Japan official workbook Reserve balances row",
+      "method": "Use semantically exact official Reserve balances row as a proxy layer; do not claim original runtime provenance equivalence.",
+      "use": ["level_context","direction","momentum","turning_point"]
+    },
+    "CHF.credit": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "B/C",
+      "source": "SNB cube bakredinausbm best-matching official dimensional series",
+      "method": "Use the best identified official SNB series for direction/momentum only; absolute runtime equivalence is not claimed.",
+      "use": ["direction","momentum","acceleration","turning_point"]
+    },
+    "CHF.sight_deposits": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "C",
+      "source": "SNB Data Portal sight-deposit source family best-matching official variant",
+      "method": "Use official candidate for direction/momentum only; absolute level mismatch is preserved and disclosed.",
+      "use": ["direction","momentum","acceleration","turning_point"]
+    },
+    "BRENT.market_proxy": {
+      "status": "MARKET_PROXY_READY_NO_LIVE_VALUE",
+      "confidence": "A_FOR_MARKET_DIRECTION_NOT_SPOT_EQUIVALENCE",
+      "source": "ICE Brent futures settlement/market data when reproducibly connected",
+      "method": "Use ICE Brent futures strictly as a separate market-direction proxy; never substitute it for canonical EIA Europe Brent Spot Price FOB.",
+      "use": ["market_direction","1d_change","1w_change","risk_context"],
+      "activation_condition": "A reproducible current ICE Brent futures observation source must be connected before numeric values are emitted."
+    }
+  }
+}
