@@ -1,0 +1,44 @@
+name: EUR Eurex FST3 Collector Proof V1
+
+on:
+  push:
+    branches:
+      - validation-eur-eurex-fst3-price-report-probe-v1-2026-10-15
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official EUR source snapshot
+        run: python validation/cb_pricing/collect_eur_eurex_fst3.py --as-of 2026-10-14 --output /tmp/eur_fst3_snapshot.json
+      - name: Validate source snapshot contract
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/eur_fst3_snapshot.json'))
+          assert p['schema']=='GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1'
+          assert p['currency']=='EUR'
+          assert p['as_of']=='2026-10-14'
+          assert p['contract_mapping']=={'3m':'20261216','6m':'20270317','12m':'20270915'}
+          assert all(p['validation'][k] is True for k in ('official_source','direct_settlements','no_interpolation','homogeneous_contracts'))
+          assert p['observations']['current']['3m']==2.7175
+          assert p['observations']['current']['6m']==2.9875
+          assert p['observations']['current']['12m']==3.2075
+          assert p['observations']['t_minus_1']['date']=='2026-10-13'
+          assert p['observations']['weekly_reference']['date'] <= '2026-10-09'
+          print(json.dumps({'status':'PASS','as_of':p['as_of'],'t1':p['observations']['t_minus_1']['date'],'week':p['observations']['weekly_reference']['date'],'change_1d_bp':p['change_1d_bp'],'change_1w_bp':p['change_1w_bp']},indent=2))
+          PY
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-eurex-fst3-source-snapshot
+          path: /tmp/eur_fst3_snapshot.json
+          if-no-files-found: error
