@@ -1,0 +1,34 @@
+name: Residual Estimated Gaps V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/estimated/**'
+      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
+      - '.github/workflows/residual-estimated-gaps-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run self-test
+        run: python validation/estimated/test_residual_gaps_estimated_v1.py
+      - name: Verify official source files are untouched by this PR
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('validation/estimated/RESIDUAL_GAPS_ESTIMATED_CONTRACT_V1_2026-10-15.json').read_text())
+          assert c['governance']['official_runtime_untouched'] is True
+          assert c['governance']['core_score_effect']=='NONE'
+          assert c['governance']['pair_engine_effect']=='NONE'
+          print('PASS informational-only governance')
+          PY
