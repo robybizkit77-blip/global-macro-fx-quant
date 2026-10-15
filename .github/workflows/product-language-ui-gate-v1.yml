@@ -1,0 +1,101 @@
+name: Product Language UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/product-language-v1.js'
+      - '.github/workflows/product-language-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/product-language-v1.js'
+      - '.github/workflows/product-language-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/product-language-ui.log 2>&1 &
+          sleep 2
+      - name: Verify simple product language desktop mobile
+        run: |
+          cat > product-language-gate.js <<'EOF'
+          const { chromium }=require('playwright');
+          const VIEWS=['overview','wow','themes','calendar','news','risk','currencies','pairs','macro','inflationlabour','ratesdesk','cbdesk','liquiditydesk','cot','method','forwarddesk'];
+          const FORBIDDEN=[
+            'What Changed operativo','Top Themes operativo','Calendar operativo','News Pulse operativo','Risk operativo',
+            'VALIDATED CHANGE DETECTION','MACRO COUNTRY DESK','RATES COUNTRY DESK','CENTRAL BANK COUNTRY DESK',
+            'METODOLOGIA · PLAYBOOK','OUT-OF-SAMPLE · FORWARD VALIDATION','Forward Test Monitor'
+          ];
+          const EXPECT={
+            wow:'Cosa è cambiato',themes:'Temi principali',calendar:'Calendario',news:'Ultimi cambiamenti',risk:'Rischio globale',
+            macro:'Macro',ratesdesk:'Tassi',cbdesk:'Banche centrali',cot:'Posizionamento COT',method:'Metodo',forwarddesk:'Monitor previsioni'
+          };
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PRODUCT_LANGUAGE?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForTimeout(900);
+            const lang=await page.evaluate(()=>({state:window.gmfqProductLanguageAudit?.(),marker:document.documentElement.dataset.gmfqLanguage}));
+            if(lang.state?.schema!=='GMFQ_PRODUCT_LANGUAGE_V1'||lang.state?.status!=='ACTIVE'||lang.state?.scope!=='PRESENTATION_ONLY'||lang.state?.core_effect!=='NONE'||lang.marker!=='simple-product') throw new Error(label+' bad language layer '+JSON.stringify(lang));
+
+            for(const view of VIEWS){
+              await page.evaluate(v=>window.showView?.(v),view);
+              await page.waitForTimeout(view==='ratesdesk'?450:220);
+              await page.evaluate(()=>window.gmfqApplyProductLanguage?.(document.querySelector('.view.active')));
+              const snap=await page.evaluate(v=>{
+                const el=document.getElementById(v);
+                return {text:String(el?.innerText||'').replace(/\s+/g,' ').trim(),active:[...document.querySelectorAll('.view.active,[data-view].active')].map(x=>x.id).filter(Boolean)};
+              },view);
+              if(!snap.text||snap.text.length<20) throw new Error(label+' empty '+view);
+              if(snap.active.length!==1||snap.active[0]!==view) throw new Error(label+' active drift '+view+' '+JSON.stringify(snap.active));
+              const bad=FORBIDDEN.filter(x=>snap.text.includes(x));
+              if(bad.length) throw new Error(label+' engine wording still visible '+view+' '+JSON.stringify(bad));
+              if(EXPECT[view]&&!snap.text.includes(EXPECT[view])) throw new Error(label+' expected product wording missing '+view+' '+EXPECT[view]);
+            }
+
+            const professional=await page.evaluate(()=>({
+              rates:String(document.getElementById('ratesdesk')?.innerText||''),
+              cb:String(document.getElementById('cbdesk')?.innerText||''),
+              cot:String(document.getElementById('cot')?.innerText||''),
+              forward:String(document.getElementById('forwarddesk')?.innerText||'')
+            }));
+            if(!/OIS/i.test(professional.rates+professional.cb)) throw new Error(label+' OIS technical term lost');
+            if(!/hawkish|dovish/i.test(professional.cb)) throw new Error(label+' CB stance vocabulary lost');
+            if(!/Net\/OI/i.test(professional.cot)) throw new Error(label+' COT Net/OI term lost');
+            if(!/Sharpe/i.test(professional.forward)||!/Sortino/i.test(professional.forward)) throw new Error(label+' forward statistical terms lost');
+
+            const health=await page.evaluate(()=>({pairs:window.GMFQ_PAIRS_OPERATIONAL?.status,currencies:window.GMFQ_CURRENCIES_OPERATIONAL?.status,rates:window.GMFQ_RATESDESK_OPERATIONAL?.status,cb:window.GMFQ_CBDESK_OPERATIONAL?.status,liquidity:window.GMFQ_LIQUIDITYDESK_OPERATIONAL?.status,cot:window.GMFQ_COTDESK_OPERATIONAL?.status,forward:window.GMFQ_FORWARDDESK_OPERATIONAL?.status}));
+            for(const [k,v] of Object.entries(health)) if(v!=='ACTIVE') throw new Error(label+' operational owner unhealthy '+k+'='+v);
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'PRODUCT_LANGUAGE_UI_PASS');
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('PRODUCT_LANGUAGE_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node product-language-gate.js
