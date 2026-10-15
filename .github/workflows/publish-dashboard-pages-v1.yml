@@ -3,43 +3,12 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths:
-      - '.github/workflows/publish-dashboard-pages-v1.yml'
-      - 'index.html'
-      - 'payload/**'
-      - 'dashboard/**'
-      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
-      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
-      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
-      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
-      - 'live_data/sections/D.json'
-      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/publish-dashboard-pages-v1.yml'
-      - 'index.html'
-      - 'payload/**'
-      - 'dashboard/**'
-      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
-      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
-      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
-      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
-      - 'live_data/sections/D.json'
-      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
   workflow_run:
-    workflows:
-      - 'Macro Persistent Daily V1'
-      - 'CB Pricing Persistent Daily V1'
-      - 'OIS Estimated Snapshot Repricing V1'
-      - 'Calendar News Operational Refresh V1'
-      - 'Price Persistent Daily V1'
-      - 'Rates Persistent Daily V1'
-      - 'COT Persistent Weekly V1'
-      - 'Liquidity JPY M3 Persistent Daily V1'
-      - 'VIX Persistent Apply V1'
-      - 'WTI Persistent Rebuild V1'
-      - 'Brent Market Proxy Refresh V1'
+    workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1']
     types: [completed]
   workflow_dispatch:
 
@@ -62,7 +31,6 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 0
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -71,9 +39,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python validation/check_live_update_contract.py > /tmp/pages-live-contract.json
-          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/pages-runtime-roundtrip.json
-          python validation/build_calendar_operational_v1.py > /tmp/pages-calendar-build.json
+          python validation/check_live_update_contract.py | tee /tmp/pages-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/pages-runtime-roundtrip.json
+          python validation/build_calendar_operational_v1.py | tee /tmp/pages-calendar-build.json
           python - <<'PY'
           import json
           from pathlib import Path
@@ -81,54 +49,44 @@ jobs:
           runtime=json.load(open('/tmp/pages-runtime-roundtrip.json'))
           calendar_build=json.load(open('/tmp/pages-calendar-build.json'))
           assert contract['status']=='PASS', contract
-          assert runtime['status']=='PASS', runtime
-          assert runtime.get('noop_roundtrip_byte_identical') is True, runtime
+          assert runtime['status']=='PASS' and runtime.get('noop_roundtrip_byte_identical') is True, runtime
           assert calendar_build['status']=='PASS', calendar_build
           index=Path('index.html').read_text(encoding='utf-8')
           parts=[Path(f'payload/part-{i:02d}.txt') for i in range(16)]
-          missing=[str(p) for p in parts if not p.is_file()]
-          assert not missing, missing
+          assert all(p.is_file() for p in parts)
           for p in parts: assert str(p).replace('\\','/') in index, p
           payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
-          for asset in [
-              'dashboard/ois-operational-monitor-v1.js',
-              'dashboard/calendar-news-operational-v1.js',
-              'dashboard/top-themes-operational-v1.js',
-              'dashboard/what-changed-operational-v1.js',
-              'dashboard/risk-operational-v1.js',
-              'dashboard/pairs-operational-v1.js',
-              'dashboard/overview-asof-operational-v1.js',
-              'dashboard/editorial-freshness-guard-v1.js'
-          ]:
+          assets=[
+            'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js',
+            'dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js',
+            'dashboard/risk-operational-v1.js','dashboard/pairs-operational-v1.js',
+            'dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js',
+            'dashboard/editorial-freshness-guard-v1.js'
+          ]
+          for asset in assets:
               assert asset in index, asset
               p=Path(asset); assert p.is_file() and p.stat().st_size>1000, asset
-          ois=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
-          cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
-          news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text(encoding='utf-8'))
-          macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text(encoding='utf-8'))
-          d=json.loads(Path('live_data/sections/D.json').read_text(encoding='utf-8'))
-          residual=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text(encoding='utf-8'))
+          ois=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text())
+          news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text())
+          macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
+          d=json.loads(Path('live_data/sections/D.json').read_text())
+          residual=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text())
           assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1' and ois['summary']['operational_green']==8
-          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3', cal.get('schema')
-          assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT', cal.get('status')
-          assert cal['coverage']['cb_schedule_available']==8, cal['coverage']
-          assert cal['coverage']['macro_ccy_coverage']==8, cal['coverage']
-          assert cal['coverage']['upcoming_macro_events']>=8, cal['coverage']
-          assert cal['scope']['core_score_impact']==0, cal['scope']
-          assert cal['scope']['consensus_context_only'] is True, cal['scope']
-          assert cal['scope']['consensus_never_changes_official_date'] is True, cal['scope']
+          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'
+          assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT'
+          assert cal['coverage']['cb_schedule_available']==8 and cal['coverage']['macro_ccy_coverage']==8 and cal['coverage']['upcoming_macro_events']>=8
+          assert cal['scope']['core_score_impact']==0 and cal['scope']['consensus_context_only'] is True and cal['scope']['consensus_never_changes_official_date'] is True
           macro=[e for e in cal['events'] if e.get('event_type')!='CENTRAL_BANK_DECISION']
-          assert macro and all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro), macro
-          assert all(str(e.get('quality','')).startswith('OFFICIAL_') for e in macro), macro
+          assert macro and all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro)
+          assert all(str(e.get('quality','')).startswith('OFFICIAL_') for e in macro)
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1' and news['items']
           assert macro_heat['status']=='ACTIVE' and set(macro_heat['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
-          assert isinstance(d.get('risk',{}).get('VIX'),dict), 'D.risk.VIX missing'
-          assert isinstance(d.get('risk',{}).get('WTI'),dict), 'D.risk.WTI missing'
+          assert isinstance(d.get('risk',{}).get('VIX'),dict) and isinstance(d.get('risk',{}).get('WTI'),dict)
           brent=residual.get('lanes',{}).get('BRENT.market_proxy',{})
-          assert brent.get('status')=='MARKET_PROXY_ACTIVE_SECONDARY', brent
-          assert brent.get('official_canonical_untouched') is True, brent
+          assert brent.get('status')=='MARKET_PROXY_ACTIVE_SECONDARY' and brent.get('official_canonical_untouched') is True
           print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
           PY
 
@@ -148,49 +106,21 @@ jobs:
           mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
-          cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/ois-operational-monitor-v1.js
-          cp dashboard/calendar-news-operational-v1.js /tmp/gmfq-pages/dashboard/calendar-news-operational-v1.js
-          cp dashboard/top-themes-operational-v1.js /tmp/gmfq-pages/dashboard/top-themes-operational-v1.js
-          cp dashboard/what-changed-operational-v1.js /tmp/gmfq-pages/dashboard/what-changed-operational-v1.js
-          cp dashboard/risk-operational-v1.js /tmp/gmfq-pages/dashboard/risk-operational-v1.js
-          cp dashboard/pairs-operational-v1.js /tmp/gmfq-pages/dashboard/pairs-operational-v1.js
-          cp dashboard/overview-asof-operational-v1.js /tmp/gmfq-pages/dashboard/overview-asof-operational-v1.js
-          cp dashboard/editorial-freshness-guard-v1.js /tmp/gmfq-pages/dashboard/editorial-freshness-guard-v1.js
-          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
-          cp live_data/sections/CALENDAR_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/CALENDAR_OPERATIONAL_VIEW.json
-          cp live_data/sections/NEWS_PULSE_OPERATIONAL.json /tmp/gmfq-pages/live_data/sections/NEWS_PULSE_OPERATIONAL.json
-          cp live_data/sections/MACRO_THERMOMETER_DATA.json /tmp/gmfq-pages/live_data/sections/MACRO_THERMOMETER_DATA.json
-          cp live_data/sections/D.json /tmp/gmfq-pages/live_data/sections/D.json
-          cp live_data/sections/ESTIMATED_RESIDUAL_GAPS.json /tmp/gmfq-pages/live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          for f in ois-operational-monitor-v1.js calendar-news-operational-v1.js top-themes-operational-v1.js what-changed-operational-v1.js risk-operational-v1.js pairs-operational-v1.js overview-asof-operational-v1.js currencies-operational-v1.js editorial-freshness-guard-v1.js; do cp "dashboard/$f" "/tmp/gmfq-pages/dashboard/$f"; done
+          for f in OIS_OPERATIONAL_VIEW.json CALENDAR_OPERATIONAL_VIEW.json NEWS_PULSE_OPERATIONAL.json MACRO_THERMOMETER_DATA.json D.json ESTIMATED_RESIDUAL_GAPS.json; do cp "live_data/sections/$f" "/tmp/gmfq-pages/live_data/sections/$f"; done
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
-          tracked=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
-          changed=tracked|untracked
-          allowed={
-              'index.html',
-              'dashboard/ois-operational-monitor-v1.js',
-              'dashboard/calendar-news-operational-v1.js',
-              'dashboard/top-themes-operational-v1.js',
-              'dashboard/what-changed-operational-v1.js',
-              'dashboard/risk-operational-v1.js',
-              'dashboard/pairs-operational-v1.js',
-              'dashboard/overview-asof-operational-v1.js',
-              'dashboard/editorial-freshness-guard-v1.js',
-              'live_data/sections/OIS_OPERATIONAL_VIEW.json',
-              'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
-              'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
-              'live_data/sections/MACRO_THERMOMETER_DATA.json',
-              'live_data/sections/D.json',
-              'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
-              *[f'payload/part-{i:02d}.txt' for i in range(16)]
-          }
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())|set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
+          allowed={'index.html',
+            'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js','dashboard/risk-operational-v1.js','dashboard/pairs-operational-v1.js','dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js','dashboard/editorial-freshness-guard-v1.js',
+            'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
+            *[f'payload/part-{i:02d}.txt' for i in range(16)]}
           unexpected=changed-allowed
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
-          print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
+          print('DASHBOARD_PAGES_SCOPE_PASS',sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/top-themes-operational-v1.js dashboard/what-changed-operational-v1.js dashboard/risk-operational-v1.js dashboard/pairs-operational-v1.js dashboard/overview-asof-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

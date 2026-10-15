@@ -77,6 +77,7 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_WHAT_CHANGED_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_PAIRS_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_CURRENCIES_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForTimeout(700);
             for(const view of VIEWS){
               await page.evaluate(v=>window.showView?.(v),view);
@@ -103,6 +104,13 @@ jobs:
             if(themes.owner!==1) throw new Error(`${label}: themes owner count ${themes.owner}`);
             if(themes.cards.length!==8||new Set(themes.cards).size!==8) throw new Error(`${label}: themes G8 coverage ${JSON.stringify(themes.cards)}`);
             if(themes.top.length!==4) throw new Error(`${label}: top theme count ${themes.top.length}`);
+
+            const currencies=await page.evaluate(()=>({state:window.GMFQ_CURRENCIES_OPERATIONAL,owner:document.querySelectorAll('#currencies #v224Headline[data-gmfq-operational="currencies"]').length,cards:[...document.querySelectorAll('#currencyGrid .ccy')].map(x=>x.dataset.c).filter(Boolean)}));
+            if(currencies.state?.schema!=='GMFQ_CURRENCIES_OPERATIONAL_UI_V1') throw new Error(`${label}: currencies schema ${currencies.state?.schema}`);
+            if(currencies.state?.status!=='ACTIVE'||currencies.state?.core_effect!=='NONE') throw new Error(`${label}: currencies state ${JSON.stringify(currencies.state)}`);
+            if(currencies.owner!==1) throw new Error(`${label}: currencies owner count ${currencies.owner}`);
+            if(currencies.cards.length!==8||new Set(currencies.cards).size!==8) throw new Error(`${label}: currencies G8 coverage ${JSON.stringify(currencies.cards)}`);
+
             const pairs=await page.evaluate(()=>({state:window.GMFQ_PAIRS_OPERATIONAL,owner:document.querySelectorAll('#pairs [data-gmfq-operational="pairs"]').length,rows:[...document.querySelectorAll('#pairs .poTable tbody tr')].map(x=>x.dataset.pair),priceAttr:document.documentElement.getAttribute('data-price-asof'),viewAsOf:document.getElementById('pairs')?.dataset?.gmfqPairPriceAsOf||null}));
             if(pairs.state?.schema!=='GMFQ_PAIRS_OPERATIONAL_UI_V1') throw new Error(`${label}: pairs schema ${pairs.state?.schema}`);
             if(pairs.state?.core_effect!=='NONE') throw new Error(`${label}: pairs core effect ${pairs.state?.core_effect}`);
@@ -121,7 +129,7 @@ jobs:
             }
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
             await browser.close();
-            console.log(label,'OWNERSHIP_PASS','TOP_THEMES_OPERATIONAL_PASS','PAIRS_OPERATIONAL_PASS','FRESHNESS_V3_OPERATIONAL_AUTHORITY_PASS');
+            console.log(label,'OWNERSHIP_PASS','CURRENCIES_OPERATIONAL_PASS','TOP_THEMES_OPERATIONAL_PASS','PAIRS_OPERATIONAL_PASS','FRESHNESS_V3_OPERATIONAL_AUTHORITY_PASS');
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('DASHBOARD_UI_OWNERSHIP_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
