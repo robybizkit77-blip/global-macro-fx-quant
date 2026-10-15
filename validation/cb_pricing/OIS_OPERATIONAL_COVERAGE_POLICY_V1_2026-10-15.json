@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_OIS_OPERATIONAL_COVERAGE_POLICY_V1",
+  "as_of": "2026-10-15",
+  "purpose": "Provide 8/8 operational central-bank market-pricing coverage while preserving the distinction between official-certified and estimated/proxy inputs.",
+  "operational_coverage_status": "GREEN_8_OF_8",
+  "official_certification_status": "PARTIAL_4_OF_8",
+  "rules": {
+    "dashboard_operational_green_requires": "Each G8 currency has either GREEN_OFFICIAL or GREEN_ESTIMATED market-pricing coverage.",
+    "official_green_requires": "Existing official OIS/futures production activation contract remains satisfied.",
+    "estimated_green_requires": "Estimated layer is explicitly informational-only, source-attributed, confidence-graded, and has at least one usable pricing horizon.",
+    "estimated_never_promotes_official": true,
+    "estimated_backtest_eligible_as_official": false,
+    "estimated_core_score_effect": "NONE",
+    "estimated_bias_effect": "NONE",
+    "estimated_sizing_effect": "NONE"
+  },
+  "currencies": {
+    "AUD": {"operational_status": "GREEN_OFFICIAL", "official_status": "ACTIVE", "coverage_source": "OIS_DATA"},
+    "CAD": {"operational_status": "GREEN_OFFICIAL", "official_status": "ACTIVE", "coverage_source": "OIS_DATA"},
+    "GBP": {"operational_status": "GREEN_OFFICIAL", "official_status": "ACTIVE", "coverage_source": "OIS_DATA"},
+    "JPY": {"operational_status": "GREEN_OFFICIAL", "official_status": "ACTIVE", "coverage_source": "OIS_DATA"},
+    "USD": {"operational_status": "GREEN_ESTIMATED", "official_status": "WITHHELD", "coverage_source": "CB_PRICING_ESTIMATED", "confidence": "B"},
+    "EUR": {"operational_status": "GREEN_ESTIMATED", "official_status": "WITHHELD", "coverage_source": "CB_PRICING_ESTIMATED", "confidence": "B"},
+    "CHF": {"operational_status": "GREEN_ESTIMATED", "official_status": "WITHHELD", "coverage_source": "CB_PRICING_ESTIMATED", "confidence": "B"},
+    "NZD": {"operational_status": "GREEN_ESTIMATED", "official_status": "WITHHELD", "coverage_source": "CB_PRICING_ESTIMATED", "confidence": "C", "note": "Partial estimated curve; operational green means usable market-pricing context exists, not full 3M/6M/12M completeness."}
+  },
+  "summary": {
+    "g8_total": 8,
+    "operational_green": 8,
+    "green_official": 4,
+    "green_estimated": 4,
+    "operational_withheld": 0,
+    "official_withheld": 4
+  }
+}
