@@ -1,0 +1,56 @@
+name: Diagnostic Currencies Structure V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostic-currencies-structure-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/currencies-structure-server.log 2>&1 &
+          sleep 2
+      - name: Audit Currencies mobile DOM structure
+        run: |
+          cat > currencies-structure.js <<'EOF'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE'&&window.GMFQ_PRODUCT_LANGUAGE?.status==='ACTIVE'&&window.GMFQ_CURRENCIES_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('currencies'));
+            await page.waitForTimeout(800);
+            const out=await page.evaluate(()=>{
+              const root=document.getElementById('currencies');
+              const clean=x=>String(x||'').replace(/\s+/g,' ').trim();
+              const vis=el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};
+              const sig=el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return {tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:null,text:clean(el.innerText).slice(0,260),h:Math.round(r.height),w:Math.round(r.width),display:s.display,gridTemplateColumns:s.gridTemplateColumns,overflowX:s.overflowX};};
+              const direct=[...root.children].filter(vis).map(sig);
+              const blocks=[...root.querySelectorAll('section,article,.card,[class*="Card"],[class*="card"],[class*="Grid"],[class*="grid"],[id^="v2"]')].filter(vis).map(sig).filter((x,i,a)=>a.findIndex(y=>y.id===x.id&&y.className===x.className&&y.text===x.text)===i).slice(0,120);
+              const headings=[...root.querySelectorAll('h1,h2,h3,h4')].filter(vis).map(el=>({heading:clean(el.innerText),parent:sig(el.parentElement)}));
+              return {schema:'GMFQ_CURRENCIES_STRUCTURE_DIAGNOSTIC_V1',root:sig(root),direct,blocks,headings,selected:window.GMFQ_CURRENCIES_OPERATIONAL?.selected_currency||null,integrity:window.currencyUiIntegrity?.()||null};
+            });
+            console.log(JSON.stringify(out,null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node currencies-structure.js
