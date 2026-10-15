@@ -20,18 +20,18 @@
   function markOwner(){
     const root=document.getElementById('currencies');
     if(!root) throw new Error('CURRENCIES_VIEW_MISSING');
-    const hero=root.querySelector('.v224CurrencyHero');
-    if(!hero) throw new Error('CURRENCIES_HERO_MISSING');
-    hero.setAttribute('data-gmfq-operational','currencies');
-    hero.setAttribute('data-owner',SCHEMA);
-    return hero;
+    const anchor=root.querySelector('#v224Headline');
+    if(!anchor) throw new Error('CURRENCIES_HEADLINE_MISSING');
+    anchor.setAttribute('data-gmfq-operational','currencies');
+    anchor.setAttribute('data-owner',SCHEMA);
+    return anchor;
   }
   function audit(){
     const root=document.getElementById('currencies');
     const st=states();
     const cards=[...document.querySelectorAll('#currencyGrid .ccy')].map(x=>x.dataset?.c).filter(Boolean);
     const unique=[...new Set(cards)];
-    const ownerCount=root?.querySelectorAll('.v224CurrencyHero[data-gmfq-operational="currencies"]').length||0;
+    const ownerCount=root?.querySelectorAll('#v224Headline[data-gmfq-operational="currencies"]').length||0;
     const c=selected();
     const title=String(document.getElementById('v219CurrencyTitle')?.textContent||'');
     const integrity=typeof window.currencyUiIntegrity==='function'?window.currencyUiIntegrity():null;
