@@ -20,13 +20,15 @@
  });
  if(refreshCalls!==25) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
 
- // Runtime quarantine V1: these September-era QA/mutator blocks remain in the
- // immutable legacy payload for audit/rollback, but must no longer execute.
- // Their former editorial surfaces are now owned by validated operational modules.
+ // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
+ // the immutable legacy payload for audit/rollback, but must no longer execute.
+ // Current visible editorial surfaces are owned by validated operational modules.
  const quarantinedLegacyScripts=[
    'gmfq-propagation-qa',
    'gmfq-e2e-live-italy',
-   'gmfq-runtime-refresh-fix-20260930'
+   'gmfq-runtime-refresh-fix-20260930',
+   'gmfq-usd-sep30-closeout-20261001',
+   'gmfq-usd-sep30-closeout-finalizer-20261001'
  ];
  for(const id of quarantinedLegacyScripts){
    const escaped=id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -34,6 +36,18 @@
    const matches=html.match(re)||[];
    if(matches.length!==1) throw new Error('Legacy quarantine manifest inatteso per '+id+': '+matches.length);
    html=html.replace(re,'<!-- GMFQ_LEGACY_QUARANTINED:'+id+' -->');
+ }
+
+ // One old 30-Sep refresh block is anonymous. Quarantine it by a unique runtime
+ // fingerprint, requiring exactly one matching script block so drift fails closed.
+ const quarantinedLegacyFingerprints=[
+   {name:'LIVE_REFRESH_20260930_AM',needle:'window.LIVE_REFRESH_20260930_AM='}
+ ];
+ for(const item of quarantinedLegacyFingerprints){
+   const blocks=html.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g)||[];
+   const matches=blocks.filter(block=>block.includes(item.needle));
+   if(matches.length!==1) throw new Error('Legacy fingerprint quarantine inatteso per '+item.name+': '+matches.length);
+   html=html.replace(matches[0],'<!-- GMFQ_LEGACY_QUARANTINED_FINGERPRINT:'+item.name+' -->');
  }
 
  const marker='<script id="gmfq-post-gate-final-audit-settlement">';
