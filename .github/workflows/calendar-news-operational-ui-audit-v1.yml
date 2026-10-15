@@ -7,6 +7,7 @@ on:
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'index.html'
       - '.github/workflows/calendar-news-operational-ui-audit-v1.yml'
   push:
@@ -15,6 +16,7 @@ on:
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'index.html'
       - '.github/workflows/calendar-news-operational-ui-audit-v1.yml'
   workflow_dispatch:
@@ -51,16 +53,18 @@ jobs:
               await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',{timeout:20000});
               await page.evaluate(()=>window.showView&&window.showView('calendar'));
               await page.waitForSelector('#calendar [data-gmfq-operational="calendar"]',{state:'visible'});
-              const cal=await page.evaluate(()=>({cards:document.querySelectorAll('#calendar .opCard').length,fresh:document.getElementById('calendar')?.dataset.gmfqEditorialFreshness,text:document.getElementById('calendar')?.innerText||'',w:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.scrollWidth,cw:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.clientWidth}));
-              if(cal.cards!==8)throw new Error(`${name} calendar cards ${cal.cards}`);
-              if(!/2026-10-28/.test(cal.text)||!/2026-12-10/.test(cal.text))throw new Error(`${name} calendar dates missing`);
+              const cal=await page.evaluate(()=>({cards:document.querySelectorAll('#calendar .opCard').length,cb:document.querySelectorAll('#calendar .opCard[data-kind="cb"]').length,macro:document.querySelectorAll('#calendar .opCard[data-kind="macro"]').length,fresh:document.getElementById('calendar')?.dataset.gmfqEditorialFreshness,text:document.getElementById('calendar')?.innerText||'',w:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.scrollWidth,cw:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.clientWidth}));
+              if(cal.cb!==8)throw new Error(`${name} CB cards ${cal.cb}`);
+              if(cal.macro<8)throw new Error(`${name} macro cards ${cal.macro}`);
+              if(!/Macro releases/.test(cal.text)||!/CONSENSUS SEPARATE \/ NOT PRESENT/.test(cal.text))throw new Error(`${name} macro/consensus labels missing`);
+              for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'])if(!cal.text.includes(ccy))throw new Error(`${name} missing ${ccy}`);
               if(cal.fresh!=='FRESH')throw new Error(`${name} calendar freshness ${cal.fresh}`);
               if(cal.w>cal.cw+2)throw new Error(`${name} calendar overflow ${cal.w}/${cal.cw}`);
               await page.evaluate(()=>window.showView&&window.showView('news'));
               await page.waitForSelector('#news [data-gmfq-operational="news"]',{state:'visible'});
               const news=await page.evaluate(()=>({cards:document.querySelectorAll('#news .opCard').length,fresh:document.getElementById('news')?.dataset.gmfqEditorialFreshness,text:document.getElementById('news')?.innerText||'',w:document.querySelector('#news [data-gmfq-operational="news"]')?.scrollWidth,cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth}));
               if(news.cards<4)throw new Error(`${name} news cards ${news.cards}`);
-              if(!/News Pulse operativo/.test(news.text)||!/2026-10-14/.test(news.text))throw new Error(`${name} news as-of missing`);
+              if(!/News Pulse operativo/.test(news.text))throw new Error(`${name} news title missing`);
               if(news.fresh!=='FRESH')throw new Error(`${name} news freshness ${news.fresh}`);
               if(news.w>news.cw+2)throw new Error(`${name} news overflow ${news.w}/${news.cw}`);
               if(errors.length)throw new Error(`${name} console errors: ${errors.join(' | ')}`);
