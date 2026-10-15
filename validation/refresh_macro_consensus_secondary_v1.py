@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import json
-import os
 import re
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -14,10 +14,39 @@ OUT=ROOT/'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
 G8={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
 ALIASES={
     'INFLATION':('inflation','consumer price','cpi','price index','prices'),
-    'LABOUR':('employment','unemployment','labour','labor','jobless','payroll'),
+    'LABOUR':('employment','unemployment','labour','labor','jobless','payroll','claimant'),
     'LABOUR_COST':('employment cost','labour cost','labor cost','wages','earnings'),
     'GROWTH':('gdp','gross domestic product','growth'),
 }
+MONTHS={m.lower():i for i,m in enumerate(('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'),1)}
+
+class TableParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.rows=[]
+        self._in_tr=False
+        self._in_cell=False
+        self._cell=[]
+        self._row=[]
+    def handle_starttag(self,tag,attrs):
+        tag=tag.lower()
+        if tag=='tr':
+            self._in_tr=True; self._row=[]
+        elif self._in_tr and tag in {'td','th'}:
+            self._in_cell=True; self._cell=[]
+    def handle_data(self,data):
+        if self._in_cell:
+            self._cell.append(data)
+    def handle_endtag(self,tag):
+        tag=tag.lower()
+        if self._in_tr and tag in {'td','th'} and self._in_cell:
+            text=' '.join(' '.join(self._cell).split())
+            self._row.append(text)
+            self._in_cell=False; self._cell=[]
+        elif tag=='tr' and self._in_tr:
+            if self._row:
+                self.rows.append(self._row)
+            self._in_tr=False; self._row=[]
 
 def norm(s):
     return re.sub(r'[^a-z0-9]+',' ',str(s or '').lower()).strip()
@@ -28,6 +57,18 @@ def iso_day(raw):
     except Exception:
         try: return date.fromisoformat(str(raw)[:10])
         except Exception: return None
+
+def parse_calendar_date(text,default_year):
+    s=' '.join(str(text or '').replace(',',' ').split())
+    m=re.search(r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b',s,re.I)
+    if not m:
+        return None
+    mon=MONTHS[m.group(1).lower()]
+    day=int(m.group(2)); year=int(m.group(3) or default_year)
+    try:
+        return date(year,mon,day)
+    except ValueError:
+        return None
 
 def semantic_score(official,candidate):
     o=norm(official.get('title'))
@@ -41,29 +82,62 @@ def semantic_score(official,candidate):
     if any(a in c for a in aliases): score+=4
     return score
 
-def fetch_calendar(key,start,end):
-    params=urllib.parse.urlencode({'from':start.isoformat(),'to':end.isoformat(),'apikey':key})
-    url=f'https://financialmodelingprep.com/stable/economic-calendar?{params}'
-    req=urllib.request.Request(url,headers={'User-Agent':'GMFQ/1.0 consensus-secondary-fmp'})
+def fetch_calendar(start,end):
+    currencies='%2C'.join(sorted(G8))
+    url=f'https://www.myfxbook.com/forex-economic-calendar/{currencies}'
+    req=urllib.request.Request(url,headers={
+        'User-Agent':'Mozilla/5.0 (compatible; GMFQ/1.0; +https://github.com/robybizkit77-blip/global-macro-fx-quant)',
+        'Accept-Language':'en-US,en;q=0.9',
+        'Accept':'text/html,application/xhtml+xml'
+    })
     with urllib.request.urlopen(req,timeout=30) as r:
-        payload=json.loads(r.read().decode('utf-8'))
-    if not isinstance(payload,list):
-        raise RuntimeError('unexpected FMP economic-calendar payload')
-    return payload
+        html=r.read().decode('utf-8','replace')
+    parser=TableParser(); parser.feed(html)
+
+    out=[]; current_date=None
+    for cells in parser.rows:
+        joined=' | '.join(cells)
+        maybe_date=parse_calendar_date(joined,start.year)
+        if maybe_date and not any(c.strip().upper() in G8 for c in cells):
+            current_date=maybe_date
+            continue
+        ccy_idx=next((i for i,c in enumerate(cells) if c.strip().upper() in G8),None)
+        if ccy_idx is None:
+            continue
+        row_date=parse_calendar_date(cells[0] if cells else '',start.year) or current_date or maybe_date
+        if not row_date or row_date<start or row_date>end:
+            continue
+        impact_idx=next((i for i,c in enumerate(cells) if c.strip().lower() in {'high','medium','low','none'}),None)
+        if impact_idx is None or impact_idx<=ccy_idx:
+            continue
+        event=' '.join(c for c in cells[ccy_idx+1:impact_idx] if c).strip()
+        if not event or event.lower().startswith('myfxbook '):
+            continue
+        tail=cells[impact_idx+1:]
+        previous=tail[0].strip() if len(tail)>0 and tail[0].strip() else None
+        consensus=tail[1].strip() if len(tail)>1 and tail[1].strip() else None
+        actual=tail[2].strip() if len(tail)>2 and tail[2].strip() else None
+        out.append({
+            'currency':cells[ccy_idx].strip().upper(),
+            'event':event,
+            'date':row_date.isoformat(),
+            'previous':previous,
+            'consensus':consensus,
+            'actual':actual,
+            'impact':cells[impact_idx].strip().title()
+        })
+    if not parser.rows:
+        raise RuntimeError('Myfxbook page returned no parseable table rows')
+    return out
 
 def main():
-    key=os.environ.get('FMP_API_KEY','').strip()
-    if not key:
-        print(json.dumps({'status':'NO_PROVIDER_CREDENTIALS','provider':'FMP','changed':False,'output':str(OUT.relative_to(ROOT))}))
-        return
-
     official=json.loads(OFFICIAL.read_text(encoding='utf-8')).get('events',[])
     today=date.today()
     horizon=today+timedelta(days=90)
     try:
-        provider_rows=fetch_calendar(key,today,horizon)
+        provider_rows=fetch_calendar(today,horizon)
     except Exception as exc:
-        print(json.dumps({'status':'PROVIDER_FETCH_FAILED','provider':'FMP','error':str(exc),'changed':False,'output':str(OUT.relative_to(ROOT))}))
+        print(json.dumps({'status':'PROVIDER_FETCH_FAILED','provider':'MYFXBOOK_PUBLIC_CALENDAR','error':str(exc),'changed':False,'output':str(OUT.relative_to(ROOT))}))
         raise
 
     by_ccy={ccy:[] for ccy in G8}
@@ -95,13 +169,13 @@ def main():
         if not best:
             continue
 
-        estimate=best.get('estimate')
+        consensus=best.get('consensus')
         previous=best.get('previous')
-        if estimate in (None,'') and previous in (None,''):
+        if consensus in (None,'') and previous in (None,''):
             continue
 
         event_key='|'.join([str(e.get('ccy','')),str(e.get('date','')),str(e.get('event_type','')),str(e.get('title',''))])
-        status='AVAILABLE' if estimate not in (None,'') else 'PREVIOUS_ONLY'
+        status='AVAILABLE' if consensus not in (None,'') else 'PREVIOUS_ONLY'
         rows.append({
             'event_key':event_key,
             'ccy':ccy,
@@ -109,13 +183,13 @@ def main():
             'official_title':e.get('title'),
             'event_type':e.get('event_type'),
             'status':status,
-            'consensus':estimate if estimate not in ('',None) else None,
+            'consensus':consensus if consensus not in ('',None) else None,
             'previous':previous if previous not in ('',None) else None,
-            'unit':best.get('unit') or None,
+            'unit':None,
             'impact':best.get('impact') or None,
-            'provider':'FMP',
+            'provider':'MYFXBOOK_PUBLIC_CALENDAR',
             'provider_event':best.get('event'),
-            'provider_country':best.get('country'),
+            'provider_country':None,
             'provider_date':best.get('date'),
             'confidence_grade':'B' if best_gap==0 else 'C',
             'date_match_gap_days':best_gap,
@@ -127,9 +201,9 @@ def main():
     out={
         'schema':'GMFQ_MACRO_CONSENSUS_SECONDARY_V1',
         'status':status,
-        'provider':'FMP',
-        'provider_endpoint':'stable/economic-calendar',
-        'provider_field':'estimate',
+        'provider':'MYFXBOOK_PUBLIC_CALENDAR',
+        'provider_endpoint':'https://www.myfxbook.com/forex-economic-calendar/',
+        'provider_field':'consensus',
         'provider_previous_field':'previous',
         'generated_at_utc':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),
         'events':rows,
@@ -141,7 +215,8 @@ def main():
             'core_score_impact':0,
             'estimate_field_is_consensus_only':True,
             'actual_not_used_as_pre_release_consensus':True,
-            'official_calendar_remains_primary':True
+            'official_calendar_remains_primary':True,
+            'public_html_secondary_source':True
         }
     }
     old=OUT.read_text(encoding='utf-8') if OUT.exists() else ''
@@ -149,7 +224,7 @@ def main():
     changed=old!=new
     if changed:
         OUT.write_text(new,encoding='utf-8')
-    print(json.dumps({'status':'PASS','provider':'FMP','changed':changed,'matched_events':len(rows),'consensus_available':sum(r['status']=='AVAILABLE' for r in rows),'output':str(OUT.relative_to(ROOT))}))
+    print(json.dumps({'status':'PASS','provider':'MYFXBOOK_PUBLIC_CALENDAR','changed':changed,'provider_rows':len(provider_rows),'matched_events':len(rows),'consensus_available':sum(r['status']=='AVAILABLE' for r in rows),'output':str(OUT.relative_to(ROOT))}))
 
 if __name__=='__main__':
     main()
