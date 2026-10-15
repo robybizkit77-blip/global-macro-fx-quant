@@ -86,7 +86,8 @@
    ['gmfq-cbdesk-operational-ui','dashboard/cbdesk-operational-v1.js'],
    ['gmfq-liquiditydesk-operational-ui','dashboard/liquiditydesk-operational-v1.js'],
    ['gmfq-forwarddesk-operational-ui','dashboard/forwarddesk-operational-v1.js'],
-   ['gmfq-editorial-freshness-guard','dashboard/editorial-freshness-guard-v1.js']
+   ['gmfq-editorial-freshness-guard','dashboard/editorial-freshness-guard-v1.js'],
+   ['gmfq-premium-shell-v1','dashboard/premium-shell-v1.js']
  ];
  const injected=assets.map(([id,src])=>`<script id="${id}" src="${src}" defer></scr`+'ipt>\n').join('');
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
