@@ -28,6 +28,7 @@ def main() -> None:
     themes = (ROOT / "dashboard/top-themes-operational-v1.js").read_text()
     wow = (ROOT / "dashboard/what-changed-operational-v1.js").read_text()
     risk = (ROOT / "dashboard/risk-operational-v1.js").read_text()
+    pairs = (ROOT / "dashboard/pairs-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
@@ -36,6 +37,7 @@ def main() -> None:
         "dashboard/top-themes-operational-v1.js",
         "dashboard/what-changed-operational-v1.js",
         "dashboard/risk-operational-v1.js",
+        "dashboard/pairs-operational-v1.js",
         "dashboard/ois-operational-monitor-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
@@ -58,6 +60,14 @@ def main() -> None:
         must(source in themes, f"themes missing operational source {source}")
     must("core_effect:'NONE'" in themes, "themes must declare zero core effect")
     must("GMFQ_TOP_THEMES_OPERATIONAL_UI_V1" in themes, "themes operational schema missing")
+
+    must('data-gmfq-operational="pairs"' in pairs, "pairs owner marker missing")
+    must("derivePairDecisionFrame" in pairs, "pairs must read canonical runtime engine")
+    must("D.prices" in pairs, "pairs must derive price from current runtime prices")
+    must("GMFQ_PAIRS_OPERATIONAL_UI_V1" in pairs, "pairs operational schema missing")
+    must("core_effect:'NONE'" in pairs, "pairs must declare zero core effect")
+    must("PAIR_COVERAGE_INCOMPLETE" in pairs, "pairs must fail closed on incomplete coverage")
+
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must('data-gmfq-operational="calendar"' in cal, "calendar owner marker missing")
@@ -79,7 +89,7 @@ def main() -> None:
     must("REAL_CALENDAR" not in freshness, "freshness guard must not read legacy REAL_CALENDAR")
     must("NEWS_PULSE_STRUCT" not in freshness, "freshness guard must not read legacy NEWS_PULSE_STRUCT")
 
-    dynamic = ("wow","themes","calendar","news","risk")
+    dynamic = ("wow","themes","calendar","news","risk","pairs")
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
@@ -96,6 +106,7 @@ def main() -> None:
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
             "news":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "risk":"MAX_RUNTIME_RISK_DATE",
+            "pairs":"D.prices latest official ECB fixing + derivePairDecisionFrame runtime",
             "legacy":"NONE"
         },
         "legacy_payload_policy":"PRESENT_BUT_NON_OWNER_UNTIL_MIGRATED"
