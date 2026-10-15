@@ -18,7 +18,7 @@ window.GMFQ_EDITORIAL_FRESHNESS=state;
 function dayFloor(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
 function isoDate(d){if(!(d instanceof Date)||Number.isNaN(d.getTime()))return null;return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function parseIso(s){
-  const m=String(s||'').match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+  const m=String(s||'').match(/(20\d{2})-(\d{2})-(\d{2})/);
   if(!m)return null;
   return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
 }
