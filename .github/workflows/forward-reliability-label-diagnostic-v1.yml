@@ -1,0 +1,44 @@
+name: Forward Reliability Label Diagnostic V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/forward-reliability-label-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate reliabilityLabel references
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          needle='reliabilityLabel'
+          found=0
+          for root in ['payload','dashboard','validation']:
+              for p in Path(root).rglob('*'):
+                  if not p.is_file(): continue
+                  try: text=p.read_text(encoding='utf-8')
+                  except Exception: continue
+                  start=0
+                  while True:
+                      i=text.find(needle,start)
+                      if i<0: break
+                      found+=1
+                      lo=max(0,i-900); hi=min(len(text),i+1400)
+                      print(f'=== MATCH {found} {p} offset={i} ===')
+                      print(text[lo:hi])
+                      print('=== END MATCH ===')
+                      start=i+len(needle)
+          print('TOTAL_MATCHES',found)
+          if not found: raise SystemExit('NO_RELIABILITY_LABEL_REFERENCE_FOUND')
+          PY
