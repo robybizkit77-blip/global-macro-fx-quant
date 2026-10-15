@@ -47,7 +47,7 @@ jobs:
           sleep 2
       - name: Verify visible ownership desktop/mobile
         run: |
-          cat > /tmp/ui-owner.js <<'EOF'
+          cat > ui-owner.js <<'EOF'
           const { chromium } = require('playwright');
           const fs = require('fs');
           const registry = JSON.parse(fs.readFileSync('validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json','utf8'));
@@ -84,4 +84,4 @@ jobs:
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('DASHBOARD_UI_OWNERSHIP_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
-          node /tmp/ui-owner.js
+          node ui-owner.js
