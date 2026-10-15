@@ -57,10 +57,15 @@ jobs:
               await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',{timeout:20000});
               await page.evaluate(()=>window.showView&&window.showView('calendar'));
               await page.waitForSelector('#calendar [data-gmfq-operational="calendar"]',{state:'visible'});
-              const cal=await page.evaluate(()=>({cards:document.querySelectorAll('#calendar .opCard').length,cb:document.querySelectorAll('#calendar .opCard[data-kind="cb"]').length,macro:document.querySelectorAll('#calendar .opCard[data-kind="macro"]').length,fresh:document.getElementById('calendar')?.dataset.gmfqEditorialFreshness,text:document.getElementById('calendar')?.innerText||'',w:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.scrollWidth,cw:document.querySelector('#calendar [data-gmfq-operational="calendar"]')?.clientWidth}));
+              const cal=await page.evaluate(()=>{
+                const root=document.querySelector('#calendar [data-gmfq-operational="calendar"]');
+                const macroCards=[...document.querySelectorAll('#calendar .opCard[data-kind="macro"]')];
+                const consensusTags=macroCards.filter(card=>[...card.querySelectorAll('.opTag')].some(tag=>tag.textContent.trim()==='CONSENSUS SEPARATE / NOT PRESENT')).length;
+                return {cards:document.querySelectorAll('#calendar .opCard').length,cb:document.querySelectorAll('#calendar .opCard[data-kind="cb"]').length,macro:macroCards.length,consensusTags,fresh:document.getElementById('calendar')?.dataset.gmfqEditorialFreshness,text:document.getElementById('calendar')?.innerText||'',w:root?.scrollWidth,cw:root?.clientWidth};
+              });
               if(cal.cb!==8)throw new Error(`${name} CB cards ${cal.cb}`);
               if(cal.macro<8)throw new Error(`${name} macro cards ${cal.macro}`);
-              if(!/Macro releases/.test(cal.text)||!/CONSENSUS SEPARATE \/ NOT PRESENT/.test(cal.text))throw new Error(`${name} macro/consensus labels missing`);
+              if(cal.consensusTags!==cal.macro)throw new Error(`${name} consensus tags ${cal.consensusTags}/${cal.macro}`);
               for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'])if(!cal.text.includes(ccy))throw new Error(`${name} missing ${ccy}`);
               if(cal.fresh!=='FRESH')throw new Error(`${name} calendar freshness ${cal.fresh}`);
               if(cal.w>cal.cw+2)throw new Error(`${name} calendar overflow ${cal.w}/${cal.cw}`);
