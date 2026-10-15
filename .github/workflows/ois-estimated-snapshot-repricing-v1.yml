@@ -100,19 +100,20 @@ jobs:
               r=v['currencies'][c]
               assert r['operational_status']=='GREEN_ESTIMATED'
               assert r['input_mode']=='LIVE_SECONDARY_OVERLAY', r
-              assert r['method_id']=='TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1', r
+              assert r['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', r
               assert r['backtest_eligible_as_official'] is False
               assert r['repricing_reference']['homogeneous_method_required'] is True
               for h in ('3m','6m','12m'):
                   x=r['horizons'][h]
                   assert x['rate'] is not None
+                  assert '!' not in str(x.get('contract')), x
+                  assert '!' not in str(x.get('symbol')), x
                   assert 'change_1d_bp' in x and 'change_1w_bp' in x
           n=v['currencies']['NZD']
           assert n['operational_status']=='GREEN_ESTIMATED'
           assert n['input_mode']=='NATIVE_CB_FALLBACK'
           assert n['method_id']=='NATIVE_CB_ESTIMATED_V1'
           assert n['backtest_eligible_as_official'] is False
-          # Native RBNZ OIS anchor stays untouched: ASX is additive context only.
           assert n['horizons']['3m']['rate']==3.0, n
           assert n['horizons']['6m']['rate'] is None, n
           assert n['horizons']['12m']['rate'] is None, n
