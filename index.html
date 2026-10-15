@@ -26,6 +26,9 @@
  const forwardReliabilityInline="const rel=(!st.n)?{label:'In attesa',cls:'fwdNeu'}:(st.n<10)?{label:'Troppo presto',cls:'fwdWarn'}:(st.n<20)?{label:'Preliminare',cls:'fwdWarn'}:(st.n<40)?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};";
  html=html.replace(forwardReliabilityCall,forwardReliabilityInline);
 
+ // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
+ // the immutable legacy payload for audit/rollback, but must no longer execute.
+ // Current visible editorial surfaces are owned by validated operational modules.
  const quarantinedLegacyScripts=[
    'gmfq-propagation-qa','gmfq-e2e-live-italy','gmfq-runtime-refresh-fix-20260930',
    'gmfq-usd-sep30-closeout-20261001','gmfq-usd-sep30-closeout-finalizer-20261001'
@@ -37,6 +40,7 @@
    if(matches.length!==1) throw new Error('Legacy quarantine manifest inatteso per '+id+': '+matches.length);
    html=html.replace(re,'<!-- GMFQ_LEGACY_QUARANTINED:'+id+' -->');
  }
+ // One old 30-Sep refresh block is anonymous. Quarantine it by a unique runtime fingerprint.
  const quarantinedLegacyFingerprints=[{name:'LIVE_REFRESH_20260930_AM',needle:'window.LIVE_REFRESH_20260930_AM='}];
  for(const item of quarantinedLegacyFingerprints){
    const blocks=html.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g)||[];
