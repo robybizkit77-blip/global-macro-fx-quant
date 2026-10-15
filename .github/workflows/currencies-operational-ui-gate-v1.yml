@@ -54,7 +54,7 @@ jobs:
                 canonical:window.deriveCurrencyState?.(c)||null,
                 selected:document.querySelector('#currencyGrid .ccy.active')?.dataset?.c||null,
                 title:document.getElementById('v219CurrencyTitle')?.textContent||'',
-                owner:document.querySelectorAll('#currencies .v224CurrencyHero[data-gmfq-operational="currencies"]').length,
+                owner:document.querySelectorAll('#currencies #v224Headline[data-gmfq-operational="currencies"]').length,
                 legacyVisible:(()=>{const x=document.getElementById('v302CurrencyShell');return !!x&&getComputedStyle(x).display!=='none';})()
               }),c);
               if(state.audit?.schema!=='GMFQ_CURRENCIES_OPERATIONAL_UI_V1'||state.audit?.status!=='ACTIVE') throw new Error(label+' '+c+' operational audit '+JSON.stringify(state.audit));
