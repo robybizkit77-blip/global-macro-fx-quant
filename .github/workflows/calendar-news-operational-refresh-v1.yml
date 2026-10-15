@@ -42,8 +42,6 @@ jobs:
   refresh:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    env:
-      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,7 +50,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Refresh secondary consensus when provider credentials are available
+      - name: Refresh public secondary consensus
         run: |
           set -euo pipefail
           python validation/refresh_macro_consensus_secondary_v1.py
@@ -81,12 +79,14 @@ jobs:
           assert {e['ccy'] for e in macro}=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
           assert all(str(e['quality']).startswith('OFFICIAL_') for e in macro)
           assert all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro)
-          assert con['provider']=='FMP'
-          assert con['provider_field']=='estimate'
+          assert con['provider']=='FOREX_FACTORY_FAIR_ECONOMY_WEEKLY'
+          assert con['provider_field']=='forecast'
           assert con['rules']['estimate_field_is_consensus_only'] is True
           assert con['rules']['actual_not_used_as_pre_release_consensus'] is True
           assert con['rules']['official_calendar_remains_primary'] is True
           assert con['rules']['never_change_release_date'] is True
+          assert con['rules']['public_json_secondary_source'] is True
+          assert con['rules']['weekly_feed_scope'] is True
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1'
           assert news['status']=='ACTIVE_DETERMINISTIC_LAYERS'
           assert news['items']
