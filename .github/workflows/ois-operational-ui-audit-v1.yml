@@ -45,7 +45,7 @@ jobs:
           sleep 2
       - name: Audit desktop and mobile operational OIS render
         run: |
-          cat > /tmp/ois-ui-audit.js <<'EOF'
+          cat > ois-ui-audit.js <<'EOF'
           const { chromium }=require('playwright');
           const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
           async function run(viewport,label){
@@ -95,7 +95,7 @@ jobs:
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');})().catch(e=>{console.error('::error title=OIS UI audit::'+String(e.message||e));process.exit(1)});
           EOF
-          node /tmp/ois-ui-audit.js
+          node ois-ui-audit.js
       - name: Upload OIS UI evidence
         if: always()
         uses: actions/upload-artifact@v4
