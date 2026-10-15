@@ -1,0 +1,96 @@
+{
+  "schema": "GMFQ_V1_DOCUMENTED_EXPECTED_GAPS_V1",
+  "as_of": "2026-10-15",
+  "base_main_sha": "8553820368e20ee845e5b47a0b9b329ae2500032",
+  "purpose": "Freeze the currently unresolved but explicitly understood data gaps for V1 without weakening provenance, freshness, PIT, or fail-closed rules.",
+  "classification": "DOCUMENTED_EXPECTED_GAPS",
+  "blocks_v1_freeze": false,
+  "changes_runtime": false,
+  "changes_payload": false,
+  "changes_engine": false,
+  "changes_scoring_bias_sizing": false,
+  "changes_publication_semantics": false,
+  "governance_rule": "A documented expected gap remains fail-closed and may be reopened only when new official-source evidence, archived vintage data, or an exact transformation contract makes certification possible without proxy substitution or methodology weakening.",
+  "summary": {
+    "total_expected_gaps": 7,
+    "liquidity": 3,
+    "cb_pricing": 4
+  },
+  "gaps": [
+    {
+      "id": "CHF.liquidity",
+      "layer": "Liquidity",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "Swiss National Bank",
+      "reason": "Official SNB variants and simple pairwise aggregations do not reproduce the runtime history exactly; original statistical provenance or an exact transformation contract is not preserved.",
+      "evidence": "validation/liquidity/CHF_SIGHT_DEPOSITS_PROVENANCE_RESOLUTION_2026-10-13.json",
+      "reopen_condition": "Exact official SNB series, archived vintage, or deterministic transformation contract reproducing the runtime history."
+    },
+    {
+      "id": "CHF.credit",
+      "layer": "Liquidity",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "Swiss National Bank",
+      "reason": "The official SNB source family is identified, but no tested dimensional series or simple pairwise aggregation reproduces the runtime history exactly.",
+      "evidence": "validation/liquidity/CHF_CREDIT_PROVENANCE_RESOLUTION_2026-10-13.json",
+      "reopen_condition": "Verifiable exact original SNB statistical series, archived vintage, or deterministic transformation contract reproducing the runtime observations."
+    },
+    {
+      "id": "JPY.liquidity",
+      "layer": "Liquidity",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "Bank of Japan",
+      "reason": "The official BOJ reserve-balances source is semantically aligned but neither a tested single MD08 series nor pairwise aggregation reproduces the 128-month runtime history exactly; original vintage provenance is absent.",
+      "evidence": "validation/liquidity/JPY_RESERVE_PROVENANCE_RESOLUTION_2026-10-13.json",
+      "reopen_condition": "Exact BOJ series, archived vintage, or deterministic transformation contract reproducing the historical runtime."
+    },
+    {
+      "id": "USD.cb_pricing",
+      "layer": "Central Banks / Market Pricing",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "CME/CBOT",
+      "instrument": "30-Day Federal Funds Futures (ZQ)",
+      "reason": "Homogeneous official T-5 settlement history is unavailable to the current automated environment; archive access is Datamine-routed/blocked.",
+      "evidence": "validation/CB_PRICING_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json",
+      "reopen_condition": "Reproducible official homogeneous historical settlements with source-defined temporal eligibility."
+    },
+    {
+      "id": "EUR.cb_pricing",
+      "layer": "Central Banks / Market Pricing",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "Eurex",
+      "instrument": "Three-Month Euro STR Futures (FST3)",
+      "reason": "Free official historical files do not expose the required settlement prices on a reproducible homogeneous basis.",
+      "evidence": "validation/CB_PRICING_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json",
+      "reopen_condition": "Reproducible official homogeneous historical settlements with deterministic 3M/6M/12M mapping and temporal eligibility."
+    },
+    {
+      "id": "CHF.cb_pricing",
+      "layer": "Central Banks / Market Pricing",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "ICE Futures Europe",
+      "instrument": "Three Month SARON Index Futures (SA3)",
+      "reason": "Public metadata does not expose reproducible daily official historical settlement prices as a free public series.",
+      "evidence": "validation/CB_PRICING_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json",
+      "reopen_condition": "Reproducible official EOD settlement history with deterministic temporal eligibility."
+    },
+    {
+      "id": "NZD.cb_pricing",
+      "layer": "Central Banks / Market Pricing",
+      "status": "WITHHELD_DOCUMENTED_EXPECTED_GAP",
+      "authority": "Reserve Bank of New Zealand / NZD OIS market",
+      "instrument": "NZD OIS linked to OCR expectations",
+      "reason": "RBNZ public data do not publish the required OIS curve and standard swap series are not a clean OCR/OIS substitute.",
+      "evidence": "validation/CB_PRICING_TEMPORAL_PIT_CONTRACT_V1_2026-10-11.json",
+      "reopen_condition": "Official or directly licensed reproducible NZD OIS history satisfying the existing PIT contract without proxy substitution."
+    }
+  ],
+  "v1_freeze_policy": {
+    "expected_gaps_are_not_green": true,
+    "expected_gaps_remain_fail_closed": true,
+    "no_proxy_substitution": true,
+    "no_gate_weakening": true,
+    "no_inferred_provenance": true,
+    "dashboard_may_finalize_with_documented_expected_gaps": true
+  }
+}
