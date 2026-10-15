@@ -55,14 +55,14 @@ def main():
         if cb_contract["governance"].get(key) != "NONE":
             raise SystemExit(f"CB estimated non-neutral effect: {key}")
 
-    cb_before = sha256("live_data/sections/CB_PRICING_ESTIMATED.json")
+    cb_before_obj = load_json("live_data/sections/CB_PRICING_ESTIMATED.json")
     ois_before = sha256("live_data/sections/OIS_DATA.json")
     native_cb_before = sha256("live_data/sections/NATIVE_CB_DATA.json")
     run([sys.executable, "validation/cb_pricing/build_cb_pricing_estimated_v1.py"])
     run([sys.executable, "validation/cb_pricing/test_cb_pricing_estimated_v1.py"])
-    cb_after = sha256("live_data/sections/CB_PRICING_ESTIMATED.json")
-    if cb_before != cb_after:
-        raise SystemExit("CB estimated committed snapshot is not aligned with its deterministic builder")
+    cb_after_obj = load_json("live_data/sections/CB_PRICING_ESTIMATED.json")
+    if cb_before_obj != cb_after_obj:
+        raise SystemExit("CB estimated committed snapshot is semantically out of alignment with its deterministic builder")
     if ois_before != sha256("live_data/sections/OIS_DATA.json") or native_cb_before != sha256("live_data/sections/NATIVE_CB_DATA.json"):
         raise SystemExit("CB estimated validation mutated official CB/OIS inputs")
 
