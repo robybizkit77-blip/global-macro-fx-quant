@@ -8,39 +8,27 @@ function css(){
  if(document.getElementById('gmfq-calendar-news-operational-style'))return;
  const s=document.createElement('style');s.id='gmfq-calendar-news-operational-style';
  s.textContent=`
- .opDesk{padding:22px 20px 36px;color:#e8eef8;font-family:Inter,system-ui,sans-serif}
- .opHero{border:1px solid rgba(130,160,210,.18);background:linear-gradient(135deg,rgba(23,45,78,.92),rgba(11,19,34,.96));border-radius:18px;padding:20px;margin-bottom:16px}
- .opEyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8fb5e8;font-weight:800}
- .opTitle{font-size:24px;line-height:1.1;margin:7px 0 6px;font-weight:850}.opSub{font-size:13px;color:#9eabc0;line-height:1.5}
- .opGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.opCard{background:#101a2b;border:1px solid rgba(135,157,190,.16);border-radius:14px;padding:15px;min-width:0}
- .opTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.opCcy{font-size:15px;font-weight:850}.opDate{font-size:12px;color:#9bb0cd;font-variant-numeric:tabular-nums}
- .opCard h3{margin:0 0 8px;font-size:15px;line-height:1.3}.opMeta{font-size:12px;color:#9eaabc;line-height:1.45}.opTag{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.04em;background:rgba(73,151,255,.12);border:1px solid rgba(73,151,255,.2);color:#9ec5ff}
- .opHigh{color:#a7e5bf}.opFoot{margin-top:16px;padding:12px 14px;border-radius:12px;background:rgba(255,181,71,.08);border:1px solid rgba(255,181,71,.16);font-size:12px;color:#cbb68c;line-height:1.45}
- @media(max-width:720px){.opDesk{padding:15px 12px 28px}.opGrid{grid-template-columns:1fr}.opTitle{font-size:21px}.opHero{padding:16px}}
+ .opDesk{padding:22px 20px 36px;color:#e8eef8;font-family:Inter,system-ui,sans-serif}.opHero{border:1px solid rgba(130,160,210,.18);background:linear-gradient(135deg,rgba(23,45,78,.92),rgba(11,19,34,.96));border-radius:18px;padding:20px;margin-bottom:16px}.opEyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8fb5e8;font-weight:800}.opTitle{font-size:24px;line-height:1.1;margin:7px 0 6px;font-weight:850}.opSub{font-size:13px;color:#9eabc0;line-height:1.5}.opSection{margin:18px 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#92a7c4;font-weight:850}.opGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.opCard{background:#101a2b;border:1px solid rgba(135,157,190,.16);border-radius:14px;padding:15px;min-width:0}.opCard[data-kind="macro"]{border-color:rgba(127,190,255,.2)}.opTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.opCcy{font-size:15px;font-weight:850}.opDate{font-size:12px;color:#9bb0cd;font-variant-numeric:tabular-nums}.opCard h3{margin:0 0 8px;font-size:15px;line-height:1.3}.opMeta{font-size:12px;color:#9eaabc;line-height:1.45}.opTag{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.04em;background:rgba(73,151,255,.12);border:1px solid rgba(73,151,255,.2);color:#9ec5ff}.opTagWarn{background:rgba(255,181,71,.09);border-color:rgba(255,181,71,.2);color:#e6c27e}.opHigh{color:#a7e5bf}.opFoot{margin-top:16px;padding:12px 14px;border-radius:12px;background:rgba(255,181,71,.08);border:1px solid rgba(255,181,71,.16);font-size:12px;color:#cbb68c;line-height:1.45}@media(max-width:720px){.opDesk{padding:15px 12px 28px}.opGrid{grid-template-columns:1fr}.opTitle{font-size:21px}.opHero{padding:16px}}
  `;document.head.appendChild(s);
 }
-
+function card(e){
+ const isCB=e.event_type==='CENTRAL_BANK_DECISION';
+ const tag=isCB?'OFFICIAL CB SCHEDULE':'OFFICIAL MACRO RELEASE';
+ const details=isCB?`Tasso attuale <b>${fmtRate(e.current_rate)}</b><br>${esc(e.stance||'')}`:`${esc(e.reference_period||'')} ${e.time_local?`· ${esc(e.time_local)} ${esc(e.timezone||'')}`:''}<br>Source: ${esc(e.source_family||e.source_layer||'official')}`;
+ return `<article class="opCard" data-kind="${isCB?'cb':'macro'}"><div class="opTop"><div class="opCcy">${FLAGS[e.ccy]||''} ${esc(e.ccy)}</div><div class="opDate">${esc(e.date)}</div></div><h3 class="${e.importance==='HIGH'?'opHigh':''}">${esc(e.title)}</h3><div class="opMeta">${details}<br><span class="opTag">${tag}</span> ${!isCB?'<span class="opTag opTagWarn">CONSENSUS SEPARATE / NOT PRESENT</span>':''}</div></article>`;
+}
 function calendarHtml(data){
- const events=(data.events||[]).map(e=>`<article class="opCard"><div class="opTop"><div class="opCcy">${FLAGS[e.ccy]||''} ${esc(e.ccy)}</div><div class="opDate">${esc(e.date)}</div></div><h3>${esc(e.title)}</h3><div class="opMeta">Tasso attuale <b>${fmtRate(e.current_rate)}</b><br>${esc(e.stance||'')}<br><span class="opTag">OFFICIAL CB SCHEDULE</span></div></article>`).join('');
- return `<div class="opDesk" data-gmfq-operational="calendar"><div class="opHero"><div class="opEyebrow">Event Risk · G8</div><div class="opTitle">Calendar operativo</div><div class="opSub">Prossime riunioni ufficiali delle banche centrali G8. La pipeline macro-release verrà aggiunta come feed separato per non mescolare schedule ufficiale e consensus secondary.</div></div><div class="opGrid">${events||'<div class="opCard">Nessun meeting futuro disponibile.</div>'}</div><div class="opFoot">Coverage CB: ${esc(data.coverage?.cb_schedule_available||0)}/8 · Macro release schedule: ${esc(data.scope?.macro_release_schedule||'PENDING')}</div></div>`;
+ const cb=(data.events||[]).filter(e=>e.event_type==='CENTRAL_BANK_DECISION').map(card).join('');
+ const macro=(data.events||[]).filter(e=>e.event_type!=='CENTRAL_BANK_DECISION').map(card).join('');
+ return `<div class="opDesk" data-gmfq-operational="calendar"><div class="opHero"><div class="opEyebrow">Event Risk · G8</div><div class="opTitle">Calendar operativo</div><div class="opSub">Riunioni CB + release macro G8 da fonti ufficiali. Le date ufficiali e il consensus restano due layer distinti: nessun consensus viene inferito o usato per correggere una data.</div></div><div class="opSection">Central Banks</div><div class="opGrid">${cb||'<div class="opCard">Nessun meeting futuro disponibile.</div>'}</div><div class="opSection">Macro releases</div><div class="opGrid">${macro||'<div class="opCard">Nessuna release macro ufficiale disponibile.</div>'}</div><div class="opFoot">Coverage CB: ${esc(data.coverage?.cb_schedule_available||0)}/8 · Macro currencies: ${esc(data.coverage?.macro_ccy_coverage||0)}/8 · Upcoming macro events: ${esc(data.coverage?.upcoming_macro_events||0)} · Consensus: ${esc(data.scope?.consensus||'NOT PRESENT')}</div></div>`;
 }
 function newsHtml(data){
  const items=(data.items||[]).map(x=>`<article class="opCard"><div class="opTop"><div class="opCcy">${FLAGS[x.ccy]||''} ${esc(x.ccy)}</div><div class="opDate">${esc(x.as_of||'—')}</div></div><h3 class="${x.importance==='HIGH'?'opHigh':''}">${esc(x.title)}</h3><div class="opMeta">${esc(x.detail)}<br><span class="opTag">${esc(x.category)}</span> <span class="opTag">${esc(x.quality||'')}</span></div></article>`).join('');
  return `<div class="opDesk" data-gmfq-operational="news"><div class="opHero"><div class="opEyebrow">What changed · validated layers</div><div class="opTitle">News Pulse operativo</div><div class="opSub">Non è un feed di headline: mostra gli ultimi cambiamenti misurabili nei layer certificati/operativi. Content as-of <b>${esc(data.content_as_of||'—')}</b>.</div></div><div class="opGrid">${items||'<div class="opCard">Nessun nuovo segnale validato disponibile.</div>'}</div><div class="opFoot">Inputs: ${esc((data.scope?.inputs||[]).join(' · '))}. Gli estimated OIS entrano nel repricing solo quando esiste una storia sufficiente; NULL non viene trasformato in 0 bp.</div></div>`;
 }
-
 let cache=null;
 async function load(){if(cache)return cache;const [c,n]=await Promise.all([fetch('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('calendar '+r.status);return r.json()}),fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('news '+r.status);return r.json()})]);cache={c,n};return cache;}
-async function render(){
- css();
- try{
-  const {c,n}=await load();
-  const cal=document.getElementById('calendar'), news=document.getElementById('news');
-  if(cal && !cal.querySelector('[data-gmfq-operational="calendar"]')) cal.innerHTML=calendarHtml(c);
-  if(news && !news.querySelector('[data-gmfq-operational="news"]')) news.innerHTML=newsHtml(n);
-  window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ACTIVE',calendar:c.status,news:n.status,calendar_events:(c.events||[]).length,news_items:(n.items||[]).length,content_as_of:n.content_as_of};
- }catch(err){console.error('calendar-news-operational',err);window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ERROR',error:String(err)};}
-}
+async function render(){css();try{const {c,n}=await load();const cal=document.getElementById('calendar'),news=document.getElementById('news');if(cal&&!cal.querySelector('[data-gmfq-operational="calendar"]'))cal.innerHTML=calendarHtml(c);if(news&&!news.querySelector('[data-gmfq-operational="news"]'))news.innerHTML=newsHtml(n);window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ACTIVE',calendar:c.status,news:n.status,calendar_events:(c.events||[]).length,macro_events:(c.events||[]).filter(e=>e.event_type!=='CENTRAL_BANK_DECISION').length,news_items:(n.items||[]).length,content_as_of:n.content_as_of};}catch(err){console.error('calendar-news-operational',err);window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ERROR',error:String(err)};}}
 const obs=new MutationObserver(()=>{const c=document.getElementById('calendar'),n=document.getElementById('news');if((c&&!c.querySelector('[data-gmfq-operational="calendar"]'))||(n&&!n.querySelector('[data-gmfq-operational="news"]')))render();});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{render();obs.observe(document.body,{childList:true,subtree:true});},{once:true});else{render();obs.observe(document.body,{childList:true,subtree:true});}
 })();
