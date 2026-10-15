@@ -89,6 +89,7 @@
   document.head.appendChild(style);
   const root=document.getElementById('currencies');
   root?.setAttribute('data-gmfq-hierarchy','currencies-v1');
+  root?.querySelector('#v224Headline[data-gmfq-operational="currencies"]')?.setAttribute('data-gmfq-hierarchy','currencies-v1');
   root?.querySelector('.v461CoreGrid')?.setAttribute('data-gmfq-currency-rail','core');
   root?.querySelector('.v461DecisionGrid')?.setAttribute('data-gmfq-currency-rail','decision');
   root?.querySelector('.v461ChartsGrid')?.setAttribute('data-gmfq-currency-rail','charts');
