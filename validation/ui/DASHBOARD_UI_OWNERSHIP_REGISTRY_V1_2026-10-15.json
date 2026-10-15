@@ -24,7 +24,7 @@
     "cbdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cbdesk-operational-v1.js","selector":"#v234CountryName[data-gmfq-operational=\"cbdesk\"]","count":1}]},
     "liquiditydesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/liquiditydesk-operational-v1.js","selector":"#v243CountryName[data-gmfq-operational=\"liquiditydesk\"]","count":1}]},
     "cot": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cotdesk-operational-v1.js","selector":"#v247CountryName[data-gmfq-operational=\"cot\"]","count":1}]},
-    "method": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "method": {"owner_type":"STATIC_REFERENCE","owner":"payload","reference_state":"CERTIFIED","freshness_requirement":"NONE","content_policy":"TIMELESS_METHODOLOGY_PLAYBOOK","migration_state":"FREEZE_AS_REFERENCE"},
     "forwarddesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/forwarddesk-operational-v1.js","selector":"#forwarddesk[data-gmfq-operational=\"forwarddesk\"]","count":1}]}
   },
   "dynamic_sources": {
@@ -43,6 +43,7 @@
     "liquiditydesk": ["NATIVE_LIQ_DATA(runtime)","liquidityStructuralChangeCandidate(runtime)","productionHealthCheck.live_freshness_integrity.LIQUIDITY","productionHealthCheck.overlay_isolation_integrity","renderNativeLiquidityDesk(runtime)"],
     "cot": ["V250_COT_CHART_DATA(runtime)","V247_COT_STORIES(runtime)","D.cot synchronized certified fields","overlayIsolationIntegrity(runtime)"],
     "forwarddesk": ["forwardValidationSummary(runtime)","forwardLedgerIntegrity(runtime)","gmfqForwardPathRiskStats(runtime)","gmfqForwardSnapshotBasketSeries(runtime)","gmfqForwardPairedOverlayStats(runtime)"],
+    "method": ["STATIC_REFERENCE","no date dependency","no runtime freshness dependency","no engine-internal terminology"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
 }
