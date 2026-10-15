@@ -33,6 +33,7 @@ def main() -> None:
     overview_asof = (ROOT / "dashboard/overview-asof-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
     cbdesk = (ROOT / "dashboard/cbdesk-operational-v1.js").read_text()
+    liquidity = (ROOT / "dashboard/liquiditydesk-operational-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
@@ -45,6 +46,7 @@ def main() -> None:
         "dashboard/overview-asof-operational-v1.js",
         "dashboard/ois-operational-monitor-v1.js",
         "dashboard/cbdesk-operational-v1.js",
+        "dashboard/liquiditydesk-operational-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
         must(src in index, f"index missing dynamic module {src}")
@@ -94,6 +96,14 @@ def main() -> None:
     must("NON OIS" in cbdesk, "CB Desk must label NZD proxy as NON OIS")
     must("GREEN_OFFICIAL" in cbdesk and "GREEN_ESTIMATED" in cbdesk, "CB Desk must preserve official/estimated distinction")
 
+    must("GMFQ_LIQUIDITYDESK_OPERATIONAL_UI_V1" in liquidity, "Liquidity Desk operational schema missing")
+    must("NATIVE_LIQ_DATA" in liquidity, "Liquidity Desk must read canonical native liquidity data")
+    must("liquidityStructuralChangeCandidate" in liquidity, "Liquidity Desk must use canonical structural candidate")
+    must("live_freshness_integrity" in liquidity, "Liquidity Desk must enforce source-native freshness integrity")
+    must("overlay_isolation_integrity" in liquidity, "Liquidity Desk must enforce overlay isolation")
+    must("SOURCE_NATIVE_CADENCE_HOLD_LAST_VALID_COMPONENT" in liquidity, "Liquidity freshness policy missing")
+    must("core_effect:'NONE'" in liquidity, "Liquidity Desk must declare zero core effect")
+
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must('data-gmfq-operational="calendar"' in cal, "calendar owner marker missing")
@@ -119,7 +129,7 @@ def main() -> None:
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
-    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk")
+    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk","liquiditydesk")
     for view in hybrid:
         must(views[view]["owner_type"] == "HYBRID", f"{view} owner type")
     for view, spec in views.items():
@@ -132,6 +142,7 @@ def main() -> None:
             "overview_asof":"GMFQ_ECB_PRICE_AUDIT.as_of; CHF rates keeps SNB last validated snapshot",
             "currencies":"deriveCurrencyState + canonical renderCurrency + current runtime layers",
             "cbdesk":"NATIVE_CB_DATA policy + OIS_OPERATIONAL_VIEW pricing + rate2YSeries confirmation",
+            "liquiditydesk":"NATIVE_LIQ_DATA + source-native cadence freshness + structural candidate; overlay only",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
