@@ -66,16 +66,18 @@ jobs:
               const cards=[...(host?.querySelectorAll('.oisPathCard')||[])];
               const badges=[...(host?.querySelectorAll('.oisPathMeta')||[])].map(x=>x.textContent.trim());
               const rows=[...(host?.querySelectorAll('.oisReprice tbody tr')||[])];
-              const text=host?.innerText||'';
+              const tickers=[...(host?.querySelectorAll('.oisPathCcy')||[])].map(x=>x.textContent.trim());
+              const foot=host?.querySelector('.oisFoot')?.textContent||'';
               const docOverflow=document.documentElement.scrollWidth-window.innerWidth;
+              const hostOverflow=host?host.scrollWidth-host.clientWidth:null;
               const active=document.getElementById('ratesdesk')?.classList.contains('active')===true;
               return {
-                audit,active,cards:cards.length,rows:rows.length,badges,
+                audit,active,cards:cards.length,rows:rows.length,badges,tickers,
                 hasOfficial:badges.filter(x=>x==='OFFICIAL').length,
                 hasEstimated:badges.filter(x=>x==='ESTIMATED').length,
-                hasAllCurrencies:CCYS.every(c=>text.includes(c)),
-                hasNullPolicy:text.includes('NULL ≠ 0 bp'),
-                docOverflow,
+                hasAllCurrencies:CCYS.every(c=>tickers.includes(c)),
+                hasNullPolicy:foot.includes('NULL ≠ 0 bp'),
+                docOverflow,hostOverflow,
                 hostBox:host?{w:host.getBoundingClientRect().width,h:host.getBoundingClientRect().height}:null,
                 finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null
               };
@@ -85,11 +87,12 @@ jobs:
             if(result.finalAudit?.status!=='PASS')throw new Error(label+' canonical final audit not PASS');
             if(!result.active)throw new Error(label+' ratesdesk not active');
             if(result.audit?.ok!==true||result.audit?.summary?.operational_green!==8)throw new Error(label+' OIS UI audit failed: '+JSON.stringify(result.audit));
+            if(result.audit?.host_count!==1)throw new Error(label+' OIS host count mismatch');
             if(result.cards!==8||result.rows!==8)throw new Error(label+' expected 8 cards/rows');
             if(result.hasOfficial!==4||result.hasEstimated!==4)throw new Error(label+' quality split mismatch');
             if(!result.hasAllCurrencies||!result.hasNullPolicy)throw new Error(label+' content integrity failure');
             if(!result.hostBox||result.hostBox.w<=0||result.hostBox.h<=0)throw new Error(label+' OIS host not rendered');
-            if(viewport.width<=500&&result.docOverflow>4)throw new Error(label+' horizontal overflow '+result.docOverflow);
+            if(result.hostOverflow!=null&&result.hostOverflow>4)throw new Error(label+' OIS host horizontal overflow '+result.hostOverflow);
             await page.screenshot({path:`ois-operational-${label}.png`,fullPage:true});
             await browser.close();
           }
