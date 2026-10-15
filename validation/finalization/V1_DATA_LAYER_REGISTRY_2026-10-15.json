@@ -6,24 +6,76 @@
   "layers": {
     "official_runtime": {
       "role": "CORE_ELIGIBLE_WHEN_ACTIVE",
-      "sources": ["Macro", "Rates", "Price", "COT", "Liquidity", "CB Pricing", "Risk"],
+      "sources": [
+        "Macro",
+        "Rates",
+        "Price",
+        "COT",
+        "Liquidity",
+        "CB Pricing",
+        "Risk"
+      ],
       "manifest": "live_data/manifest.v2.json",
       "fail_closed": true
     },
     "cb_pricing_estimated": {
       "role": "INFORMATIONAL_ONLY",
       "path": "live_data/sections/CB_PRICING_ESTIMATED.json",
-      "refresh_mode": "DERIVED_DYNAMIC_FROM_NATIVE_CB_DATA",
+      "refresh_mode": "LIVE_OPERATIONAL_ESTIMATED_WITH_HOMOGENEOUS_REPRICING",
       "builder": "validation/cb_pricing/build_cb_pricing_estimated_v1.py",
-      "currencies": ["USD", "EUR", "CHF", "NZD"],
+      "currencies": [
+        "USD",
+        "EUR",
+        "CHF",
+        "NZD"
+      ],
+      "live_secondary_overlay_currencies": [
+        "USD",
+        "EUR",
+        "CHF"
+      ],
+      "native_ois_anchor_currencies": [
+        "NZD"
+      ],
+      "directional_market_proxy_currencies": [
+        "NZD"
+      ],
+      "repricing_history": "validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl",
+      "repricing_policy": {
+        "homogeneous_method_required": true,
+        "daily_reference_min_age_hours": 18,
+        "weekly_reference_min_age_days": 5,
+        "missing_reference": "NULL_NOT_ZERO"
+      },
       "core_effect": "NONE",
       "backtest_eligible_as_official": false
+    },
+    "ois_operational_view": {
+      "role": "DECISION_SUPPORT_RESOLVED_VIEW",
+      "path": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+      "status": "GREEN_8_OF_8",
+      "green_official": 4,
+      "green_estimated": 4,
+      "operational_withheld": 0,
+      "official_certification_unchanged": true,
+      "core_effect_from_estimated": "NONE"
     },
     "residual_gap_proxies": {
       "role": "INFORMATIONAL_ONLY",
       "path": "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json",
-      "refresh_mode": "SNAPSHOT_UNTIL_LIVE_COLLECTOR_EXISTS",
-      "lanes": ["JPY.reserve_balances", "CHF.credit", "CHF.sight_deposits", "BRENT.market_proxy"],
+      "refresh_mode": "ALL_RESIDUAL_PROXIES_LIVE_OR_AUTO_REFRESH",
+      "lanes": [
+        "JPY.reserve_balances",
+        "CHF.credit",
+        "CHF.sight_deposits",
+        "BRENT.market_proxy"
+      ],
+      "lane_refresh_modes": {
+        "JPY.reserve_balances": "AUTO_REFRESH_OFFICIAL_PROXY_BOJ",
+        "CHF.credit": "AUTO_REFRESH_OFFICIAL_PROXY_SNB",
+        "CHF.sight_deposits": "AUTO_REFRESH_OFFICIAL_PROXY_SNB",
+        "BRENT.market_proxy": "LIVE_SECONDARY_MARKET_PROXY"
+      },
       "core_effect": "NONE",
       "backtest_eligible_as_official": false
     },
