@@ -1,0 +1,27 @@
+name: Live Manifest V2 Refresh Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/refresh_live_manifest_v2.py'
+      - '.github/workflows/live-manifest-v2-refresh-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Refresh manifest in disposable runner and show diff
+        run: |
+          set -euo pipefail
+          python validation/refresh_live_manifest_v2.py --apply | tee /tmp/manifest-refresh.json
+          python validation/check_live_update_contract.py | tee /tmp/live-contract.json
+          git diff -- live_data/manifest.v2.json
