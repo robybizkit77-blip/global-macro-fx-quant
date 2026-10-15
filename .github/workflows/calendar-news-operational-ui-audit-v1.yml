@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'validation/build_calendar_operational_v1.py'
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
@@ -13,6 +14,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'validation/build_calendar_operational_v1.py'
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
@@ -30,6 +32,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Build Calendar V2 from official sources
+        run: python3 validation/build_calendar_operational_v1.py
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
