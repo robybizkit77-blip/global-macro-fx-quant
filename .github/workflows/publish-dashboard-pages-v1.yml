@@ -98,6 +98,7 @@ jobs:
               'dashboard/top-themes-operational-v1.js',
               'dashboard/what-changed-operational-v1.js',
               'dashboard/risk-operational-v1.js',
+              'dashboard/pairs-operational-v1.js',
               'dashboard/editorial-freshness-guard-v1.js'
           ]:
               assert asset in index, asset
@@ -151,6 +152,7 @@ jobs:
           cp dashboard/top-themes-operational-v1.js /tmp/gmfq-pages/dashboard/top-themes-operational-v1.js
           cp dashboard/what-changed-operational-v1.js /tmp/gmfq-pages/dashboard/what-changed-operational-v1.js
           cp dashboard/risk-operational-v1.js /tmp/gmfq-pages/dashboard/risk-operational-v1.js
+          cp dashboard/pairs-operational-v1.js /tmp/gmfq-pages/dashboard/pairs-operational-v1.js
           cp dashboard/editorial-freshness-guard-v1.js /tmp/gmfq-pages/dashboard/editorial-freshness-guard-v1.js
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
           cp live_data/sections/CALENDAR_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/CALENDAR_OPERATIONAL_VIEW.json
@@ -171,6 +173,7 @@ jobs:
               'dashboard/top-themes-operational-v1.js',
               'dashboard/what-changed-operational-v1.js',
               'dashboard/risk-operational-v1.js',
+              'dashboard/pairs-operational-v1.js',
               'dashboard/editorial-freshness-guard-v1.js',
               'live_data/sections/OIS_OPERATIONAL_VIEW.json',
               'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
@@ -184,7 +187,7 @@ jobs:
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/top-themes-operational-v1.js dashboard/what-changed-operational-v1.js dashboard/risk-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/top-themes-operational-v1.js dashboard/what-changed-operational-v1.js dashboard/risk-operational-v1.js dashboard/pairs-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
