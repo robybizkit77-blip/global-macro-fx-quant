@@ -1,0 +1,76 @@
+name: Final End-to-End Certification Gate V2
+
+on:
+  pull_request:
+    paths:
+      - 'validation/run_final_e2e_certification_gate_v2.py'
+      - 'validation/run_daily_data_orchestrator_final_gate_v1.py'
+      - 'validation/finalization/**'
+      - 'validation/beta/**'
+      - 'validation/forward/**'
+      - 'validation/liquidity/**'
+      - 'validation/risk/**'
+      - 'validation/price/**'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/manifest.v2.json'
+      - 'payload/**'
+      - '.github/workflows/final-e2e-certification-gate-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Snapshot immutable runtime surfaces
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/liq.before.sha256
+          sha256sum live_data/sections/D.json > /tmp/d.before.sha256
+          sha256sum live_data/sections/NATIVE_RATES_DATA.json > /tmp/rates.before.sha256
+          sha256sum live_data/sections/MACRO_SERIES.json > /tmp/macro.before.sha256
+          sha256sum payload/part-15.txt > /tmp/price.before.sha256
+
+      - name: Run final end-to-end certification gate V2
+        run: |
+          set -euo pipefail
+          python validation/run_final_e2e_certification_gate_v2.py | tee /tmp/final-e2e-v2.json
+
+      - name: Verify final receipt and zero runtime mutation
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/final-e2e-v2.json'))
+          assert d['status']=='PASS', d
+          assert d['operational_state']=='READY_WITH_DOCUMENTED_EXPECTED_GAPS', d
+          assert d['v1_freeze_ready'] is True, d
+          assert d['core_runtime_mutated'] is False, d
+          assert d['documented_expected_gaps']['count']==7, d
+          assert d['rate_beta']['scope']=='OBSERVATIONAL_ONLY', d
+          assert d['rate_beta']['backtest_enabled'] is False, d
+          assert d['rate_beta']['promotion_enabled'] is False, d
+          assert d['forward_logger']['snapshot_count']==28, d
+          assert d['forward_logger']['no_forward_outcomes_in_snapshot'] is True, d
+          print('FINAL_E2E_V2_PASS')
+          PY
+          sha256sum -c /tmp/liq.before.sha256
+          sha256sum -c /tmp/d.before.sha256
+          sha256sum -c /tmp/rates.before.sha256
+          sha256sum -c /tmp/macro.before.sha256
+          sha256sum -c /tmp/price.before.sha256
+          git diff --exit-code -- live_data payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-e2e-certification-gate-v2
+          path: /tmp/final-e2e-v2.json
+          if-no-files-found: error
