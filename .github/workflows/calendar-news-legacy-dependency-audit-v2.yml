@@ -1,0 +1,42 @@
+name: Calendar News Legacy Dependency Audit V2
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'validation/ui/audit_calendar_news_legacy_dependencies_v2.py'
+      - '.github/workflows/calendar-news-legacy-dependency-audit-v2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'validation/ui/audit_calendar_news_legacy_dependencies_v2.py'
+      - '.github/workflows/calendar-news-legacy-dependency-audit-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit runtime-equivalent legacy dependencies after quarantine
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/ui/audit_calendar_news_legacy_dependencies_v2.py | tee /tmp/legacy-audit-v2.json
+          test -s /tmp/legacy-audit-v2.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: calendar-news-legacy-dependency-audit-v2
+          path: /tmp/legacy-audit-v2.json
+          if-no-files-found: error
