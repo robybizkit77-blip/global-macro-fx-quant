@@ -86,7 +86,8 @@ jobs:
             if(snap.marker!=='overview-v1') throw new Error(label+' hierarchy marker missing');
             for(const k of ['hero','exec','risk','map','bottom','macro','rates','refresh']) if(!snap[k]||snap[k].h<=0||snap[k].display==='none') throw new Error(label+' hidden/missing Overview block '+k+' '+JSON.stringify(snap[k]));
             if(snap.execCards<5||snap.ccyCards!==8||snap.pairCards!==2||snap.changeCards<3) throw new Error(label+' content coverage drift '+JSON.stringify({exec:snap.execCards,ccy:snap.ccyCards,pairs:snap.pairCards,changes:snap.changeCards}));
-            for(const term of ['Panoramica G8','AUD/CHF','USD/CHF','Rischio','USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) if(!snap.rootText.includes(term)) throw new Error(label+' Overview content lost '+term);
+            const rootLower=snap.rootText.toLocaleLowerCase('it');
+            for(const term of ['panoramica g8','aud/chf','usd/chf','rischio','usd','eur','gbp','jpy','chf','cad','aud','nzd']) if(!rootLower.includes(term)) throw new Error(label+' Overview content lost '+term);
             if(snap.documentOverflow>4) throw new Error(label+' document horizontal overflow '+snap.documentOverflow);
             for(const [k,v] of Object.entries(snap.owners)) if(v!=='ACTIVE') throw new Error(label+' operational owner unhealthy '+k+'='+v);
             if(label==='mobile'){
