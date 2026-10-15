@@ -7,9 +7,13 @@ on:
       - price-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/price-persistent-daily-v1.yml'
+      - 'validation/refresh_live_manifest_v2.py'
+      - 'live_data/manifest.v2.json'
   pull_request:
     paths:
       - '.github/workflows/price-persistent-daily-v1.yml'
+      - 'validation/refresh_live_manifest_v2.py'
+      - 'live_data/manifest.v2.json'
   workflow_dispatch:
   schedule:
     # Europe/Rome retries after the ECB reference-rate publication window.
@@ -82,9 +86,9 @@ jobs:
           assert c['as_of']<=date.today().isoformat(),(c['as_of'],date.today().isoformat())
           print('PRICE_PERSISTENT_CANDIDATE_PASS',current,'->',c['as_of'])
           PY
-          git diff --exit-code -- payload/part-15.txt
+          git diff --exit-code -- payload/part-15.txt live_data/manifest.v2.json
 
-      - name: Apply candidate and classify result
+      - name: Apply candidate and classify Price result
         id: apply
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
@@ -96,44 +100,63 @@ jobs:
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           test "$STATUS" = 'NO_CHANGE' -o "$STATUS" = 'UPDATE_AVAILABLE'
 
-      - name: Validate no-change identity
-        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'NO_CHANGE'
+      - name: Refresh and validate live manifest V2
+        id: manifest
+        if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          git diff --exit-code -- payload/part-15.txt
-          echo PRICE_PERSISTENT_NO_CHANGE_PASS
+          python validation/refresh_live_manifest_v2.py --apply > /tmp/price-persistent/manifest-refresh.json
+          cat /tmp/price-persistent/manifest-refresh.json
+          STATUS="$(python -c "import json; print(json.load(open('/tmp/price-persistent/manifest-refresh.json'))['status'])")"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          test "$STATUS" = 'NO_CHANGE' -o "$STATUS" = 'UPDATE_AVAILABLE'
+          python validation/check_live_update_contract.py > /tmp/price-persistent/live-contract.json
+          cat /tmp/price-persistent/live-contract.json
 
-      - name: Validate update scope and idempotence
-        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE'
+      - name: Validate combined scope and idempotence
+        if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git diff --name-only)" = 'payload/part-15.txt'
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'payload/part-15.txt','live_data/manifest.v2.json'}
+          unexpected=changed-allowed
+          assert not unexpected, f'unexpected Price persistence scope: {sorted(unexpected)}'
+          print('PRICE_MANIFEST_SCOPE_PASS',sorted(changed))
+          PY
           python validation/apply_ecb_g8_price_candidate.py --candidate /tmp/price-persistent/candidate.json --apply > /tmp/price-persistent/apply-second.json
+          python validation/refresh_live_manifest_v2.py --apply > /tmp/price-persistent/manifest-second.json
+          python validation/check_live_update_contract.py > /tmp/price-persistent/live-contract-second.json
           python - <<'PY'
           import json,re
           c=json.load(open('/tmp/price-persistent/candidate.json'))
-          r=json.load(open('/tmp/price-persistent/apply-second.json'))
-          assert r['status']=='NO_CHANGE' and r['applied'] is False,r
+          p=json.load(open('/tmp/price-persistent/apply-second.json'))
+          m=json.load(open('/tmp/price-persistent/manifest-second.json'))
+          assert p['status']=='NO_CHANGE' and p['applied'] is False,p
+          assert m['status']=='NO_CHANGE' and m['applied'] is False,m
           text=open('payload/part-15.txt',encoding='utf-8').read()
           compact=c['as_of'].replace('-','')
           assert len(re.findall(r'<script id="gmfq-price-ecb-\d{8}">',text))==1
           assert f'<script id="gmfq-price-ecb-{compact}">' in text
-          print('PRICE_PERSISTENT_SCOPE_AND_IDEMPOTENCE_PASS')
+          print('PRICE_MANIFEST_IDEMPOTENCE_PASS')
           PY
 
-      - name: Validation branch leaves runtime unchanged
-        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
+      - name: Validation branch leaves persistent files unchanged
+        if: steps.gate.outputs.should_run == 'true' && github.ref != 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
-          git checkout -- payload/part-15.txt
-          git diff --exit-code -- payload/part-15.txt
-          echo PRICE_PERSISTENT_VALIDATION_ONLY_PASS
+          git checkout -- payload/part-15.txt live_data/manifest.v2.json
+          git diff --exit-code -- payload/part-15.txt live_data/manifest.v2.json
+          echo PRICE_MANIFEST_VALIDATION_ONLY_PASS
 
-      - name: Commit validated Price update to main with remote-head lease
-        if: steps.gate.outputs.should_run == 'true' && steps.apply.outputs.status == 'UPDATE_AVAILABLE' && github.ref == 'refs/heads/main'
+      - name: Commit validated Price and manifest update to main with remote-head lease
+        if: >-
+          steps.gate.outputs.should_run == 'true' && github.ref == 'refs/heads/main' &&
+          (steps.apply.outputs.status == 'UPDATE_AVAILABLE' || steps.manifest.outputs.status == 'UPDATE_AVAILABLE')
         shell: bash
         env:
           TARGET_BRANCH: main
@@ -143,13 +166,13 @@ jobs:
           test "$REMOTE_SHA" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add payload/part-15.txt
-          git diff --cached --quiet && { echo 'No Price changes to persist'; exit 0; }
-          git commit -m 'Refresh daily FX Price runtime from official ECB fixing'
+          git add payload/part-15.txt live_data/manifest.v2.json
+          git diff --cached --quiet && { echo 'No Price/manifest changes to persist'; exit 0; }
+          git commit -m 'Refresh daily FX Price runtime and live manifest'
           REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
           test "$REMOTE_SHA_2" = "$GITHUB_SHA"
           git push origin "HEAD:$TARGET_BRANCH"
-          echo PRICE_PERSISTENT_MAIN_UPDATE_PUSHED
+          echo PRICE_MANIFEST_MAIN_UPDATE_PUSHED
 
       - name: Upload Price evidence
         if: always() && steps.gate.outputs.should_run == 'true'
