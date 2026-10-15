@@ -26,15 +26,18 @@
  const forwardReliabilityInline="const rel=(!st.n)?{label:'In attesa',cls:'fwdNeu'}:(st.n<10)?{label:'Troppo presto',cls:'fwdWarn'}:(st.n<20)?{label:'Preliminare',cls:'fwdWarn'}:(st.n<40)?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};";
  html=html.replace(forwardReliabilityCall,forwardReliabilityInline);
 
- // Forward path-risk compatibility: preserve the original local implementation
- // exactly, but publish its hoisted function reference for a later legacy renderer.
+ // Forward path-risk compatibility: preserve the original local implementations
+ // exactly, but publish their hoisted references for the later legacy renderer.
  const forwardPathRiskDef='function pathRiskStats(series){';
+ const forwardSnapshotBasketDef='function snapshotBasketSeries(outcomes,horizon){';
  const forwardPathRiskCall='const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));';
  const pathRiskDefMatches=html.split(forwardPathRiskDef).length-1;
+ const snapshotBasketDefMatches=html.split(forwardSnapshotBasketDef).length-1;
  const pathRiskCallMatches=html.split(forwardPathRiskCall).length-1;
- if(pathRiskDefMatches!==1 || pathRiskCallMatches!==1) throw new Error('Forward path-risk scope manifest inatteso: '+pathRiskDefMatches+'/'+pathRiskCallMatches);
+ if(pathRiskDefMatches!==1 || snapshotBasketDefMatches!==1 || pathRiskCallMatches!==1) throw new Error('Forward path-risk scope manifest inatteso: '+pathRiskDefMatches+'/'+snapshotBasketDefMatches+'/'+pathRiskCallMatches);
  html=html.replace(forwardPathRiskDef,'window.gmfqForwardPathRiskStats=pathRiskStats;\n'+forwardPathRiskDef);
- html=html.replace(forwardPathRiskCall,'const rs=window.gmfqForwardPathRiskStats(snapshotBasketSeries(outcomes,h));');
+ html=html.replace(forwardSnapshotBasketDef,'window.gmfqForwardSnapshotBasketSeries=snapshotBasketSeries;\n'+forwardSnapshotBasketDef);
+ html=html.replace(forwardPathRiskCall,'const rs=window.gmfqForwardPathRiskStats(window.gmfqForwardSnapshotBasketSeries(outcomes,h));');
 
  // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
  // the immutable legacy payload for audit/rollback, but must no longer execute.
