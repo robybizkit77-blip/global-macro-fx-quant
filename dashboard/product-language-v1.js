@@ -9,6 +9,7 @@
     ['News Pulse operativo','Ultimi cambiamenti'],
     ['Risk operativo','Rischio globale'],
     ['VALIDATED CHANGE DETECTION','Cambiamenti principali'],
+    ['HIGH IMPORTANCE','Alta importanza'],
     ['CONTESTO VALIDATO PRECEDENTE','Contesto precedente'],
     ['MACRO → MARKET PRICING · G8','Macro e attese sui tassi'],
     ['MARKET PRICING','Cosa prezza il mercato'],
@@ -64,6 +65,7 @@
     ['Δ mean vs Core','Differenza vs modello base'],
     ['Rischio OOS & confronto paired','Rischio del test e confronto']
   ]);
+  const exactFold=new Map([...exact].map(([k,v])=>[String(k).toLocaleLowerCase('it'),v]));
 
   const phrases=[
     [/^CONTENT AS-OF\s+/i,'Aggiornato al '],
@@ -97,6 +99,8 @@
     const t=normalize(raw);
     if(!t) return null;
     if(exact.has(t)) return exact.get(t);
+    const folded=exactFold.get(t.toLocaleLowerCase('it'));
+    if(folded!=null) return folded;
     for(const [re,repl] of phrases){if(re.test(t)) return t.replace(re,repl);}
     return null;
   }
@@ -110,8 +114,6 @@
       const text=normalize(el.textContent);
       const out=translate(text);
       if(out==null||out===text) continue;
-      // Collapse markup only when the whole element is exactly one known UI label.
-      // Analytical cards/paragraphs never match this condition.
       el.textContent=out;
       el.dataset.gmfqLanguageTranslated='true';
       changed++;
