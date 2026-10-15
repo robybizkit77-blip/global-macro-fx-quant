@@ -68,9 +68,6 @@ def _estimated_repricing(ccy: str, row: dict, history: list[dict]):
         return _empty_repricing()
     current_dt = _parse_capture(current_rec.get('captured_at_utc'))
     prior = [x for x in rows if _parse_capture(x.get('captured_at_utc')) and _parse_capture(x.get('captured_at_utc')) < current_dt]
-    # "1D" must represent a prior session, not merely the immediately previous
-    # intraday snapshot. 18h tolerates ordinary daily scheduling drift while
-    # preventing multiple same-day refreshes from being mislabeled as 1D.
     daily_candidates = [
         x for x in prior
         if _parse_capture(x.get('captured_at_utc')) <= current_dt - DAILY_REFERENCE_MIN_AGE
@@ -149,6 +146,7 @@ def build():
                 'source': e.get('source'),
                 'horizons': horizons,
                 'direction_vs_policy': e.get('direction_vs_policy'),
+                'market_direction_proxy': e.get('market_direction_proxy'),
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
                 'repricing_reference': {
