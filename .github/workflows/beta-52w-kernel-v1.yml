@@ -1,0 +1,47 @@
+name: Beta 52W Research Kernel V1
+
+on:
+  push:
+    branches:
+      - 'beta-52w-*'
+  pull_request:
+    paths:
+      - 'validation/beta/**'
+      - '.github/workflows/beta-52w-kernel-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  beta-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run beta 52W research kernel tests
+        working-directory: validation/beta
+        run: python test_beta_52w_kernel_v1.py
+
+      - name: Assert observational-only scope
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('validation/beta/BETA_52W_PREREGISTERED_CONTRACT_V1_2026-10-15.json')
+          c = json.loads(p.read_text())
+          assert c['status'] == 'RESEARCH_ONLY'
+          assert c['window_weeks'] == 52
+          g = c['governance']
+          assert g['no_core_score_effect'] is True
+          assert g['no_bias_effect'] is True
+          assert g['no_sizing_effect'] is True
+          assert g['no_pair_engine_effect'] is True
+          assert g['no_forward_logger_change'] is True
+          assert g['no_runtime_payload_change'] is True
+          assert c['b1']['status'] == 'NOT_EVALUATED'
+          assert c['b2']['status'] == 'NOT_EVALUATED'
+          print('PASS observational-only beta contract')
+          PY
