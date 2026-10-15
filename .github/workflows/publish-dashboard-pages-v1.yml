@@ -68,9 +68,6 @@ jobs:
           set -euo pipefail
           python validation/check_live_update_contract.py > /tmp/pages-live-contract.json
           python validation/rebuild_live_data_runtime.py --verify-only > /tmp/pages-runtime-roundtrip.json
-          # Calendar is a derived operational view. Rebuild it from the checked-out
-          # official schedule + secondary context before validating/publishing so a
-          # schema promotion cannot race the persisted JSON from the prior main run.
           python validation/build_calendar_operational_v1.py > /tmp/pages-calendar-build.json
           python - <<'PY'
           import json
@@ -90,7 +87,13 @@ jobs:
           payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
-          for asset in ['dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/editorial-freshness-guard-v1.js']:
+          for asset in [
+              'dashboard/ois-operational-monitor-v1.js',
+              'dashboard/calendar-news-operational-v1.js',
+              'dashboard/top-themes-operational-v1.js',
+              'dashboard/what-changed-operational-v1.js',
+              'dashboard/editorial-freshness-guard-v1.js'
+          ]:
               assert asset in index, asset
               p=Path(asset); assert p.is_file() and p.stat().st_size>1000, asset
           ois=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
@@ -133,6 +136,7 @@ jobs:
           cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/ois-operational-monitor-v1.js
           cp dashboard/calendar-news-operational-v1.js /tmp/gmfq-pages/dashboard/calendar-news-operational-v1.js
           cp dashboard/top-themes-operational-v1.js /tmp/gmfq-pages/dashboard/top-themes-operational-v1.js
+          cp dashboard/what-changed-operational-v1.js /tmp/gmfq-pages/dashboard/what-changed-operational-v1.js
           cp dashboard/editorial-freshness-guard-v1.js /tmp/gmfq-pages/dashboard/editorial-freshness-guard-v1.js
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
           cp live_data/sections/CALENDAR_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/CALENDAR_OPERATIONAL_VIEW.json
@@ -144,12 +148,24 @@ jobs:
           tracked=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           changed=tracked|untracked
-          allowed={'index.html','dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/editorial-freshness-guard-v1.js','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json',*[f'payload/part-{i:02d}.txt' for i in range(16)]}
+          allowed={
+              'index.html',
+              'dashboard/ois-operational-monitor-v1.js',
+              'dashboard/calendar-news-operational-v1.js',
+              'dashboard/top-themes-operational-v1.js',
+              'dashboard/what-changed-operational-v1.js',
+              'dashboard/editorial-freshness-guard-v1.js',
+              'live_data/sections/OIS_OPERATIONAL_VIEW.json',
+              'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
+              'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+              'live_data/sections/MACRO_THERMOMETER_DATA.json',
+              *[f'payload/part-{i:02d}.txt' for i in range(16)]
+          }
           unexpected=changed-allowed
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/top-themes-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json
+          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/top-themes-operational-v1.js dashboard/what-changed-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
