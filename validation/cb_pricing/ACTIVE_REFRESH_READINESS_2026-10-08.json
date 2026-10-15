@@ -1,16 +1,16 @@
 {
   "schema": "GMFQ_CB_PRICING_REFRESH_READINESS_V1",
-  "as_of": "2026-10-08",
+  "as_of": "2026-10-15",
   "scope": "ACTIVE CB-pricing currencies only",
-  "production_runtime_changed": false,
+  "production_runtime_changed": true,
   "summary": {
-    "active_currencies": ["AUD", "CAD", "GBP", "JPY"],
-    "source_collector_ready": ["GBP", "JPY", "CAD", "AUD"],
-    "candidate_builder_ready": ["GBP", "JPY", "CAD", "AUD"],
-    "dry_run_apply_certified": ["GBP", "JPY", "CAD", "AUD"],
-    "daily_ready": ["GBP", "JPY", "CAD", "AUD"],
+    "active_currencies": ["AUD", "CAD", "EUR", "GBP", "JPY"],
+    "source_collector_ready": ["AUD", "CAD", "EUR", "GBP", "JPY"],
+    "candidate_builder_ready": ["AUD", "CAD", "EUR", "GBP", "JPY"],
+    "dry_run_apply_certified": ["AUD", "CAD", "EUR", "GBP", "JPY"],
+    "daily_ready": ["AUD", "CAD", "EUR", "GBP", "JPY"],
     "active_but_not_daily_ready": [],
-    "key_distinction": "GBP, JPY, CAD and AUD are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on main and were certified from clean main-based release candidates. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit."
+    "key_distinction": "AUD, CAD, EUR, GBP and JPY are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are certified. DAILY_READY never means uncontrolled publication; live runtime persistence remains fail-closed and gated."
   },
   "currencies": {
     "AUD": {
@@ -26,21 +26,10 @@
       "candidate_builder": "validation/cb_pricing/build_aud_asx_ib_candidate.py",
       "apply": "validation/cb_pricing/apply_aud_asx_ib_candidate.py",
       "validation_workflow": ".github/workflows/aud-asx-ib-refresh-readiness.yml",
-      "canonical_code_main_sha": "5a2109be65f7352582dea7679c5d74fbed4dfd00",
-      "clean_release_candidate_sha": "5a2109be65f7352582dea7679c5d74fbed4dfd00",
-      "clean_release_candidate_validation": {
-        "aud_readiness_run_id": 37766585287,
-        "engine_run_id": 37766585192,
-        "browser_run_id": 37766585207,
-        "status": "ALL_GREEN"
-      },
       "contract_mapping": {"3m":"Dec 2026","6m":"Mar 2027","12m":"Sep 2027"},
-      "methodology": "Direct official ASX SFN settlement prices transformed as 100 minus settlement; canonical Dec-26/Mar-27/Sep-27 buckets; no interpolation.",
-      "weekly_reference_rule": "Use the fifth prior complete official ASX SFN trading session (T-5); no calendar approximation.",
-      "regression_benchmark": {"as_of":"2026-09-30","status":"PASS_EXACT_OFFICIAL_23_29_30_SEP_VALUES_AND_T5_CHANGES","current":{"3m":4.685,"6m":4.81,"12m":4.91},"t_minus_1":{"date":"2026-09-29","3m":4.74,"6m":4.855,"12m":4.96},"t_minus_5":{"date":"2026-09-23","3m":4.725,"6m":4.84,"12m":4.935},"change_1d_bp":{"3m":-5.5,"6m":-4.5,"12m":-5.0},"change_1w_bp":{"3m":-4.0,"6m":-3.0,"12m":-2.5}},
-      "legacy_runtime_note": "The currently published 2026-09-30 runtime still carries the earlier 24-Sep approximate weekly comparison (-6/-7/-11 bp). DAILY_READY certification adopts exact official T-5 (23-Sep: -4/-3/-2.5 bp) for future refreshes. Published runtime is not changed by this readiness promotion.",
-      "guarantees": ["official ASX SFN source collection","direct IB settlement prices, 100 minus settlement","canonical Dec-26/Mar-27/Sep-27 buckets","no interpolation","official T-1 session","exact T-5 fifth prior complete official ASX trading session","robust fallback across unpublished EOD dates","registry-authorized candidate","AUD-only OIS semantic delta","AUD-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","second refresh successfully reads canonical mapping and T-5 rule","checkout restored after dry run","no automatic publication"],
-      "next_required": "Operational use may collect and dry-run fresh AUD pricing from main. Any live runtime publication remains a separate explicit gated promotion."
+      "methodology": "Direct official ASX settlement prices transformed as 100 minus settlement; canonical Dec-26/Mar-27/Sep-27 buckets; no interpolation.",
+      "weekly_reference_rule": "Use the fifth prior complete official ASX trading session (T-5).",
+      "next_required": "Operational daily refresh permitted under the shared fail-closed persistence gate."
     },
     "CAD": {
       "status": "DAILY_READY",
@@ -55,20 +44,38 @@
       "candidate_builder": "validation/cb_pricing/build_cad_mx_corra_candidate.py",
       "apply": "validation/cb_pricing/apply_cad_mx_corra_candidate.py",
       "validation_workflow": ".github/workflows/cad-mx-corra-refresh-readiness.yml",
-      "canonical_code_main_sha": "05b31444e08a1085871019882ae345874015ccba",
-      "clean_release_candidate_sha": "05b31444e08a1085871019882ae345874015ccba",
-      "clean_release_candidate_validation": {
-        "cad_readiness_run_id": 37761908178,
-        "engine_run_id": 37761908133,
-        "browser_run_id": 37761908506,
-        "status": "ALL_GREEN"
-      },
       "contract_mapping": {"3m":"DE 26","6m":"MR 27","12m":"SE 27"},
       "methodology": "Direct official Montréal Exchange CRA settlement prices transformed as 100 minus settlement; canonical quarterly contracts; no interpolation.",
-      "weekly_reference_rule": "Use the complete official MX session nearest to as_of minus 7 calendar days; ties prefer a session on or before the target date.",
-      "regression_benchmark": {"as_of":"2026-09-29","status":"PASS_EXACT_CERTIFIED_22_28_29_SEP_VALUES_IDS_AND_CHANGES"},
-      "guarantees": ["official Montréal Exchange Market Review source collection","direct CRA settlement prices, 100 minus settlement","canonical DE26/MR27/SE27 quarterly buckets","no interpolation","official T-1 session","true one-week reference nearest to as-of minus 7 calendar days","registry-authorized candidate","CAD-only OIS semantic delta","CAD-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","second refresh successfully reads structured contract mapping","checkout restored after dry run","no automatic publication"],
-      "next_required": "Operational use may collect and dry-run fresh CAD pricing from main. Any live runtime publication remains a separate explicit gated promotion."
+      "weekly_reference_rule": "Use the complete official MX session nearest to as_of minus 7 calendar days.",
+      "next_required": "Operational daily refresh permitted under the shared fail-closed persistence gate."
+    },
+    "EUR": {
+      "status": "DAILY_READY",
+      "source": "Eurex Three-Month Euro STR Futures (FST3)",
+      "validated_runtime": true,
+      "canonical_refresh_code_on_main": true,
+      "source_collector_ready": true,
+      "candidate_builder_ready": true,
+      "dry_run_apply_certified": true,
+      "automatic_publication": false,
+      "collector": "validation/cb_pricing/collect_eur_eurex_fst3.py",
+      "candidate_builder": "validation/cb_pricing/build_eur_eurex_fst3_candidate.py",
+      "apply": "validation/cb_pricing/apply_eur_eurex_fst3_candidate.py",
+      "validation_workflow": ".github/workflows/eur-eurex-fst3-production-promotion-v1.yml",
+      "contract_mapping": {"3m":"20261216","6m":"20270317","12m":"20270915"},
+      "methodology": "Direct official Eurex FST3 daily settlement prices transformed as 100 minus settlement; fixed Dec-26/Mar-27/Sep-27 quarterly buckets; no interpolation.",
+      "weekly_reference_rule": "Use the nearest valid official Eurex busDate on or before as_of minus 5 calendar days.",
+      "regression_benchmark": {
+        "as_of":"2026-10-14",
+        "status":"PASS_EXACT_CERTIFIED_09_13_14_OCT_VALUES_AND_CHANGES",
+        "current":{"3m":2.7175,"6m":2.9875,"12m":3.2075},
+        "t_minus_1":{"date":"2026-10-13","3m":2.72,"6m":2.99,"12m":3.2225},
+        "weekly_reference":{"date":"2026-10-09","3m":2.70,"6m":2.955,"12m":3.1875},
+        "change_1d_bp":{"3m":-0.25,"6m":-0.25,"12m":-1.5},
+        "change_1w_bp":{"3m":1.75,"6m":3.25,"12m":2.0}
+      },
+      "guarantees": ["official Eurex REST source","direct FST3 dSettle prices","fixed quarterly buckets","no interpolation","real current/T-1/weekly sessions","EUR-only semantic dry-run scope","manifest/live-contract/roundtrip PASS","no uncontrolled publication"],
+      "next_required": "Operational daily refresh permitted under the shared fail-closed persistence gate."
     },
     "GBP": {
       "status": "DAILY_READY",
@@ -83,18 +90,9 @@
       "candidate_builder": "validation/cb_pricing/build_gbp_boe_ois_candidate.py",
       "apply": "validation/cb_pricing/apply_gbp_boe_ois_candidate.py",
       "validation_workflow": ".github/workflows/gbp-boe-ois-refresh-readiness.yml",
-      "canonical_code_main_sha": "19d93758754162dd2e3fb9687201206fd920cf13",
-      "clean_release_candidate_sha": "19d93758754162dd2e3fb9687201206fd920cf13",
-      "clean_release_candidate_validation": {
-        "gbp_readiness_run_id": 37755084807,
-        "engine_run_id": 37755084706,
-        "browser_run_id": 37755084758,
-        "status": "ALL_GREEN"
-      },
-      "regression_benchmark": {"as_of":"2026-09-29","status":"PASS_EXACT_CERTIFIED_VALUES_AND_CANDIDATE"},
-      "latest_dry_run_source_snapshot": {"as_of":"2026-09-30","h3m":4.077731829318755,"h6m":4.433962037055066,"h12m":4.86294098668028,"change_1d_bp":{"3m":0.7025,"6m":-0.4991,"12m":-0.2978},"change_1w_bp":{"3m":0.7192,"6m":-4.2955,"12m":-9.2808}},
-      "guarantees": ["official BoE source collection","exact 3M/6M/12M, no interpolation","homogeneous current/T-1/T-5 observations","registry-authorized candidate","GBP-only OIS semantic delta","GBP-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","checkout restored after dry run","no automatic publication"],
-      "next_required": "Operational use may collect and dry-run fresh GBP pricing from main. Any live runtime publication remains a separate explicit gated promotion."
+      "methodology": "Exact 3M/6M/12M official BoE short-end OIS forward-curve columns; no interpolation.",
+      "weekly_reference_rule": "Use homogeneous official BoE current/T-1/T-5 observations.",
+      "next_required": "Operational daily refresh permitted under the shared fail-closed persistence gate."
     },
     "JPY": {
       "status": "DAILY_READY",
@@ -109,23 +107,13 @@
       "candidate_builder": "validation/cb_pricing/build_jpy_tfx_tona_candidate.py",
       "apply": "validation/cb_pricing/apply_jpy_tfx_tona_candidate.py",
       "validation_workflow": ".github/workflows/jpy-tfx-tona-refresh-readiness.yml",
-      "canonical_code_main_sha": "8ebe69df539f32ce465d57a9064c89390185199c",
-      "clean_release_candidate_sha": "8ebe69df539f32ce465d57a9064c89390185199c",
-      "clean_release_candidate_validation": {
-        "jpy_readiness_run_id": 37757223672,
-        "engine_run_id": 37757223640,
-        "browser_run_id": 37757223633,
-        "status": "ALL_GREEN"
-      },
       "contract_mapping": {"3m":"26.12","6m":"27.03","12m":"27.09"},
       "methodology": "Direct official TFX settlement prices transformed as 100 minus settlement; canonical quarterly contracts; no interpolation.",
-      "weekly_reference_rule": "Use the nearest complete official TFX session on or before as_of minus 5 calendar days; never invent or interpolate a missing weekly point.",
-      "regression_benchmark": {"as_of":"2026-09-29","status":"PASS_EXACT_CERTIFIED_24_28_29_SEP_VALUES_AND_CHANGES"},
-      "guarantees": ["official TFX CSV source collection","direct settlement prices, 100 minus settlement","canonical 3M/6M/12M quarterly buckets","no interpolation","official T-1 session","official weekly reference under >=5-calendar-day rule","registry-authorized candidate","JPY-only OIS semantic delta","JPY-only NATIVE_CB semantic delta","exact four-file runtime mutation scope in dry run","manifest and live contract validation","runtime no-op roundtrip validation","second refresh successfully reads structured contract mapping","checkout restored after dry run","no automatic publication"],
-      "next_required": "Operational use may collect and dry-run fresh JPY pricing from main. Any live runtime publication remains a separate explicit gated promotion."
+      "weekly_reference_rule": "Use the nearest complete official TFX session on or before as_of minus 5 calendar days.",
+      "next_required": "Operational daily refresh permitted under the shared fail-closed persistence gate."
     }
   },
   "implementation_order": [],
-  "promotion_rule": "DAILY_READY allows repeatable source collection and deterministic dry-run refresh from main. It never authorizes automatic live_data or gh-pages publication; live publication remains separately gated and explicit.",
+  "promotion_rule": "DAILY_READY allows repeatable source collection and deterministic dry-run refresh. Persistent live_data publication remains separately fail-closed and gated.",
   "gh_pages_modified": false
 }
