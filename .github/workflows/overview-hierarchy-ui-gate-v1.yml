@@ -1,0 +1,107 @@
+name: Overview Hierarchy UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/overview-hierarchy-v1.js'
+      - '.github/workflows/overview-hierarchy-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/overview-hierarchy-v1.js'
+      - '.github/workflows/overview-hierarchy-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/overview-hierarchy-ui.log 2>&1 &
+          sleep 2
+      - name: Verify Overview hierarchy desktop mobile
+        run: |
+          cat > overview-hierarchy-gate.js <<'EOF'
+          const { chromium }=require('playwright');
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE'&&window.GMFQ_PRODUCT_LANGUAGE?.status==='ACTIVE'&&window.GMFQ_OVERVIEW_HIERARCHY?.status==='ACTIVE',null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('overview'));
+            await page.waitForTimeout(900);
+            const snap=await page.evaluate(({vw,vh})=>{
+              const root=document.getElementById('overview');
+              const q=s=>root?.querySelector(s)||null;
+              const box=el=>{const r=el?.getBoundingClientRect();const s=el?getComputedStyle(el):null;return el?{x:r.x,y:r.y,w:r.width,h:r.height,display:s.display,overflowX:s.overflowX,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,text:String(el.innerText||'').replace(/\s+/g,' ').trim()}:null};
+              const hero=q(':scope > .ov387Hero');
+              const exec=q(':scope > .gmfqOverviewExecutive');
+              const risk=q(':scope > #ov387Risk');
+              const map=q(':scope > .ov387MapPanel');
+              const bottom=q(':scope > .ov387BottomGrid');
+              const macro=q(':scope > #gmfqCurrencyOverview');
+              const rates=q(':scope > .ov387RatesGrid');
+              const refresh=q(':scope > #v472RefreshCoverage');
+              const ccyGrid=q('#gmfqCcyGrid');
+              const pairs=q('#ov387Pairs');
+              const changes=q('#ov387Changes');
+              const rb=root?.getBoundingClientRect();
+              return {
+                state:window.GMFQ_OVERVIEW_HIERARCHY,
+                marker:root?.getAttribute('data-gmfq-hierarchy'),
+                root:box(root),hero:box(hero),exec:box(exec),risk:box(risk),map:box(map),bottom:box(bottom),macro:box(macro),rates:box(rates),refresh:box(refresh),ccyGrid:box(ccyGrid),pairs:box(pairs),changes:box(changes),
+                execCards:root?.querySelectorAll('.gmfqOverviewExecutive > .gmfqExecCard').length||0,
+                ccyCards:root?.querySelectorAll('#gmfqCcyGrid > .gmfqCcyCard').length||0,
+                pairCards:root?.querySelectorAll('#ov387Pairs > .ov387Card').length||0,
+                changeCards:root?.querySelectorAll('#ov387Changes > .ov387Card').length||0,
+                pageScreens:(rb?.height||0)/vh,
+                documentOverflow:document.documentElement.scrollWidth-vw,
+                rootText:String(root?.innerText||'').replace(/\s+/g,' ').trim(),
+                owners:{pairs:window.GMFQ_PAIRS_OPERATIONAL?.status,currencies:window.GMFQ_CURRENCIES_OPERATIONAL?.status,rates:window.GMFQ_RATESDESK_OPERATIONAL?.status,cb:window.GMFQ_CBDESK_OPERATIONAL?.status,liquidity:window.GMFQ_LIQUIDITYDESK_OPERATIONAL?.status,cot:window.GMFQ_COTDESK_OPERATIONAL?.status,forward:window.GMFQ_FORWARDDESK_OPERATIONAL?.status}
+              };
+            },{vw:viewport.width,vh:viewport.height});
+            console.log(label,JSON.stringify(snap,null,2));
+            if(snap.state?.schema!=='GMFQ_OVERVIEW_HIERARCHY_V1'||snap.state?.status!=='ACTIVE'||snap.state?.scope!=='PRESENTATION_ONLY'||snap.state?.core_effect!=='NONE') throw new Error(label+' bad hierarchy state '+JSON.stringify(snap.state));
+            if(snap.marker!=='overview-v1') throw new Error(label+' hierarchy marker missing');
+            for(const k of ['hero','exec','risk','map','bottom','macro','rates','refresh']) if(!snap[k]||snap[k].h<=0||snap[k].display==='none') throw new Error(label+' hidden/missing Overview block '+k+' '+JSON.stringify(snap[k]));
+            if(snap.execCards<5||snap.ccyCards!==8||snap.pairCards!==2||snap.changeCards<3) throw new Error(label+' content coverage drift '+JSON.stringify({exec:snap.execCards,ccy:snap.ccyCards,pairs:snap.pairCards,changes:snap.changeCards}));
+            for(const term of ['Panoramica G8','AUD/CHF','USD/CHF','Rischio','USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']) if(!snap.rootText.includes(term)) throw new Error(label+' Overview content lost '+term);
+            if(snap.documentOverflow>4) throw new Error(label+' document horizontal overflow '+snap.documentOverflow);
+            for(const [k,v] of Object.entries(snap.owners)) if(v!=='ACTIVE') throw new Error(label+' operational owner unhealthy '+k+'='+v);
+            if(label==='mobile'){
+              const ys=['hero','exec','risk','map','bottom','macro','rates','refresh'].map(k=>[k,snap[k].y]);
+              for(let i=1;i<ys.length;i++) if(ys[i][1]<ys[i-1][1]-2) throw new Error(label+' decision order drift '+JSON.stringify(ys));
+              for(const k of ['exec','ccyGrid','rates','bottom']) if(!(snap[k].scrollWidth>snap[k].clientWidth+10)) throw new Error(label+' expected horizontal detail rail missing '+k+' '+JSON.stringify(snap[k]));
+              if(snap.pageScreens>4.8) throw new Error(label+' Overview still too tall '+snap.pageScreens.toFixed(2)+' screens');
+            }else{
+              if(snap.pageScreens>4.2) throw new Error(label+' desktop Overview regression '+snap.pageScreens.toFixed(2)+' screens');
+            }
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'OVERVIEW_HIERARCHY_UI_PASS',snap.pageScreens.toFixed(2));
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('OVERVIEW_HIERARCHY_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node overview-hierarchy-gate.js
