@@ -21,9 +21,13 @@ jobs:
           python-version: '3.12'
       - name: Probe official Eurex Product and Price Report
         run: python validation/cb_pricing/probe_eur_eurex_fst3_price_report_v1.py
-      - name: Upload diagnostic receipt
+      - name: Probe official Eurex public FST3 page
+        run: python validation/cb_pricing/probe_eur_eurex_fst3_public_page_v1.py
+      - name: Upload diagnostic receipts
         uses: actions/upload-artifact@v4
         with:
-          name: eur-eurex-fst3-price-report-probe-receipt
-          path: validation/cb_pricing/eur_eurex_fst3_price_report_probe_receipt_v1.json
+          name: eur-eurex-fst3-price-report-probe-receipts
+          path: |
+            validation/cb_pricing/eur_eurex_fst3_price_report_probe_receipt_v1.json
+            validation/cb_pricing/eur_eurex_fst3_public_page_probe_receipt_v1.json
           if-no-files-found: error
