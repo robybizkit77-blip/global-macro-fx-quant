@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_DAILY_DATA_ORCHESTRATOR_V2",
+  "version": "2026-10-15",
+  "status": "PREMERGE_CONTRACT",
+  "purpose": "Serialize production refresh workflows without duplicating collector/apply logic.",
+  "timezone": "Europe/Rome",
+  "target_local_times": {
+    "morning": "09:10",
+    "close": "18:30",
+    "night": "00:50"
+  },
+  "phases": {
+    "morning": [
+      "macro-persistent-daily-v1.yml",
+      "rates-persistent-daily-v1.yml",
+      "cb-pricing-persistent-daily-v1.yml",
+      "ois-estimated-snapshot-repricing-v1.yml",
+      "liquidity-jpy-m3-persistent-daily-v1.yml",
+      "chf-residual-proxy-refresh-v1.yml",
+      "jpy-reserve-balances-proxy-refresh-v1.yml",
+      "calendar-news-operational-refresh-v1.yml",
+      "final-e2e-certification-gate-v3.yml",
+      "publish-dashboard-pages-v1.yml"
+    ],
+    "close": [
+      "price-persistent-daily-v1.yml",
+      "calendar-news-operational-refresh-v1.yml",
+      "final-e2e-certification-gate-v3.yml",
+      "publish-dashboard-pages-v1.yml"
+    ],
+    "night": [
+      "vix-persistent-apply-v1.yml",
+      "wti-persistent-rebuild-v1.yml",
+      "brent-market-proxy-refresh-v1.yml",
+      "calendar-news-operational-refresh-v1.yml",
+      "final-e2e-certification-gate-v3.yml",
+      "publish-dashboard-pages-v1.yml"
+    ]
+  },
+  "separate_cadences": {
+    "COT": "cot-persistent-weekly-v1.yml"
+  },
+  "rules": {
+    "dispatch_ref": "main",
+    "strict_sequence": true,
+    "stop_on_child_failure": true,
+    "reuse_existing_workflows": true,
+    "duplicate_collectors_forbidden": true,
+    "core_scoring_effect": "NONE",
+    "official_promotion_effect": "NONE",
+    "cot_remains_weekly": true,
+    "final_certification_required_per_phase": true,
+    "pages_publish_required_per_phase": true
+  }
+}
