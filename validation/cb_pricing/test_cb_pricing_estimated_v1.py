@@ -45,7 +45,7 @@ def main():
         assert proxy["status"] == "LIVE_DIRECTIONAL_PROXY_READY", proxy
         assert proxy["substitutes_for_ois_level"] is False, proxy
         assert proxy["policy_delta_from_proxy_allowed"] is False, proxy
-        assert "Bank Bill" in proxy["instrument"], proxy
+        assert "Bank" in proxy["instrument"] and "Bill Futures" in proxy["instrument"], proxy
         assert all(proxy["horizons"][h]["implied_bank_bill_rate"] is not None for h in ("3m", "6m", "12m")), proxy
         # The ASX proxy must never fill or mutate the native OIS curve.
         assert nzd["horizons"]["3m"]["rate"] == 3.0, nzd
