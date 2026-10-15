@@ -34,6 +34,7 @@ def main() -> None:
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
     cbdesk = (ROOT / "dashboard/cbdesk-operational-v1.js").read_text()
     liquidity = (ROOT / "dashboard/liquiditydesk-operational-v1.js").read_text()
+    cotdesk = (ROOT / "dashboard/cotdesk-operational-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
@@ -41,6 +42,7 @@ def main() -> None:
         "dashboard/top-themes-operational-v1.js",
         "dashboard/what-changed-operational-v1.js",
         "dashboard/risk-operational-v1.js",
+        "dashboard/cotdesk-operational-v1.js",
         "dashboard/pairs-operational-v1.js",
         "dashboard/currencies-operational-v1.js",
         "dashboard/overview-asof-operational-v1.js",
@@ -104,6 +106,14 @@ def main() -> None:
     must("SOURCE_NATIVE_CADENCE_HOLD_LAST_VALID_COMPONENT" in liquidity, "Liquidity freshness policy missing")
     must("core_effect:'NONE'" in liquidity, "Liquidity Desk must declare zero core effect")
 
+    must("GMFQ_COTDESK_OPERATIONAL_UI_V1" in cotdesk, "COT Desk operational schema missing")
+    must("V250_COT_CHART_DATA" in cotdesk and "V247_COT_STORIES" in cotdesk, "COT Desk must use canonical V250/V247 authority")
+    must("overlayIsolationIntegrity" in cotdesk, "COT Desk must enforce overlay isolation")
+    must("COT_OVERLAY_CHANGED_STRUCTURAL_OUTPUT" in cotdesk, "COT Desk must fail closed on structural drift")
+    must("price_confirmation_policy:'WITHHELD_UNLESS_SEPARATELY_VALIDATED'" in cotdesk, "COT price confirmation policy missing")
+    must("preserved_legacy_fields:['open_interest','oi_series']" in cotdesk, "COT must preserve non-reconstructible legacy OI fields")
+    must("core_effect:'NONE'" in cotdesk, "COT Desk must declare zero core effect")
+
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must('data-gmfq-operational="calendar"' in cal, "calendar owner marker missing")
@@ -129,7 +139,7 @@ def main() -> None:
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
-    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk","liquiditydesk")
+    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk","liquiditydesk","cot")
     for view in hybrid:
         must(views[view]["owner_type"] == "HYBRID", f"{view} owner type")
     for view, spec in views.items():
@@ -143,6 +153,7 @@ def main() -> None:
             "currencies":"deriveCurrencyState + canonical renderCurrency + current runtime layers",
             "cbdesk":"NATIVE_CB_DATA policy + OIS_OPERATIONAL_VIEW pricing + rate2YSeries confirmation",
             "liquiditydesk":"NATIVE_LIQ_DATA + source-native cadence freshness + structural candidate; overlay only",
+            "cot":"V250_COT_CHART_DATA + V247_COT_STORIES; D.cot certified context fields synchronized; overlay only",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",

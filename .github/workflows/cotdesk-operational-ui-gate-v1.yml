@@ -1,0 +1,92 @@
+name: COT Desk Operational UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/cotdesk-operational-v1.js'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/cotdesk-operational-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/cotdesk-operational-v1.js'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/cotdesk-operational-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/cotdesk-operational-ui.log 2>&1 &
+          sleep 2
+      - name: Verify COT Desk desktop mobile
+        run: |
+          cat > cotdesk-operational-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>['ACTIVE','FAIL'].includes(window.GMFQ_COTDESK_OPERATIONAL?.status),null,{timeout:120000});
+            const state=await page.evaluate(()=>window.gmfqCotDeskOperationalAudit?.());
+            if(state?.schema!=='GMFQ_COTDESK_OPERATIONAL_UI_V1'||state?.status!=='ACTIVE'||state?.core_effect!=='NONE') throw new Error(label+' bad COT state '+JSON.stringify(state));
+            if(state.owner_count!==1||state.currency_count!==8||state.window_weeks!==104) throw new Error(label+' COT owner/coverage '+JSON.stringify(state));
+            if(state.structural_unchanged!==true||state.overlay_isolation_ok!==true) throw new Error(label+' COT structural isolation '+JSON.stringify(state));
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(state.current_as_of||'')) throw new Error(label+' invalid COT as-of '+state.current_as_of);
+            const authority=await page.evaluate(()=>{
+              const out={};
+              for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+                const s=V250_COT_CHART_DATA[c],d=D.cot[c];
+                out[c]={v250_date:s.dates.at(-1),v250_net:s.net.at(-1),v250_netoi:s.netoi.at(-1),v250_pct:s.percentile.at(-1),d_date:d.release_date,d_net:d.net,d_netoi:d.net_oi,d_pct:d.pct,d_d1:d.chg_net_1w,expected_d1:s.net.at(-1)-s.net.at(-2)};
+              }
+              return out;
+            });
+            for(const c of CCYS){
+              const x=authority[c],row=state.coverage?.[c];
+              if(x.v250_date!==state.current_as_of||x.d_date!==x.v250_date) throw new Error(label+' COT date mismatch '+c+' '+JSON.stringify(x));
+              if(x.d_net!==x.v250_net||Math.abs(x.d_netoi-x.v250_netoi)>1e-9||Math.abs(x.d_pct-x.v250_pct)>1e-9||x.d_d1!==x.expected_d1) throw new Error(label+' COT value mismatch '+c+' '+JSON.stringify(x));
+              if(row?.as_of!==state.current_as_of||row?.net!==x.v250_net||row?.state_label==null) throw new Error(label+' COT audit row mismatch '+c+' '+JSON.stringify(row));
+            }
+            await page.evaluate(()=>window.showView?.('cot'));
+            for(const wanted of CCYS){
+              const ok=await page.evaluate(w=>{const b=document.querySelector(`#v247CurrencyCards .v245CurrencyCard[data-c="${w}"]`);if(!b)return false;b.click();return true;},wanted);
+              if(!ok) throw new Error(label+' missing COT selector '+wanted);
+              await page.waitForTimeout(120);
+              const snap=await page.evaluate(()=>({country:String(document.getElementById('v247CountryName')?.textContent||''),asof:String(document.getElementById('v247Asof')?.textContent||''),today:String(document.getElementById('v247Today')?.textContent||''),drivers:String(document.getElementById('gmfqCotDrivers')?.textContent||'')}));
+              if(!snap.country.includes(wanted)||!snap.asof.includes(state.current_as_of)||!snap.today.includes(state.current_as_of)) throw new Error(label+' COT visible sync '+wanted+' '+JSON.stringify(snap));
+              const row=state.coverage[wanted];
+              if(!snap.drivers.includes(String(Math.round(row.pct)))&&!snap.drivers.includes(String(row.pct))) throw new Error(label+' COT guided percentile stale '+wanted+' '+JSON.stringify(snap));
+            }
+            const policy=state.price_confirmation_policy;
+            if(policy!=='WITHHELD_UNLESS_SEPARATELY_VALIDATED') throw new Error(label+' COT price policy drift '+policy);
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'COTDESK_OPERATIONAL_UI_PASS',state.current_as_of);
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('COTDESK_OPERATIONAL_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cotdesk-operational-gate.js
