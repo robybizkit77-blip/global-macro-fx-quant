@@ -38,7 +38,7 @@ jobs:
           sleep 2
       - name: Verify Forward Monitor desktop and mobile
         run: |
-          cat > /tmp/forward-monitor-gate.js <<'EOF'
+          cat > forward-monitor-gate.js <<'EOF'
           const { chromium } = require('playwright');
           async function run(viewport,label){
             const browser=await chromium.launch({headless:true});
@@ -74,4 +74,4 @@ jobs:
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('FORWARD_MONITOR_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
-          node /tmp/forward-monitor-gate.js
+          node forward-monitor-gate.js
