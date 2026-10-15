@@ -1,0 +1,194 @@
+name: Daily Data Orchestrator V2
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-data-orchestrator-v2.yml'
+      - 'validation/orchestration/DAILY_DATA_ORCHESTRATOR_V2_2026-10-15.json'
+      - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-data-orchestrator-v2.yml'
+      - 'validation/orchestration/DAILY_DATA_ORCHESTRATOR_V2_2026-10-15.json'
+      - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Phase to run'
+        required: true
+        default: morning
+        type: choice
+        options:
+          - morning
+          - close
+          - night
+          - full
+  schedule:
+    # Europe/Rome 09:10. Duplicate UTC entries cover CEST/CET; offset gate selects one.
+    - cron: '10 7 * * 1-5'
+    - cron: '10 8 * * 1-5'
+    # Europe/Rome 18:30.
+    - cron: '30 16 * * 1-5'
+    - cron: '30 17 * * 1-5'
+    # Europe/Rome 00:50 after each Mon-Fri trading day.
+    - cron: '50 22 * * 1-5'
+    - cron: '50 23 * * 1-5'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: daily-data-orchestrator-v2
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  TZ_NAME: Europe/Rome
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify orchestration contract
+        run: python validation/orchestration/check_daily_data_orchestrator_v2.py
+
+  orchestrate:
+    needs: contract
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Resolve phase with Europe/Rome DST gate
+        id: phase
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            phase="${{ inputs.phase }}"
+          else
+            offset=$(python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          print(int(datetime.now(ZoneInfo('Europe/Rome')).utcoffset().total_seconds() // 3600))
+          PY
+          )
+            sched='${{ github.event.schedule }}'
+            phase=skip
+            case "$sched|$offset" in
+              '10 7 * * 1-5|2'|'10 8 * * 1-5|1') phase=morning ;;
+              '30 16 * * 1-5|2'|'30 17 * * 1-5|1') phase=close ;;
+              '50 22 * * 1-5|2'|'50 23 * * 1-5|1') phase=night ;;
+            esac
+          fi
+          echo "phase=$phase" >> "$GITHUB_OUTPUT"
+          echo "Resolved phase: $phase"
+
+      - name: Run serialized refresh sequence
+        if: ${{ steps.phase.outputs.phase != 'skip' }}
+        shell: bash
+        env:
+          PHASE: ${{ steps.phase.outputs.phase }}
+        run: |
+          set -euo pipefail
+
+          dispatch_and_wait() {
+            local wf="$1"
+            local api="repos/${GITHUB_REPOSITORY}/actions/workflows/${wf}"
+            local before run_id status conclusion json
+
+            before=$(gh api "${api}/runs?branch=main&event=workflow_dispatch&per_page=20" | jq '[.workflow_runs[].id] | max // 0')
+            echo "Dispatching ${wf} (after run id ${before})"
+            gh api --method POST "${api}/dispatches" -f ref=main >/dev/null
+
+            run_id=""
+            for _ in $(seq 1 120); do
+              json=$(gh api "${api}/runs?branch=main&event=workflow_dispatch&per_page=20")
+              run_id=$(jq -r --argjson b "$before" '[.workflow_runs[] | select(.id > $b)] | sort_by(.id) | .[0].id // empty' <<<"$json")
+              [[ -n "$run_id" ]] && break
+              sleep 5
+            done
+            [[ -n "$run_id" ]] || { echo "No dispatched run found for ${wf}" >&2; return 1; }
+
+            echo "${wf} -> run ${run_id}"
+            for _ in $(seq 1 360); do
+              json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")
+              status=$(jq -r '.status' <<<"$json")
+              conclusion=$(jq -r '.conclusion // empty' <<<"$json")
+              if [[ "$status" == "completed" ]]; then
+                echo "${wf} -> ${conclusion}"
+                [[ "$conclusion" == "success" ]] || return 1
+                return 0
+              fi
+              sleep 10
+            done
+            echo "Timed out waiting for ${wf} run ${run_id}" >&2
+            return 1
+          }
+
+          run_phase() {
+            local phase="$1"
+            local workflows=()
+            case "$phase" in
+              morning)
+                workflows=(
+                  macro-persistent-daily-v1.yml
+                  rates-persistent-daily-v1.yml
+                  cb-pricing-persistent-daily-v1.yml
+                  ois-estimated-snapshot-repricing-v1.yml
+                  liquidity-jpy-m3-persistent-daily-v1.yml
+                  chf-residual-proxy-refresh-v1.yml
+                  jpy-reserve-balances-proxy-refresh-v1.yml
+                  calendar-news-operational-refresh-v1.yml
+                  final-e2e-certification-gate-v3.yml
+                  publish-dashboard-pages-v1.yml
+                )
+                ;;
+              close)
+                workflows=(
+                  price-persistent-daily-v1.yml
+                  calendar-news-operational-refresh-v1.yml
+                  final-e2e-certification-gate-v3.yml
+                  publish-dashboard-pages-v1.yml
+                )
+                ;;
+              night)
+                workflows=(
+                  vix-persistent-apply-v1.yml
+                  wti-persistent-rebuild-v1.yml
+                  brent-market-proxy-refresh-v1.yml
+                  calendar-news-operational-refresh-v1.yml
+                  final-e2e-certification-gate-v3.yml
+                  publish-dashboard-pages-v1.yml
+                )
+                ;;
+              *) echo "Unknown phase: $phase" >&2; return 2 ;;
+            esac
+
+            echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
+            for wf in "${workflows[@]}"; do
+              dispatch_and_wait "$wf"
+              echo "- ✅ ${wf}" >> "$GITHUB_STEP_SUMMARY"
+            done
+          }
+
+          case "$PHASE" in
+            morning|close|night) run_phase "$PHASE" ;;
+            full)
+              run_phase morning
+              run_phase close
+              run_phase night
+              ;;
+            *) echo "Nothing to run for phase=${PHASE}" ;;
+          esac
+
+      - name: Record skipped duplicate DST schedule
+        if: ${{ steps.phase.outputs.phase == 'skip' }}
+        run: echo 'Duplicate DST cron intentionally skipped.' >> "$GITHUB_STEP_SUMMARY"
