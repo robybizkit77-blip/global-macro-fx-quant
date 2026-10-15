@@ -90,8 +90,8 @@ jobs:
                 const active=[...document.querySelectorAll('.view.active,[data-view].active')].map(x=>x.id).filter(Boolean);
                 const text=(el?.innerText||'').replace(/\s+/g,' ').trim();
                 const out={exists:!!el,active,textLength:text.length,required:null,mounts:[]};
-                if(spec.required_selector) out.required=el?.querySelectorAll(spec.required_selector).length||0;
-                for(const m of (spec.dynamic_mounts||[])) out.mounts.push({selector:m.selector,count:el?.querySelectorAll(m.selector).length||0,expected:m.count});
+                if(spec.required_selector) out.required=(el?.matches?.(spec.required_selector)?1:0)+(el?.querySelectorAll(spec.required_selector).length||0);
+                for(const m of (spec.dynamic_mounts||[])) out.mounts.push({selector:m.selector,count:(el?.matches?.(m.selector)?1:0)+(el?.querySelectorAll(m.selector).length||0),expected:m.count});
                 return out;
               },{view,spec});
               if(!result.exists) throw new Error(`${label} ${view}: missing view`);
