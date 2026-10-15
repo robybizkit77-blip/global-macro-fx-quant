@@ -65,6 +65,7 @@ jobs:
             const errs=[]; page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
             await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:120000});
             await page.waitForTimeout(700);
             for(const view of VIEWS){
               await page.evaluate(v=>window.showView?.(v),view);
@@ -85,9 +86,17 @@ jobs:
               if(spec.required_selector && result.required!==1) throw new Error(`${label} ${view}: required owner selector count ${result.required}`);
               for(const m of result.mounts) if(m.count!==m.expected) throw new Error(`${label} ${view}: mount ${m.selector} count ${m.count}/${m.expected}`);
             }
+            const freshness=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
+            if(!freshness) throw new Error(`${label}: freshness audit missing`);
+            if(freshness.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V2_OPERATIONAL_AUTHORITY') throw new Error(`${label}: freshness schema ${freshness.schema}`);
+            if(freshness.legacy_authority!=='NONE') throw new Error(`${label}: legacy freshness authority ${freshness.legacy_authority}`);
+            if(freshness.sections?.calendar?.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc') throw new Error(`${label}: calendar freshness authority drift`);
+            if(freshness.sections?.news?.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of') throw new Error(`${label}: news freshness authority drift`);
+            if(freshness.sections?.calendar?.status!=='FRESH') throw new Error(`${label}: calendar freshness ${JSON.stringify(freshness.sections?.calendar)}`);
+            if(freshness.sections?.news?.status!=='FRESH') throw new Error(`${label}: news freshness ${JSON.stringify(freshness.sections?.news)}`);
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
             await browser.close();
-            console.log(label,'OWNERSHIP_PASS');
+            console.log(label,'OWNERSHIP_PASS','FRESHNESS_OPERATIONAL_AUTHORITY_PASS');
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('DASHBOARD_UI_OWNERSHIP_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
