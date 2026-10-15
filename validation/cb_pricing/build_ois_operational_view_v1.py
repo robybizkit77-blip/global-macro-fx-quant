@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from ois_estimated_snapshot_v1 import HORIZONS, load_history, fingerprint
+from ois_estimated_snapshot_v1 import HORIZONS, load_history, fingerprint, method_id
 
 ROOT = Path(__file__).resolve().parents[2]
 OIS = ROOT / 'live_data/sections/OIS_DATA.json'
@@ -30,24 +30,40 @@ def _bp_delta(current, reference):
     return round((float(current) - float(reference)) * 100.0, 1)
 
 
+def _empty_repricing():
+    return {
+        'previous_reference': None,
+        'weekly_reference': None,
+        'change_1d_available': False,
+        'change_1w_available': False,
+        'horizon_changes': {h: {'change_1d_bp': None, 'change_1w_bp': None} for h in HORIZONS},
+    }
+
+
 def _estimated_repricing(ccy: str, row: dict, history: list[dict]):
-    rows = [x for x in history if x.get('currency') == ccy]
+    current_method = method_id(row)
+    rows = [
+        x for x in history
+        if x.get('currency') == ccy and method_id(x) == current_method
+    ]
     rows.sort(key=lambda x: _parse_capture(x.get('captured_at_utc')) or datetime.min.replace(tzinfo=timezone.utc))
     current_fp = fingerprint(ccy, row)
     current_rec = None
     for rec in reversed(rows):
         rec_fp = rec.get('fingerprint')
+        if rec_fp is None:
+            rec_fp = fingerprint(ccy, {
+                'method_id': method_id(rec),
+                'as_of': rec.get('source_as_of'),
+                'source': rec.get('source'),
+                'confidence': rec.get('confidence'),
+                'horizons': rec.get('horizons') or {},
+            })
         if rec_fp == current_fp:
             current_rec = rec
             break
     if current_rec is None:
-        return {
-            'previous_reference': None,
-            'weekly_reference': None,
-            'change_1d_available': False,
-            'change_1w_available': False,
-            'horizon_changes': {h: {'change_1d_bp': None, 'change_1w_bp': None} for h in HORIZONS},
-        }
+        return _empty_repricing()
     current_dt = _parse_capture(current_rec.get('captured_at_utc'))
     prior = [x for x in rows if _parse_capture(x.get('captured_at_utc')) and _parse_capture(x.get('captured_at_utc')) < current_dt]
     previous = prior[-1] if prior else None
@@ -114,6 +130,8 @@ def build():
                 'quality': 'ESTIMATED_INFORMATIONAL',
                 'confidence': e.get('confidence_grade'),
                 'official_status': o.get('status'),
+                'input_mode': e.get('input_mode'),
+                'method_id': e.get('method_id'),
                 'as_of': e.get('as_of'),
                 'policy_rate': e.get('policy_rate'),
                 'source': e.get('source'),
@@ -122,9 +140,11 @@ def build():
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
                 'repricing_reference': {
+                    'method_id': method_id(e),
                     'previous_observation_captured_at_utc': repricing['previous_reference'],
                     'weekly_reference_captured_at_utc': repricing['weekly_reference'],
-                    'missing_reference_policy': 'NULL_NOT_ZERO'
+                    'missing_reference_policy': 'NULL_NOT_ZERO',
+                    'homogeneous_method_required': True,
                 },
                 'backtest_eligible_as_official': False
             }
