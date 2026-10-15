@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 from ois_estimated_snapshot_v1 import append_changed_snapshots, load_history, make_record
-from build_ois_operational_view_v1 import _estimated_repricing
+from build_ois_operational_view_v1 import _estimated_repricing, DAILY_REFERENCE_MIN_AGE, WEEKLY_REFERENCE_MIN_AGE
 
 ROOT = Path(__file__).resolve().parents[2]
 VIEW = json.loads((ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
@@ -15,6 +15,9 @@ assert VIEW['status'] == 'GREEN_8_OF_8'
 assert VIEW['summary']['operational_green'] == 8
 for ccy in ('USD','EUR','CHF','NZD'):
     assert VIEW['currencies'][ccy]['operational_status'] == 'GREEN_ESTIMATED'
+
+assert int(DAILY_REFERENCE_MIN_AGE.total_seconds() / 3600) == 18
+assert WEEKLY_REFERENCE_MIN_AGE.days == 5
 
 with tempfile.TemporaryDirectory() as td:
     p = Path(td) / 'history.jsonl'
@@ -48,13 +51,31 @@ assert r['change_1d_available'] is False, r
 assert r['change_1w_available'] is False, r
 assert all(x['change_1d_bp'] is None and x['change_1w_bp'] is None for x in r['horizon_changes'].values()), r
 
-# Once a second same-method snapshot exists, 1D becomes legal.
+# A same-method intraday snapshot must NOT be mislabeled as 1D.
+intraday = json.loads(json.dumps(base_row))
+intraday['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.02
+intraday_record = make_record('USD', intraday, '2026-10-15T01:00:00Z')
+r = _estimated_repricing('USD', base_row, [intraday_record, live_record])
+assert r['previous_reference'] is None, r
+assert r['change_1d_available'] is False, r
+assert r['horizon_changes']['3m']['change_1d_bp'] is None, r
+
+# Once a prior-session same-method snapshot exists, 1D becomes legal.
 prior_live = json.loads(json.dumps(base_row))
 prior_live['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.01
 prior_live_record = make_record('USD', prior_live, '2026-10-14T09:00:00Z')
-r = _estimated_repricing('USD', base_row, [legacy_record, prior_live_record, live_record])
+r = _estimated_repricing('USD', base_row, [legacy_record, prior_live_record, intraday_record, live_record])
 assert r['previous_reference'] == '2026-10-14T09:00:00Z', r
 assert r['change_1d_available'] is True, r
 assert r['horizon_changes']['3m']['change_1d_bp'] == 1.0, r
+
+# Weekly repricing remains unavailable until a same-method observation is >=5 days old.
+week_row = json.loads(json.dumps(base_row))
+week_row['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.03
+week_record = make_record('USD', week_row, '2026-10-10T08:00:00Z')
+r = _estimated_repricing('USD', base_row, [week_record, prior_live_record, live_record])
+assert r['weekly_reference'] == '2026-10-10T08:00:00Z', r
+assert r['change_1w_available'] is True, r
+assert r['horizon_changes']['3m']['change_1w_bp'] == 3.0, r
 
 print('PASS OIS estimated snapshot/repricing V1')
