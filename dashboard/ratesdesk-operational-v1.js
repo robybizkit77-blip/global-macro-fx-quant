@@ -73,7 +73,7 @@
     const tick=()=>{
       tries++;
       try{
-        if(window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true && typeof window.rate2YSeries==='function' && typeof window.ratesTimingBindingIntegrity==='function' && typeof window.ratesCanonicalBasisIntegrity==='function' && typeof window.visibleRatesSnapshotIntegrity==='function' && window.GMFQ_OIS_OPERATIONAL?.status==='ACTIVE'){
+        if(window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true && typeof window.rate2YSeries==='function' && typeof window.ratesTimingBindingIntegrity==='function' && typeof window.ratesCanonicalBasisIntegrity==='function' && typeof window.visibleRatesSnapshotIntegrity==='function' && window.GMFQ_OIS_OPERATIONAL_UI?.status==='READY'){
           ['renderNativeRatesDesk','selectNativeRates','v401RenderRatesLayers'].forEach(wrap);
           sync();
           return;
