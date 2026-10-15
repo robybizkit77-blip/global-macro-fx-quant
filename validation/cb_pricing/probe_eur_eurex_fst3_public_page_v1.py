@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import html
 import json
 import re
 import urllib.error
@@ -33,10 +34,25 @@ def main() -> int:
             text = raw.decode("utf-8", errors="replace")
             upper = text.upper()
             snippets = []
-            for pat in ("D. SETTLE", "FST3", "TRADING DATE", "97.715", "EURO STR"):
+            for pat in ("D. SETTLE", "FST3", "TRADING DATE", "EURO STR"):
                 idx = upper.find(pat.upper())
                 if idx >= 0:
                     snippets.append({"pattern": pat, "sample": re.sub(r"\s+", " ", text[max(0, idx-250):idx+750])[:1000]})
+
+            product_blocks = []
+            for m in re.finditer(r'<script[^>]*type=["\']application/json["\'][^>]*data-product[^>]*>(.*?)</script>', text, flags=re.I | re.S):
+                body = html.unescape(m.group(1)).strip()
+                block = {"chars": len(body), "sample": re.sub(r"\s+", " ", body)[:5000]}
+                try:
+                    parsed = json.loads(body)
+                    block["json"] = parsed
+                except Exception:
+                    pass
+                product_blocks.append(block)
+
+            candidate_urls = sorted(set(re.findall(r'https?://[^"\'<>\\\s]+', text)))
+            interesting_urls = [u for u in candidate_urls if any(k in u.lower() for k in ("stat", "price", "quote", "future", "product", "market", "api"))][:100]
+
             attempts.append({
                 "url": url,
                 "status": "HTTP_200",
@@ -45,6 +61,8 @@ def main() -> int:
                 "has_d_settle": "D. SETTLE" in upper,
                 "has_trading_date": "TRADING DATE" in upper,
                 "snippets": snippets,
+                "data_product_blocks": product_blocks[:10],
+                "interesting_urls": interesting_urls,
             })
         except urllib.error.HTTPError as exc:
             attempts.append({"url": url, "status": "HTTP_ERROR", "http_status": exc.code, "error": str(exc)})
