@@ -1,0 +1,28 @@
+{
+  "schema": "GMFQ_OIS_ESTIMATED_REPRICING_CONTRACT_V1",
+  "as_of": "2026-10-15",
+  "status": "OPERATIONAL_INFORMATIONAL",
+  "currencies": ["USD", "EUR", "CHF", "NZD"],
+  "history": {
+    "mode": "APPEND_ONLY_ON_VALUE_CHANGE",
+    "file": "validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl",
+    "duplicate_rule": "Do not append when source/as_of/horizons are unchanged.",
+    "capture_clock": "UTC"
+  },
+  "repricing": {
+    "previous_observation": "Latest earlier distinct snapshot for the same currency.",
+    "weekly_reference": "Latest earlier snapshot captured at least 5 calendar days before the current snapshot.",
+    "calculation": "(current rate - reference rate) * 100 = basis points",
+    "missing_reference_policy": "NULL_NOT_ZERO"
+  },
+  "governance": {
+    "official_ois_runtime_mutated": false,
+    "official_withheld_status_changed": false,
+    "core_score_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "backtest_eligible_as_official_ois": false,
+    "forward_logger_effect": "NONE"
+  }
+}

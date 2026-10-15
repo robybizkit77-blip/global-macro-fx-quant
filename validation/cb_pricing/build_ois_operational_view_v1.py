@@ -1,18 +1,80 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+from ois_estimated_snapshot_v1 import HORIZONS, load_history, fingerprint
 
 ROOT = Path(__file__).resolve().parents[2]
 OIS = ROOT / 'live_data/sections/OIS_DATA.json'
 EST = ROOT / 'live_data/sections/CB_PRICING_ESTIMATED.json'
 OUT = ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+HISTORY = ROOT / 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
 CCYS = ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD')
+
+
+def _parse_capture(value: str | None):
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace('Z', '+00:00')).astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
+def _bp_delta(current, reference):
+    if current is None or reference is None:
+        return None
+    return round((float(current) - float(reference)) * 100.0, 1)
+
+
+def _estimated_repricing(ccy: str, row: dict, history: list[dict]):
+    rows = [x for x in history if x.get('currency') == ccy]
+    rows.sort(key=lambda x: _parse_capture(x.get('captured_at_utc')) or datetime.min.replace(tzinfo=timezone.utc))
+    current_fp = fingerprint(ccy, row)
+    current_rec = None
+    for rec in reversed(rows):
+        rec_fp = rec.get('fingerprint')
+        if rec_fp == current_fp:
+            current_rec = rec
+            break
+    if current_rec is None:
+        return {
+            'previous_reference': None,
+            'weekly_reference': None,
+            'change_1d_available': False,
+            'change_1w_available': False,
+            'horizon_changes': {h: {'change_1d_bp': None, 'change_1w_bp': None} for h in HORIZONS},
+        }
+    current_dt = _parse_capture(current_rec.get('captured_at_utc'))
+    prior = [x for x in rows if _parse_capture(x.get('captured_at_utc')) and _parse_capture(x.get('captured_at_utc')) < current_dt]
+    previous = prior[-1] if prior else None
+    weekly_candidates = [x for x in prior if _parse_capture(x.get('captured_at_utc')) <= current_dt - timedelta(days=5)]
+    weekly = weekly_candidates[-1] if weekly_candidates else None
+    changes = {}
+    for h in HORIZONS:
+        cur = ((row.get('horizons') or {}).get(h) or {}).get('rate')
+        prev_rate = None if previous is None else ((previous.get('horizons') or {}).get(h) or {}).get('rate')
+        week_rate = None if weekly is None else ((weekly.get('horizons') or {}).get(h) or {}).get('rate')
+        changes[h] = {
+            'change_1d_bp': _bp_delta(cur, prev_rate),
+            'change_1w_bp': _bp_delta(cur, week_rate),
+        }
+    return {
+        'previous_reference': None if previous is None else previous.get('captured_at_utc'),
+        'weekly_reference': None if weekly is None else weekly.get('captured_at_utc'),
+        'change_1d_available': previous is not None and any(v['change_1d_bp'] is not None for v in changes.values()),
+        'change_1w_available': weekly is not None and any(v['change_1w_bp'] is not None for v in changes.values()),
+        'horizon_changes': changes,
+    }
 
 
 def build():
     official = json.loads(OIS.read_text(encoding='utf-8'))['currencies']
     estimated = json.loads(EST.read_text(encoding='utf-8'))['currencies']
+    history = load_history(HISTORY)
     out = {
         'schema': 'GMFQ_OIS_OPERATIONAL_VIEW_V1',
         'status': 'GREEN_8_OF_8',
@@ -38,9 +100,15 @@ def build():
             }
         else:
             e = estimated.get(ccy) or {}
-            usable = any(((e.get('horizons') or {}).get(h) or {}).get('rate') is not None for h in ('3m','6m','12m'))
+            usable = any(((e.get('horizons') or {}).get(h) or {}).get('rate') is not None for h in HORIZONS)
             if not usable:
                 raise SystemExit(f'{ccy}: neither official ACTIVE nor usable estimated pricing')
+            repricing = _estimated_repricing(ccy, e, history)
+            horizons = {}
+            for h in HORIZONS:
+                base = dict(((e.get('horizons') or {}).get(h) or {}))
+                base.update(repricing['horizon_changes'][h])
+                horizons[h] = base
             out['currencies'][ccy] = {
                 'operational_status': 'GREEN_ESTIMATED',
                 'quality': 'ESTIMATED_INFORMATIONAL',
@@ -49,10 +117,15 @@ def build():
                 'as_of': e.get('as_of'),
                 'policy_rate': e.get('policy_rate'),
                 'source': e.get('source'),
-                'horizons': e.get('horizons'),
+                'horizons': horizons,
                 'direction_vs_policy': e.get('direction_vs_policy'),
-                'change_1d_available': e.get('change_1d_bp') is not None,
-                'change_1w_available': e.get('change_1w_bp') is not None,
+                'change_1d_available': repricing['change_1d_available'],
+                'change_1w_available': repricing['change_1w_available'],
+                'repricing_reference': {
+                    'previous_observation_captured_at_utc': repricing['previous_reference'],
+                    'weekly_reference_captured_at_utc': repricing['weekly_reference'],
+                    'missing_reference_policy': 'NULL_NOT_ZERO'
+                },
                 'backtest_eligible_as_official': False
             }
     out['summary'] = {
@@ -69,6 +142,7 @@ def main():
     out = build()
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     print(json.dumps(out['summary'], sort_keys=True))
+
 
 if __name__ == '__main__':
     main()
