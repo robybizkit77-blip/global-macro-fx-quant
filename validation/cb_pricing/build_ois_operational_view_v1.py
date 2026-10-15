@@ -13,6 +13,8 @@ EST = ROOT / 'live_data/sections/CB_PRICING_ESTIMATED.json'
 OUT = ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
 HISTORY = ROOT / 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
 CCYS = ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD')
+DAILY_REFERENCE_MIN_AGE = timedelta(hours=18)
+WEEKLY_REFERENCE_MIN_AGE = timedelta(days=5)
 
 
 def _parse_capture(value: str | None):
@@ -66,8 +68,18 @@ def _estimated_repricing(ccy: str, row: dict, history: list[dict]):
         return _empty_repricing()
     current_dt = _parse_capture(current_rec.get('captured_at_utc'))
     prior = [x for x in rows if _parse_capture(x.get('captured_at_utc')) and _parse_capture(x.get('captured_at_utc')) < current_dt]
-    previous = prior[-1] if prior else None
-    weekly_candidates = [x for x in prior if _parse_capture(x.get('captured_at_utc')) <= current_dt - timedelta(days=5)]
+    # "1D" must represent a prior session, not merely the immediately previous
+    # intraday snapshot. 18h tolerates ordinary daily scheduling drift while
+    # preventing multiple same-day refreshes from being mislabeled as 1D.
+    daily_candidates = [
+        x for x in prior
+        if _parse_capture(x.get('captured_at_utc')) <= current_dt - DAILY_REFERENCE_MIN_AGE
+    ]
+    previous = daily_candidates[-1] if daily_candidates else None
+    weekly_candidates = [
+        x for x in prior
+        if _parse_capture(x.get('captured_at_utc')) <= current_dt - WEEKLY_REFERENCE_MIN_AGE
+    ]
     weekly = weekly_candidates[-1] if weekly_candidates else None
     changes = {}
     for h in HORIZONS:
@@ -143,6 +155,8 @@ def build():
                     'method_id': method_id(e),
                     'previous_observation_captured_at_utc': repricing['previous_reference'],
                     'weekly_reference_captured_at_utc': repricing['weekly_reference'],
+                    'daily_min_age_hours': int(DAILY_REFERENCE_MIN_AGE.total_seconds() / 3600),
+                    'weekly_min_age_days': WEEKLY_REFERENCE_MIN_AGE.days,
                     'missing_reference_policy': 'NULL_NOT_ZERO',
                     'homogeneous_method_required': True,
                 },
