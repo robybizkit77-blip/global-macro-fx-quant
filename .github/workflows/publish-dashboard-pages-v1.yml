@@ -105,38 +105,42 @@ jobs:
           rm -rf /tmp/gmfq-pages
           git worktree add --detach /tmp/gmfq-pages origin/gh-pages
 
-          rm -rf /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data
           mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
-          cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/
-          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/
+          cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/ois-operational-monitor-v1.js
+          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
 
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
-          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+
+          tracked=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
+          changed=tracked|untracked
           allowed={
               'index.html',
               'dashboard/ois-operational-monitor-v1.js',
               'live_data/sections/OIS_OPERATIONAL_VIEW.json',
               *[f'payload/part-{i:02d}.txt' for i in range(16)]
           }
-          if not changed:
-              print('DASHBOARD_PAGES_ALREADY_CURRENT')
-          elif not changed.issubset(allowed):
-              raise SystemExit(f'Pages exact-scope violation: {sorted(changed)}')
-          else:
+          unexpected=changed-allowed
+          if unexpected:
+              raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
+          if changed:
               print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed))
+          else:
+              print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
 
-          if git diff --quiet -- index.html payload dashboard live_data/sections/OIS_OPERATIONAL_VIEW.json; then
+          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json
+          if git diff --cached --quiet; then
+            echo DASHBOARD_PAGES_ALREADY_CURRENT
             exit 0
           fi
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- index.html payload dashboard live_data/sections/OIS_OPERATIONAL_VIEW.json
           git commit -m "Publish dashboard runtime from main ${GITHUB_SHA}"
 
           REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
