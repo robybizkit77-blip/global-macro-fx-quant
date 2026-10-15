@@ -1,0 +1,93 @@
+name: Currencies Hierarchy UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/currencies-hierarchy-v1.js'
+      - '.github/workflows/currencies-hierarchy-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/currencies-hierarchy-v1.js'
+      - '.github/workflows/currencies-hierarchy-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/currencies-hierarchy-ui.log 2>&1 &
+          sleep 2
+      - name: Verify Currencies hierarchy desktop mobile
+        run: |
+          cat > currencies-hierarchy-gate.js <<'EOF'
+          const { chromium }=require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_CURRENCIES_OPERATIONAL?.status==='ACTIVE'&&window.GMFQ_CURRENCIES_HIERARCHY?.status==='ACTIVE',null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('currencies'));
+            await page.waitForTimeout(900);
+            const snap=await page.evaluate(({vw,vh})=>{
+              const view=document.getElementById('currencies');
+              const grid=document.getElementById('currencyGrid');
+              const root=view?.querySelector('[data-gmfq-hierarchy="currencies-v1"]');
+              const rect=view?.getBoundingClientRect();
+              const summary=el=>el?{scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:getComputedStyle(el).overflowX,display:getComputedStyle(el).display}:null;
+              const rails=['core','decision','charts','end'].reduce((out,key)=>{out[key]=summary(view?.querySelector(`[data-gmfq-currency-rail="${key}"]`));return out;},{});
+              return {
+                hierarchy:window.GMFQ_CURRENCIES_HIERARCHY,
+                operational:window.GMFQ_CURRENCIES_OPERATIONAL,
+                marker:view?.getAttribute('data-gmfq-hierarchy'),
+                hierarchyRoot:!!root,
+                ownerCount:view?.querySelectorAll('#v224Headline[data-gmfq-operational="currencies"]').length||0,
+                cards:[...(grid?.querySelectorAll('.ccy')||[])].map(x=>x.dataset.c),
+                active:grid?.querySelector('.ccy.active')?.dataset.c||null,
+                selector:summary(grid),rails,
+                pageScreens:(rect?.height||0)/vh,
+                documentOverflow:document.documentElement.scrollWidth-vw
+              };
+            },{vw:viewport.width,vh:viewport.height});
+            console.log(label,JSON.stringify(snap,null,2));
+            if(snap.hierarchy?.schema!=='GMFQ_CURRENCIES_HIERARCHY_V1'||snap.hierarchy?.status!=='ACTIVE'||snap.hierarchy?.scope!=='PRESENTATION_ONLY'||snap.hierarchy?.core_effect!=='NONE') throw new Error(label+' bad hierarchy '+JSON.stringify(snap.hierarchy));
+            if(snap.operational?.schema!=='GMFQ_CURRENCIES_OPERATIONAL_UI_V1'||snap.operational?.status!=='ACTIVE'||snap.operational?.core_effect!=='NONE') throw new Error(label+' bad operational state '+JSON.stringify(snap.operational));
+            if(snap.marker!=='currencies-v1'||!snap.hierarchyRoot||snap.ownerCount!==1) throw new Error(label+' hierarchy ownership '+JSON.stringify(snap));
+            if(snap.cards.length!==8||new Set(snap.cards).size!==8||CCYS.some(c=>!snap.cards.includes(c))||!snap.active) throw new Error(label+' G8 selector coverage '+JSON.stringify(snap.cards));
+            if(snap.documentOverflow>4) throw new Error(label+' document horizontal overflow '+snap.documentOverflow);
+            if(label==='mobile'){
+              if(!snap.selector||snap.selector.overflowX!=='auto'||!(snap.selector.scrollWidth>snap.selector.clientWidth+30)) throw new Error(label+' selector rail missing '+JSON.stringify(snap.selector));
+              for(const [key,rail] of Object.entries(snap.rails)) if(!rail||rail.overflowX!=='auto'||!(rail.scrollWidth>rail.clientWidth+80)) throw new Error(label+' '+key+' rail missing '+JSON.stringify(rail));
+              if(snap.pageScreens>3.9) throw new Error(label+' hierarchy exceeds mobile density budget '+snap.pageScreens.toFixed(2));
+            } else if(snap.pageScreens>5.5) throw new Error(label+' desktop height regression '+snap.pageScreens.toFixed(2));
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'CURRENCIES_HIERARCHY_UI_PASS',snap.pageScreens.toFixed(2));
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('CURRENCIES_HIERARCHY_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node currencies-hierarchy-gate.js
