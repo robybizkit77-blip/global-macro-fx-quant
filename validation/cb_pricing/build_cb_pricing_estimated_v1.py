@@ -13,7 +13,7 @@ OUT_PATH = ROOT / "live_data/sections/CB_PRICING_ESTIMATED.json"
 
 ELIGIBLE = ("USD", "EUR", "CHF", "NZD")
 CONFIDENCE = {"USD": "B", "EUR": "B", "CHF": "B", "NZD": "C"}
-LIVE_METHOD_ID = "TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1"
+LIVE_METHOD_ID = "TRADINGVIEW_DATED_FUTURES_SSR_V2"
 NATIVE_METHOD_ID = "NATIVE_CB_ESTIMATED_V1"
 
 
@@ -34,7 +34,13 @@ def _live_usable(ccy: str, live_row: dict | None) -> bool:
     if row.get("status") != "LIVE_SECONDARY_READY":
         return False
     hs = row.get("horizons") or {}
-    return all(_num((hs.get(h) or {}).get("rate")) is not None for h in ("3m", "6m", "12m"))
+    for h in ("3m", "6m", "12m"):
+        x = hs.get(h) or {}
+        if _num(x.get("rate")) is None:
+            return False
+        if "!" in str(x.get("contract") or "") or "!" in str(x.get("symbol") or ""):
+            return False
+    return True
 
 
 def _valid_nzd_directional_proxy(proxy: dict | None) -> dict | None:
@@ -57,7 +63,6 @@ def _valid_nzd_directional_proxy(proxy: dict | None) -> dict | None:
 
 
 def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
-    # Estimated layer is only legal while official OIS remains withheld.
     if (ois_row or {}).get("status") != "WITHHELD":
         return {
             "currency": ccy,
@@ -81,11 +86,7 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         input_mode = "LIVE_SECONDARY_OVERLAY"
         method_id = LIVE_METHOD_ID
         horizon_meta = {
-            h: {
-                k: v
-                for k, v in (hs.get(h) or {}).items()
-                if k != "rate"
-            }
+            h: {k: v for k, v in (hs.get(h) or {}).items() if k != "rate"}
             for h in ("3m", "6m", "12m")
         }
     else:
@@ -164,8 +165,6 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
     }
     proxy = _valid_nzd_directional_proxy(directional_proxy) if ccy == "NZD" else None
     if proxy is not None:
-        # Additive context only. Do not mutate OIS horizons, policy deltas,
-        # direction_vs_policy, method_id or official certification state.
         result["market_direction_proxy"] = {
             "status": proxy.get("status"),
             "as_of": proxy.get("as_of"),
