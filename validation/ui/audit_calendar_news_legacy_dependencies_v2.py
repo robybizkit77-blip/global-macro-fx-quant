@@ -22,7 +22,12 @@ QUARANTINED_IDS = [
     "gmfq-propagation-qa",
     "gmfq-e2e-live-italy",
     "gmfq-runtime-refresh-fix-20260930",
+    "gmfq-usd-sep30-closeout-20261001",
+    "gmfq-usd-sep30-closeout-finalizer-20261001",
 ]
+QUARANTINED_FINGERPRINTS = {
+    "LIVE_REFRESH_20260930_AM": "window.LIVE_REFRESH_20260930_AM=",
+}
 
 
 def combined_payload() -> str:
@@ -36,16 +41,29 @@ def script_pattern(script_id: str) -> re.Pattern[str]:
     )
 
 
-def strip_quarantined(text: str) -> tuple[str, dict[str, int]]:
-    counts: dict[str, int] = {}
+def any_script_blocks(text: str) -> list[str]:
+    return re.findall(r'<script(?:\s[^>]*)?>[\s\S]*?</script>', text, re.IGNORECASE)
+
+
+def strip_quarantined(text: str) -> tuple[str, dict[str, int], dict[str, int]]:
+    named_counts: dict[str, int] = {}
+    fingerprint_counts: dict[str, int] = {}
     out = text
     for script_id in QUARANTINED_IDS:
         pattern = script_pattern(script_id)
         matches = pattern.findall(out)
-        counts[script_id] = len(matches)
+        named_counts[script_id] = len(matches)
         assert len(matches) == 1, (script_id, len(matches))
         out = pattern.sub(f"<!-- GMFQ_LEGACY_QUARANTINED:{script_id} -->", out)
-    return out, counts
+
+    for name, needle in QUARANTINED_FINGERPRINTS.items():
+        blocks = any_script_blocks(out)
+        matches = [block for block in blocks if needle in block]
+        fingerprint_counts[name] = len(matches)
+        assert len(matches) == 1, (name, len(matches))
+        out = out.replace(matches[0], f"<!-- GMFQ_LEGACY_QUARANTINED_FINGERPRINT:{name} -->", 1)
+
+    return out, named_counts, fingerprint_counts
 
 
 def token_counts(text: str) -> dict[str, int]:
@@ -54,7 +72,7 @@ def token_counts(text: str) -> dict[str, int]:
 
 def main() -> None:
     raw = combined_payload()
-    runtime_equivalent, quarantine_counts = strip_quarantined(raw)
+    runtime_equivalent, named_counts, fingerprint_counts = strip_quarantined(raw)
     raw_counts = token_counts(raw)
     runtime_counts = token_counts(runtime_equivalent)
     removed_counts = {k: raw_counts[k] - runtime_counts[k] for k in TOKENS}
@@ -62,25 +80,36 @@ def main() -> None:
     index = INDEX.read_text(errors="replace")
     for script_id in QUARANTINED_IDS:
         assert f"'{script_id}'" in index, script_id
-        # The marker text may retain the identifier, but no executable script tag may survive.
         assert not script_pattern(script_id).search(runtime_equivalent), script_id
-    assert "GMFQ_LEGACY_QUARANTINED:" in index
 
-    # Named global QA authorities must disappear entirely from runtime-equivalent content.
+    fingerprint_script_tags_remaining: dict[str, int] = {}
+    for name, needle in QUARANTINED_FINGERPRINTS.items():
+        assert needle in index, name
+        remaining_blocks = [block for block in any_script_blocks(runtime_equivalent) if needle in block]
+        fingerprint_script_tags_remaining[name] = len(remaining_blocks)
+        assert not remaining_blocks, name
+
+    assert "GMFQ_LEGACY_QUARANTINED:" in index
+    assert "GMFQ_LEGACY_QUARANTINED_FINGERPRINT:" in index
+
+    # Named global QA authorities disappear entirely. Fingerprint names may remain
+    # only inside non-executable quarantine comments, never inside a script block.
     assert runtime_counts["GMFQ_PROPAGATION_QA"] == 0, runtime_counts
     assert runtime_counts["GMFQ_E2E_LIVE_ITALY"] == 0, runtime_counts
 
     remaining = {k: v for k, v in runtime_counts.items() if v > 0}
-    deletion_allowed = not any(
-        runtime_counts[k] > 0
-        for k in (
-            "REAL_CALENDAR",
-            "NEWS_PULSE_STRUCT",
-            "renderRealCalendar",
-            "renderNewsPulse",
-            "LIVE_REFRESH_20260930_AM",
-            "2026-09-30",
+    deletion_allowed = (
+        not any(
+            runtime_counts[k] > 0
+            for k in (
+                "REAL_CALENDAR",
+                "NEWS_PULSE_STRUCT",
+                "renderRealCalendar",
+                "renderNewsPulse",
+                "2026-09-30",
+            )
         )
+        and all(v == 0 for v in fingerprint_script_tags_remaining.values())
     )
 
     out = {
@@ -89,16 +118,18 @@ def main() -> None:
         "raw_source_counts": raw_counts,
         "runtime_equivalent_counts": runtime_counts,
         "removed_from_runtime_counts": removed_counts,
-        "quarantined_script_instances": quarantine_counts,
-        "quarantined_script_tags_remaining": {
+        "quarantined_named_script_instances": named_counts,
+        "quarantined_fingerprint_instances": fingerprint_counts,
+        "quarantined_named_script_tags_remaining": {
             script_id: len(script_pattern(script_id).findall(runtime_equivalent))
             for script_id in QUARANTINED_IDS
         },
+        "quarantined_fingerprint_script_tags_remaining": fingerprint_script_tags_remaining,
         "remaining_runtime_legacy": remaining,
         "migration_policy": {
             "visible_owner": "DYNAMIC_OPERATIONAL_MODULES",
             "legacy_payload_source_retained": True,
-            "three_stale_mutators_runtime_quarantined": True,
+            "six_stale_mutators_runtime_quarantined": True,
             "physical_deletion_allowed_now": deletion_allowed,
             "next_step": (
                 "PHYSICAL_REMOVAL_CAN_BE_PLANNED"
