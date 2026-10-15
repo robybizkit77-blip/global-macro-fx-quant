@@ -1,0 +1,88 @@
+name: Method Static Reference Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'payload/**'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/method-static-reference-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'payload/**'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/method-static-reference-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Method registry contract
+        run: |
+          python - <<'PY'
+          import json
+          p='validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+          d=json.load(open(p))
+          m=d['views']['method']
+          assert m['owner_type']=='STATIC_REFERENCE',m
+          assert m['reference_state']=='CERTIFIED',m
+          assert m['freshness_requirement']=='NONE',m
+          assert m['content_policy']=='TIMELESS_METHODOLOGY_PLAYBOOK',m
+          assert m['migration_state']=='FREEZE_AS_REFERENCE',m
+          src=d['dynamic_sources']['method']
+          assert 'STATIC_REFERENCE' in src and 'no date dependency' in src and 'no runtime freshness dependency' in src and 'no engine-internal terminology' in src,src
+          assert not [k for k,v in d['views'].items() if v['owner_type']=='PAYLOAD'], d['views']
+          print('METHOD_STATIC_REFERENCE_REGISTRY_PASS')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/method-static-reference.log 2>&1 &
+          sleep 2
+      - name: Verify Method desktop mobile
+        run: |
+          cat > method-static-reference-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const forbidden=['payload','runtime','owner','ownership','schema','authority','withheld','fail-closed','adapter','manifest','bootstrap','registry','core_effect','renderer','mount','legacy'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('method'));
+            await page.waitForTimeout(350);
+            const out=await page.evaluate(()=>{
+              const el=document.getElementById('method');
+              const text=String(el?.innerText||'').replace(/\s+/g,' ').trim();
+              return {exists:!!el,visible:!!el&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().height>0,text,textLength:text.length};
+            });
+            if(!out.exists||!out.visible||out.textLength<3000) throw new Error(label+' Method reference missing/too short '+out.textLength);
+            const lower=out.text.toLowerCase();
+            for(const term of forbidden) if(lower.includes(term)) throw new Error(label+' internal engine term leaked: '+term);
+            if(/\b20\d{2}[-\/]\d{1,2}(?:[-\/]\d{1,2})?\b/.test(out.text)) throw new Error(label+' date dependency leaked into timeless Method reference');
+            for(const phrase of ['Come leggere il modello intero senza perdersi','Le 6 domande da farsi sempre','Cosa NON fare','Checklist finale','REGOLA MADRE']) if(!out.text.includes(phrase)) throw new Error(label+' Method reference section missing: '+phrase);
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error');
+            await browser.close();
+            console.log(label,'METHOD_STATIC_REFERENCE_PASS',out.textLength);
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('METHOD_STATIC_REFERENCE_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node method-static-reference-gate.js
