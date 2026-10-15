@@ -6,6 +6,7 @@ on:
     paths:
       - 'index.html'
       - 'dashboard/ois-operational-monitor-v1.js'
+      - 'dashboard/product-language-v1.js'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
       - '.github/workflows/ois-operational-ui-audit-v1.yml'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'index.html'
       - 'dashboard/ois-operational-monitor-v1.js'
+      - 'dashboard/product-language-v1.js'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
       - '.github/workflows/ois-operational-ui-audit-v1.yml'
@@ -73,8 +75,8 @@ jobs:
               const active=document.getElementById('ratesdesk')?.classList.contains('active')===true;
               return {
                 audit,active,cards:cards.length,rows:rows.length,badges,tickers,
-                hasOfficial:badges.filter(x=>x==='OFFICIAL').length,
-                hasEstimated:badges.filter(x=>x==='ESTIMATED').length,
+                hasOfficial:badges.filter(x=>x==='OFFICIAL'||x==='Ufficiale').length,
+                hasEstimated:badges.filter(x=>x==='ESTIMATED'||x==='Stimato').length,
                 hasAllCurrencies:CCYS.every(c=>tickers.includes(c)),
                 hasNullPolicy:foot.includes('NULL ≠ 0 bp'),
                 docOverflow,hostOverflow,
