@@ -29,6 +29,7 @@ def main() -> None:
     wow = (ROOT / "dashboard/what-changed-operational-v1.js").read_text()
     risk = (ROOT / "dashboard/risk-operational-v1.js").read_text()
     pairs = (ROOT / "dashboard/pairs-operational-v1.js").read_text()
+    overview_asof = (ROOT / "dashboard/overview-asof-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
@@ -38,10 +39,16 @@ def main() -> None:
         "dashboard/what-changed-operational-v1.js",
         "dashboard/risk-operational-v1.js",
         "dashboard/pairs-operational-v1.js",
+        "dashboard/overview-asof-operational-v1.js",
         "dashboard/ois-operational-monitor-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
         must(src in index, f"index missing dynamic module {src}")
+
+    must("GMFQ_OVERVIEW_ASOF_OPERATIONAL_V1" in overview_asof, "overview as-of schema missing")
+    must("GMFQ_ECB_PRICE_AUDIT" in overview_asof, "overview as-of must read current price authority")
+    must("SNB_LAST_VALIDATED" in overview_asof, "overview must label CHF source state truthfully")
+    must("core_effect:'NONE'" in overview_asof, "overview as-of must declare zero core effect")
 
     must('data-gmfq-operational="wow"' in wow, "what changed owner marker missing")
     must("NEWS_PULSE_OPERATIONAL.json" in wow, "what changed missing operational source")
@@ -93,14 +100,16 @@ def main() -> None:
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
-    must(views["ratesdesk"]["owner_type"] == "HYBRID", "ratesdesk owner type")
+    for view in ("overview","ratesdesk"):
+        must(views[view]["owner_type"] == "HYBRID", f"{view} owner type")
     for view, spec in views.items():
         if spec["owner_type"] == "PAYLOAD": must(spec.get("migration_state") == "KEEP", f"payload owner migration state {view}")
 
     print(json.dumps({
         "status":"PASS","schema":d["schema"],"views":len(views),
-        "dynamic_replace":list(dynamic),"hybrid":["ratesdesk"],
+        "dynamic_replace":list(dynamic),"hybrid":["overview","ratesdesk"],
         "freshness_authority":{
+            "overview_asof":"GMFQ_ECB_PRICE_AUDIT.as_of; CHF rates keeps SNB last validated snapshot",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
