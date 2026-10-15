@@ -422,14 +422,14 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-15T09:09:23.214953Z",
+  "generated_at_utc": "2026-10-15T09:26:48.481676Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
     "consensus": "SECONDARY_PROVIDER_READY_NO_VALUES",
     "consensus_context_only": true,
     "consensus_never_changes_official_date": true,
-    "consensus_provider": "TRADING_ECONOMICS",
+    "consensus_provider": "FMP",
     "core_score_impact": 0,
     "macro_release_currencies": [
       "AUD",
