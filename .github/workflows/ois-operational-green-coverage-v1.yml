@@ -1,0 +1,33 @@
+name: OIS Operational Green Coverage V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/cb_pricing/OIS_OPERATIONAL_COVERAGE_POLICY_V1_2026-10-15.json'
+      - 'validation/cb_pricing/build_ois_operational_view_v1.py'
+      - 'validation/cb_pricing/test_ois_operational_view_v1.py'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - '.github/workflows/ois-operational-green-coverage-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot official OIS
+        run: sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+      - name: Rebuild operational OIS view
+        run: python validation/cb_pricing/build_ois_operational_view_v1.py
+      - name: Verify committed operational view is deterministic
+        run: git diff --exit-code -- live_data/sections/OIS_OPERATIONAL_VIEW.json
+      - name: Run coverage self-test
+        run: python validation/cb_pricing/test_ois_operational_view_v1.py
+      - name: Verify official OIS untouched
+        run: sha256sum -c /tmp/ois.before.sha256
