@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_DASHBOARD_UI_OWNERSHIP_REGISTRY_V1",
   "version": "2026-10-15",
-  "status": "CANONICAL_PRE_REDESIGN",
+  "status": "OPERATIONAL_OWNERSHIP_COMPLETE_PRE_REDESIGN",
   "policy": {
     "one_visible_owner_per_view": true,
     "legacy_payload_may_remain_non_owner_during_migration": true,
@@ -24,7 +24,7 @@
     "cbdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cbdesk-operational-v1.js","selector":"#v234CountryName[data-gmfq-operational=\"cbdesk\"]","count":1}]},
     "liquiditydesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/liquiditydesk-operational-v1.js","selector":"#v243CountryName[data-gmfq-operational=\"liquiditydesk\"]","count":1}]},
     "cot": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cotdesk-operational-v1.js","selector":"#v247CountryName[data-gmfq-operational=\"cot\"]","count":1}]},
-    "method": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "method": {"owner_type":"STATIC_DOCUMENTATION","owner":"payload","migration_state":"FINAL_STATIC","reason":"NO_RUNTIME_OR_FRESHNESS_AUTHORITY_REQUIRED"},
     "forwarddesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/forwarddesk-operational-v1.js","selector":"#forwarddesk[data-gmfq-operational=\"forwarddesk\"]","count":1}]}
   },
   "dynamic_sources": {
@@ -42,6 +42,7 @@
     "cbdesk": ["NATIVE_CB_DATA(runtime)","corePolicyIntegrity(runtime)","live_data/sections/OIS_OPERATIONAL_VIEW.json","rate2YSeries(runtime)","renderNativeCbDesk(runtime)"],
     "liquiditydesk": ["NATIVE_LIQ_DATA(runtime)","liquidityStructuralChangeCandidate(runtime)","productionHealthCheck.live_freshness_integrity.LIQUIDITY","productionHealthCheck.overlay_isolation_integrity","renderNativeLiquidityDesk(runtime)"],
     "cot": ["V250_COT_CHART_DATA(runtime)","V247_COT_STORIES(runtime)","D.cot synchronized certified fields","overlayIsolationIntegrity(runtime)"],
+    "method": "STATIC_PLAYBOOK_NO_RUNTIME_DATA",
     "forwarddesk": ["forwardValidationSummary(runtime)","forwardLedgerIntegrity(runtime)","gmfqForwardPathRiskStats(runtime)","gmfqForwardSnapshotBasketSeries(runtime)","gmfqForwardPairedOverlayStats(runtime)"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
