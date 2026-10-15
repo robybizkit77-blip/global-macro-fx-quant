@@ -23,7 +23,7 @@
     "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ratesdesk-operational-v1.js","selector":"#v233CountryName[data-gmfq-operational=\"ratesdesk\"]","count":1},{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
     "cbdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cbdesk-operational-v1.js","selector":"#v234CountryName[data-gmfq-operational=\"cbdesk\"]","count":1}]},
     "liquiditydesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/liquiditydesk-operational-v1.js","selector":"#v243CountryName[data-gmfq-operational=\"liquiditydesk\"]","count":1}]},
-    "cot": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "cot": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/cotdesk-operational-v1.js","selector":"#v247CountryName[data-gmfq-operational=\"cot\"]","count":1}]},
     "method": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "forwarddesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"}
   },
@@ -41,6 +41,7 @@
     "ratesdesk": ["rate2YSeries(runtime)","ratesTimingBindingIntegrity(runtime)","ratesCanonicalBasisIntegrity(runtime)","visibleRatesSnapshotIntegrity(runtime)","renderNativeRatesDesk(runtime)"],
     "cbdesk": ["NATIVE_CB_DATA(runtime)","corePolicyIntegrity(runtime)","live_data/sections/OIS_OPERATIONAL_VIEW.json","rate2YSeries(runtime)","renderNativeCbDesk(runtime)"],
     "liquiditydesk": ["NATIVE_LIQ_DATA(runtime)","liquidityStructuralChangeCandidate(runtime)","productionHealthCheck.live_freshness_integrity.LIQUIDITY","productionHealthCheck.overlay_isolation_integrity","renderNativeLiquidityDesk(runtime)"],
+    "cot": ["V250_COT_CHART_DATA(runtime)","V247_COT_STORIES(runtime)","D.cot synchronized certified fields","overlayIsolationIntegrity(runtime)"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
 }
