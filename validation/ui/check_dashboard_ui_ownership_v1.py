@@ -27,16 +27,23 @@ def main() -> None:
 
     index = (ROOT / "index.html").read_text()
     cal = (ROOT / "dashboard/calendar-news-operational-v1.js").read_text()
+    themes = (ROOT / "dashboard/top-themes-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
         "dashboard/calendar-news-operational-v1.js",
+        "dashboard/top-themes-operational-v1.js",
         "dashboard/ois-operational-monitor-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
         must(src in index, f"index missing dynamic module {src}")
 
+    must("data-gmfq-operational=\"themes\"" in themes, "themes owner marker missing")
+    for source in ["NEWS_PULSE_OPERATIONAL.json","MACRO_THERMOMETER_DATA.json","OIS_OPERATIONAL_VIEW.json"]:
+        must(source in themes, f"themes missing operational source {source}")
+    must("core_effect:'NONE'" in themes, "themes must declare zero core effect")
+    must("GMFQ_TOP_THEMES_OPERATIONAL_UI_V1" in themes, "themes operational schema missing")
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must("data-gmfq-operational=\"calendar\"" in cal, "calendar owner marker missing")
@@ -56,11 +63,10 @@ def main() -> None:
     must("REAL_CALENDAR" not in freshness, "freshness guard must not read legacy REAL_CALENDAR")
     must("NEWS_PULSE_STRUCT" not in freshness, "freshness guard must not read legacy NEWS_PULSE_STRUCT")
 
-    must(views["calendar"]["owner_type"] == "DYNAMIC_REPLACE", "calendar owner type")
-    must(views["news"]["owner_type"] == "DYNAMIC_REPLACE", "news owner type")
+    for view in ("themes","calendar","news"):
+        must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
+        must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
     must(views["ratesdesk"]["owner_type"] == "HYBRID", "ratesdesk owner type")
-    must(views["calendar"]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", "calendar legacy state")
-    must(views["news"]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", "news legacy state")
 
     for view, spec in views.items():
         if spec["owner_type"] == "PAYLOAD":
@@ -70,7 +76,7 @@ def main() -> None:
         "status": "PASS",
         "schema": d["schema"],
         "views": len(views),
-        "dynamic_replace": ["calendar", "news"],
+        "dynamic_replace": ["themes", "calendar", "news"],
         "hybrid": ["ratesdesk"],
         "freshness_authority": {
             "calendar": "CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
