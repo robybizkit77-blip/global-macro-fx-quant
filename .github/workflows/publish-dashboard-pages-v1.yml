@@ -81,9 +81,12 @@ jobs:
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
           assert 'dashboard/ois-operational-monitor-v1.js' in index
-          asset=Path('dashboard/ois-operational-monitor-v1.js')
+          assert 'dashboard/editorial-freshness-guard-v1.js' in index
+          ois_asset=Path('dashboard/ois-operational-monitor-v1.js')
+          freshness_asset=Path('dashboard/editorial-freshness-guard-v1.js')
           ois=Path('live_data/sections/OIS_OPERATIONAL_VIEW.json')
-          assert asset.is_file() and asset.stat().st_size>1000
+          assert ois_asset.is_file() and ois_asset.stat().st_size>1000
+          assert freshness_asset.is_file() and freshness_asset.stat().st_size>1000
           data=json.loads(ois.read_text(encoding='utf-8'))
           assert data['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
           assert data['status']=='GREEN_8_OF_8'
@@ -109,6 +112,7 @@ jobs:
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
           cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/ois-operational-monitor-v1.js
+          cp dashboard/editorial-freshness-guard-v1.js /tmp/gmfq-pages/dashboard/editorial-freshness-guard-v1.js
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
 
           cd /tmp/gmfq-pages
@@ -121,6 +125,7 @@ jobs:
           allowed={
               'index.html',
               'dashboard/ois-operational-monitor-v1.js',
+              'dashboard/editorial-freshness-guard-v1.js',
               'live_data/sections/OIS_OPERATIONAL_VIEW.json',
               *[f'payload/part-{i:02d}.txt' for i in range(16)]
           }
@@ -133,7 +138,7 @@ jobs:
               print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
 
-          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json
+          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json
           if git diff --cached --quiet; then
             echo DASHBOARD_PAGES_ALREADY_CURRENT
             exit 0
