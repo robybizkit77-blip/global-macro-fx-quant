@@ -36,13 +36,21 @@
       "interpretation": "Use for direction/momentum/turning-point analysis only; level mismatch remains explicit."
     },
     "BRENT.market_proxy": {
-      "status": "MARKET_PROXY_READY_NO_LIVE_VALUE",
-      "confidence": "A_FOR_DIRECTION_ONLY",
-      "value": null,
-      "change_1d_pct": null,
-      "change_1w_pct": null,
-      "source": "ICE Brent futures — connector/source not yet reproducibly wired into repository",
-      "interpretation": "No numeric proxy is emitted until a reproducible current futures source is connected. Canonical EIA Brent spot remains unchanged and fail-closed when stale."
+      "status": "MARKET_PROXY_ACTIVE_SECONDARY",
+      "confidence": "B_FOR_DIRECTION_ONLY",
+      "value": 104.09,
+      "change_1d_pct": -1.8574,
+      "change_1w_pct": -0.1822,
+      "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
+      "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect.",
+      "proxy_as_of": "2026-10-15",
+      "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
+      "vendor_symbol": "BZ=F",
+      "currency": "USD",
+      "exchange_name": "NYM",
+      "instrument_type": "FUTURE",
+      "fetched_at_utc": "2026-10-15T09:50:59.948295Z",
+      "official_canonical_untouched": true
     }
   },
   "governance": {
