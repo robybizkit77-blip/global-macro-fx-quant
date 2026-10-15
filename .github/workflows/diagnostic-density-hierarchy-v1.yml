@@ -1,0 +1,93 @@
+name: Diagnostic Density Hierarchy V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostic-density-hierarchy-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/density-hierarchy-server.log 2>&1 &
+          sleep 2
+      - name: Measure view density and hierarchy desktop mobile
+        run: |
+          cat > density-hierarchy.js <<'EOF'
+          const { chromium }=require('playwright');
+          const fs=require('fs');
+          const VIEWS=['overview','wow','themes','calendar','news','risk','currencies','pairs','macro','inflationlabour','ratesdesk','cbdesk','liquiditydesk','cot','method','forwarddesk'];
+          async function collect(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE'&&window.GMFQ_PRODUCT_LANGUAGE?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForTimeout(900);
+            const out={};
+            for(const view of VIEWS){
+              await page.evaluate(v=>window.showView?.(v),view);
+              await page.waitForTimeout(view==='ratesdesk'?450:220);
+              out[view]=await page.evaluate(({v,viewport})=>{
+                const root=document.getElementById(v); const r=root?.getBoundingClientRect();
+                const vis=el=>{const s=getComputedStyle(el),b=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&b.width>0&&b.height>0};
+                const text=String(root?.innerText||'').replace(/\s+/g,' ').trim();
+                const cards=[...root.querySelectorAll('.card,[class*="Card"],[class*="card"],article')].filter(vis);
+                const headings=[...root.querySelectorAll('h1,h2,h3,h4,[class*="Title"],[class*="title"],[class*="Headline"],[class*="headline"]')].filter(vis);
+                const grids=[...root.querySelectorAll('[class*="Grid"],[class*="grid"]')].filter(vis);
+                const buttons=[...root.querySelectorAll('button,a')].filter(vis);
+                const smallLabels=[...root.querySelectorAll('.badge,.pill,.label,[class*="Tag"],[class*="tag"],[class*="Meta"],[class*="meta"]')].filter(vis);
+                const longBlocks=[...root.querySelectorAll('p,li,[class*="Detail"],[class*="detail"],[class*="Sub"],[class*="sub"]')].filter(vis).map(el=>String(el.innerText||'').trim()).filter(t=>t.length>180);
+                const heights=cards.map(x=>Math.round(x.getBoundingClientRect().height)).sort((a,b)=>a-b);
+                const median=heights.length?heights[Math.floor(heights.length/2)]:0;
+                const titleTexts=headings.map(x=>String(x.innerText||'').replace(/\s+/g,' ').trim()).filter(Boolean);
+                const duplicateTitles=Object.entries(titleTexts.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{})).filter(([,n])=>n>1);
+                return {
+                  viewport,
+                  viewHeight:Math.round(r?.height||0),
+                  pageScreens:Math.round(((r?.height||0)/viewport.height)*10)/10,
+                  textChars:text.length,
+                  charsPerScreen:Math.round(text.length/Math.max(1,(r?.height||viewport.height)/viewport.height)),
+                  cardCount:cards.length,
+                  cardMedianHeight:median,
+                  cardTallCount:heights.filter(h=>h>360).length,
+                  headingCount:headings.length,
+                  gridCount:grids.length,
+                  actionCount:buttons.length,
+                  microLabelCount:smallLabels.length,
+                  longTextBlocks:longBlocks.length,
+                  duplicateTitles,
+                  firstHeadings:titleTexts.slice(0,12)
+                };
+              },{v:view,viewport});
+            }
+            await browser.close(); return out;
+          }
+          (async()=>{
+            const result={schema:'GMFQ_DENSITY_HIERARCHY_DIAGNOSTIC_V1',status:'PASS_OBSERVATIONAL',desktop:await collect({width:1440,height:1100},'desktop'),mobile:await collect({width:390,height:844},'mobile')};
+            fs.writeFileSync('/tmp/density-hierarchy-v1.json',JSON.stringify(result,null,2));
+            console.log(JSON.stringify(result,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node density-hierarchy.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: density-hierarchy-v1
+          path: /tmp/density-hierarchy-v1.json
+          if-no-files-found: error
