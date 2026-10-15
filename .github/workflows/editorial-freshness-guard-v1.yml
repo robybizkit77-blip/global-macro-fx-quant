@@ -8,8 +8,13 @@ on:
       - 'payload/**'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'dashboard/top-themes-operational-v1.js'
+      - 'dashboard/what-changed-operational-v1.js'
+      - 'dashboard/risk-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
       - '.github/workflows/editorial-freshness-guard-v1.yml'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
   push:
@@ -21,8 +26,13 @@ on:
       - 'payload/**'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'dashboard/top-themes-operational-v1.js'
+      - 'dashboard/what-changed-operational-v1.js'
+      - 'dashboard/risk-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
       - '.github/workflows/editorial-freshness-guard-v1.yml'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
   workflow_dispatch:
@@ -55,7 +65,14 @@ jobs:
           cat > editorial-freshness-audit.js <<'EOF'
           const { chromium }=require('playwright');
           const fs=require('fs');
-          const IDS=['overview','calendar','news'];
+          const IDS=['overview','wow','themes','calendar','news','risk'];
+          const AUTH={
+            wow:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
+            news:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            risk:'MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
+          };
           async function run(viewport,label){
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport});
@@ -65,16 +82,18 @@ jobs:
             const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             if(!response||!response.ok())throw new Error(label+' HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
-            if(await page.evaluate(()=>!!document.getElementById('gmfq-calendar-news-operational-ui'))){
-              await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
-            }
             await page.waitForFunction(()=>window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:30000});
+            await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
+            await page.waitForFunction(()=>window.GMFQ_TOP_THEMES_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
+            await page.waitForFunction(()=>window.GMFQ_WHAT_CHANGED_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
+            await page.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
             const audit=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
-            if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V2_OPERATIONAL_AUTHORITY')throw new Error(label+' freshness schema '+audit?.schema);
+            if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V3_OPERATIONAL_AUTHORITY')throw new Error(label+' freshness schema '+audit?.schema);
             if(audit.legacy_authority!=='NONE')throw new Error(label+' legacy freshness authority '+audit.legacy_authority);
             if(!['PASS_FAIL_CLOSED_STALE','PASS_FRESH','PASS_WITH_UNVERIFIED'].includes(audit.status))throw new Error(label+' freshness status '+audit.status);
-            if(audit.sections?.calendar?.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc')throw new Error(label+' calendar authority drift');
-            if(audit.sections?.news?.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of')throw new Error(label+' news authority drift');
+            for(const [id,authority] of Object.entries(AUTH)){
+              if(audit.sections?.[id]?.authority!==authority)throw new Error(label+' '+id+' authority drift '+JSON.stringify(audit.sections?.[id]));
+            }
             for(const id of IDS){
               const s=audit.sections?.[id];
               if(!s)throw new Error(label+' missing section state '+id);
@@ -86,9 +105,8 @@ jobs:
                 const box=banner?.getBoundingClientRect();
                 return {status:el?.dataset?.gmfqEditorialFreshness||null,authority:el?.dataset?.gmfqFreshnessAuthority||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0,operational:!!el?.querySelector('[data-gmfq-operational]')};
               },id);
-              if(r.operational && (id==='calendar'||id==='news') && r.status!=='FRESH')throw new Error(label+' operational section must be fresh '+id+': '+JSON.stringify(r));
-              if(id==='calendar'&&r.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc')throw new Error(label+' calendar DOM authority '+JSON.stringify(r));
-              if(id==='news'&&r.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of')throw new Error(label+' news DOM authority '+JSON.stringify(r));
+              if(['wow','themes','calendar','news','risk'].includes(id)&&!r.operational)throw new Error(label+' missing operational owner '+id);
+              if(AUTH[id]&&r.authority!==AUTH[id])throw new Error(label+' '+id+' DOM authority '+JSON.stringify(r));
               if(r.status==='STALE'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS FAIL-CLOSED')))throw new Error(label+' stale section not visibly fail-closed '+id+': '+JSON.stringify(r));
               if(r.status==='UNVERIFIED'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS OPERATIVA NON VERIFICABILE')))throw new Error(label+' unverified section not visibly labelled '+id+': '+JSON.stringify(r));
               if(r.status==='FRESH'&&r.banner)throw new Error(label+' fresh section should not show freshness banner '+id);
