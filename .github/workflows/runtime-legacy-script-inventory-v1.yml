@@ -1,0 +1,35 @@
+name: Runtime Legacy Script Inventory V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'validation/ui/inventory_runtime_legacy_script_blocks_v1.py'
+      - '.github/workflows/runtime-legacy-script-inventory-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inventory runtime legacy script blocks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/ui/inventory_runtime_legacy_script_blocks_v1.py | tee /tmp/runtime-legacy-script-inventory-v1.json
+          test -s /tmp/runtime-legacy-script-inventory-v1.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-legacy-script-inventory-v1
+          path: /tmp/runtime-legacy-script-inventory-v1.json
+          if-no-files-found: error
