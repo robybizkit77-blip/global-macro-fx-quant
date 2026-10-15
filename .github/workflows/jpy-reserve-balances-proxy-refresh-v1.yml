@@ -1,0 +1,87 @@
+name: JPY Reserve Balances Proxy Refresh V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - jpy-reserve-balances-proxy-refresh-v1-2026-10-15
+    paths:
+      - validation/estimated/refresh_jpy_reserve_balances_proxy_v1.py
+      - live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+      - .github/workflows/jpy-reserve-balances-proxy-refresh-v1.yml
+  schedule:
+    - cron: '50 06 * * 1-5'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install XLSX parser
+        run: python -m pip install --disable-pip-version-check openpyxl==3.1.5
+
+      - name: Refresh JPY reserve-balances official proxy
+        run: |
+          set -euo pipefail
+          python validation/estimated/refresh_jpy_reserve_balances_proxy_v1.py
+
+      - name: Validate governance and continuity anchors
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text())
+          assert d['schema']=='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'
+          assert d['official_lanes_untouched'] is True
+          lane=d['lanes']['JPY.reserve_balances']
+          assert lane['status']=='ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY'
+          assert lane['confidence']=='A/B'
+          assert lane['proxy_value']>0
+          assert lane['proxy_as_of']>='2026-09'
+          assert lane['official_canonical_untouched'] is True
+          assert 'Bank of Japan official' in lane['source']
+          assert lane['original_runtime_validation']['period']=='2026-08'
+          assert lane['original_runtime_validation']['official_proxy_value']==3905362.0
+          assert lane['original_runtime_validation']['absolute_difference']==460.0
+          assert lane['original_runtime_validation']['original_runtime_vintage_equivalence_claimed'] is False
+          assert lane['continuity_anchor']['period']=='2026-09'
+          assert lane['continuity_anchor']['expected_official_value']==3849859.0
+          assert lane['continuity_anchor']['matched'] is True
+          gov=d['governance']
+          assert gov['core_score_effect']=='NONE'
+          assert gov['bias_effect']=='NONE'
+          assert gov['sizing_effect']=='NONE'
+          assert gov['pair_engine_effect']=='NONE'
+          assert gov['forward_logger_effect']=='NONE'
+          assert gov['backtest_eligible_as_official'] is False
+          print('JPY_RESERVE_BALANCES_PROXY_REFRESH_PASS', lane['proxy_as_of'], lane['proxy_value'], lane['change_1m_pct'], lane['change_3m_pct'])
+          PY
+
+      - name: Persist changed JPY proxy on main only
+        if: github.ref_name == 'main'
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
+          if [ -z "$changed" ]; then echo JPY_RESERVE_PROXY_NO_CHANGE; exit 0; fi
+          unexpected="$(git diff --name-only | grep -Ev '^live_data/sections/ESTIMATED_RESIDUAL_GAPS.json$' || true)"
+          test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
+          REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          LOCAL_SHA="$(git rev-parse HEAD)"
+          test "$REMOTE_SHA" = "$LOCAL_SHA" || { echo 'main moved during JPY reserve proxy refresh' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git commit -m 'Refresh JPY reserve-balances official proxy'
+          git push origin HEAD:main

@@ -16,8 +16,22 @@ for key in ("core_score_effect","bias_effect","sizing_effect","pair_engine_effec
     assert s["governance"][key] == "NONE"
 assert s["governance"]["backtest_eligible_as_official"] is False
 
-assert s["lanes"]["JPY.reserve_balances"]["status"] == "ESTIMATED_ACTIVE"
-assert s["lanes"]["JPY.reserve_balances"]["absolute_difference"] == 460.0
+jpy = s["lanes"]["JPY.reserve_balances"]
+assert jpy["status"] in {"ESTIMATED_ACTIVE", "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY"}
+if jpy["status"] == "ESTIMATED_ACTIVE":
+    assert jpy["absolute_difference"] == 460.0
+else:
+    assert jpy["proxy_as_of"] >= "2026-09"
+    assert jpy["proxy_value"] > 0
+    assert jpy["official_canonical_untouched"] is True
+    assert jpy["original_runtime_validation"]["period"] == "2026-08"
+    assert jpy["original_runtime_validation"]["official_proxy_value"] == 3905362.0
+    assert jpy["original_runtime_validation"]["absolute_difference"] == 460.0
+    assert jpy["original_runtime_validation"]["original_runtime_vintage_equivalence_claimed"] is False
+    assert jpy["continuity_anchor"]["period"] == "2026-09"
+    assert jpy["continuity_anchor"]["expected_official_value"] == 3849859.0
+    assert jpy["continuity_anchor"]["matched"] is True
+
 assert s["lanes"]["CHF.credit"]["confidence"] == "B/C"
 assert s["lanes"]["CHF.sight_deposits"]["confidence"] == "C"
 
