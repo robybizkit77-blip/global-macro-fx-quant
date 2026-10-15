@@ -1,0 +1,73 @@
+name: Currencies Operational UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['index.html','dashboard/currencies-operational-v1.js','payload/**','validation/ui/**','.github/workflows/currencies-operational-ui-gate-v1.yml']
+  push:
+    branches: [main]
+    paths: ['index.html','dashboard/currencies-operational-v1.js','payload/**','validation/ui/**','.github/workflows/currencies-operational-ui-gate-v1.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/currencies-operational.log 2>&1 &
+          sleep 2
+      - name: Verify Currencies desktop and mobile
+        run: |
+          cat > currencies-operational-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const errs=[]; page.on('console',m=>{if(m.type()==='error') errs.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_CURRENCIES_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('currencies'));
+            await page.waitForTimeout(500);
+            for(const c of ['EUR','USD','CAD']){
+              await page.evaluate(c=>{
+                const el=[...document.querySelectorAll('#currencyGrid .ccy')].find(x=>x.dataset.c===c);
+                if(!el) throw new Error('missing card '+c);
+                el.click();
+              },c);
+              await page.waitForTimeout(180);
+              const state=await page.evaluate(c=>({
+                audit:window.gmfqCurrenciesOperationalAudit?.(),
+                canonical:window.deriveCurrencyState?.(c)||null,
+                selected:document.querySelector('#currencyGrid .ccy.active')?.dataset?.c||null,
+                title:document.getElementById('v219CurrencyTitle')?.textContent||'',
+                owner:document.querySelectorAll('#currencies .v224CurrencyHero[data-gmfq-operational="currencies"]').length,
+                legacyVisible:(()=>{const x=document.getElementById('v302CurrencyShell');return !!x&&getComputedStyle(x).display!=='none';})()
+              }),c);
+              if(state.audit?.schema!=='GMFQ_CURRENCIES_OPERATIONAL_UI_V1'||state.audit?.status!=='ACTIVE') throw new Error(label+' '+c+' operational audit '+JSON.stringify(state.audit));
+              if(state.audit?.core_effect!=='NONE'||state.audit?.coverage!==8) throw new Error(label+' '+c+' operational coverage/core');
+              if(!state.canonical||state.selected!==c||!state.title.includes(c)) throw new Error(label+' '+c+' selected/title/canonical sync '+JSON.stringify(state));
+              if(state.owner!==1||state.legacyVisible) throw new Error(label+' '+c+' owner/legacy '+JSON.stringify(state));
+            }
+            const coverage=await page.evaluate(CCYS=>CCYS.filter(c=>!!window.deriveCurrencyState?.(c)).length,CCYS);
+            if(coverage!==8) throw new Error(label+' canonical G8 coverage '+coverage);
+            if(errs.some(x=>/currency|currencies/i.test(x))) throw new Error(label+' currency console errors '+errs.join(' | '));
+            console.log(label,'CURRENCIES_OPERATIONAL_PASS');
+            await browser.close();
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('CURRENCIES_OPERATIONAL_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node currencies-operational-gate.js
