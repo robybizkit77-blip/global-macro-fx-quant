@@ -39,9 +39,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python validation/check_live_update_contract.py > /tmp/pages-live-contract.json
-          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/pages-runtime-roundtrip.json
-          python validation/build_calendar_operational_v1.py > /tmp/pages-calendar-build.json
+          python validation/check_live_update_contract.py | tee /tmp/pages-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only | tee /tmp/pages-runtime-roundtrip.json
+          python validation/build_calendar_operational_v1.py | tee /tmp/pages-calendar-build.json
           python - <<'PY'
           import json
           from pathlib import Path
