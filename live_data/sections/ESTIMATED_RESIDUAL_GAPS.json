@@ -1,0 +1,56 @@
+{
+  "schema": "GMFQ_ESTIMATED_RESIDUAL_GAPS_V1",
+  "as_of": "2026-10-15",
+  "status": "INFORMATIONAL_ONLY",
+  "official_lanes_untouched": true,
+  "lanes": {
+    "JPY.reserve_balances": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "A/B",
+      "proxy_as_of": "2026-08",
+      "proxy_value": 3905362.0,
+      "official_runtime_reference": 3905822.0,
+      "absolute_difference": 460.0,
+      "difference_pct": 0.0118,
+      "source": "Bank of Japan official workbook · Reserve balances",
+      "interpretation": "Semantically aligned official series; suitable for live direction/context but not certified as the original runtime vintage."
+    },
+    "CHF.credit": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "B/C",
+      "proxy_as_of": "2026-07",
+      "proxy_value": 408640.0,
+      "official_runtime_reference": 400255.9803935034,
+      "absolute_difference": 8384.0196064966,
+      "source": "SNB cube bakredinausbm · best identified official dimensional series AV1 | A | T1 | B",
+      "interpretation": "Use for direction/momentum/turning-point analysis; do not treat the absolute level as runtime-equivalent."
+    },
+    "CHF.sight_deposits": {
+      "status": "ESTIMATED_ACTIVE",
+      "confidence": "C",
+      "proxy_as_of": "2026-07",
+      "proxy_value": 404247.6214390011,
+      "official_runtime_reference": 420858.97054532,
+      "absolute_difference": 16611.3491063189,
+      "source": "SNB Data Portal · best identified official sight-deposit variant U_T_T_A40",
+      "interpretation": "Use for direction/momentum/turning-point analysis only; level mismatch remains explicit."
+    },
+    "BRENT.market_proxy": {
+      "status": "MARKET_PROXY_READY_NO_LIVE_VALUE",
+      "confidence": "A_FOR_DIRECTION_ONLY",
+      "value": null,
+      "change_1d_pct": null,
+      "change_1w_pct": null,
+      "source": "ICE Brent futures — connector/source not yet reproducibly wired into repository",
+      "interpretation": "No numeric proxy is emitted until a reproducible current futures source is connected. Canonical EIA Brent spot remains unchanged and fail-closed when stale."
+    }
+  },
+  "governance": {
+    "core_score_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "forward_logger_effect": "NONE",
+    "backtest_eligible_as_official": false
+  }
+}
