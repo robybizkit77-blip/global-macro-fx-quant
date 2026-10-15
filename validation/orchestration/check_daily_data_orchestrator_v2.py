@@ -17,18 +17,25 @@ def main() -> None:
     c = json.loads(CONTRACT.read_text())
     assert c["schema"] == "GMFQ_DAILY_DATA_ORCHESTRATOR_V2"
     assert c["timezone"] == "Europe/Rome"
+    assert c["target_local_times"] == {
+        "premorning": "07:45",
+        "morning": "09:10",
+        "close": "18:30",
+        "night": "00:50",
+    }
     assert c["rules"]["strict_sequence"] is True
     assert c["rules"]["stop_on_child_failure"] is True
     assert c["rules"]["duplicate_collectors_forbidden"] is True
     assert c["rules"]["core_scoring_effect"] == "NONE"
     assert c["rules"]["official_promotion_effect"] == "NONE"
+    assert c["rules"]["premorning_avoids_not_yet_ready_sources"] is True
     assert c["separate_cadences"]["COT"] == "cot-persistent-weekly-v1.yml"
 
     expected_suffix = [
         "final-e2e-certification-gate-v3.yml",
         "publish-dashboard-pages-v1.yml",
     ]
-    for phase in ("morning", "close", "night"):
+    for phase in ("premorning", "morning", "close", "night"):
         items = c["phases"][phase]
         assert items[-2:] == expected_suffix, (phase, items)
         assert len(items) == len(set(items)), (phase, items)
@@ -41,15 +48,29 @@ def main() -> None:
             if "workflow_dispatch:" not in text:
                 fail(f"child workflow is not dispatchable: {child}")
 
+    assert c["phases"]["premorning"] == [
+        "rates-persistent-daily-v1.yml",
+        "cb-pricing-persistent-daily-v1.yml",
+        "final-e2e-certification-gate-v3.yml",
+        "publish-dashboard-pages-v1.yml",
+    ]
+    assert "macro-persistent-daily-v1.yml" not in c["phases"]["premorning"]
+    assert "ois-estimated-snapshot-repricing-v1.yml" not in c["phases"]["premorning"]
+    assert "chf-residual-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
+    assert "jpy-reserve-balances-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
+
     text = WORKFLOW.read_text()
     required_markers = [
         "name: Daily Data Orchestrator V2",
         "actions: write",
         "Europe/Rome",
         "dispatch_and_wait",
-        "macro-persistent-daily-v1.yml",
+        "45 5 * * 1-5",
+        "45 6 * * 1-5",
+        "phase=premorning",
         "rates-persistent-daily-v1.yml",
         "cb-pricing-persistent-daily-v1.yml",
+        "macro-persistent-daily-v1.yml",
         "ois-estimated-snapshot-repricing-v1.yml",
         "price-persistent-daily-v1.yml",
         "vix-persistent-apply-v1.yml",
@@ -66,6 +87,7 @@ def main() -> None:
         "status": "PASS",
         "schema": c["schema"],
         "phases": {k: len(v) for k, v in c["phases"].items()},
+        "target_local_times": c["target_local_times"],
         "cot": "SEPARATE_WEEKLY",
         "core_scoring_effect": "NONE",
         "official_promotion_effect": "NONE",
