@@ -54,4 +54,3 @@ jobs:
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node inflationlabour-structure.js
-EOF
