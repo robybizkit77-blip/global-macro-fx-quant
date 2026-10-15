@@ -18,9 +18,18 @@
         "sizing_effect": "NONE"
       },
       "horizons": {
-        "12m": {"policy_delta_bp": 69.5, "rate": 0.695},
-        "3m": {"policy_delta_bp": 6.0, "rate": 0.06},
-        "6m": {"policy_delta_bp": 27.5, "rate": 0.275}
+        "12m": {
+          "policy_delta_bp": 69.5,
+          "rate": 0.695
+        },
+        "3m": {
+          "policy_delta_bp": 6.0,
+          "rate": 0.06
+        },
+        "6m": {
+          "policy_delta_bp": 27.5,
+          "rate": 0.275
+        }
       },
       "instrument": "ICE Three-Month SARON Index Futures",
       "note": "Secondary-price implementation because ICE public expiry page exposes contract maturities but not the live settlement table.",
@@ -49,9 +58,18 @@
         "sizing_effect": "NONE"
       },
       "horizons": {
-        "12m": {"policy_delta_bp": 88.0, "rate": 3.38},
-        "3m": {"policy_delta_bp": 32.0, "rate": 2.82},
-        "6m": {"policy_delta_bp": 64.0, "rate": 3.14}
+        "12m": {
+          "policy_delta_bp": 88.0,
+          "rate": 3.38
+        },
+        "3m": {
+          "policy_delta_bp": 32.0,
+          "rate": 2.82
+        },
+        "6m": {
+          "policy_delta_bp": 64.0,
+          "rate": 3.14
+        }
       },
       "instrument": "Eurex Three-Month Euro STR Futures",
       "note": "Recent secondary quote; preferred over the stale pre-10-Sep ECB bulletin snapshot for current curve shape.",
@@ -80,9 +98,18 @@
         "sizing_effect": "NONE"
       },
       "horizons": {
-        "12m": {"policy_delta_bp": null, "rate": null},
-        "3m": {"policy_delta_bp": 25.0, "rate": 3.0},
-        "6m": {"policy_delta_bp": null, "rate": null}
+        "12m": {
+          "policy_delta_bp": null,
+          "rate": null
+        },
+        "3m": {
+          "policy_delta_bp": 25.0,
+          "rate": 3.0
+        },
+        "6m": {
+          "policy_delta_bp": null,
+          "rate": null
+        }
       },
       "instrument": "RBNZ-reported market pricing / NZ interest-rate market",
       "note": "Official RBNZ market-pricing point retained. ASX NZ 90-day bank bill futures are not mapped mechanically into OCR because bank-bill/FRA pricing includes non-policy spread components.",
@@ -111,9 +138,18 @@
         "sizing_effect": "NONE"
       },
       "horizons": {
-        "12m": {"policy_delta_bp": 59.0, "rate": 4.465},
-        "3m": {"policy_delta_bp": 12.5, "rate": 4.0},
-        "6m": {"policy_delta_bp": 31.0, "rate": 4.185}
+        "12m": {
+          "policy_delta_bp": 59.0,
+          "rate": 4.465
+        },
+        "3m": {
+          "policy_delta_bp": 12.5,
+          "rate": 4.0
+        },
+        "6m": {
+          "policy_delta_bp": 31.0,
+          "rate": 4.185
+        }
       },
       "instrument": "CBOT 30-Day Federal Funds Futures",
       "note": "Secondary quote layer: valid for curve shape, but not promoted to official-current until direct CME settlement is captured.",
