@@ -1,0 +1,66 @@
+name: Final End-to-End Certification Gate V3
+
+on:
+  pull_request:
+    paths:
+      - 'validation/run_final_e2e_certification_gate_v3.py'
+      - 'validation/run_final_e2e_certification_gate_v2.py'
+      - 'validation/finalization/**'
+      - 'validation/cb_pricing/**'
+      - 'validation/estimated/**'
+      - 'validation/beta/**'
+      - 'validation/forward/**'
+      - 'live_data/sections/CB_PRICING_ESTIMATED.json'
+      - 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'
+      - 'live_data/sections/OIS_DATA.json'
+      - 'live_data/sections/NATIVE_CB_DATA.json'
+      - 'live_data/manifest.v2.json'
+      - '.github/workflows/final-e2e-certification-gate-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-e2e-v3:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Snapshot official runtime surfaces
+        run: |
+          sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+          sha256sum live_data/sections/NATIVE_CB_DATA.json > /tmp/native_cb.before.sha256
+          sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
+      - name: Run final system alignment gate V3
+        run: |
+          set -euo pipefail
+          python validation/run_final_e2e_certification_gate_v3.py | tee /tmp/final-e2e-v3.json
+      - name: Verify receipt and official zero-mutation
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/final-e2e-v3.json'))
+          assert d['status']=='PASS', d
+          assert d['operational_state']=='READY_WITH_DOCUMENTED_EXPECTED_GAPS', d
+          assert d['v1_engine_freeze_ready'] is True, d
+          assert d['official_runtime']['documented_expected_gaps']==7, d
+          assert d['official_runtime']['silent_proxy_promotion'] is False, d
+          assert d['estimated_layers']['cb_pricing']['deterministic_snapshot_aligned'] is True, d
+          assert d['estimated_layers']['cb_pricing']['core_effect']=='NONE', d
+          assert d['estimated_layers']['residual_gaps']['core_effect']=='NONE', d
+          assert d['estimated_layers']['residual_gaps']['brent_live_value'] is False, d
+          print('FINAL_E2E_V3_PASS')
+          PY
+          sha256sum -c /tmp/ois.before.sha256
+          sha256sum -c /tmp/native_cb.before.sha256
+          sha256sum -c /tmp/manifest.before.sha256
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-e2e-certification-gate-v3
+          path: /tmp/final-e2e-v3.json
+          if-no-files-found: error
