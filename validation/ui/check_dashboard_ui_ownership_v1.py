@@ -32,6 +32,7 @@ def main() -> None:
     currencies = (ROOT / "dashboard/currencies-operational-v1.js").read_text()
     overview_asof = (ROOT / "dashboard/overview-asof-operational-v1.js").read_text()
     ois = (ROOT / "dashboard/ois-operational-monitor-v1.js").read_text()
+    cbdesk = (ROOT / "dashboard/cbdesk-operational-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
@@ -43,6 +44,7 @@ def main() -> None:
         "dashboard/currencies-operational-v1.js",
         "dashboard/overview-asof-operational-v1.js",
         "dashboard/ois-operational-monitor-v1.js",
+        "dashboard/cbdesk-operational-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
         must(src in index, f"index missing dynamic module {src}")
@@ -84,6 +86,14 @@ def main() -> None:
     must("core_effect:'NONE'" in pairs, "pairs must declare zero core effect")
     must("PAIR_COVERAGE_INCOMPLETE" in pairs, "pairs must fail closed on incomplete coverage")
 
+    must("GMFQ_CBDESK_OPERATIONAL_UI_V1" in cbdesk, "CB Desk operational schema missing")
+    must("OIS_OPERATIONAL_VIEW.json" in cbdesk, "CB Desk must read operational OIS authority")
+    must("corePolicyIntegrity" in cbdesk, "CB Desk must protect canonical policy integrity")
+    must("rate2YSeries" in cbdesk, "CB Desk must keep 2Y confirmation separate")
+    must("core_effect:'NONE'" in cbdesk, "CB Desk must declare zero core effect")
+    must("NON OIS" in cbdesk, "CB Desk must label NZD proxy as NON OIS")
+    must("GREEN_OFFICIAL" in cbdesk and "GREEN_ESTIMATED" in cbdesk, "CB Desk must preserve official/estimated distinction")
+
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must('data-gmfq-operational="calendar"' in cal, "calendar owner marker missing")
@@ -109,17 +119,19 @@ def main() -> None:
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
-    for view in ("overview","currencies","ratesdesk"):
+    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk")
+    for view in hybrid:
         must(views[view]["owner_type"] == "HYBRID", f"{view} owner type")
     for view, spec in views.items():
         if spec["owner_type"] == "PAYLOAD": must(spec.get("migration_state") == "KEEP", f"payload owner migration state {view}")
 
     print(json.dumps({
         "status":"PASS","schema":d["schema"],"views":len(views),
-        "dynamic_replace":list(dynamic),"hybrid":["overview","currencies","ratesdesk"],
+        "dynamic_replace":list(dynamic),"hybrid":list(hybrid),
         "freshness_authority":{
             "overview_asof":"GMFQ_ECB_PRICE_AUDIT.as_of; CHF rates keeps SNB last validated snapshot",
             "currencies":"deriveCurrencyState + canonical renderCurrency + current runtime layers",
+            "cbdesk":"NATIVE_CB_DATA policy + OIS_OPERATIONAL_VIEW pricing + rate2YSeries confirmation",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",

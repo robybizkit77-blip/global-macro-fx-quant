@@ -1,0 +1,82 @@
+name: CB Desk Operational UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/cbdesk-operational-v1.js'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/cbdesk-operational-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/cbdesk-operational-v1.js'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
+      - '.github/workflows/cbdesk-operational-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/cbdesk-operational-ui.log 2>&1 &
+          sleep 2
+      - name: Verify CB Desk desktop mobile
+        run: |
+          cat > cbdesk-operational-gate.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          const STALE=/Pricing non comparabile|OIS non confrontabile|Nessuna curva OIS\/forward omogenea disponibile/;
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>['ACTIVE','FAIL'].includes(window.GMFQ_CBDESK_OPERATIONAL?.status),null,{timeout:120000});
+            const bootState=await page.evaluate(()=>window.GMFQ_CBDESK_OPERATIONAL);
+            if(bootState?.status!=='ACTIVE') throw new Error(label+' CB boot state '+JSON.stringify(bootState));
+            await page.evaluate(()=>window.showView?.('cbdesk'));
+            for(const wanted of CCYS){
+              const ok=await page.evaluate(w=>{const b=document.querySelector(`#v234CurrencyCards .v234CurrencyCard[data-c="${w}"]`);if(!b)return false;b.click();return true;},wanted);
+              if(!ok)throw new Error(label+' missing CB selector '+wanted);
+              await page.waitForTimeout(180);
+              const snap=await page.evaluate(()=>({audit:window.gmfqCbDeskOperationalAudit?.(),country:String(document.getElementById('v234CountryName')?.textContent||''),quality:String(document.getElementById('v234PricingQuality')?.textContent||''),market:String(document.getElementById('v234Market')?.textContent||''),why:String(document.getElementById('v234MarketWhy')?.textContent||''),text:String(document.getElementById('cbdesk')?.innerText||''),pricingCards:document.querySelectorAll('#v234PricingGrid [data-gmfq-cb-pricing]').length,kind:document.getElementById('cbdesk')?.dataset?.gmfqCbPricingKind||null}));
+              if(snap.audit?.schema!=='GMFQ_CBDESK_OPERATIONAL_UI_V1'||snap.audit?.status!=='ACTIVE'||snap.audit?.core_effect!=='NONE')throw new Error(label+' bad CB audit '+wanted+' '+JSON.stringify(snap.audit));
+              if(!snap.country.includes(wanted))throw new Error(label+' CB selector/title desync '+wanted+' '+snap.country);
+              if(STALE.test(snap.text))throw new Error(label+' stale CB pricing narrative '+wanted);
+              if(snap.pricingCards!==3)throw new Error(label+' CB pricing cards '+wanted+' '+snap.pricingCards);
+              if(wanted==='NZD'){
+                if(snap.kind!=='NON_OIS'||!/NON OIS/.test(snap.quality+' '+snap.why))throw new Error(label+' NZD proxy labeling '+JSON.stringify(snap));
+              }else if(!['OFFICIAL','ESTIMATED'].includes(snap.kind))throw new Error(label+' CB pricing kind '+wanted+' '+snap.kind);
+              if(!snap.market||!snap.why)throw new Error(label+' empty CB market narrative '+wanted);
+            }
+            const final=await page.evaluate(()=>window.gmfqCbDeskOperationalAudit?.());
+            if(final?.policy_integrity?.ok!==true||final?.ois_summary?.operational_green!==8)throw new Error(label+' CB policy/OIS coverage '+JSON.stringify(final));
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x)))throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();console.log(label,'CBDESK_OPERATIONAL_UI_PASS');
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('CBDESK_OPERATIONAL_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cbdesk-operational-gate.js
