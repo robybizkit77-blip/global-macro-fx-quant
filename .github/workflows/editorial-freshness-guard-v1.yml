@@ -1,0 +1,96 @@
+name: Editorial Freshness Guard V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'dashboard/editorial-freshness-guard-v1.js'
+      - '.github/workflows/editorial-freshness-guard-v1.yml'
+      - '.github/workflows/publish-dashboard-pages-v1.yml'
+  push:
+    branches:
+      - 'fix-editorial-freshness-*'
+      - main
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'dashboard/editorial-freshness-guard-v1.js'
+      - '.github/workflows/editorial-freshness-guard-v1.yml'
+      - '.github/workflows/publish-dashboard-pages-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start local dashboard server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/editorial-freshness-server.log 2>&1 &
+          echo $! > /tmp/editorial-freshness-server.pid
+          sleep 2
+      - name: Verify fail-closed editorial freshness state
+        run: |
+          mkdir -p editorial-freshness-evidence
+          cat > editorial-freshness-audit.js <<'EOF'
+          const { chromium }=require('playwright');
+          const fs=require('fs');
+          const IDS=['overview','calendar','news'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            page.on('pageerror',e=>errors.push(String(e)));
+            const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(!response||!response.ok())throw new Error(label+' HTTP load failed');
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>!!window.GMFQ_EDITORIAL_FRESHNESS?.evaluated_at,null,{timeout:30000});
+            const audit=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
+            if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V1')throw new Error(label+' freshness schema missing');
+            if(!['PASS_FAIL_CLOSED_STALE','PASS_FRESH'].includes(audit.status))throw new Error(label+' freshness status '+audit.status);
+            for(const id of IDS){
+              const s=audit.sections?.[id];
+              if(!s)throw new Error(label+' missing section state '+id);
+              if(!['FRESH','STALE'].includes(s.status))throw new Error(label+' unverifiable freshness '+id+': '+JSON.stringify(s));
+              await page.evaluate(v=>window.showView?.(v),id);
+              await page.waitForTimeout(150);
+              const r=await page.evaluate(id=>{
+                const el=document.getElementById(id);const banner=el?.querySelector(':scope > .gmfqEditorialFreshnessBanner');
+                const box=banner?.getBoundingClientRect();
+                return {status:el?.dataset?.gmfqEditorialFreshness||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0};
+              },id);
+              if(r.status==='STALE'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS FAIL-CLOSED')))throw new Error(label+' stale section not visibly fail-closed '+id+': '+JSON.stringify(r));
+              if(r.status==='FRESH'&&r.banner)throw new Error(label+' fresh section should not show stale banner '+id);
+              await page.locator('#'+id).screenshot({path:`editorial-freshness-evidence/${label}-${id}.png`});
+            }
+            if(errors.length)throw new Error(label+' console/page errors: '+errors.join(' | '));
+            fs.writeFileSync(`editorial-freshness-evidence/${label}.json`,JSON.stringify(audit,null,2));
+            console.log(label,JSON.stringify(audit,null,2));
+            await browser.close();
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');})().catch(e=>{console.error('::error title=Editorial freshness guard::'+String(e.message||e));process.exit(1)});
+          EOF
+          node editorial-freshness-audit.js
+      - name: Upload freshness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-freshness-guard-v1
+          path: |
+            editorial-freshness-evidence/**
+            /tmp/editorial-freshness-server.log
