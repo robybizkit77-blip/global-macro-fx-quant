@@ -7,6 +7,9 @@ on:
       - 'index.html'
       - 'payload/**'
       - 'dashboard/editorial-freshness-guard-v1.js'
+      - 'dashboard/calendar-news-operational-v1.js'
+      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - '.github/workflows/editorial-freshness-guard-v1.yml'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
   push:
@@ -17,6 +20,9 @@ on:
       - 'index.html'
       - 'payload/**'
       - 'dashboard/editorial-freshness-guard-v1.js'
+      - 'dashboard/calendar-news-operational-v1.js'
+      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - '.github/workflows/editorial-freshness-guard-v1.yml'
       - '.github/workflows/publish-dashboard-pages-v1.yml'
   workflow_dispatch:
@@ -59,6 +65,9 @@ jobs:
             const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             if(!response||!response.ok())throw new Error(label+' HTTP load failed');
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            if(await page.evaluate(()=>!!document.getElementById('gmfq-calendar-news-operational-ui'))){
+              await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
+            }
             await page.waitForFunction(()=>!!window.GMFQ_EDITORIAL_FRESHNESS?.evaluated_at,null,{timeout:30000});
             const audit=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
             if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V1')throw new Error(label+' freshness schema missing');
@@ -67,13 +76,15 @@ jobs:
               const s=audit.sections?.[id];
               if(!s)throw new Error(label+' missing section state '+id);
               if(!['FRESH','STALE'].includes(s.status))throw new Error(label+' unverifiable freshness '+id+': '+JSON.stringify(s));
+              if((id==='calendar'||id==='news')&&window!==undefined){ /* state checked in browser below */ }
               await page.evaluate(v=>window.showView?.(v),id);
               await page.waitForTimeout(150);
               const r=await page.evaluate(id=>{
                 const el=document.getElementById(id);const banner=el?.querySelector(':scope > .gmfqEditorialFreshnessBanner');
                 const box=banner?.getBoundingClientRect();
-                return {status:el?.dataset?.gmfqEditorialFreshness||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0};
+                return {status:el?.dataset?.gmfqEditorialFreshness||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0,operational:!!el?.querySelector('[data-gmfq-operational]')};
               },id);
+              if(r.operational && (id==='calendar'||id==='news') && r.status!=='FRESH')throw new Error(label+' operational section must be fresh '+id+': '+JSON.stringify(r));
               if(r.status==='STALE'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS FAIL-CLOSED')))throw new Error(label+' stale section not visibly fail-closed '+id+': '+JSON.stringify(r));
               if(r.status==='FRESH'&&r.banner)throw new Error(label+' fresh section should not show stale banner '+id);
               await page.locator('#'+id).screenshot({path:`editorial-freshness-evidence/${label}-${id}.png`});
