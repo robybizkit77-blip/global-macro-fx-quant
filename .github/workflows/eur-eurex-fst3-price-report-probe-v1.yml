@@ -1,0 +1,29 @@
+name: EUR Eurex FST3 Price Report Probe V1
+
+on:
+  push:
+    branches:
+      - validation-eur-eurex-fst3-price-report-probe-v1-2026-10-15
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official Eurex Product and Price Report
+        run: python validation/cb_pricing/probe_eur_eurex_fst3_price_report_v1.py
+      - name: Upload diagnostic receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-eurex-fst3-price-report-probe-receipt
+          path: validation/cb_pricing/eur_eurex_fst3_price_report_probe_receipt_v1.json
+          if-no-files-found: error
