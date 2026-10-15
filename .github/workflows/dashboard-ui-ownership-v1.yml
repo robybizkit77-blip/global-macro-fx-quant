@@ -59,6 +59,13 @@ jobs:
           const fs = require('fs');
           const registry = JSON.parse(fs.readFileSync('validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json','utf8'));
           const VIEWS=Object.keys(registry.views);
+          const AUTH={
+            wow:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
+            news:'NEWS_PULSE_OPERATIONAL.content_as_of',
+            risk:'MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
+          };
           async function run(viewport,label){
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport});
@@ -67,6 +74,8 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:120000});
             await page.waitForFunction(()=>window.GMFQ_TOP_THEMES_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_WHAT_CHANGED_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE',null,{timeout:120000});
             await page.waitForTimeout(700);
             for(const view of VIEWS){
               await page.evaluate(v=>window.showView?.(v),view);
@@ -95,15 +104,15 @@ jobs:
             if(themes.top.length!==4) throw new Error(`${label}: top theme count ${themes.top.length}`);
             const freshness=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
             if(!freshness) throw new Error(`${label}: freshness audit missing`);
-            if(freshness.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V2_OPERATIONAL_AUTHORITY') throw new Error(`${label}: freshness schema ${freshness.schema}`);
+            if(freshness.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V3_OPERATIONAL_AUTHORITY') throw new Error(`${label}: freshness schema ${freshness.schema}`);
             if(freshness.legacy_authority!=='NONE') throw new Error(`${label}: legacy freshness authority ${freshness.legacy_authority}`);
-            if(freshness.sections?.calendar?.authority!=='CALENDAR_OPERATIONAL_VIEW.generated_at_utc') throw new Error(`${label}: calendar freshness authority drift`);
-            if(freshness.sections?.news?.authority!=='NEWS_PULSE_OPERATIONAL.content_as_of') throw new Error(`${label}: news freshness authority drift`);
-            if(freshness.sections?.calendar?.status!=='FRESH') throw new Error(`${label}: calendar freshness ${JSON.stringify(freshness.sections?.calendar)}`);
-            if(freshness.sections?.news?.status!=='FRESH') throw new Error(`${label}: news freshness ${JSON.stringify(freshness.sections?.news)}`);
+            for(const [id,authority] of Object.entries(AUTH)){
+              if(freshness.sections?.[id]?.authority!==authority) throw new Error(`${label}: ${id} freshness authority drift ${JSON.stringify(freshness.sections?.[id])}`);
+              if(freshness.sections?.[id]?.status!=='FRESH') throw new Error(`${label}: ${id} freshness ${JSON.stringify(freshness.sections?.[id])}`);
+            }
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
             await browser.close();
-            console.log(label,'OWNERSHIP_PASS','TOP_THEMES_OPERATIONAL_PASS','FRESHNESS_OPERATIONAL_AUTHORITY_PASS');
+            console.log(label,'OWNERSHIP_PASS','TOP_THEMES_OPERATIONAL_PASS','FRESHNESS_V3_OPERATIONAL_AUTHORITY_PASS');
           }
           (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('DASHBOARD_UI_OWNERSHIP_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
           EOF
