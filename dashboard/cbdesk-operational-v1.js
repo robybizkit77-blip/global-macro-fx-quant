@@ -39,8 +39,7 @@ function pathState(r,c){
 }
 function patchChangeMap(q,p){
  const map=document.getElementById('v234ChangeMap');if(!map)return;
- const nodes=[...map.children];
- const card=nodes.find(x=>/LIMITE DEL DATO|OIS non confrontabile|curva OIS\/forward/i.test(x.innerText||''));
+ const card=[...map.querySelectorAll('div')].find(x=>/LIMITE DEL DATO|OIS non confrontabile|curva OIS\/forward/i.test(x.innerText||'')&&x.querySelector('b')&&x.querySelector('small'));
  if(!card)return;
  const b=card.querySelector('b');const sm=card.querySelector('small');
  if(b)b.textContent=q.label;
@@ -50,7 +49,7 @@ function patchChangeMap(q,p){
 function patchPolicyRead(p){
  const el=document.getElementById('v234PolicyRead');if(!el)return;
  let t=String(el.textContent||'');
- t=t.replace(/Nessuna curva OIS\/forward omogenea disponibile\. Il front-end osservato \(2Y[^.]*\) è soltanto una lettura separata del repricing\./g,p.detail+' Il 2Y resta una conferma separata, non sostituisce il pricing policy.');
+ t=t.replace(/Nessuna curva OIS\/forward omogenea disponibile\.[\s\S]*?è soltanto una lettura separata del repricing\./g,p.detail+' Il 2Y resta una conferma separata, non sostituisce il pricing policy.');
  el.textContent=t;
 }
 function patchPricingGrid(c,r,p,q){
