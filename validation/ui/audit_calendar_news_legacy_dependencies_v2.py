@@ -14,7 +14,6 @@ TOKENS = [
     "LIVE_REFRESH_20260930_AM",
     "GMFQ_PROPAGATION_QA",
     "GMFQ_E2E_LIVE_ITALY",
-    "gmfq-runtime-refresh-fix-20260930",
     "renderRealCalendar",
     "renderNewsPulse",
     "2026-09-30",
@@ -30,14 +29,18 @@ def combined_payload() -> str:
     return "\n".join(p.read_text(errors="replace") for p in sorted(PAYLOAD.glob("part-*.txt")))
 
 
+def script_pattern(script_id: str) -> re.Pattern[str]:
+    return re.compile(
+        rf'<script\s+id=["\']{re.escape(script_id)}["\'][^>]*>[\s\S]*?</script>',
+        re.IGNORECASE,
+    )
+
+
 def strip_quarantined(text: str) -> tuple[str, dict[str, int]]:
     counts: dict[str, int] = {}
     out = text
     for script_id in QUARANTINED_IDS:
-        pattern = re.compile(
-            rf'<script\s+id=["\']{re.escape(script_id)}["\'][^>]*>[\s\S]*?</script>',
-            re.IGNORECASE,
-        )
+        pattern = script_pattern(script_id)
         matches = pattern.findall(out)
         counts[script_id] = len(matches)
         assert len(matches) == 1, (script_id, len(matches))
@@ -59,24 +62,15 @@ def main() -> None:
     index = INDEX.read_text(errors="replace")
     for script_id in QUARANTINED_IDS:
         assert f"'{script_id}'" in index, script_id
+        # The marker text may retain the identifier, but no executable script tag may survive.
+        assert not script_pattern(script_id).search(runtime_equivalent), script_id
     assert "GMFQ_LEGACY_QUARANTINED:" in index
 
-    # The three stale QA/mutator authorities must be completely absent from the
-    # runtime-equivalent payload after applying the production quarantine.
+    # Named global QA authorities must disappear entirely from runtime-equivalent content.
     assert runtime_counts["GMFQ_PROPAGATION_QA"] == 0, runtime_counts
     assert runtime_counts["GMFQ_E2E_LIVE_ITALY"] == 0, runtime_counts
-    assert runtime_counts["gmfq-runtime-refresh-fix-20260930"] == 0, runtime_counts
 
-    remaining = {
-        k: v
-        for k, v in runtime_counts.items()
-        if v > 0
-        and k not in {
-            "GMFQ_PROPAGATION_QA",
-            "GMFQ_E2E_LIVE_ITALY",
-            "gmfq-runtime-refresh-fix-20260930",
-        }
-    }
+    remaining = {k: v for k, v in runtime_counts.items() if v > 0}
     deletion_allowed = not any(
         runtime_counts[k] > 0
         for k in (
@@ -96,6 +90,10 @@ def main() -> None:
         "runtime_equivalent_counts": runtime_counts,
         "removed_from_runtime_counts": removed_counts,
         "quarantined_script_instances": quarantine_counts,
+        "quarantined_script_tags_remaining": {
+            script_id: len(script_pattern(script_id).findall(runtime_equivalent))
+            for script_id in QUARANTINED_IDS
+        },
         "remaining_runtime_legacy": remaining,
         "migration_policy": {
             "visible_owner": "DYNAMIC_OPERATIONAL_MODULES",
