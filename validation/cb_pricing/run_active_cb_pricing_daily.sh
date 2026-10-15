@@ -83,7 +83,6 @@ collect_build() {
     touch "$WORKDIR/$c.failed"
   fi
 }
-
 for c in "${CURRENCIES[@]}"; do collect_build "$c"; done
 
 validate_candidate_contract() {
@@ -140,11 +139,20 @@ bo=json.loads((root/'OIS.baseline.json').read_text()); ao=json.loads(pathlib.Pat
 bn=json.loads((root/'NATIVE.baseline.json').read_text()); an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
 co=[k for k in bo['currencies'] if bo['currencies'][k] != ao['currencies'][k]]
 cn=[k for k in bn if bn[k] != an[k]]
-if co != [c] or cn != [c]: raise SystemExit(f'{c} semantic scope failure OIS={co} NATIVE={cn}')
+if co != cn:
+    raise SystemExit(f'{c} OIS/NATIVE scope disagreement OIS={co} NATIVE={cn}')
+if co not in ([], [c]):
+    raise SystemExit(f'{c} semantic scope failure OIS={co} NATIVE={cn}')
 changed=sorted(subprocess.check_output(['git','diff','--name-only'], text=True).splitlines())
 expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
-if changed != expected: raise SystemExit(f'{c} file scope failure {changed}')
-print(c, 'ISOLATED_DRY_RUN_PASS')
+if co == []:
+    if changed != []:
+        raise SystemExit(f'{c} no-change semantic result has unexpected file delta {changed}')
+    print(c, 'ISOLATED_DRY_RUN_NO_CHANGE_PASS')
+else:
+    if changed != expected:
+        raise SystemExit(f'{c} file scope failure {changed}')
+    print(c, 'ISOLATED_DRY_RUN_UPDATE_PASS')
 PY
   ); then echo PASS > "$WORKDIR/$c.dryrun.txt"; else
     echo 'isolated dry-run failed' > "$WORKDIR/$c.error.txt"; touch "$WORKDIR/$c.failed"
