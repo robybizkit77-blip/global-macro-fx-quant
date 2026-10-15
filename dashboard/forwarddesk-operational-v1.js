@@ -1,9 +1,10 @@
 (()=>{
   'use strict';
+  function safeCall(fn){try{return typeof fn==='function'?fn():null;}catch(e){return null;}}
   function audit(){
     const root=document.getElementById('forwarddesk');
-    const summary=typeof window.forwardValidationSummary==='function'?window.forwardValidationSummary():null;
-    const integrity=typeof window.forwardLedgerIntegrity==='function'?window.forwardLedgerIntegrity():null;
+    const summary=safeCall(window.forwardValidationSummary);
+    const integrity=safeCall(window.forwardLedgerIntegrity);
     const helpers={
       pathRisk:typeof window.gmfqForwardPathRiskStats,
       snapshotBasket:typeof window.gmfqForwardSnapshotBasketSeries,
@@ -35,7 +36,7 @@
     const tick=()=>{
       n++;
       try{
-        if(window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true&&typeof window.forwardLedgerIntegrity==='function'&&typeof window.forwardValidationSummary==='function'){
+        if(window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true&&typeof window.gmfqForwardPathRiskStats==='function'&&typeof window.gmfqForwardSnapshotBasketSeries==='function'&&typeof window.gmfqForwardPairedOverlayStats==='function'){
           certify();return;
         }
       }catch(e){window.GMFQ_FORWARDDESK_OPERATIONAL={status:'WAITING',schema:'GMFQ_FORWARDDESK_OPERATIONAL_UI_V1',core_effect:'NONE',error:String(e?.message||e)};}
