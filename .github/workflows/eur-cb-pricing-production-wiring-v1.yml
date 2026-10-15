@@ -1,0 +1,140 @@
+name: EUR CB Pricing Production Wiring V1
+
+on:
+  push:
+    branches:
+      - promotion-eur-cb-pricing-official-eurex-v1-2026-10-15
+    paths:
+      - '.github/workflows/eur-cb-pricing-production-wiring-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+      - name: Wire EUR into canonical readiness and production daily paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+
+          # Canonical readiness: derive EUR entry from already-certified production artifacts.
+          p=pathlib.Path('validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json')
+          d=json.loads(p.read_text())
+          d['as_of']='2026-10-15'
+          for key in ('active_currencies','source_collector_ready','candidate_builder_ready','dry_run_apply_certified','daily_ready'):
+              vals=list(d['summary'][key])
+              if 'EUR' not in vals: vals.append('EUR')
+              d['summary'][key]=sorted(vals)
+          d['summary']['active_but_not_daily_ready']=[]
+          d['summary']['key_distinction']='AUD, CAD, EUR, GBP and JPY are DAILY_READY: canonical official-source collectors, candidate builders and currency-only deterministic dry-run apply paths are on the production branch and certified. DAILY_READY never means automatic publication; live runtime promotion remains gated and explicit.'
+          d['currencies']['EUR']={
+            'status':'DAILY_READY',
+            'source':'Eurex Three-Month Euro STR Futures (FST3)',
+            'validated_runtime':True,
+            'canonical_refresh_code_on_main':False,
+            'source_collector_ready':True,
+            'candidate_builder_ready':True,
+            'dry_run_apply_certified':True,
+            'automatic_publication':False,
+            'collector':'validation/cb_pricing/collect_eur_eurex_fst3.py',
+            'candidate_builder':'validation/cb_pricing/build_eur_eurex_fst3_candidate.py',
+            'apply':'validation/cb_pricing/apply_eur_eurex_fst3_candidate.py',
+            'validation_workflow':'.github/workflows/eur-eurex-fst3-production-promotion-v1.yml',
+            'contract_mapping':{'3m':'20261216','6m':'20270317','12m':'20270915'},
+            'methodology':'Direct official Eurex FST3 daily settlement prices transformed as 100 minus settlement; fixed Dec-26/Mar-27/Sep-27 quarterly buckets; no interpolation.',
+            'weekly_reference_rule':'Use the nearest valid official Eurex busDate on or before as_of minus 5 calendar days; never invent or interpolate a missing weekly point.',
+            'regression_benchmark':{
+              'as_of':'2026-10-14','status':'PASS_EXACT_CERTIFIED_09_13_14_OCT_VALUES_AND_CHANGES',
+              'current':{'3m':2.7175,'6m':2.9875,'12m':3.2075},
+              't_minus_1':{'date':'2026-10-13','3m':2.72,'6m':2.99,'12m':3.2225},
+              'weekly_reference':{'date':'2026-10-09','3m':2.70,'6m':2.955,'12m':3.1875},
+              'change_1d_bp':{'3m':-0.25,'6m':-0.25,'12m':-1.5},
+              'change_1w_bp':{'3m':1.75,'6m':3.25,'12m':2.0}
+            },
+            'guarantees':['official Eurex REST source collection','direct FST3 dSettle prices, 100 minus settlement','fixed Dec-26/Mar-27/Sep-27 quarterly buckets','no interpolation','official T-1 session','official weekly reference under >=5-calendar-day rule','registry-authorized candidate after activation','EUR-only OIS semantic delta','EUR-only NATIVE_CB semantic delta','exact four-file runtime mutation scope in dry run','manifest and live contract validation','runtime no-op roundtrip validation','no automatic publication'],
+            'next_required':'Operational use may collect and dry-run fresh EUR pricing. Any live runtime publication remains separately gated and explicit.'
+          }
+          p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
+
+          # Production dry-run orchestrator.
+          p=pathlib.Path('validation/cb_pricing/run_active_cb_pricing_daily.sh'); s=p.read_text()
+          replacements={
+            'CURRENCIES=(AUD CAD GBP JPY)':'CURRENCIES=(AUD CAD EUR GBP JPY)',
+            "want=['AUD','CAD','GBP','JPY']":"want=['AUD','CAD','EUR','GBP','JPY']",
+            "    GBP)\n      if [[ -f \"$WORKDIR/GBP.failed\" ]]":"    EUR)\n      python3 validation/cb_pricing/collect_eur_eurex_fst3.py --output \"$snapshot\" || rc=$?\n      if [[ $rc -eq 0 ]]; then python3 validation/cb_pricing/build_eur_eurex_fst3_candidate.py --snapshot \"$snapshot\" --output \"$candidate\" || rc=$?; fi\n      ;;\n    GBP)\n      if [[ -f \"$WORKDIR/GBP.failed\" ]]",
+            '    GBP) echo validation/cb_pricing/apply_gbp_boe_ois_candidate.py ;;':'    EUR) echo validation/cb_pricing/apply_eur_eurex_fst3_candidate.py ;;\n    GBP) echo validation/cb_pricing/apply_gbp_boe_ois_candidate.py ;;',
+            "    'GBP':'Europe/London',":"    'EUR':'Europe/Berlin',\n    'GBP':'Europe/London',",
+            "for c in ('AUD','CAD','GBP','JPY'):":"for c in ('AUD','CAD','EUR','GBP','JPY'):"
+          }
+          for old,new in replacements.items():
+              if old not in s: raise SystemExit(f'missing run_active anchor: {old[:80]}')
+              s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # Persistent publisher path: consume the five-currency preflight and apply EUR too.
+          p=pathlib.Path('.github/workflows/cb-pricing-persistent-daily-v1.yml'); s=p.read_text()
+          reps={
+            "assert sorted(d['currencies'])==['AUD','CAD','GBP','JPY'],d":"assert sorted(d['currencies'])==['AUD','CAD','EUR','GBP','JPY'],d",
+            "assert all(d['currencies'][c]['status']=='GREEN' for c in ('AUD','CAD','GBP','JPY')),d":"assert all(d['currencies'][c]['status']=='GREEN' for c in ('AUD','CAD','EUR','GBP','JPY')),d",
+            '- name: Apply all four validated candidates':'- name: Apply all five validated candidates',
+            '          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/cb-pricing-persistent/GBP.candidate.json':'          python3 validation/cb_pricing/apply_eur_eurex_fst3_candidate.py --candidate /tmp/cb-pricing-persistent/EUR.candidate.json > /tmp/cb-pricing-persistent/EUR.apply.json\n          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/cb-pricing-persistent/GBP.candidate.json',
+            "          allowed_ccy=['AUD','CAD','GBP','JPY']":"          allowed_ccy=['AUD','CAD','EUR','GBP','JPY']"
+          }
+          for old,new in reps.items():
+              if old not in s: raise SystemExit(f'missing persistent anchor: {old[:80]}')
+              s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # Operational observation: make EUR code changes trigger it and remove stale wording.
+          p=pathlib.Path('.github/workflows/cb-pricing-daily-operational.yml'); s=p.read_text()
+          anchor="      - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'\n"
+          add=anchor+"      - 'validation/cb_pricing/collect_eur_eurex_fst3.py'\n      - 'validation/cb_pricing/build_eur_eurex_fst3_candidate.py'\n      - 'validation/cb_pricing/apply_eur_eurex_fst3_candidate.py'\n"
+          if anchor not in s: raise SystemExit('missing daily operational EUR insertion anchor')
+          s=s.replace(anchor,add,1).replace('Run all four daily source/candidate/dry-run paths','Run all active daily source/candidate/dry-run paths')
+          p.write_text(s)
+          PY
+
+      - name: Validate static five-currency wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+          d=json.load(open('validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json'))
+          want=['AUD','CAD','EUR','GBP','JPY']
+          assert sorted(d['summary']['active_currencies'])==want,d['summary']
+          assert sorted(d['summary']['daily_ready'])==want,d['summary']
+          assert d['currencies']['EUR']['status']=='DAILY_READY'
+          s=pathlib.Path('validation/cb_pricing/run_active_cb_pricing_daily.sh').read_text()
+          assert 'CURRENCIES=(AUD CAD EUR GBP JPY)' in s
+          assert 'collect_eur_eurex_fst3.py' in s and 'apply_eur_eurex_fst3_candidate.py' in s
+          w=pathlib.Path('.github/workflows/cb-pricing-persistent-daily-v1.yml').read_text()
+          assert "['AUD','CAD','EUR','GBP','JPY']" in w and 'EUR.candidate.json' in w
+          print('EUR_PRODUCTION_WIRING_STATIC_PASS')
+          PY
+          python3 validation/check_cb_pricing_source_registry.py
+          python3 validation/check_live_update_contract.py
+          python3 validation/rebuild_live_data_runtime.py --verify-only
+
+      - name: Commit production wiring to branch with lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH='promotion-eur-cb-pricing-official-eurex-v1-2026-10-15'
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/cb_pricing/ACTIVE_REFRESH_READINESS_2026-10-08.json validation/cb_pricing/run_active_cb_pricing_daily.sh .github/workflows/cb-pricing-persistent-daily-v1.yml .github/workflows/cb-pricing-daily-operational.yml
+          git commit -m 'Wire EUR into daily CB pricing production paths'
+          test "$(git ls-remote origin "refs/heads/$BRANCH" | awk '{print $1}')" = "$GITHUB_SHA"
+          git push origin "HEAD:$BRANCH"
