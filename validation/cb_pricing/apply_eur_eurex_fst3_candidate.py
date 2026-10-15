@@ -34,9 +34,11 @@ def main():
     ng=n['EUR']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}
     ng['pricing_tier']='COMPLETO_OFFICIAL_EUREX_ESTR_HISTORY'; ng['pricing_status']=f"Eurex official €STR futures: 3M {vals['3m']:.4f}%; 6M {vals['6m']:.4f}%; 12M {vals['12m']:.4f}%."; ng['market_3m']=f"{vals['3m']:.4f}%"; ng['market_6m']=f"{vals['6m']:.4f}%"; ng['market_12m']=f"{vals['12m']:.4f}%"; ng['market_pricing']={'as_of':c['as_of'],'instrument':c['instrument'],'quality':'COMPLETO_OFFICIAL_EUREX_ESTR_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Official Eurex FST3 settlements; current, 1D and official weekly-reference history validated.','source':c['source'],'source_url':c['source_url'],'note':c['provenance']['method'],'freshness_status':'CURRENT_VALIDATED'}
     co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
-    if co!=['EUR'] or cn!=['EUR']: raise SystemExit(f'non-EUR semantic delta OIS={co} NATIVE={cn}')
+    if co not in ([],['EUR']) or cn not in ([],['EUR']): raise SystemExit(f'non-EUR semantic delta OIS={co} NATIVE={cn}')
     raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
     if ro!=bo or rn!=bn: raise SystemExit('live sections and payload differ before apply')
+    if not co and not cn:
+        print(json.dumps({'status':'NO_CHANGE','scope':{'OIS':co,'NATIVE_CB':cn},'as_of':c['as_of'],'publication':False},indent=2)); return
     OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))
     print(json.dumps({'status':'PASS','scope':{'OIS':co,'NATIVE_CB':cn},'as_of':c['as_of'],'changed_payload_part':0,'publication':False},indent=2))
 if __name__=='__main__': main()
