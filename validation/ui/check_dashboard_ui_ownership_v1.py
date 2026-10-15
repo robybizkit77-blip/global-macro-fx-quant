@@ -35,6 +35,7 @@ def main() -> None:
     cbdesk = (ROOT / "dashboard/cbdesk-operational-v1.js").read_text()
     liquidity = (ROOT / "dashboard/liquiditydesk-operational-v1.js").read_text()
     cotdesk = (ROOT / "dashboard/cotdesk-operational-v1.js").read_text()
+    forward = (ROOT / "dashboard/forwarddesk-operational-v1.js").read_text()
     freshness = (ROOT / "dashboard/editorial-freshness-guard-v1.js").read_text()
 
     for src in [
@@ -49,6 +50,7 @@ def main() -> None:
         "dashboard/ois-operational-monitor-v1.js",
         "dashboard/cbdesk-operational-v1.js",
         "dashboard/liquiditydesk-operational-v1.js",
+        "dashboard/forwarddesk-operational-v1.js",
         "dashboard/editorial-freshness-guard-v1.js",
     ]:
         must(src in index, f"index missing dynamic module {src}")
@@ -114,6 +116,13 @@ def main() -> None:
     must("preserved_legacy_fields:['open_interest','oi_series']" in cotdesk, "COT must preserve non-reconstructible legacy OI fields")
     must("core_effect:'NONE'" in cotdesk, "COT Desk must declare zero core effect")
 
+    must("GMFQ_FORWARDDESK_OPERATIONAL_UI_V1" in forward, "Forward Desk operational schema missing")
+    must("forwardValidationSummary" in forward, "Forward Desk must read validation summary")
+    must("forwardLedgerIntegrity" in forward, "Forward Desk must enforce ledger integrity")
+    must("gmfqForwardPathRiskStats" in forward and "gmfqForwardSnapshotBasketSeries" in forward and "gmfqForwardPairedOverlayStats" in forward, "Forward helper chain missing")
+    must("OBSERVATIONAL_FORWARD_VALIDATION_ONLY" in forward, "Forward Desk scope must remain observational")
+    must("core_effect:'NONE'" in forward, "Forward Desk must declare zero core effect")
+
     must("cal.innerHTML=calendarHtml(c)" in cal, "calendar is not explicit dynamic owner")
     must("news.innerHTML=newsHtml(n)" in cal, "news is not explicit dynamic owner")
     must('data-gmfq-operational="calendar"' in cal, "calendar owner marker missing")
@@ -139,7 +148,7 @@ def main() -> None:
     for view in dynamic:
         must(views[view]["owner_type"] == "DYNAMIC_REPLACE", f"{view} owner type")
         must(views[view]["legacy_payload_state"] == "SOURCE_PRESENT_NON_OWNER", f"{view} legacy state")
-    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk","liquiditydesk","cot")
+    hybrid = ("overview","currencies","macro","inflationlabour","ratesdesk","cbdesk","liquiditydesk","cot","forwarddesk")
     for view in hybrid:
         must(views[view]["owner_type"] == "HYBRID", f"{view} owner type")
     for view, spec in views.items():
@@ -154,6 +163,7 @@ def main() -> None:
             "cbdesk":"NATIVE_CB_DATA policy + OIS_OPERATIONAL_VIEW pricing + rate2YSeries confirmation",
             "liquiditydesk":"NATIVE_LIQ_DATA + source-native cadence freshness + structural candidate; overlay only",
             "cot":"V250_COT_CHART_DATA + V247_COT_STORIES; D.cot certified context fields synchronized; overlay only",
+            "forwarddesk":"forwardValidationSummary + forwardLedgerIntegrity + helper chain; observational only",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
