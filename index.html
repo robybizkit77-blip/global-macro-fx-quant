@@ -26,18 +26,26 @@
  const forwardReliabilityInline="const rel=(!st.n)?{label:'In attesa',cls:'fwdNeu'}:(st.n<10)?{label:'Troppo presto',cls:'fwdWarn'}:(st.n<20)?{label:'Preliminare',cls:'fwdWarn'}:(st.n<40)?{label:'Campione in costruzione',cls:'fwdWarn'}:{label:'Più affidabile',cls:'fwdPos'};";
  html=html.replace(forwardReliabilityCall,forwardReliabilityInline);
 
- // Forward path-risk compatibility: preserve the original local implementations
+ // Forward compatibility bridge: preserve the original local implementations
  // exactly, but publish their hoisted references for the later legacy renderer.
  const forwardPathRiskDef='function pathRiskStats(series){';
  const forwardSnapshotBasketDef='function snapshotBasketSeries(outcomes,horizon){';
+ const forwardPairedOverlayDef='function pairedOverlayStats(outcomes,horizon,kind,value){';
  const forwardPathRiskCall='const rs=pathRiskStats(snapshotBasketSeries(outcomes,h));';
+ const forwardPairedOverlayCall="const s=pairedOverlayStats(outcomes,'1W',k,v);";
  const pathRiskDefMatches=html.split(forwardPathRiskDef).length-1;
  const snapshotBasketDefMatches=html.split(forwardSnapshotBasketDef).length-1;
+ const pairedOverlayDefMatches=html.split(forwardPairedOverlayDef).length-1;
  const pathRiskCallMatches=html.split(forwardPathRiskCall).length-1;
- if(pathRiskDefMatches!==1 || snapshotBasketDefMatches!==1 || pathRiskCallMatches!==1) throw new Error('Forward path-risk scope manifest inatteso: '+pathRiskDefMatches+'/'+snapshotBasketDefMatches+'/'+pathRiskCallMatches);
+ const pairedOverlayCallMatches=html.split(forwardPairedOverlayCall).length-1;
+ if(pathRiskDefMatches!==1 || snapshotBasketDefMatches!==1 || pairedOverlayDefMatches!==1 || pathRiskCallMatches!==1 || pairedOverlayCallMatches!==1){
+   throw new Error('Forward helper scope manifest inatteso: '+[pathRiskDefMatches,snapshotBasketDefMatches,pairedOverlayDefMatches,pathRiskCallMatches,pairedOverlayCallMatches].join('/'));
+ }
  html=html.replace(forwardPathRiskDef,'window.gmfqForwardPathRiskStats=pathRiskStats;\n'+forwardPathRiskDef);
  html=html.replace(forwardSnapshotBasketDef,'window.gmfqForwardSnapshotBasketSeries=snapshotBasketSeries;\n'+forwardSnapshotBasketDef);
+ html=html.replace(forwardPairedOverlayDef,'window.gmfqForwardPairedOverlayStats=pairedOverlayStats;\n'+forwardPairedOverlayDef);
  html=html.replace(forwardPathRiskCall,'const rs=window.gmfqForwardPathRiskStats(window.gmfqForwardSnapshotBasketSeries(outcomes,h));');
+ html=html.replace(forwardPairedOverlayCall,"const s=window.gmfqForwardPairedOverlayStats(outcomes,'1W',k,v);");
 
  // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
  // the immutable legacy payload for audit/rollback, but must no longer execute.
