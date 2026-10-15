@@ -21,15 +21,19 @@ on:
         default: morning
         type: choice
         options:
+          - premorning
           - morning
           - close
           - night
           - full
   schedule:
-    # Europe/Rome 09:10. Duplicate UTC entries cover CEST/CET; offset gate selects one.
+    # Europe/Rome 07:45 pre-morning. Duplicate UTC entries cover CEST/CET; offset gate selects one.
+    - cron: '45 5 * * 1-5'
+    - cron: '45 6 * * 1-5'
+    # Europe/Rome 09:10 morning final.
     - cron: '10 7 * * 1-5'
     - cron: '10 8 * * 1-5'
-    # Europe/Rome 18:30.
+    # Europe/Rome 18:30 close.
     - cron: '30 16 * * 1-5'
     - cron: '30 17 * * 1-5'
     # Europe/Rome 00:50 after each Mon-Fri trading day.
@@ -83,6 +87,7 @@ jobs:
             sched='${{ github.event.schedule }}'
             phase=skip
             case "$sched|$offset" in
+              '45 5 * * 1-5|2'|'45 6 * * 1-5|1') phase=premorning ;;
               '10 7 * * 1-5|2'|'10 8 * * 1-5|1') phase=morning ;;
               '30 16 * * 1-5|2'|'30 17 * * 1-5|1') phase=close ;;
               '50 22 * * 1-5|2'|'50 23 * * 1-5|1') phase=night ;;
@@ -137,6 +142,14 @@ jobs:
             local phase="$1"
             local workflows=()
             case "$phase" in
+              premorning)
+                workflows=(
+                  rates-persistent-daily-v1.yml
+                  cb-pricing-persistent-daily-v1.yml
+                  final-e2e-certification-gate-v3.yml
+                  publish-dashboard-pages-v1.yml
+                )
+                ;;
               morning)
                 workflows=(
                   macro-persistent-daily-v1.yml
@@ -180,8 +193,9 @@ jobs:
           }
 
           case "$PHASE" in
-            morning|close|night) run_phase "$PHASE" ;;
+            premorning|morning|close|night) run_phase "$PHASE" ;;
             full)
+              run_phase premorning
               run_phase morning
               run_phase close
               run_phase night
