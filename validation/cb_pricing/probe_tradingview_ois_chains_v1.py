@@ -8,16 +8,19 @@ import urllib.request
 CHAINS = {
     "USD": {
         "url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/?contract=ZQV2026",
         "anchor": "ZQV2026",
         "scanner_candidates": ["CBOT:ZQV2026", "CBOT:ZQ1!"],
     },
     "EUR": {
         "url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/?contract=FST3U2026",
         "anchor": "FST3U2026",
         "scanner_candidates": ["EUREX:FST3U2026", "EUREX:FFST3U2026", "EUREX:FST31!"],
     },
     "CHF": {
         "url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/?contract=SA3U2026",
         "anchor": "SA3U2026",
         "scanner_candidates": ["ICEEUR:SA3U2026", "ICEEUR:FSA3U2026", "ICEEUR:SA31!"],
     },
@@ -29,6 +32,7 @@ HEADERS = {
 }
 SCANNER_URL = "https://scanner.tradingview.com/futures/scan"
 COLUMNS = ["name", "description", "close", "change", "change_abs", "Perf.W", "exchange"]
+SSR_KEYS = ["last_price", "lastPrice", "\"close\"", "\"price\"", "current_price", "change_abs", "Perf.W"]
 
 
 def fetch(url: str) -> str:
@@ -64,36 +68,48 @@ def scan(symbols: list[str]) -> dict[str, dict]:
     return out
 
 
+def snippets(html: str) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for key in SSR_KEYS:
+        vals = []
+        start = 0
+        while len(vals) < 3:
+            idx = html.find(key, start)
+            if idx < 0:
+                break
+            vals.append(re.sub(r"\s+", " ", html[max(0, idx-130):idx+260])[:390])
+            start = idx + len(key)
+        if vals:
+            out[key] = vals
+    return out
+
+
 def main():
     out = {}
     candidates = []
     for ccy, spec in CHAINS.items():
-        html = fetch(spec["url"])
-        idx = html.find(spec["anchor"])
-        excerpt = ""
-        if idx >= 0:
-            excerpt = re.sub(r"\s+", " ", html[max(0, idx-250):idx+650])
+        chain_html = fetch(spec["url"])
+        idx = chain_html.find(spec["anchor"])
+        contract_html = fetch(spec["contract_url"])
         out[ccy] = {
             "anchor": spec["anchor"],
             "anchor_found": idx >= 0,
-            "bytes": len(html.encode("utf-8")),
-            "excerpt": excerpt[:450],
+            "chain_bytes": len(chain_html.encode("utf-8")),
+            "contract_bytes": len(contract_html.encode("utf-8")),
+            "contract_anchor_found": spec["anchor"] in contract_html,
+            "ssr_quote_snippets": snippets(contract_html),
             "scanner_candidates": spec["scanner_candidates"],
             "scanner_matches": {},
         }
         candidates.extend(spec["scanner_candidates"])
-    if not all(x["anchor_found"] for x in out.values()):
-        raise SystemExit("One or more TradingView chains are not server-visible on runner")
+    if not all(x["anchor_found"] and x["contract_anchor_found"] for x in out.values()):
+        raise SystemExit("One or more TradingView contract pages are not server-visible on runner")
 
     quotes = scan(candidates)
     for ccy, spec in CHAINS.items():
         matches = {s: quotes[s] for s in spec["scanner_candidates"] if s in quotes}
         out[ccy]["scanner_matches"] = matches
-        usable = []
-        for symbol, q in matches.items():
-            close = q.get("close")
-            if close is not None and 50.0 < float(close) < 120.0:
-                usable.append(symbol)
+        usable = [s for s, q in matches.items() if q.get("close") is not None and 50.0 < float(q["close"]) < 120.0]
         out[ccy]["usable_symbols"] = usable
         out[ccy]["status"] = "PASS" if usable else "NO_USABLE_SCANNER_SYMBOL"
 
