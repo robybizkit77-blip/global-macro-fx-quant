@@ -1,0 +1,1 @@
+Observational diagnostic only. No runtime mutation.
