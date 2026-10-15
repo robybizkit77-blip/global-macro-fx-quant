@@ -32,9 +32,14 @@ def main():
         for ccy in ("USD", "EUR", "CHF"):
             row = built["currencies"][ccy]
             assert row["input_mode"] == "LIVE_SECONDARY_OVERLAY", row
+            assert row["method_id"] == "TRADINGVIEW_DATED_FUTURES_SSR_V2", row
             assert row["method_id"] == mod.LIVE_METHOD_ID, row
             assert row["freshness_status"] == "LIVE_OR_RECENT_SESSION", row
-            assert all(row["horizons"][h]["rate"] is not None for h in ("3m", "6m", "12m")), row
+            for h in ("3m", "6m", "12m"):
+                x = row["horizons"][h]
+                assert x["rate"] is not None, x
+                assert "!" not in str(x.get("contract") or ""), x
+                assert "!" not in str(x.get("symbol") or ""), x
         assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
         assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
 
