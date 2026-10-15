@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import urllib.request
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUT = ROOT / "live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json"
+
+SPECS = {
+    "USD": {
+        "exchange": "CBOT",
+        "root": "ZQ",
+        "chain_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/?contract={contract}",
+        "instrument": "30 Day Federal Funds Futures",
+        "confidence": "B",
+    },
+    "EUR": {
+        "exchange": "EUREX",
+        "root": "FST3",
+        "chain_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/?contract={contract}",
+        "instrument": "Three-Month Euro STR Futures",
+        "confidence": "B",
+    },
+    "CHF": {
+        "exchange": "ICEEUR",
+        "root": "SA3",
+        "chain_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
+        "contract_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/?contract={contract}",
+        "instrument": "Three Month SARON",
+        "confidence": "B",
+    },
+}
+TARGET_DAYS = {"3m": 90, "6m": 180, "12m": 365}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/155 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+CONTRACT_RE = re.compile(
+    r'\{"fullname":"(?P<fullname>[^"]+)","short_name":"(?P<short>[^"]+)"'
+    r'.{0,1400}?"expiration":"(?P<expiration>\d{8})"'
+    r'.{0,500}?"contract_description":"(?P<description>[^"]*)"'
+    r'.{0,500}?"instrument_name":"(?P<instrument>[^"]*)"',
+    re.S,
+)
+OFFER_RE = re.compile(
+    r'"offers"\s*:\s*\{[^{}]*?"price"\s*:\s*"(?P<price>[0-9]+(?:\.[0-9]+)?)"'
+    r'[^{}]*?"priceCurrency"\s*:\s*"(?P<currency>[A-Z]+)"'
+    r'[^{}]*?"priceValidUntil"\s*:\s*"(?P<valid>[^"]+)"',
+    re.S,
+)
+
+
+def fetch(url: str) -> str:
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=30) as r:
+        body = r.read().decode("utf-8", errors="replace")
+        if r.status != 200:
+            raise RuntimeError(f"HTTP {r.status}: {url}")
+        return body
+
+
+def business_days_ago(as_of: date, today: date) -> int:
+    if as_of > today:
+        return 0
+    d = as_of
+    n = 0
+    while d < today:
+        d += timedelta(days=1)
+        if d.weekday() < 5:
+            n += 1
+    return n
+
+
+def parse_contracts(html: str, spec: dict) -> list[dict]:
+    rows = []
+    seen = set()
+    for m in CONTRACT_RE.finditer(html):
+        full = m.group("fullname")
+        short = m.group("short")
+        if not full.startswith(spec["exchange"] + ":") or not short.startswith(spec["root"]):
+            continue
+        if short in seen:
+            continue
+        seen.add(short)
+        expiry = datetime.strptime(m.group("expiration"), "%Y%m%d").date()
+        rows.append({
+            "symbol": full,
+            "contract": short,
+            "expiration": expiry,
+            "description": m.group("description"),
+            "instrument_name": m.group("instrument"),
+        })
+    rows.sort(key=lambda x: x["expiration"])
+    if len(rows) < 6:
+        raise RuntimeError(f"{spec['exchange']}: only {len(rows)} contracts parsed")
+    return rows
+
+
+def select_contracts(rows: list[dict], today: date) -> dict[str, dict]:
+    future = [r for r in rows if r["expiration"] >= today]
+    selected = {}
+    used = set()
+    for horizon, days in TARGET_DAYS.items():
+        target = today + timedelta(days=days)
+        candidates = [r for r in future if r["contract"] not in used]
+        if not candidates:
+            raise RuntimeError(f"No contract candidate for {horizon}")
+        row = min(candidates, key=lambda r: (abs((r["expiration"] - target).days), r["expiration"]))
+        selected[horizon] = row
+        used.add(row["contract"])
+    return selected
+
+
+def parse_quote(html: str, expected_contract: str, today: date) -> dict:
+    if expected_contract not in html:
+        raise RuntimeError(f"contract page does not contain {expected_contract}")
+    m = OFFER_RE.search(html)
+    if not m:
+        raise RuntimeError(f"no SSR Offer quote for {expected_contract}")
+    price = float(m.group("price"))
+    if not 80.0 < price < 105.0:
+        raise RuntimeError(f"implausible futures price {price} for {expected_contract}")
+    valid = datetime.fromisoformat(m.group("valid").replace("Z", "+00:00"))
+    as_of = valid.astimezone(timezone.utc).date()
+    lag_bd = business_days_ago(as_of, today)
+    if lag_bd > 3:
+        raise RuntimeError(f"stale quote {expected_contract}: {as_of} ({lag_bd} business days)")
+    return {
+        "price": price,
+        "implied_rate": round(100.0 - price, 4),
+        "currency": m.group("currency"),
+        "quote_as_of": as_of.isoformat(),
+        "price_valid_until": valid.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "business_day_lag": lag_bd,
+    }
+
+
+def collect(today: date | None = None) -> dict:
+    today = today or datetime.now(timezone.utc).date()
+    out = {
+        "schema": "GMFQ_CB_PRICING_ESTIMATED_LIVE_QUOTES_V1",
+        "status": "INFORMATIONAL_ONLY",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "official_ois_runtime_untouched": True,
+        "currencies": {},
+        "governance": {
+            "informational_only": True,
+            "core_score_effect": "NONE",
+            "bias_effect": "NONE",
+            "sizing_effect": "NONE",
+            "pair_engine_effect": "NONE",
+            "backtest_eligible_as_official_ois": False,
+        },
+    }
+    for ccy, spec in SPECS.items():
+        contracts = parse_contracts(fetch(spec["chain_url"]), spec)
+        selected = select_contracts(contracts, today)
+        horizons = {}
+        asofs = []
+        for horizon, row in selected.items():
+            url = spec["contract_url"].format(contract=row["contract"])
+            q = parse_quote(fetch(url), row["contract"], today)
+            asofs.append(q["quote_as_of"])
+            horizons[horizon] = {
+                "rate": q["implied_rate"],
+                "futures_price": q["price"],
+                "contract": row["contract"],
+                "symbol": row["symbol"],
+                "expiration": row["expiration"].isoformat(),
+                "contract_description": row["description"],
+                "quote_as_of": q["quote_as_of"],
+                "price_valid_until": q["price_valid_until"],
+                "business_day_lag": q["business_day_lag"],
+                "mapping": f"nearest listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation",
+            }
+        out["currencies"][ccy] = {
+            "status": "LIVE_SECONDARY_READY",
+            "confidence_grade": spec["confidence"],
+            "as_of": min(asofs),
+            "instrument": spec["instrument"],
+            "source": "TradingView public server-rendered contract pages · exchange-labelled futures",
+            "source_url": spec["chain_url"],
+            "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
+            "freshness_status": "LIVE_OR_RECENT_SESSION",
+            "horizons": horizons,
+            "note": "Informational futures-implied policy proxy. Contract-expiry mapping is approximate to 3M/6M/12M and does not promote official OIS certification.",
+        }
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--output", default=str(DEFAULT_OUT))
+    args = ap.parse_args()
+    data = collect()
+    path = Path(args.output)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "status": "PASS",
+        "output": str(path),
+        "currencies": {
+            c: {h: r["rate"] for h, r in row["horizons"].items()}
+            for c, row in data["currencies"].items()
+        },
+    }, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
