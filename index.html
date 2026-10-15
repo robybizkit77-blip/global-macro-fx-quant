@@ -20,9 +20,6 @@
  });
  if(refreshCalls!==25) throw new Error('Bootstrap refresh manifest inatteso: '+refreshCalls);
 
- // Forward presentation compatibility: one later legacy renderer calls a helper
- // that exists only inside an earlier IIFE. Patch exactly that call with the same
- // thresholds/labels; this does not alter Forward snapshots, outcomes or OOS rules.
  const forwardReliabilityCall='const rel=reliabilityLabel(st);';
  const forwardReliabilityMatches=html.split(forwardReliabilityCall).length-1;
  if(forwardReliabilityMatches!==1) throw new Error('Forward reliability scope manifest inatteso: '+forwardReliabilityMatches);
@@ -33,11 +30,8 @@
  // the immutable legacy payload for audit/rollback, but must no longer execute.
  // Current visible editorial surfaces are owned by validated operational modules.
  const quarantinedLegacyScripts=[
-   'gmfq-propagation-qa',
-   'gmfq-e2e-live-italy',
-   'gmfq-runtime-refresh-fix-20260930',
-   'gmfq-usd-sep30-closeout-20261001',
-   'gmfq-usd-sep30-closeout-finalizer-20261001'
+   'gmfq-propagation-qa','gmfq-e2e-live-italy','gmfq-runtime-refresh-fix-20260930',
+   'gmfq-usd-sep30-closeout-20261001','gmfq-usd-sep30-closeout-finalizer-20261001'
  ];
  for(const id of quarantinedLegacyScripts){
    const escaped=id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -46,12 +40,8 @@
    if(matches.length!==1) throw new Error('Legacy quarantine manifest inatteso per '+id+': '+matches.length);
    html=html.replace(re,'<!-- GMFQ_LEGACY_QUARANTINED:'+id+' -->');
  }
-
- // One old 30-Sep refresh block is anonymous. Quarantine it by a unique runtime
- // fingerprint, requiring exactly one matching script block so drift fails closed.
- const quarantinedLegacyFingerprints=[
-   {name:'LIVE_REFRESH_20260930_AM',needle:'window.LIVE_REFRESH_20260930_AM='}
- ];
+ // One old 30-Sep refresh block is anonymous. Quarantine it by a unique runtime fingerprint.
+ const quarantinedLegacyFingerprints=[{name:'LIVE_REFRESH_20260930_AM',needle:'window.LIVE_REFRESH_20260930_AM='}];
  for(const item of quarantinedLegacyFingerprints){
    const blocks=html.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g)||[];
    const matches=blocks.filter(block=>block.includes(item.needle));
@@ -63,16 +53,20 @@
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
  html=html.replace(marker,finalRefresh+marker);
- const oisUi='<script id="gmfq-ois-operational-ui" src="dashboard/ois-operational-monitor-v1.js" defer></scr'+'ipt>\n';
- const calendarNews='<script id="gmfq-calendar-news-operational-ui" src="dashboard/calendar-news-operational-v1.js" defer></scr'+'ipt>\n';
- const topThemes='<script id="gmfq-top-themes-operational-ui" src="dashboard/top-themes-operational-v1.js" defer></scr'+'ipt>\n';
- const whatChanged='<script id="gmfq-what-changed-operational-ui" src="dashboard/what-changed-operational-v1.js" defer></scr'+'ipt>\n';
- const riskOperational='<script id="gmfq-risk-operational-ui" src="dashboard/risk-operational-v1.js" defer></scr'+'ipt>\n';
- const pairsOperational='<script id="gmfq-pairs-operational-ui" src="dashboard/pairs-operational-v1.js" defer></scr'+'ipt>\n';
- const overviewAsOf='<script id="gmfq-overview-asof-operational-ui" src="dashboard/overview-asof-operational-v1.js" defer></scr'+'ipt>\n';
- const editorialFreshness='<script id="gmfq-editorial-freshness-guard" src="dashboard/editorial-freshness-guard-v1.js" defer></scr'+'ipt>\n';
+ const assets=[
+   ['gmfq-ois-operational-ui','dashboard/ois-operational-monitor-v1.js'],
+   ['gmfq-calendar-news-operational-ui','dashboard/calendar-news-operational-v1.js'],
+   ['gmfq-top-themes-operational-ui','dashboard/top-themes-operational-v1.js'],
+   ['gmfq-what-changed-operational-ui','dashboard/what-changed-operational-v1.js'],
+   ['gmfq-risk-operational-ui','dashboard/risk-operational-v1.js'],
+   ['gmfq-pairs-operational-ui','dashboard/pairs-operational-v1.js'],
+   ['gmfq-overview-asof-operational-ui','dashboard/overview-asof-operational-v1.js'],
+   ['gmfq-currencies-operational-ui','dashboard/currencies-operational-v1.js'],
+   ['gmfq-editorial-freshness-guard','dashboard/editorial-freshness-guard-v1.js']
+ ];
+ const injected=assets.map(([id,src])=>`<script id="${id}" src="${src}" defer></scr`+'ipt>\n').join('');
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
- html=html.replace('</body>',oisUi+calendarNews+topThemes+whatChanged+riskOperational+pairsOperational+overviewAsOf+editorialFreshness+'</body>');
+ html=html.replace('</body>',injected+'</body>');
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
