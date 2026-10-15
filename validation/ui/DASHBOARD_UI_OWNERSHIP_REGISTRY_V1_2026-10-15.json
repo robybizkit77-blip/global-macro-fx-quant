@@ -18,8 +18,8 @@
     "risk": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/risk-operational-v1.js","required_selector":"[data-gmfq-operational=\"risk\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "currencies": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/currencies-operational-v1.js","selector":"#v224Headline[data-gmfq-operational=\"currencies\"]","count":1}]},
     "pairs": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/pairs-operational-v1.js","required_selector":"[data-gmfq-operational=\"pairs\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
-    "macro": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
-    "inflationlabour": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
+    "macro": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/macro-operational-v1.js","selector":"#v232CountryName[data-gmfq-operational=\"macro\"]","count":1}]},
+    "inflationlabour": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/macro-operational-v1.js","selector":"#il407Grid[data-gmfq-operational=\"inflationlabour\"]","count":1}]},
     "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
     "cbdesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "liquiditydesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
@@ -36,6 +36,8 @@
     "risk": ["live_data/sections/D.json","live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"],
     "currencies": ["deriveCurrencyState(runtime)","renderCurrency(runtime)","currencyUiIntegrity(runtime)","GMFQ_ECB_PRICE_AUDIT.as_of"],
     "pairs": ["derivePairDecisionFrame(runtime)","D.prices latest official ECB fixing"],
+    "macro": ["macroBlockCoverage(runtime)","macroCategoryIntegrity(runtime)","renderMacroLab(runtime)"],
+    "inflationlabour": ["macroCategoryIntegrity(runtime)","renderInflationLabourSection(runtime)","renderDynamicHeatmap(runtime)"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
 }
