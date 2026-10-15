@@ -14,7 +14,21 @@ function validate(d){
  if(!d||d.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1')throw new Error('schema OIS operational inatteso');
  if(d.status!=='GREEN_8_OF_8')throw new Error('OIS operational non GREEN_8_OF_8');
  if(d?.summary?.operational_green!==8)throw new Error('copertura OIS operativa diversa da 8/8');
- for(const c of CCYS){const r=d?.currencies?.[c];if(!r)throw new Error('valuta OIS mancante: '+c);if(!['GREEN_OFFICIAL','GREEN_ESTIMATED'].includes(r.operational_status))throw new Error('status OIS invalido '+c);}
+ for(const c of CCYS){
+   const r=d?.currencies?.[c];
+   if(!r)throw new Error('valuta OIS mancante: '+c);
+   if(!['GREEN_OFFICIAL','GREEN_ESTIMATED'].includes(r.operational_status))throw new Error('status OIS invalido '+c);
+   const p=r.market_direction_proxy;
+   if(p){
+     if(c!=='NZD')throw new Error('market direction proxy consentito solo per NZD');
+     if(p.status!=='LIVE_DIRECTIONAL_PROXY_READY')throw new Error('NZD market direction proxy non READY');
+     if(p.substitutes_for_ois_level!==false)throw new Error('NZD proxy non puo sostituire OIS');
+     if(p.policy_delta_from_proxy_allowed!==false)throw new Error('NZD proxy non puo generare policy delta');
+     for(const h of ['3m','6m','12m']){
+       if(!Number.isFinite(Number(p?.horizons?.[h]?.implied_bank_bill_rate)))throw new Error('NZD proxy horizon mancante '+h);
+     }
+   }
+ }
  return d;
 }
 function ensureHost(){
@@ -41,8 +55,9 @@ function style(){
  const s=document.createElement('style');s.id='gmfq-ois-operational-style';s.textContent=`
  #v401OisBlock{display:block!important;margin-top:14px;max-width:100%;min-width:0;overflow:hidden;border:1px solid #173d55;background:#081723;border-radius:12px;padding:12px}#v401OisBlock .oisOp{display:grid;gap:12px;min-width:0}.oisOpHead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}.oisOpTitle{font-size:16px;font-weight:900}.oisOpSub{color:#8eabba;font-size:11px;line-height:1.45;max-width:760px}.oisOpBadges{display:flex;gap:6px;flex-wrap:wrap}.oisBadge{font-size:9px;font-weight:850;border:1px solid #31536a;border-radius:999px;padding:4px 7px}.oisBadge.off{color:#20df76;border-color:rgba(32,223,118,.45);background:rgba(32,223,118,.07)}.oisBadge.est{color:#f2bb49;border-color:rgba(242,187,73,.45);background:rgba(242,187,73,.07)}
  .oisPathGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0}.oisPathCard{border:1px solid #173d55;background:#071a28;border-radius:9px;padding:9px;min-width:0}.oisPathTop{display:flex;align-items:center;justify-content:space-between;gap:6px}.oisPathCcy{font-size:14px;font-weight:900}.oisPathMeta{font-size:8px;border-radius:999px;padding:3px 5px;border:1px solid #31536a}.oisPathMeta.off{color:#20df76;border-color:rgba(32,223,118,.4)}.oisPathMeta.est{color:#f2bb49;border-color:rgba(242,187,73,.4)}.oisPathCard svg{width:100%;height:72px;display:block;margin-top:5px}.oisPathVals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;font-size:8px;color:#7696a8}.oisPathVals b{display:block;color:#dcecf4;font-size:10px;margin-top:2px}.oisAsOf{font-size:8px;color:#6e91a2;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .oisProxyBox{margin-top:8px;border:1px solid rgba(35,183,255,.3);background:rgba(35,183,255,.055);border-radius:8px;padding:7px;display:grid;gap:6px}.oisProxyHead{display:flex;justify-content:space-between;gap:6px;align-items:center}.oisProxyTitle{font-size:8px;font-weight:900;letter-spacing:.05em;color:#8fdcff}.oisProxyFlag{font-size:7px;font-weight:900;color:#ffca62;border:1px solid rgba(255,202,98,.45);border-radius:999px;padding:2px 5px;white-space:nowrap}.oisProxyGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.oisProxyCell{min-width:0;border-left:1px solid rgba(49,83,106,.55);padding-left:5px}.oisProxyCell:first-child{border-left:0;padding-left:0}.oisProxyHz{font-size:7px;color:#7899aa}.oisProxyRate{font-size:10px;font-weight:850;color:#dcecf4;margin:1px 0}.oisProxyMove{font-size:7px;color:#86a6b7;line-height:1.35}.oisProxyMove .up{color:#20df76}.oisProxyMove .down{color:#b99aff}.oisProxyNote{font-size:7px;color:#7493a4;line-height:1.35}
  .oisReprice{overflow-x:auto;max-width:100%}.oisReprice table{min-width:760px;width:100%}.oisReprice th,.oisReprice td{font-size:9px;padding:6px 5px}.oisReprice td.up{color:#20df76}.oisReprice td.down{color:#b99aff}.oisReprice td.neu{color:#91aebe}.oisQuality{font-size:8px;font-weight:850;border-radius:999px;padding:3px 5px;border:1px solid #31536a}.oisQuality.off{color:#20df76;border-color:rgba(32,223,118,.4)}.oisQuality.est{color:#f2bb49;border-color:rgba(242,187,73,.4)}.oisFoot{font-size:9px;color:#7899aa;line-height:1.45}.oisFail{border:1px solid rgba(255,82,99,.45);background:rgba(255,82,99,.06);color:#ff929d;border-radius:8px;padding:10px;font-size:11px}
- @media(max-width:1050px){.oisPathGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.oisPathGrid{grid-template-columns:1fr}.oisPathVals{grid-template-columns:repeat(4,minmax(52px,1fr))}}
+ @media(max-width:1050px){.oisPathGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.oisPathGrid{grid-template-columns:1fr}.oisPathVals{grid-template-columns:repeat(4,minmax(52px,1fr))}.oisProxyGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
  `;document.head.appendChild(s);
 }
 function pathSvg(r,min,max){
@@ -53,15 +68,22 @@ function pathSvg(r,min,max){
  const dots=pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#eef7ff" stroke="#23b7ff" stroke-width="1.5"/>`).join('');
  return `<svg viewBox="0 0 ${W} ${HGT}" aria-label="Policy path ${esc(r.operational_status)}"><line x1="10" x2="210" y1="62" y2="62" stroke="#173d55"/>${poly}${dots}</svg>`;
 }
+function proxyMove(v){return `<span class="${clsBp(v)}">${fmtBp(v)}</span>`;}
+function proxyHtml(c,r){
+ const p=r?.market_direction_proxy;
+ if(c!=='NZD'||!p)return '';
+ const cells=['3m','6m','12m'].map(h=>{const x=p?.horizons?.[h]||{};return `<div class="oisProxyCell"><div class="oisProxyHz">${h.toUpperCase()}</div><div class="oisProxyRate">${fmtRate(x.implied_bank_bill_rate)}</div><div class="oisProxyMove">1D ${proxyMove(x.change_1d_bp)}<br>1W ${proxyMove(x.change_1w_bp)}</div></div>`;}).join('');
+ return `<div class="oisProxyBox" data-ois-proxy="NZD_ASX_BB_DIRECTIONAL" title="${esc(p.basis_warning||'Directional market-rates proxy; non OCR/OIS')}"><div class="oisProxyHead"><span class="oisProxyTitle">ASX BB DIRECTIONAL</span><span class="oisProxyFlag">NON OIS</span></div><div class="oisProxyGrid">${cells}</div><div class="oisProxyNote">Bank-bill/FRA proxy · solo direzione di mercato · as-of ${esc(p.as_of||'—')}</div></div>`;
+}
 function render(){
  const host=ensureHost();if(!host)return false;style();
  if(state.status==='ERROR'){host.innerHTML=`<div class="oisFail"><b>OIS operativo non disponibile.</b><br>${esc(state.error)}. Nessun fallback stimato come dato ufficiale.</div>`;return true;}
  if(state.status!=='READY'||!state.data){host.innerHTML='<div class="oisOpSub">Caricamento OIS operativo…</div>';return true;}
  const d=state.data;const rows=CCYS.map(c=>[c,d.currencies[c]]);
  const finite=rows.flatMap(([,r])=>H.map(h=>Number(rowRate(r,h))).filter(Number.isFinite));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
- const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${est?'ESTIMATED':'OFFICIAL'}</span></div>${pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div><div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
+ const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${est?'ESTIMATED':'OFFICIAL'}</span></div>${pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
  const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
- host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path comparabile tra le 8 valute. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">4 ESTIMATED</span><span class="oisBadge">8/8 OPERATIVO</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code> e non promuove gli estimated a dato ufficiale.</div></div>`;
+ host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path comparabile tra le 8 valute. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">4 ESTIMATED</span><span class="oisBadge">8/8 OPERATIVO</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD, quando presente, è un proxy direzionale separato e non viene promosso a OIS.</div></div>`;
  return true;
 }
 let repairQueued=false;
@@ -72,7 +94,9 @@ function queueRepair(){
    repairQueued=false;
    const host=document.getElementById('v401OisBlock');
    const cards=host?.querySelectorAll('.oisPathCard')?.length||0;
-   if(!host||cards!==8)render();
+   const proxyExpected=!!state.data?.currencies?.NZD?.market_direction_proxy;
+   const proxyCount=host?.querySelectorAll('[data-ois-proxy="NZD_ASX_BB_DIRECTIONAL"]')?.length||0;
+   if(!host||cards!==8||(proxyExpected&&proxyCount!==1))render();
  });
 }
 let observer=null;
@@ -88,7 +112,7 @@ async function load(){
  catch(e){state.status='ERROR';state.error=String(e?.message||e);render();}
 }
 window.gmfqRenderOisOperational=render;
-window.gmfqOisOperationalUiAudit=function(){const hosts=document.querySelectorAll('#v401OisBlock');const host=hosts[0]||null;const rows=host?.querySelectorAll('.oisPathCard')?.length||0;return {status:state.status,host:!!host,host_count:hosts.length,cards:rows,ok:state.status==='READY'&&hosts.length===1&&rows===8,summary:state.data?.summary||null,error:state.error};};
+window.gmfqOisOperationalUiAudit=function(){const hosts=document.querySelectorAll('#v401OisBlock');const host=hosts[0]||null;const rows=host?.querySelectorAll('.oisPathCard')?.length||0;const proxyExpected=!!state.data?.currencies?.NZD?.market_direction_proxy;const proxyCount=host?.querySelectorAll('[data-ois-proxy="NZD_ASX_BB_DIRECTIONAL"]')?.length||0;return {status:state.status,host:!!host,host_count:hosts.length,cards:rows,nzd_proxy_expected:proxyExpected,nzd_proxy_count:proxyCount,ok:state.status==='READY'&&hosts.length===1&&rows===8&&(!proxyExpected||proxyCount===1),summary:state.data?.summary||null,error:state.error};};
 const base=window.renderNativeRatesDesk;if(typeof base==='function'){window.renderNativeRatesDesk=function(){const out=base.apply(this,arguments);setTimeout(render,0);return out;};}
 const prev=window.showView;if(typeof prev==='function'){window.showView=function(v){const out=prev.apply(this,arguments);if(v==='ratesdesk')setTimeout(render,0);return out;};}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
