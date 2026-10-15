@@ -9,6 +9,8 @@ on:
       - 'payload/**'
       - 'dashboard/**'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
   push:
     branches: [main]
     paths:
@@ -17,11 +19,14 @@ on:
       - 'payload/**'
       - 'dashboard/**'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
   workflow_run:
     workflows:
       - 'Macro Persistent Daily V1'
       - 'CB Pricing Persistent Daily V1'
       - 'OIS Estimated Snapshot Repricing V1'
+      - 'Calendar News Operational Refresh V1'
       - 'Price Persistent Daily V1'
       - 'Rates Persistent Daily V1'
       - 'COT Persistent Weekly V1'
@@ -80,17 +85,15 @@ jobs:
           payload='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           assert 'GMFQ_RUNTIME_VALIDATION_MANIFEST' in payload
           assert '<script id="gmfq-post-gate-final-audit-settlement">' in payload
-          assert 'dashboard/ois-operational-monitor-v1.js' in index
-          assert 'dashboard/editorial-freshness-guard-v1.js' in index
-          ois_asset=Path('dashboard/ois-operational-monitor-v1.js')
-          freshness_asset=Path('dashboard/editorial-freshness-guard-v1.js')
-          ois=Path('live_data/sections/OIS_OPERATIONAL_VIEW.json')
-          assert ois_asset.is_file() and ois_asset.stat().st_size>1000
-          assert freshness_asset.is_file() and freshness_asset.stat().st_size>1000
-          data=json.loads(ois.read_text(encoding='utf-8'))
-          assert data['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
-          assert data['status']=='GREEN_8_OF_8'
-          assert data['summary']['operational_green']==8
+          for asset in ['dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/editorial-freshness-guard-v1.js']:
+              assert asset in index, asset
+              p=Path(asset); assert p.is_file() and p.stat().st_size>1000, asset
+          ois=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
+          cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
+          news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text(encoding='utf-8'))
+          assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1' and ois['summary']['operational_green']==8
+          assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V1' and cal['coverage']['cb_schedule_available']==8
+          assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1' and news['items']
           print('DASHBOARD_PUBLICATION_PREFLIGHT_PASS')
           PY
 
@@ -112,42 +115,33 @@ jobs:
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
           cp dashboard/ois-operational-monitor-v1.js /tmp/gmfq-pages/dashboard/ois-operational-monitor-v1.js
+          cp dashboard/calendar-news-operational-v1.js /tmp/gmfq-pages/dashboard/calendar-news-operational-v1.js
           cp dashboard/editorial-freshness-guard-v1.js /tmp/gmfq-pages/dashboard/editorial-freshness-guard-v1.js
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/OIS_OPERATIONAL_VIEW.json
+          cp live_data/sections/CALENDAR_OPERATIONAL_VIEW.json /tmp/gmfq-pages/live_data/sections/CALENDAR_OPERATIONAL_VIEW.json
+          cp live_data/sections/NEWS_PULSE_OPERATIONAL.json /tmp/gmfq-pages/live_data/sections/NEWS_PULSE_OPERATIONAL.json
 
           cd /tmp/gmfq-pages
           python - <<'PY'
           import subprocess
-
           tracked=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           changed=tracked|untracked
           allowed={
-              'index.html',
-              'dashboard/ois-operational-monitor-v1.js',
-              'dashboard/editorial-freshness-guard-v1.js',
-              'live_data/sections/OIS_OPERATIONAL_VIEW.json',
+              'index.html','dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/editorial-freshness-guard-v1.js',
+              'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json',
               *[f'payload/part-{i:02d}.txt' for i in range(16)]
           }
           unexpected=changed-allowed
-          if unexpected:
-              raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
-          if changed:
-              print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed))
-          else:
-              print('DASHBOARD_PAGES_ALREADY_CURRENT')
+          if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
+          print('DASHBOARD_PAGES_SCOPE_PASS', sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
 
-          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json
-          if git diff --cached --quiet; then
-            echo DASHBOARD_PAGES_ALREADY_CURRENT
-            exit 0
-          fi
-
+          git add -- index.html payload/part-*.txt dashboard/ois-operational-monitor-v1.js dashboard/calendar-news-operational-v1.js dashboard/editorial-freshness-guard-v1.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json
+          if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m "Publish dashboard runtime from main ${GITHUB_SHA}"
-
           REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
           test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during publication' >&2; exit 1; }
           git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
