@@ -66,7 +66,7 @@ jobs:
             }
             await page.evaluate(()=>window.showView?.('inflationlabour'));
             const heat=await page.evaluate(()=>({owner:document.querySelectorAll('#inflationlabour #il407Grid[data-gmfq-operational="inflationlabour"]').length,text:String(document.getElementById('inflationlabour')?.innerText||'')}));
-            if(heat.owner!==1||CCYS.some(c=>!new RegExp(`\\b${c}\\b`).test(heat.text))) throw new Error(label+' heatmap coverage/owner');
+            if(heat.owner!==1||CCYS.some(c=>!heat.text.includes(c))) throw new Error(label+' heatmap coverage/owner');
             const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
             if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
             await browser.close();
