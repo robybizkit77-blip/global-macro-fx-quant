@@ -7,10 +7,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CB_PATH = ROOT / "live_data/sections/NATIVE_CB_DATA.json"
 OIS_PATH = ROOT / "live_data/sections/OIS_DATA.json"
+LIVE_PATH = ROOT / "live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json"
 OUT_PATH = ROOT / "live_data/sections/CB_PRICING_ESTIMATED.json"
 
 ELIGIBLE = ("USD", "EUR", "CHF", "NZD")
 CONFIDENCE = {"USD": "B", "EUR": "B", "CHF": "B", "NZD": "C"}
+LIVE_METHOD_ID = "TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1"
+NATIVE_METHOD_ID = "NATIVE_CB_ESTIMATED_V1"
 
 
 def _num(v):
@@ -23,7 +26,17 @@ def _num(v):
         return None
 
 
-def build_currency(ccy, cb_row, ois_row):
+def _live_usable(ccy: str, live_row: dict | None) -> bool:
+    if ccy not in {"USD", "EUR", "CHF"}:
+        return False
+    row = live_row or {}
+    if row.get("status") != "LIVE_SECONDARY_READY":
+        return False
+    hs = row.get("horizons") or {}
+    return all(_num((hs.get(h) or {}).get("rate")) is not None for h in ("3m", "6m", "12m"))
+
+
+def build_currency(ccy, cb_row, ois_row, live_row=None):
     # Estimated layer is only legal while official OIS remains withheld.
     if (ois_row or {}).get("status") != "WITHHELD":
         return {
@@ -32,13 +45,48 @@ def build_currency(ccy, cb_row, ois_row):
             "official_ois_status": (ois_row or {}).get("status"),
         }
 
-    mp = (cb_row or {}).get("market_pricing") or {}
     policy_rate = _num((cb_row or {}).get("rate"))
-    vals = {
-        "3m": _num(mp.get("h3m")),
-        "6m": _num(mp.get("h6m")),
-        "12m": _num(mp.get("h12m")),
-    }
+    if _live_usable(ccy, live_row):
+        lr = live_row or {}
+        hs = lr.get("horizons") or {}
+        vals = {h: _num((hs.get(h) or {}).get("rate")) for h in ("3m", "6m", "12m")}
+        as_of = lr.get("as_of")
+        instrument = lr.get("instrument")
+        source = lr.get("source")
+        source_url = lr.get("source_url")
+        source_quality = lr.get("source_quality")
+        freshness_status = lr.get("freshness_status")
+        confidence = lr.get("confidence_grade") or CONFIDENCE[ccy]
+        note = lr.get("note")
+        input_mode = "LIVE_SECONDARY_OVERLAY"
+        method_id = LIVE_METHOD_ID
+        horizon_meta = {
+            h: {
+                k: v
+                for k, v in (hs.get(h) or {}).items()
+                if k != "rate"
+            }
+            for h in ("3m", "6m", "12m")
+        }
+    else:
+        mp = (cb_row or {}).get("market_pricing") or {}
+        vals = {
+            "3m": _num(mp.get("h3m")),
+            "6m": _num(mp.get("h6m")),
+            "12m": _num(mp.get("h12m")),
+        }
+        as_of = mp.get("as_of")
+        instrument = mp.get("instrument")
+        source = mp.get("source")
+        source_url = mp.get("source_url")
+        source_quality = mp.get("quality")
+        freshness_status = mp.get("freshness_status")
+        confidence = CONFIDENCE[ccy]
+        note = mp.get("note")
+        input_mode = "NATIVE_CB_FALLBACK"
+        method_id = NATIVE_METHOD_ID
+        horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
+
     n = sum(v is not None for v in vals.values())
     if n == 0:
         status = "WITHHELD"
@@ -52,6 +100,7 @@ def build_currency(ccy, cb_row, ois_row):
         horizons[h] = {
             "rate": rate,
             "policy_delta_bp": None if rate is None or policy_rate is None else round((rate - policy_rate) * 100.0, 1),
+            **horizon_meta[h],
         }
 
     available_deltas = [x["policy_delta_bp"] for x in horizons.values() if x["policy_delta_bp"] is not None]
@@ -68,20 +117,22 @@ def build_currency(ccy, cb_row, ois_row):
         "currency": ccy,
         "status": status,
         "official_ois_status": "WITHHELD",
-        "as_of": mp.get("as_of"),
+        "input_mode": input_mode,
+        "method_id": method_id,
+        "as_of": as_of,
         "policy_rate": policy_rate,
-        "instrument": mp.get("instrument"),
-        "source": mp.get("source"),
-        "source_url": mp.get("source_url"),
-        "source_quality": mp.get("quality"),
-        "freshness_status": mp.get("freshness_status"),
-        "confidence_grade": CONFIDENCE[ccy],
+        "instrument": instrument,
+        "source": source,
+        "source_url": source_url,
+        "source_quality": source_quality,
+        "freshness_status": freshness_status,
+        "confidence_grade": confidence,
         "horizons": horizons,
         "direction_vs_policy": direction,
         "change_1d_bp": None,
         "change_1w_bp": None,
-        "change_status": "NOT_AVAILABLE_ESTIMATED_V1",
-        "note": mp.get("note"),
+        "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
+        "note": note,
         "governance": {
             "informational_only": True,
             "core_score_effect": "NONE",
@@ -93,7 +144,8 @@ def build_currency(ccy, cb_row, ois_row):
     }
 
 
-def build(cb, ois):
+def build(cb, ois, live=None):
+    live_ccys = ((live or {}).get("currencies") or {}) if isinstance(live, dict) else {}
     out = {
         "schema": "GMFQ_CB_PRICING_ESTIMATED_V1",
         "status": "INFORMATIONAL_ONLY",
@@ -105,19 +157,35 @@ def build(cb, ois):
             ccy,
             (cb or {}).get(ccy) or {},
             ((ois or {}).get("currencies") or {}).get(ccy) or {},
+            live_ccys.get(ccy),
         )
     return out
+
+
+def load_live_overlay():
+    if not LIVE_PATH.exists():
+        return None
+    try:
+        data = json.loads(LIVE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if data.get("schema") != "GMFQ_CB_PRICING_ESTIMATED_LIVE_QUOTES_V1":
+        return None
+    if data.get("status") != "INFORMATIONAL_ONLY" or data.get("official_ois_runtime_untouched") is not True:
+        return None
+    return data
 
 
 def main():
     cb = json.loads(CB_PATH.read_text(encoding="utf-8"))
     ois = json.loads(OIS_PATH.read_text(encoding="utf-8"))
-    out = build(cb, ois)
+    live = load_live_overlay()
+    out = build(cb, ois, live)
     OUT_PATH.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": "PASS",
         "output": str(OUT_PATH.relative_to(ROOT)),
-        "currencies": {k: v["status"] for k, v in out["currencies"].items()},
+        "currencies": {k: {"status": v["status"], "input_mode": v.get("input_mode")} for k, v in out["currencies"].items()},
     }, ensure_ascii=False, sort_keys=True))
 
 

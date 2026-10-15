@@ -12,11 +12,19 @@ VIEW_PATH = ROOT / "live_data/sections/OIS_OPERATIONAL_VIEW.json"
 HISTORY_PATH = ROOT / "validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl"
 ESTIMATED = ("USD", "EUR", "CHF", "NZD")
 HORIZONS = ("3m", "6m", "12m")
+LEGACY_METHOD_ID = "NATIVE_CB_ESTIMATED_V1"
+
+
+def method_id(row: dict) -> str:
+    # All snapshots written before method_id existed were produced by the
+    # original NATIVE_CB estimated builder. Preserve that lineage explicitly.
+    return row.get("method_id") or LEGACY_METHOD_ID
 
 
 def _canonical_payload(currency: str, row: dict) -> dict:
     return {
         "currency": currency,
+        "method_id": method_id(row),
         "source_as_of": row.get("as_of"),
         "source": row.get("source"),
         "confidence": row.get("confidence"),
@@ -69,8 +77,13 @@ def append_changed_snapshots(view: dict, captured_at_utc: str, path: Path = HIST
         rec = make_record(currency, row, captured_at_utc)
         prev = latest.get(currency)
         prev_fp = None if prev is None else prev.get("fingerprint")
-        if prev_fp is None and prev is not None:
+        # Historical fingerprints did not include method_id. Reconstruct only
+        # for same-method legacy rows; a method transition must append a new row.
+        if prev is not None and method_id(prev) != rec["method_id"]:
+            prev_fp = None
+        elif prev_fp is None and prev is not None:
             prev_fp = fingerprint(currency, {
+                "method_id": method_id(prev),
                 "as_of": prev.get("source_as_of"),
                 "source": prev.get("source"),
                 "confidence": prev.get("confidence"),

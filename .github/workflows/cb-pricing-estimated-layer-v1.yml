@@ -5,8 +5,10 @@ on:
     paths:
       - 'validation/cb_pricing/CB_PRICING_ESTIMATED_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
+      - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/test_cb_pricing_estimated_v1.py'
       - 'live_data/sections/CB_PRICING_ESTIMATED.json'
+      - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
       - '.github/workflows/cb-pricing-estimated-layer-v1.yml'
   workflow_dispatch:
 
@@ -15,12 +17,17 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Snapshot official runtime surfaces
+        run: |
+          sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
+          sha256sum live_data/sections/NATIVE_CB_DATA.json > /tmp/native.before.sha256
       - name: Verify methodology contract
         run: |
           python - <<'PY'
@@ -39,9 +46,26 @@ jobs:
           assert g['pair_engine_effect']=='NONE'
           assert g['backtest_effect']=='NONE'
           PY
+      - name: Collect live secondary curves for USD EUR CHF
+        run: python validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py
       - name: Rebuild estimated snapshot
         run: python validation/cb_pricing/build_cb_pricing_estimated_v1.py
       - name: Run estimated layer self-test
         run: python validation/cb_pricing/test_cb_pricing_estimated_v1.py
-      - name: Verify no official OIS mutation
-        run: git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
+      - name: Verify live modes and no official mutation
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('live_data/sections/CB_PRICING_ESTIMATED.json'))
+          for c in ('USD','EUR','CHF'):
+              r=d['currencies'][c]
+              assert r['input_mode']=='LIVE_SECONDARY_OVERLAY', r
+              assert r['method_id']=='TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1', r
+              assert r['freshness_status']=='LIVE_OR_RECENT_SESSION', r
+          assert d['currencies']['NZD']['input_mode']=='NATIVE_CB_FALLBACK'
+          assert d['currencies']['NZD']['method_id']=='NATIVE_CB_ESTIMATED_V1'
+          print('CB_ESTIMATED_LIVE_MODES_PASS')
+          PY
+          sha256sum -c /tmp/ois.before.sha256
+          sha256sum -c /tmp/native.before.sha256
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json

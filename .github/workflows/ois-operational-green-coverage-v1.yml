@@ -37,22 +37,24 @@ jobs:
           before=json.load(open('/tmp/ois_operational.before.json'))
           after=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
 
-          def strip_repricing(obj):
+          def strip_additive_metadata(obj):
               if isinstance(obj, dict):
                   return {
-                      k: strip_repricing(v)
+                      k: strip_additive_metadata(v)
                       for k, v in obj.items()
                       if k not in {
                           'change_1d_bp',
                           'change_1w_bp',
                           'repricing_reference',
+                          'input_mode',
+                          'method_id',
                       }
                   }
               if isinstance(obj, list):
-                  return [strip_repricing(x) for x in obj]
+                  return [strip_additive_metadata(x) for x in obj]
               return obj
 
-          assert strip_repricing(before) == strip_repricing(after), 'non-repricing operational OIS semantic drift'
+          assert strip_additive_metadata(before) == strip_additive_metadata(after), 'non-additive operational OIS semantic drift'
           assert after['status']=='GREEN_8_OF_8'
           assert after['summary']=={
               'g8_total':8,
@@ -66,10 +68,12 @@ jobs:
               assert row['operational_status']=='GREEN_ESTIMATED'
               assert row['backtest_eligible_as_official'] is False
               assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'
+              assert row['repricing_reference']['homogeneous_method_required'] is True
+              assert row['method_id'] in {'NATIVE_CB_ESTIMATED_V1','TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'}
               for h in ('3m','6m','12m'):
                   assert 'change_1d_bp' in row['horizons'][h]
                   assert 'change_1w_bp' in row['horizons'][h]
-          print('PASS core determinism with additive repricing fields')
+          print('PASS core determinism with additive repricing/method lineage fields')
           PY
       - name: Run coverage self-test
         run: python validation/cb_pricing/test_ois_operational_view_v1.py

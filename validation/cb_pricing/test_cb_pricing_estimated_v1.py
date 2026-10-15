@@ -15,8 +15,9 @@ def main():
     cb = json.loads((ROOT / "live_data/sections/NATIVE_CB_DATA.json").read_text(encoding="utf-8"))
     ois = json.loads((ROOT / "live_data/sections/OIS_DATA.json").read_text(encoding="utf-8"))
     current = json.loads((ROOT / "live_data/sections/CB_PRICING_ESTIMATED.json").read_text(encoding="utf-8"))
-    built = mod.build(cb, ois)
-    assert built == current, "Committed estimated snapshot drifted from deterministic builder"
+    live = mod.load_live_overlay()
+    built = mod.build(cb, ois, live)
+    assert built == current, "Committed/generated estimated snapshot drifted from deterministic builder"
 
     assert set(built["currencies"]) == {"USD", "EUR", "CHF", "NZD"}
     assert built["currencies"]["USD"]["status"] == "ESTIMATED_ACTIVE"
@@ -25,6 +26,16 @@ def main():
     assert built["currencies"]["NZD"]["status"] == "ESTIMATED_PARTIAL"
     assert built["currencies"]["NZD"]["horizons"]["6m"]["rate"] is None
     assert built["currencies"]["NZD"]["horizons"]["12m"]["rate"] is None
+
+    if live is not None:
+        for ccy in ("USD", "EUR", "CHF"):
+            row = built["currencies"][ccy]
+            assert row["input_mode"] == "LIVE_SECONDARY_OVERLAY", row
+            assert row["method_id"] == mod.LIVE_METHOD_ID, row
+            assert row["freshness_status"] == "LIVE_OR_RECENT_SESSION", row
+            assert all(row["horizons"][h]["rate"] is not None for h in ("3m", "6m", "12m")), row
+        assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
+        assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
 
     for ccy, row in built["currencies"].items():
         assert row["official_ois_status"] == "WITHHELD"
@@ -38,7 +49,7 @@ def main():
         assert row["change_1w_bp"] is None
 
     # Never allow the estimated layer to shadow an official ACTIVE currency.
-    x = mod.build_currency("USD", cb["USD"], {"status": "ACTIVE"})
+    x = mod.build_currency("USD", cb["USD"], {"status": "ACTIVE"}, None)
     assert x["status"] == "NOT_APPLICABLE_OFFICIAL_ACTIVE"
 
     print("CB_PRICING_ESTIMATED_V1: PASS")

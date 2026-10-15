@@ -1,0 +1,49 @@
+name: Probe TradingView OIS Chains V1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'validation/cb_pricing/probe_tradingview_ois_chains_v1.py'
+      - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
+      - '.github/workflows/probe-tradingview-ois-chains-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe server-visible futures chains
+        run: python validation/cb_pricing/probe_tradingview_ois_chains_v1.py
+      - name: Build live USD EUR CHF estimated curve
+        run: python validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py --output /tmp/CB_PRICING_ESTIMATED_LIVE_QUOTES.json
+      - name: Validate live overlay governance
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'))
+          assert d['status']=='INFORMATIONAL_ONLY'
+          assert d['official_ois_runtime_untouched'] is True
+          assert set(d['currencies'])=={'USD','EUR','CHF'}
+          for c,row in d['currencies'].items():
+              assert row['status']=='LIVE_SECONDARY_READY'
+              assert row['freshness_status']=='LIVE_OR_RECENT_SESSION'
+              assert set(row['horizons'])=={'3m','6m','12m'}
+              for h,x in row['horizons'].items():
+                  assert isinstance(x['rate'], (int,float))
+                  assert 80 < x['futures_price'] < 105
+                  assert x['business_day_lag'] <= 3
+          g=d['governance']
+          assert g['core_score_effect']=='NONE'
+          assert g['bias_effect']=='NONE'
+          assert g['pair_engine_effect']=='NONE'
+          assert g['backtest_eligible_as_official_ois'] is False
+          print('LIVE_ESTIMATED_OIS_COLLECTOR_PASS')
+          PY
