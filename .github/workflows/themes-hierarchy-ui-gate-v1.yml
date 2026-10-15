@@ -1,0 +1,105 @@
+name: Themes Hierarchy UI Gate V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/themes-hierarchy-v1.js'
+      - '.github/workflows/themes-hierarchy-ui-gate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dashboard/themes-hierarchy-v1.js'
+      - '.github/workflows/themes-hierarchy-ui-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/themes-hierarchy-ui.log 2>&1 &
+          sleep 2
+      - name: Verify Themes hierarchy desktop mobile
+        run: |
+          cat > themes-hierarchy-gate.js <<'EOF'
+          const { chromium }=require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          async function run(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_PREMIUM_SHELL?.status==='ACTIVE'&&window.GMFQ_PRODUCT_LANGUAGE?.status==='ACTIVE'&&window.GMFQ_TOP_THEMES_OPERATIONAL?.status==='ACTIVE'&&window.GMFQ_THEMES_HIERARCHY?.status==='ACTIVE',null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('themes'));
+            await page.waitForTimeout(900);
+            const snap=await page.evaluate(({vw,vh})=>{
+              const view=document.getElementById('themes');
+              const root=view?.querySelector('[data-gmfq-operational="themes"]');
+              const topRail=root?.querySelector('[data-gmfq-themes-rail="top"]');
+              const ctxRail=root?.querySelector('[data-gmfq-themes-rail="context"]');
+              const all=[...(root?.querySelectorAll('.ttCard')||[])];
+              const top=[...(root?.querySelectorAll('.ttCard[data-tier="top"]')||[])];
+              const ctx=[...(root?.querySelectorAll('.ttCard[data-tier="context"]')||[])];
+              const b=root?.getBoundingClientRect();
+              const grid=g=>g?{h:g.getBoundingClientRect().height,w:g.getBoundingClientRect().width,scrollWidth:g.scrollWidth,clientWidth:g.clientWidth,overflowX:getComputedStyle(g).overflowX,display:getComputedStyle(g).display}:null;
+              return {
+                hierarchy:window.GMFQ_THEMES_HIERARCHY,
+                operational:window.GMFQ_TOP_THEMES_OPERATIONAL,
+                marker:root?.getAttribute('data-gmfq-hierarchy'),
+                ownerCount:view?.querySelectorAll('[data-gmfq-operational="themes"]').length||0,
+                total:all.length,topCount:top.length,contextCount:ctx.length,
+                currencies:all.map(x=>x.dataset.ccy),
+                topCurrencies:top.map(x=>x.dataset.ccy),
+                visibleCards:all.filter(x=>getComputedStyle(x).display!=='none'&&x.getBoundingClientRect().height>0&&x.getBoundingClientRect().width>0).length,
+                headlineCount:all.filter(x=>x.querySelector('.ttHeadline')).length,
+                macroRows:all.filter(x=>x.querySelector('.ttRow')).length,
+                pricingPaths:all.filter(x=>x.querySelector('.ttPath')).length,
+                pricingBuckets:all.reduce((n,x)=>n+x.querySelectorAll('.ttBucket').length,0),
+                topRail:grid(topRail),contextRail:grid(ctxRail),
+                pageScreens:(b?.height||0)/vh,
+                text:String(root?.innerText||'').replace(/\s+/g,' ').trim(),
+                documentOverflow:document.documentElement.scrollWidth-vw
+              };
+            },{vw:viewport.width,vh:viewport.height});
+            console.log(label,JSON.stringify(snap,null,2));
+            if(snap.hierarchy?.schema!=='GMFQ_THEMES_HIERARCHY_V1'||snap.hierarchy?.status!=='ACTIVE'||snap.hierarchy?.scope!=='PRESENTATION_ONLY'||snap.hierarchy?.core_effect!=='NONE') throw new Error(label+' bad hierarchy '+JSON.stringify(snap.hierarchy));
+            if(snap.operational?.schema!=='GMFQ_TOP_THEMES_OPERATIONAL_UI_V1'||snap.operational?.status!=='ACTIVE'||snap.operational?.core_effect!=='NONE') throw new Error(label+' bad operational themes '+JSON.stringify(snap.operational));
+            if(snap.marker!=='themes-v1'||snap.ownerCount!==1) throw new Error(label+' themes owner/hierarchy marker '+JSON.stringify({marker:snap.marker,owner:snap.ownerCount}));
+            if(snap.total!==8||snap.topCount!==4||snap.contextCount!==4||snap.visibleCards!==8) throw new Error(label+' card coverage '+JSON.stringify({total:snap.total,top:snap.topCount,context:snap.contextCount,visible:snap.visibleCards}));
+            if(new Set(snap.currencies).size!==8||CCYS.some(c=>!snap.currencies.includes(c))) throw new Error(label+' G8 currency coverage '+JSON.stringify(snap.currencies));
+            if(JSON.stringify(snap.topCurrencies)!==JSON.stringify(snap.operational.top)) throw new Error(label+' top4 ranking drift '+JSON.stringify({visible:snap.topCurrencies,state:snap.operational.top}));
+            if(snap.headlineCount!==8||snap.macroRows!==8||snap.pricingPaths!==8||snap.pricingBuckets!==24) throw new Error(label+' content structure drift '+JSON.stringify({headlines:snap.headlineCount,macro:snap.macroRows,paths:snap.pricingPaths,buckets:snap.pricingBuckets}));
+            for(const term of ['Temi principali','Macro','3M','6M','12M']) if(!snap.text.toLocaleLowerCase('it').includes(term.toLocaleLowerCase('it'))) throw new Error(label+' themes content lost '+term);
+            if(snap.documentOverflow>4) throw new Error(label+' document horizontal overflow '+snap.documentOverflow);
+            if(label==='mobile'){
+              for(const [k,g] of Object.entries({top:snap.topRail,context:snap.contextRail})) if(!g||g.overflowX!=='auto'||!(g.scrollWidth>g.clientWidth+100)) throw new Error(label+' horizontal rail missing '+k+' '+JSON.stringify(g));
+              if(snap.pageScreens>2.6) throw new Error(label+' Themes still too tall '+snap.pageScreens.toFixed(2)+' screens');
+            }else if(snap.pageScreens>4.2) throw new Error(label+' desktop Themes regression '+snap.pageScreens.toFixed(2)+' screens');
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+            console.log(label,'THEMES_HIERARCHY_UI_PASS',snap.pageScreens.toFixed(2));
+          }
+          (async()=>{await run({width:1440,height:1100},'desktop');await run({width:390,height:844},'mobile');console.log('THEMES_HIERARCHY_UI_GATE_V1 PASS');})().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node themes-hierarchy-gate.js
