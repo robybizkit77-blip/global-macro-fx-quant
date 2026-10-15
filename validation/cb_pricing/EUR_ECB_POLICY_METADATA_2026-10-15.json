@@ -1,0 +1,17 @@
+{
+  "schema": "GMFQ_CB_POLICY_METADATA_V1",
+  "currency": "EUR",
+  "central_bank": "European Central Bank",
+  "as_of": "2026-10-15",
+  "policy_rate_name": "deposit facility rate",
+  "policy_rate": 2.50,
+  "effective_from": "2026-09-16",
+  "policy_rate_source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html",
+  "meeting_path": [
+    {"date":"2026-10-29","source":"ECB Governing Council monetary policy meeting calendar","status":"mapped"},
+    {"date":"2026-12-17","source":"ECB Governing Council monetary policy meeting calendar","status":"mapped"},
+    {"date":"2027-02-04","source":"ECB Governing Council monetary policy meeting calendar","status":"mapped"}
+  ],
+  "meeting_calendar_source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+  "validation": {"official_source":true,"policy_rate_validated":true,"meeting_path_validated":true,"runtime_mutated":false}
+}
