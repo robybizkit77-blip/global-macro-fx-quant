@@ -1,0 +1,47 @@
+name: CB Pricing Estimated Layer V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/cb_pricing/CB_PRICING_ESTIMATED_CONTRACT_V1_2026-10-15.json'
+      - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
+      - 'validation/cb_pricing/test_cb_pricing_estimated_v1.py'
+      - 'live_data/sections/CB_PRICING_ESTIMATED.json'
+      - '.github/workflows/cb-pricing-estimated-layer-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify methodology contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('validation/cb_pricing/CB_PRICING_ESTIMATED_CONTRACT_V1_2026-10-15.json')
+          d=json.loads(p.read_text())
+          assert d['status']=='INFORMATIONAL_ONLY'
+          assert d['eligible_currencies']==['USD','EUR','CHF','NZD']
+          g=d['governance']
+          assert g['official_ois_runtime_replaced'] is False
+          assert g['official_withheld_status_changed'] is False
+          assert g['core_score_effect']=='NONE'
+          assert g['bias_effect']=='NONE'
+          assert g['sizing_effect']=='NONE'
+          assert g['pair_engine_effect']=='NONE'
+          assert g['backtest_effect']=='NONE'
+          PY
+      - name: Rebuild estimated snapshot
+        run: python validation/cb_pricing/build_cb_pricing_estimated_v1.py
+      - name: Run estimated layer self-test
+        run: python validation/cb_pricing/test_cb_pricing_estimated_v1.py
+      - name: Verify no official OIS mutation
+        run: git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json

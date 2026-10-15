@@ -1,0 +1,39 @@
+{
+  "schema": "GMFQ_CB_PRICING_ESTIMATED_CONTRACT_V1",
+  "as_of": "2026-10-15",
+  "status": "INFORMATIONAL_ONLY",
+  "purpose": "Provide a clearly separated estimated central-bank pricing layer for currencies whose official OIS/futures runtime remains WITHHELD. This layer must never masquerade as official OIS data.",
+  "eligible_currencies": ["USD", "EUR", "CHF", "NZD"],
+  "source_precedence": [
+    "existing secondary instrument quote already stored in NATIVE_CB_DATA.market_pricing",
+    "existing partial-official central-bank market-pricing point already stored in NATIVE_CB_DATA.market_pricing",
+    "otherwise WITHHELD"
+  ],
+  "classification": {
+    "USD": {"confidence_grade": "B", "basis": "CBOT Fed Funds futures secondary quote layer; instrument identity validated, official current/T-1 evidence exists, full official weekly history not yet certified."},
+    "EUR": {"confidence_grade": "B", "basis": "Eurex Three-Month Euro STR futures secondary quote layer; instrument and quote convention validated, historical official settlements not yet reproducible."},
+    "CHF": {"confidence_grade": "B", "basis": "ICE Three-Month SARON futures secondary quote layer; instrument and convention validated, free official daily settlement history not reproducible."},
+    "NZD": {"confidence_grade": "C", "basis": "Partial official RBNZ market-pricing point; only the surfaced near-term point is retained, with no invented 6M/12M path."}
+  },
+  "output_rules": {
+    "status_full_three_horizons": "ESTIMATED_ACTIVE",
+    "status_partial": "ESTIMATED_PARTIAL",
+    "status_no_usable_input": "WITHHELD",
+    "horizons": ["3m", "6m", "12m"],
+    "policy_delta_bp": "100 * (estimated market rate - current policy rate) when both are available",
+    "two_year_change_1w_proxy_bp": "Optional front-end context copied from NATIVE_RATES_DATA.chg2_bp. This is not an OIS change and must never be labelled as such.",
+    "missing_horizons": "Remain null; no interpolation or curve invention is permitted."
+  },
+  "governance": {
+    "official_ois_runtime_replaced": false,
+    "official_withheld_status_changed": false,
+    "core_score_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "backtest_effect": "NONE",
+    "forward_logger_effect": "NONE",
+    "publication_effect": "NONE_UNTIL_EXPLICIT_UI_INTEGRATION",
+    "promotion_rule": "An estimated currency can move to the official OIS layer only after the original homogeneous-source activation condition is satisfied."
+  }
+}
