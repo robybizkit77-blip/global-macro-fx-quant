@@ -30,7 +30,11 @@ jobs:
         with:
           python-version: '3.12'
       - name: Audit runtime-equivalent legacy dependencies after quarantine
-        run: python validation/ui/audit_calendar_news_legacy_dependencies_v2.py | tee /tmp/legacy-audit-v2.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/ui/audit_calendar_news_legacy_dependencies_v2.py | tee /tmp/legacy-audit-v2.json
+          test -s /tmp/legacy-audit-v2.json
       - uses: actions/upload-artifact@v4
         with:
           name: calendar-news-legacy-dependency-audit-v2
