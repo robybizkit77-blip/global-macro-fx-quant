@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 CB=ROOT/'live_data/sections/NATIVE_CB_DATA.json'
 MACRO=ROOT/'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
+CONSENSUS=ROOT/'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
 OUT=ROOT/'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
 ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
 
@@ -26,7 +27,9 @@ def stable_write(core):
 def main():
     cb=json.loads(CB.read_text(encoding='utf-8'))
     macro=json.loads(MACRO.read_text(encoding='utf-8'))
-    today=date.today(); events=[]; cb_count=0; macro_count=0
+    consensus=json.loads(CONSENSUS.read_text(encoding='utf-8')) if CONSENSUS.exists() else {'status':'MISSING','events':[]}
+    cmap={r.get('event_key'):r for r in consensus.get('events',[]) if r.get('event_key')}
+    today=date.today(); events=[]; cb_count=0; macro_count=0; consensus_available=0; previous_only=0
     for ccy in ORDER:
         row=cb.get(ccy) or {}; raw=row.get('next_meeting')
         if raw:
@@ -39,12 +42,38 @@ def main():
         try: d=date.fromisoformat(e['date'])
         except Exception: continue
         if d<today: continue
-        x=dict(e); x.update({'status':'UPCOMING','source_layer':'MACRO_RELEASE_OFFICIAL_SEED_V1','consensus_status':'NOT_PRESENT'})
+        key='|'.join([str(e.get('ccy','')),str(e.get('date','')),str(e.get('event_type','')),str(e.get('title',''))])
+        c=cmap.get(key)
+        cstatus=(c or {}).get('status','NOT_PRESENT')
+        if cstatus=='AVAILABLE': consensus_available+=1
+        elif cstatus=='PREVIOUS_ONLY': previous_only+=1
+        x=dict(e); x.update({'status':'UPCOMING','source_layer':'MACRO_RELEASE_OFFICIAL_SEED_V1','consensus_status':cstatus})
+        if c:
+            x.update({'consensus':c.get('consensus'),'previous':c.get('previous'),'consensus_unit':c.get('unit'),
+                      'consensus_provider':c.get('provider'),'consensus_confidence':c.get('confidence_grade'),
+                      'consensus_provider_last_update':c.get('provider_last_update'),'consensus_official_date_overridden':False})
         macro_count+=1; events.append(x)
     events.sort(key=lambda x:(x['date'],ORDER.index(x['ccy']) if x.get('ccy') in ORDER else 99,x.get('event_type','')))
     ccy_macro=sorted({e['ccy'] for e in events if e.get('source_layer')=='MACRO_RELEASE_OFFICIAL_SEED_V1'})
-    core={'schema':'GMFQ_CALENDAR_OPERATIONAL_VIEW_V2','status':'ACTIVE_CB_PLUS_MACRO_OFFICIAL','coverage':{'g8_total':8,'cb_schedule_available':cb_count,'macro_ccy_coverage':len(ccy_macro),'upcoming_macro_events':macro_count,'upcoming_total_events':len(events)},'scope':{'central_bank_schedule':'ACTIVE_OFFICIAL','macro_release_schedule':'ACTIVE_OFFICIAL_VERIFIED_SEED','macro_release_currencies':ccy_macro,'consensus':'SEPARATE_SECONDARY_LAYER_NOT_PRESENT','core_score_impact':0},'events':events}
+    if consensus_available:
+        consensus_scope='SECONDARY_ACTIVE_PARTIAL'
+    elif previous_only:
+        consensus_scope='SECONDARY_PREVIOUS_ONLY'
+    elif consensus.get('provider'):
+        consensus_scope='SECONDARY_PROVIDER_READY_NO_VALUES'
+    else:
+        consensus_scope='SEPARATE_SECONDARY_LAYER_NOT_PRESENT'
+    core={'schema':'GMFQ_CALENDAR_OPERATIONAL_VIEW_V3','status':'ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT',
+          'coverage':{'g8_total':8,'cb_schedule_available':cb_count,'macro_ccy_coverage':len(ccy_macro),
+                      'upcoming_macro_events':macro_count,'upcoming_total_events':len(events),
+                      'consensus_available_events':consensus_available,'previous_only_events':previous_only},
+          'scope':{'central_bank_schedule':'ACTIVE_OFFICIAL','macro_release_schedule':'ACTIVE_OFFICIAL_VERIFIED_SEED',
+                   'macro_release_currencies':ccy_macro,'consensus':consensus_scope,
+                   'consensus_provider':consensus.get('provider'),'consensus_context_only':True,
+                   'consensus_never_changes_official_date':True,'core_score_impact':0},'events':events}
     changed=stable_write(core)
-    print(json.dumps({'status':'PASS','changed':changed,'total_events':len(events),'macro_events':macro_count,'macro_ccy_coverage':len(ccy_macro),'output':str(OUT.relative_to(ROOT))}))
+    print(json.dumps({'status':'PASS','changed':changed,'total_events':len(events),'macro_events':macro_count,
+                      'macro_ccy_coverage':len(ccy_macro),'consensus_available':consensus_available,
+                      'previous_only':previous_only,'output':str(OUT.relative_to(ROOT))}))
 
 if __name__=='__main__': main()
