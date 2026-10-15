@@ -71,7 +71,7 @@ def main():
         raise SystemExit("CB estimated validation mutated official CB/OIS inputs")
 
     # Current operational estimated architecture: USD/EUR/CHF use live secondary
-    # exchange-labelled curves; NZD preserves the native RBNZ OIS anchor and adds
+    # dated listed futures only; NZD preserves the native RBNZ OIS anchor and adds
     # an explicitly non-OIS ASX directional market-rates proxy.
     for ccy in ("USD", "EUR", "CHF"):
         row = cb_after_obj["currencies"][ccy]
@@ -79,10 +79,16 @@ def main():
             raise SystemExit(f"{ccy} estimated live layer not active")
         if row.get("input_mode") != "LIVE_SECONDARY_OVERLAY":
             raise SystemExit(f"{ccy} estimated input mode drift")
-        if row.get("method_id") != "TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1":
+        if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
             raise SystemExit(f"{ccy} estimated method drift")
         if row.get("governance", {}).get("backtest_eligible_as_official_ois") is not False:
             raise SystemExit(f"{ccy} estimated layer was silently promoted to official backtest input")
+        for horizon in ("3m", "6m", "12m"):
+            point = (row.get("horizons") or {}).get(horizon) or {}
+            if not isinstance(point.get("rate"), (int, float)):
+                raise SystemExit(f"{ccy} estimated {horizon} missing numeric rate")
+            if "!" in str(point.get("contract") or "") or "!" in str(point.get("symbol") or ""):
+                raise SystemExit(f"{ccy} estimated {horizon} uses forbidden continuous future")
 
     nzd = cb_after_obj["currencies"]["NZD"]
     if nzd.get("status") != "ESTIMATED_PARTIAL" or nzd.get("input_mode") != "NATIVE_CB_FALLBACK":
@@ -123,6 +129,14 @@ def main():
         row = operational_ois["currencies"][ccy]
         if row.get("operational_status") != "GREEN_ESTIMATED" or row.get("backtest_eligible_as_official") is not False:
             raise SystemExit(f"{ccy} estimated operational OIS governance drift")
+    for ccy in ("USD", "EUR", "CHF"):
+        row = operational_ois["currencies"][ccy]
+        if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
+            raise SystemExit(f"{ccy} operational OIS method drift")
+        for horizon in ("3m", "6m", "12m"):
+            point = (row.get("horizons") or {}).get(horizon) or {}
+            if "!" in str(point.get("contract") or "") or "!" in str(point.get("symbol") or ""):
+                raise SystemExit(f"{ccy} operational {horizon} uses forbidden continuous future")
 
     residual_contract = load_json("validation/estimated/RESIDUAL_GAPS_ESTIMATED_CONTRACT_V1_2026-10-15.json")
     residual = load_json("live_data/sections/ESTIMATED_RESIDUAL_GAPS.json")
@@ -194,6 +208,8 @@ def main():
                 "refresh_mode": "LIVE_OPERATIONAL_ESTIMATED_WITH_HOMOGENEOUS_REPRICING",
                 "currencies": ["USD", "EUR", "CHF", "NZD"],
                 "live_secondary_overlay_currencies": ["USD", "EUR", "CHF"],
+                "live_secondary_method": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
+                "continuous_futures_allowed": False,
                 "native_ois_anchor_currencies": ["NZD"],
                 "directional_market_proxy_currencies": ["NZD"],
                 "deterministic_snapshot_aligned": True,
