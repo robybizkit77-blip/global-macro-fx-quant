@@ -53,10 +53,9 @@ jobs:
             await page.waitForTimeout(700);
             const shell=await page.evaluate(()=>{
               const state=window.GMFQ_PREMIUM_SHELL;
-              const style=document.getElementById('gmfq-premium-shell-v1-style');
               const body=getComputedStyle(document.body);
-              const sidebar=document.querySelector('aside.sidebar,.sidebar');
-              const sideStyle=sidebar?getComputedStyle(sidebar):null;
+              const rail=document.querySelector('[data-gmfq-premium-rail="true"]');
+              const railStyle=rail?getComputedStyle(rail):null;
               return {
                 state,
                 design:document.documentElement.dataset.gmfqDesign,
@@ -64,17 +63,18 @@ jobs:
                 styleCount:document.querySelectorAll('#gmfq-premium-shell-v1-style').length,
                 bodyBg:body.backgroundColor,
                 bodyFont:body.fontFamily,
-                sidebar:!!sidebar,
-                sidebarBg:sideStyle?.backgroundImage||sideStyle?.backgroundColor||null,
-                sidebarBorder:sideStyle?.borderRightWidth||null,
+                rail:!!rail,
+                railIsFirst:rail===document.querySelector('.shell')?.firstElementChild,
+                railBg:railStyle?.backgroundImage||railStyle?.backgroundColor||null,
+                railBorder:railStyle?.borderRightWidth||null,
                 shell:!!document.querySelector('.shell')
               };
             });
-            if(shell.state?.schema!=='GMFQ_PREMIUM_SHELL_V1'||shell.state?.status!=='ACTIVE'||shell.state?.core_effect!=='NONE'||shell.state?.scope!=='PRESENTATION_ONLY') throw new Error(label+' bad premium state '+JSON.stringify(shell));
+            if(shell.state?.schema!=='GMFQ_PREMIUM_SHELL_V1'||shell.state?.status!=='ACTIVE'||shell.state?.core_effect!=='NONE'||shell.state?.scope!=='PRESENTATION_ONLY'||shell.state?.rail_bound!==true) throw new Error(label+' bad premium state '+JSON.stringify(shell));
             if(shell.styleCount!==1||shell.design!=='institutional-editorial-premium'||shell.version!=='1') throw new Error(label+' premium marker drift '+JSON.stringify(shell));
-            if(!shell.shell||!shell.sidebar) throw new Error(label+' shell/sidebar missing '+JSON.stringify(shell));
+            if(!shell.shell||!shell.rail||!shell.railIsFirst) throw new Error(label+' shell/rail binding missing '+JSON.stringify(shell));
             if(!/Inter/i.test(shell.bodyFont)) throw new Error(label+' typography drift '+shell.bodyFont);
-            if(shell.sidebarBorder==='0px') throw new Error(label+' sidebar separation missing '+JSON.stringify(shell));
+            if(shell.railBorder==='0px') throw new Error(label+' rail separation missing '+JSON.stringify(shell));
 
             for(const view of VIEWS){
               await page.evaluate(v=>window.showView?.(v),view);
