@@ -25,6 +25,13 @@ on:
       - 'validation/run_final_e2e_certification_gate_v3.py'
       - 'validation/estimated/**'
       - '.github/workflows/final-e2e-certification-gate-v3.yml'
+  workflow_run:
+    workflows:
+      - 'JPY Reserve Balances Proxy Refresh V1'
+      - 'CHF Residual Proxy Refresh V1'
+      - 'Brent Market Proxy Refresh V1'
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -32,10 +39,13 @@ permissions:
 
 jobs:
   final-e2e-v3:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
