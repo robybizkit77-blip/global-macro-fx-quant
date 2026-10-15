@@ -25,14 +25,20 @@
     return d;
   }
 
+  function chfRateDates(){
+    return [...document.querySelectorAll('#overview .ov387RateRow')]
+      .filter(row=>/^CHF\b/.test((row.innerText||'').trim()))
+      .map(row=>row.querySelector('.ov387RateDate'))
+      .filter(Boolean);
+  }
+
   function explainChfRates(){
-    const dates=[...document.querySelectorAll('#overview .ov387RateDate')];
+    const dates=chfRateDates();
     let n=0;
     for(const el of dates){
-      const row=el.closest('.ov387RateRow');
-      if(!row || !/^CHF\b/.test((row.innerText||'').trim())) continue;
-      if((el.textContent||'').trim()==='2026-09-30'){
-        el.textContent='2026-09-30 · ultimo SNB validato';
+      const raw=(el.textContent||'').trim().match(/20\d{2}-\d{2}-\d{2}/)?.[0]||null;
+      if(raw==='2026-09-30'){
+        el.textContent=`${raw} · ultimo SNB validato`;
         el.setAttribute('title','Ultimo snapshot 2Y/10Y SNB validato. Il feed ufficiale successivo è trattenuto perché l’export non restituisce osservazioni complete; nessun mix con fonti secondarie.');
         el.setAttribute('data-gmfq-source-state','SNB_LAST_VALIDATED');
         n++;
@@ -41,13 +47,20 @@
     return n;
   }
 
+  function currentChfAsOf(){
+    const vals=chfRateDates().map(el=>(el.textContent||'').match(/20\d{2}-\d{2}-\d{2}/)?.[0]).filter(Boolean).sort();
+    return vals.at(-1)||null;
+  }
+
   function render(){
     const d=relabelHero();
     const chfLabels=explainChfRates();
+    const chfAsOf=currentChfAsOf();
     window.GMFQ_OVERVIEW_ASOF_OPERATIONAL={
       schema:SCHEMA,status:'ACTIVE',core_effect:'NONE',
       price_as_of:d,hero_authority:'GMFQ_ECB_PRICE_AUDIT.as_of',
-      chf_rates_as_of:'2026-09-30',chf_rates_state:'SNB_LAST_VALIDATED_SOURCE_EXPORT_BLOCKED',
+      chf_rates_as_of:chfAsOf,
+      chf_rates_state:chfLabels>0?'SNB_LAST_VALIDATED_SOURCE_EXPORT_BLOCKED':'SOURCE_DATE_VISIBLE',
       chf_labels:chfLabels
     };
     return window.GMFQ_OVERVIEW_ASOF_OPERATIONAL;
