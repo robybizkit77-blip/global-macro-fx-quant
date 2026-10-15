@@ -1,0 +1,113 @@
+name: EUR Eurex FST3 Production Promotion V1
+
+on:
+  push:
+    branches:
+      - promotion-eur-cb-pricing-official-eurex-v1-2026-10-15
+    paths:
+      - '.github/workflows/eur-eurex-fst3-production-promotion-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: eur-eurex-fst3-production-promotion-v1
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build certified EUR activation candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/eur-promotion
+          cp live_data/sections/OIS_DATA.json /tmp/eur-promotion/OIS.before.json
+          cp live_data/sections/NATIVE_CB_DATA.json /tmp/eur-promotion/NATIVE.before.json
+          python3 validation/cb_pricing/collect_eur_eurex_fst3.py --as-of 2026-10-14 --output /tmp/eur-promotion/EUR.snapshot.json
+          python3 validation/cb_pricing/build_eur_eurex_fst3_candidate.py --snapshot /tmp/eur-promotion/EUR.snapshot.json --output /tmp/eur-promotion/EUR.candidate.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('/tmp/eur-promotion/EUR.candidate.json'))
+          assert c['status']=='READY_FOR_CONTROLLED_ACTIVATION_PROOF',c['status']
+          assert c['validation']['controlled_activation_only'] is True
+          assert c['validation']['source_registry_authorized'] is False
+          print('EUR_ACTIVATION_CANDIDATE_PASS')
+          PY
+      - name: Apply EUR runtime and activate canonical source registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/cb_pricing/apply_eur_eurex_fst3_candidate.py --candidate /tmp/eur-promotion/EUR.candidate.json > /tmp/eur-promotion/EUR.apply.json
+          python3 - <<'PY'
+          import pathlib,re
+          p=pathlib.Path('validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json')
+          s=p.read_text()
+          active='    "EUR": {"status":"ACTIVE","official_source":"Eurex","instrument":"Three-Month Euro STR Futures (FST3)","method":"Direct official Eurex FST3 daily settlement prices transformed as 100 minus rate; fixed Dec-26/Mar-27/Sep-27 quarterly buckets; no interpolation","activation_blocker":null,"certification":{"source":"official Eurex overallstatistics REST surface","product_id":"3402482","product_code":"FST3","isin":"DE000A3CNW06","current_t1_weekly":"validated","controlled_apply":"PASS"}},'
+          s,n=re.subn(r'^    "EUR": .*,$',active,s,count=1,flags=re.M)
+          assert n==1,n
+          old='  "governance": {"active_count":4,"withheld_count":4,"active":["AUD","CAD","GBP","JPY"],"withheld":["USD","EUR","CHF","NZD"],"rule":"Better WITHHELD than a weak proxy. A currency can move to ACTIVE only after source, as-of, meeting path and 1D/1W change fields are validated on homogeneous data."}'
+          new='  "governance": {"active_count":5,"withheld_count":3,"active":["AUD","CAD","EUR","GBP","JPY"],"withheld":["USD","CHF","NZD"],"rule":"Better WITHHELD than a weak proxy. A currency can move to ACTIVE only after source, as-of, meeting path and 1D/1W change fields are validated on homogeneous data."}'
+          assert old in s
+          s=s.replace(old,new).replace('"as_of": "2026-10-08"','"as_of": "2026-10-15"',1)
+          p.write_text(s)
+          PY
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/eur-promotion/manifest.json
+          python3 validation/check_cb_pricing_source_registry.py > /tmp/eur-promotion/registry.json
+          python3 validation/check_live_update_contract.py > /tmp/eur-promotion/live-contract.json
+          python3 validation/rebuild_live_data_runtime.py --verify-only > /tmp/eur-promotion/roundtrip.json
+      - name: Enforce exact EUR promotion scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,subprocess
+          bo=json.load(open('/tmp/eur-promotion/OIS.before.json')); ao=json.load(open('live_data/sections/OIS_DATA.json'))
+          bn=json.load(open('/tmp/eur-promotion/NATIVE.before.json')); an=json.load(open('live_data/sections/NATIVE_CB_DATA.json'))
+          co=[k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k]]
+          cn=[k for k in bn if bn[k]!=an[k]]
+          assert co==['EUR'],co; assert cn==['EUR'],cn
+          assert ao['currencies']['EUR']['status']=='ACTIVE'
+          reg=json.load(open('validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json'))
+          assert reg['currencies']['EUR']['status']=='ACTIVE'
+          assert reg['governance']['active_count']==5 and reg['governance']['withheld_count']==3
+          c=json.load(open('/tmp/eur-promotion/live-contract.json')); r=json.load(open('/tmp/eur-promotion/roundtrip.json'))
+          assert c['status']=='PASS',c
+          assert r['status']=='PASS' and r.get('noop_roundtrip_byte_identical') is True,r
+          changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt','validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json'])
+          assert changed==expected,(changed,expected)
+          print('EUR_PRODUCTION_PROMOTION_SCOPE_PASS')
+          PY
+      - name: Commit promotion to branch with remote-head lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH='promotion-eur-cb-pricing-official-eurex-v1-2026-10-15'
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/manifest.v2.json live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json payload/part-00.txt validation/cb_pricing/CB_PRICING_SOURCE_STATUS_2026-10-08.json
+          git commit -m 'Activate EUR CB pricing from official Eurex FST3 settlements'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$BRANCH"
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-eurex-fst3-production-promotion-${{ github.run_id }}
+          path: /tmp/eur-promotion/
+          if-no-files-found: warn
+          retention-days: 30
