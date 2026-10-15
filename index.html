@@ -23,6 +23,9 @@
  if(!html.includes(marker)) throw new Error('Final audit settlement marker mancante');
  const finalRefresh='<script id="gmfq-single-final-stable-refresh">try{if(typeof stableModelRefresh===\'function\')stableModelRefresh();}catch(e){console.error(\'single-final-refresh\',e);}</scr'+'ipt>\n';
  html=html.replace(marker,finalRefresh+marker);
+ const oisUi='<script id="gmfq-ois-operational-ui" src="dashboard/ois-operational-monitor-v1.js" defer></scr'+'ipt>\n';
+ if(!html.includes('</body>')) throw new Error('Payload body close mancante');
+ html=html.replace('</body>',oisUi+'</body>');
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
