@@ -20,7 +20,7 @@
     "pairs": {"owner_type":"DYNAMIC_REPLACE","owner":"dashboard/pairs-operational-v1.js","required_selector":"[data-gmfq-operational=\"pairs\"]","legacy_payload_state":"SOURCE_PRESENT_NON_OWNER"},
     "macro": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/macro-operational-v1.js","selector":"#v232CountryName[data-gmfq-operational=\"macro\"]","count":1}]},
     "inflationlabour": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/macro-operational-v1.js","selector":"#il407Grid[data-gmfq-operational=\"inflationlabour\"]","count":1}]},
-    "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
+    "ratesdesk": {"owner_type":"HYBRID","owner":"payload","dynamic_mounts":[{"owner":"dashboard/ratesdesk-operational-v1.js","selector":"#v233CountryName[data-gmfq-operational=\"ratesdesk\"]","count":1},{"owner":"dashboard/ois-operational-monitor-v1.js","selector":"#v401OisBlock[data-owner=\"GMFQ_OIS_OPERATIONAL_UI_V1\"]","count":1}]},
     "cbdesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "liquiditydesk": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
     "cot": {"owner_type":"PAYLOAD","owner":"payload","migration_state":"KEEP"},
@@ -38,6 +38,7 @@
     "pairs": ["derivePairDecisionFrame(runtime)","D.prices latest official ECB fixing"],
     "macro": ["macroBlockCoverage(runtime)","macroCategoryIntegrity(runtime)","renderMacroLab(runtime)"],
     "inflationlabour": ["macroCategoryIntegrity(runtime)","renderInflationLabourSection(runtime)","renderDynamicHeatmap(runtime)"],
+    "ratesdesk": ["rate2YSeries(runtime)","ratesTimingBindingIntegrity(runtime)","ratesCanonicalBasisIntegrity(runtime)","visibleRatesSnapshotIntegrity(runtime)","renderNativeRatesDesk(runtime)"],
     "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json"
   }
 }
