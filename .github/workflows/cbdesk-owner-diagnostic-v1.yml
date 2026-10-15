@@ -55,7 +55,11 @@ jobs:
                 }
               }
               const dataKeys=Object.keys(window.__GMFQ_DATA||{}).filter(k=>/CB|CENTRAL|POLICY|PRICING|OIS/i.test(k)).sort();
-              const data={};for(const k of dataKeys){const v=window.__GMFQ_DATA[k];data[k]=Array.isArray(v)?{type:'array',length:v.length,sample:v.slice(0,2)}:{type:typeof v,keys:v&&typeof v==='object'?Object.keys(v).slice(0,30):null,sample:v&&typeof v==='object'?JSON.parse(JSON.stringify(v,(kk,vv)=>vv)).constructor===Object?Object.fromEntries(Object.entries(v).slice(0,3)):null:v};}
+              const data={};
+              for(const k of dataKeys){
+                const v=window.__GMFQ_DATA[k];
+                data[k]=Array.isArray(v)?{type:'array',length:v.length,sample:v.slice(0,2)}:{type:typeof v,keys:v&&typeof v==='object'?Object.keys(v).slice(0,30):null};
+              }
               return {schema:'GMFQ_CBDESK_OWNER_DIAGNOSTIC_V1',text:norm(root?.innerText).slice(0,5000),elements:elems,buttons,globals,probes,dataKeys,data,health:typeof window.productionHealthCheck==='function'?window.productionHealthCheck():null};
             });
             const initial=await inspect();
@@ -67,7 +71,6 @@ jobs:
               snapshots.push({wanted,clicked,text});
             }
             const out={...initial,snapshots};console.log(JSON.stringify(out,null,2));
-            if(!document){}
             if(!initial.text)throw new Error('CB Desk empty');
             if(initial.buttons.length<8)throw new Error('CB Desk selector has fewer than 8 buttons');
             if(snapshots.some(x=>!x.clicked))throw new Error('CB Desk selector click failed');
