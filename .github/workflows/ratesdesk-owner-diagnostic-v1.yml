@@ -1,0 +1,109 @@
+name: Rates Desk Owner Diagnostic V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/ratesdesk-owner-diagnostic-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/ratesdesk-owner-diagnostic-server.log 2>&1 &
+          sleep 2
+      - name: Inspect Rates Desk live bindings
+        run: |
+          cat > ratesdesk-owner-diagnostic.js <<'EOF'
+          const { chromium } = require('playwright');
+          const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1100}});
+            const consoleErrors=[],pageErrors=[];
+            page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.evaluate(()=>window.showView?.('ratesdesk'));
+            await page.waitForTimeout(400);
+            const inspect=()=>page.evaluate(()=>{
+              const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
+              const root=document.getElementById('ratesdesk');
+              const rows=[...root.querySelectorAll('*')]
+                .filter(x=>x.id || /rate|curve|country/i.test(String(x.className||'')))
+                .slice(0,160)
+                .map(x=>({tag:x.tagName,id:x.id||null,cls:typeof x.className==='string'?x.className:null,text:norm(x.innerText).slice(0,160)}));
+              const native={};
+              for(const c of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+                const d=window.NATIVE_RATES_DATA?.[c]||null;
+                let bound=null;
+                try{bound=typeof window.rate2YSeries==='function'?window.rate2YSeries(c):null}catch(e){bound={error:String(e)}}
+                native[c]={
+                  date:d?.date||null,rate2y:d?.['2Y']??null,rate10y:d?.['10Y']??null,
+                  quality:d?.quality||null,history2_quality:d?.history2_quality||null,
+                  bound_last_date:bound?.dates?.at?.(-1)??null,bound_last_value:bound?.values?.at?.(-1)??null,
+                  bound_mode:bound?.same_basis_mode||null
+                };
+              }
+              return {
+                schema:'GMFQ_RATESDESK_OWNER_DIAGNOSTIC_V1',
+                text:norm(root?.innerText).slice(0,6000),
+                buttons:[...root.querySelectorAll('button')].map(x=>({text:norm(x.innerText),id:x.id||null,cls:x.className||null,attrs:Object.fromEntries([...x.attributes].map(a=>[a.name,a.value]))})).slice(0,50),
+                elements:rows,
+                operationalOwners:[...root.querySelectorAll('[data-gmfq-operational]')].map(x=>x.getAttribute('data-gmfq-operational')),
+                native,
+                timingIntegrity:typeof window.ratesTimingBindingIntegrity==='function'?window.ratesTimingBindingIntegrity():null,
+                basisIntegrity:typeof window.ratesCanonicalBasisIntegrity==='function'?window.ratesCanonicalBasisIntegrity():null,
+                visibleIntegrity:typeof window.visibleRatesSnapshotIntegrity==='function'?window.visibleRatesSnapshotIntegrity():null,
+                globals:Object.keys(window).filter(k=>/renderRate|Rates|rate2YSeries|rates.*Integrity/i.test(k)).sort().slice(0,180),
+                health:typeof window.productionHealthCheck==='function'?window.productionHealthCheck():null
+              };
+            });
+            const initial=await inspect();
+            const snapshots=[];
+            for(const wanted of ['USD','EUR','CHF','CAD']){
+              const clicked=await page.evaluate(w=>{
+                const root=document.getElementById('ratesdesk');
+                const b=[...root.querySelectorAll('button')].find(x=>String(x.innerText||'').trim().startsWith(w));
+                if(!b)return false;b.click();return true;
+              },wanted);
+              await page.waitForTimeout(180);
+              const text=await page.evaluate(()=>String(document.getElementById('ratesdesk')?.innerText||'').replace(/\s+/g,' ').trim().slice(0,1200));
+              snapshots.push({wanted,clicked,text});
+            }
+            const out={initial,snapshots};
+            console.log(JSON.stringify(out,null,2));
+            if(!initial.timingIntegrity?.ok||!initial.basisIntegrity?.ok||!initial.visibleIntegrity?.ok) throw new Error('Rates canonical integrity failed');
+            if(initial.buttons.length<8) throw new Error('Rates selector has fewer than 8 buttons');
+            if(snapshots.some(x=>!x.clicked)) throw new Error('Rates selector click failed');
+            for(const s of snapshots){if(!s.text.includes(s.wanted)) throw new Error('Rates selection did not render '+s.wanted);}
+            for(const c of CCYS){if(!initial.native[c]?.date||initial.native[c]?.rate2y==null) throw new Error('Native Rates incomplete '+c);}
+            const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
+            if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x))) throw new Error('Runtime scope error: '+consoleErrors.concat(pageErrors).join(' | '));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node ratesdesk-owner-diagnostic.js | tee /tmp/ratesdesk-owner-diagnostic.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ratesdesk-owner-diagnostic-v1
+          path: |
+            /tmp/ratesdesk-owner-diagnostic.json
+            /tmp/ratesdesk-owner-diagnostic-server.log
