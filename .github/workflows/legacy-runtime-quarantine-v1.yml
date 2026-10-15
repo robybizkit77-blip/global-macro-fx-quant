@@ -1,0 +1,33 @@
+name: Legacy Runtime Quarantine V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'validation/ui/check_legacy_runtime_quarantine_v1.py'
+      - '.github/workflows/legacy-runtime-quarantine-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'payload/**'
+      - 'validation/ui/check_legacy_runtime_quarantine_v1.py'
+      - '.github/workflows/legacy-runtime-quarantine-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quarantine-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify legacy source is retained but runtime execution is quarantined
+        run: python validation/ui/check_legacy_runtime_quarantine_v1.py
