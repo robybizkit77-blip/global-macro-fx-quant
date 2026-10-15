@@ -5,11 +5,13 @@ on:
     paths:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
+      - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
+      - 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'
       - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
       - '.github/workflows/ois-estimated-snapshot-repricing-v1.yml'
   push:
@@ -17,11 +19,13 @@ on:
     paths:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
+      - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
+      - 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'
       - 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
       - '.github/workflows/ois-estimated-snapshot-repricing-v1.yml'
   workflow_run:
@@ -64,6 +68,9 @@ jobs:
       - name: Collect live secondary USD EUR CHF curves
         run: python validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py
 
+      - name: Collect official ASX NZD directional rates proxy
+        run: python validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py
+
       - name: Rebuild estimated input and pre-snapshot operational view
         run: |
           python validation/cb_pricing/build_cb_pricing_estimated_v1.py
@@ -87,6 +94,7 @@ jobs:
           import json
           from pathlib import Path
           v=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          p=json.loads(Path('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json').read_text())
           assert v['summary']=={'g8_total':8,'operational_green':8,'green_official':4,'green_estimated':4,'operational_withheld':0}, v['summary']
           for c in ('USD','EUR','CHF'):
               r=v['currencies'][c]
@@ -102,7 +110,22 @@ jobs:
           n=v['currencies']['NZD']
           assert n['operational_status']=='GREEN_ESTIMATED'
           assert n['input_mode']=='NATIVE_CB_FALLBACK'
+          assert n['method_id']=='NATIVE_CB_ESTIMATED_V1'
           assert n['backtest_eligible_as_official'] is False
+          # Native RBNZ OIS anchor stays untouched: ASX is additive context only.
+          assert n['horizons']['3m']['rate']==3.0, n
+          assert n['horizons']['6m']['rate'] is None, n
+          assert n['horizons']['12m']['rate'] is None, n
+          proxy=n['market_direction_proxy']
+          assert proxy['status']=='LIVE_DIRECTIONAL_PROXY_READY', proxy
+          assert proxy['substitutes_for_ois_level'] is False, proxy
+          assert proxy['policy_delta_from_proxy_allowed'] is False, proxy
+          assert p['governance']['substitutes_for_ois_level'] is False
+          assert p['governance']['policy_delta_from_proxy_allowed'] is False
+          for h in ('3m','6m','12m'):
+              x=proxy['horizons'][h]
+              assert x['implied_bank_bill_rate'] is not None, x
+              assert 'change_1d_bp' in x and 'change_1w_bp' in x
           print('OIS_ESTIMATED_REPRICING_GOVERNANCE_PASS')
           PY
           git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
@@ -120,6 +143,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json \
+                  live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json \
                   live_data/sections/CB_PRICING_ESTIMATED.json \
                   live_data/sections/OIS_OPERATIONAL_VIEW.json \
                   validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl
