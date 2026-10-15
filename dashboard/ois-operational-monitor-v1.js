@@ -64,10 +64,30 @@ function render(){
  host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path comparabile tra le 8 valute. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">4 ESTIMATED</span><span class="oisBadge">8/8 OPERATIVO</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code> e non promuove gli estimated a dato ufficiale.</div></div>`;
  return true;
 }
+let repairQueued=false;
+function queueRepair(){
+ if(repairQueued||state.status!=='READY')return;
+ repairQueued=true;
+ requestAnimationFrame(()=>{
+   repairQueued=false;
+   const host=document.getElementById('v401OisBlock');
+   const cards=host?.querySelectorAll('.oisPathCard')?.length||0;
+   if(!host||cards!==8)render();
+ });
+}
+let observer=null;
+function attachRepairObserver(){
+ const desk=document.getElementById('ratesdesk');
+ if(!desk){setTimeout(attachRepairObserver,100);return;}
+ if(observer)return;
+ observer=new MutationObserver(queueRepair);
+ observer.observe(desk,{childList:true,subtree:true});
+}
 async function load(){
- try{state.status='LOADING';render();const r=await fetch(SRC,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);state.data=validate(await r.json());state.status='READY';state.loaded_at=new Date().toISOString();state.error=null;render();}
+ try{state.status='LOADING';render();const r=await fetch(SRC,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);state.data=validate(await r.json());state.status='READY';state.loaded_at=new Date().toISOString();state.error=null;render();attachRepairObserver();}
  catch(e){state.status='ERROR';state.error=String(e?.message||e);render();}
 }
+window.gmfqRenderOisOperational=render;
 window.gmfqOisOperationalUiAudit=function(){const hosts=document.querySelectorAll('#v401OisBlock');const host=hosts[0]||null;const rows=host?.querySelectorAll('.oisPathCard')?.length||0;return {status:state.status,host:!!host,host_count:hosts.length,cards:rows,ok:state.status==='READY'&&hosts.length===1&&rows===8,summary:state.data?.summary||null,error:state.error};};
 const base=window.renderNativeRatesDesk;if(typeof base==='function'){window.renderNativeRatesDesk=function(){const out=base.apply(this,arguments);setTimeout(render,0);return out;};}
 const prev=window.showView;if(typeof prev==='function'){window.showView=function(v){const out=prev.apply(this,arguments);if(v==='ratesdesk')setTimeout(render,0);return out;};}
