@@ -53,7 +53,7 @@
     if(!selected||!CCYS.includes(selected)||!countryText.includes(selected)) issues.push('MACRO_SELECTION_SYNC');
     if(integrity?.ok!==true) issues.push('MACRO_CATEGORY_INTEGRITY');
     if(!cov.ok) issues.push(...cov.issues);
-    if(CCYS.some(c=>!new RegExp(`\\b${c}\\b`).test(heatText))) issues.push('HEATMAP_G8_COVERAGE');
+    if(CCYS.some(c=>!heatText.includes(c))) issues.push('HEATMAP_G8_COVERAGE');
     return {
       schema:SCHEMA,status:issues.length?'FAIL':'ACTIVE',core_effect:'NONE',
       owner_type:'HYBRID_CANONICAL_RENDER_ADAPTER',macro_owner_count:macroOwner,
