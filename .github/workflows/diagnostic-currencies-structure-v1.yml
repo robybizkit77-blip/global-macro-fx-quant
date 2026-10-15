@@ -32,6 +32,7 @@ jobs:
         run: |
           cat > currencies-structure.js <<'EOF'
           const { chromium }=require('playwright');
+          const fs=require('fs');
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:390,height:844}});
@@ -58,8 +59,14 @@ jobs:
                 integrity:window.currencyUiIntegrity?.()||null
               };
             });
+            fs.writeFileSync('/tmp/currencies-structure-v1.json',JSON.stringify(out,null,2));
             console.log('CURRENCIES_DIAGNOSTIC_SUMMARY '+JSON.stringify(out));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
           node currencies-structure.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: currencies-structure-v1
+          path: /tmp/currencies-structure-v1.json
+          if-no-files-found: error
