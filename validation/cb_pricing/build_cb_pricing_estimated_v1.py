@@ -7,7 +7,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CB_PATH = ROOT / "live_data/sections/NATIVE_CB_DATA.json"
 OIS_PATH = ROOT / "live_data/sections/OIS_DATA.json"
-RATES_PATH = ROOT / "live_data/sections/NATIVE_RATES_DATA.json"
 OUT_PATH = ROOT / "live_data/sections/CB_PRICING_ESTIMATED.json"
 
 ELIGIBLE = ("USD", "EUR", "CHF", "NZD")
@@ -24,7 +23,7 @@ def _num(v):
         return None
 
 
-def build_currency(ccy, cb_row, ois_row, rates_row=None):
+def build_currency(ccy, cb_row, ois_row):
     # Estimated layer is only legal while official OIS remains withheld.
     if (ois_row or {}).get("status") != "WITHHELD":
         return {
@@ -65,7 +64,6 @@ def build_currency(ccy, cb_row, ois_row, rates_row=None):
     else:
         direction = "FLAT"
 
-    r2_change = _num((rates_row or {}).get("chg2_bp"))
     return {
         "currency": ccy,
         "status": status,
@@ -80,8 +78,9 @@ def build_currency(ccy, cb_row, ois_row, rates_row=None):
         "confidence_grade": CONFIDENCE[ccy],
         "horizons": horizons,
         "direction_vs_policy": direction,
-        "two_year_change_1w_proxy_bp": r2_change,
-        "two_year_change_note": "Front-end context only; this is the 2Y yield weekly change, not an OIS/futures weekly repricing measure.",
+        "change_1d_bp": None,
+        "change_1w_bp": None,
+        "change_status": "NOT_AVAILABLE_ESTIMATED_V1",
         "note": mp.get("note"),
         "governance": {
             "informational_only": True,
@@ -94,7 +93,7 @@ def build_currency(ccy, cb_row, ois_row, rates_row=None):
     }
 
 
-def build(cb, ois, rates):
+def build(cb, ois):
     out = {
         "schema": "GMFQ_CB_PRICING_ESTIMATED_V1",
         "status": "INFORMATIONAL_ONLY",
@@ -106,7 +105,6 @@ def build(cb, ois, rates):
             ccy,
             (cb or {}).get(ccy) or {},
             ((ois or {}).get("currencies") or {}).get(ccy) or {},
-            (rates or {}).get(ccy) or {},
         )
     return out
 
@@ -114,8 +112,7 @@ def build(cb, ois, rates):
 def main():
     cb = json.loads(CB_PATH.read_text(encoding="utf-8"))
     ois = json.loads(OIS_PATH.read_text(encoding="utf-8"))
-    rates = json.loads(RATES_PATH.read_text(encoding="utf-8"))
-    out = build(cb, ois, rates)
+    out = build(cb, ois)
     OUT_PATH.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": "PASS",
