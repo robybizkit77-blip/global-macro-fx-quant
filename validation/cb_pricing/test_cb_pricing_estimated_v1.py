@@ -16,7 +16,8 @@ def main():
     ois = json.loads((ROOT / "live_data/sections/OIS_DATA.json").read_text(encoding="utf-8"))
     current = json.loads((ROOT / "live_data/sections/CB_PRICING_ESTIMATED.json").read_text(encoding="utf-8"))
     live = mod.load_live_overlay()
-    built = mod.build(cb, ois, live)
+    nzd_proxy = mod.load_nzd_directional_proxy()
+    built = mod.build(cb, ois, live, nzd_proxy)
     assert built == current, "Committed/generated estimated snapshot drifted from deterministic builder"
 
     assert set(built["currencies"]) == {"USD", "EUR", "CHF", "NZD"}
@@ -36,6 +37,21 @@ def main():
             assert all(row["horizons"][h]["rate"] is not None for h in ("3m", "6m", "12m")), row
         assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
         assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
+
+    if nzd_proxy is not None:
+        nzd = built["currencies"]["NZD"]
+        proxy = nzd.get("market_direction_proxy")
+        assert proxy is not None, nzd
+        assert proxy["status"] == "LIVE_DIRECTIONAL_PROXY_READY", proxy
+        assert proxy["substitutes_for_ois_level"] is False, proxy
+        assert proxy["policy_delta_from_proxy_allowed"] is False, proxy
+        assert "Bank" in proxy["instrument"] and "Bill Futures" in proxy["instrument"], proxy
+        assert all(proxy["horizons"][h]["implied_bank_bill_rate"] is not None for h in ("3m", "6m", "12m")), proxy
+        # The ASX proxy must never fill or mutate the native OIS curve.
+        assert nzd["horizons"]["3m"]["rate"] == 3.0, nzd
+        assert nzd["horizons"]["6m"]["rate"] is None, nzd
+        assert nzd["horizons"]["12m"]["rate"] is None, nzd
+        assert nzd["direction_vs_policy"] == "UP", nzd
 
     for ccy, row in built["currencies"].items():
         assert row["official_ois_status"] == "WITHHELD"

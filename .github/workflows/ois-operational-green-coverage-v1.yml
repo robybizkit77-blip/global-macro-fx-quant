@@ -48,6 +48,7 @@ jobs:
                           'repricing_reference',
                           'input_mode',
                           'method_id',
+                          'market_direction_proxy',
                       }
                   }
               if isinstance(obj, list):
@@ -73,7 +74,26 @@ jobs:
               for h in ('3m','6m','12m'):
                   assert 'change_1d_bp' in row['horizons'][h]
                   assert 'change_1w_bp' in row['horizons'][h]
-          print('PASS core determinism with additive repricing/method lineage fields')
+
+          # market_direction_proxy is additive metadata, but if present it is
+          # tightly governed and may never masquerade as OIS or alter policy deltas.
+          for c, row in after['currencies'].items():
+              proxy=row.get('market_direction_proxy')
+              if proxy is None:
+                  continue
+              assert c=='NZD', (c, proxy)
+              assert row['operational_status']=='GREEN_ESTIMATED'
+              assert row['input_mode']=='NATIVE_CB_FALLBACK'
+              assert row['method_id']=='NATIVE_CB_ESTIMATED_V1'
+              assert row['backtest_eligible_as_official'] is False
+              assert proxy['status']=='LIVE_DIRECTIONAL_PROXY_READY'
+              assert proxy['substitutes_for_ois_level'] is False
+              assert proxy['policy_delta_from_proxy_allowed'] is False
+              # Native RBNZ OIS anchor must remain unchanged by the ASX overlay.
+              assert row['horizons']['3m']['rate']==3.0, row
+              assert row['horizons']['6m']['rate'] is None, row
+              assert row['horizons']['12m']['rate'] is None, row
+          print('PASS core determinism with governed additive repricing/directional metadata')
           PY
       - name: Run coverage self-test
         run: python validation/cb_pricing/test_ois_operational_view_v1.py
