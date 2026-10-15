@@ -60,9 +60,10 @@
  const whatChanged='<script id="gmfq-what-changed-operational-ui" src="dashboard/what-changed-operational-v1.js" defer></scr'+'ipt>\n';
  const riskOperational='<script id="gmfq-risk-operational-ui" src="dashboard/risk-operational-v1.js" defer></scr'+'ipt>\n';
  const pairsOperational='<script id="gmfq-pairs-operational-ui" src="dashboard/pairs-operational-v1.js" defer></scr'+'ipt>\n';
+ const overviewAsOf='<script id="gmfq-overview-asof-operational-ui" src="dashboard/overview-asof-operational-v1.js" defer></scr'+'ipt>\n';
  const editorialFreshness='<script id="gmfq-editorial-freshness-guard" src="dashboard/editorial-freshness-guard-v1.js" defer></scr'+'ipt>\n';
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
- html=html.replace('</body>',oisUi+calendarNews+topThemes+whatChanged+riskOperational+pairsOperational+editorialFreshness+'</body>');
+ html=html.replace('</body>',oisUi+calendarNews+topThemes+whatChanged+riskOperational+pairsOperational+overviewAsOf+editorialFreshness+'</body>');
  document.open(); document.write(html); document.close();
 })().catch(e=>document.body.innerHTML='<pre style="white-space:pre-wrap;padding:20px">Errore caricamento dashboard: '+e.message+'</pre>');
 </script></body></html>
