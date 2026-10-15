@@ -5,11 +5,18 @@
   "purpose": "Serialize production refresh workflows without duplicating collector/apply logic.",
   "timezone": "Europe/Rome",
   "target_local_times": {
+    "premorning": "07:45",
     "morning": "09:10",
     "close": "18:30",
     "night": "00:50"
   },
   "phases": {
+    "premorning": [
+      "rates-persistent-daily-v1.yml",
+      "cb-pricing-persistent-daily-v1.yml",
+      "final-e2e-certification-gate-v3.yml",
+      "publish-dashboard-pages-v1.yml"
+    ],
     "morning": [
       "macro-persistent-daily-v1.yml",
       "rates-persistent-daily-v1.yml",
@@ -50,6 +57,7 @@
     "official_promotion_effect": "NONE",
     "cot_remains_weekly": true,
     "final_certification_required_per_phase": true,
-    "pages_publish_required_per_phase": true
+    "pages_publish_required_per_phase": true,
+    "premorning_avoids_not_yet_ready_sources": true
   }
 }
