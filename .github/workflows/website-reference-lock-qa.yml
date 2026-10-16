@@ -128,16 +128,10 @@ jobs:
             const globalHref=hrefs.find(href=>href.endsWith(GLOBAL_MACRO));
             if(!globalHref) throw new Error('Global Macro mirror is not active in Library');
             const macro=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
-            macro.on('console',msg=>console.log(`BROWSER console ${msg.type()}: ${msg.text()}`));
-            macro.on('pageerror',err=>console.log(`BROWSER pageerror: ${err.message}`));
-            macro.on('requestfailed',req=>console.log(`BROWSER requestfailed: ${req.url()} · ${req.failure()?.errorText}`));
             const macroResponse=await macro.goto(new URL(globalHref,base+'library.html').href,{waitUntil:'domcontentloaded',timeout:120000});
             if(!macroResponse || !macroResponse.ok()) throw new Error(`${globalHref}: HTTP ${macroResponse?.status()}`);
-            await macro.waitForTimeout(5000);
-            const macroText=await macro.locator('body').innerText();
-            console.log(`BROWSER url: ${macro.url()}`);
-            console.log(`BROWSER title: ${await macro.title()}`);
-            console.log(`BROWSER body sample: ${macroText.slice(0,500).replace(/\s+/g,' ')}`);
+            await macro.waitForTimeout(3000);
+            const macroText=await macro.locator('body').textContent();
             if(!macroText.includes('Il quadro globale in 45 secondi') || !macroText.includes('Bottom line · desk takeaways')) throw new Error(`${globalHref}: multipart report did not render canonical content`);
             console.log(`QA multipart render OK: ${globalHref}`);
             await macro.close();
