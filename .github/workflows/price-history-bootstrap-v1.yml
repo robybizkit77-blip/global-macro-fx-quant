@@ -1,0 +1,70 @@
+name: Price History Bootstrap V1
+
+on:
+  push:
+    branches:
+      - website-reference-lock-2026-10-16
+    paths:
+      - 'validation/fetch_ecb_g8_price_history.py'
+      - '.github/workflows/price-history-bootstrap-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: price-history-bootstrap-v1
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch official ECB G8 history
+        run: |
+          set -euo pipefail
+          python validation/fetch_ecb_g8_price_history.py --out /tmp/ECB_G8_PRICE_HISTORY.json
+          python - <<'PY'
+          import json,re
+          h=json.load(open('/tmp/ECB_G8_PRICE_HISTORY.json'))
+          assert h['schema']=='GMFQ_ECB_G8_PRICE_HISTORY_V1',h
+          assert h['status']=='CURRENT_OFFICIAL_HISTORY',h
+          assert h['base']=='EUR' and h['pair_count']==28,h
+          assert h['currencies']==['EUR','USD','GBP','JPY','CHF','CAD','AUD','NZD'],h
+          assert h['row_count']==len(h['rows']) and h['row_count']>=500,h['row_count']
+          assert h['first_as_of']==h['rows'][0]['Date'] and h['last_as_of']==h['rows'][-1]['Date']
+          assert len({r['Date'] for r in h['rows']})==h['row_count']
+          assert all(r['EUR']==1 and all(float(r[c])>0 for c in h['currencies']) for r in h['rows'])
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">',text)
+          assert len(m)==1,m
+          runtime=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8:]}'
+          assert h['last_as_of']>=runtime,(h['last_as_of'],runtime)
+          print('PRICE_HISTORY_CONTRACT_PASS',h['first_as_of'],h['last_as_of'],h['row_count'])
+          PY
+
+      - name: Persist deterministic history snapshot
+        run: |
+          set -euo pipefail
+          mkdir -p live_data/sections
+          cp /tmp/ECB_G8_PRICE_HISTORY.json live_data/sections/ECB_G8_PRICE_HISTORY.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/ECB_G8_PRICE_HISTORY.json
+          if git diff --cached --quiet; then
+            echo PRICE_HISTORY_NO_CHANGE
+            exit 0
+          fi
+          git commit -m 'Refresh official ECB G8 price history'
+          git push origin HEAD:website-reference-lock-2026-10-16
+          echo PRICE_HISTORY_PERSISTED
