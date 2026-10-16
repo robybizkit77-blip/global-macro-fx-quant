@@ -34,7 +34,7 @@
     document.getElementById('pair-title').textContent=p;
     const st=document.getElementById('pair-state');st.textContent=r.label;st.className=`pair-state ${r.type==='align'?'align':r.type==='split'?'split':''}`;
     document.getElementById('pair-last').textContent=n(row?.last)===null?'—':fmt(row.last,p.includes('JPY')?3:5);
-    document.getElementById('pair-asof').textContent=`as of ${row?.price_asof||state.d?.asOf||'—'}`;
+    document.getElementById('pair-asof').textContent=`as of ${row?.price_asof||state.d?.price_asof||'—'}`;
     setMove('move-1w',row?.ret1w);setMove('move-1m',row?.ret1m);setMove('move-3m',row?.ret3m);
 
     const thesis=document.getElementById('pair-thesis'),lead=document.getElementById('pair-lead');
@@ -87,6 +87,6 @@
   }
   function bind(){document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));document.querySelector('.pro-card button')?.addEventListener('click',()=>location.href='index.html')}
   function clock(){const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'Europe/Rome'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d)}
-  async function main(){bind();clock();setInterval(clock,30000);try{[state.d,state.rates,state.ois,state.cot,state.cb,state.ctx]=await Promise.all([load('D.json'),load('NATIVE_RATES_DATA.json'),load('OIS_OPERATIONAL_VIEW.json'),load('V250_COT_CHART_DATA.json'),load('NATIVE_CB_DATA.json'),load('COUNTRY_CTX.json')]);render()}catch(e){console.warn('[GMFQ coppia]',e);document.documentElement.dataset.coppiaPage='FAIL'}}
+  async function main(){bind();clock();setInterval(clock,30000);try{[state.d,state.rates,state.ois,state.cot,state.cb,state.ctx]=await Promise.all([load('D.json'),load('NATIVE_RATES_DATA.json'),load('OIS_OPERATIONAL_VIEW.json'),load('V250_COT_CHART_DATA.json'),load('NATIVE_CB_DATA.json'),load('COUNTRY_CTX.json')]);if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Canonical Price runtime adapter missing');await window.GMFQWebsitePrice.hydrate(state.d);render()}catch(e){console.warn('[GMFQ coppia]',e);document.documentElement.dataset.coppiaPage='FAIL'}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',main,{once:true});else main();
 })();
