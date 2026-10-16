@@ -93,4 +93,9 @@
     group.querySelectorAll('.active').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
   }));
+
+  const dataScript=document.createElement('script');
+  dataScript.src='data-adapter.js';
+  dataScript.defer=true;
+  document.head.appendChild(dataScript);
 })();
