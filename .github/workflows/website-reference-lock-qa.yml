@@ -1,0 +1,47 @@
+name: Website Reference Lock QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/website-v1/**'
+      - '.github/workflows/website-reference-lock-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start site
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/website-v1.log 2>&1 &
+          sleep 2
+      - name: Capture exact reference viewport
+        run: |
+          cat > website-v1-qa.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1672,height:905},deviceScaleFactor:1});
+            await page.goto('http://127.0.0.1:8000/site/website-v1/',{waitUntil:'networkidle',timeout:120000});
+            await page.screenshot({path:'website-v1-reference.png',fullPage:false});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node website-v1-qa.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-v1-reference-lock
+          path: website-v1-reference.png
