@@ -3,19 +3,21 @@
 
   const referenceLock=document.createElement('style');
   referenceLock.textContent=`
-    .brand{position:absolute;top:0;left:0;width:455px;z-index:30;border-bottom:1px solid #163044;overflow:visible;padding-left:27px;gap:18px}
-    .brandmark{position:relative;background:none;border:2px solid #d6ae4f;box-shadow:0 0 14px rgba(214,174,79,.15)}
-    .brandmark:before{content:"";position:absolute;left:8px;top:3px;width:2px;height:29px;background:#d6ae4f;transform:rotate(17deg);box-shadow:8px 1px 0 #d6ae4f}
-    .brandmark:after{content:"";position:absolute;left:5px;top:16px;width:27px;height:2px;background:#d6ae4f;transform:rotate(-36deg)}
+    .brand{position:absolute;top:0;left:0;width:455px;z-index:30;border-bottom:1px solid #163044;overflow:visible;padding-left:27px;gap:15px}
+    .brandmark{width:42px!important;height:40px!important;flex:0 0 42px!important;border:0!important;border-radius:0!important;background:url('./assets/logo-reference.png') center/contain no-repeat!important;box-shadow:none!important}
+    .brandmark:before,.brandmark:after{display:none!important}
     .nav-main{margin-top:60px}
     .topbar{z-index:10}
-    .content{grid-template-rows:163px 286px 232px 133px}
+    .content{grid-template-rows:163px 286px 232px 118px}
     .hero{isolation:isolate}
-    .hero:after{content:"";position:absolute;right:0;top:0;width:88px;height:112px;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(4,14,23,0),rgba(4,14,23,.92))}
-    .hero-bg{inset:0!important;z-index:0;opacity:1!important;background-image:linear-gradient(90deg,#061726 0%,rgba(6,23,38,.82) 20%,rgba(6,23,38,.20) 46%,rgba(6,23,38,0) 66%),url('./assets/hero-earth-reference.jpg')!important;background-repeat:no-repeat!important;background-position:left top,right 120px top!important;background-size:100% 100%,980px 112px!important}
+    .hero:after{display:none!important}
+    .hero-bg{left:425px!important;right:0!important;top:0!important;bottom:auto!important;width:auto!important;height:88px!important;z-index:0;opacity:1!important;background-image:url('./assets/hero-earth-reference.jpg')!important;background-repeat:no-repeat!important;background-position:left top!important;background-size:1052px 88px!important}
     .hero-bg:before,.hero-bg:after{display:none!important}
+    .hero-wordmark{display:none!important}
     .ticker-strip{bottom:0!important}
     .hero-title,.hero-right,.ticker-strip{z-index:4}
+    .row3{align-self:start}
+    .theme-card,.watch-card{height:118px!important}
   `;
   document.head.appendChild(referenceLock);
 
