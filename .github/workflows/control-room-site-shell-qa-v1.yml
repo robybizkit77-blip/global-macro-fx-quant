@@ -1,0 +1,52 @@
+name: Control Room Site Shell QA V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/control-room/**'
+      - '.github/workflows/control-room-site-shell-qa-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start site
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/control-room-site.log 2>&1 &
+          sleep 2
+      - name: Capture standalone site
+        run: |
+          cat > cr-site-shell.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1050},deviceScaleFactor:1});
+            await page.goto('http://127.0.0.1:8000/site/control-room/',{waitUntil:'networkidle',timeout:120000});
+            await page.screenshot({path:'control-room-site-desktop.png',fullPage:true});
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            await mobile.goto('http://127.0.0.1:8000/site/control-room/',{waitUntil:'networkidle',timeout:120000});
+            await mobile.screenshot({path:'control-room-site-mobile.png',fullPage:true});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cr-site-shell.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: control-room-site-shell-v1
+          path: |
+            control-room-site-desktop.png
+            control-room-site-mobile.png
