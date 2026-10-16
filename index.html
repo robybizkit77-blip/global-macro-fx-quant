@@ -95,7 +95,8 @@
    ['gmfq-themes-hierarchy-v1','dashboard/themes-hierarchy-v1.js'],
    ['gmfq-currencies-hierarchy-v1','dashboard/currencies-hierarchy-v1.js'],
    ['gmfq-control-room-shell-v1','dashboard/control-room-shell-v1.js'],
-   ['gmfq-control-room-insights-v1','dashboard/control-room-insights-v1.js']
+   ['gmfq-control-room-insights-v1','dashboard/control-room-insights-v1.js'],
+   ['gmfq-control-room-snapshot-v1','dashboard/control-room-snapshot-v1.js']
  ];
  const injected=assets.map(([id,src])=>`<script id="${id}" src="${src}" defer></scr`+'ipt>\n').join('');
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
