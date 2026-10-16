@@ -25,6 +25,8 @@
   document.querySelectorAll('.nav a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.setAttribute('href',routes[label]);});
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{const href=a.getAttribute('href');if(!href||href==='#'){e.preventDefault();document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');}}));
   document.querySelectorAll('.hero-tabs button,.mini-tabs b,.pill-tabs b,.watch-actions b').forEach(t=>t.addEventListener('click',()=>{const group=t.parentElement;group.querySelectorAll('.active').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+  const clock=()=>{const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('en-US',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'America/New_York'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}).format(d);};
+  clock();setInterval(clock,30000);
   const dataScript=document.createElement('script');dataScript.src='data-adapter.js';dataScript.defer=true;document.head.appendChild(dataScript);
   const snapshotScript=document.createElement('script');snapshotScript.src='market-snapshot.js';snapshotScript.defer=true;document.head.appendChild(snapshotScript);
 })();

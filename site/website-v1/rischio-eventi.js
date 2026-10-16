@@ -8,6 +8,7 @@
   function todayRome(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
   function addDays(dateStr,n){const d=new Date(dateStr+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
   function fmtDate(s){if(!s)return '—';const d=new Date(s+'T12:00:00Z');return new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short'}).format(d)}
+  function updatedAt(s){const d=new Date(s||'');return Number.isNaN(d.getTime())?'aggiornamento non dichiarato':`aggiornato ${new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d)}`}
   function isCB(e){return e?.event_type==='CENTRAL_BANK_DECISION'}
   function events(){return Array.isArray(state.calendar?.events)?state.calendar.events.filter(e=>e?.status==='UPCOMING'):[]}
   function filteredRows(){const rows=events();if(state.filter==='HIGH')return rows.filter(e=>e.importance==='HIGH');if(state.filter==='CB')return rows.filter(isCB);if(state.filter==='MACRO')return rows.filter(e=>!isCB(e));return rows}
@@ -35,7 +36,7 @@
       const time=e.time_local?`${e.time_local} ${e.timezone||''}`.trim():(e.timezone||'orario non disponibile');
       return `<div class="risk-event-row"><span>${fmtDate(e.date)}<small class="event-meta">${esc(time)}</small></span><span class="ccy">${esc(e.ccy)}</span><span><span class="event-title">${esc(e.title)}</span><small class="event-meta">${esc(e.source_family||e.bank||e.source_layer||'fonte canonica')}</small></span><span class="${isCB(e)?'cb':''}">${esc(type)}</span><span class="${impactCls}">${esc(impact)}</span><span class="consensus">${esc(consensus)}</span></div>`;
     }).join('')||'<div class="method-copy">Nessun evento nel filtro selezionato.</div>';
-    const asof=document.getElementById('risk-asof');if(asof)asof.textContent=`${rows.length} eventi mostrati · aggiornamento canonico`;
+    const asof=document.getElementById('risk-asof');if(asof)asof.textContent=`${rows.length} eventi mostrati · ${updatedAt(state.calendar?.generated_at_utc)}`;
   }
   function renderCurrencies(){
     const today=todayRome(),end14=addDays(today,14),rows=events().filter(e=>e.date>=today&&e.date<=end14);
