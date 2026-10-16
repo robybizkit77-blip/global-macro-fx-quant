@@ -43,7 +43,8 @@ jobs:
               ['posizionamento.html','website-v1-posizionamento.png'],
               ['coppie.html','website-v1-coppie.png'],
               ['coppia.html?pair=EURUSD','website-v1-coppia-eurusd.png'],
-              ['rischio-eventi.html','website-v1-rischio-eventi.png']
+              ['rischio-eventi.html','website-v1-rischio-eventi.png'],
+              ['top-themes.html','website-v1-top-themes.png']
             ];
             for(const [path,file] of shots){
               await page.goto(`http://127.0.0.1:8000/site/website-v1/${path}`,{waitUntil:'networkidle',timeout:120000});
@@ -65,3 +66,4 @@ jobs:
             website-v1-coppie.png
             website-v1-coppia-eurusd.png
             website-v1-rischio-eventi.png
+            website-v1-top-themes.png
