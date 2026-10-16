@@ -28,26 +28,24 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/website-v1.log 2>&1 &
           sleep 2
-      - name: Capture home, Valute, Tassi and Banche centrali
+      - name: Capture website pages
         run: |
           cat > website-v1-qa.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1672,height:905},deviceScaleFactor:1});
-
-            await page.goto('http://127.0.0.1:8000/site/website-v1/',{waitUntil:'networkidle',timeout:120000});
-            await page.screenshot({path:'website-v1-reference.png',fullPage:false});
-
-            await page.goto('http://127.0.0.1:8000/site/website-v1/valute.html',{waitUntil:'networkidle',timeout:120000});
-            await page.screenshot({path:'website-v1-valute.png',fullPage:false});
-
-            await page.goto('http://127.0.0.1:8000/site/website-v1/tassi.html',{waitUntil:'networkidle',timeout:120000});
-            await page.screenshot({path:'website-v1-tassi.png',fullPage:false});
-
-            await page.goto('http://127.0.0.1:8000/site/website-v1/banche-centrali.html',{waitUntil:'networkidle',timeout:120000});
-            await page.screenshot({path:'website-v1-banche-centrali.png',fullPage:false});
-
+            const shots=[
+              ['','website-v1-reference.png'],
+              ['valute.html','website-v1-valute.png'],
+              ['tassi.html','website-v1-tassi.png'],
+              ['banche-centrali.html','website-v1-banche-centrali.png'],
+              ['posizionamento.html','website-v1-posizionamento.png']
+            ];
+            for(const [path,file] of shots){
+              await page.goto(`http://127.0.0.1:8000/site/website-v1/${path}`,{waitUntil:'networkidle',timeout:120000});
+              await page.screenshot({path:file,fullPage:false});
+            }
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
@@ -60,3 +58,4 @@ jobs:
             website-v1-valute.png
             website-v1-tassi.png
             website-v1-banche-centrali.png
+            website-v1-posizionamento.png
