@@ -54,9 +54,9 @@
     return validateHistory(await r.json());
   }
 
-  function mergedHistory(h,latestRow){
+  function mergedHistory(h,overlayRow){
     const byDate=new Map(h.rows.map(row=>[row.Date,{...row}]));
-    byDate.set(latestRow.Date,{...latestRow});
+    if(!byDate.has(overlayRow.Date))byDate.set(overlayRow.Date,{...overlayRow});
     return [...byDate.values()].sort((a,b)=>a.Date.localeCompare(b.Date));
   }
 
@@ -73,28 +73,30 @@
     return gapDays>=0&&gapDays<=MAX_ANCHOR_GAP_DAYS?best:null;
   }
 
-  function ret(history,latestRow,pair,days){
-    const ref=referenceRow(history,latestRow.Date,days);if(!ref)return null;
-    const a=cross(latestRow,pair),b=cross(ref,pair);
+  function ret(history,currentRow,pair,days){
+    const ref=referenceRow(history,currentRow.Date,days);if(!ref)return null;
+    const a=cross(currentRow,pair),b=cross(ref,pair);
     return a===null||b===null||b===0?null:(a/b-1)*100;
   }
 
   async function hydrate(d){
     if(!d||typeof d!=='object')throw new Error('D payload missing');
-    const [live,h]=await Promise.all([latest(),officialHistory()]);
-    const history=mergedHistory(h,live.row);
-    const latestHistoryDate=history[history.length-1]?.Date;
-    if(latestHistoryDate!==live.asOf)throw new Error(`ECB Price history/runtime mismatch: ${latestHistoryDate} != ${live.asOf}`);
+    const [overlay,h]=await Promise.all([latest(),officialHistory()]);
+    const history=mergedHistory(h,overlay.row);
+    const currentRow=history[history.length-1];
+    if(!currentRow?.Date)throw new Error('ECB Price current row missing');
+    const overlayAhead=dateMs(overlay.asOf)>dateMs(h.last_as_of);
+    const currentSource=overlayAhead?'canonical overlay':'official history snapshot';
 
     const old=Array.isArray(d.pairs)?d.pairs:[];
     if(old.length!==28)throw new Error(`Expected 28 G8 pairs, found ${old.length}`);
     let completePairs=0,completeReturns=0;
     d.pairs=old.map(p=>{
-      const code=pairCode(p?.pair),last=cross(live.row,code),next={...p,last,price_asof:live.asOf,price_source:live.source};
+      const code=pairCode(p?.pair),last=cross(currentRow,code),next={...p,last,price_asof:currentRow.Date,price_source:'ECB euro foreign exchange reference rates'};
       if(!code||last===null)throw new Error(`Cannot derive canonical FX cross ${p?.pair}`);
       let pairComplete=true;
       for(const [k,days] of Object.entries(WINDOWS)){
-        next[k]=ret(history,live.row,code,days);
+        next[k]=ret(history,currentRow,code,days);
         if(Number.isFinite(next[k]))completeReturns+=1;else pairComplete=false;
       }
       if(pairComplete)completePairs+=1;
@@ -103,16 +105,18 @@
     if(completePairs!==28||completeReturns!==140)throw new Error(`FX returns incomplete: ${completePairs}/28 pairs · ${completeReturns}/140 values`);
 
     d.prices=history;
-    d.price_asof=live.asOf;
-    d.price_source=live.source;
+    d.price_asof=currentRow.Date;
+    d.price_source='ECB euro foreign exchange reference rates';
     d.price_runtime_status='CURRENT_OFFICIAL';
     d.price_history_status='CURRENT_OFFICIAL_HISTORY';
-    d.price_runtime_note='Returns use the latest official ECB fixing on or before each calendar target date; anchors more than 5 calendar days before target are withheld.';
+    d.price_runtime_note='Current fixing uses the freshest official ECB row available across the canonical overlay and official history snapshot. Returns use the latest official fixing on or before each target date; anchors more than 5 calendar days before target are withheld.';
 
     window.GMFQ_WEBSITE_PRICE_AUDIT={
       status:'PASS',
-      as_of:live.asOf,
-      source:live.source,
+      as_of:currentRow.Date,
+      source:'ECB euro foreign exchange reference rates',
+      current_row_source:currentSource,
+      overlay_asof:overlay.asOf,
       history_status:'CURRENT_OFFICIAL_HISTORY',
       history_asof:h.last_as_of,
       history_rows:h.row_count,
@@ -126,7 +130,7 @@
       anchor_rule:'latest official fixing <= target date; max 5 calendar day gap',
       no_lookahead:true
     };
-    document.documentElement.setAttribute('data-website-price-asof',live.asOf);
+    document.documentElement.setAttribute('data-website-price-asof',currentRow.Date);
     document.documentElement.setAttribute('data-website-price-runtime','CURRENT_OFFICIAL');
     document.documentElement.setAttribute('data-website-price-history','CURRENT_OFFICIAL_HISTORY');
     document.documentElement.setAttribute('data-website-price-history-asof',h.last_as_of);
