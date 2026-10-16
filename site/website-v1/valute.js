@@ -10,7 +10,7 @@
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const fmtPct=(v,d=2)=>{const x=n(v);return x===null?'—':`${x>0?'+':''}${x.toFixed(d)}%`;};
-  const cls=v=>(n(v)||0)>=0?'pos':'neg';
+  const cls=v=>{const x=n(v);return x===null?'neu':x>0?'pos':x<0?'neg':'neu';};
 
   async function load(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return r.json();}
 
@@ -59,7 +59,7 @@
       return `<div class="perf-row"><span>${FLAGS[x.ccy]} ${x.ccy}</span><i><b class="${cls(x.v)}" style="width:${width.toFixed(1)}%"></b></i><em class="${cls(x.v)}">${fmtPct(x.v,2)}</em></div>`;
     }).join('');
     const asof=document.getElementById('perf-asof');
-    if(asof)asof.textContent=`${TF_LABEL[state.tf]} · FX as of ${state.d?.pairs?.[0]?.price_asof||state.d?.asOf||'—'}`;
+    if(asof)asof.textContent=`${TF_LABEL[state.tf]} · FX as of ${state.d?.price_asof||state.d?.pairs?.[0]?.price_asof||'—'}`;
   }
 
   function render(){renderCards();renderPerformance();document.documentElement.setAttribute('data-valute-page','READY');}
@@ -88,6 +88,8 @@
     bind();clock();setInterval(clock,30000);
     try{
       [state.d,state.rates]=await Promise.all([load(ROOT+'D.json'),load(ROOT+'NATIVE_RATES_DATA.json')]);
+      if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Canonical Price runtime adapter missing');
+      await window.GMFQWebsitePrice.hydrate(state.d);
       render();
     }catch(e){console.warn('[GMFQ valute]',e);document.documentElement.setAttribute('data-valute-page','FAIL');}
   }
