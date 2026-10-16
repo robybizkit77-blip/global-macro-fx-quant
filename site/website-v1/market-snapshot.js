@@ -9,8 +9,12 @@
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
   const ALLOWED=['1D','1W','1M','3M','YTD'];
+  const HIERARCHY_ALLOWED=['1D','1W','1M'];
   const params=new URLSearchParams(location.search);
-  let d=null,rates=null,fx=null,heroPeriod=ALLOWED.includes(params.get('tf'))?params.get('tf'):'1D',hierarchyPeriod='1D',rendering=false;
+  let d=null,rates=null,fx=null;
+  let heroPeriod=ALLOWED.includes(params.get('tf'))?params.get('tf'):'1D';
+  let hierarchyPeriod=HIERARCHY_ALLOWED.includes(params.get('h'))?params.get('h'):'1D';
+  let rendering=false;
 
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
@@ -32,11 +36,44 @@
   function startRateIndex(h,period){if(h.length<2)return 0;if(period==='1D')return Math.max(0,h.length-2);const last=new Date(`${h.at(-1).date}T00:00:00Z`);let target;if(period==='YTD')target=new Date(Date.UTC(last.getUTCFullYear(),0,1));else{target=new Date(last);if(period==='1W')target.setUTCDate(target.getUTCDate()-7);if(period==='1M')target.setUTCMonth(target.getUTCMonth()-1);if(period==='3M')target.setUTCMonth(target.getUTCMonth()-3);}const ts=target.toISOString().slice(0,10);let idx=h.findIndex(x=>x.date>=ts);if(idx<0)idx=0;return Math.min(idx,h.length-2);}
   function rateCard(tenor,period){const usd=rates?.USD;if(!usd)return null;const key=tenor===10?'history10':'history2',h=rateHistory(usd,key);if(h.length<2)return null;const si=startRateIndex(h,period),window=h.slice(si),current=n(usd?.[`${tenor}Y`])??n(usd?.current?.[tenor===10?'y10':'y2'])??window.at(-1)?.value;if(current===null||current===undefined)return null;const first=window[0].value,delta=(current-first)*100;return{label:`US ${tenor}Y`,value:`${current.toFixed(2)}%`,change:`${delta>0?'+':''}${delta.toFixed(1)}bp`,dir:delta>=0?'up':'down',values:sampled(window.map(x=>x.value)),title:`${period} · official Treasury curve · as of ${usd.date||h.at(-1).date}`};}
 
-  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host||!d||!rates)return;const cards=[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)].filter(Boolean);if(!cards.length)return;rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;document.documentElement.setAttribute('data-market-snapshot',cards.length===8?'READY':'PARTIAL');document.documentElement.setAttribute('data-hero-period',heroPeriod);}
+  function syncHeroTabs(){document.querySelectorAll('.hero-tabs [data-timeframe]').forEach(el=>el.classList.toggle('active',el.dataset.timeframe===heroPeriod));}
+  function syncHierarchyTabs(){document.querySelectorAll('.hierarchy .mini-tabs b').forEach(el=>el.classList.toggle('active',el.textContent.trim()===hierarchyPeriod));}
+  function setQuery(key,value,push=true){const u=new URL(location.href);u.searchParams.set(key,value);history[push?'pushState':'replaceState'](null,'',u);}
+
+  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host||!d||!rates)return;const cards=[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)].filter(Boolean);if(!cards.length)return;rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;syncHeroTabs();document.documentElement.setAttribute('data-market-snapshot',cards.length===8?'READY':'PARTIAL');document.documentElement.setAttribute('data-hero-period',heroPeriod);}
   function currencyStrength(period){const rows=datedRows();if(rows.length<2)return[];const si=startIndex(rows,period),a=rows[si],b=rows.at(-1),raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};});const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
-  function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length||!data.length)return;const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});}
+  function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length||!data.length)return;const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});syncHierarchyTabs();document.documentElement.setAttribute('data-hierarchy-period',hierarchyPeriod);}
   function protectStrip(){const host=document.querySelector('.ticker-strip');if(!host)return;new MutationObserver(()=>{if(!rendering&&host.children.length===0&&d&&rates)queueMicrotask(renderHero);}).observe(host,{childList:true});}
 
-  async function run(){try{protectStrip();[d,rates]=await Promise.all([load(D_PATH),load(RATES_PATH)]);renderHero();fx=await tryLoad(FX_PATH);if(fx){renderHero();renderHierarchy();}document.documentElement.setAttribute('data-market-snapshot','READY');}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
+  function bindInteractions(){
+    document.addEventListener('click',e=>{
+      const hero=e.target.closest('.hero-tabs [data-timeframe]');
+      if(hero){
+        e.preventDefault();
+        const next=hero.dataset.timeframe;
+        if(ALLOWED.includes(next)&&next!==heroPeriod){heroPeriod=next;setQuery('tf',next,true);renderHero();}
+        return;
+      }
+      const h=e.target.closest('.hierarchy .mini-tabs b');
+      if(h){
+        e.preventDefault();
+        const next=h.textContent.trim();
+        if(HIERARCHY_ALLOWED.includes(next)&&next!==hierarchyPeriod){hierarchyPeriod=next;setQuery('h',next,true);renderHierarchy();}
+      }
+    });
+    addEventListener('popstate',()=>{
+      const p=new URLSearchParams(location.search);
+      const nextHero=ALLOWED.includes(p.get('tf'))?p.get('tf'):'1D';
+      const nextHierarchy=HIERARCHY_ALLOWED.includes(p.get('h'))?p.get('h'):'1D';
+      const heroChanged=nextHero!==heroPeriod;
+      const hierarchyChanged=nextHierarchy!==hierarchyPeriod;
+      heroPeriod=nextHero;hierarchyPeriod=nextHierarchy;
+      if(heroChanged)renderHero();else syncHeroTabs();
+      if(hierarchyChanged)renderHierarchy();else syncHierarchyTabs();
+    });
+    syncHeroTabs();syncHierarchyTabs();
+  }
+
+  async function run(){try{bindInteractions();protectStrip();[d,rates]=await Promise.all([load(D_PATH),load(RATES_PATH)]);fx=await tryLoad(FX_PATH);renderHero();if(fx)renderHierarchy();document.documentElement.setAttribute('data-market-snapshot','READY');}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
