@@ -91,6 +91,18 @@ jobs:
             console.log(`QA report OK: ${href} · ${html.length} chars · ${mode}`);
           }
 
+          async function verifyFxRuntime(page,base,route,readyAttr){
+            await page.goto(base+route,{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(({readyAttr})=>document.documentElement.getAttribute('data-website-price-runtime')==='CURRENT_OFFICIAL' && document.documentElement.getAttribute(readyAttr)==='READY',{readyAttr},{timeout:30000});
+            const asof=await page.getAttribute('html','data-website-price-asof');
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(asof||'')) throw new Error(`${route}: invalid canonical FX as-of ${asof}`);
+            const ageDays=(Date.now()-Date.parse(`${asof}T00:00:00Z`))/86400000;
+            if(ageDays< -1 || ageDays>5) throw new Error(`${route}: canonical FX fixing stale (${asof}, age ${ageDays.toFixed(1)}d)`);
+            const text=await page.locator('body').innerText();
+            if(text.includes('FX as of 2026-09-28') || text.includes('as of 2026-09-28')) throw new Error(`${route}: stale September FX date leaked into rendered page`);
+            console.log(`QA FX runtime OK: ${route} · ${asof} · age ${ageDays.toFixed(1)}d`);
+          }
+
           (async()=>{
             const base='http://127.0.0.1:8000/site/website-v1/';
             const browser=await chromium.launch({headless:true});
@@ -111,6 +123,11 @@ jobs:
               await page.goto(base+route,{waitUntil:'networkidle',timeout:120000});
               await page.screenshot({path:file,fullPage:false});
             }
+
+            await verifyFxRuntime(page,base,'valute.html','data-valute-page');
+            await verifyFxRuntime(page,base,'coppie.html','data-coppie-page');
+            await verifyFxRuntime(page,base,'coppia.html?pair=EURUSD','data-coppia-page');
+
             await page.goto(base+'library.html',{waitUntil:'networkidle',timeout:120000});
             const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
             if(hrefs.length!==9) throw new Error(`Expected 9 active Library web mirrors, found ${hrefs.length}`);
