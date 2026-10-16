@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -45,16 +45,16 @@
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 99.985,
+          "futures_price": 99.995,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": 1.5,
-          "price_valid_until": "2026-10-14T16:59:59Z",
-          "quote_as_of": "2026-10-14",
-          "rate": 0.015,
+          "policy_delta_bp": 0.5,
+          "price_valid_until": "2026-10-15T16:54:55Z",
+          "quote_as_of": "2026-10-15",
+          "rate": 0.005,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -70,7 +70,7 @@
       "status": "ESTIMATED_ACTIVE"
     },
     "EUR": {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -101,16 +101,16 @@
           "symbol": "EUREX:FST3M2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
-          "futures_price": 97.46,
+          "futures_price": 97.465,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": 4.0,
-          "price_valid_until": "2026-10-14T21:14:22Z",
-          "quote_as_of": "2026-10-14",
-          "rate": 2.54,
+          "policy_delta_bp": 3.5,
+          "price_valid_until": "2026-10-15T21:24:04Z",
+          "quote_as_of": "2026-10-15",
+          "rate": 2.535,
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {

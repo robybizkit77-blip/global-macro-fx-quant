@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-15",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -9,22 +9,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.0,
-          "change_1w_bp": -2.5,
-          "policy_delta_bp": 26.5,
-          "rate": 4.865
+          "change_1d_bp": -3.0,
+          "change_1w_bp": -2.0,
+          "policy_delta_bp": 24.0,
+          "rate": 4.84
         },
         "3m": {
-          "change_1d_bp": -0.5,
-          "change_1w_bp": 1.5,
-          "policy_delta_bp": 11.0,
-          "rate": 4.71
+          "change_1d_bp": -3.0,
+          "change_1w_bp": -1.0,
+          "policy_delta_bp": 8.5,
+          "rate": 4.685
         },
         "6m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": 0.5,
-          "policy_delta_bp": 20.0,
-          "rate": 4.8
+          "change_1d_bp": -3.0,
+          "change_1w_bp": -2.5,
+          "policy_delta_bp": 17.5,
+          "rate": 4.775
         }
       },
       "official_status": "ACTIVE",
@@ -34,7 +34,7 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-15",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -42,22 +42,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -6.5,
-          "policy_delta_bp": 100.5,
-          "rate": 3.255
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -4.0,
+          "policy_delta_bp": 102.5,
+          "rate": 3.275
         },
         "3m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": -3.5,
-          "policy_delta_bp": 37.0,
-          "rate": 2.62
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -4.5,
+          "policy_delta_bp": 36.5,
+          "rate": 2.615
         },
         "6m": {
-          "change_1d_bp": 1.0,
-          "change_1w_bp": -5.5,
-          "policy_delta_bp": 64.5,
-          "rate": 2.895
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -3.5,
+          "policy_delta_bp": 66.5,
+          "rate": 2.915
         }
       },
       "official_status": "ACTIVE",
@@ -67,7 +67,7 @@
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)"
     },
     "CHF": {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
@@ -105,18 +105,18 @@
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 99.985,
+          "futures_price": 99.995,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": 1.5,
-          "price_valid_until": "2026-10-14T16:59:59Z",
-          "quote_as_of": "2026-10-14",
-          "rate": 0.015,
+          "policy_delta_bp": 0.5,
+          "price_valid_until": "2026-10-15T16:54:55Z",
+          "quote_as_of": "2026-10-15",
+          "rate": 0.005,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -139,7 +139,7 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
@@ -162,18 +162,18 @@
           "symbol": "EUREX:FST3M2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
-          "futures_price": 97.46,
+          "futures_price": 97.465,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": 4.0,
-          "price_valid_until": "2026-10-14T21:14:22Z",
-          "quote_as_of": "2026-10-14",
-          "rate": 2.54,
+          "policy_delta_bp": 3.5,
+          "price_valid_until": "2026-10-15T21:24:04Z",
+          "quote_as_of": "2026-10-15",
+          "rate": 2.535,
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
@@ -211,7 +211,7 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "GBP": {
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-14",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -219,22 +219,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -0.2,
-          "change_1w_bp": 11.2,
-          "policy_delta_bp": 113.3,
-          "rate": 4.8827
+          "change_1d_bp": -3.5,
+          "change_1w_bp": 6.7,
+          "policy_delta_bp": 109.8,
+          "rate": 4.8476
         },
         "3m": {
-          "change_1d_bp": 0.2,
-          "change_1w_bp": 4.3,
-          "policy_delta_bp": 38.3,
-          "rate": 4.1328
+          "change_1d_bp": -0.3,
+          "change_1w_bp": 4.6,
+          "policy_delta_bp": 37.9,
+          "rate": 4.1294
         },
         "6m": {
-          "change_1d_bp": -0.0,
-          "change_1w_bp": 7.6,
-          "policy_delta_bp": 72.9,
-          "rate": 4.4786
+          "change_1d_bp": -1.6,
+          "change_1w_bp": 6.5,
+          "policy_delta_bp": 71.3,
+          "rate": 4.4628
         }
       },
       "official_status": "ACTIVE",
@@ -244,7 +244,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -252,19 +252,19 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.9,
-          "change_1w_bp": 1.5,
-          "policy_delta_bp": 80.5,
-          "rate": 2.055
+          "change_1d_bp": -3.7,
+          "change_1w_bp": -2.2,
+          "policy_delta_bp": 76.8,
+          "rate": 2.018
         },
         "3m": {
-          "change_1d_bp": -2.6,
+          "change_1d_bp": 0.0,
           "change_1w_bp": -2.6,
           "policy_delta_bp": 22.5,
           "rate": 1.475
         },
         "6m": {
-          "change_1d_bp": -2.6,
+          "change_1d_bp": 0.0,
           "change_1w_bp": -2.6,
           "policy_delta_bp": 46.2,
           "rate": 1.712
