@@ -28,11 +28,12 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/website-v1.log 2>&1 &
           sleep 2
-      - name: Capture website pages and verify Library report mirror
+      - name: Capture website pages and verify Library report mirrors
         run: |
           cat > website-v1-qa.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
+            const base='http://127.0.0.1:8000/site/website-v1/';
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1672,height:905},deviceScaleFactor:1});
             const shots=[
@@ -48,15 +49,25 @@ jobs:
               ['library.html','website-v1-library.png']
             ];
             for(const [path,file] of shots){
-              await page.goto(`http://127.0.0.1:8000/site/website-v1/${path}`,{waitUntil:'networkidle',timeout:120000});
+              await page.goto(base+path,{waitUntil:'networkidle',timeout:120000});
               await page.screenshot({path:file,fullPage:false});
             }
-            const reportUrl='http://127.0.0.1:8000/site/website-v1/library/reports/Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html';
-            const response=await page.goto(reportUrl,{waitUntil:'domcontentloaded',timeout:120000});
-            if(!response || !response.ok()) throw new Error(`Library report mirror HTTP ${response?.status()}`);
-            const body=(await page.textContent('body'))||'';
-            if(!body.includes('Trade Thesis Monitor')) throw new Error('Library report mirror content missing');
-            await page.screenshot({path:'website-v1-library-report.png',fullPage:false});
+            await page.goto(base+'library.html',{waitUntil:'networkidle',timeout:120000});
+            const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
+            if(hrefs.length!==9) throw new Error(`Expected 9 Library mirrors, found ${hrefs.length}`);
+            for(const href of hrefs){
+              const report=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+              const response=await report.goto(new URL(href,base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
+              if(!response || !response.ok()) throw new Error(`${href}: HTTP ${response?.status()}`);
+              await report.waitForFunction(()=>document.body && document.body.innerText.length>500,{timeout:120000});
+              const body=(await report.locator('body').innerText())||'';
+              if(body.includes('Impossibile aprire il report')) throw new Error(`${href}: report decompression failed`);
+              await report.close();
+            }
+            const first=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+            await first.goto(new URL(hrefs[0],base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
+            await first.screenshot({path:'website-v1-library-report.png',fullPage:false});
+            await first.close();
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
