@@ -28,7 +28,7 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/website-v1.log 2>&1 &
           sleep 2
-      - name: Capture website pages
+      - name: Capture website pages and verify Library report mirror
         run: |
           cat > website-v1-qa.js <<'EOF'
           const { chromium } = require('playwright');
@@ -51,6 +51,12 @@ jobs:
               await page.goto(`http://127.0.0.1:8000/site/website-v1/${path}`,{waitUntil:'networkidle',timeout:120000});
               await page.screenshot({path:file,fullPage:false});
             }
+            const reportUrl='http://127.0.0.1:8000/site/website-v1/library/reports/Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html';
+            const response=await page.goto(reportUrl,{waitUntil:'domcontentloaded',timeout:120000});
+            if(!response || !response.ok()) throw new Error(`Library report mirror HTTP ${response?.status()}`);
+            const body=(await page.textContent('body'))||'';
+            if(!body.includes('Trade Thesis Monitor')) throw new Error('Library report mirror content missing');
+            await page.screenshot({path:'website-v1-library-report.png',fullPage:false});
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
@@ -69,3 +75,4 @@ jobs:
             website-v1-rischio-eventi.png
             website-v1-top-themes.png
             website-v1-library.png
+            website-v1-library-report.png
