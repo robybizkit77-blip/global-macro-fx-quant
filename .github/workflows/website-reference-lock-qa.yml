@@ -40,7 +40,9 @@ jobs:
               ['valute.html','website-v1-valute.png'],
               ['tassi.html','website-v1-tassi.png'],
               ['banche-centrali.html','website-v1-banche-centrali.png'],
-              ['posizionamento.html','website-v1-posizionamento.png']
+              ['posizionamento.html','website-v1-posizionamento.png'],
+              ['coppie.html','website-v1-coppie.png'],
+              ['coppia.html?pair=EURUSD','website-v1-coppia-eurusd.png']
             ];
             for(const [path,file] of shots){
               await page.goto(`http://127.0.0.1:8000/site/website-v1/${path}`,{waitUntil:'networkidle',timeout:120000});
@@ -59,3 +61,5 @@ jobs:
             website-v1-tassi.png
             website-v1-banche-centrali.png
             website-v1-posizionamento.png
+            website-v1-coppie.png
+            website-v1-coppia-eurusd.png
