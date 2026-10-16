@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: pair-setup-operational-view-v1
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   export:
