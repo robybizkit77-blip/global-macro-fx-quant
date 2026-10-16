@@ -11,6 +11,7 @@
   };
 
   ensureCss('control-room-pixel-match','./pixel-match.css');
+  ensureCss('control-room-final-visual','./final-visual-pass.css');
 
   const clock=document.querySelector('.clock');
   const fmt=new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
