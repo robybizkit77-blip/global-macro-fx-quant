@@ -47,8 +47,9 @@
 
       <section class="cot-main-row">
         <article class="internal-card cot-chart-card">
-          <div class="internal-card-head"><h3 id="chart-title">COT 104W</h3><small>Net contracts</small></div>
-          <svg id="cot-chart" viewBox="0 0 900 280" preserveAspectRatio="none" aria-label="COT net positioning chart"></svg>
+          <div class="internal-card-head"><h3 id="chart-title">COT 104W</h3><small id="cot-price-meta">Net contracts · FX fixing aligned no-lookahead</small></div>
+          <div id="cot-price-legend" class="cot-price-legend"></div>
+          <svg id="cot-chart" viewBox="0 0 900 280" preserveAspectRatio="none" aria-label="COT net positioning and aligned FX price chart"></svg>
         </article>
         <article class="internal-card extremes-card">
           <div class="internal-card-head"><h3>Estremi</h3><small>percentile 2Y</small></div>
@@ -58,7 +59,7 @@
 
       <section class="cot-bottom-row">
         <article class="internal-card"><div class="internal-card-head"><h3>Flusso settimanale</h3><small>Δ Net 1W</small></div><div id="flow-table" class="flow-table"></div></article>
-        <article class="internal-card"><div class="internal-card-head"><h3>Come leggerla</h3><small>Positioning → Price</small></div><div class="method-copy">Il COT è <strong>contesto</strong>, non trigger. Percentile ≥80 = estremo long; ≤20 = estremo short. Un <strong>|Net/OI| ≥30%</strong> segnala uno squilibrio importante. Il flusso settimanale mostra se i fondi stanno aggiungendo o riducendo esposizione.<br><br><span class="status">Il confronto diretto prezzo/COT viene mostrato solo quando il prezzo è riallineato e validato.</span></div></article>
+        <article class="internal-card"><div class="internal-card-head"><h3>Come leggerla</h3><small>Positioning → Price</small></div><div class="method-copy">Il COT è <strong>contesto</strong>, non trigger. Percentile ≥80 = estremo long; ≤20 = estremo short. Un <strong>|Net/OI| ≥30%</strong> segnala uno squilibrio importante. Il flusso settimanale mostra se i fondi stanno aggiungendo o riducendo esposizione.<br><br>Nel grafico principale il prezzo FX viene allineato alle date COT usando l’ultimo fixing ECB disponibile <strong>uguale o precedente</strong> alla data del report. <span class="status">No look-ahead. Per USD non viene inventato alcun basket o DXY: il confronto prezzo resta WITHHELD.</span></div></article>
       </section>
     </main>
   </section>
