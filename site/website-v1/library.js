@@ -13,7 +13,7 @@
   ];
   let active='Tutti';
   const TYPES=['Tutti',...new Set(reports.map(r=>r.type))];
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   function fmtDate(s){const d=new Date(s+'T12:00:00Z');return new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',year:'numeric'}).format(d)}
   function renderStats(){
     const cats=new Set(reports.map(r=>r.type)).size;
