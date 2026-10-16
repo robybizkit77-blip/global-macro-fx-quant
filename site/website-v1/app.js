@@ -11,6 +11,7 @@
     .topbar{z-index:10}
     .content{grid-template-rows:163px 286px 232px 133px}
     .hero{isolation:isolate}
+    .hero:after{content:"";position:absolute;right:0;top:0;width:88px;height:112px;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(4,14,23,0),rgba(4,14,23,.92))}
     .hero-bg{inset:0!important;z-index:0;opacity:1!important;background-image:linear-gradient(90deg,#061726 0%,rgba(6,23,38,.82) 20%,rgba(6,23,38,.20) 46%,rgba(6,23,38,0) 66%),url('./assets/hero-earth-reference.jpg')!important;background-repeat:no-repeat!important;background-position:left top,right 120px top!important;background-size:100% 100%,980px 112px!important}
     .hero-bg:before,.hero-bg:after{display:none!important}
     .ticker-strip{bottom:0!important}
