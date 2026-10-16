@@ -4,9 +4,10 @@
   const referenceLock=document.createElement('style');
   referenceLock.textContent=`
     .brand{position:absolute;top:0;left:0;width:455px;z-index:30;border-bottom:1px solid #163044;overflow:visible;padding-left:27px;gap:15px}
-    .brandmark{width:42px!important;height:40px!important;flex:0 0 42px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;display:block!important}
-    .brandmark:before,.brandmark:after{display:none!important}
-    .brandmark img{display:block;width:42px;height:40px;object-fit:contain}
+    .brandmark{width:40px!important;height:40px!important;flex:0 0 40px!important;border:2px solid #e4bd61!important;border-radius:50%!important;background:transparent!important;box-shadow:0 0 12px rgba(228,189,97,.10)!important;display:block!important;position:relative!important}
+    .brandmark img{display:none!important}
+    .brandmark:before{content:""!important;display:block!important;position:absolute!important;left:12px!important;top:3px!important;width:2px!important;height:31px!important;background:#e4bd61!important;transform:rotate(17deg)!important;box-shadow:9px 1px 0 #e4bd61!important}
+    .brandmark:after{content:""!important;display:block!important;position:absolute!important;left:5px!important;top:18px!important;width:29px!important;height:2px!important;background:#e4bd61!important;transform:rotate(-36deg)!important}
     .nav-main{margin-top:60px}
     .topbar{z-index:10}
     .content{grid-template-rows:163px 286px 232px 118px}
@@ -18,17 +19,11 @@
     .ticker-strip{bottom:0!important}
     .hero-title,.hero-right,.ticker-strip{z-index:4}
     .row3{align-self:start}
-    .theme-card,.watch-card{height:118px!important}
   `;
   document.head.appendChild(referenceLock);
 
   const brandmark=document.querySelector('.brandmark');
-  if(brandmark){
-    const img=document.createElement('img');
-    img.src='./assets/logo-reference.png';
-    img.alt='';
-    brandmark.replaceChildren(img);
-  }
+  if(brandmark) brandmark.replaceChildren();
 
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{
     e.preventDefault();
