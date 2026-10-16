@@ -36,8 +36,6 @@ jobs:
             page.on('pageerror',e=>pageErrors.push(String(e)));
             page.on('requestfailed',r=>failedRequests.push(`${r.url()} :: ${r.failure()?.errorText||'failed'}`));
             page.on('response',r=>{if(r.status()>=400)badResponses.push(`${r.status()} ${r.url()}`);});
-            let mainFrameNavigations=0;
-            page.on('framenavigated',f=>{if(f===page.mainFrame())mainFrameNavigations++;});
             const url='http://127.0.0.1:8000/site/website-v1/index.html';
             const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
             if(!res||!res.ok())throw new Error('Home HTTP load failed');
@@ -56,23 +54,28 @@ jobs:
             if(boot.snapshot!=='READY')throw new Error(`market-snapshot not READY: ${boot.snapshot}; failed=${failedRequests.join(' | ')}; bad=${badResponses.join(' | ')}; console=${consoleErrors.join(' | ')}; page=${pageErrors.join(' | ')}`);
             if(boot.adapter!=='READY')throw new Error(`data-adapter not READY: ${boot.adapter}; failed=${failedRequests.join(' | ')}; bad=${badResponses.join(' | ')}; console=${consoleErrors.join(' | ')}; page=${pageErrors.join(' | ')}`);
 
+            await page.evaluate(()=>{window.__GMFQ_AUDIT_SENTINEL='alive-'+Math.random();});
             const before=await page.evaluate(()=>({
               url:location.href,
               hero:document.documentElement.getAttribute('data-hero-period'),
               hierarchy:document.documentElement.getAttribute('data-hierarchy-period'),
               ticker:[...document.querySelectorAll('.ticker-strip .ticker')].map(x=>x.innerText.trim()),
-              y:scrollY
+              y:scrollY,
+              sentinel:window.__GMFQ_AUDIT_SENTINEL,
+              navigationEntries:performance.getEntriesByType('navigation').length
             }));
-            const navBefore=mainFrameNavigations;
             await page.locator('.hero-tabs [data-timeframe="1W"]').click();
             await page.waitForFunction(()=>document.documentElement.getAttribute('data-hero-period')==='1W',null,{timeout:10000});
             const after=await page.evaluate(()=>({
               url:location.href,
               hero:document.documentElement.getAttribute('data-hero-period'),
               ticker:[...document.querySelectorAll('.ticker-strip .ticker')].map(x=>x.innerText.trim()),
-              y:scrollY
+              y:scrollY,
+              sentinel:window.__GMFQ_AUDIT_SENTINEL,
+              navigationEntries:performance.getEntriesByType('navigation').length
             }));
-            if(mainFrameNavigations!==navBefore)throw new Error('Hero timeframe caused a document navigation/reload');
+            if(!after.sentinel||after.sentinel!==before.sentinel)throw new Error('Hero timeframe reloaded the document');
+            if(after.navigationEntries!==before.navigationEntries)throw new Error('Hero timeframe created a new document navigation');
             if(!after.url.includes('tf=1W'))throw new Error('Hero URL state did not update');
             if(after.hero!=='1W')throw new Error('Hero period did not update');
             if(JSON.stringify(before.ticker)===JSON.stringify(after.ticker))throw new Error('Hero ticker values did not change on 1W');
@@ -99,7 +102,7 @@ jobs:
             if(failedRequests.length)throw new Error('Failed requests: '+failedRequests.join(' | '));
             if(badResponses.length)throw new Error('Bad responses: '+badResponses.join(' | '));
 
-            console.log(JSON.stringify({before,after,linkChecks,cards,mainFrameNavigations},null,2));
+            console.log(JSON.stringify({before,after,linkChecks,cards},null,2));
             await page.screenshot({path:'control-room-site-audit.png',fullPage:true});
             await browser.close();
           })().catch(e=>{console.error('::error title=Control Room Site Audit::'+String(e.message||e));process.exit(1)});
