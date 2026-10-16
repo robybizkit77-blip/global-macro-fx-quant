@@ -8,7 +8,6 @@
   const PAIRS=['EURUSD','GBPUSD','USDJPY','USDCAD','AUDUSD','NZDUSD'];
   const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
   const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
-  const PERIODS=new Set(['1D','1W','1M','3M','YTD']);
   let d=null,rates=null,fx=null,heroPeriod='1D',hierarchyPeriod='1D',rendering=false;
 
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -34,18 +33,11 @@
   function renderHero(){const host=document.querySelector('.ticker-strip');if(!host||!d||!rates)return;const cards=[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)].filter(Boolean);if(!cards.length)return;rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;document.documentElement.setAttribute('data-market-snapshot',cards.length===8?'READY':'PARTIAL');}
   function currencyStrength(period){const rows=datedRows();if(rows.length<2)return[];const si=startIndex(rows,period),a=rows[si],b=rows.at(-1),raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};});const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
   function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length||!data.length)return;const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});}
-
-  function bindControls(){
-    document.addEventListener('click',e=>{
-      const heroBtn=e.target.closest('.hero-tabs button');
-      if(heroBtn){const p=heroBtn.textContent.trim();if(PERIODS.has(p)){e.preventDefault();e.stopImmediatePropagation();heroPeriod=p;heroBtn.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===heroBtn));renderHero();return;}}
-      const hierarchyBtn=e.target.closest('.hierarchy .mini-tabs b');
-      if(hierarchyBtn){const p=hierarchyBtn.textContent.trim();if(PERIODS.has(p)){e.preventDefault();e.stopImmediatePropagation();hierarchyPeriod=p;hierarchyBtn.parentElement.querySelectorAll('b').forEach(x=>x.classList.toggle('active',x===hierarchyBtn));renderHierarchy();}}
-    },true);
-  }
-  function bindCardLinks(){const rules=[['changed','alert.html'],['rates','tassi.html'],['cbs','banche-centrali.html'],['cot-card','posizionamento.html'],['calendar','rischio-eventi.html'],['themes','top-themes.html'],['watch','watchlist.html']];rules.forEach(([cls,href])=>document.querySelectorAll(`.${cls} .card-head a`).forEach(a=>{a.href=href;a.style.cursor='pointer';}));document.querySelectorAll('.card-head a').forEach(a=>{if(!a.getAttribute('href')){const t=(a.closest('.card-head')?.querySelector('h2')?.textContent||'').toLowerCase();if(t.includes('setup')||t.includes('pair'))a.href='screener.html';}});}
   function protectStrip(){const host=document.querySelector('.ticker-strip');if(!host)return;new MutationObserver(()=>{if(!rendering&&host.children.length===0&&d&&rates)queueMicrotask(renderHero);}).observe(host,{childList:true});}
 
-  async function run(){try{bindControls();bindCardLinks();protectStrip();[d,rates]=await Promise.all([load(D_PATH),load(RATES_PATH)]);renderHero();fx=await tryLoad(FX_PATH);if(fx){renderHero();renderHierarchy();}document.documentElement.setAttribute('data-market-snapshot','READY');}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
+  window.addEventListener('gmfq:hero-period',e=>{const p=e.detail?.period;if(p){heroPeriod=p;renderHero();}});
+  window.addEventListener('gmfq:hierarchy-period',e=>{const p=e.detail?.period;if(p){hierarchyPeriod=p;renderHierarchy();}});
+
+  async function run(){try{protectStrip();[d,rates]=await Promise.all([load(D_PATH),load(RATES_PATH)]);renderHero();fx=await tryLoad(FX_PATH);if(fx){renderHero();renderHierarchy();}document.documentElement.setAttribute('data-market-snapshot','READY');}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
