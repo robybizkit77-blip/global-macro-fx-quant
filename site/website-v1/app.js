@@ -83,6 +83,13 @@
   const brandmark=document.querySelector('.brandmark');
   if(brandmark) brandmark.replaceChildren();
 
+  const navLinks=[...document.querySelectorAll('.nav-main a')];
+  const routes={Dashboard:'index.html',Valute:'valute.html'};
+  navLinks.forEach(a=>{
+    const label=a.querySelector('b')?.textContent?.trim();
+    if(routes[label]) a.setAttribute('href',routes[label]);
+  });
+
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{
     const href=a.getAttribute('href');
     if(!href||href==='#'){
