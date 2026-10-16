@@ -38,27 +38,27 @@
 
     <main class="internal-content pairs-page">
       <section class="page-head">
-        <div><h1>Coppie FX</h1><p>Ranking delle 28 coppie G8, con il contrasto relativo prima dei dettagli.</p></div>
+        <div><h1>Coppie FX</h1><p>Ranking delle 28 coppie G8, con qualità del setup prima dei dettagli.</p></div>
         <div class="page-actions" id="pair-timeframes"><button class="active" data-tf="ret1w">1W</button><button data-tf="ret1m">1M</button><button data-tf="ret3m">3M</button><button data-tf="ret6m">6M</button><button data-tf="ret1y">1Y</button></div>
       </section>
 
       <section class="ranking-intro">
-        <div class="ranking-copy"><small>FX PAIR RANKING</small><h2>Prima restringi il campo. Poi apri la coppia.</h2><p>La classifica mette in alto i contrasti in cui <strong>2Y e pricing 3M puntano nella stessa direzione</strong>. Il movimento prezzo del timeframe scelto e il COT restano conferme di contesto, non creano da soli una tesi.</p></div>
-        <div class="ranking-meta"><div><span>UNIVERSO</span><b>28</b><em>pair G8</em></div><div><span>METODO</span><b>Rates + Pricing</b><em>ordinamento trasparente</em></div><div><span>CORE</span><b>Invariato</b><em>nessun nuovo score motore</em></div></div>
+        <div class="ranking-copy"><small>FX PAIR RANKING</small><h2>Prima restringi il campo. Poi apri la coppia.</h2><p>La classifica usa la <strong>qualità canonica del setup</strong>: struttura Macro + Tassi/CB, timing, prezzo, estensione, COT e liquidità. Il movimento del timeframe scelto resta contesto e non crea da solo una tesi.</p></div>
+        <div class="ranking-meta"><div><span>UNIVERSO</span><b>28</b><em>pair G8</em></div><div><span>METODO</span><b>Pair Setup</b><em>motore canonico</em></div><div><span>ENTRATA</span><b>Separata</b><em>tesi ≠ trigger</em></div></div>
       </section>
 
-      <div class="section-title"><h2>Contrasti più netti adesso</h2><small id="pairs-asof">28 pair · —</small></div>
+      <div class="section-title"><h2>Setup più interessanti adesso</h2><small id="pairs-asof">28 pair · —</small></div>
       <section class="top-pairs" id="top-pairs"></section>
 
       <section class="ranking-layout">
         <article class="internal-card ranking-card">
           <div class="internal-card-head"><h3>Ranking completo</h3><small>clicca una coppia per aprire il deep dive</small></div>
-          <div class="ranking-head"><span>#</span><span>Coppia</span><span>Lettura relativa</span><span>2Y</span><span>Pricing 3M</span><span id="tf-col">1W</span><span>COT</span><span></span></div>
+          <div class="ranking-head"><span>#</span><span>Coppia</span><span>Qualità setup</span><span>2Y</span><span>Pricing 3M</span><span id="tf-col">1W</span><span>COT</span><span></span></div>
           <div id="pairs-table" class="ranking-table"></div>
         </article>
         <aside class="ranking-side">
-          <article class="internal-card"><div class="internal-card-head"><h3>Come leggerlo</h3><small>selezione, non segnale</small></div><div class="method-copy">Il ranking riprende la logica del vecchio monitor: prima cerchiamo <strong>separazione relativa</strong>, poi guardiamo conferme e rischi.<br><br><strong>Allineato</strong>: 2Y e pricing 3M favoriscono lo stesso lato.<br><strong>Diviso</strong>: i due layer non raccontano la stessa storia.<br><br><span class="status">Non modifica ranking, bias, sizing o scoring del motore.</span></div></article>
-          <article class="internal-card side-note"><div class="internal-card-head"><h3>Nel deep dive</h3><small>pagina della singola pair</small></div><div class="method-copy">Tesi relativa → Macro → Rates & Pricing → Positioning → Price → condizioni di conferma / invalidazione. Il trigger tecnico resta separato finché non è canonico.</div></article>
+          <article class="internal-card"><div class="internal-card-head"><h3>Come leggerlo</h3><small>selezione, non segnale</small></div><div class="method-copy">Il ranking ordina prima la qualità del setup canonico: <strong>PULITO → CON RISCHI → DA CONFERMARE → DA MONITORARE → NON VALUTABILE</strong>.<br><br>A parità di qualità, 2Y e pricing 3M servono solo come tiebreak trasparente. Prezzo del timeframe e COT restano contesto.<br><br><span class="status">La classifica non pubblica BUY/SELL, sizing o livelli di ingresso.</span></div></article>
+          <article class="internal-card side-note"><div class="internal-card-head"><h3>Nel deep dive</h3><small>pagina della singola pair</small></div><div class="method-copy">Tesi relativa → Macro → Rates & Pricing → Positioning → Price → Execution Readiness → condizioni di conferma / invalidazione. Il trigger tecnico resta separato finché non è canonico.</div></article>
         </aside>
       </section>
     </main>
