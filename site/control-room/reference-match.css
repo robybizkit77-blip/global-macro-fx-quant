@@ -1,0 +1,122 @@
+/* Approved site-reference refinement layer. Standalone front-end only. */
+:root{
+  --rm-bg:#02070d;
+  --rm-panel:#07131d;
+  --rm-panel-2:#091722;
+  --rm-line:#17334a;
+  --rm-line-soft:#102638;
+  --rm-gold:#d1ad61;
+  --rm-cyan:#39a8e2;
+  --rm-green:#37d6a3;
+  --rm-red:#f05f7b;
+}
+html,body{background:#01060b!important}
+body{font-feature-settings:"tnum" 1,"ss01" 1}
+.site-shell{
+  grid-template-columns:174px minmax(0,1fr)!important;
+  background:
+    radial-gradient(circle at 69% 0%,rgba(12,58,92,.15),transparent 24%),
+    linear-gradient(180deg,#01070d 0%,#02070d 100%)!important;
+}
+.sidebar{
+  background:linear-gradient(180deg,#07121c 0%,#050d15 64%,#040b12 100%)!important;
+  border-right:1px solid #11283a!important;
+  box-shadow:12px 0 28px rgba(0,0,0,.16)!important;
+}
+.brand{height:60px!important;padding:10px 11px!important;background:linear-gradient(180deg,rgba(255,255,255,.015),transparent)!important}
+.brand-mark{width:27px!important;height:27px!important;border-color:#caa958!important;box-shadow:0 0 24px rgba(202,169,88,.15)!important}
+.brand-copy strong{font-size:8.8px!important;letter-spacing:.07em!important}
+.brand-copy span{font-size:5.2px!important;color:#61788c!important}
+.nav-main{padding:9px 8px 4px!important;gap:2px!important}
+.nav-item{height:31px!important;font-size:8.3px!important;border-radius:4px!important;color:#899caf!important}
+.nav-item span{font-size:10.5px!important}
+.nav-item.active{background:linear-gradient(90deg,#0d3c65 0%,#0b2e4f 100%)!important;border-color:#14527e!important;box-shadow:inset 2px 0 0 #3aa3df,0 4px 16px rgba(0,42,72,.18)!important}
+.nav-sep{margin:6px 9px!important;background:#10283a!important}
+.sidebar-card{margin:10px 8px 9px!important;margin-top:auto!important;padding:9px!important;border-color:#31422d!important;background:linear-gradient(180deg,#111b18 0%,#0a1414 100%)!important;box-shadow:inset 0 0 0 1px rgba(208,173,93,.05)!important}
+.sidebar-card .crown{color:#e2bd69!important}.sidebar-card strong{font-size:7.2px!important}.sidebar-card small{font-size:5.4px!important}
+.topbar{
+  height:46px!important;
+  padding:0 12px!important;
+  background:linear-gradient(180deg,#06111a 0%,#050d15 100%)!important;
+  border-bottom:1px solid #10293c!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.15)!important;
+}
+.searchbox{height:28px!important;width:min(440px,45vw)!important;border-color:#17364f!important;background:#081824!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important}
+.searchbox input{font-size:7.9px!important}.top-actions{font-size:7.2px!important;gap:11px!important}.avatar{width:25px!important;height:25px!important}
+.control-room{padding:5px 7px 8px!important;gap:4px!important}
+.hero{
+  height:118px!important;
+  min-height:118px!important;
+  padding:0 15px!important;
+  border-radius:4px!important;
+  border-color:#123550!important;
+  background:
+    linear-gradient(90deg,rgba(3,16,26,.96) 0%,rgba(3,16,26,.86) 31%,rgba(3,16,26,.34) 57%,rgba(3,12,21,.15) 100%),
+    radial-gradient(circle at 69% 50%,rgba(27,117,173,.2),transparent 24%),
+    linear-gradient(180deg,#071623,#06111b)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 5px 22px rgba(0,0,0,.18)!important;
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  inset:0 0 0 38%;
+  background-image:
+    linear-gradient(90deg,rgba(2,9,15,.92) 0%,rgba(2,9,15,.23) 23%,rgba(2,9,15,0) 50%,rgba(2,9,15,.28) 100%),
+    url('https://sos.noaa.gov/ftp_mirror/land/earth_night/2012/media/thumbnail_big.jpg');
+  background-repeat:no-repeat,no-repeat;
+  background-position:center,68% 47%;
+  background-size:cover,265px 265px;
+  filter:saturate(.85) contrast(1.07) brightness(.82);
+  opacity:.95;
+  pointer-events:none;
+}
+.hero:after{opacity:.07!important;background-size:19px 19px!important}
+.hero-copy{position:relative;z-index:3!important;padding-left:0!important;align-self:center!important}
+.hero-label{font-size:5.4px!important;letter-spacing:.22em!important;color:#7992a7!important;margin-bottom:4px!important}
+.hero h1{font-size:30px!important;letter-spacing:-.035em!important;text-shadow:0 2px 14px rgba(0,0,0,.5)!important}
+.hero p{font-size:7.7px!important;color:#9aabba!important;margin-top:4px!important}
+.hero-art{position:absolute!important;inset:0!important;z-index:2!important;pointer-events:none!important}
+.hero-art svg{display:none!important}
+.hero-stamp{right:20px!important;top:20px!important;z-index:4!important;text-shadow:0 1px 7px rgba(0,0,0,.8)!important}
+.hero-stamp span{font-size:5.1px!important;color:#8ba5b7!important}.hero-stamp b{font-size:4.8px!important;color:#70889a!important}
+.ticker-strip{gap:3px!important;margin-top:-1px!important}
+.ticker{
+  height:50px!important;
+  border-radius:3px!important;
+  padding:5px 6px!important;
+  grid-template-columns:1fr 58px!important;
+  background:linear-gradient(180deg,#081725 0%,#06121d 100%)!important;
+  border-color:#17344d!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
+}
+.ticker span{font-size:5.8px!important;color:#8497aa!important}.ticker strong{font-size:10.8px!important;margin-top:3px!important}
+.ticker svg{width:58px!important;height:27px!important}.ticker polyline{stroke-width:1.65!important}
+.dashboard-grid{gap:4px!important}.top-grid{grid-template-columns:1.05fr .94fr 1.42fr .90fr!important}.middle-grid{grid-template-columns:.88fr 1.18fr 1.02fr!important}.bottom-grid{grid-template-columns:1.55fr .86fr!important}
+.panel{
+  border-radius:4px!important;
+  border-color:#16334b!important;
+  background:linear-gradient(180deg,#081622 0%,#06131e 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 4px 18px rgba(0,0,0,.11)!important;
+  padding:6px 7px!important;
+}
+.top-grid .panel{height:190px!important}.middle-grid .panel{height:178px!important}.bottom-grid .panel{height:138px!important}
+.panel header{height:21px!important;margin-bottom:4px!important;border-color:#112a3e!important}
+.panel header b{font-size:8px!important}.panel header a{font-size:5.5px!important}.panel-icon{color:var(--rm-gold)!important}
+.change-list li{padding:3px 0!important}.change-list p{font-size:6.2px!important}.change-list small{font-size:5.4px!important}.change-list em{font-size:5px!important}
+.hierarchy-list>div{height:17px!important}.hierarchy-list span{font-size:6.4px!important}.hierarchy-list i{height:7px!important}
+.legend span{font-size:5.1px!important}.chart-wrap{height:145px!important}
+.cb-table>div,.setup-table>div,.calendar-table>div,.watch-table>div{height:24px!important}
+.bar-chart{gap:4px!important}.bar-chart i{height:10px!important}
+.theme-cards{gap:4px!important}.theme-cards article{height:98px!important;grid-template-rows:48px 1fr!important;background:#081520!important}
+.theme-image:before{inset:0!important;filter:saturate(.78) contrast(1.04)!important}
+.theme-image.t1:before{background:linear-gradient(180deg,rgba(1,6,10,.12),rgba(1,6,10,.62)),url('https://sos.noaa.gov/ftp_mirror/land/earth_night/2012/media/thumbnail_big.jpg') center 56%/cover no-repeat!important}
+.theme-image.t2:before{background:linear-gradient(180deg,rgba(1,6,10,.12),rgba(1,6,10,.65)),radial-gradient(circle at 45% 45%,rgba(49,128,185,.58),transparent 30%),linear-gradient(135deg,#193348,#09141f 58%,#0c2536)!important}
+.theme-image.t3:before{background:linear-gradient(180deg,rgba(1,6,10,.08),rgba(1,6,10,.68)),radial-gradient(circle at 65% 35%,rgba(223,175,86,.42),transparent 27%),linear-gradient(135deg,#2a2b2d,#121720 58%,#21190f)!important}
+.theme-image.t4:before{background:linear-gradient(180deg,rgba(1,6,10,.08),rgba(1,6,10,.68)),radial-gradient(circle at 56% 42%,rgba(194,103,49,.48),transparent 28%),linear-gradient(135deg,#2b1b13,#101820 60%,#162b36)!important}
+.theme-cards article>div:last-child{padding:4px 5px!important}.theme-cards b{font-size:6.15px!important}.theme-cards p{font-size:5.1px!important}
+@media(max-width:1100px){.site-shell{grid-template-columns:156px minmax(0,1fr)!important}.top-grid{grid-template-columns:1fr 1fr!important}.middle-grid{grid-template-columns:1fr 1fr!important}.middle-grid .calendar-panel{grid-column:1/-1}.bottom-grid{grid-template-columns:1fr!important}.ticker-strip{grid-template-columns:repeat(4,1fr)!important}}
+@media(max-width:760px){
+  .site-shell{grid-template-columns:1fr!important}.sidebar{display:none!important}.topbar{height:42px!important}.control-room{padding:4px!important}
+  .hero{height:105px!important;min-height:105px!important;padding:0 10px!important}.hero:before{inset:0 0 0 30%!important;background-position:center,72% 47%!important;background-size:cover,220px 220px!important}.hero h1{font-size:25px!important}
+  .ticker-strip{grid-template-columns:repeat(4,1fr)!important}.top-grid,.middle-grid,.bottom-grid{grid-template-columns:1fr!important}.top-grid .panel,.middle-grid .panel,.bottom-grid .panel{height:auto!important;min-height:150px!important}.theme-cards{grid-template-columns:1fr 1fr!important}
+}
