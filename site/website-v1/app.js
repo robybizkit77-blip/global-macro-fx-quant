@@ -17,7 +17,7 @@
     .content{height:auto!important;min-height:calc(100vh - 60px)!important;padding:0 14px 12px!important;grid-template-rows:167px 286px 234px 122px!important;gap:9px!important;overflow:visible!important}
     .hero{isolation:isolate!important;overflow:hidden!important}.hero-title{left:5px!important;top:13px!important}.hero-title h1{font-size:39px!important}.hero-title p{font-size:14px!important}.hero:after{display:none!important}
     .hero-bg{left:180px!important;right:0!important;top:0!important;bottom:auto!important;width:auto!important;height:97px!important;z-index:0!important;opacity:1!important;background-image:linear-gradient(90deg,#061726 0%,rgba(6,23,38,.80) 12%,rgba(6,23,38,.18) 36%,rgba(6,23,38,0) 58%),url('./assets/hero-earth-reference.jpg')!important;background-repeat:no-repeat!important;background-position:left top,right top!important;background-size:100% 100%,1210px 97px!important;filter:brightness(1.08) saturate(1.06) contrast(1.03)!important;pointer-events:none!important}
-    .hero-bg:before,.hero-bg:after{display:none!important}.hero-right{right:0!important;top:25px!important;z-index:50!important;pointer-events:auto!important}.hero-tabs{z-index:51!important;pointer-events:auto!important;position:relative!important}.hero-tabs button{pointer-events:auto!important;cursor:pointer!important;position:relative!important;z-index:52!important}.hero-wordmark{display:block!important;font-size:9px!important;line-height:1.52!important;letter-spacing:.43em!important;color:#e4edf3!important;text-shadow:0 1px 3px rgba(0,0,0,.72)!important}.hero-wordmark span{font-size:9px!important}.hero-wordmark i{width:39px!important;margin-top:5px!important}.ticker-strip{left:0!important;right:0!important;bottom:3px!important;gap:8px!important;z-index:4!important}.ticker{height:77px!important;padding:10px!important;border-color:#23485f!important;box-shadow:0 5px 12px rgba(0,0,0,.16)!important}.ticker:has(em.up){background:radial-gradient(ellipse at 85% 64%,rgba(25,217,148,.18),transparent 40%),linear-gradient(180deg,rgba(8,28,43,.98),rgba(5,21,33,.98))!important}.ticker:has(em.down){background:radial-gradient(ellipse at 85% 64%,rgba(255,81,104,.16),transparent 40%),linear-gradient(180deg,rgba(8,28,43,.98),rgba(5,21,33,.98))!important}.hero-title{z-index:4!important}
+    .hero-bg:before,.hero-bg:after{display:none!important}.hero-right{right:0!important;top:25px!important;z-index:50!important;pointer-events:auto!important}.hero-tabs{z-index:51!important;pointer-events:auto!important;position:relative!important}.hero-tabs button,.hero-tabs a{height:31px!important;min-width:48px!important;border:0!important;border-right:1px solid #1b3345!important;background:transparent!important;color:#9aacba!important;font-size:9px!important;text-decoration:none!important;display:grid!important;place-items:center!important;pointer-events:auto!important;cursor:pointer!important;position:relative!important;z-index:52!important}.hero-tabs button.active,.hero-tabs a.active{background:#144e83!important;color:#fff!important;box-shadow:inset 0 0 0 1px #1c6aac!important}.hero-tabs button:last-child,.hero-tabs a:last-child{min-width:39px!important;border-right:0!important}.hero-wordmark{display:block!important;font-size:9px!important;line-height:1.52!important;letter-spacing:.43em!important;color:#e4edf3!important;text-shadow:0 1px 3px rgba(0,0,0,.72)!important}.hero-wordmark span{font-size:9px!important}.hero-wordmark i{width:39px!important;margin-top:5px!important}.ticker-strip{left:0!important;right:0!important;bottom:3px!important;gap:8px!important;z-index:4!important}.ticker{height:77px!important;padding:10px!important;border-color:#23485f!important;box-shadow:0 5px 12px rgba(0,0,0,.16)!important}.ticker:has(em.up){background:radial-gradient(ellipse at 85% 64%,rgba(25,217,148,.18),transparent 40%),linear-gradient(180deg,rgba(8,28,43,.98),rgba(5,21,33,.98))!important}.ticker:has(em.down){background:radial-gradient(ellipse at 85% 64%,rgba(255,81,104,.16),transparent 40%),linear-gradient(180deg,rgba(8,28,43,.98),rgba(5,21,33,.98))!important}.hero-title{z-index:4!important}
     .card-head a,.mini-tabs b,.pill-tabs b,.watch-actions b{pointer-events:auto!important;cursor:pointer!important;position:relative!important;z-index:5!important}
     .row{gap:9px!important}.row1{grid-template-columns:414fr 338fr 365fr 305fr!important}.row2{grid-template-columns:462fr 443fr 526fr!important}.row3{grid-template-columns:993fr 446fr!important;align-self:start!important}.card-head{height:39px!important}.row3 .card-head{height:31px!important}.row3>.card{height:122px!important}.theme-strip{height:86px!important}.theme-card{height:86px!important}.watch-table{height:86px!important;overflow:hidden!important}
     @media(max-width:900px){body{overflow:auto!important}.site{display:block!important;height:auto!important}.sidebar{display:none!important}.main{height:auto!important}.topbar{height:42px!important}.search{display:none!important}.content{height:auto!important;padding:5px!important;display:block!important;overflow:visible!important}.hero{height:150px!important;margin-bottom:8px!important}.row1,.row2,.row3{grid-template-columns:1fr!important}.row{display:grid!important;margin-bottom:8px!important}.row3>.card{height:auto!important}.card-head,.row3 .card-head{height:auto!important;min-height:36px!important}.theme-strip,.theme-card,.watch-table{height:auto!important}}
@@ -32,19 +32,23 @@
   Object.entries(cardRoutes).forEach(([cls,href])=>document.querySelectorAll(`.${cls} .card-head a`).forEach(a=>a.href=href));
   document.querySelectorAll('.card-head a').forEach(a=>{if(!a.getAttribute('href')){const title=(a.closest('.card-head')?.querySelector('h2')?.textContent||'').toLowerCase();if(title.includes('setup')||title.includes('pair'))a.href='screener.html';}});
 
-  document.querySelectorAll('.hero-tabs button').forEach(btn=>btn.addEventListener('click',()=>{
-    const p=btn.textContent.trim();if(!['1D','1W','1M','3M','YTD'].includes(p))return;
-    btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn));
-    window.dispatchEvent(new CustomEvent('gmfq:hero-period',{detail:{period:p}}));
-  }));
-  document.querySelectorAll('.hierarchy .mini-tabs b').forEach(btn=>btn.addEventListener('click',()=>{
-    const p=btn.textContent.trim();if(!['1D','1W','1M'].includes(p))return;
-    btn.parentElement.querySelectorAll('b').forEach(x=>x.classList.toggle('active',x===btn));
-    window.dispatchEvent(new CustomEvent('gmfq:hierarchy-period',{detail:{period:p}}));
-  }));
+  const allowed=['1D','1W','1M','3M','YTD'];
+  const params=new URLSearchParams(location.search);
+  const selected=allowed.includes(params.get('tf'))?params.get('tf'):'1D';
+  document.querySelectorAll('.hero-tabs button').forEach(btn=>{
+    const label=btn.textContent.trim();
+    if(!allowed.includes(label))return;
+    const a=document.createElement('a');
+    const p=new URLSearchParams(location.search);p.set('tf',label);
+    a.href=`?${p.toString()}`;
+    a.textContent=label;
+    a.className=label===selected?'active':'';
+    a.setAttribute('data-timeframe',label);
+    btn.replaceWith(a);
+  });
 
   const clock=()=>{const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('en-US',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'America/New_York'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}).format(d);};
   clock();setInterval(clock,30000);
-  const dataScript=document.createElement('script');dataScript.src='data-adapter.js?v=20261016-2047';document.head.appendChild(dataScript);
-  const snapshotScript=document.createElement('script');snapshotScript.src='market-snapshot.js?v=20261016-2047';document.head.appendChild(snapshotScript);
+  const dataScript=document.createElement('script');dataScript.src='data-adapter.js?v=20261016-staging2';document.head.appendChild(dataScript);
+  const snapshotScript=document.createElement('script');snapshotScript.src='market-snapshot.js?v=20261016-staging2';document.head.appendChild(snapshotScript);
 })();
