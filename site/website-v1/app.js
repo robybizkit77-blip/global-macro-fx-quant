@@ -84,7 +84,7 @@
   if(brandmark) brandmark.replaceChildren();
 
   const navLinks=[...document.querySelectorAll('.nav-main a')];
-  const routes={Dashboard:'index.html',Valute:'valute.html'};
+  const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html'};
   navLinks.forEach(a=>{
     const label=a.querySelector('b')?.textContent?.trim();
     if(routes[label]) a.setAttribute('href',routes[label]);
