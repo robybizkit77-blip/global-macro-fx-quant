@@ -1,0 +1,2984 @@
+{
+  "schema": "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1",
+  "status": "CURRENT_CANONICAL_ENGINE",
+  "pair_count": 28,
+  "price_asof": "2026-09-28",
+  "price_source": "ECB euro foreign exchange reference rates",
+  "rules_source": "derivePairSetupState / derivePairDecisionFrame / pairTransitionState / derivePairRelativeDynamics",
+  "thesis_is_not_entry": true,
+  "entry_level_published": false,
+  "pairs": {
+    "AUDCAD": {
+      "setup": {
+        "pair": "AUDCAD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "AUDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "AUDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "AUDCAD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "AUDCHF": {
+      "setup": {
+        "pair": "AUDCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "AUDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "AUDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "AUDCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "AUDJPY": {
+      "setup": {
+        "pair": "AUDJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "AUDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "AUDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "AUDJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "AUDNZD": {
+      "setup": {
+        "pair": "AUDNZD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "AUDNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "AUDNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "AUDNZD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "AUDUSD": {
+      "setup": {
+        "pair": "AUDUSD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "AUDUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "AUDUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "AUDUSD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "CADCHF": {
+      "setup": {
+        "pair": "CADCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "CADCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "CADCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "CADCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "CADJPY": {
+      "setup": {
+        "pair": "CADJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "CADJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "CADJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "CADJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "CHFJPY": {
+      "setup": {
+        "pair": "CHFJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "CHFJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "CHFJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "CHFJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURAUD": {
+      "setup": {
+        "pair": "EURAUD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURAUD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURAUD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURAUD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURCAD": {
+      "setup": {
+        "pair": "EURCAD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURCAD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURCHF": {
+      "setup": {
+        "pair": "EURCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURGBP": {
+      "setup": {
+        "pair": "EURGBP",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURGBP: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURGBP: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURGBP",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURJPY": {
+      "setup": {
+        "pair": "EURJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURNZD": {
+      "setup": {
+        "pair": "EURNZD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURNZD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "EURUSD": {
+      "setup": {
+        "pair": "EURUSD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "EURUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "EURUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "EURUSD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPAUD": {
+      "setup": {
+        "pair": "GBPAUD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPAUD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPAUD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPAUD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPCAD": {
+      "setup": {
+        "pair": "GBPCAD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPCAD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPCHF": {
+      "setup": {
+        "pair": "GBPCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPJPY": {
+      "setup": {
+        "pair": "GBPJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPNZD": {
+      "setup": {
+        "pair": "GBPNZD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPNZD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPNZD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "GBPUSD": {
+      "setup": {
+        "pair": "GBPUSD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "GBPUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "GBPUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "GBPUSD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "NZDCAD": {
+      "setup": {
+        "pair": "NZDCAD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "NZDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "NZDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "NZDCAD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "NZDCHF": {
+      "setup": {
+        "pair": "NZDCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "NZDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "NZDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "NZDCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "NZDJPY": {
+      "setup": {
+        "pair": "NZDJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "NZDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "NZDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "NZDJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "NZDUSD": {
+      "setup": {
+        "pair": "NZDUSD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "NZDUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "NZDUSD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "NZDUSD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "USDCAD": {
+      "setup": {
+        "pair": "USDCAD",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "USDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "USDCAD: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "USDCAD",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "USDCHF": {
+      "setup": {
+        "pair": "USDCHF",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "USDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "USDCHF: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "USDCHF",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    },
+    "USDJPY": {
+      "setup": {
+        "pair": "USDJPY",
+        "structuralFav": null,
+        "quality": "NON VALUTABILE",
+        "qualityCode": "NOT_EVALUABLE",
+        "price": {
+          "state": "NEUTRAL",
+          "text": "Nessun vantaggio strutturale"
+        },
+        "cot": {
+          "state": "CONTEXT",
+          "kind": "CONTEXT",
+          "text": "COT solo contesto"
+        },
+        "liquidity": {
+          "state": "CONTEXT",
+          "text": "Liquidità solo contesto"
+        },
+        "structural": {
+          "fav": "—",
+          "quality": "NESSUN CONTRASTO",
+          "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+          "timing": "USDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+          "priceReading": "PREZZO NON RISOLUTIVO",
+          "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+          "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+          "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+          "structural": {
+            "macro": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "policy": {
+              "a": 0,
+              "b": 0,
+              "side": "TIE"
+            },
+            "ratesGap": {
+              "bp": null,
+              "material": false,
+              "side": "—"
+            }
+          },
+          "macroSide": null,
+          "policySide": null
+        }
+      },
+      "decision_frame": {
+        "fav": "—",
+        "quality": "NESSUN CONTRASTO",
+        "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+        "timing": "USDJPY: NON DETERMINATO · undefined: NON DETERMINATO",
+        "priceReading": "PREZZO NON RISOLUTIVO",
+        "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
+        "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+        "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB.",
+        "structural": {
+          "macro": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "policy": {
+            "a": 0,
+            "b": 0,
+            "side": "TIE"
+          },
+          "ratesGap": {
+            "bp": null,
+            "material": false,
+            "side": "—"
+          }
+        },
+        "macroSide": null,
+        "policySide": null
+      },
+      "transition": {
+        "state": "WITHHELD",
+        "cls": "transNeutral",
+        "note": "copertura dinamica insufficiente su almeno una delle due valute"
+      },
+      "relative_dynamics": {
+        "a": "USDJPY",
+        "A": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "B": {
+          "positive": 0,
+          "negative": 0,
+          "turns": 0,
+          "details": [],
+          "withheld": true
+        },
+        "aNet": null,
+        "bNet": null,
+        "state": "WITHHELD",
+        "fav": "—"
+      },
+      "price_state": null
+    }
+  },
+  "quality_distribution": {
+    "NON VALUTABILE": 28
+  },
+  "browser_page_errors": []
+}
