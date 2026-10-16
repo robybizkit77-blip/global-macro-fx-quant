@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const reports=[
-    {date:'2026-10-15',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX con controllo Macro → Rates → Pricing → Positioning → Price.'},
+    {date:'2026-10-15',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',href:'library/reports/Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX con controllo Macro → Rates → Pricing → Positioning → Price.'},
     {date:'2026-10-14',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-14_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX e verifica della reazione effettiva del mercato.'},
     {date:'2026-10-13',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-13_DARK_DESK.html',desc:'Monitor serale delle tesi FX con separazione tra thesis strength e trade attractiveness.'},
     {date:'2026-10-11',type:'CB Sentiment',title:'Weekly CB Sentiment',file:'Weekly_CB_Sentiment_Report_2026-10-11_DARK_RESEARCH_DESK_v23_TERMINOLOGY_HAWKISH.html',desc:'Stance, focus, pricing e cambi di tono delle principali banche centrali G8.'},
@@ -13,19 +13,20 @@
   ];
   let active='Tutti';
   const TYPES=['Tutti',...new Set(reports.map(r=>r.type))];
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   function fmtDate(s){const d=new Date(s+'T12:00:00Z');return new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',year:'numeric'}).format(d)}
   function renderStats(){
     const cats=new Set(reports.map(r=>r.type)).size;
     const latest=[...reports].sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'—';
-    document.getElementById('library-stats').innerHTML=`<div class="library-stat"><small>Report indicizzati</small><b>${reports.length}</b></div><div class="library-stat"><small>Categorie</small><b>${cats}</b></div><div class="library-stat"><small>Ultimo report</small><b>${fmtDate(latest)}</b></div><div class="library-stat"><small>Archivio</small><b>Canonical</b></div>`;
+    const mirrored=reports.filter(r=>r.href).length;
+    document.getElementById('library-stats').innerHTML=`<div class="library-stat"><small>Report indicizzati</small><b>${reports.length}</b></div><div class="library-stat"><small>Categorie</small><b>${cats}</b></div><div class="library-stat"><small>Ultimo report</small><b>${fmtDate(latest)}</b></div><div class="library-stat"><small>Web mirror</small><b>${mirrored}/${reports.length}</b></div>`;
   }
   function renderFilters(){document.getElementById('library-filters').innerHTML=TYPES.map(t=>`<button data-type="${esc(t)}" class="${t===active?'active':''}">${esc(t)}</button>`).join('')}
   function renderGrid(){
     const q=document.getElementById('library-search').value.trim().toLowerCase();
     const rows=reports.filter(r=>(active==='Tutti'||r.type===active)&&(!q||`${r.title} ${r.file} ${r.type} ${r.desc}`.toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
     document.getElementById('library-count').textContent=`${rows.length} report · archivio canonico`;
-    document.getElementById('library-grid').innerHTML=rows.length?rows.map(r=>`<article class="report-card"><div class="report-top"><span class="report-type">${esc(r.type)}</span><span class="report-date">${esc(fmtDate(r.date))}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.desc)}</p><div class="report-file">${esc(r.file)}</div><div class="report-footer"><span class="report-status">● Presente in Library</span><button class="report-action" disabled>Web mirror pending</button></div></article>`).join(''):'<div class="library-empty">Nessun report corrisponde al filtro selezionato.</div>';
+    document.getElementById('library-grid').innerHTML=rows.length?rows.map(r=>`<article class="report-card"><div class="report-top"><span class="report-type">${esc(r.type)}</span><span class="report-date">${esc(fmtDate(r.date))}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.desc)}</p><div class="report-file">${esc(r.file)}</div><div class="report-footer"><span class="report-status">● ${r.href?'Disponibile nel sito':'Presente in Library'}</span>${r.href?`<a class="report-action" href="${esc(r.href)}" target="_blank" rel="noopener">Apri report →</a>`:'<button class="report-action" disabled>Web mirror pending</button>'}</div></article>`).join(''):'<div class="library-empty">Nessun report corrisponde al filtro selezionato.</div>';
   }
   function bind(){
     document.getElementById('library-filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;active=b.dataset.type;renderFilters();renderGrid()});
