@@ -21,9 +21,8 @@
   `;
   document.head.appendChild(fidelity);
   const brandmark=document.querySelector('.brandmark');if(brandmark) brandmark.replaceChildren();
-  const navLinks=[...document.querySelectorAll('.nav-main a')];
-  const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html','Banche centrali':'banche-centrali.html',Posizionamento:'posizionamento.html',Coppie:'coppie.html','Rischio/Eventi':'rischio-eventi.html','Top Themes':'top-themes.html',Library:'library.html'};
-  navLinks.forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label]) a.setAttribute('href',routes[label]);});
+  const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html','Banche centrali':'banche-centrali.html',Posizionamento:'posizionamento.html',Coppie:'coppie.html','Rischio/Eventi':'rischio-eventi.html','Top Themes':'top-themes.html',Library:'library.html','Macro Data':'macro-data.html'};
+  document.querySelectorAll('.nav a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.setAttribute('href',routes[label]);});
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{const href=a.getAttribute('href');if(!href||href==='#'){e.preventDefault();document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');}}));
   document.querySelectorAll('.hero-tabs button,.mini-tabs b,.pill-tabs b,.watch-actions b').forEach(t=>t.addEventListener('click',()=>{const group=t.parentElement;group.querySelectorAll('.active').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
   const dataScript=document.createElement('script');dataScript.src='data-adapter.js';dataScript.defer=true;document.head.appendChild(dataScript);
