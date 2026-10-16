@@ -19,6 +19,15 @@ try{
     null,{timeout:120000});
   await page.waitForTimeout(2500);
 
+  // Reuse the Website V1 official ECB adapter before evaluating the canonical
+  // setup functions. This keeps the core rules untouched while ensuring Price
+  // confirmation/extension are evaluated on the same current 28x5 PIT layer
+  // consumed by the new site.
+  await page.addScriptTag({url:'/site/website-v1/price-runtime.js'});
+  await page.waitForFunction(()=>typeof window.GMFQWebsitePrice?.hydrate==='function',null,{timeout:30000});
+  await page.evaluate(async()=>{await window.GMFQWebsitePrice.hydrate(D);});
+  await page.waitForFunction(()=>window.GMFQ_WEBSITE_PRICE_AUDIT?.status==='PASS' && window.GMFQ_WEBSITE_PRICE_AUDIT?.returns_complete===true,null,{timeout:30000});
+
   const snapshot=await page.evaluate(()=>{
     const clean=v=>JSON.parse(JSON.stringify(v));
     const canonicalPairs=[...new Set((D.pairs||[])
@@ -41,16 +50,14 @@ try{
         price_state:price==null?null:clean(price)
       };
     }
-    const priceDates=(D.pairs||[]).map(x=>x?.price_asof).filter(Boolean);
-    const audit=(window.GMFQ_ECB_PRICE_AUDIT&&window.GMFQ_ECB_PRICE_AUDIT.status==='PASS')?clean(window.GMFQ_ECB_PRICE_AUDIT):null;
-    if(audit?.as_of) priceDates.push(audit.as_of);
-    priceDates.sort();
+    const audit=clean(window.GMFQ_WEBSITE_PRICE_AUDIT);
     return {
       schema:'GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1',
       status:'CURRENT_CANONICAL_ENGINE',
       pair_count:canonicalPairs.length,
-      price_asof:priceDates.at(-1)||null,
-      price_source:audit?.source||'canonical dashboard runtime',
+      price_asof:audit.as_of,
+      price_source:audit.source,
+      price_audit:audit,
       rules_source:'derivePairSetupState / derivePairDecisionFrame / pairTransitionState / derivePairRelativeDynamics',
       thesis_is_not_entry:true,
       entry_level_published:false,
@@ -59,6 +66,8 @@ try{
   });
 
   if(snapshot.pair_count!==28)throw new Error(`Expected 28 pairs, got ${snapshot.pair_count}`);
+  if(snapshot.price_audit?.status!=='PASS'||snapshot.price_audit?.pair_count!==28||snapshot.price_audit?.complete_return_values!==140||snapshot.price_audit?.no_lookahead!==true)throw new Error('Current ECB Price runtime audit failed');
+  if(snapshot.price_asof!==snapshot.price_audit.as_of)throw new Error('Pair setup Price as-of mismatch');
   const qualities={};
   for(const [pair,row] of Object.entries(snapshot.pairs)){
     if(!row.canonical_pair||!/^([A-Z]{3})\/([A-Z]{3})$/.test(row.canonical_pair))throw new Error(`${pair}: canonical pair label missing`);
