@@ -84,9 +84,12 @@
   if(brandmark) brandmark.replaceChildren();
 
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{
-    e.preventDefault();
-    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
-    a.classList.add('active');
+    const href=a.getAttribute('href');
+    if(!href||href==='#'){
+      e.preventDefault();
+      document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+      a.classList.add('active');
+    }
   }));
   document.querySelectorAll('.hero-tabs button,.mini-tabs b,.pill-tabs b,.watch-actions b').forEach(t=>t.addEventListener('click',()=>{
     const group=t.parentElement;
@@ -98,4 +101,9 @@
   dataScript.src='data-adapter.js';
   dataScript.defer=true;
   document.head.appendChild(dataScript);
+
+  const snapshotScript=document.createElement('script');
+  snapshotScript.src='market-snapshot.js';
+  snapshotScript.defer=true;
+  document.head.appendChild(snapshotScript);
 })();
