@@ -2,15 +2,15 @@
   'use strict';
 
   const fidelity=document.createElement('style');
-  fidelity.id='reference-lock-v2';
+  fidelity.id='reference-lock-v3';
   fidelity.textContent=`
-    /* Approved reference: 1672×905 website viewport. Design geometry locked 1:1. */
+    /* Approved reference: 1672×905 website viewport. */
     .site{grid-template-columns:196px minmax(0,1fr)!important}
-    .brand{position:absolute!important;top:0!important;left:0!important;width:455px!important;height:60px!important;z-index:30!important;padding:0 0 0 27px!important;gap:15px!important;border-bottom:1px solid #163044!important;overflow:visible!important}
-    .brandmark{width:42px!important;height:40px!important;flex:0 0 42px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;display:block!important}
-    .brandmark img{display:block!important;width:42px!important;height:40px!important;object-fit:contain!important}
-    .brandname{font-size:21px!important}
-    .brandsub{font-size:6.4px!important;letter-spacing:.20em!important}
+    .brand{position:absolute!important;top:0!important;left:0!important;width:455px!important;height:60px!important;z-index:30!important;padding:0 0 0 17px!important;gap:10px!important;border-bottom:1px solid #163044!important;overflow:visible!important}
+    .brandmark{width:30px!important;height:30px!important;flex:0 0 30px!important;border:0!important;border-radius:0!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='16.3' fill='none' stroke='%23e1b94f' stroke-width='2.1'/%3E%3Cpath d='M18 5.7L14.5 34.2M24.8 6.9L20.8 34M7.4 25.8L31.8 10.6M9.6 12.8L30.2 28.8' fill='none' stroke='%23e1b94f' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E")!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center!important;box-shadow:none!important;display:block!important}
+    .brandmark:before,.brandmark:after,.brandmark img{display:none!important}
+    .brandname{font-size:20px!important}
+    .brandsub{font-size:6.2px!important;letter-spacing:.20em!important}
 
     .nav-main{margin-top:60px!important}
     .nav{padding-right:2px!important}
@@ -21,7 +21,7 @@
     .content{
       height:calc(100vh - 60px)!important;
       padding:0 14px!important;
-      grid-template-rows:195px 286px 261px 72px!important;
+      grid-template-rows:171px 286px 261px 72px!important;
       gap:9px!important;
       overflow:hidden!important;
     }
@@ -33,12 +33,12 @@
     .hero:after{display:none!important}
     .hero-bg{
       left:180px!important;right:0!important;top:0!important;bottom:auto!important;
-      width:auto!important;height:111px!important;z-index:0!important;opacity:1!important;
+      width:auto!important;height:101px!important;z-index:0!important;opacity:1!important;
       background-image:linear-gradient(90deg,#061726 0%,rgba(6,23,38,.80) 12%,rgba(6,23,38,.18) 36%,rgba(6,23,38,0) 58%),url('./assets/hero-earth-reference.jpg')!important;
       background-repeat:no-repeat!important;
       background-position:left top,right top!important;
-      background-size:100% 100%,1300px 111px!important;
-      filter:brightness(1.11) saturate(1.08) contrast(1.04)!important;
+      background-size:100% 100%,1240px 101px!important;
+      filter:brightness(1.08) saturate(1.06) contrast(1.03)!important;
     }
     .hero-bg:before,.hero-bg:after{display:none!important}
     .hero-right{right:0!important;top:23px!important}
@@ -77,12 +77,7 @@
   document.head.appendChild(fidelity);
 
   const brandmark=document.querySelector('.brandmark');
-  if(brandmark){
-    const img=document.createElement('img');
-    img.src='./assets/logo-reference.png';
-    img.alt='';
-    brandmark.replaceChildren(img);
-  }
+  if(brandmark) brandmark.replaceChildren();
 
   document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',e=>{
     e.preventDefault();
