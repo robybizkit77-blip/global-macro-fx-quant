@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GMFQ Timeframe No-Reload Test</title>
+<style>
+:root{--bg:#03101a;--panel:#071a29;--line:#203e52;--text:#e8eef4;--muted:#8ca0b2;--green:#24d99a;--red:#ff5168}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}.wrap{max-width:1400px;margin:0 auto;padding:28px}.hero{position:relative;border:1px solid #17384c;border-radius:10px;background:linear-gradient(90deg,#061726,#071a29);padding:22px;min-height:190px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.hero h1{margin:0 0 6px;font-family:Georgia,serif;font-size:34px}.hero p{margin:0;color:var(--muted)}.hero-tabs{display:flex;border:1px solid #263e51;border-radius:5px;overflow:hidden}.hero-tabs a{height:34px;min-width:52px;display:grid;place-items:center;color:#9aacba;text-decoration:none;border-right:1px solid #1b3345;font-size:11px}.hero-tabs a:last-child{border-right:0}.hero-tabs a.active{background:#144e83;color:#fff}.ticker-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:26px}.ticker{height:82px;border:1px solid var(--line);border-radius:6px;background:linear-gradient(180deg,rgba(8,28,43,.97),rgba(5,21,33,.97));display:grid;grid-template-columns:1fr 83px;padding:10px;overflow:hidden}.ticker small{display:block;font-size:11px;font-weight:700}.ticker b{display:block;font-size:17px;margin-top:3px}.ticker em{display:block;font-style:normal;font-size:11px;font-weight:700;margin-top:5px}.up{color:var(--green)}.down{color:var(--red)}.ticker svg{width:82px;height:48px;align-self:end}.ticker polyline{fill:none;stroke-width:1.5}.ticker polyline.up{stroke:var(--green)}.ticker polyline.down{stroke:var(--red)}#status{margin-top:14px;color:#9fb2c0;font-size:12px}@media(max-width:900px){.ticker-strip{grid-template-columns:repeat(2,1fr)}.top{display:block}.hero-tabs{margin-top:18px;width:max-content}}
+</style>
+</head>
+<body>
+<div class="wrap"><section class="hero"><div class="top"><div><h1>Timeframe no-reload test</h1><p>Il click deve cambiare solo ticker e URL, senza ricaricare o far saltare la pagina.</p></div><div class="hero-tabs"><a data-timeframe="1D" href="?tf=1D" class="active">1D</a><a data-timeframe="1W" href="?tf=1W">1W</a><a data-timeframe="1M" href="?tf=1M">1M</a><a data-timeframe="3M" href="?tf=3M">3M</a><a data-timeframe="YTD" href="?tf=YTD">YTD</a></div></div><div class="ticker-strip"></div><div id="status">LOADING…</div></section></div>
+<script src="market-snapshot-noreload-test.js?v=20261016-2123"></script>
+</body></html>
