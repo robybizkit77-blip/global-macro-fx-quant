@@ -11,7 +11,7 @@
   const PERIODS=new Set(['1D','1W','1M','3M','YTD']);
   let d=null,rates=null,fx=null,heroPeriod='1D',hierarchyPeriod='1D',rendering=false;
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
   const pct=(v,digits=2)=>{const x=n(v);return x===null?'—':`${x>0?'+':''}${x.toFixed(digits)}%`;};
   async function load(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return r.json();}
