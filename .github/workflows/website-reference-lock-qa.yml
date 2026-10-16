@@ -56,10 +56,11 @@ jobs:
             const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
             if(hrefs.length!==9) throw new Error(`Expected 9 Library mirrors, found ${hrefs.length}`);
             for(const href of hrefs){
+              console.log(`QA report: ${href}`);
               const report=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
               const response=await report.goto(new URL(href,base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
               if(!response || !response.ok()) throw new Error(`${href}: HTTP ${response?.status()}`);
-              await report.waitForFunction(()=>document.body && document.body.innerText.length>500,{timeout:120000});
+              await report.waitForFunction(()=>document.body && document.body.innerText.length>500,null,{timeout:120000});
               const body=(await report.locator('body').innerText())||'';
               if(body.includes('Impossibile aprire il report')) throw new Error(`${href}: report decompression failed`);
               await report.close();
