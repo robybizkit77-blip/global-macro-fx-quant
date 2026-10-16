@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pair Deep Dive — Global Macro FX Quant</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="internal.css">
+  <link rel="stylesheet" href="coppia.css">
+</head>
+<body>
+<div class="site">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark"></div><div class="brandtext"><div class="brandname">GLOBAL MACRO FX QUANT</div><div class="brandsub">CURRENCIES · RATES · CENTRAL BANKS · POSITIONING · MACRO</div></div></div>
+    <nav class="nav nav-main">
+      <a href="index.html"><span>⌂</span><b>Dashboard</b></a>
+      <a href="valute.html"><span>▦</span><b>Valute</b></a>
+      <a href="tassi.html"><span>↗</span><b>Tassi</b></a>
+      <a href="banche-centrali.html"><span>🏛</span><b>Banche centrali</b></a>
+      <a href="posizionamento.html"><span>◉</span><b>Posizionamento</b></a>
+      <a class="active" href="coppie.html"><span>◌</span><b>Coppie</b></a>
+      <a href="#"><span>⌘</span><b>Rischio/Eventi</b></a>
+      <a href="#"><span>◒</span><b>Top Themes</b></a>
+      <a href="#"><span>▣</span><b>Library</b></a>
+    </nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub"><a href="#"><span>☆</span><b>Watchlist</b></a><a href="#"><span>⌁</span><b>Screener</b></a><a href="#"><span>▦</span><b>Macro Data</b></a><a href="#"><span>⌘</span><b>Strumenti</b></a></nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub bottom-links"><a href="#"><span>♧</span><b>Alert</b></a><a href="#"><span>⚙</span><b>Impostazioni</b></a></nav>
+    <div class="pro-card"><div class="pro-title"><span>♛</span> Private Desk</div><div class="pro-copy">Motore macro, dati e ricerca<br>del tuo workspace.</div><button>Control Room <span>→</span></button></div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="search"><span class="search-icon">⌕</span><span>Cerca valute, tassi, banche centrali, temi...</span><kbd>⌘</kbd><kbd>K</kbd></div>
+      <div class="topmeta"><span class="world">◉</span><span>Europe/Rome</span><div class="vline"></div><div class="datetime"><small id="site-date">—</small><b id="site-time">—</b></div><div class="vline"></div><span class="bell">♧<i></i></span><div class="vline"></div><span class="avatar">GM</span></div>
+    </header>
+
+    <main class="internal-content">
+      <section class="page-head pair-head">
+        <div><a class="back-link" href="coppie.html">← Tutte le coppie</a><h1 id="pair-title">Pair</h1><p id="pair-subtitle">Macro → Rates → Pricing → Positioning → Price → Trigger</p></div>
+        <div class="pair-price"><small>Prezzo canonico</small><b id="pair-last">—</b><em id="pair-asof">—</em></div>
+      </section>
+
+      <section class="layer-grid" id="layer-grid"></section>
+
+      <section class="pair-detail-row">
+        <article class="internal-card">
+          <div class="internal-card-head"><h3>Relative Map</h3><small>base vs quote</small></div>
+          <div id="relative-map" class="relative-map"></div>
+        </article>
+        <article class="internal-card">
+          <div class="internal-card-head"><h3>Trade Readiness</h3><small>nessun trigger inventato</small></div>
+          <div id="trade-readiness" class="method-copy"></div>
+        </article>
+      </section>
+    </main>
+  </section>
+</div>
+<script src="coppia.js"></script>
+</body>
+</html>
