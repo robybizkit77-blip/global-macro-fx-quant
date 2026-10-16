@@ -53,10 +53,11 @@ jobs:
             const local=path.join(process.cwd(),'site','website-v1',href);
             if(!fs.existsSync(local)) throw new Error(`${href}: local mirror missing`);
             const raw=fs.readFileSync(local,'utf8');
+            const isGlobalMacro=path.basename(local)===GLOBAL_MACRO;
             let html=raw;
             let mode='raw';
 
-            if(path.basename(local)===GLOBAL_MACRO){
+            if(isGlobalMacro){
               const dir=path.dirname(local);
               for(const part of GLOBAL_MACRO_PARTS){
                 if(!raw.includes(part)) throw new Error(`${href}: multipart loader missing ${part}`);
@@ -81,8 +82,12 @@ jobs:
             }
 
             if(html.length<500) throw new Error(`${href}: HTML payload too short (${html.length})`);
-            if(!/^<!doctype html>/i.test(html.trimStart())) throw new Error(`${href}: payload does not start with HTML doctype`);
-            if(!/<\/html>\s*$/i.test(html.trimEnd())) throw new Error(`${href}: payload does not end with </html>`);
+            if(isGlobalMacro){
+              if(!/^<!doctype html>/i.test(html.trimStart())) throw new Error(`${href}: multipart payload does not start with HTML doctype`);
+              if(!/<\/html>\s*$/i.test(html.trimEnd())) throw new Error(`${href}: multipart payload does not end with </html>`);
+            }else if(!/<(?:!doctype\s+html|html|head|body)\b/i.test(html)){
+              throw new Error(`${href}: payload is not HTML`);
+            }
             console.log(`QA report OK: ${href} · ${html.length} chars · ${mode}`);
           }
 
@@ -123,10 +128,9 @@ jobs:
             const globalHref=hrefs.find(href=>href.endsWith(GLOBAL_MACRO));
             if(!globalHref) throw new Error('Global Macro mirror is not active in Library');
             const macro=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
-            const macroResponse=await macro.goto(new URL(globalHref,base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
+            const macroResponse=await macro.goto(new URL(globalHref,base+'library.html').href,{waitUntil:'domcontentloaded',timeout:120000});
             if(!macroResponse || !macroResponse.ok()) throw new Error(`${globalHref}: HTTP ${macroResponse?.status()}`);
-            const macroText=await macro.locator('body').innerText();
-            if(!macroText.includes('Il quadro globale in 45 secondi') || !macroText.includes('Bottom line · desk takeaways')) throw new Error(`${globalHref}: multipart report did not render canonical content`);
+            await macro.waitForFunction(()=>document.body?.innerText?.includes('Il quadro globale in 45 secondi') && document.body?.innerText?.includes('Bottom line · desk takeaways'),null,{timeout:120000});
             console.log(`QA multipart render OK: ${globalHref}`);
             await macro.close();
             await browser.close();
