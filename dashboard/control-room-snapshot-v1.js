@@ -76,7 +76,14 @@ function sync(){
   window.GMFQ_CONTROL_ROOM_SNAPSHOT={schema:SCHEMA,status:'ACTIVE',scope:'PRESENTATION_ONLY',core_effect:'NONE',tiles:8,live,withheld:8-live,sources:['D.prices(runtime)','rate2YSeries(runtime)','legacy validated presentation fallback']};
   return window.GMFQ_CONTROL_ROOM_SNAPSHOT;
 }
-function boot(){let tries=0;const tick=()=>{tries++;if(window.GMFQ_CONTROL_ROOM_HOME?.status==='ACTIVE'&&document.querySelector('#gmfq-control-room-home-v1 .crStrip')){try{sync();}catch(e){window.GMFQ_CONTROL_ROOM_SNAPSHOT={schema:SCHEMA,status:'ERROR',error:String(e),core_effect:'NONE'};}return;}if(tries<240)setTimeout(tick,250);else window.GMFQ_CONTROL_ROOM_SNAPSHOT={schema:SCHEMA,status:'WITHHELD',reason:'BOOT_TIMEOUT',core_effect:'NONE'};};tick();}
+function loadInsightsTrigger(){
+  if(document.getElementById('gmfq-control-room-insights-trigger-loader-v1'))return;
+  const s=document.createElement('script');
+  s.id='gmfq-control-room-insights-trigger-loader-v1';
+  s.src='dashboard/control-room-insights-trigger-v1.js';
+  document.body.appendChild(s);
+}
+function boot(){loadInsightsTrigger();let tries=0;const tick=()=>{tries++;if(window.GMFQ_CONTROL_ROOM_HOME?.status==='ACTIVE'&&document.querySelector('#gmfq-control-room-home-v1 .crStrip')){try{sync();}catch(e){window.GMFQ_CONTROL_ROOM_SNAPSHOT={schema:SCHEMA,status:'ERROR',error:String(e),core_effect:'NONE'};}return;}if(tries<240)setTimeout(tick,250);else window.GMFQ_CONTROL_ROOM_SNAPSHOT={schema:SCHEMA,status:'WITHHELD',reason:'BOOT_TIMEOUT',core_effect:'NONE'};};tick();}
 window.gmfqControlRoomSnapshotSync=sync;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
