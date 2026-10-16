@@ -11,11 +11,11 @@ try{
   page.on('pageerror',e=>errors.push(String(e?.message||e)));
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>
-    typeof window.derivePairSetupState==='function' &&
-    typeof window.derivePairDecisionFrame==='function' &&
-    typeof window.pairTransitionState==='function' &&
-    typeof window.derivePairRelativeDynamics==='function' &&
-    typeof window.D==='object' && Array.isArray(window.D?.pairs) && window.D.pairs.length===28,
+    typeof derivePairSetupState==='function' &&
+    typeof derivePairDecisionFrame==='function' &&
+    typeof pairTransitionState==='function' &&
+    typeof derivePairRelativeDynamics==='function' &&
+    typeof D==='object' && Array.isArray(D?.pairs) && D.pairs.length===28,
     null,{timeout:120000});
   await page.waitForTimeout(2500);
 
