@@ -1,13 +1,12 @@
 (()=>{
   'use strict';
 
-  // Small visual-spec patch kept here while the approved-rendering pass is active.
+  // Approved rendering: use the extracted hero visual from the approved mockup.
   const visualPatch=document.createElement('style');
   visualPatch.id='approved-rendering-fidelity';
   visualPatch.textContent=`
-    .earth{top:0!important;right:0!important;width:59%!important;height:100%!important;aspect-ratio:auto!important;border-radius:0!important;transform:none!important;box-shadow:none!important;overflow:hidden!important;background:radial-gradient(ellipse at 52% 112%,#16415f 0 16%,#0d314b 30%,#09243a 47%,#061827 61%,rgba(3,12,20,.35) 72%,transparent 76%)!important}
-    .earth:before{left:5%!important;bottom:0!important;width:92%!important;height:82%!important;opacity:.68!important}
-    .earth-grid{opacity:.12!important;transform:skewY(-2deg)}
+    .earth{top:0!important;right:0!important;width:60%!important;height:100%!important;aspect-ratio:auto!important;border-radius:0!important;transform:none!important;box-shadow:none!important;overflow:hidden!important;background:linear-gradient(90deg,rgba(6,21,34,.94) 0%,rgba(6,21,34,.45) 22%,rgba(2,8,17,.06) 54%),url('./assets/hero-earth-reference.jpg') center right/cover no-repeat!important;filter:saturate(.92) contrast(1.06)!important}
+    .earth:before,.earth-grid,.earth .city{display:none!important}
   `;
   document.head.appendChild(visualPatch);
 
