@@ -36,22 +36,54 @@ jobs:
           const path = require('path');
           const zlib = require('zlib');
 
+          const GLOBAL_MACRO='Weekly_Global_Macro_Report_2026-10-10_DARK_DESK_DEFINITIVO.html';
+          const GLOBAL_MACRO_PARTS=[
+            'weekly-global-macro-2026-10-10.part1.txt',
+            'weekly-global-macro-2026-10-10.part2.txt',
+            'weekly-global-macro-2026-10-10.part3.txt',
+            'weekly-global-macro-2026-10-10.part4.txt',
+            'weekly-global-macro-2026-10-10.part5a.txt',
+            'weekly-global-macro-2026-10-10.part5b.txt',
+            'weekly-global-macro-2026-10-10.part5c.txt',
+            'weekly-global-macro-2026-10-10.part5d.txt',
+            'weekly-global-macro-2026-10-10.part6a.txt'
+          ];
+
           function verifyReportFile(href){
             const local=path.join(process.cwd(),'site','website-v1',href);
             if(!fs.existsSync(local)) throw new Error(`${href}: local mirror missing`);
             const raw=fs.readFileSync(local,'utf8');
-            const packed=raw.match(/const\s+b\s*=\s*'([^']+)'/s);
             let html=raw;
-            if(packed){
-              try{
-                html=zlib.gunzipSync(Buffer.from(packed[1],'base64')).toString('utf8');
-              }catch(err){
-                throw new Error(`${href}: gzip payload invalid — ${err.message}`);
+            let mode='raw';
+
+            if(path.basename(local)===GLOBAL_MACRO){
+              const dir=path.dirname(local);
+              for(const part of GLOBAL_MACRO_PARTS){
+                if(!raw.includes(part)) throw new Error(`${href}: multipart loader missing ${part}`);
+              }
+              html=GLOBAL_MACRO_PARTS.map(part=>{
+                const file=path.join(dir,part);
+                if(!fs.existsSync(file)) throw new Error(`${href}: multipart fragment missing — ${part}`);
+                return fs.readFileSync(file,'utf8');
+              }).join('');
+              mode='multipart raw HTML';
+              if(raw.includes('DecompressionStream') || raw.includes("const b='H4sI")) throw new Error(`${href}: legacy gzip/base64 wrapper still present`);
+            }else{
+              const packed=raw.match(/const\s+b\s*=\s*'([^']+)'/s);
+              if(packed){
+                try{
+                  html=zlib.gunzipSync(Buffer.from(packed[1],'base64')).toString('utf8');
+                  mode='gzip';
+                }catch(err){
+                  throw new Error(`${href}: gzip payload invalid — ${err.message}`);
+                }
               }
             }
+
             if(html.length<500) throw new Error(`${href}: HTML payload too short (${html.length})`);
-            if(!/<(?:!doctype\s+html|html|head|body)\b/i.test(html)) throw new Error(`${href}: decompressed payload is not HTML`);
-            console.log(`QA report OK: ${href} · ${html.length} chars${packed?' · gzip':''}`);
+            if(!/^<!doctype html>/i.test(html.trimStart())) throw new Error(`${href}: payload does not start with HTML doctype`);
+            if(!/<\/html>\s*$/i.test(html.trimEnd())) throw new Error(`${href}: payload does not end with </html>`);
+            console.log(`QA report OK: ${href} · ${html.length} chars · ${mode}`);
           }
 
           (async()=>{
@@ -76,17 +108,27 @@ jobs:
             }
             await page.goto(base+'library.html',{waitUntil:'networkidle',timeout:120000});
             const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
-            if(hrefs.length!==8) throw new Error(`Expected 8 active Library web mirrors, found ${hrefs.length}`);
+            if(hrefs.length!==9) throw new Error(`Expected 9 active Library web mirrors, found ${hrefs.length}`);
             hrefs.forEach(verifyReportFile);
 
             const pending=await page.$$eval('.report-action.disabled',els=>els.length);
-            if(pending!==1) throw new Error(`Expected 1 Library mirror pending, found ${pending}`);
+            if(pending!==0) throw new Error(`Expected 0 Library mirrors pending, found ${pending}`);
 
             const first=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
             const response=await first.goto(new URL(hrefs[0],base+'library.html').href,{waitUntil:'domcontentloaded',timeout:120000});
             if(!response || !response.ok()) throw new Error(`${hrefs[0]}: HTTP ${response?.status()}`);
             await first.screenshot({path:'website-v1-library-report.png',fullPage:false});
             await first.close();
+
+            const globalHref=hrefs.find(href=>href.endsWith(GLOBAL_MACRO));
+            if(!globalHref) throw new Error('Global Macro mirror is not active in Library');
+            const macro=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+            const macroResponse=await macro.goto(new URL(globalHref,base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
+            if(!macroResponse || !macroResponse.ok()) throw new Error(`${globalHref}: HTTP ${macroResponse?.status()}`);
+            const macroText=await macro.locator('body').innerText();
+            if(!macroText.includes('Il quadro globale in 45 secondi') || !macroText.includes('Bottom line · desk takeaways')) throw new Error(`${globalHref}: multipart report did not render canonical content`);
+            console.log(`QA multipart render OK: ${globalHref}`);
+            await macro.close();
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           EOF
