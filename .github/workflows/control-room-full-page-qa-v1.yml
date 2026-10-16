@@ -1,0 +1,51 @@
+name: Control Room Full Page QA V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dashboard/control-room-**'
+      - '.github/workflows/control-room-full-page-qa-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/cr-full-page.log 2>&1 &
+          sleep 2
+      - name: Capture full page
+        run: |
+          cat > cr-full-page.js <<'EOF'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1100},deviceScaleFactor:1});
+            await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            await page.waitForFunction(()=>window.GMFQ_CONTROL_ROOM_RENDERING_MATCH?.status==='ACTIVE',null,{timeout:60000});
+            await page.evaluate(()=>window.showView?.('overview'));
+            await page.waitForTimeout(1000);
+            await page.screenshot({path:'control-room-full-page.png',fullPage:true});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node cr-full-page.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: control-room-full-page-v1
+          path: control-room-full-page.png
