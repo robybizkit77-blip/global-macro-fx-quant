@@ -37,6 +37,30 @@
   function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length||!data.length)return;const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});}
   function protectStrip(){const host=document.querySelector('.ticker-strip');if(!host)return;new MutationObserver(()=>{if(!rendering&&host.children.length===0&&d&&rates)queueMicrotask(renderHero);}).observe(host,{childList:true});}
 
+  function setHeroPeriod(period){
+    if(!ALLOWED.includes(period))return;
+    heroPeriod=period;
+    const p=new URLSearchParams(location.search);p.set('tf',period);
+    history.replaceState(null,'',`${location.pathname}?${p.toString()}${location.hash||''}`);
+    document.querySelectorAll('.hero-tabs [data-timeframe],.hero-tabs a,.hero-tabs button').forEach(el=>{
+      const label=(el.getAttribute('data-timeframe')||el.textContent||'').trim();
+      if(ALLOWED.includes(label))el.classList.toggle('active',label===period);
+    });
+    renderHero();
+  }
+
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.hero-tabs a[data-timeframe],.hero-tabs a,.hero-tabs button');
+    if(!el)return;
+    const period=(el.getAttribute('data-timeframe')||el.textContent||'').trim();
+    if(!ALLOWED.includes(period))return;
+    e.preventDefault();
+    e.stopPropagation();
+    setHeroPeriod(period);
+  },true);
+
+  window.GMFQMarketSnapshot={setHeroPeriod};
+
   async function run(){try{protectStrip();[d,rates]=await Promise.all([load(D_PATH),load(RATES_PATH)]);renderHero();fx=await tryLoad(FX_PATH);if(fx){renderHero();renderHierarchy();}document.documentElement.setAttribute('data-market-snapshot','READY');}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
