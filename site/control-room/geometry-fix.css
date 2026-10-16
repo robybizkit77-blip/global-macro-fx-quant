@@ -1,0 +1,24 @@
+/* Compact page-flow correction after 1440px visual QA. Keep the approved reference geometry but stop CSS Grid from distributing free viewport height between rows. */
+.control-room{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  grid-auto-rows:max-content!important;
+  align-content:start!important;
+  min-height:0!important;
+}
+.control-room > .hero,
+.control-room > .ticker-strip,
+.control-room > .dashboard-grid{
+  align-self:start!important;
+  margin:0!important;
+}
+.dashboard-grid{
+  align-content:start!important;
+  align-items:start!important;
+  grid-auto-rows:max-content!important;
+}
+.top-grid,.middle-grid,.bottom-grid{margin:0!important}
+@media (min-width:1200px){
+  .control-room{min-height:0!important;height:auto!important}
+}
