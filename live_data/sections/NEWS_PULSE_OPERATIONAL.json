@@ -1,50 +1,50 @@
 {
-  "content_as_of": "2026-10-14",
-  "generated_at_utc": "2026-10-15T08:39:54.807217Z",
+  "content_as_of": "2026-10-15",
+  "generated_at_utc": "2026-10-16T06:52:28.526033Z",
   "items": [
     {
-      "as_of": "2026-10-14",
+      "as_of": "2026-10-15",
       "category": "OIS_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
-      "detail": "Movimento 1D -2.6 bp sul bucket 6M; variazione 1W -2.6 bp.",
+      "detail": "Movimento 1D -3.7 bp sul bucket 12M; variazione 1W -2.2 bp.",
       "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing OIS più dovish (-2.6 bp 6M in 1D)"
+      "title": "JPY: repricing OIS più dovish (-3.7 bp 12M in 1D)"
     },
     {
-      "as_of": "2026-10-13",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D +0.2 bp sul bucket 3M; variazione 1W +4.3 bp.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più hawkish (+0.2 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-10-13",
-      "category": "OIS_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.5 bp sul bucket 3M; variazione 1W -3.5 bp.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing OIS più hawkish (+1.5 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-15",
       "category": "OIS_REPRICING",
       "ccy": "AUD",
       "confidence": "A",
-      "detail": "Movimento 1D +1.0 bp sul bucket 12M; variazione 1W -2.5 bp.",
-      "importance": "MEDIUM",
+      "detail": "Movimento 1D -3.0 bp sul bucket 6M; variazione 1W -2.5 bp.",
+      "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing OIS più hawkish (+1.0 bp 12M in 1D)"
+      "title": "AUD: repricing OIS più dovish (-3.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-10-15",
+      "category": "OIS_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -0.5 bp sul bucket 3M; variazione 1W -4.5 bp.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing OIS più dovish (-0.5 bp 3M in 1D)"
+    },
+    {
+      "as_of": "2026-10-14",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D -3.5 bp sul bucket 12M; variazione 1W +6.7 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più dovish (-3.5 bp 12M in 1D)"
     },
     {
       "as_of": "2026-09",
