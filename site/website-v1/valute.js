@@ -33,6 +33,8 @@
   function rate2y(ccy){
     const live=n(state.rates?.[ccy]?.current?.y2);
     if(live!==null)return live;
+    const native=n(state.rates?.[ccy]?.['2Y']);
+    if(native!==null)return native;
     return n(state.d?.macro?.[ccy]?.rate2y);
   }
 
@@ -63,6 +65,8 @@
   function render(){renderCards();renderPerformance();document.documentElement.setAttribute('data-valute-page','READY');}
 
   function bind(){
+    const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html'};
+    document.querySelectorAll('.nav-main a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.setAttribute('href',routes[label]);});
     document.querySelectorAll('#currency-timeframes button').forEach(btn=>btn.addEventListener('click',()=>{
       const tf=btn.dataset.tf;if(!TF_LABEL[tf])return;
       state.tf=tf;
