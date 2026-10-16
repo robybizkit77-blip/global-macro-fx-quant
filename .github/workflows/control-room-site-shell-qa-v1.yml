@@ -34,9 +34,9 @@ jobs:
           const { chromium } = require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:1440,height:1050},deviceScaleFactor:1});
+            const page=await browser.newPage({viewport:{width:1440,height:840},deviceScaleFactor:1});
             await page.goto('http://127.0.0.1:8000/site/control-room/',{waitUntil:'networkidle',timeout:120000});
-            await page.screenshot({path:'control-room-site-desktop.png',fullPage:true});
+            await page.screenshot({path:'control-room-site-desktop.png',fullPage:false});
             const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
             await mobile.goto('http://127.0.0.1:8000/site/control-room/',{waitUntil:'networkidle',timeout:120000});
             await mobile.screenshot({path:'control-room-site-mobile.png',fullPage:true});
