@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strumenti — Global Macro FX Quant</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="internal.css">
+  <link rel="stylesheet" href="strumenti.css">
+</head>
+<body>
+<div class="site">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark"></div><div class="brandtext"><div class="brandname">GLOBAL MACRO FX QUANT</div><div class="brandsub">CURRENCIES · RATES · CENTRAL BANKS · POSITIONING · MACRO</div></div></div>
+    <nav class="nav nav-main">
+      <a href="index.html"><span>⌂</span><b>Dashboard</b></a><a href="valute.html"><span>▦</span><b>Valute</b></a><a href="tassi.html"><span>↗</span><b>Tassi</b></a><a href="banche-centrali.html"><span>🏛</span><b>Banche centrali</b></a><a href="posizionamento.html"><span>◉</span><b>Posizionamento</b></a><a href="coppie.html"><span>◌</span><b>Coppie</b></a><a href="rischio-eventi.html"><span>⌘</span><b>Rischio/Eventi</b></a><a href="top-themes.html"><span>◒</span><b>Top Themes</b></a><a href="library.html"><span>▣</span><b>Library</b></a>
+    </nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub"><a href="watchlist.html"><span>☆</span><b>Watchlist</b></a><a href="screener.html"><span>⌁</span><b>Screener</b></a><a href="macro-data.html"><span>▦</span><b>Macro Data</b></a><a class="active" href="strumenti.html"><span>⌘</span><b>Strumenti</b></a></nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub bottom-links"><a href="alert.html"><span>♧</span><b>Alert</b></a><a href="impostazioni.html"><span>⚙</span><b>Impostazioni</b></a></nav>
+    <div class="pro-card"><div class="pro-title"><span>♛</span> Private Desk</div><div class="pro-copy">Motore macro, dati e ricerca<br>del tuo workspace.</div><button>Control Room <span>→</span></button></div>
+  </aside>
+  <section class="main">
+    <header class="topbar"><div class="search"><span class="search-icon">⌕</span><span>Cerca valute, tassi, banche centrali, temi...</span><kbd>⌘</kbd><kbd>K</kbd></div><div class="topmeta"><span class="world">◉</span><span>Europe/Rome</span><div class="vline"></div><div class="datetime"><small id="site-date">—</small><b id="site-time">—</b></div><div class="vline"></div><span class="bell">♧<i></i></span><div class="vline"></div><span class="avatar">GM</span></div></header>
+    <main class="internal-content tools-content">
+      <section class="page-head"><div><h1>Strumenti</h1><p>Utility da desk per confrontare due valute senza creare un nuovo score o un nuovo segnale.</p></div><div class="tool-selector"><select id="tool-a"></select><span>vs</span><select id="tool-b"></select></div></section>
+
+      <section class="tool-compare">
+        <article class="internal-card compare-card"><div class="internal-card-head"><h3 id="compare-title">Pair Comparator</h3><small id="compare-asof">—</small></div><div id="compare-summary" class="compare-summary"></div><div id="compare-metrics" class="compare-metrics"></div><div id="compare-notes" class="compare-notes"></div></article>
+        <article class="internal-card setup-card"><div class="internal-card-head"><h3>Canonical Setup</h3><small>thesis ≠ entry</small></div><div id="setup-view" class="setup-view"></div></article>
+      </section>
+
+      <div class="section-title"><h2>Rates Differential Matrix</h2><small>riga − colonna · basis points</small></div>
+      <section class="internal-card matrix-card"><div id="rates-matrix" class="matrix-scroll"></div></section>
+
+      <div class="section-title ois-tools-title"><h2>OIS / Market Pricing Differential Matrix</h2><div class="matrix-tabs" id="ois-horizon"><button class="active" data-h="3m">3M</button><button data-h="6m">6M</button><button data-h="12m">12M</button></div></div>
+      <section class="internal-card matrix-card"><div id="ois-matrix-tools" class="matrix-scroll"></div><div class="matrix-note">I punti non pubblicabili restano <strong>—</strong>. Nessun proxy direzionale viene trasformato in livello OIS e nessuna interpolazione viene aggiunta dal frontend.</div></section>
+
+      <section class="internal-card tools-method"><div class="internal-card-head"><h3>Come usarli</h3><small>calcolo trasparente</small></div><div class="method-copy"><strong>Pair Comparator</strong> raccoglie Price, 2Y, OIS/market pricing, COT e Pair Setup già canonici. Le matrici mostrano soltanto differenze aritmetiche tra livelli esistenti. <span class="status">Nessun ranking, BUY/SELL o livello di ingresso viene generato qui.</span></div></section>
+    </main>
+  </section>
+</div>
+<script src="price-runtime.js"></script>
+<script src="strumenti.js"></script>
+</body>
+</html>

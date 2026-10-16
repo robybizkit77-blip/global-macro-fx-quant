@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rischio & Eventi — Global Macro FX Quant</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="internal.css">
+  <link rel="stylesheet" href="rischio-eventi.css">
+</head>
+<body>
+<div class="site">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark"></div><div class="brandtext"><div class="brandname">GLOBAL MACRO FX QUANT</div><div class="brandsub">CURRENCIES · RATES · CENTRAL BANKS · POSITIONING · MACRO</div></div></div>
+    <nav class="nav nav-main">
+      <a href="index.html"><span>⌂</span><b>Dashboard</b></a>
+      <a href="valute.html"><span>▦</span><b>Valute</b></a>
+      <a href="tassi.html"><span>↗</span><b>Tassi</b></a>
+      <a href="banche-centrali.html"><span>🏛</span><b>Banche centrali</b></a>
+      <a href="posizionamento.html"><span>◉</span><b>Posizionamento</b></a>
+      <a href="coppie.html"><span>◌</span><b>Coppie</b></a>
+      <a class="active" href="rischio-eventi.html"><span>⌘</span><b>Rischio/Eventi</b></a>
+      <a href="top-themes.html"><span>◒</span><b>Top Themes</b></a>
+      <a href="library.html"><span>▣</span><b>Library</b></a>
+    </nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub"><a href="watchlist.html"><span>☆</span><b>Watchlist</b></a><a href="screener.html"><span>⌁</span><b>Screener</b></a><a href="macro-data.html"><span>▦</span><b>Macro Data</b></a><a href="strumenti.html"><span>⌘</span><b>Strumenti</b></a></nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub bottom-links"><a href="alert.html"><span>♧</span><b>Alert</b></a><a href="impostazioni.html"><span>⚙</span><b>Impostazioni</b></a></nav>
+    <div class="pro-card"><div class="pro-title"><span>♛</span> Private Desk</div><div class="pro-copy">Motore macro, dati e ricerca<br>del tuo workspace.</div><button>Control Room <span>→</span></button></div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="search"><span class="search-icon">⌕</span><span>Cerca valute, tassi, banche centrali, temi...</span><kbd>⌘</kbd><kbd>K</kbd></div>
+      <div class="topmeta"><span class="world">◉</span><span>Europe/Rome</span><div class="vline"></div><div class="datetime"><small id="site-date">—</small><b id="site-time">—</b></div><div class="vline"></div><span class="bell">♧<i></i></span><div class="vline"></div><span class="avatar">GM</span></div>
+    </header>
+
+    <main class="internal-content risk-content">
+      <section class="page-head">
+        <div><h1>Rischio & Eventi</h1><p>Calendario macro e banche centrali, ordinato per impatto potenziale sulle valute G8.</p></div>
+        <div class="page-actions" id="risk-filters"><button class="active" data-filter="ALL">Tutti</button><button data-filter="HIGH">High impact</button><button data-filter="CB">Banche centrali</button><button data-filter="MACRO">Macro</button></div>
+      </section>
+
+      <section id="risk-summary" class="risk-summary"></section>
+
+      <section class="risk-layout">
+        <article class="internal-card risk-calendar-card">
+          <div class="internal-card-head"><h3>Prossimi eventi</h3><small id="risk-asof">fonte canonica · —</small></div>
+          <div class="risk-table-head"><span>Data</span><span>Valuta</span><span>Evento</span><span>Tipo</span><span>Impatto</span><span>Consenso / Prev.</span></div>
+          <div id="risk-events" class="risk-events"></div>
+        </article>
+
+        <aside class="risk-side">
+          <article class="internal-card">
+            <div class="internal-card-head"><h3>Valute più esposte</h3><small>prossimi 14 giorni</small></div>
+            <div id="risk-currencies" class="risk-currencies"></div>
+          </article>
+          <article class="internal-card">
+            <div class="internal-card-head"><h3>Finestra di rischio</h3><small>lettura operativa</small></div>
+            <div id="risk-window" class="method-copy"></div>
+          </article>
+        </aside>
+      </section>
+
+      <section class="internal-card risk-method">
+        <div class="internal-card-head"><h3>Come usarla</h3><small>event risk, non previsione</small></div>
+        <div class="method-copy">Questa pagina non prova a indovinare il dato. Serve a capire <strong>quando</strong> una tesi FX può essere messa alla prova. Gli eventi sono letti dal calendario canonico; il consenso viene mostrato solo quando è realmente disponibile. <span class="status">Nessun consenso o impatto inventato dal front-end.</span></div>
+      </section>
+    </main>
+  </section>
+</div>
+<script src="rischio-eventi.js"></script>
+</body>
+</html>

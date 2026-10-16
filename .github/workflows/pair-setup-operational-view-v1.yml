@@ -1,0 +1,85 @@
+name: Pair Setup Operational View V1
+
+on:
+  push:
+    branches:
+      - website-reference-lock-2026-10-16
+    paths:
+      - 'validation/export_pair_setup_operational_view.mjs'
+      - '.github/workflows/pair-setup-operational-view-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pair-setup-operational-view-v1
+  cancel-in-progress: true
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start canonical dashboard
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-dashboard.log 2>&1 &
+          sleep 2
+
+      - name: Export canonical Pair setup state
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pair-setup
+          node validation/export_pair_setup_operational_view.mjs /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json | tee /tmp/pair-setup/export.log
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json','utf8'));
+          if(x.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||x.status!=='CURRENT_CANONICAL_ENGINE') throw new Error('schema/status');
+          if(x.pair_count!==28||Object.keys(x.pairs||{}).length!==28) throw new Error('pair completeness');
+          if(x.thesis_is_not_entry!==true||x.entry_level_published!==false) throw new Error('entry separation contract');
+          const allowed=new Set(['PULITO','CON RISCHI','DA CONFERMARE','DA MONITORARE','NON VALUTABILE']);
+          for(const [pair,row] of Object.entries(x.pairs)){
+            const q=row.setup?.quality||row.setup?.qualityLabel||row.setup?.label;
+            if(!allowed.has(q)) throw new Error(`${pair}: unsupported quality ${q}`);
+          }
+          console.log('PAIR_SETUP_CONTRACT_PASS',x.price_asof,x.quality_distribution);
+          NODE
+
+      - name: Persist branch snapshot for website integration
+        run: |
+          set -euo pipefail
+          cp /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+          if git diff --cached --quiet; then
+            echo PAIR_SETUP_NO_CHANGE
+            exit 0
+          fi
+          git commit -m 'Refresh canonical Pair setup operational view'
+          git push origin HEAD:website-reference-lock-2026-10-16
+          echo PAIR_SETUP_BRANCH_SNAPSHOT_PERSISTED
+
+      - name: Upload Pair setup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pair-setup-operational-view-${{ github.run_id }}
+          path: /tmp/pair-setup/
+          if-no-files-found: warn
+          retention-days: 30

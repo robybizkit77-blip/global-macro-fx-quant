@@ -1,0 +1,110 @@
+name: Website Watchlist QA
+
+on:
+  push:
+    branches:
+      - website-reference-lock-2026-10-16
+    paths:
+      - 'site/website-v1/watchlist.*'
+      - 'site/website-v1/app.js'
+      - 'site/website-v1/price-runtime.js'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - '.github/workflows/website-watchlist-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  watchlist-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+      - name: Start Website V1
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/watchlist-qa.log 2>&1 &
+          sleep 2
+      - name: Verify Watchlist persistence and canonical data
+        run: |
+          cat > watchlist-qa.js <<'NODE'
+          const { chromium }=require('playwright');
+          const base='http://127.0.0.1:8000/site/website-v1/';
+          const STORE='gmfq.website.watchlist.v1';
+          async function audit(viewport,label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.goto(base+'watchlist.html',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>document.documentElement.dataset.watchlistPage==='READY',null,{timeout:30000});
+            let s=await page.evaluate(()=>({
+              cards:document.querySelectorAll('.watch-card').length,
+              options:document.querySelectorAll('#watch-pair option').length,
+              empty:!document.getElementById('watch-empty').hidden,
+              priceRuntime:document.documentElement.getAttribute('data-website-price-runtime'),
+              priceHistory:document.documentElement.getAttribute('data-website-price-history'),
+              asof:document.documentElement.getAttribute('data-website-price-asof'),
+              overflow:document.documentElement.scrollWidth-window.innerWidth,
+              body:document.body.innerText||''
+            }));
+            if(s.cards!==0||!s.empty)throw new Error(`${label}: default watchlist must be empty`);
+            if(s.options!==28)throw new Error(`${label}: pair universe ${s.options}/28`);
+            if(s.priceRuntime!=='CURRENT_OFFICIAL'||s.priceHistory!=='CURRENT_OFFICIAL_HISTORY')throw new Error(`${label}: canonical price runtime not ready`);
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(s.asof||''))throw new Error(`${label}: bad price as-of ${s.asof}`);
+            if(s.overflow>12)throw new Error(`${label}: horizontal overflow ${s.overflow}px`);
+
+            await page.selectOption('#watch-pair','EURUSD');
+            await page.click('#watch-add');
+            await page.waitForFunction(()=>document.querySelectorAll('.watch-card').length===1);
+            let card=await page.locator('.watch-card').innerText();
+            for(const token of ['EUR/USD','2Y SPREAD','PRICING 3M','COT DIFF','DEEP DIVE'])if(!card.toUpperCase().includes(token))throw new Error(`${label}: card missing ${token}`);
+            if(/undefined|\[object Object\]|NaN/.test(card))throw new Error(`${label}: bad card token`);
+            const stored=await page.evaluate(k=>localStorage.getItem(k),STORE);
+            if(!stored||!stored.includes('EURUSD'))throw new Error(`${label}: EURUSD not persisted`);
+
+            await page.reload({waitUntil:'networkidle'});
+            await page.waitForFunction(()=>document.documentElement.dataset.watchlistPage==='READY'&&document.querySelectorAll('.watch-card').length===1,null,{timeout:30000});
+            const pair=await page.getAttribute('.watch-card','data-pair');
+            if(pair!=='EURUSD')throw new Error(`${label}: persisted pair mismatch ${pair}`);
+            await page.screenshot({path:`watchlist-${label}.png`,fullPage:false});
+            await page.click('[data-remove="EURUSD"]');
+            await page.waitForFunction(()=>document.querySelectorAll('.watch-card').length===0);
+            const cleared=await page.evaluate(k=>localStorage.getItem(k),STORE);
+            if(cleared!=='[]')throw new Error(`${label}: remove did not persist empty state (${cleared})`);
+            if(errors.length)throw new Error(`${label}: browser errors ${errors.join(' | ')}`);
+            await browser.close();
+          }
+          (async()=>{
+            await audit({width:1672,height:905},'desktop');
+            await audit({width:390,height:844},'mobile');
+            const browser=await chromium.launch({headless:true});
+            const home=await browser.newPage({viewport:{width:1672,height:905}});
+            await home.goto(base,{waitUntil:'networkidle',timeout:120000});
+            const href=await home.locator('.nav-sub a').filter({hasText:'Watchlist'}).getAttribute('href');
+            if(href!=='watchlist.html')throw new Error(`Home Watchlist route invalid: ${href}`);
+            await browser.close();
+            console.log('WEBSITE_WATCHLIST_QA_PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node watchlist-qa.js
+      - name: Upload Watchlist evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-watchlist-qa-${{ github.run_id }}
+          path: |
+            watchlist-desktop.png
+            watchlist-mobile.png
+          if-no-files-found: warn
+          retention-days: 30

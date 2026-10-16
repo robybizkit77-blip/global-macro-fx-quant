@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watchlist — Global Macro FX Quant</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="internal.css">
+  <link rel="stylesheet" href="watchlist.css">
+</head>
+<body>
+<div class="site">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark"></div><div class="brandtext"><div class="brandname">GLOBAL MACRO FX QUANT</div><div class="brandsub">CURRENCIES · RATES · CENTRAL BANKS · POSITIONING · MACRO</div></div></div>
+    <nav class="nav nav-main">
+      <a href="index.html"><span>⌂</span><b>Dashboard</b></a>
+      <a href="valute.html"><span>▦</span><b>Valute</b></a>
+      <a href="tassi.html"><span>↗</span><b>Tassi</b></a>
+      <a href="banche-centrali.html"><span>🏛</span><b>Banche centrali</b></a>
+      <a href="posizionamento.html"><span>◉</span><b>Posizionamento</b></a>
+      <a href="coppie.html"><span>◌</span><b>Coppie</b></a>
+      <a href="rischio-eventi.html"><span>⌘</span><b>Rischio/Eventi</b></a>
+      <a href="top-themes.html"><span>◒</span><b>Top Themes</b></a>
+      <a href="library.html"><span>▣</span><b>Library</b></a>
+    </nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub"><a class="active" href="watchlist.html"><span>☆</span><b>Watchlist</b></a><a href="screener.html"><span>⌁</span><b>Screener</b></a><a href="macro-data.html"><span>▦</span><b>Macro Data</b></a><a href="strumenti.html"><span>⌘</span><b>Strumenti</b></a></nav>
+    <div class="separator"></div>
+    <nav class="nav nav-sub bottom-links"><a href="alert.html"><span>♧</span><b>Alert</b></a><a href="impostazioni.html"><span>⚙</span><b>Impostazioni</b></a></nav>
+    <div class="pro-card"><div class="pro-title"><span>♛</span> Private Desk</div><div class="pro-copy">Motore macro, dati e ricerca<br>del tuo workspace.</div><button>Control Room <span>→</span></button></div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="search"><span class="search-icon">⌕</span><span>Cerca valute, tassi, banche centrali, temi...</span><kbd>⌘</kbd><kbd>K</kbd></div>
+      <div class="topmeta"><span class="world">◉</span><span>Europe/Rome</span><div class="vline"></div><div class="datetime"><small id="site-date">—</small><b id="site-time">—</b></div><div class="vline"></div><span class="bell">♧<i></i></span><div class="vline"></div><span class="avatar">GM</span></div>
+    </header>
+
+    <main class="internal-content watchlist-content">
+      <section class="page-head">
+        <div><h1>Watchlist</h1><p>Le pair che vuoi seguire davvero. Selezione manuale, dati canonici, nessuna priorità automatica.</p></div>
+        <div class="watch-add"><select id="watch-pair" aria-label="Seleziona pair"></select><button id="watch-add" type="button">+ Aggiungi pair</button></div>
+      </section>
+
+      <section class="watch-hero">
+        <div><small>PERSONAL FX DESK</small><h2>Solo ciò che hai deciso di seguire.</h2><p>Il ranking restringe il campo. La watchlist è diversa: conserva soltanto le pair che scegli tu e ne aggiorna automaticamente il quadro operativo con i layer canonici.</p></div>
+        <div class="watch-stats"><div><span>IN LISTA</span><b id="watch-count">0</b><em>pair</em></div><div><span>PRICE AS OF</span><b id="watch-asof">—</b><em>ECB fixing</em></div><div><span>STORAGE</span><b>Locale</b><em>questo browser</em></div></div>
+      </section>
+
+      <div class="section-title"><h2>Pair monitorate</h2><small id="watch-status">Nessuna pair aggiunta</small></div>
+      <section id="watch-empty" class="watch-empty"><span>☆</span><h3>La watchlist è vuota</h3><p>Aggiungi una pair dal menu in alto. Non inseriamo automaticamente le idee del ranking: qui restano solo le tue.</p></section>
+      <section id="watch-grid" class="watch-grid"></section>
+
+      <section class="internal-card watch-method">
+        <div class="internal-card-head"><h3>Come usarla</h3><small>selection ≠ signal</small></div>
+        <div class="method-copy">La watchlist non modifica il motore e non produce BUY/SELL. <strong>Setup quality</strong> dice quanto è pulito il quadro corrente; <strong>2Y e pricing 3M</strong> mostrano la separazione relativa; <strong>COT</strong> è contesto; <strong>Price</strong> conferma o diverge. L'entrata resta separata nel Pair Deep Dive.</div>
+      </section>
+    </main>
+  </section>
+</div>
+<script src="price-runtime.js"></script>
+<script src="watchlist.js"></script>
+</body>
+</html>
