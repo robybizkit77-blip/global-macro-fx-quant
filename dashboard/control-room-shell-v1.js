@@ -111,5 +111,13 @@
   const style=document.createElement('style');
   style.id=STYLE_ID;style.dataset.gmfqDesign=SCHEMA;style.textContent=css;document.head.appendChild(style);
 
-  window.GMFQ_CONTROL_ROOM_SHELL={schema:SCHEMA,status:'ACTIVE',scope:'PRESENTATION_ONLY',core_effect:'NONE',rail_bound:!!rail,workspace_bound:true};
+  if(!document.getElementById('gmfq-control-room-home-loader-v1')){
+    const home=document.createElement('script');
+    home.id='gmfq-control-room-home-loader-v1';
+    home.src='dashboard/control-room-home-v1.js';
+    home.defer=true;
+    document.body.appendChild(home);
+  }
+
+  window.GMFQ_CONTROL_ROOM_SHELL={schema:SCHEMA,status:'ACTIVE',scope:'PRESENTATION_ONLY',core_effect:'NONE',rail_bound:!!rail,workspace_bound:true,home_loader:true};
 })();
