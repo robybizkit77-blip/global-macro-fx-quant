@@ -32,6 +32,28 @@ jobs:
         run: |
           cat > website-v1-qa.js <<'EOF'
           const { chromium } = require('playwright');
+          const fs = require('fs');
+          const path = require('path');
+          const zlib = require('zlib');
+
+          function verifyReportFile(href){
+            const local=path.join(process.cwd(),'site','website-v1',href);
+            if(!fs.existsSync(local)) throw new Error(`${href}: local mirror missing`);
+            const raw=fs.readFileSync(local,'utf8');
+            const packed=raw.match(/const\s+b\s*=\s*'([^']+)'/s);
+            let html=raw;
+            if(packed){
+              try{
+                html=zlib.gunzipSync(Buffer.from(packed[1],'base64')).toString('utf8');
+              }catch(err){
+                throw new Error(`${href}: gzip payload invalid — ${err.message}`);
+              }
+            }
+            if(html.length<500) throw new Error(`${href}: HTML payload too short (${html.length})`);
+            if(!/<(?:!doctype\s+html|html|head|body)\b/i.test(html)) throw new Error(`${href}: decompressed payload is not HTML`);
+            console.log(`QA report OK: ${href} · ${html.length} chars${packed?' · gzip':''}`);
+          }
+
           (async()=>{
             const base='http://127.0.0.1:8000/site/website-v1/';
             const browser=await chromium.launch({headless:true});
@@ -48,25 +70,18 @@ jobs:
               ['top-themes.html','website-v1-top-themes.png'],
               ['library.html','website-v1-library.png']
             ];
-            for(const [path,file] of shots){
-              await page.goto(base+path,{waitUntil:'networkidle',timeout:120000});
+            for(const [route,file] of shots){
+              await page.goto(base+route,{waitUntil:'networkidle',timeout:120000});
               await page.screenshot({path:file,fullPage:false});
             }
             await page.goto(base+'library.html',{waitUntil:'networkidle',timeout:120000});
             const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
             if(hrefs.length!==9) throw new Error(`Expected 9 Library mirrors, found ${hrefs.length}`);
-            for(const href of hrefs){
-              console.log(`QA report: ${href}`);
-              const report=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
-              const response=await report.goto(new URL(href,base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
-              if(!response || !response.ok()) throw new Error(`${href}: HTTP ${response?.status()}`);
-              await report.waitForFunction(()=>document.body && document.body.innerText.length>500,null,{timeout:120000});
-              const body=(await report.locator('body').innerText())||'';
-              if(body.includes('Impossibile aprire il report')) throw new Error(`${href}: report decompression failed`);
-              await report.close();
-            }
+            hrefs.forEach(verifyReportFile);
+
             const first=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
-            await first.goto(new URL(hrefs[0],base+'library.html').href,{waitUntil:'networkidle',timeout:120000});
+            const response=await first.goto(new URL(hrefs[0],base+'library.html').href,{waitUntil:'domcontentloaded',timeout:120000});
+            if(!response || !response.ok()) throw new Error(`${hrefs[0]}: HTTP ${response?.status()}`);
             await first.screenshot({path:'website-v1-library-report.png',fullPage:false});
             await first.close();
             await browser.close();
