@@ -3,10 +3,10 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','site/website-v1/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
   push:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','site/website-v1/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1']
     types: [completed]
@@ -105,9 +105,8 @@ jobs:
           REMOTE_SHA="$(git rev-parse origin/gh-pages)"
           rm -rf /tmp/gmfq-pages
           git worktree add --detach /tmp/gmfq-pages origin/gh-pages
-          mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections /tmp/gmfq-pages/site
+          mkdir -p /tmp/gmfq-pages/payload /tmp/gmfq-pages/dashboard /tmp/gmfq-pages/live_data/sections
           cp index.html /tmp/gmfq-pages/index.html
-          cp -R site/website-v1 /tmp/gmfq-pages/site/
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
           for f in ois-operational-monitor-v1.js calendar-news-operational-v1.js top-themes-operational-v1.js what-changed-operational-v1.js risk-operational-v1.js cotdesk-operational-v1.js pairs-operational-v1.js overview-asof-operational-v1.js currencies-operational-v1.js macro-operational-v1.js ratesdesk-operational-v1.js cbdesk-operational-v1.js liquiditydesk-operational-v1.js forwarddesk-operational-v1.js editorial-freshness-guard-v1.js premium-shell-v1.js product-language-v1.js overview-hierarchy-v1.js inflationlabour-hierarchy-v1.js calendar-hierarchy-v1.js themes-hierarchy-v1.js currencies-hierarchy-v1.js; do cp "dashboard/$f" "/tmp/gmfq-pages/dashboard/$f"; done
           for f in OIS_OPERATIONAL_VIEW.json CALENDAR_OPERATIONAL_VIEW.json NEWS_PULSE_OPERATIONAL.json MACRO_THERMOMETER_DATA.json D.json ESTIMATED_RESIDUAL_GAPS.json; do cp "live_data/sections/$f" "/tmp/gmfq-pages/live_data/sections/$f"; done
@@ -119,11 +118,11 @@ jobs:
             'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js','dashboard/risk-operational-v1.js','dashboard/cotdesk-operational-v1.js','dashboard/pairs-operational-v1.js','dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js','dashboard/macro-operational-v1.js','dashboard/ratesdesk-operational-v1.js','dashboard/cbdesk-operational-v1.js','dashboard/liquiditydesk-operational-v1.js','dashboard/forwarddesk-operational-v1.js','dashboard/editorial-freshness-guard-v1.js','dashboard/premium-shell-v1.js','dashboard/product-language-v1.js','dashboard/overview-hierarchy-v1.js','dashboard/inflationlabour-hierarchy-v1.js','dashboard/calendar-hierarchy-v1.js','dashboard/themes-hierarchy-v1.js','dashboard/currencies-hierarchy-v1.js',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
             *[f'payload/part-{i:02d}.txt' for i in range(16)]}
-          unexpected={p for p in changed if p not in allowed and not p.startswith('site/website-v1/')}
+          unexpected={p for p in changed if p not in allowed}
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS',sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html site/website-v1 payload/part-*.txt dashboard/*.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
