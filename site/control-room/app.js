@@ -1,13 +1,17 @@
 (()=>{
   'use strict';
 
-  if(!document.getElementById('control-room-reference-match')){
+  const ensureCss=(id,href)=>{
+    if(document.getElementById(id)) return;
     const link=document.createElement('link');
-    link.id='control-room-reference-match';
+    link.id=id;
     link.rel='stylesheet';
-    link.href='./reference-match.css';
+    link.href=href;
     document.head.appendChild(link);
-  }
+  };
+
+  ensureCss('control-room-reference-match','./reference-match.css');
+  ensureCss('control-room-geometry-fix','./geometry-fix.css');
 
   const clock=document.querySelector('.clock');
   const fmt=new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
