@@ -37,9 +37,8 @@ jobs:
           sleep 2
       - name: Verify Macro Data desktop and mobile
         run: |
-          cat > /tmp/macro-data-qa.js <<'NODE'
+          cat > macro-data-qa.js <<'NODE'
           const { chromium }=require('playwright');
-          const fs=require('fs');
           const base='http://127.0.0.1:8000/site/website-v1/';
           async function audit(viewport,label){
             const browser=await chromium.launch({headless:true});
@@ -80,7 +79,7 @@ jobs:
             console.log('WEBSITE_MACRO_DATA_QA_PASS',JSON.stringify({desktopCards:desktop.cards,mobileCards:mobile.cards,homeRoute:href}));
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
-          node /tmp/macro-data-qa.js
+          node macro-data-qa.js
       - name: Upload Macro Data evidence
         if: always()
         uses: actions/upload-artifact@v4
