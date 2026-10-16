@@ -1,0 +1,145 @@
+name: Price History Persistent Daily V1
+
+on:
+  push:
+    branches:
+      - main
+      - website-reference-lock-2026-10-16
+    paths:
+      - 'validation/fetch_ecb_g8_price_history.py'
+      - '.github/workflows/price-history-persistent-daily-v1.yml'
+  pull_request:
+    paths:
+      - 'validation/fetch_ecb_g8_price_history.py'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - '.github/workflows/price-history-persistent-daily-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # Europe/Rome retries 15 minutes after the current Price lane windows.
+    # Duplicate UTC entries cover CET/CEST; the local gate admits only 17:25, 17:55, 18:25.
+    - cron: '25 15 * * 1-5'
+    - cron: '25 16 * * 1-5'
+    - cron: '25 17 * * 1-5'
+    - cron: '55 15 * * 1-5'
+    - cron: '55 16 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: price-history-persistent-daily-v1
+  cancel-in-progress: false
+
+jobs:
+  persist-history:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - name: Rome schedule gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
+          allowed='17:25 17:55 18:25'
+          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
+            echo 'should_run=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'should_run=false' >> "$GITHUB_OUTPUT"
+          fi
+          echo "event=${{ github.event_name }} rome_time=$hhmm"
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.should_run == 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Fetch and validate official ECB G8 history candidate
+        id: candidate
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/price-history
+          python validation/fetch_ecb_g8_price_history.py --out /tmp/price-history/candidate.json > /tmp/price-history/fetch.json
+          cat /tmp/price-history/fetch.json
+          python - <<'PY'
+          import json,re
+          h=json.load(open('/tmp/price-history/candidate.json'))
+          assert h['schema']=='GMFQ_ECB_G8_PRICE_HISTORY_V1',h
+          assert h['status']=='CURRENT_OFFICIAL_HISTORY',h
+          assert h['base']=='EUR' and h['pair_count']==28,h
+          assert h['currencies']==['EUR','USD','GBP','JPY','CHF','CAD','AUD','NZD'],h
+          assert h['row_count']==len(h['rows']) and h['row_count']>=500,h['row_count']
+          assert h['first_as_of']==h['rows'][0]['Date'] and h['last_as_of']==h['rows'][-1]['Date']
+          dates=[r['Date'] for r in h['rows']]
+          assert dates==sorted(dates) and len(set(dates))==len(dates)
+          assert all(r['EUR']==1 and all(float(r[c])>0 for c in h['currencies']) for r in h['rows'])
+          text=open('payload/part-15.txt',encoding='utf-8').read()
+          m=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">',text)
+          assert len(m)==1,m
+          runtime=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
+          assert h['last_as_of']>=runtime,(h['last_as_of'],runtime)
+          print('PRICE_HISTORY_CANDIDATE_PASS',h['first_as_of'],h['last_as_of'],h['row_count'],'runtime',runtime)
+          PY
+
+      - name: Classify history update
+        id: classify
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,pathlib
+          candidate=pathlib.Path('/tmp/price-history/candidate.json').read_text(encoding='utf-8')
+          target=pathlib.Path('live_data/sections/ECB_G8_PRICE_HISTORY.json')
+          current=target.read_text(encoding='utf-8') if target.exists() else None
+          status='NO_CHANGE' if current==candidate else 'UPDATE_AVAILABLE'
+          print(status)
+          pathlib.Path('/tmp/price-history/status.txt').write_text(status+'\n',encoding='utf-8')
+          PY
+          STATUS="$(cat /tmp/price-history/status.txt)"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          test "$STATUS" = 'NO_CHANGE' -o "$STATUS" = 'UPDATE_AVAILABLE'
+
+      - name: Validate PR/branch without persistence
+        if: steps.gate.outputs.should_run == 'true' && github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          echo PRICE_HISTORY_VALIDATION_ONLY_PASS
+
+      - name: Persist validated history to main with remote-head lease
+        if: steps.gate.outputs.should_run == 'true' && github.ref == 'refs/heads/main' && steps.classify.outputs.status == 'UPDATE_AVAILABLE'
+        shell: bash
+        env:
+          TARGET_BRANCH: main
+        run: |
+          set -euo pipefail
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          cp /tmp/price-history/candidate.json live_data/sections/ECB_G8_PRICE_HISTORY.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/ECB_G8_PRICE_HISTORY.json
+          git diff --cached --quiet && { echo 'No Price history changes to persist'; exit 0; }
+          git commit -m 'Refresh official ECB G8 price history'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_BRANCH"
+          echo PRICE_HISTORY_MAIN_UPDATE_PUSHED
+
+      - name: Upload Price history evidence
+        if: always() && steps.gate.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-history-persistent-daily-${{ github.run_id }}
+          path: /tmp/price-history/
+          if-no-files-found: warn
+          retention-days: 30
