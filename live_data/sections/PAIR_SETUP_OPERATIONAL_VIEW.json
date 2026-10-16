@@ -2,8 +2,33 @@
   "schema": "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1",
   "status": "CURRENT_CANONICAL_ENGINE",
   "pair_count": 28,
-  "price_asof": "2026-10-15",
+  "price_asof": "2026-10-16",
   "price_source": "ECB euro foreign exchange reference rates",
+  "price_audit": {
+    "status": "PASS",
+    "as_of": "2026-10-16",
+    "source": "ECB euro foreign exchange reference rates",
+    "current_row_source": "official history snapshot",
+    "overlay_asof": "2026-10-15",
+    "history_status": "CURRENT_OFFICIAL_HISTORY",
+    "history_asof": "2026-10-16",
+    "history_rows": 561,
+    "first_asof": "2024-08-07",
+    "pair_count": 28,
+    "complete_pair_count": 28,
+    "complete_return_values": 140,
+    "returns_complete": true,
+    "horizon_days": {
+      "ret1w": 7,
+      "ret1m": 30,
+      "ret3m": 91,
+      "ret6m": 182,
+      "ret1y": 365
+    },
+    "max_anchor_gap_days": 5,
+    "anchor_rule": "latest official fixing <= target date; max 5 calendar day gap",
+    "no_lookahead": true
+  },
   "rules_source": "derivePairSetupState / derivePairDecisionFrame / pairTransitionState / derivePairRelativeDynamics",
   "thesis_is_not_entry": true,
   "entry_level_published": false,
@@ -22,9 +47,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 27.81844802342606,
-          "move1m": -1.0344499265119822,
-          "text": "Estensione non elevata · 1M -1.0% · P28 storico"
+          "pct": 15.584415584415584,
+          "move1m": -0.8834284923002089,
+          "text": "Estensione non elevata · 1M -0.9% · P16 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -174,9 +199,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 27.89165446559297,
-          "move1m": -1.3390405827101937,
-          "text": "Estensione non elevata · 1M -1.3% · P28 storico"
+          "pct": 13.543599257884972,
+          "move1m": -1.8428737387113592,
+          "text": "Estensione non elevata · 1M -1.8% · P14 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -326,9 +351,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 15.043923865300146,
-          "move1m": -2.717919780548661,
-          "text": "Estensione non elevata · 1M -2.7% · P15 storico"
+          "pct": 31.16883116883117,
+          "move1m": -0.5618397031103894,
+          "text": "Estensione non elevata · 1M -0.6% · P31 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -479,9 +504,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 65.51976573938506,
-          "move1m": 0.7299819534175578,
-          "text": "Estensione non elevata · 1M +0.7% · P66 storico"
+          "pct": 15.584415584415584,
+          "move1m": -0.7335143316264059,
+          "text": "Estensione non elevata · 1M -0.7% · P16 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -750,9 +775,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 46.449487554904834,
-          "move1m": -0.3077744285481465,
-          "text": "Estensione non elevata · 1M -0.3% · P46 storico"
+          "pct": 26.716141001855288,
+          "move1m": -0.9679968059999267,
+          "text": "Estensione non elevata · 1M -1.0% · P27 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1016,13 +1041,13 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +1.4% · P82 storico"
+          "text": "Prezzo conferma"
         },
         "extension": {
-          "state": "ADVANCED",
-          "pct": 82.46705710102489,
-          "move1m": 1.3975935425546093,
-          "text": "Prezzo già avanzato · 1M +1.4% · P82 storico"
+          "state": "NORMAL",
+          "pct": 35.064935064935064,
+          "move1m": -1.3050851062926583,
+          "text": "Estensione non elevata · 1M -1.3% · P35 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1172,9 +1197,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 40.226939970717424,
-          "move1m": -0.43971016287853715,
-          "text": "Estensione non elevata · 1M -0.4% · P40 storico"
+          "pct": 43.41372912801484,
+          "move1m": 0.030909990108796137,
+          "text": "Estensione non elevata · 1M +0.0% · P43 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1440,9 +1465,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 23.901903367496338,
-          "move1m": -0.9052183173588912,
-          "text": "Estensione non elevata · 1M -0.9% · P24 storico"
+          "pct": 3.896103896103896,
+          "move1m": -1.8732140967298028,
+          "text": "Estensione non elevata · 1M -1.9% · P4 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -1937,13 +1962,13 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.5% · P98 storico"
+          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.5% · P89 storico"
         },
         "extension": {
-          "state": "EXTENDED",
-          "pct": 97.9502196193265,
-          "move1m": 3.5040895393887217,
-          "text": "Prezzo già molto avanzato · 1M +3.5% · P98 storico"
+          "state": "ADVANCED",
+          "pct": 89.23933209647495,
+          "move1m": 2.4616451417179497,
+          "text": "Prezzo già avanzato · 1M +2.5% · P89 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -2091,9 +2116,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 17.386530014641288,
-          "move1m": -2.155055644327075,
-          "text": "Estensione non elevata · 1M -2.2% · P17 storico"
+          "pct": 14.84230055658627,
+          "move1m": -1.5743292936905018,
+          "text": "Estensione non elevata · 1M -1.6% · P15 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -2359,9 +2384,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 67.16691068814056,
-          "move1m": 0.7871579919593641,
-          "text": "Estensione non elevata · 1M +0.8% · P67 storico"
+          "pct": 37.47680890538033,
+          "move1m": -0.2975573461351244,
+          "text": "Estensione non elevata · 1M -0.3% · P37 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -2744,9 +2769,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 79.8316251830161,
-          "move1m": 1.8560976871775936,
-          "text": "Estensione non elevata · 1M +1.9% · P80 storico"
+          "pct": 67.90352504638219,
+          "move1m": 0.895437037991309,
+          "text": "Estensione non elevata · 1M +0.9% · P68 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -3012,9 +3037,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 19.72913616398243,
-          "move1m": -2.0540284987686674,
-          "text": "Estensione non elevata · 1M -2.1% · P20 storico"
+          "pct": 35.250463821892396,
+          "move1m": -1.117556846719714,
+          "text": "Estensione non elevata · 1M -1.1% · P35 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -3278,13 +3303,13 @@
         "qualityCode": "WATCH",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +4.6% · P95 storico"
+          "text": "Prezzo conferma"
         },
         "extension": {
-          "state": "EXTENDED",
-          "pct": 94.87554904831626,
-          "move1m": 4.622770891920302,
-          "text": "Prezzo già molto avanzato · 1M +4.6% · P95 storico"
+          "state": "NORMAL",
+          "pct": 68.83116883116882,
+          "move1m": 1.7105192964734894,
+          "text": "Estensione non elevata · 1M +1.7% · P69 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -3429,13 +3454,13 @@
         "qualityCode": "WATCH",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +3.0% · P95 storico"
+          "text": "Prezzo conferma"
         },
         "extension": {
-          "state": "EXTENDED",
-          "pct": 95.35139092240117,
-          "move1m": 3.0102842498016757,
-          "text": "Prezzo già molto avanzato · 1M +3.0% · P95 storico"
+          "state": "NORMAL",
+          "pct": 79.96289424860854,
+          "move1m": 1.5866371021092895,
+          "text": "Estensione non elevata · 1M +1.6% · P80 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -3580,13 +3605,13 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già molto esteso · Prezzo già molto avanzato · 1M +2.7% · P92 storico"
+          "text": "Prezzo conferma"
         },
         "extension": {
-          "state": "EXTENDED",
-          "pct": 92.49633967789165,
-          "move1m": 2.6932449361060318,
-          "text": "Prezzo già molto avanzato · 1M +2.7% · P92 storico"
+          "state": "NORMAL",
+          "pct": 59.36920222634508,
+          "move1m": 0.6032816996381696,
+          "text": "Estensione non elevata · 1M +0.6% · P59 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -3735,9 +3760,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 67.8623718887262,
-          "move1m": 1.2580107762392378,
-          "text": "Estensione non elevata · 1M +1.3% · P68 storico"
+          "pct": 76.06679035250464,
+          "move1m": 1.91624014554177,
+          "text": "Estensione non elevata · 1M +1.9% · P76 storico"
         },
         "timing": {
           "state": "PARTIAL",
