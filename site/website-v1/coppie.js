@@ -41,7 +41,7 @@
     const sorted=ordered(list);
     host.innerHTML=sorted.map((x,i)=>`<div class="ranking-row"><span class="rank-num">${String(i+1).padStart(2,'0')}</span><b class="pair-name">${x.pair}</b><span class="reading"><i class="reading-pill ${x.reading.cls}">${x.reading.label}</i><em class="reading-side">${x.reading.side}</em></span><span class="${valCls(x.y2diff)}">${signed(x.y2diff,0,'bp')}</span><span class="${valCls(x.oisdiff)}">${signed(x.oisdiff,0,'bp')}</span><span class="${valCls(x.ret)}">${signed(x.ret,2,'%')}</span><span class="${valCls(x.cotdiff)}">${signed(x.cotdiff,0)}</span><a class="pair-open" href="coppia.html?pair=${x.pair}" aria-label="Apri ${x.pair}">→</a></div>`).join('');
     document.getElementById('tf-col').textContent=TF_LABEL[state.tf];
-    const asof=document.getElementById('pairs-asof');if(asof)asof.textContent=`${list.length} pair · FX as of ${list[0]?.price_asof||state.d?.asOf||'—'}`;
+    const asof=document.getElementById('pairs-asof');if(asof)asof.textContent=`${list.length} pair · FX as of ${state.d?.price_asof||list[0]?.price_asof||'—'}`;
   }
   function render(){const list=rows();renderTop(list);renderTable(list);document.documentElement.dataset.coppiePage='READY'}
   function bind(){
@@ -50,6 +50,6 @@
     document.querySelector('.pro-card button')?.addEventListener('click',()=>location.href='index.html');
   }
   function clock(){const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'Europe/Rome'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d)}
-  async function main(){bind();clock();setInterval(clock,30000);try{[state.d,state.rates,state.ois,state.cot]=await Promise.all([load('D.json'),load('NATIVE_RATES_DATA.json'),load('OIS_OPERATIONAL_VIEW.json'),load('V250_COT_CHART_DATA.json')]);render()}catch(e){console.warn('[GMFQ coppie]',e);document.documentElement.dataset.coppiePage='FAIL'}}
+  async function main(){bind();clock();setInterval(clock,30000);try{[state.d,state.rates,state.ois,state.cot]=await Promise.all([load('D.json'),load('NATIVE_RATES_DATA.json'),load('OIS_OPERATIONAL_VIEW.json'),load('V250_COT_CHART_DATA.json')]);if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Canonical Price runtime adapter missing');await window.GMFQWebsitePrice.hydrate(state.d);render()}catch(e){console.warn('[GMFQ coppie]',e);document.documentElement.dataset.coppiePage='FAIL'}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',main,{once:true});else main();
 })();
