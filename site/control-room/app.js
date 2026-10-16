@@ -5,12 +5,12 @@
   fidelity.id='approved-rendering-final-tuning';
   fidelity.textContent=`
     @media (min-width:901px){
-      .page{grid-template-rows:120px 270px 210px 145px!important}
+      .page{grid-template-rows:120px 252px 192px 118px!important}
       .row-one{margin-top:31px!important}
-      .theme-card{height:103px!important;grid-template-columns:44% 1fr!important}
-      .theme-card>div:last-child{padding:6px!important}
-      .watch{height:24px!important}
-      .watch-head{height:20px!important}
+      .theme-card{height:77px!important;grid-template-columns:43% 1fr!important}
+      .theme-card>div:last-child{padding:5px!important}
+      .watch{height:18px!important}
+      .watch-head{height:18px!important}
     }
     .earth{
       width:57%!important;
