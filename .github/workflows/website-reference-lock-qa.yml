@@ -76,8 +76,11 @@ jobs:
             }
             await page.goto(base+'library.html',{waitUntil:'networkidle',timeout:120000});
             const hrefs=await page.$$eval('a.report-action.ready',as=>as.map(a=>a.getAttribute('href')));
-            if(hrefs.length!==9) throw new Error(`Expected 9 Library mirrors, found ${hrefs.length}`);
+            if(hrefs.length!==8) throw new Error(`Expected 8 active Library web mirrors, found ${hrefs.length}`);
             hrefs.forEach(verifyReportFile);
+
+            const pending=await page.$$eval('.report-action.disabled',els=>els.length);
+            if(pending!==1) throw new Error(`Expected 1 Library mirror pending, found ${pending}`);
 
             const first=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
             const response=await first.goto(new URL(hrefs[0],base+'library.html').href,{waitUntil:'domcontentloaded',timeout:120000});
