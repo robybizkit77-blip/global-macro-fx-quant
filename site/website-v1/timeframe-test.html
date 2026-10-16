@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GMFQ Timeframe Test</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+body{overflow:auto;background:#020a12}.test-wrap{max-width:1500px;margin:40px auto;padding:0 18px}.test-note{font:12px Inter,Arial,sans-serif;color:#8ca0b2;margin-bottom:12px}.hero{height:175px}.hero-tabs a{height:31px;min-width:48px;border:0;border-right:1px solid #1b3345;background:transparent;color:#9aacba;font-size:9px;text-decoration:none;display:grid;place-items:center}.hero-tabs a.active{background:#144e83;color:#fff;box-shadow:inset 0 0 0 1px #1c6aac}.hero-tabs a:last-child{border-right:0}.status{margin-top:12px;font:12px monospace;color:#8ca0b2}
+</style>
+</head>
+<body>
+<div class="test-wrap">
+  <div class="test-note">STAGING TEST · non modifica la Control Room live</div>
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-title"><h1>Timeframe Test</h1><p>Stesso motore dati, pagina isolata.</p></div>
+    <div class="hero-right">
+      <div class="hero-wordmark">GLOBAL MARKETS<br><span>REAL CONNECTIONS</span><i></i></div>
+      <div class="hero-tabs">
+        <a data-tf="1D" href="?tf=1D">1D</a><a data-tf="1W" href="?tf=1W">1W</a><a data-tf="1M" href="?tf=1M">1M</a><a data-tf="3M" href="?tf=3M">3M</a><a data-tf="YTD" href="?tf=YTD">YTD</a>
+      </div>
+    </div>
+    <div class="ticker-strip"></div>
+  </section>
+  <div class="status" id="status">loading…</div>
+</div>
+<script>
+(()=>{
+'use strict';
+const ROOT='../../live_data/sections/';
+const FX_URL='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/ECB_G8_PRICE_HISTORY.json';
+const PAIRS=['EURUSD','GBPUSD','USDJPY','USDCAD','AUDUSD','NZDUSD'];
+const allowed=['1D','1W','1M','3M','YTD'];
+const p=new URLSearchParams(location.search);const period=allowed.includes(p.get('tf'))?p.get('tf'):'1D';
+document.querySelectorAll('[data-tf]').forEach(a=>a.classList.toggle('active',a.dataset.tf===period));
+const n=v=>Number.isFinite(Number(v))?Number(v):null;
+const pct=v=>`${v>0?'+':''}${v.toFixed(2)}%`;
+const load=async u=>{const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(`${u} HTTP ${r.status}`);return r.json();};
+const spark=(values,w=90,h=44,pad=2)=>{const a=values.map(Number).filter(Number.isFinite);if(a.length<2)return `0,${h/2} ${w},${h/2}`;const lo=Math.min(...a),hi=Math.max(...a),span=(hi-lo)||1;return a.map((v,i)=>`${(pad+(w-2*pad)*i/(a.length-1)).toFixed(1)},${(pad+(h-2*pad)*(1-(v-lo)/span)).toFixed(1)}`).join(' ')};
+const startIndex=(rows,tf)=>{if(tf==='1D')return Math.max(0,rows.length-2);const last=new Date(rows.at(-1).Date+'T00:00:00Z');let target;if(tf==='YTD')target=new Date(Date.UTC(last.getUTCFullYear(),0,1));else{target=new Date(last);if(tf==='1W')target.setUTCDate(target.getUTCDate()-7);if(tf==='1M')target.setUTCMonth(target.getUTCMonth()-1);if(tf==='3M')target.setUTCMonth(target.getUTCMonth()-3)}const ts=target.toISOString().slice(0,10);let i=rows.findIndex(r=>r.Date>=ts);if(i<0)i=0;return Math.min(i,rows.length-2)};
+const pairValue=(row,label)=>{const a=label.slice(0,3),b=label.slice(3,6),av=a==='EUR'?1:n(row[a]),bv=b==='EUR'?1:n(row[b]);return av&&bv?bv/av:null};
+const rateHistory=(s,key)=>{const h=s?.[key],dates=h?.dates||[],vals=h?.values||[];return dates.map((date,i)=>({date,value:n(vals[i])})).filter(x=>x.date&&x.value!==null)};
+const rateStart=(h,tf)=>{if(tf==='1D')return Math.max(0,h.length-2);const last=new Date(h.at(-1).date+'T00:00:00Z');let target;if(tf==='YTD')target=new Date(Date.UTC(last.getUTCFullYear(),0,1));else{target=new Date(last);if(tf==='1W')target.setUTCDate(target.getUTCDate()-7);if(tf==='1M')target.setUTCMonth(target.getUTCMonth()-1);if(tf==='3M')target.setUTCMonth(target.getUTCMonth()-3)}const ts=target.toISOString().slice(0,10);let i=h.findIndex(x=>x.date>=ts);if(i<0)i=0;return Math.min(i,h.length-2)};
+(async()=>{
+try{
+ const [fx,rates]=await Promise.all([load(FX_URL),load(ROOT+'NATIVE_RATES_DATA.json')]);
+ const rows=(fx.rows||[]).filter(r=>r.Date).sort((a,b)=>a.Date.localeCompare(b.Date));
+ const si=startIndex(rows,period);const win=rows.slice(si);const cards=[];
+ for(const pair of PAIRS){const vals=win.map(r=>pairValue(r,pair)).filter(v=>v!==null);if(vals.length<2)continue;const first=vals[0],last=vals.at(-1),ret=(last/first-1)*100;cards.push({label:pair,value:last>=100?last.toFixed(2):last.toFixed(4),change:pct(ret),dir:ret>=0?'up':'down',vals});}
+ for(const tenor of [2,10]){const usd=rates.USD,key=tenor===2?'history2':'history10',h=rateHistory(usd,key);const ri=rateStart(h,period),rw=h.slice(ri),current=n(usd[tenor+'Y'])??rw.at(-1).value,delta=(current-rw[0].value)*100;cards.push({label:'US '+tenor+'Y',value:current.toFixed(2)+'%',change:(delta>0?'+':'')+delta.toFixed(1)+'bp',dir:delta>=0?'up':'down',vals:rw.map(x=>x.value)});}
+ document.querySelector('.ticker-strip').innerHTML=cards.map(c=>`<div class="ticker"><div><small>${c.label}</small><b>${c.value}</b><em class="${c.dir}">${c.change}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${spark(c.vals)}"/></svg></div>`).join('');
+ document.getElementById('status').textContent=`READY · timeframe=${period} · FX as-of ${rows.at(-1).Date} · Rates as-of ${rates.USD?.date||'—'} · cards=${cards.length}`;
+}catch(e){document.getElementById('status').textContent='FAIL · '+e.message;console.error(e)}
+})();
+})();
+</script>
+</body>
+</html>
