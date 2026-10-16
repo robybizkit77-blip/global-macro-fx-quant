@@ -11,24 +11,8 @@
     .topbar{z-index:10}
     .content{grid-template-rows:163px 286px 232px 133px}
     .hero{isolation:isolate}
-    .hero-bg{inset:0!important;background:none!important;overflow:hidden;opacity:1!important;z-index:0}
-    .hero-bg:before{content:"";position:absolute;right:-25px;top:-103px;width:1040px;height:250px;border-radius:50%;background:
-      radial-gradient(circle at 31% 72%,rgba(246,185,83,.95) 0 1px,transparent 1.8px),
-      radial-gradient(circle at 37% 64%,rgba(242,176,71,.85) 0 1px,transparent 1.7px),
-      radial-gradient(circle at 43% 78%,rgba(255,207,103,.95) 0 1.2px,transparent 2px),
-      radial-gradient(circle at 48% 58%,rgba(237,171,68,.9) 0 1px,transparent 1.8px),
-      radial-gradient(circle at 53% 69%,rgba(255,213,117,.95) 0 1.1px,transparent 1.9px),
-      radial-gradient(circle at 58% 76%,rgba(244,183,78,.9) 0 1px,transparent 1.8px),
-      radial-gradient(circle at 63% 60%,rgba(255,221,128,.95) 0 1.3px,transparent 2px),
-      radial-gradient(circle at 69% 73%,rgba(241,178,71,.9) 0 1px,transparent 1.8px),
-      radial-gradient(circle at 76% 64%,rgba(255,218,120,.95) 0 1.2px,transparent 2px),
-      radial-gradient(circle at 83% 75%,rgba(241,175,71,.9) 0 1px,transparent 1.8px),
-      radial-gradient(ellipse at 55% 100%,#114e73 0 26%,#0c3b5b 38%,#082940 53%,#061928 66%,#04111c 73%,transparent 74%);
-      box-shadow:0 -2px 28px rgba(83,176,230,.42),inset 0 15px 45px rgba(78,172,226,.10);transform:rotate(-2deg)}
-    .hero-bg:after{content:"";position:absolute;right:0;top:-5px;width:1050px;height:120px;opacity:.55;background:
-      repeating-radial-gradient(ellipse at 58% 150%,transparent 0 18px,rgba(87,162,205,.14) 19px 20px),
-      repeating-linear-gradient(13deg,transparent 0 36px,rgba(73,143,183,.12) 37px 38px),
-      linear-gradient(90deg,#061726 0%,rgba(6,23,38,.58) 22%,rgba(6,23,38,0) 55%)}
+    .hero-bg{inset:0!important;z-index:0;opacity:1!important;background-image:linear-gradient(90deg,#061726 0%,rgba(6,23,38,.82) 20%,rgba(6,23,38,.20) 46%,rgba(6,23,38,0) 66%),url('./assets/hero-earth-reference.jpg')!important;background-repeat:no-repeat!important;background-position:left top,right top!important;background-size:100% 100%,auto 112px!important}
+    .hero-bg:before,.hero-bg:after{display:none!important}
     .hero-title,.hero-right,.ticker-strip{z-index:4}
   `;
   document.head.appendChild(referenceLock);
