@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'site/website-v1/**'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/website-reference-lock-qa.yml'
 
 permissions:
@@ -93,14 +94,32 @@ jobs:
 
           async function verifyFxRuntime(page,base,route,readyAttr){
             await page.goto(base+route,{waitUntil:'networkidle',timeout:120000});
-            await page.waitForFunction(({readyAttr})=>document.documentElement.getAttribute('data-website-price-runtime')==='CURRENT_OFFICIAL' && document.documentElement.getAttribute(readyAttr)==='READY',{readyAttr},{timeout:30000});
+            await page.waitForFunction(({readyAttr})=>
+              document.documentElement.getAttribute('data-website-price-runtime')==='CURRENT_OFFICIAL' &&
+              document.documentElement.getAttribute('data-website-price-history')==='CURRENT_OFFICIAL_HISTORY' &&
+              document.documentElement.getAttribute('data-website-price-returns')==='COMPLETE' &&
+              document.documentElement.getAttribute(readyAttr)==='READY',
+              {readyAttr},{timeout:30000});
+
             const asof=await page.getAttribute('html','data-website-price-asof');
+            const historyAsof=await page.getAttribute('html','data-website-price-history-asof');
             if(!/^\d{4}-\d{2}-\d{2}$/.test(asof||'')) throw new Error(`${route}: invalid canonical FX as-of ${asof}`);
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(historyAsof||'')) throw new Error(`${route}: invalid FX history as-of ${historyAsof}`);
             const ageDays=(Date.now()-Date.parse(`${asof}T00:00:00Z`))/86400000;
             if(ageDays< -1 || ageDays>5) throw new Error(`${route}: canonical FX fixing stale (${asof}, age ${ageDays.toFixed(1)}d)`);
+
+            const audit=await page.evaluate(()=>window.GMFQ_WEBSITE_PRICE_AUDIT);
+            if(!audit || audit.status!=='PASS') throw new Error(`${route}: FX audit missing/failed`);
+            if(audit.history_status!=='CURRENT_OFFICIAL_HISTORY') throw new Error(`${route}: FX history status ${audit.history_status}`);
+            if(audit.pair_count!==28 || audit.complete_pair_count!==28) throw new Error(`${route}: FX pair completeness ${audit.complete_pair_count}/${audit.pair_count}`);
+            if(audit.complete_return_values!==140 || audit.returns_complete!==true) throw new Error(`${route}: FX return completeness ${audit.complete_return_values}/140`);
+            if(audit.no_lookahead!==true || audit.anchor_rule!=='latest official fixing <= target date; max 5 calendar day gap') throw new Error(`${route}: FX PIT anchor contract failed`);
+            if(audit.history_rows<500) throw new Error(`${route}: FX history too short (${audit.history_rows})`);
+            if(audit.as_of!==asof || audit.history_asof!==historyAsof) throw new Error(`${route}: FX audit/DOM as-of mismatch`);
+
             const text=await page.locator('body').innerText();
             if(text.includes('FX as of 2026-09-28') || text.includes('as of 2026-09-28')) throw new Error(`${route}: stale September FX date leaked into rendered page`);
-            console.log(`QA FX runtime OK: ${route} · ${asof} · age ${ageDays.toFixed(1)}d`);
+            console.log(`QA FX HISTORY OK: ${route} · current ${asof} · history ${historyAsof} · 28/28 pairs · 140/140 returns · no-lookahead`);
           }
 
           (async()=>{
