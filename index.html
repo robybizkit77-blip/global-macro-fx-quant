@@ -45,9 +45,6 @@
  html=html.replace(forwardPathRiskCall,'const rs=window.gmfqForwardPathRiskStats(window.gmfqForwardSnapshotBasketSeries(outcomes,h));');
  html=html.replace(forwardPairedOverlayCall,"const s=window.gmfqForwardPairedOverlayStats(outcomes,'1W',k,v);");
 
- // Runtime quarantine V2: obsolete September-era QA/editorial mutators remain in
- // the immutable legacy payload for audit/rollback, but must no longer execute.
- // Current visible editorial surfaces are owned by validated operational modules.
  const quarantinedLegacyScripts=[
    'gmfq-propagation-qa','gmfq-e2e-live-italy','gmfq-runtime-refresh-fix-20260930',
    'gmfq-usd-sep30-closeout-20261001','gmfq-usd-sep30-closeout-finalizer-20261001'
@@ -93,7 +90,8 @@
    ['gmfq-inflationlabour-hierarchy-v1','dashboard/inflationlabour-hierarchy-v1.js'],
    ['gmfq-calendar-hierarchy-v1','dashboard/calendar-hierarchy-v1.js'],
    ['gmfq-themes-hierarchy-v1','dashboard/themes-hierarchy-v1.js'],
-   ['gmfq-currencies-hierarchy-v1','dashboard/currencies-hierarchy-v1.js']
+   ['gmfq-currencies-hierarchy-v1','dashboard/currencies-hierarchy-v1.js'],
+   ['gmfq-control-room-shell-v1','dashboard/control-room-shell-v1.js']
  ];
  const injected=assets.map(([id,src])=>`<script id="${id}" src="${src}" defer></scr`+'ipt>\n').join('');
  if(!html.includes('</body>')) throw new Error('Payload body close mancante');
