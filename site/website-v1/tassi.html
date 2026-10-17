@@ -42,7 +42,7 @@
         <div class="page-actions" id="rates-timeframes"><button data-days="63">3M</button><button data-days="126">6M</button><button class="active" data-days="252">1Y</button></div>
       </section>
 
-      <div class="section-title"><h2>Rates Overview</h2><small>2Y · 10Y · curva 2s10s · fonti canoniche</small></div>
+      <div class="section-title"><h2>Rates Overview</h2><small>2Y · 10Y · curva 2s10s · dati aggiornati per fonte</small></div>
       <section class="rates-grid" id="rates-grid"></section>
 
       <section class="rates-main-row">
@@ -62,7 +62,7 @@
 
       <section class="ois-main-row">
         <article class="internal-card ois-combined-card">
-          <div class="internal-card-head"><h3>Combined G8 Pricing Curve</h3><small>livelli pubblicabili · nessuna interpolazione frontend</small></div>
+          <div class="internal-card-head"><h3>Combined G8 Pricing Curve</h3><small>solo livelli disponibili · punti mancanti restano mancanti</small></div>
           <div class="chart-legend" id="ois-legend"></div>
           <svg id="ois-chart" viewBox="0 0 900 300" preserveAspectRatio="none" aria-label="G8 OIS and market pricing curves"></svg>
         </article>
@@ -79,7 +79,7 @@
         </article>
         <article class="internal-card">
           <div class="internal-card-head"><h3>Come leggerla</h3><small>Rates → Pricing → FX</small></div>
-          <div class="method-copy">Il <strong>2Y</strong> rappresenta il front-end e quindi il repricing più vicino alla banca centrale. Il <strong>10Y</strong> incorpora crescita, real yield, breakeven, term premium e supply. La <strong>curva 2s10s</strong> mostra flattening o steepening.<br><br>Le curve <strong>OIS / market pricing</strong> sono separate per valuta e poi confrontate nello stesso grafico G8: policy rate, 3M, 6M e 12M. La qualità della fonte resta visibile e i punti mancanti restano mancanti. <span class="status">Nessun proxy viene trasformato in OIS e nessuna interpolazione viene inventata dal frontend.</span></div>
+          <div class="method-copy">Il <strong>2Y</strong> rappresenta il front-end e quindi il repricing più vicino alla banca centrale. Il <strong>10Y</strong> incorpora crescita, real yield, breakeven, term premium e supply. La <strong>curva 2s10s</strong> mostra flattening o steepening.<br><br>Le curve <strong>OIS / market pricing</strong> sono separate per valuta e poi confrontate nello stesso grafico G8: policy rate, 3M, 6M e 12M. La qualità della fonte resta visibile e i punti mancanti restano mancanti. <span class="status">Se un livello non è pubblicabile o sufficientemente affidabile, resta vuoto invece di essere stimato.</span></div>
         </article>
       </section>
     </main>
