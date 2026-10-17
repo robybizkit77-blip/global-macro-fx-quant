@@ -29,7 +29,7 @@
   function sampled(values,max=34){if(values.length<=max)return values;return Array.from({length:max},(_,i)=>values[Math.round(i*(values.length-1)/(max-1))]);}
 
   function datedRows(){return (Array.isArray(fx?.rows)?fx.rows:[]).filter(r=>r?.Date).slice().sort((a,b)=>String(a.Date).localeCompare(String(b.Date)));}
-  function fxAsOf(){const rows=datedRows();return fx?.last_as_of||rows.at(-1)?.Date||null;}
+  function fxAsOf(){const rows=datedRows(),actual=rows.at(-1)?.Date||null,metadata=fx?.last_as_of||null;return actual&&metadata&&String(actual).slice(0,10)===String(metadata).slice(0,10)?actual:null;}
   function startIndex(rows,period){if(rows.length<2)return 0;if(period==='1D')return Math.max(0,rows.length-2);const last=new Date(`${rows.at(-1).Date}T00:00:00Z`);if(!Number.isFinite(last.getTime()))return Math.max(0,rows.length-2);let target;if(period==='YTD')target=new Date(Date.UTC(last.getUTCFullYear(),0,1));else{target=new Date(last);if(period==='1W')target.setUTCDate(target.getUTCDate()-7);if(period==='1M')target.setUTCMonth(target.getUTCMonth()-1);if(period==='3M')target.setUTCMonth(target.getUTCMonth()-3);}if(!Number.isFinite(target.getTime()))return Math.max(0,rows.length-2);const ts=target.toISOString().slice(0,10);let idx=rows.findIndex(r=>r.Date>=ts);if(idx<0)idx=0;return Math.min(idx,rows.length-2);}
   function pairValue(row,label){const a=label.slice(0,3),b=label.slice(3,6);const av=a==='EUR'?1:n(row?.[a]),bv=b==='EUR'?1:n(row?.[b]);return av&&bv?bv/av:null;}
   function unavailablePairCard(label,reason,asof){return{label,value:'—',change:'—',dir:'flat',values:[0,0],title:`${reason}${asof?` · dati al ${asof}`:''}`};}
