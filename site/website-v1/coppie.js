@@ -12,14 +12,14 @@
   async function load(f){const r=await fetch(ROOT+f,{cache:'no-store'});if(!r.ok)throw new Error(`${f}: ${r.status}`);return r.json();}
   function normalizePair(p){return String(p||'').replace(/[^A-Z]/g,'').slice(0,6)}
   function splitPair(p){const x=normalizePair(p);return [x.slice(0,3),x.slice(3,6)]}
-  function rate2(c){return n(state.rates?.[c]?.['2Y'])??n(state.rates?.[c]?.current?.y2)??n(state.d?.macro?.[c]?.rate2y)}
+  function rate2(c){return n(state.rates?.[c]?.['2Y'])??n(state.rates?.[c]?.current?.y2)??null}
   function ois3(c){return n(state.ois?.currencies?.[c]?.horizons?.['3m']?.rate)}
   function cotPct(c){const a=state.cot?.[c]?.percentile;return Array.isArray(a)&&a.length?n(a[a.length-1]):null}
   function relativeReading(y2,ois,base,quote){
     if(y2===null||ois===null)return {tier:0,label:'Dati parziali',cls:'flat',side:'—',strength:0};
     const sy=Math.sign(y2),so=Math.sign(ois),strength=Math.min(Math.abs(y2),Math.abs(ois));
     if(Math.abs(y2)<5&&Math.abs(ois)<5)return {tier:1,label:'Poco contrasto',cls:'flat',side:'—',strength};
-    if(sy!==0&&sy===so){const side=sy>0?base:quote;return {tier:3,label:'Allineato',cls:'align',side:`favorisce ${side}`,strength};}
+    if(sy!==0&&sy===so){const side=sy>0?base:quote;return {tier:3,label:'Allineato',cls:'align',side:`favorisce ${side}`,strength};
     return {tier:2,label:'Diviso',cls:'split',side:'rates / pricing in conflitto',strength};
   }
   function setupRow(pair){return state.setup?.pairs?.[normalizePair(pair)]||null}
