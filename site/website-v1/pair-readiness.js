@@ -8,29 +8,29 @@
     const tick=()=>{
       const s=document.documentElement.dataset.coppiaPage;
       if(s==='READY')return resolve();
-      if(s==='FAIL')return reject(new Error('Pair Deep Dive base page failed'));
-      if(Date.now()-started>15000)return reject(new Error('Pair Deep Dive readiness timeout'));
+      if(s==='FAIL')return reject(new Error('Pair Deep Dive non disponibile'));
+      if(Date.now()-started>15000)return reject(new Error('Pair Deep Dive non pronto'));
       setTimeout(tick,80);
     };
     tick();
   });
   const line=(label,text)=>`<span class="compare-chip"><b>${esc(label)}</b> ${esc(text)}</span>`;
   function validateSnapshot(x){
-    if(x?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1')throw new Error('snapshot schema invalid');
-    if(x?.status!=='CURRENT_CANONICAL_ENGINE')throw new Error('snapshot status not current');
-    if(x?.pair_count!==28||Object.keys(x?.pairs||{}).length!==28)throw new Error('snapshot coverage invalid');
-    if(x?.price_audit?.status!=='PASS')throw new Error('snapshot price audit not PASS');
-    if(x?.thesis_is_not_entry!==true||x?.entry_level_published!==false)throw new Error('contratto tesi/entrata non valido');
+    if(x?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1')throw new Error('quadro pair non valido');
+    if(x?.status!=='CURRENT_CANONICAL_ENGINE')throw new Error('quadro pair non aggiornato');
+    if(x?.pair_count!==28||Object.keys(x?.pairs||{}).length!==28)throw new Error('universo pair incompleto');
+    if(x?.price_audit?.status!=='PASS')throw new Error('prezzi non verificati');
+    if(x?.thesis_is_not_entry!==true||x?.entry_level_published!==false)throw new Error('stato esecuzione non valido');
   }
   function withheld(el,msg){
-    el.innerHTML=`La <strong>tesi relativa</strong> e l'<strong>entrata</strong> restano due cose diverse.<br><br><span class="status">Execution Readiness non pubblicata: ${esc(msg)}. Nessun livello d'ingresso viene inventato dal frontend.</span>`;
+    el.innerHTML=`La <strong>tesi relativa</strong> e l'<strong>entrata</strong> restano due cose diverse.<br><br><span class="status">Execution Readiness non disponibile: ${esc(msg)}. Nessun livello d'ingresso viene inventato.</span>`;
     document.documentElement.dataset.executionReadiness='WITHHELD';
   }
   function render(el,snapshot){
     const pair=code(),row=snapshot?.pairs?.[pair],setup=row?.setup;
-    if(!setup)return withheld(el,`setup canonico ${pair} non disponibile`);
+    if(!setup)return withheld(el,`setup della pair ${pair} non disponibile`);
     const priceAsOf=document.documentElement.getAttribute('data-website-price-asof')||null;
-    if(!priceAsOf||snapshot.price_asof!==priceAsOf)return withheld(el,`Price non allineato (${snapshot.price_asof||'—'} vs ${priceAsOf||'—'})`);
+    if(!priceAsOf||snapshot.price_asof!==priceAsOf)return withheld(el,`prezzo non allineato (${snapshot.price_asof||'—'} vs ${priceAsOf||'—'})`);
     const quality=setup.quality||'NON VALUTABILE';
     const fav=setup.structuralFav||row?.decision_frame?.fav||'—';
     const structural=setup.structural?.relation||row?.decision_frame?.relation||'Struttura relativa non determinata.';
@@ -46,7 +46,7 @@
     const el=document.getElementById('trade-readiness');if(!el)return;
     try{
       await waitReady();
-      const r=await fetch(SOURCE,{cache:'no-store'});if(!r.ok)throw new Error(`snapshot HTTP ${r.status}`);
+      const r=await fetch(SOURCE,{cache:'no-store'});if(!r.ok)throw new Error(`dati pair non disponibili (${r.status})`);
       const x=await r.json();validateSnapshot(x);render(el,x);
     }catch(e){console.warn('[GMFQ Pair Readiness]',e);withheld(el,e?.message||'dato non disponibile');}
   }
