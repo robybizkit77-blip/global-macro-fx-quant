@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const reports=[
-    {date:'2026-10-15',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',href:'library/reports/Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX con controllo Macro → Rates → Pricing → Positioning → Price.'},
+    {date:'2026-10-15',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',href:'reports/Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX con controllo Macro → Rates → Pricing → Positioning → Price.'},
     {date:'2026-10-14',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-14_DARK_DESK_CLEAN.html',href:'reports/Trade_Thesis_Monitor_2026-10-14_DARK_DESK_CLEAN.html',desc:'Monitor serale delle tesi FX e verifica della reazione effettiva del mercato.'},
     {date:'2026-10-13',type:'Trade Monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-13_DARK_DESK.html',href:'reports/Trade_Thesis_Monitor_2026-10-13_DARK_DESK.html',desc:'Monitor serale delle tesi FX con separazione tra thesis strength e trade attractiveness.'},
     {date:'2026-10-11',type:'CB Sentiment',title:'Weekly CB Sentiment',file:'Weekly_CB_Sentiment_Report_2026-10-11_DARK_RESEARCH_DESK_v23_TERMINOLOGY_HAWKISH.html',href:'reports/Weekly_CB_Sentiment_Report_2026-10-11_DARK_RESEARCH_DESK_v23_TERMINOLOGY_HAWKISH.html',desc:'Stance, focus, pricing e cambi di tono delle principali banche centrali G8.'},
