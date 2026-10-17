@@ -1,6 +1,7 @@
 (()=>{
   'use strict';
   const R='../../live_data/sections/',q=s=>document.querySelector(s),esc=s=>String(s??'—').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+  const QUALITY_RANK={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':0};
   let setup;
   const load=f=>fetch(R+f,{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(`${f}: ${r.status}`)));
   function validateSetup(x){
@@ -12,14 +13,14 @@
   }
   function render(){
     const qual=q('#quality').value,fav=q('#fav').value;
-    const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav));
-    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span>${esc(r.s.quality)}</span><p>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
+    const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav)).sort((a,b)=>(QUALITY_RANK[b.s.quality]||0)-(QUALITY_RANK[a.s.quality]||0)||(a.x.canonical_pair||a.pair).localeCompare(b.x.canonical_pair||b.pair));
+    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(r.s.quality)}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
     q('#asof').textContent=`${rows.length}/28 pair · quadro aggiornato al ${setup.price_asof||'—'}`;
   }
   load('PAIR_SETUP_OPERATIONAL_VIEW.json').then(b=>{
     setup=b;validateSetup(b);
     for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.quality).filter(Boolean))])q('#quality').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
-    for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.structuralFav).filter(Boolean))])q('#fav').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
+    for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.structuralFav).filter(Boolean))].sort())q('#fav').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
     q('#quality').onchange=q('#fav').onchange=render;
     render();
     document.documentElement.dataset.screenerPage='READY';
