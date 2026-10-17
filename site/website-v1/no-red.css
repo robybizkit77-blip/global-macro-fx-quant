@@ -1,5 +1,5 @@
 :root{--red:#c97aff!important;--negative:#c97aff!important}
-.bell i{background:#c97aff!important}
+.bell i{background:#ff5168!important}
 .down{color:#c97aff!important}
 .ticker polyline.down,.watch-table polyline.down{stroke:#c97aff!important}
 .tag.red{background:#4a255f!important;border-color:#7f4aa8!important;color:#ead7ff!important}
@@ -15,7 +15,7 @@
 .cot-alert.hot{color:#c97aff!important}
 .watch-bad{color:#c97aff!important}
 .setup-op-row u.bad{color:#c97aff!important}
-.event-risk.high{background:rgba(201,122,255,.13)!important;color:#d8a2ff!important}
+.event-risk.high,.calendar .event-risk.high{background:rgba(255,81,104,.15)!important;color:#ff8d9b!important}
 /* Semantic palette guard across legacy components */
 .dovish{background:#321b43!important;color:#e0b8ff!important}
 .risk-event-row .high{color:#d8a2ff!important}
