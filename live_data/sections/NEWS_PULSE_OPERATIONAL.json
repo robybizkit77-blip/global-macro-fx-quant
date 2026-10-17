@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-15",
-  "generated_at_utc": "2026-10-16T06:52:28.526033Z",
+  "generated_at_utc": "2026-10-17T06:47:54.282790Z",
   "items": [
     {
       "as_of": "2026-10-15",
@@ -45,61 +45,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più dovish (-3.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-09",
-      "category": "MACRO_UPDATE",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Ultimo valore 3.7172508442689933; percentile storico 75.4%; stato CALDO.",
-      "importance": "MEDIUM",
-      "quality": "CERTIFIED_MACRO_LAYER",
-      "source": "FRED/BLS",
-      "title": "USD: Inflazione sale · accelera"
-    },
-    {
-      "as_of": "2026-09",
-      "category": "MACRO_UPDATE",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "Ultimo valore 3.8; percentile storico 79.6%; stato CALDO.",
-      "importance": "MEDIUM",
-      "quality": "CERTIFIED_MACRO_LAYER",
-      "source": "Eurostat prc_hicp_minr via Wolfram HTTP transport",
-      "title": "EUR: Inflazione sale · accelera"
-    },
-    {
-      "as_of": "2026-09",
-      "category": "MACRO_UPDATE",
-      "ccy": "CHF",
-      "confidence": "A",
-      "detail": "Ultimo valore 1.0; percentile storico 66.7%; stato CALDO.",
-      "importance": "MEDIUM",
-      "quality": "CERTIFIED_MACRO_LAYER",
-      "source": "Swiss National Bank data portal / SFSO",
-      "title": "CHF: Inflazione sale · rallenta"
-    },
-    {
-      "as_of": "2026-09-01",
-      "category": "MACRO_UPDATE",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Ultimo valore 6.5; percentile storico 58.8%; stato NORMALE.",
-      "importance": "MEDIUM",
-      "quality": "CERTIFIED_MACRO_LAYER",
-      "source": "Statistics Canada",
-      "title": "CAD: Disoccupazione sale · accelera"
-    },
-    {
-      "as_of": "2026-09-01",
-      "category": "MACRO_UPDATE",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Ultimo valore 4.7; percentile storico 49.6%; stato NORMALE.",
-      "importance": "MEDIUM",
-      "quality": "CERTIFIED_MACRO_LAYER",
-      "source": "Australian Bureau of Statistics",
-      "title": "AUD: Disoccupazione sale · stabile"
     }
   ],
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
