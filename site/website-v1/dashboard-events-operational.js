@@ -38,7 +38,7 @@
     const events=(Array.isArray(data?.events)?data.events:[])
       .filter(x=>x?.status==='UPCOMING'&&x?.date&&String(x.date)>=today()&&FLAGS[x.ccy])
       .sort((a,b)=>String(a.date).localeCompare(String(b.date))||((b.importance==='HIGH')-(a.importance==='HIGH')))
-      .slice(0,7);
+      .slice(0,5);
 
     const head='<div class="thead event-head"><span>QUANDO</span><span>CCY</span><span>CATALYST</span><span>FOCUS</span><span>RISCHIO</span></div>';
     if(!events.length){host.innerHTML=head+'<div class="event-row"><span>—</span><b>—</b><small>Nessun catalyst futuro disponibile</small><em>—</em><i>—</i></div>';return;}
