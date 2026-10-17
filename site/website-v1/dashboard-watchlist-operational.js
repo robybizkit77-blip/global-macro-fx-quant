@@ -49,7 +49,7 @@
       .watch-table>div>*{min-width:0}
       .watch-table a{color:#f3f7fb;text-decoration:none;font-weight:700}
       .watch-pill{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:2px 8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:.02em;background:rgba(127,151,171,.12);white-space:nowrap}
-      .watch-good{color:#4be0a5}.watch-bad{color:#ff6b7a}.watch-warn{color:#f4bd61}.watch-neutral{color:#9fb3c4}
+      .watch-good{color:#4be0a5}.watch-bad{color:#c97aff}.watch-warn{color:#f4bd61}.watch-neutral{color:#9fb3c4}
       .watch-state{font-size:11px;line-height:1.25}
       .watch-empty-row{grid-template-columns:28px 1fr auto!important;padding:14px 0}
       @media(max-width:760px){
