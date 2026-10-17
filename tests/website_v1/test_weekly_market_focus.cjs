@@ -45,6 +45,8 @@ async function scenario(tf,rateFeed,fxFeed){
   const stale=await scenario('1D',rates,{...fx,last_as_of:'2026-09-01'});
   assert.equal(stale.cardCount,8);
   assert.equal(stale.attrs['data-fx-freshness'],'WITHHELD');
+  const falseFresh=await scenario('1D',rates,{...fx,rows:fx.rows.filter(r=>r.Date<'2026-10-09'),last_as_of:'2026-10-16'});
+  assert.equal(falseFresh.attrs['data-fx-freshness'],'WITHHELD','fresh metadata must not revive stale prices');
   const absent=await scenario('1D',null,null);
   assert.equal(absent.cardCount,8,'fallback');
   assert.equal(absent.attrs['data-market-snapshot'],'FAIL');
