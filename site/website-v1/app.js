@@ -48,10 +48,10 @@
   setInterval(clock,30000);
 
   const dataScript=document.createElement('script');
-  dataScript.src='data-adapter.js?v=20261016-bonifica1';
+  dataScript.src='data-adapter.js?v=20261017-datahygiene1';
   document.head.appendChild(dataScript);
 
   const snapshotScript=document.createElement('script');
-  snapshotScript.src='market-snapshot.js?v=20261016-bonifica1';
+  snapshotScript.src='market-snapshot.js?v=20261017-datahygiene1';
   document.head.appendChild(snapshotScript);
 })();
