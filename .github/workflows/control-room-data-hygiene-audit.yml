@@ -26,7 +26,7 @@ jobs:
           sleep 2
       - name: Audit Control Room data hygiene
         run: |
-          cat > /tmp/control-room-audit.js <<'EOF'
+          cat > control-room-audit.js <<'EOF'
           const { chromium } = require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
@@ -94,7 +94,7 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error('::error title=Control Room data hygiene::'+String(e.message||e));process.exit(1)});
           EOF
-          node /tmp/control-room-audit.js
+          node control-room-audit.js
       - name: Upload audit artifact
         if: always()
         uses: actions/upload-artifact@v4
