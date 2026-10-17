@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-dashboard10';
+  const VERSION='20261017-dashboard11';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
