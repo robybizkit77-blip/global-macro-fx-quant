@@ -40,6 +40,6 @@
     .cot-op-empty{padding:18px;color:#91a5b4;font-size:10px}
     @media(max-width:650px){.cot-op-row{grid-template-columns:64px 58px minmax(94px,1fr) 68px 18px;gap:5px}.cot-op-pct small{display:none}}
   `;document.head.appendChild(s)}
-  async function run(){css();try{const q=await fetch(PATH,{cache:'no-store'});if(!q.ok)throw new Error('HTTP '+q.status);render(await q.json())}catch(e){console.warn('[GMFQ dashboard COT]',e)}}
+  async function run(){css();try{const q=await fetch(PATH,{cache:'no-store'});if(!q.ok)throw new Error('HTTP '+q.status);const data=await q.json();render(data);setTimeout(()=>render(data),700);setTimeout(()=>render(data),1800)}catch(e){console.warn('[GMFQ dashboard COT]',e)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
