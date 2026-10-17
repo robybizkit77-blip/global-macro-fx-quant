@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-weeklyfocus2';
+  const VERSION='20261017-recover3';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
@@ -98,7 +98,7 @@
   loadScript(`data-adapter.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ data adapter]',e)).finally(()=>{
     repairDashboardSetup();
     loadScript(`dashboard-policy-layout.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ policy layout]',e));
-    // Weekly Market Focus is loaded explicitly by index.html; prevent duplicate render.
+    loadScript(`market-snapshot.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ market snapshot loader]',e));
     loadScript(`dashboard-cot-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard COT]',e));
     loadScript(`dashboard-setups-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard setups]',e));
     loadScript(`dashboard-events-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard events]',e));
