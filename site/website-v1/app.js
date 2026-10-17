@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261016-2055';
+  const VERSION='20261017-finalui1';
 
   if(!document.querySelector('link[data-control-room-css]')){
     const link=document.createElement('link');
@@ -58,8 +58,8 @@
 
   const clock=()=>{
     const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');
-    if(date)date.textContent=new Intl.DateTimeFormat('en-US',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'America/New_York'}).format(d);
-    if(time)time.textContent=new Intl.DateTimeFormat('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}).format(d);
+    if(date)date.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'Europe/Rome'}).format(d);
+    if(time)time.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d);
   };
   clock();setInterval(clock,30000);
 
