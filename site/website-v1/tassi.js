@@ -7,11 +7,14 @@
   const COLORS=['#e6b448','#2f8ce9','#a05af0','#f34b66','#24d99a','#e98b38','#49c2d0','#c3d067'];
   const OIS_KEYS=['policy','3m','6m','12m'];
   const OIS_LABELS={policy:'Policy','3m':'3M','6m':'6M','12m':'12M'};
+  const OIS_MAX_AGE_DAYS=5;
   let rates=null,ois=null,days=252;
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const sign=(v,d=0,suffix='')=>{const x=n(v);return x===null?'—':`${x>0?'+':''}${x.toFixed(d)}${suffix}`};
   async function load(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return r.json();}
+  function ageDays(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(s||'')))return Infinity;const t=Date.parse(`${s}T00:00:00Z`);const now=new Date(),today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());return Math.floor((today-t)/86400000);}
+  const freshOis=s=>{const a=ageDays(s);return a>=0&&a<=OIS_MAX_AGE_DAYS;};
   function y2(x){return n(x?.['2Y'])??n(x?.current?.y2)??n(x?.history2?.last_value);}
   function y10(x){return n(x?.['10Y'])??n(x?.current?.y10)??n(x?.history10?.last_value);}
   function hist(x,key){
@@ -54,14 +57,16 @@
 
   function oisRow(ccy){
     const x=ois?.currencies?.[ccy]||{};
+    const asOf=x.as_of||'—',isFresh=freshOis(asOf);
     return {
       ccy,
       raw:x,
-      asOf:x.as_of||'—',
-      quality:x.quality||x.operational_status||'—',
+      asOf,
+      isFresh,
+      quality:isFresh?(x.quality||x.operational_status||'—'):'WITHHELD_STALE',
       source:x.source||'—',
-      points:{policy:n(x.policy_rate),'3m':n(x.horizons?.['3m']?.rate),'6m':n(x.horizons?.['6m']?.rate),'12m':n(x.horizons?.['12m']?.rate)},
-      delta:{'3m':n(x.horizons?.['3m']?.policy_delta_bp),'6m':n(x.horizons?.['6m']?.policy_delta_bp),'12m':n(x.horizons?.['12m']?.policy_delta_bp)}
+      points:{policy:n(x.policy_rate),'3m':isFresh?n(x.horizons?.['3m']?.rate):null,'6m':isFresh?n(x.horizons?.['6m']?.rate):null,'12m':isFresh?n(x.horizons?.['12m']?.rate):null},
+      delta:{'3m':isFresh?n(x.horizons?.['3m']?.policy_delta_bp):null,'6m':isFresh?n(x.horizons?.['6m']?.policy_delta_bp):null,'12m':isFresh?n(x.horizons?.['12m']?.policy_delta_bp):null}
     };
   }
   function lineSegments(points,xs,ys){
@@ -82,18 +87,19 @@
     const dots=vals.map((v,i)=>v===null?'':`<circle cx="${xs[i]}" cy="${y(v)}" r="3"/>`).join('');
     const levels=OIS_KEYS.map(k=>`<span>${OIS_LABELS[k]}<b>${row.points[k]===null?'—':row.points[k].toFixed(3)+'%'}</b></span>`).join('');
     const published=finite.length;
-    return `<article class="ois-card"><div class="ois-card-top"><div class="ois-card-title"><span class="flag">${FLAGS[row.ccy]}</span><div><b>${row.ccy}</b><small>${esc(row.asOf)}</small></div></div><span class="ois-quality">${esc(String(row.quality).replaceAll('_',' '))}</span></div><svg class="ois-mini" viewBox="0 0 158 58" preserveAspectRatio="none"><line class="base" x1="8" y1="50" x2="150" y2="50"/>${seg}${dots}</svg><div class="ois-points">${levels}</div><div class="ois-card-foot"><span>${published}/4 punti</span><em>${esc(row.raw?.direction_vs_policy||'—')}</em></div></article>`;
+    return `<article class="ois-card"><div class="ois-card-top"><div class="ois-card-title"><span class="flag">${FLAGS[row.ccy]}</span><div><b>${row.ccy}</b><small>${esc(row.asOf)}</small></div></div><span class="ois-quality">${esc(String(row.quality).replaceAll('_',' '))}</span></div><svg class="ois-mini" viewBox="0 0 158 58" preserveAspectRatio="none"><line class="base" x1="8" y1="50" x2="150" y2="50"/>${seg}${dots}</svg><div class="ois-points">${levels}</div><div class="ois-card-foot"><span>${row.isFresh?`${published}/4 punti`:'pricing WITHHELD'}</span><em>${row.isFresh?esc(row.raw?.direction_vs_policy||'—'):'stale'}</em></div></article>`;
   }
   function renderOisCards(){
     const host=document.getElementById('ois-grid');if(!host)return;
     const rows=ORDER.map(oisRow);
     host.innerHTML=rows.map(miniOis).join('');
-    const dates=rows.map(r=>r.asOf).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
-    const asof=document.getElementById('ois-asof');if(asof)asof.textContent=`Policy → 3M → 6M → 12M · latest ${dates.at(-1)||'—'} · mixed-source quality visible`;
+    const freshDates=rows.filter(r=>r.isFresh).map(r=>r.asOf).sort();
+    const withheld=rows.filter(r=>!r.isFresh).map(r=>r.ccy);
+    const asof=document.getElementById('ois-asof');if(asof)asof.textContent=`Policy → 3M → 6M → 12M · latest ${freshDates.at(-1)||'—'} · ${withheld.length?`WITHHELD ${withheld.join(', ')}`:'all fresh'}`;
   }
   function renderOisLegend(){
     const host=document.getElementById('ois-legend');if(!host)return;
-    host.innerHTML=ORDER.map((c,i)=>`<span class="c${i}"><i></i>${c}</span>`).join('');
+    host.innerHTML=ORDER.map((c,i)=>`<span class="c${i}"><i></i>${c}${oisRow(c).isFresh?'':' · WITHHELD'}</span>`).join('');
   }
   function renderOisCombined(){
     const svg=document.getElementById('ois-chart');if(!svg)return;
@@ -128,7 +134,7 @@
   }
   function renderOis(){renderOisCards();renderOisLegend();renderOisCombined();renderOisMatrix();}
 
-  function render(){renderCards();renderCurveTable();renderMoves();renderLegend();renderChart();renderOis();document.documentElement.setAttribute('data-tassi-page','READY');document.documentElement.setAttribute('data-ois-curves','READY');}
+  function render(){renderCards();renderCurveTable();renderMoves();renderLegend();renderChart();renderOis();document.documentElement.setAttribute('data-tassi-page','READY');document.documentElement.setAttribute('data-ois-curves',ORDER.every(c=>oisRow(c).isFresh)?'READY':'PARTIAL_WITHHELD');}
   function bind(){
     document.querySelectorAll('#rates-timeframes button').forEach(btn=>btn.addEventListener('click',()=>{days=Number(btn.dataset.days)||252;document.querySelectorAll('#rates-timeframes button').forEach(x=>x.classList.toggle('active',x===btn));renderChart();}));
     document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
