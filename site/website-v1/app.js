@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-renderfix9';
+  const VERSION='20261017-dashboard2';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
@@ -20,7 +20,7 @@
   const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html','Banche centrali':'banche-centrali.html',Posizionamento:'posizionamento.html',Coppie:'coppie.html','Rischio/Eventi':'rischio-eventi.html','Top Themes':'top-themes.html',Library:'library.html',Watchlist:'watchlist.html','Macro Data':'macro-data.html',Strumenti:'strumenti.html',Screener:'screener.html',Alert:'alert.html',Impostazioni:'impostazioni.html'};
   document.querySelectorAll('.nav a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.href=routes[label];});
 
-  const cardRoutes={changed:'top-themes.html',rates:'tassi.html',cbs:'banche-centrali.html','cot-card':'posizionamento.html',setups:'coppie.html',calendar:'rischio-eventi.html',themes:'top-themes.html',watch:'watchlist.html'};
+  const cardRoutes={changed:'top-themes.html',rates:'tassi.html',cbs:'banche-centrali.html','cot-card':'posizionamento.html',setups:'coppie.html',calendar:'rischio-eventi.html',watch:'watchlist.html'};
   Object.entries(cardRoutes).forEach(([cls,href])=>document.querySelectorAll(`.${cls} .card-head a`).forEach(a=>a.href=href));
 
   const params=new URLSearchParams(location.search);
