@@ -1,0 +1,18 @@
+:root{--red:#c97aff!important;--negative:#c97aff!important}
+.bell i{background:#c97aff!important}
+.down{color:#c97aff!important}
+.ticker polyline.down,.watch-table polyline.down{stroke:#c97aff!important}
+.tag.red{background:#4a255f!important;border-color:#7f4aa8!important;color:#ead7ff!important}
+.rankrow>i .neg{background:linear-gradient(90deg,#c97aff,#9d5fd3)!important}
+.rankrow>em.neg{color:#c97aff!important}
+.rate-legend .jpy{color:#c97aff!important}
+.ratechart .jpy{stroke:#c97aff!important}
+.cotrow>i .neg{background:#c97aff!important}
+.cotrow>em.neg{color:#c97aff!important}
+.perf-row i b.neg{background:#c97aff!important}
+.perf-row em.neg,.currency-perf .neg,.flow-row b.neg,.extreme-row em.short{color:#c97aff!important}
+.cot-signal.short{color:#d8a2ff!important;border-color:#7448a0!important;background:#241432!important}
+.cot-alert.hot{color:#c97aff!important}
+.watch-bad{color:#c97aff!important}
+.setup-op-row u.bad{color:#c97aff!important}
+.event-risk.high{background:rgba(201,122,255,.13)!important;color:#d8a2ff!important}
