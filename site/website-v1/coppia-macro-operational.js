@@ -20,7 +20,11 @@
     if(copy)copy.textContent=`${ctx?.[base]?.summary_it||'Quadro macro base non disponibile.'} ${ctx?.[quote]?.summary_it||'Quadro macro quote non disponibile.'}`;
     if(compare)compare.innerHTML=[chip(base,bs),chip(`${base} lavoro`,`${bl.dir} · ${bl.acc}`),chip(`${base} infl.`,`${bi.dir} · ${bi.acc}`),chip(quote,qs),chip(`${quote} lavoro`,`${ql.dir} · ${ql.acc}`),chip(`${quote} infl.`,`${qi.dir} · ${qi.acc}`)].join('');
     const map=document.getElementById('relative-map');
-    if(map){const first=map.querySelector('.map-row:not(:first-child)');if(first){first.innerHTML=`<small>Macro operativo</small><b>${esc(bs)}</b><b>${esc(qs)}</b><b>—</b>`;}}
+    if(map){
+      const rows=[...map.querySelectorAll('.map-row')];
+      const macroRow=rows.find(r=>r.querySelector('small')?.textContent?.trim()==='Macro');
+      if(macroRow)macroRow.innerHTML=`<small>Macro operativo</small><b>${esc(bs)}</b><b>${esc(qs)}</b><b>—</b>`;
+    }
     document.documentElement.dataset.pairMacro='OPERATIONAL_CONTEXT';
     document.documentElement.dataset.pairMacroThermometer='READY';
   }
