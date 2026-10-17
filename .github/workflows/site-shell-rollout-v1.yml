@@ -1,0 +1,73 @@
+name: Site Shell Rollout V1
+
+on:
+  push:
+    paths:
+      - '.github/workflows/site-shell-rollout-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rollout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch main website HTML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('site/website-v1')
+          tag = '<script src="site-shell.js?v=20261017-shell1"></script>'
+          for p in sorted(root.glob('*.html')):
+              s = p.read_text(encoding='utf-8')
+              if '<div class="site">' not in s:
+                  continue
+              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo workspace.')
+              if 'site-shell.js?' not in s:
+                  if '</body>' not in s:
+                      raise SystemExit(f'missing </body>: {p}')
+                  s = s.replace('</body>', f'{tag}\n</body>')
+              p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit main if needed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/website-v1/*.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Wire functional site shell across website"
+            git push origin main
+          fi
+
+      - name: Patch gh-pages website HTML
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('site/website-v1')
+          tag = '<script src="site-shell.js?v=20261017-shell1"></script>'
+          for p in sorted(root.glob('*.html')):
+              s = p.read_text(encoding='utf-8')
+              if '<div class="site">' not in s:
+                  continue
+              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo workspace.')
+              if 'site-shell.js?' not in s:
+                  if '</body>' not in s:
+                      raise SystemExit(f'missing </body>: {p}')
+                  s = s.replace('</body>', f'{tag}\n</body>')
+              p.write_text(s, encoding='utf-8')
+          PY
+          git add site/website-v1/*.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Wire functional site shell across website"
+            git push origin gh-pages
+          fi
