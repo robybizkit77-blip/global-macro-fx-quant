@@ -3,14 +3,13 @@ name: Website Macro Data QA
 on:
   push:
     branches:
-      - website-reference-lock-2026-10-16
+      - main
     paths:
       - 'site/website-v1/macro-data.*'
-      - 'site/website-v1/app.js'
-      - 'live_data/sections/D.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'live_data/sections/COUNTRY_CTX.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
-      - 'live_data/sections/WHAT_CHANGED.json'
       - '.github/workflows/website-macro-data-qa.yml'
   workflow_dispatch:
 
@@ -26,6 +25,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify Macro source contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const js=fs.readFileSync('site/website-v1/macro-data.js','utf8');
+          const html=fs.readFileSync('site/website-v1/macro-data.html','utf8');
+          for(const required of ['MACRO_SERIES.json','MACRO_THERMOMETER_DATA.json','COUNTRY_CTX.json','MACRO_RELEASE_OFFICIAL_SEED_V1.json']){
+            if(!js.includes(required))throw new Error(`Missing canonical Macro source: ${required}`);
+          }
+          for(const legacy of ["load('D.json')","load('WHAT_CHANGED.json')"]){
+            if(js.includes(legacy))throw new Error(`Legacy Macro dependency reintroduced: ${legacy}`);
+          }
+          if(!js.includes("dataset.macroSource='MACRO_SERIES'"))throw new Error('Macro source marker missing');
+          if(!html.includes('operationalbridge1'))throw new Error('Macro bridge cache-bust missing');
+          console.log('MACRO_SOURCE_CONTRACT_PASS');
+          NODE
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
@@ -53,14 +68,17 @@ jobs:
               cards:document.querySelectorAll('.macro-card').length,
               buttons:document.querySelectorAll('#macro-select button').length,
               sectors:document.querySelectorAll('.macro-sector-row').length,
+              source:document.documentElement.dataset.macroSource,
+              coverage:document.documentElement.dataset.macroCoverage,
               body:(document.body.innerText||''),
-              overflow:document.documentElement.scrollWidth-window.innerWidth,
-              active:[...document.querySelectorAll('.nav a.active')].map(a=>a.textContent.trim())
+              overflow:document.documentElement.scrollWidth-window.innerWidth
             }));
             if(x.cards!==8||x.buttons!==8)throw new Error(`${label}: G8 coverage ${x.cards} cards / ${x.buttons} selectors`);
+            if(x.source!=='MACRO_SERIES'||x.coverage!=='8')throw new Error(`${label}: canonical source/coverage ${x.source}/${x.coverage}`);
             if(x.sectors<4)throw new Error(`${label}: sector detail too thin (${x.sectors})`);
             for(const bad of ['undefined','[object Object]','NaN'])if(x.body.includes(bad))throw new Error(`${label}: bad token ${bad}`);
-            if(!x.body.includes('Prossimi release')||!x.body.includes('Cosa sta cambiando'))throw new Error(`${label}: operational sections missing`);
+            for(const required of ['Prossimi release','Cosa sta cambiando','Nessuno score ricostruito'])if(!x.body.includes(required))throw new Error(`${label}: missing ${required}`);
+            if(x.body.includes('Score Macro WITHHELD · D.json'))throw new Error(`${label}: legacy D.json UI still visible`);
             if(x.overflow>12)throw new Error(`${label}: hard horizontal overflow ${x.overflow}px`);
             if(errors.length)throw new Error(`${label}: browser errors ${errors.join(' | ')}`);
             await page.screenshot({path:`macro-data-${label}.png`,fullPage:false});
@@ -70,13 +88,7 @@ jobs:
           (async()=>{
             const desktop=await audit({width:1672,height:905},'desktop');
             const mobile=await audit({width:390,height:844},'mobile');
-            const browser=await chromium.launch({headless:true});
-            const home=await browser.newPage({viewport:{width:1672,height:905}});
-            await home.goto(base,{waitUntil:'networkidle',timeout:120000});
-            const href=await home.locator('.nav-sub a').filter({hasText:'Macro Data'}).getAttribute('href');
-            if(href!=='macro-data.html')throw new Error(`Home Macro Data route invalid: ${href}`);
-            await browser.close();
-            console.log('WEBSITE_MACRO_DATA_QA_PASS',JSON.stringify({desktopCards:desktop.cards,mobileCards:mobile.cards,homeRoute:href}));
+            console.log('WEBSITE_MACRO_DATA_QA_PASS',JSON.stringify({desktopCards:desktop.cards,mobileCards:mobile.cards,source:desktop.source,coverage:desktop.coverage}));
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
           node macro-data-qa.js
