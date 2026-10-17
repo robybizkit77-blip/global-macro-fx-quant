@@ -1,14 +1,10 @@
 (()=>{
   'use strict';
-
-  const VERSION='20261017-dashboard8';
+  const VERSION='20261017-dashboard9';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
-
-  if(!document.querySelector('link[data-control-room-css]')){
-    const link=document.createElement('link');link.rel='stylesheet';link.href=`control-room.css?v=${VERSION}`;link.dataset.controlRoomCss='1';document.head.appendChild(link);
-  }
+  if(!document.querySelector('link[data-control-room-css]')){const link=document.createElement('link');link.rel='stylesheet';link.href=`control-room.css?v=${VERSION}`;link.dataset.controlRoomCss='1';document.head.appendChild(link);}
   const brandmark=document.querySelector('.brandmark');if(brandmark)brandmark.replaceChildren();
   const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html','Banche centrali':'banche-centrali.html',Posizionamento:'posizionamento.html',Coppie:'coppie.html','Rischio/Eventi':'rischio-eventi.html','Top Themes':'top-themes.html',Library:'library.html',Watchlist:'watchlist.html','Macro Data':'macro-data.html',Strumenti:'strumenti.html',Screener:'screener.html',Alert:'alert.html',Impostazioni:'impostazioni.html'};
   document.querySelectorAll('.nav a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.href=routes[label];});
@@ -26,5 +22,5 @@
   function renderWatchFallback(data){const host=document.querySelector('.watch-table');if(!host)return;const head='<div class="thead"><span>COPPIA</span><span>QUALITÀ</span><span>FAVORITA</span><span>PREZZO</span><span>STATO</span></div>';let saved=[];try{const x=JSON.parse(localStorage.getItem('gmfq.website.watchlist.v1')||'[]');if(Array.isArray(x))saved=x;}catch{}if(!saved.length){host.innerHTML=head+'<div class="watch-empty-row"><span>☆</span><b>Nessuna pair in watchlist</b><small><a href="watchlist.html">Apri Watchlist →</a></small></div>';document.documentElement.dataset.dashboardWatch='EMPTY';return;}const pairs=data?.pairs||{};host.innerHTML=head+saved.slice(0,6).map(raw=>{const code=String(raw).replace(/[^A-Z]/g,''),x=pairs[code]||{},s=x.setup||{},f=x.decision_frame||{},pair=x.canonical_pair||raw;return `<div><b><a href="coppia.html?pair=${encodeURIComponent(code)}">${esc(pair)}</a></b><span>${esc(s.quality||f.quality||'—')}</span><span>${esc(s.structuralFav||f.fav||'—')}</span><span>${esc(s.price?.text||f.priceReading||'—')}</span><small>${esc(s.timing?.text||'Da monitorare')}</small></div>`;}).join('');document.documentElement.dataset.dashboardWatch='READY';}
   async function repairDashboardSetup(){try{const data=await loadSetup();renderSetupFallback(data);renderWatchFallback(data);}catch(e){console.warn('[GMFQ dashboard setup repair]',e);}}
   const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});
-  loadScript(`data-adapter.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ data adapter]',e)).finally(()=>{repairDashboardSetup();loadScript(`dashboard-policy-layout.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ policy layout]',e));loadScript(`market-snapshot.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ market snapshot loader]',e));loadScript(`dashboard-cot-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard COT]',e));loadScript(`dashboard-setups-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard setups]',e));loadScript(`dashboard-events-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard events]',e));});
+  loadScript(`data-adapter.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ data adapter]',e)).finally(()=>{repairDashboardSetup();loadScript(`dashboard-policy-layout.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ policy layout]',e));loadScript(`market-snapshot.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ market snapshot loader]',e));loadScript(`dashboard-cot-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard COT]',e));loadScript(`dashboard-setups-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard setups]',e));loadScript(`dashboard-events-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard events]',e));loadScript(`dashboard-watchlist-operational.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ dashboard watchlist]',e));});
 })();
