@@ -20,7 +20,7 @@
   const routes={Dashboard:'index.html',Valute:'valute.html',Tassi:'tassi.html','Banche centrali':'banche-centrali.html',Posizionamento:'posizionamento.html',Coppie:'coppie.html','Rischio/Eventi':'rischio-eventi.html','Top Themes':'top-themes.html',Library:'library.html',Watchlist:'watchlist.html','Macro Data':'macro-data.html',Strumenti:'strumenti.html',Screener:'screener.html',Alert:'alert.html',Impostazioni:'impostazioni.html'};
   document.querySelectorAll('.nav a').forEach(a=>{const label=a.querySelector('b')?.textContent?.trim();if(routes[label])a.href=routes[label];});
 
-  const cardRoutes={changed:'top-themes.html',rates:'tassi.html',cbs:'banche-centrali.html','cot-card':'posizionamento.html',setups:'coppie.html',calendar:'rischio-eventi.html',themes:'top-themes.html',watch:'watchlist.html'};
+  const cardRoutes={changed:'top-themes.html',rates:'tassi.html',cbs:'banche-centrali.html','cot-card':'posizionamento.html',setups:'coppie.html',calendar:'rischio-eventi.html',watch:'watchlist.html'};
   Object.entries(cardRoutes).forEach(([cls,href])=>document.querySelectorAll(`.${cls} .card-head a`).forEach(a=>a.href=href));
 
   const params=new URLSearchParams(location.search);
@@ -66,7 +66,7 @@
   };
   clock();setInterval(clock,30000);
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const trim=(v,max)=>{const s=String(v??'');return s.length<=max?s:s.slice(0,max-1).trimEnd()+'…';};
   async function loadSetup(){
     for(const src of [SETUP_LOCAL,SETUP_RAW]){
