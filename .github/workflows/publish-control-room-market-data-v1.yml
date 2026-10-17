@@ -1,0 +1,90 @@
+name: Publish Control Room Market Data V1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-control-room-market-data-v1.yml'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/V250_COT_CHART_DATA.json'
+  workflow_run:
+    workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-dashboard-pages-v1
+  cancel-in-progress: false
+
+jobs:
+  publish-control-room-data:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate source feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rates_path=Path('live_data/sections/NATIVE_RATES_DATA.json')
+          cot_path=Path('live_data/sections/V250_COT_CHART_DATA.json')
+          assert rates_path.is_file() and rates_path.stat().st_size>1000
+          assert cot_path.is_file() and cot_path.stat().st_size>1000
+          rates=json.loads(rates_path.read_text())
+          cot=json.loads(cot_path.read_text())
+          assert set(rates) >= {'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert set(cot) >= {'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert rates['USD'].get('date')
+          assert cot['USD'].get('dates')
+          print('CONTROL_ROOM_MARKET_DATA_SOURCE_PASS', rates['USD'].get('date'), cot['USD']['dates'][-1])
+          PY
+
+      - name: Publish exact feed scope to gh-pages with lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          REMOTE_SHA="$(git rev-parse origin/gh-pages)"
+          rm -rf /tmp/gmfq-control-room-data
+          git worktree add --detach /tmp/gmfq-control-room-data origin/gh-pages
+          mkdir -p /tmp/gmfq-control-room-data/live_data/sections
+          cp live_data/sections/NATIVE_RATES_DATA.json /tmp/gmfq-control-room-data/live_data/sections/NATIVE_RATES_DATA.json
+          cp live_data/sections/V250_COT_CHART_DATA.json /tmp/gmfq-control-room-data/live_data/sections/V250_COT_CHART_DATA.json
+          cd /tmp/gmfq-control-room-data
+          python - <<'PY'
+          import subprocess
+          allowed={
+            'live_data/sections/NATIVE_RATES_DATA.json',
+            'live_data/sections/V250_COT_CHART_DATA.json',
+          }
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())|set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
+          unexpected=changed-allowed
+          if unexpected:
+              raise SystemExit(f'Control Room data scope violation: {sorted(unexpected)}')
+          print('CONTROL_ROOM_MARKET_DATA_SCOPE_PASS',sorted(changed))
+          PY
+          git add -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/V250_COT_CHART_DATA.json
+          if git diff --cached --quiet; then
+            echo CONTROL_ROOM_MARKET_DATA_ALREADY_CURRENT
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Publish Control Room market data from main ${GITHUB_SHA}"
+          REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during Control Room data publication' >&2; exit 1; }
+          git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
+          echo CONTROL_ROOM_MARKET_DATA_PUBLISHED
