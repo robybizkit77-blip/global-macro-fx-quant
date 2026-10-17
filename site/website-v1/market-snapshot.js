@@ -66,13 +66,39 @@
       if(card.value==='—')continue;
       ranked.push({label,score:Math.abs(move)/(stdev*Math.sqrt(5)),card});
     }
+    // Include verified G8 sovereign rates. Skip stale and incompatible historical basis.
+    for(const ccy of CCYS){
+      const country=rates?.[ccy];
+      if(!country)continue;
+      for(const tenor of [2,10]){
+        if(tenor===2&&/NOT_SAME_BASIS|WITHHELD|STALE/i.test(String(country.history2_quality||'')))continue;
+        const h=rateHistory(country,tenor===2?'history2':'history10');
+        const asof=country.date||h.at(-1)?.date;
+        if(!fresh(asof,RATES_MAX_AGE_DAYS)||h.length<35)continue;
+        const d=h.slice(1).map((row,i)=>row.value-h[i].value);
+        const base=d.slice(-65,-5);
+        if(base.length<20)continue;
+        const mu=base.reduce((a,b)=>a+b,0)/base.length;
+        const sigma=Math.sqrt(base.reduce((a,b)=>a+(b-mu)**2,0)/base.length);
+        if(!(sigma>0))continue;
+        const deviation=d.slice(-5).reduce((a,b)=>a+b,0)-5*mu;
+        const window=h.slice(startRateIndex(h,heroPeriod));
+        if(window.length<2)continue;
+        const latest=h.at(-1).value,delta=(latest-window[0].value)*100;
+        ranked.push({label:ccy+tenor,ccys:[ccy],score:Math.abs(deviation)/(sigma*Math.sqrt(5)),
+          card:{label:ccy+' '+tenor+'Y',value:latest.toFixed(2)+'%',
+            change:(delta>0?'+':'')+delta.toFixed(1)+'bp',dir:delta>=0?'up':'down',
+            values:sampled(window.map(x=>x.value)),
+            title:'Rendimenti '+ccy+' '+tenor+'Y · dati al '+asof}});
+      }
+    }
     ranked.sort((a,b)=>b.score-a.score||a.label.localeCompare(b.label));
     const chosen=[],exposure={};
     for(const item of ranked){
-      const a=item.label.slice(0,3),b=item.label.slice(3,6);
-      if((exposure[a]||0)>=3||(exposure[b]||0)>=3)continue;
+      const members=item.ccys||[item.label.slice(0,3),item.label.slice(3,6)];
+      if(members.some(c=>(exposure[c]||0)>=3))continue;
       chosen.push(item.card);
-      exposure[a]=(exposure[a]||0)+1;exposure[b]=(exposure[b]||0)+1;
+      members.forEach(c=>exposure[c]=(exposure[c]||0)+1);
       if(chosen.length===8)break;
     }
     return chosen.length===8?chosen:null;
