@@ -39,6 +39,29 @@ jobs:
         run: python validation/hourly_alerts/build_certified_alert_snapshot.py --macro-feed-snapshot "$RUNNER_TEMP/certified-macro-g8-feed.json" --output "$RUNNER_TEMP/hourly-alert-certification.json"
       - name: Build Macro Research Desk alert outbox
         run: python validation/hourly_alerts/build_macro_research_desk_alert.py --snapshot "$RUNNER_TEMP/hourly-alert-certification.json" --use-certified-macro-event --output "$RUNNER_TEMP/macro-research-desk-alert.json"
+      - name: Build and publish fail-closed public alert JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          REMOTE_SHA="$(git rev-parse origin/gh-pages)"
+          rm -rf /tmp/gmfq-public-alerts
+          git worktree add --detach /tmp/gmfq-public-alerts origin/gh-pages
+          mkdir -p /tmp/gmfq-public-alerts/live_data/sections
+          python validation/hourly_alerts/build_public_macro_alerts.py \
+            --receipt "$RUNNER_TEMP/hourly-alert-certification.json" \
+            --outbox "$RUNNER_TEMP/macro-research-desk-alert.json" \
+            --previous /tmp/gmfq-public-alerts/live_data/sections/MACRO_MARKET_ALERTS.json \
+            --output /tmp/gmfq-public-alerts/live_data/sections/MACRO_MARKET_ALERTS.json
+          cd /tmp/gmfq-public-alerts
+          git add -- live_data/sections/MACRO_MARKET_ALERTS.json
+          if git diff --cached --quiet; then echo PUBLIC_ALERT_JSON_ALREADY_CURRENT; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Publish certified macro alert view from main ${GITHUB_SHA}"
+          REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during alert publication' >&2; exit 1; }
+          git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
       - name: Publish human-readable job summary
         run: |
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
