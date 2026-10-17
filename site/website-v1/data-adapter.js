@@ -41,13 +41,6 @@
     return dates.map((date,i)=>({date,value:n(values[i])})).filter(x=>x.date&&x.value!==null).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   }
 
-  function renderWhatChanged(data){
-    const host=document.querySelector('.changed .change-list');if(!host)return;
-    const asof=explicitAsOf(data),items=asArray(data,'items').slice(0,5);
-    if(!asof||!items.length){host.innerHTML='<div class="change"><i>!</i><div><b>Nessun nuovo cambiamento validato</b><small>Il desk non mostra narrativa senza data o senza evidenza corrente.</small></div><span class="tag amber">ATTESA</span><em>—</em></div>';document.documentElement.setAttribute('data-what-changed-freshness','WITHHELD');return;}
-    host.innerHTML=items.map((x,i)=>{const ccy=x.ccy||'G8';const imp=String(x.importance||'').toUpperCase();const tagClass=imp==='HIGH'?'red':imp==='MEDIUM'?'amber':'blue';const trailing=x.category?String(x.category).replaceAll('_',' '):'';return `<div class="change"><i>${i+1}</i><div><b>${esc(trim(x.title||`${ccy} · nuovo sviluppo`,62))}</b><small>${esc(trim(x.detail||'',92))}</small></div><span class="tag ${tagClass}">${esc(ccy)}</span><em>${esc(trim(trailing,12))}</em></div>`;}).join('');document.documentElement.setAttribute('data-what-changed-freshness','DATED');
-  }
-
   function stanceLabel(v){const s=String(v||'').toUpperCase();if(s.includes('HAWK'))return ['Hawkish','hawkish'];if(s.includes('DOV'))return ['Dovish','dovish'];return ['Neutrale','neutral'];}
 
   function renderCB(data){
@@ -100,7 +93,6 @@
   async function main(){
     const entries=await Promise.all(Object.entries(PATHS).map(async([k,p])=>{try{return [k,await load(p)]}catch(e){console.warn('[GMFQ data]',k,e);return [k,null]}}));
     const data=Object.fromEntries(entries);
-    renderWhatChanged(data.pulse);
     renderCB(data.cb);
     renderCOT(data.cot);
     renderCalendar(data.calendar);
