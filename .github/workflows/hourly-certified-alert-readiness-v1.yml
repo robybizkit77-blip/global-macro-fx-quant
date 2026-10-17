@@ -1,0 +1,72 @@
+name: Hourly Certified Alert Readiness V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every day, including weekends.  The classifier itself remains fail-closed.
+    - cron: '7 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hourly-certified-alert-readiness-v1
+  cancel-in-progress: false
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify fail-closed classifier
+        run: |
+          python validation/hourly_alerts/test_build_certified_alert_snapshot.py
+          python validation/hourly_alerts/test_build_certified_macro_g8_feed.py
+      - name: Validate certified G8 macro event feed
+        # This is a committed GitHub snapshot, not a webhook or delivery endpoint.
+        # A missing, stale or incomplete snapshot produces a withheld result.
+        run: python validation/hourly_alerts/build_certified_macro_g8_feed.py --feed automation/macro_g8/certified-feed.json --output "$RUNNER_TEMP/certified-macro-g8-feed.json"
+      - name: Build hourly eligibility receipt
+        # Keep this as one shell line: it is safe under both LF and accidental
+        # CRLF checkout settings and avoids a trailing-backslash continuation.
+        run: python validation/hourly_alerts/build_certified_alert_snapshot.py --macro-feed-snapshot "$RUNNER_TEMP/certified-macro-g8-feed.json" --output "$RUNNER_TEMP/hourly-alert-certification.json"
+      - name: Build Macro Research Desk alert outbox
+        run: python validation/hourly_alerts/build_macro_research_desk_alert.py --snapshot "$RUNNER_TEMP/hourly-alert-certification.json" --use-certified-macro-event --output "$RUNNER_TEMP/macro-research-desk-alert.json"
+      - name: Publish human-readable job summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          x=json.load(open(os.environ['RUNNER_TEMP']+'/hourly-alert-certification.json'))
+          a=json.load(open(os.environ['RUNNER_TEMP']+'/macro-research-desk-alert.json'))
+          s=x['summary']
+          print('# Hourly alert certification')
+          print(f"Evaluation date: `{x['as_of_evaluation_date']}`")
+          print(f"Aggregate state: `{s['state']}` (aggregate GREEN intentionally disabled)")
+          for key in ('available_certified','stale','unavailable'):
+              print(f"\n## {key.replace('_', ' ').title()}")
+              print(', '.join(s[key]) if s[key] else 'None')
+          print('\n## Desk alert')
+          print(f"Kind: `{a['kind']}`; delivery: `{a['delivery']['status']}`")
+          print('GitHub produces a pull-only outbox. ChatGPT delivery is a separate scheduled-task action.')
+          PY
+      - name: Upload certification receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: hourly-alert-certification-${{ github.run_id }}
+          path: ${{ runner.temp }}/hourly-alert-certification.json
+          retention-days: 30
+      - name: Upload certified macro feed receipt and Desk alert outbox
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-research-desk-alert-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/macro-research-desk-alert.json
+            ${{ runner.temp }}/certified-macro-g8-feed.json
+          retention-days: 30

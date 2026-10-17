@@ -1,0 +1,3 @@
+# The scheduled Linux workflow must not depend on the Windows checkout default.
+/.github/workflows/hourly-certified-alert-readiness-v1.yml text eol=lf
+/validation/hourly_alerts/*.py text eol=lf
