@@ -16,3 +16,6 @@
 .watch-bad{color:#c97aff!important}
 .setup-op-row u.bad{color:#c97aff!important}
 .event-risk.high{background:rgba(201,122,255,.13)!important;color:#d8a2ff!important}
+/* Semantic palette guard across legacy components */
+.dovish{background:#321b43!important;color:#e0b8ff!important}
+.risk-event-row .high{color:#d8a2ff!important}
