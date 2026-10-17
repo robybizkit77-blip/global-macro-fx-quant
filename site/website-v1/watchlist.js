@@ -13,7 +13,7 @@
   async function load(f){const r=await fetch(ROOT+f,{cache:'no-store'});if(!r.ok)throw new Error(`${f}: HTTP ${r.status}`);return r.json();}
   function readStore(){try{const x=JSON.parse(localStorage.getItem(STORE)||'[]');return Array.isArray(x)?[...new Set(x.map(norm).filter(x=>x.length===6))]:[]}catch{return []}}
   function writeStore(){localStorage.setItem(STORE,JSON.stringify(state.selected));}
-  function rate2(c){return n(state.rates?.[c]?.['2Y'])??n(state.rates?.[c]?.current?.y2)??n(state.d?.macro?.[c]?.rate2y)}
+  function rate2(c){return n(state.rates?.[c]?.['2Y'])??n(state.rates?.[c]?.current?.y2)??null}
   function ois3(c){return n(state.ois?.currencies?.[c]?.horizons?.['3m']?.rate)}
   function cotPct(c){const a=state.cot?.[c]?.percentile;return Array.isArray(a)&&a.length?n(a.at(-1)):null}
   function qualityClass(q){q=String(q||'').toUpperCase();if(q.includes('PULITO'))return'clean';if(q.includes('RISCHI'))return'risky';if(q.includes('CONFERMARE'))return'confirm';return'monitor'}
