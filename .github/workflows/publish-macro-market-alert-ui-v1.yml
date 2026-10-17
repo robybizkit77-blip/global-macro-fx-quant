@@ -1,0 +1,44 @@
+name: Publish Macro Market Alert UI V1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/website-v1/index.html'
+      - 'site/website-v1/alert.html'
+      - 'site/website-v1/macro-market-alerts.js'
+      - '.github/workflows/publish-macro-market-alert-ui-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macro-market-alert-publication-v1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 0}
+      - name: Publish exact alert UI scope to gh-pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          REMOTE_SHA="$(git rev-parse origin/gh-pages)"
+          rm -rf /tmp/gmfq-alert-ui
+          git worktree add --detach /tmp/gmfq-alert-ui origin/gh-pages
+          mkdir -p /tmp/gmfq-alert-ui/site/website-v1
+          for f in index.html alert.html macro-market-alerts.js; do cp "site/website-v1/$f" "/tmp/gmfq-alert-ui/site/website-v1/$f"; done
+          cd /tmp/gmfq-alert-ui
+          git add -- site/website-v1/index.html site/website-v1/alert.html site/website-v1/macro-market-alerts.js
+          if git diff --cached --quiet; then echo MACRO_ALERT_UI_ALREADY_CURRENT; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Publish Macro Market Alert UI from main ${GITHUB_SHA}"
+          REMOTE_SHA_2="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during UI publication' >&2; exit 1; }
+          git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
