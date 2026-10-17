@@ -1,44 +1,30 @@
 (()=>{
-  'use strict';
-  const ROOT='../../live_data/sections/';
-  const ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-  const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
-  const PRICING_MAX_AGE_DAYS=5;
-  let state={cb:null,rates:null,h:3};
-  const n=v=>Number.isFinite(Number(v))?Number(v):null;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const bp=v=>{const x=n(v);return x===null?'—':`${x>0?'+':''}${x.toFixed(0)}bp`;};
-  const pct=v=>{const x=n(v);return x===null?'—':`${x.toFixed(2)}%`;};
-  async function load(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return r.json();}
-  function stanceClass(v){const s=String(v||'').toUpperCase();if(s.includes('HAWK'))return 'hawkish';if(s.includes('DOV')||s.includes('ACCOMOD'))return 'dovish';return 'neutral';}
-  function todayRome(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
-  function parsePricingDate(x){const s=String(x?.market_pricing?.as_of||'');const m=s.match(/\b(20\d{2}-\d{2}-\d{2})\b/g);return m?.at(-1)||null;}
-  function ageDays(s){if(!s)return Infinity;const t=Date.parse(`${s}T00:00:00Z`);if(!Number.isFinite(t))return Infinity;const now=new Date();const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());return Math.floor((today-t)/86400000);}
-  function pricingFresh(x){const status=String(x?.market_pricing?.freshness_status||'').toUpperCase();if(status.includes('STALE'))return false;const asof=parsePricingDate(x);return asof!==null&&ageDays(asof)>=0&&ageDays(asof)<=PRICING_MAX_AGE_DAYS;}
-  function marketAtRaw(x){return state.h===3?n(x?.market_pricing?.h3m):state.h===6?n(x?.market_pricing?.h6m):n(x?.market_pricing?.h12m);}
-  function marketAt(x){return pricingFresh(x)?marketAtRaw(x):null;}
-  function y2(ccy){return n(state.rates?.[ccy]?.current?.y2)??n(state.rates?.[ccy]?.['2Y']);}
-  function pricingLabel(x){const asof=parsePricingDate(x);return pricingFresh(x)?(x?.market_pricing?.freshness_status||'CURRENT'):`WITHHELD${asof?` · ${asof}`:''}`;}
-  function cbCard(ccy,x){const m=marketAt(x),fresh=pricingFresh(x);return `<div class="cb-bank-top"><div class="cb-bank-name"><span class="flag">${FLAGS[ccy]}</span><div><b>${esc(x.bank||ccy)}</b><small>${esc(x.full_name||'')}</small></div></div><span class="stance ${stanceClass(x.stance)}">${esc(x.stance||'—')}</span></div><div class="cb-policy"><div><small>Policy</small><b>${esc(x.rate_text||pct(x.rate))}</b></div><div><small>Next</small><b>${esc(x.next_meeting||'—')}</b></div><div><small>${state.h}M mkt</small><b>${fresh&&m!==null?m.toFixed(2)+'%':'WITHHELD'}</b></div></div><div class="cb-context">${esc(x.context||x.official_next||'')}</div>`;}
-  function renderCards(){const host=document.getElementById('cb-grid');if(!host)return;host.innerHTML=ORDER.map(ccy=>`<article class="cb-bank-card">${cbCard(ccy,state.cb?.[ccy]||{})}</article>`).join('');}
-  function renderPricing(){
-    const host=document.getElementById('cb-pricing-table');if(!host)return;
-    const rows=ORDER.map(ccy=>{const x=state.cb?.[ccy]||{},p=n(x.rate),raw=marketAtRaw(x),fresh=pricingFresh(x),m=fresh?raw:null,d=fresh&&m!==null&&p!==null?(m-p)*100:null;return {ccy,x,m,p,d,fresh};});
-    const valid=rows.filter(r=>r.d!==null),max=Math.max(25,...valid.map(r=>Math.abs(r.d||0)));
-    host.innerHTML=rows.map(r=>{
-      if(!r.fresh)return `<div class="pricing-row"><span>${FLAGS[r.ccy]} ${esc(r.x.bank||r.ccy)}</span><span>${pct(r.p)}</span><span>WITHHELD</span><i class="bar"><b style="width:0"></b></i><span class="delta">—</span><span class="quality" title="${esc(r.x.market_pricing?.as_of||'as-of non certificato')}">${esc(pricingLabel(r.x))}</span></div>`;
-      if(r.m===null||r.p===null)return `<div class="pricing-row"><span>${FLAGS[r.ccy]} ${esc(r.x.bank||r.ccy)}</span><span>${pct(r.p)}</span><span>—</span><i class="bar"><b style="width:0"></b></i><span class="delta">—</span><span class="quality">PARTIAL</span></div>`;
-      const w=Math.min(48,Math.abs(r.d)/max*48),cls=(r.d||0)>=0?'pos':'neg';
-      return `<div class="pricing-row"><span>${FLAGS[r.ccy]} ${esc(r.x.bank||r.ccy)}</span><span>${pct(r.p)}</span><span>${pct(r.m)}</span><i class="bar"><b class="${cls}" style="width:${w.toFixed(1)}%"></b></i><span class="delta ${cls}">${bp(r.d)}</span><span class="quality" title="${esc(r.x.market_pricing?.quality||'')}">${esc(pricingLabel(r.x))}</span></div>`;
-    }).join('');
-    const label=document.getElementById('pricing-label');if(label)label.textContent=`${state.h}M horizon · stale pricing fail-closed`;
-    document.documentElement.setAttribute('data-cb-pricing-fresh',String(rows.filter(r=>r.fresh).length));
-  }
-  function renderMeetings(){const host=document.getElementById('meeting-list');if(!host)return;const today=todayRome();const rows=ORDER.map(ccy=>({ccy,x:state.cb?.[ccy]||{}})).filter(r=>r.x.next_meeting&&String(r.x.next_meeting)>=today).sort((a,b)=>String(a.x.next_meeting).localeCompare(String(b.x.next_meeting)));host.innerHTML=rows.map(r=>`<div class="meeting-row"><b>${FLAGS[r.ccy]} ${esc(r.x.bank||r.ccy)}</b><small>${esc(r.x.action||'')}</small><em>${esc(r.x.next_meeting)}</em></div>`).join('');}
-  function renderFront(){const host=document.getElementById('front-table');if(!host)return;const rows=ORDER.map(ccy=>{const x=state.cb?.[ccy]||{},p=n(x.rate),r=y2(ccy),d=p===null||r===null?null:(r-p)*100;return {ccy,x,p,r,d};}).filter(z=>z.d!==null);const max=Math.max(25,...rows.map(r=>Math.abs(r.d||0)));host.innerHTML=rows.map(r=>{const cls=(r.d||0)>=0?'pos':'neg',w=Math.min(48,Math.abs(r.d)/max*48);return `<div class="front-row"><span>${FLAGS[r.ccy]} ${esc(r.x.bank||r.ccy)}</span><span>${pct(r.p)}</span><span>${pct(r.r)}</span><i class="bar"><b class="${cls}" style="width:${w.toFixed(1)}%"></b></i><span class="delta ${cls}">${bp(r.d)}</span></div>`;}).join('');}
-  function render(){renderCards();renderPricing();renderMeetings();renderFront();document.documentElement.setAttribute('data-cb-page','READY');}
-  function bind(){document.querySelectorAll('#cb-horizon button').forEach(btn=>btn.addEventListener('click',()=>{state.h=Number(btn.dataset.h);document.querySelectorAll('#cb-horizon button').forEach(x=>x.classList.toggle('active',x===btn));render();}));document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));const control=document.querySelector('.pro-card button');if(control)control.addEventListener('click',()=>location.href='index.html');}
-  function clock(){const d=new Date();const date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'Europe/Rome'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d);}
-  async function main(){bind();clock();setInterval(clock,30000);try{[state.cb,state.rates]=await Promise.all([load(ROOT+'NATIVE_CB_DATA.json'),load(ROOT+'NATIVE_RATES_DATA.json')]);render();}catch(e){console.warn('[GMFQ cb]',e);document.documentElement.setAttribute('data-cb-page','FAIL');}}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',main,{once:true});else main();
+'use strict';
+const ROOT='../../live_data/sections/';
+const ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
+const PRICING_MAX_AGE_DAYS=5;
+let state={cb:null,rates:{},h:3};
+const n=v=>Number.isFinite(Number(v))?Number(v):null;
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const bp=v=>{const x=n(v);return x===null?'—':`${x>0?'+':''}${x.toFixed(0)}bp`};
+const pct=v=>{const x=n(v);return x===null?'—':`${x.toFixed(2)}%`};
+async function load(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: ${r.status}`);return r.json()}
+async function optional(path,fallback={}){try{return await load(path)}catch(e){console.warn('[GMFQ optional CB feed]',e);return fallback}}
+function stanceClass(v){const s=String(v||'').toUpperCase();if(s.includes('HAWK'))return'hawkish';if(s.includes('DOV')||s.includes('ACCOMOD'))return'dovish';return'neutral'}
+function todayRome(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function parsePricingDate(x){const m=String(x?.market_pricing?.as_of||'').match(/\b(20\d{2}-\d{2}-\d{2})\b/g);return m?.at(-1)||null}
+function ageDays(s){if(!s)return Infinity;const t=Date.parse(`${s}T00:00:00Z`);if(!Number.isFinite(t))return Infinity;const now=new Date(),today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());return Math.floor((today-t)/86400000)}
+function pricingFresh(x){const st=String(x?.market_pricing?.freshness_status||'').toUpperCase();if(st.includes('STALE'))return false;const a=parsePricingDate(x);return a!==null&&ageDays(a)>=0&&ageDays(a)<=PRICING_MAX_AGE_DAYS}
+function marketRaw(x){return state.h===3?n(x?.market_pricing?.h3m):state.h===6?n(x?.market_pricing?.h6m):n(x?.market_pricing?.h12m)}
+function y2(c){return n(state.rates?.[c]?.current?.y2)??n(state.rates?.[c]?.['2Y'])}
+function renderCards(){const host=document.getElementById('cb-grid');if(!host)return;host.innerHTML=ORDER.map(c=>{const x=state.cb?.[c]||{},fresh=pricingFresh(x),m=fresh?marketRaw(x):null;return `<article class="cb-bank-card"><div class="cb-bank-top"><div class="cb-bank-name"><span class="flag">${FLAGS[c]}</span><div><b>${esc(x.bank||c)}</b><small>${esc(x.full_name||'')}</small></div></div><span class="stance ${stanceClass(x.stance)}">${esc(x.stance||'—')}</span></div><div class="cb-policy"><div><small>Policy</small><b>${esc(x.rate_text||pct(x.rate))}</b></div><div><small>Next</small><b>${esc(x.next_meeting||'—')}</b></div><div><small>${state.h}M mkt</small><b>${m===null?'—':m.toFixed(2)+'%'}</b></div></div><div class="cb-context">${esc(x.context||x.official_next||'')}</div></article>`}).join('')}
+function renderPricing(){const host=document.getElementById('cb-pricing-table');if(!host)return;const rows=ORDER.map(c=>{const x=state.cb?.[c]||{},p=n(x.rate),fresh=pricingFresh(x),m=fresh?marketRaw(x):null,d=fresh&&m!==null&&p!==null?(m-p)*100:null;return{c,x,p,m,d,fresh}}),valid=rows.filter(r=>r.d!==null),max=Math.max(25,...valid.map(r=>Math.abs(r.d||0)));host.innerHTML=rows.map(r=>{if(r.d===null)return `<div class="pricing-row"><span>${FLAGS[r.c]} ${esc(r.x.bank||r.c)}</span><span>${pct(r.p)}</span><span>—</span><i class="bar"><b style="width:0"></b></i><span class="delta">—</span><span class="quality">Non disponibile</span></div>`;const w=Math.min(48,Math.abs(r.d)/max*48),cl=r.d>=0?'pos':'neg';return `<div class="pricing-row"><span>${FLAGS[r.c]} ${esc(r.x.bank||r.c)}</span><span>${pct(r.p)}</span><span>${pct(r.m)}</span><i class="bar"><b class="${cl}" style="width:${w.toFixed(1)}%"></b></i><span class="delta ${cl}">${bp(r.d)}</span><span class="quality">${esc(parsePricingDate(r.x)||'')}</span></div>`}).join('');const label=document.getElementById('pricing-label');if(label)label.textContent=`${state.h}M horizon · ${rows.filter(r=>r.fresh).length}/8 pricing aggiornati`}
+function renderMeetings(){const host=document.getElementById('meeting-list');if(!host)return;const today=todayRome(),rows=ORDER.map(c=>({c,x:state.cb?.[c]||{}})).filter(r=>r.x.next_meeting&&String(r.x.next_meeting)>=today).sort((a,b)=>String(a.x.next_meeting).localeCompare(String(b.x.next_meeting)));host.innerHTML=rows.length?rows.map(r=>`<div class="meeting-row"><b>${FLAGS[r.c]} ${esc(r.x.bank||r.c)}</b><small>${esc(r.x.action||'')}</small><em>${esc(r.x.next_meeting)}</em></div>`).join(''):'<div class="meeting-row"><small>Nessuna prossima riunione disponibile.</small></div>'}
+function renderFront(){const host=document.getElementById('front-table');if(!host)return;const rows=ORDER.map(c=>{const x=state.cb?.[c]||{},p=n(x.rate),r=y2(c),d=p===null||r===null?null:(r-p)*100;return{c,x,p,r,d}}).filter(z=>z.d!==null);if(!rows.length){host.innerHTML='<div class="front-row"><span>Rates 2Y temporaneamente non disponibili</span></div>';return}const max=Math.max(25,...rows.map(r=>Math.abs(r.d||0)));host.innerHTML=rows.map(r=>{const cl=r.d>=0?'pos':'neg',w=Math.min(48,Math.abs(r.d)/max*48);return `<div class="front-row"><span>${FLAGS[r.c]} ${esc(r.x.bank||r.c)}</span><span>${pct(r.p)}</span><span>${pct(r.r)}</span><i class="bar"><b class="${cl}" style="width:${w.toFixed(1)}%"></b></i><span class="delta ${cl}">${bp(r.d)}</span></div>`}).join('')}
+function render(){renderCards();renderPricing();renderMeetings();renderFront();document.documentElement.dataset.cbPage='READY'}
+function bind(){document.querySelectorAll('#cb-horizon button').forEach(btn=>btn.addEventListener('click',()=>{state.h=Number(btn.dataset.h);document.querySelectorAll('#cb-horizon button').forEach(x=>x.classList.toggle('active',x===btn));render()}));document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));document.querySelector('.pro-card button')?.addEventListener('click',()=>location.href='index.html')}
+function clock(){const d=new Date(),date=document.getElementById('site-date'),time=document.getElementById('site-time');if(date)date.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'Europe/Rome'}).format(d);if(time)time.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(d)}
+async function main(){bind();clock();setInterval(clock,30000);try{state.cb=await load(ROOT+'NATIVE_CB_DATA.json');state.rates=await optional(ROOT+'NATIVE_RATES_DATA.json',{});render()}catch(e){console.warn('[GMFQ cb core]',e);const grid=document.getElementById('cb-grid');if(grid)grid.innerHTML='<article class="cb-bank-card"><p>Dati banche centrali non disponibili.</p></article>';document.documentElement.dataset.cbPage='FAIL'}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',main,{once:true});else main();
 })();
