@@ -34,8 +34,8 @@
   function css(){if(document.getElementById('dashboard-cot-operational-css'))return;const s=document.createElement('style');s.id='dashboard-cot-operational-css';s.textContent=`
     .cot-operational{display:grid!important;gap:5px!important;padding:6px 10px 10px!important;height:auto!important}
     .cot-op-row{display:grid;grid-template-columns:76px 68px minmax(110px,1fr) 82px 20px;align-items:center;gap:8px;min-height:27px;padding:0 7px;border:1px solid transparent;border-radius:6px;background:rgba(8,27,42,.42)}
-    .cot-op-row.crowd{border-color:rgba(255,90,105,.42);background:rgba(255,72,96,.055)}
-    .cot-op-ccy{font-size:10px;font-weight:700;color:#dce8ef}.cot-op-net,.cot-op-delta{font-size:10px;font-variant-numeric:tabular-nums;text-align:right}.cot-op-net.pos,.cot-op-delta.pos{color:#48d9a0}.cot-op-net.neg,.cot-op-delta.neg{color:#ff6f82}
+    .cot-op-row.crowd{border-color:rgba(201,122,255,.42);background:rgba(201,122,255,.055)}
+    .cot-op-ccy{font-size:10px;font-weight:700;color:#dce8ef}.cot-op-net,.cot-op-delta{font-size:10px;font-variant-numeric:tabular-nums;text-align:right}.cot-op-net.pos,.cot-op-delta.pos{color:#48d9a0}.cot-op-net.neg,.cot-op-delta.neg{color:#c97aff}
     .cot-op-pct{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}.cot-op-pct small{font-size:7px;font-weight:700;letter-spacing:.045em}.cot-op-pct.ext-long{color:#48d9a0}.cot-op-pct.ext-short{color:#c97aff}.cot-op-pct.normal{color:#a9bac6}.cot-op-alert{font-size:10px;color:#ffcc66;text-align:center}
     .cot-op-empty{padding:18px;color:#91a5b4;font-size:10px}
     @media(max-width:650px){.cot-op-row{grid-template-columns:64px 58px minmax(94px,1fr) 68px 18px;gap:5px}.cot-op-pct small{display:none}}
