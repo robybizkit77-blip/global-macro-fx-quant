@@ -44,7 +44,40 @@
   function syncHierarchyTabs(){document.querySelectorAll('.hierarchy .mini-tabs a').forEach(el=>el.classList.toggle('active',el.textContent.trim()===hierarchyPeriod));}
   function setQuery(key,value,push=true){const u=new URL(location.href);u.searchParams.set(key,value);history[push?'pushState':'replaceState'](null,'',u);}
 
-  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host)return;const cards=[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)];rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;syncHeroTabs();document.documentElement.setAttribute('data-market-snapshot',(rates||fx)?'READY':'EMPTY');document.documentElement.setAttribute('data-hero-period',heroPeriod);document.documentElement.setAttribute('data-fx-freshness',fresh(fxAsOf(),FX_MAX_AGE_DAYS)?'FRESH':'WITHHELD');const usdAsOf=rates?.USD?.date||rateHistory(rates?.USD,'history2').at(-1)?.date||null;document.documentElement.setAttribute('data-rates-freshness',fresh(usdAsOf,RATES_MAX_AGE_DAYS)?'FRESH':'WITHHELD');}
+  // Weekly Market Focus V1: independently select FX crosses by normalized weekly move.
+  // Stable rendering contract: exactly eight valid cards or the previous eight-card fallback.
+  function weeklyFocusCards(){
+    const rows=datedRows(),asof=fxAsOf();
+    if(!fresh(asof,FX_MAX_AGE_DAYS)||rows.length<35)return null;
+    const labels=CCYS.flatMap((a,i)=>CCYS.slice(i+1).map(b=>a+b));
+    const ranked=[];
+    for(const label of labels){
+      const values=rows.map(row=>pairValue(row,label));
+      if(values.some(v=>v===null||v<=0))continue;
+      const logs=values.map(v=>Math.log(v));
+      const d=logs.slice(1).map((v,i)=>v-logs[i]);
+      const base=d.slice(-65,-5);
+      if(base.length<20)continue;
+      const mean=base.reduce((a,b)=>a+b,0)/base.length;
+      const stdev=Math.sqrt(base.reduce((a,b)=>a+(b-mean)**2,0)/base.length);
+      if(!(stdev>0))continue;
+      const move=d.slice(-5).reduce((a,b)=>a+b,0)-5*mean;
+      const card=pairCard(label,heroPeriod);
+      if(card.value==='—')continue;
+      ranked.push({label,score:Math.abs(move)/(stdev*Math.sqrt(5)),card});
+    }
+    ranked.sort((a,b)=>b.score-a.score||a.label.localeCompare(b.label));
+    const chosen=[],exposure={};
+    for(const item of ranked){
+      const a=item.label.slice(0,3),b=item.label.slice(3,6);
+      if((exposure[a]||0)>=3||(exposure[b]||0)>=3)continue;
+      chosen.push(item.card);
+      exposure[a]=(exposure[a]||0)+1;exposure[b]=(exposure[b]||0)+1;
+      if(chosen.length===8)break;
+    }
+    return chosen.length===8?chosen:null;
+  }
+  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host)return;const cards=weeklyFocusCards()||[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)];rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;syncHeroTabs();document.documentElement.setAttribute('data-market-snapshot',(rates||fx)?'READY':'EMPTY');document.documentElement.setAttribute('data-hero-period',heroPeriod);document.documentElement.setAttribute('data-fx-freshness',fresh(fxAsOf(),FX_MAX_AGE_DAYS)?'FRESH':'WITHHELD');const usdAsOf=rates?.USD?.date||rateHistory(rates?.USD,'history2').at(-1)?.date||null;document.documentElement.setAttribute('data-rates-freshness',fresh(usdAsOf,RATES_MAX_AGE_DAYS)?'FRESH':'WITHHELD');}
   function currencyStrength(period){const asof=fxAsOf(),rows=datedRows();if(!fresh(asof,FX_MAX_AGE_DAYS)||rows.length<2)return[];const si=startIndex(rows,period),a=rows[si],b=rows.at(-1),raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};});const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
   function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length)return;if(!data.length){rows.forEach(el=>{const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em');if(label)label.textContent='—';if(bar){bar.className='';bar.style.width='0%';}if(val){val.className='';val.textContent='—';}});syncHierarchyTabs();document.documentElement.setAttribute('data-hierarchy-period',hierarchyPeriod);return;}const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}%`;}});const note=document.querySelector('.hierarchy .hierarchy-note');if(note)note.textContent=`Conferma di mercato · fixing ECB al ${fxAsOf()||'—'} · non forza macro`;syncHierarchyTabs();document.documentElement.setAttribute('data-hierarchy-period',hierarchyPeriod);}
   function protectStrip(){const host=document.querySelector('.ticker-strip');if(!host)return;new MutationObserver(()=>{if(!rendering&&host.children.length===0&&(rates||fx))queueMicrotask(renderHero);}).observe(host,{childList:true});}
