@@ -2,7 +2,7 @@
   'use strict';
   const ROOT='../../live_data/sections/';
   const ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-  const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
+  const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇦'===false?'':'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
   const OIS_MAX_AGE_DAYS=5,COT_MAX_AGE_DAYS=10;
   let state={price:null,rates:null,ois:null,cot:null,setup:null,h:'3m',a:'EUR',b:'USD'};
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
@@ -22,6 +22,10 @@
     if(pairs.length!==28)throw new Error(`Expected 28 canonical pairs, found ${pairs.length}`);
     return {pairs};
   }
+  function orientedReturn(v,inverted){
+    const x=n(v);if(x===null)return null;if(!inverted)return x;
+    const gross=1+x/100;return gross>0?(1/gross-1)*100:null;
+  }
   function renderSelectors(){
     const a=document.getElementById('tool-a'),b=document.getElementById('tool-b');
     const opts=ORDER.map(c=>`<option value="${c}">${FLAGS[c]} ${c}</option>`).join('');
@@ -29,27 +33,30 @@
   }
   function renderComparator(){
     const code=resolvePair(state.a,state.b),snap=code?state.setup.pairs[code]:null,row=code?pairRow(code):null;
-    const canonical=snap?.canonical_pair||`${state.a}/${state.b}`;
-    const [base,quote]=canonical.split('/');
+    const selectedCode=`${state.a}${state.b}`;
+    const inverted=Boolean(code&&code!==selectedCode);
+    const base=state.a,quote=state.b,displayPair=`${base}/${quote}`;
     const y2a=rate2(base),y2b=rate2(quote),d2=y2a===null||y2b===null?null:(y2a-y2b)*100;
-    const d3=ois(base,'3m')===null||ois(quote,'3m')===null?null:(ois(base,'3m')-ois(quote,'3m'))*100;
-    const d6=ois(base,'6m')===null||ois(quote,'6m')===null?null:(ois(base,'6m')-ois(quote,'6m'))*100;
-    const d12=ois(base,'12m')===null||ois(quote,'12m')===null?null:(ois(base,'12m')-ois(quote,'12m'))*100;
-    const cd=cot(base)===null||cot(quote)===null?null:cot(base)-cot(quote);
-    document.getElementById('compare-title').textContent=`Pair Comparator · ${canonical}`;
+    const o3a=ois(base,'3m'),o3b=ois(quote,'3m'),d3=o3a===null||o3b===null?null:(o3a-o3b)*100;
+    const o6a=ois(base,'6m'),o6b=ois(quote,'6m'),d6=o6a===null||o6b===null?null:(o6a-o6b)*100;
+    const o12a=ois(base,'12m'),o12b=ois(quote,'12m'),d12=o12a===null||o12b===null?null:(o12a-o12b)*100;
+    const ca=cot(base),cb=cot(quote),cd=ca===null||cb===null?null:ca-cb;
+    const rawLast=n(row?.last),last=rawLast===null?null:(inverted?1/rawLast:rawLast);
+    const r1w=orientedReturn(row?.ret1w,inverted),r1m=orientedReturn(row?.ret1m,inverted),r3m=orientedReturn(row?.ret3m,inverted),r6m=orientedReturn(row?.ret6m,inverted),r1y=orientedReturn(row?.ret1y,inverted);
+    document.getElementById('compare-title').textContent=`Pair Comparator · ${displayPair}`;
     document.getElementById('compare-asof').textContent=`Price ${row?.price_asof||state.price?.price_asof||state.setup?.price_asof||'—'}`;
-    document.getElementById('compare-summary').innerHTML=`<div><h2>${FLAGS[base]||''} ${base}/${quote} ${FLAGS[quote]||''}</h2><p>Confronto relativo della pair con i layer disponibili adesso.</p></div><div class="compare-price"><b>${n(row?.last)===null?'—':n(row.last).toFixed(n(row.last)>=100?3:5)}</b><small>1W ${signed(row?.ret1w,2,'%')} · 1M ${signed(row?.ret1m,2,'%')}</small></div>`;
-    const metrics=[['2Y spread',d2,0,'bp',d2===null?'dato non disponibile':`${base} ${y2a.toFixed(2)}% · ${quote} ${y2b.toFixed(2)}%`],['OIS 3M',d3,0,'bp',d3===null?'dato non disponibile':'market pricing'],['OIS 6M',d6,0,'bp',d6===null?'dato non disponibile':'market pricing'],['OIS 12M',d12,0,'bp',d12===null?'dato non disponibile':'market pricing'],['COT diff',cd,0,'',cd===null?'dato non disponibile':'percentile 2Y'],['Price 3M',row?.ret3m,2,'%','ECB fixing return'],['Price 6M',row?.ret6m,2,'%','ECB fixing return'],['Price 1Y',row?.ret1y,2,'%','ECB fixing return']];
+    document.getElementById('compare-summary').innerHTML=`<div><h2>${FLAGS[base]||''} ${displayPair} ${FLAGS[quote]||''}</h2><p>Confronto relativo nell’ordine selezionato: ${base} − ${quote}.</p></div><div class="compare-price"><b>${last===null?'—':last.toFixed(last>=100?3:5)}</b><small>1W ${signed(r1w,2,'%')} · 1M ${signed(r1m,2,'%')}</small></div>`;
+    const metrics=[['2Y spread',d2,0,'bp',d2===null?'dato non disponibile':`${base} ${y2a.toFixed(2)}% · ${quote} ${y2b.toFixed(2)}%`],['OIS 3M',d3,0,'bp',d3===null?'dato non disponibile':'market pricing'],['OIS 6M',d6,0,'bp',d6===null?'dato non disponibile':'market pricing'],['OIS 12M',d12,0,'bp',d12===null?'dato non disponibile':'market pricing'],['COT diff',cd,0,'',cd===null?'dato non disponibile':'percentile 2Y'],['Price 3M',r3m,2,'%','ECB fixing return'],['Price 6M',r6m,2,'%','ECB fixing return'],['Price 1Y',r1y,2,'%','ECB fixing return']];
     document.getElementById('compare-metrics').innerHTML=metrics.map(([k,v,d,s,note])=>`<div class="tool-metric"><small>${k}</small><b class="${cls(v)}">${signed(v,d,s)}</b><em>${note}</em></div>`).join('');
-    document.getElementById('compare-notes').textContent=`Le differenze sono sempre ${base} − ${quote}. Un valore positivo indica un livello maggiore sul lato base; non equivale automaticamente a un segnale FX.`;
-    const setup=snap?.setup||{},frame=snap?.decision_frame||{};
-    document.getElementById('setup-view').innerHTML=`<span class="setup-badge">${esc(setup.quality||'NON VALUTABILE')}</span><h4>Vantaggio strutturale · ${esc(setup.structuralFav||frame.fav||'—')}</h4><p>${esc(setup.structural?.relation||frame.relation||'Struttura non disponibile.')}</p><h4>Prezzo</h4><p>${esc(setup.price?.text||frame.priceReading||'—')}</p><h4>Timing</h4><p>${esc(setup.timing?.text||'—')}</p><h4>Cosa manca</h4><p>${esc(setup.structural?.missing||frame.missing||'—')}</p>${code?`<a href="coppia.html?pair=${code}">Apri Pair Deep Dive →</a>`:''}`;
+    document.getElementById('compare-notes').textContent=`Tutte le differenze seguono l’ordine ${base} − ${quote}. Se il mercato quota normalmente la pair al contrario, prezzo e rendimenti vengono invertiti matematicamente solo per questa vista.`;
+    const setup=snap?.setup||{},frame=snap?.decision_frame||{},canonical=snap?.canonical_pair||code||'—';
+    document.getElementById('setup-view').innerHTML=`<span class="setup-badge">${esc(setup.quality||'NON VALUTABILE')}</span><h4>Valuta favorita · ${esc(setup.structuralFav||frame.fav||'—')}</h4><p>${esc(setup.structural?.relation||frame.relation||'Struttura non disponibile.')}</p><h4>Prezzo</h4><p>${esc(setup.price?.text||frame.priceReading||'—')}</p><h4>Timing</h4><p>${esc(setup.timing?.text||'—')}</p><h4>Cosa manca</h4><p>${esc(setup.structural?.missing||frame.missing||'—')}</p>${code?`<a href="coppia.html?pair=${encodeURIComponent(code)}">Apri ${esc(canonical)} Deep Dive →</a>`:''}`;
   }
   function matrixValue(kind,a,b,h){if(a===b)return 0;const va=kind==='rates'?rate2(a):ois(a,h),vb=kind==='rates'?rate2(b):ois(b,h);return va===null||vb===null?null:(va-vb)*100}
   function renderMatrix(hostId,kind,h){
     const host=document.getElementById(hostId);if(!host)return;
     let html='<div class="diff-matrix"><div class="diff-cell head"></div>'+ORDER.map(c=>`<div class="diff-cell head">${c}</div>`).join('');
-    for(const a of ORDER){html+=`<div class="diff-cell rowhead">${FLAGS[a]} ${a}</div>`;for(const b of ORDER){const v=matrixValue(kind,a,b,h);html+=`<div class="diff-cell ${cls(v)}" data-row="${a}" data-col="${b}">${v===null?'—':signed(v,0,'')}</div>`;}}
+    for(const a of ORDER){html+=`<div class="diff-cell rowhead">${FLAGS[a]} ${a}</div>`;for(const b of ORDER){const v=matrixValue(kind,a,b,h);html+=`<div class="diff-cell ${cls(v)}" data-row="${a}" data-col="${b}" title="${a} − ${b}">${v===null?'—':signed(v,0,'')}</div>`;}}
     html+='</div>';host.innerHTML=html;
   }
   function render(){renderComparator();renderMatrix('rates-matrix','rates');renderMatrix('ois-matrix-tools','ois',state.h);document.documentElement.dataset.strumentiPage='READY';document.documentElement.dataset.strumentiMatrix='READY';document.documentElement.dataset.strumentiData='FAIL_SOFT';}
@@ -66,7 +73,7 @@
       state.setup=await load('PAIR_SETUP_OPERATIONAL_VIEW.json');
       if(state.setup?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||state.setup?.pair_count!==28||state.setup?.status!=='CURRENT_CANONICAL_ENGINE')throw new Error('Pair setup contract invalid');
       [state.rates,state.ois,state.cot]=await Promise.all([optional('NATIVE_RATES_DATA.json'),optional('OIS_OPERATIONAL_VIEW.json'),optional('V250_COT_CHART_DATA.json')]);
-      if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Canonical Price runtime missing');
+      if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Price runtime missing');
       state.price=priceSeed(state.setup);
       await window.GMFQWebsitePrice.hydrate(state.price);
       renderSelectors();bind();render();
