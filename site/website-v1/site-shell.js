@@ -1,0 +1,36 @@
+(()=>{
+'use strict';
+if(window.GMFQ_SITE_SHELL?.status==='READY')return;
+const CCYS=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const PAGES=[
+  ['Dashboard','index.html','Panoramica operativa'],
+  ['Valute','valute.html','Forza relativa G8'],
+  ['Tassi','tassi.html','2Y, 10Y, curve e pricing'],
+  ['Banche centrali','banche-centrali.html','Stance, policy e meeting'],
+  ['Posizionamento','posizionamento.html','COT e percentile 104W'],
+  ['Coppie','coppie.html','Ranking 28 pair'],
+  ['Rischio / Eventi','rischio-eventi.html','Calendario macro e CB'],
+  ['Top Themes','top-themes.html','Narrative e conferme'],
+  ['Library','library.html','Report definitivi'],
+  ['Watchlist','watchlist.html','Pair salvate'],
+  ['Screener','screener.html','Filtra i setup'],
+  ['Macro Data','macro-data.html','Crescita, lavoro, inflazione'],
+  ['Strumenti','strumenti.html','Comparator e matrici'],
+  ['Alert','alert.html','Monitor locale pair'],
+  ['Impostazioni','impostazioni.html','Preferenze locali']
+].map(([label,href,meta])=>({label,href,meta,type:'Pagina'}));
+const PAIRS=[];for(let i=0;i<CCYS.length;i++)for(let j=i+1;j<CCYS.length;j++){const code=CCYS[i]+CCYS[j];PAIRS.push({label:`${CCYS[i]}/${CCYS[j]}`,href:`coppia.html?pair=${code}`,meta:'Pair Deep Dive',type:'Coppia'});}const ITEMS=[...PAGES,...PAIRS];
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const norm=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+let active=0,filtered=ITEMS.slice();
+function injectStyle(){if(document.getElementById('gmfq-site-shell-style'))return;const s=document.createElement('style');s.id='gmfq-site-shell-style';s.textContent=`
+.search,.bell,.avatar,.brand,.pro-card button{cursor:pointer}.search:focus-visible,.bell:focus-visible,.avatar:focus-visible,.brand:focus-visible,.pro-card button:focus-visible{outline:2px solid #46aef0;outline-offset:2px}.bell,.avatar,.brand{user-select:none}.gmfq-palette{position:fixed;inset:0;z-index:99999;display:none;align-items:flex-start;justify-content:center;padding-top:min(14vh,120px);background:rgba(1,7,13,.72);backdrop-filter:blur(8px)}.gmfq-palette.open{display:flex}.gmfq-palette-box{width:min(680px,calc(100vw - 28px));max-height:min(650px,76vh);overflow:hidden;border:1px solid #28475e;border-radius:14px;background:#071522;box-shadow:0 28px 80px rgba(0,0,0,.5)}.gmfq-palette-input{width:100%;height:54px;padding:0 17px;border:0;border-bottom:1px solid #1c394f;outline:0;background:#091a29;color:#eef5fb;font-size:15px}.gmfq-palette-results{max-height:560px;overflow:auto;padding:7px}.gmfq-palette-item{width:100%;border:0;background:transparent;color:#dce7ef;display:grid;grid-template-columns:1fr auto;gap:14px;text-align:left;padding:11px 12px;border-radius:9px;cursor:pointer}.gmfq-palette-item:hover,.gmfq-palette-item.active{background:#0d2a40}.gmfq-palette-item b{font-size:12px}.gmfq-palette-item small{display:block;margin-top:3px;color:#849aad;font-size:10px}.gmfq-palette-item em{font-style:normal;color:#6f879a;font-size:9px;align-self:center}.gmfq-palette-empty{padding:24px 14px;color:#8196aa;text-align:center;font-size:12px}@media(max-width:700px){.gmfq-palette{padding-top:70px}.gmfq-palette-box{max-height:78vh}.gmfq-palette-results{max-height:calc(78vh - 54px)}}`;document.head.appendChild(s)}
+function ensurePalette(){let root=document.getElementById('gmfq-palette');if(root)return root;root=document.createElement('div');root.id='gmfq-palette';root.className='gmfq-palette';root.setAttribute('aria-hidden','true');root.innerHTML='<div class="gmfq-palette-box" role="dialog" aria-modal="true" aria-label="Navigazione rapida"><input class="gmfq-palette-input" type="search" autocomplete="off" placeholder="Cerca pagina o coppia…" aria-label="Cerca pagina o coppia"><div class="gmfq-palette-results"></div></div>';document.body.appendChild(root);const input=root.querySelector('input');input.addEventListener('input',()=>{filter(input.value);render()});input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,filtered.length-1);render(true)}else if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(active-1,0);render(true)}else if(e.key==='Enter'&&filtered[active]){location.href=filtered[active].href}else if(e.key==='Escape'){close()}});root.addEventListener('click',e=>{if(e.target===root)close()});return root}
+function filter(q){const needle=norm(q);filtered=!needle?ITEMS.slice():ITEMS.filter(x=>norm(`${x.label} ${x.meta} ${x.type}`).includes(needle));active=0}
+function render(scroll=false){const root=ensurePalette(),host=root.querySelector('.gmfq-palette-results');if(!filtered.length){host.innerHTML='<div class="gmfq-palette-empty">Nessun risultato.</div>';return}host.innerHTML=filtered.slice(0,24).map((x,i)=>`<button class="gmfq-palette-item ${i===active?'active':''}" data-i="${i}"><span><b>${esc(x.label)}</b><small>${esc(x.meta)}</small></span><em>${esc(x.type)}</em></button>`).join('');host.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>location.href=filtered[Number(b.dataset.i)].href));if(scroll)host.querySelector('.active')?.scrollIntoView({block:'nearest'})}
+function open(){const root=ensurePalette();filter('');render();root.classList.add('open');root.setAttribute('aria-hidden','false');setTimeout(()=>{const i=root.querySelector('input');i.value='';i.focus()},0)}
+function close(){const root=document.getElementById('gmfq-palette');if(!root)return;root.classList.remove('open');root.setAttribute('aria-hidden','true')}
+function bindClickable(el,href,label){if(!el)return;el.setAttribute('role','button');el.tabIndex=0;if(label)el.setAttribute('aria-label',label);const go=()=>location.href=href;el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})}
+function bind(){injectStyle();const search=document.querySelector('.topbar .search');if(search){search.setAttribute('role','button');search.tabIndex=0;search.setAttribute('aria-label','Apri navigazione rapida');search.addEventListener('click',open);search.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})}bindClickable(document.querySelector('.bell'),'alert.html','Apri Alert');bindClickable(document.querySelector('.avatar'),'impostazioni.html','Apri Impostazioni');bindClickable(document.querySelector('.brand'),'index.html','Torna alla Dashboard');const p=document.querySelector('.pro-card button');if(p){p.onclick=null;bindClickable(p,'index.html','Apri Control Room')}document.querySelectorAll('.pro-copy').forEach(el=>el.innerHTML='Macro, dati e ricerca<br>del tuo workspace.');document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();open()}else if(e.key==='Escape')close()});document.documentElement.dataset.siteShell='READY';window.GMFQ_SITE_SHELL={status:'READY',version:'1',pages:PAGES.length,pairs:PAIRS.length}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();
