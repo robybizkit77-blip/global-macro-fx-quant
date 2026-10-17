@@ -29,11 +29,54 @@ jobs:
           shell_pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
           responsive_tag = '<link rel="stylesheet" href="responsive.css?v=20261017-responsive2">'
           responsive_pat = re.compile(r'<link rel="stylesheet" href="responsive\.css\?v=[^"]+">')
+          edits = {
+              'Macro, dati e ricerca<br>del tuo workspace.': 'Macro, dati e ricerca<br>del tuo desk operativo.',
+              'Forza relativa, macro, rates, positioning e prezzo': 'Forza relativa, macro, tassi, posizionamento e prezzo',
+              'Currency Overview': 'Quadro valute',
+              'Relative Performance vs USD': 'Performance relativa vs USD',
+              'Macro → Rates → Positioning → Price': 'Macro → Tassi → Posizionamento → Prezzo',
+              'G8 Macro Overview': 'Quadro macro G8',
+              'Per questo l’as-of resta visibile accanto ai dati.': 'Per questo la data di riferimento resta visibile accanto ai dati.',
+              'FX PAIR RANKING': 'RANKING COPPIE FX',
+              'Rates, pricing, COT e movimento prezzo': 'Tassi, pricing, COT e movimento del prezzo',
+              'Macro + Rates + Price': 'Macro + Tassi + Prezzo',
+              'clicca una coppia per aprire il deep dive': 'clicca una coppia per aprire l’analisi completa',
+              'Un overlay mancante non cancella il quadro delle 28 coppie.': 'Un dato secondario mancante non cancella il quadro delle 28 coppie.',
+              'Nel deep dive': 'Nell’analisi completa',
+              'pagina della singola pair': 'pagina della singola coppia',
+              'Tesi relativa → Macro → Rates & Pricing → Positioning → Price → Execution Readiness → condizioni di conferma / invalidazione.': 'Tesi relativa → Macro → Tassi e pricing → Posizionamento → Prezzo → Prontezza esecutiva → conferma / invalidazione.',
+              'COT Overview': 'Quadro COT',
+              'Net contracts · prezzo FX allineato senza look-ahead': 'Net contract · prezzo FX allineato senza usare dati futuri',
+              'Positioning → Price': 'Posizionamento → Prezzo',
+              'Il COT è <strong>contesto</strong>, non trigger.': 'Il COT è <strong>contesto</strong>, non un segnale d’ingresso.',
+              'overlay prezzo': 'confronto prezzo',
+              'High impact': 'Alto impatto',
+              'Consenso / Prev.': 'Consenso / Precedente',
+              'event risk, non previsione': 'rischio evento, non previsione',
+              'Confronta due valute su prezzo, rates, market pricing e positioning': 'Confronta due valute su prezzo, tassi, pricing di mercato e posizionamento',
+              'Pair Comparator': 'Confronto coppie',
+              'thesis ≠ entry': 'tesi ≠ ingresso',
+              'Rates Differential Matrix': 'Matrice differenziale tassi',
+              'basis points': 'punti base',
+              'OIS / Market Pricing Differential Matrix': 'Matrice differenziale OIS / pricing',
+              '<strong>Pair Comparator</strong> riunisce Price, 2Y, OIS/market pricing, COT e Pair Setup già disponibili.': '<strong>Confronto coppie</strong> riunisce prezzo, 2Y, OIS/pricing di mercato, COT e setup già disponibili.',
+              'Rates Overview': 'Quadro tassi',
+              'Relative 2Y — G8': '2Y relativo — G8',
+              'Curve Monitor': 'Monitor curva',
+              'OIS / Market Pricing Curves': 'Curve OIS / pricing di mercato',
+              'Combined G8 Pricing Curve': 'Confronto curve pricing G8',
+              'Policy Repricing': 'Repricing vs policy',
+              'Central Bank Overview': 'Quadro banche centrali',
+              'Market Pricing vs Policy Rate': 'Pricing di mercato vs tasso ufficiale',
+              'Central Bank → Pricing → Rates → FX': 'Banca centrale → Pricing → Tassi → FX'
+          }
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
               if '<div class="site">' not in s:
                   continue
-              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo workspace.')
+              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo desk operativo.')
+              for old,new in edits.items():
+                  s = s.replace(old,new)
               if p.name == 'index.html':
                   s = s.replace(' <small>ⓘ</small>', '')
                   s = s.replace('<div class="pill-tabs"><b class="active">Oggi</b><b>Questa settimana</b></div>', '')
@@ -58,7 +101,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Cache-bust responsive layer v2"
+            git commit -m "Apply final editorial cleanup"
             git push origin main
           fi
 
@@ -74,11 +117,54 @@ jobs:
           shell_pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
           responsive_tag = '<link rel="stylesheet" href="responsive.css?v=20261017-responsive2">'
           responsive_pat = re.compile(r'<link rel="stylesheet" href="responsive\.css\?v=[^"]+">')
+          edits = {
+              'Macro, dati e ricerca<br>del tuo workspace.': 'Macro, dati e ricerca<br>del tuo desk operativo.',
+              'Forza relativa, macro, rates, positioning e prezzo': 'Forza relativa, macro, tassi, posizionamento e prezzo',
+              'Currency Overview': 'Quadro valute',
+              'Relative Performance vs USD': 'Performance relativa vs USD',
+              'Macro → Rates → Positioning → Price': 'Macro → Tassi → Posizionamento → Prezzo',
+              'G8 Macro Overview': 'Quadro macro G8',
+              'Per questo l’as-of resta visibile accanto ai dati.': 'Per questo la data di riferimento resta visibile accanto ai dati.',
+              'FX PAIR RANKING': 'RANKING COPPIE FX',
+              'Rates, pricing, COT e movimento prezzo': 'Tassi, pricing, COT e movimento del prezzo',
+              'Macro + Rates + Price': 'Macro + Tassi + Prezzo',
+              'clicca una coppia per aprire il deep dive': 'clicca una coppia per aprire l’analisi completa',
+              'Un overlay mancante non cancella il quadro delle 28 coppie.': 'Un dato secondario mancante non cancella il quadro delle 28 coppie.',
+              'Nel deep dive': 'Nell’analisi completa',
+              'pagina della singola pair': 'pagina della singola coppia',
+              'Tesi relativa → Macro → Rates & Pricing → Positioning → Price → Execution Readiness → condizioni di conferma / invalidazione.': 'Tesi relativa → Macro → Tassi e pricing → Posizionamento → Prezzo → Prontezza esecutiva → conferma / invalidazione.',
+              'COT Overview': 'Quadro COT',
+              'Net contracts · prezzo FX allineato senza look-ahead': 'Net contract · prezzo FX allineato senza usare dati futuri',
+              'Positioning → Price': 'Posizionamento → Prezzo',
+              'Il COT è <strong>contesto</strong>, non trigger.': 'Il COT è <strong>contesto</strong>, non un segnale d’ingresso.',
+              'overlay prezzo': 'confronto prezzo',
+              'High impact': 'Alto impatto',
+              'Consenso / Prev.': 'Consenso / Precedente',
+              'event risk, non previsione': 'rischio evento, non previsione',
+              'Confronta due valute su prezzo, rates, market pricing e positioning': 'Confronta due valute su prezzo, tassi, pricing di mercato e posizionamento',
+              'Pair Comparator': 'Confronto coppie',
+              'thesis ≠ entry': 'tesi ≠ ingresso',
+              'Rates Differential Matrix': 'Matrice differenziale tassi',
+              'basis points': 'punti base',
+              'OIS / Market Pricing Differential Matrix': 'Matrice differenziale OIS / pricing',
+              '<strong>Pair Comparator</strong> riunisce Price, 2Y, OIS/market pricing, COT e Pair Setup già disponibili.': '<strong>Confronto coppie</strong> riunisce prezzo, 2Y, OIS/pricing di mercato, COT e setup già disponibili.',
+              'Rates Overview': 'Quadro tassi',
+              'Relative 2Y — G8': '2Y relativo — G8',
+              'Curve Monitor': 'Monitor curva',
+              'OIS / Market Pricing Curves': 'Curve OIS / pricing di mercato',
+              'Combined G8 Pricing Curve': 'Confronto curve pricing G8',
+              'Policy Repricing': 'Repricing vs policy',
+              'Central Bank Overview': 'Quadro banche centrali',
+              'Market Pricing vs Policy Rate': 'Pricing di mercato vs tasso ufficiale',
+              'Central Bank → Pricing → Rates → FX': 'Banca centrale → Pricing → Tassi → FX'
+          }
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
               if '<div class="site">' not in s:
                   continue
-              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo workspace.')
+              s = s.replace('Motore macro, dati e ricerca<br>del tuo workspace.', 'Macro, dati e ricerca<br>del tuo desk operativo.')
+              for old,new in edits.items():
+                  s = s.replace(old,new)
               if p.name == 'index.html':
                   s = s.replace(' <small>ⓘ</small>', '')
                   s = s.replace('<div class="pill-tabs"><b class="active">Oggi</b><b>Questa settimana</b></div>', '')
@@ -98,6 +184,6 @@ jobs:
           PY
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Cache-bust responsive layer v2"
+            git commit -m "Apply final editorial cleanup"
             git push origin gh-pages
           fi
