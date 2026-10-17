@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-renderfix9';
+  const VERSION='20261017-dashboard2';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
@@ -66,7 +66,7 @@
   };
   clock();setInterval(clock,30000);
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   const trim=(v,max)=>{const s=String(v??'');return s.length<=max?s:s.slice(0,max-1).trimEnd()+'…';};
   async function loadSetup(){
     for(const src of [SETUP_LOCAL,SETUP_RAW]){
