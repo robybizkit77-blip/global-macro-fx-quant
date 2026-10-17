@@ -2,7 +2,6 @@
   'use strict';
 
   const ROOT='../../live_data/sections/';
-  const D_PATH=ROOT+'D.json';
   const RATES_PATH=ROOT+'NATIVE_RATES_DATA.json';
   const FX_PATH='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/ECB_G8_PRICE_HISTORY.json';
   const PAIRS=['EURUSD','GBPUSD','USDJPY','USDCAD','AUDUSD','NZDUSD'];
@@ -13,7 +12,7 @@
   const FX_MAX_AGE_DAYS=4;
   const RATES_MAX_AGE_DAYS=4;
   const params=new URLSearchParams(location.search);
-  let d=null,rates=null,fx=null;
+  let rates=null,fx=null;
   let heroPeriod=ALLOWED.includes(params.get('tf'))?params.get('tf'):'1D';
   let hierarchyPeriod=HIERARCHY_ALLOWED.includes(params.get('h'))?params.get('h'):'1D';
   let rendering=false;
@@ -60,6 +59,6 @@
     syncHeroTabs();syncHierarchyTabs();
   }
 
-  async function run(){try{bindInteractions();protectStrip();rates=await load(RATES_PATH);[d,fx]=await Promise.all([tryLoad(D_PATH),tryLoad(FX_PATH)]);renderHero();renderHierarchy();}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
+  async function run(){try{bindInteractions();protectStrip();rates=await load(RATES_PATH);fx=await tryLoad(FX_PATH);renderHero();renderHierarchy();}catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.setAttribute('data-market-snapshot','FAIL');}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
