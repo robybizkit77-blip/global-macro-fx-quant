@@ -58,7 +58,7 @@
     .calendar .event-row>small{font-size:9px!important;color:#d8e8f1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .calendar .event-row>em{font-size:8px!important;color:#87a6ba;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .calendar .event-risk{justify-self:start;font-size:8px!important;font-style:normal;font-weight:800;letter-spacing:.05em;padding:4px 6px;border-radius:6px;background:rgba(127,157,179,.12);color:#a9c1d1;white-space:nowrap}
-    .calendar .event-risk.high{background:rgba(227,99,116,.13);color:#ff8b9a}.calendar .event-risk.med{background:rgba(216,169,92,.13);color:#e7bd73}.calendar .event-risk.low{color:#8eb4ca}
+    .calendar .event-risk.high{background:rgba(201,122,255,.13);color:#d8a2ff}.calendar .event-risk.med{background:rgba(216,169,92,.13);color:#e7bd73}.calendar .event-risk.low{color:#8eb4ca}
     .calendar .event-risk-subline{padding:0 12px 7px!important}
     @media(max-width:1250px){.calendar .calendar-table>.event-head,.calendar .calendar-table>.event-row{grid-template-columns:54px 62px minmax(0,1fr) 66px!important}.calendar .event-head span:nth-child(4),.calendar .event-row em{display:none!important}}
     @media(max-width:760px){.calendar .calendar-table>.event-head,.calendar .calendar-table>.event-row{grid-template-columns:50px 58px minmax(0,1fr) 60px!important;gap:6px!important}.calendar .event-row{min-height:44px!important}}
