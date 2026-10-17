@@ -11,7 +11,7 @@
     GROWTH:['Crescita','Attività'],
     CENTRAL_BANK_DECISION:['Decisione CB','Policy']
   };
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const today=()=>{const d=new Date();return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;};
   const dateLabel=s=>{if(!s)return '—';const d=new Date(`${s}T00:00:00Z`);return Number.isNaN(d.getTime())?'—':`${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;};
   const shortRef=s=>String(s||'').replace(/September/gi,'Set').replace(/October/gi,'Ott').replace(/November/gi,'Nov').replace(/December/gi,'Dic').replace(/quarter/gi,'trim.');
