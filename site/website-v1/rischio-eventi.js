@@ -20,8 +20,8 @@
     const host=document.getElementById('risk-summary');
     host.innerHTML=[
       ['Eventi prossimi 7g',next7.length,'macro + banche centrali'],
-      ['High impact 14g',high,'solo calendario canonico'],
-      ['Decisioni CB 14g',cb,'schedule certificato'],
+      ['High impact 14g',high,'eventi ad alto impatto'],
+      ['Decisioni CB 14g',cb,'riunioni programmate'],
       ['Valute coinvolte',active+'/8','copertura G8']
     ].map(([k,v,s])=>`<article class="risk-stat"><small>${k}</small><b>${v}</b><em>${s}</em></article>`).join('');
   }
@@ -34,7 +34,7 @@
       const type=isCB(e)?'Decisione CB':String(e.event_type||'Macro').replaceAll('_',' ');
       const consensus=e.consensus_status==='AVAILABLE'?`Cons. ${e.consensus||'—'} · Prev. ${e.previous||'—'}`:(e.previous?`Prev. ${e.previous}`:'—');
       const time=e.time_local?`${e.time_local} ${e.timezone||''}`.trim():(e.timezone||'orario non disponibile');
-      return `<div class="risk-event-row"><span>${fmtDate(e.date)}<small class="event-meta">${esc(time)}</small></span><span class="ccy">${esc(e.ccy)}</span><span><span class="event-title">${esc(e.title)}</span><small class="event-meta">${esc(e.source_family||e.bank||e.source_layer||'fonte canonica')}</small></span><span class="${isCB(e)?'cb':''}">${esc(type)}</span><span class="${impactCls}">${esc(impact)}</span><span class="consensus">${esc(consensus)}</span></div>`;
+      return `<div class="risk-event-row"><span>${fmtDate(e.date)}<small class="event-meta">${esc(time)}</small></span><span class="ccy">${esc(e.ccy)}</span><span><span class="event-title">${esc(e.title)}</span><small class="event-meta">${esc(e.source_family||e.bank||e.source_layer||'fonte')}</small></span><span class="${isCB(e)?'cb':''}">${esc(type)}</span><span class="${impactCls}">${esc(impact)}</span><span class="consensus">${esc(consensus)}</span></div>`;
     }).join('')||'<div class="method-copy">Nessun evento nel filtro selezionato.</div>';
     const asof=document.getElementById('risk-asof');if(asof)asof.textContent=`${rows.length} eventi mostrati · ${updatedAt(state.calendar?.generated_at_utc)}`;
   }
