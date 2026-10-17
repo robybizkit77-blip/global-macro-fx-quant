@@ -8,8 +8,7 @@
     themes:ROOT+'TOP_THEMES.json',
     rates:ROOT+'NATIVE_RATES_DATA.json',
     cb:ROOT+'NATIVE_CB_DATA.json',
-    cot:ROOT+'V250_COT_CHART_DATA.json',
-    d:ROOT+'D.json'
+    cot:ROOT+'V250_COT_CHART_DATA.json'
   };
   const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
   const ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
