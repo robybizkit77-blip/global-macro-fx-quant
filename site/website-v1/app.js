@@ -54,6 +54,7 @@
       a.href=`?${p.toString()}`;
       a.textContent=label;
       a.className=label===hierarchyPeriod?'active':'';
+      a.setAttribute('aria-label',`Hierarchy ${label}`);
       node.replaceWith(a);
     });
   }
@@ -65,7 +66,7 @@
   };
   clock();setInterval(clock,30000);
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const trim=(v,max)=>{const s=String(v??'');return s.length<=max?s:s.slice(0,max-1).trimEnd()+'…';};
   async function loadSetup(){
     for(const src of [SETUP_LOCAL,SETUP_RAW]){
