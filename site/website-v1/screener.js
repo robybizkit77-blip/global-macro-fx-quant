@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const R='../../live_data/sections/',q=s=>document.querySelector(s),esc=s=>String(s??'—').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-  let d,setup;
+  let setup;
   const load=f=>fetch(R+f,{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(`${f}: ${r.status}`)));
   function validateSetup(x){
     if(x?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1')throw new Error('Pair setup schema invalid');
@@ -14,24 +14,20 @@
     const qual=q('#quality').value,fav=q('#fav').value;
     const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav));
     q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span>${esc(r.s.quality)}</span><p>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
-    q('#asof').textContent=`${rows.length}/28 pair · setup + prezzo ${setup.price_asof||'—'}`;
+    q('#asof').textContent=`${rows.length}/28 pair · quadro aggiornato al ${setup.price_asof||'—'}`;
   }
-  Promise.all([load('D.json'),load('PAIR_SETUP_OPERATIONAL_VIEW.json')]).then(async([a,b])=>{
-    d=a;setup=b;validateSetup(b);
-    if(!window.GMFQWebsitePrice?.hydrate)throw new Error('Canonical Price runtime adapter missing');
-    await window.GMFQWebsitePrice.hydrate(d);
-    if(!d?.price_asof||b.price_asof!==d.price_asof)throw new Error(`Pair setup / Price mismatch: ${b.price_asof||'—'} vs ${d?.price_asof||'—'}`);
+  load('PAIR_SETUP_OPERATIONAL_VIEW.json').then(b=>{
+    setup=b;validateSetup(b);
     for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.quality).filter(Boolean))])q('#quality').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
     for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.structuralFav).filter(Boolean))])q('#fav').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
     q('#quality').onchange=q('#fav').onchange=render;
     render();
     document.documentElement.dataset.screenerPage='READY';
-    document.documentElement.dataset.screenerContract='CURRENT_CANONICAL_ENGINE';
-    document.documentElement.dataset.screenerPriceAsOf=b.price_asof;
+    document.documentElement.dataset.screenerPriceAsOf=b.price_asof||'—';
   }).catch(e=>{
     console.warn('[GMFQ screener]',e);
-    q('#rows').textContent='Screener WITHHELD: setup canonico o allineamento Price non valido.';
-    q('#asof').textContent='WITHHELD';
+    q('#rows').textContent='Screener non disponibile: il quadro delle 28 coppie non è aggiornato.';
+    q('#asof').textContent='Non disponibile';
     document.documentElement.dataset.screenerPage='WITHHELD';
   });
 })();
