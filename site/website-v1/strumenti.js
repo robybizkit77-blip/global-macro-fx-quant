@@ -2,7 +2,7 @@
   'use strict';
   const ROOT='../../live_data/sections/';
   const ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-  const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇦'===false?'':'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
+  const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
   const OIS_MAX_AGE_DAYS=5,COT_MAX_AGE_DAYS=10;
   let state={price:null,rates:null,ois:null,cot:null,setup:null,h:'3m',a:'EUR',b:'USD'};
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
