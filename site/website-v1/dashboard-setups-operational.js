@@ -13,18 +13,30 @@
     let sub=card.querySelector('.setup-operational-subline');if(!sub){sub=document.createElement('div');sub.className='subline setup-operational-subline';card.querySelector('.card-head')?.after(sub);}sub.textContent='Tesi = struttura Macro + Tassi/CB · Adesso = qualità operativa corrente';
     const r=rows(data).slice(0,5);
     host.classList.add('setup-operational');
-    host.innerHTML='<div class="setup-op-head"><span>#</span><span>COPPIA</span><span>FAV</span><span>TESI</span><span>ADESSO</span><span>PREZZO / TIMING</span></div>'+r.map((x,i)=>`<a class="setup-op-row" href="coppia.html?pair=${encodeURIComponent(x.code)}" title="${esc(x.relation)} · ${esc(x.timing)}"><span>${i+1}</span><b>${esc(x.pair)}</b><strong>${esc(x.fav)}</strong><em>${esc(trim(x.thesis,28))}</em><i class="${clsQuality(x.attract)}">${esc(x.attract)}</i><small><u class="${clsPrice(x.priceState)}">${esc(x.price)}</u><br>${esc(trim(x.timing,42))}</small></a>`).join('');
+    host.innerHTML='<div class="setup-op-head"><span>#</span><span>COPPIA</span><span>FAV</span><span>TESI</span><span>ADESSO</span><span>PREZZO / TIMING</span></div>'+r.map((x,i)=>`<a class="setup-op-row" href="coppia.html?pair=${encodeURIComponent(x.code)}" title="${esc(x.relation)} · ${esc(x.timing)}"><span>${i+1}</span><b>${esc(x.pair)}</b><strong>${esc(x.fav)}</strong><em>${esc(trim(x.thesis,28))}</em><i class="${clsQuality(x.attract)}">${esc(x.attract)}</i><small><u class="${clsPrice(x.priceState)}">${esc(x.price)}</u><span>${esc(trim(x.timing,42))}</span></small></a>`).join('');
     document.documentElement.dataset.dashboardSetups='THESIS_VS_NOW';
   }
   function css(){if(document.getElementById('dashboard-setups-operational-css'))return;const s=document.createElement('style');s.id='dashboard-setups-operational-css';s.textContent=`
-    .setup-operational{display:block!important;padding:0 10px 10px!important}
-    .setup-op-head,.setup-op-row{display:grid;grid-template-columns:28px 82px 48px minmax(150px,.9fr) 96px minmax(190px,1.35fr);gap:8px;align-items:center}
-    .setup-op-head{min-height:28px;color:#738898;font-size:7px;letter-spacing:.08em;border-bottom:1px solid #183246}
-    .setup-op-row{min-height:50px;text-decoration:none;border-bottom:1px solid rgba(31,59,78,.72);color:#c8d6df}
-    .setup-op-row:hover{background:rgba(22,73,112,.09)}.setup-op-row>b{color:#edf4f7;font-size:11px}.setup-op-row>strong{font-size:9px;color:#d8e5ec}.setup-op-row>em{font-style:normal;font-size:8px;color:#a9bdca;line-height:1.25}.setup-op-row>i{font-style:normal;font-size:7px;font-weight:700;text-align:center;padding:4px 5px;border-radius:5px;white-space:nowrap}.setup-op-row>small{font-size:8px;color:#8fa4b4;line-height:1.3}.setup-op-row u{text-decoration:none;font-weight:700}.setup-op-row u.good{color:#48d9a0}.setup-op-row u.bad{color:#ff6f82}.setup-op-row u.neutral{color:#a9bac6}
-    .setup-op-row>i.clean{background:rgba(72,217,160,.12);color:#64e2af}.setup-op-row>i.risky{background:rgba(216,169,92,.12);color:#e7bd73}.setup-op-row>i.confirm{background:rgba(88,169,231,.12);color:#7dc0ef}.setup-op-row>i.watch{background:rgba(201,122,255,.12);color:#d59aff}.setup-op-row>i.neutral{background:rgba(145,164,180,.10);color:#9fb1bd}
+    .setup-table.setup-operational{display:block!important;padding:0 10px 10px!important;overflow:hidden!important}
+    .setup-table.setup-operational>.setup-op-head,.setup-table.setup-operational>.setup-op-row{display:grid!important;grid-template-columns:28px 96px 54px minmax(0,1.2fr) 120px minmax(0,1.1fr)!important;column-gap:10px!important;align-items:center!important;width:100%!important;box-sizing:border-box!important}
+    .setup-op-head>*,.setup-op-row>*{min-width:0!important;box-sizing:border-box!important}
+    .setup-op-head{min-height:30px!important;color:#738898!important;font-size:7px!important;letter-spacing:.08em!important;border-bottom:1px solid #183246!important;white-space:nowrap!important}
+    .setup-op-head>span{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+    .setup-op-row{min-height:56px!important;text-decoration:none!important;border-bottom:1px solid rgba(31,59,78,.72)!important;color:#c8d6df!important}
+    .setup-op-row:hover{background:rgba(22,73,112,.09)!important}
+    .setup-op-row>b{color:#edf4f7!important;font-size:11px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+    .setup-op-row>strong{font-size:9px!important;color:#d8e5ec!important;white-space:nowrap!important}
+    .setup-op-row>em{font-style:normal!important;font-size:8px!important;color:#a9bdca!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+    .setup-op-row>i{font-style:normal!important;font-size:7px!important;font-weight:700!important;text-align:center!important;padding:5px 6px!important;border-radius:6px!important;white-space:nowrap!important;width:100%!important;max-width:120px!important;justify-self:center!important}
+    .setup-op-row>small{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:3px!important;font-size:8px!important;color:#8fa4b4!important;line-height:1.2!important;overflow:hidden!important}
+    .setup-op-row>small>u,.setup-op-row>small>span{display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+    .setup-op-row u{text-decoration:none!important;font-weight:700!important}.setup-op-row u.good{color:#48d9a0!important}.setup-op-row u.bad{color:#ff6f82!important}.setup-op-row u.neutral{color:#a9bac6!important}
+    .setup-op-row>i.clean{background:rgba(72,217,160,.12)!important;color:#64e2af!important}.setup-op-row>i.risky{background:rgba(216,169,92,.12)!important;color:#e7bd73!important}.setup-op-row>i.confirm{background:rgba(88,169,231,.12)!important;color:#7dc0ef!important}.setup-op-row>i.watch{background:rgba(201,122,255,.12)!important;color:#d59aff!important}.setup-op-row>i.neutral{background:rgba(145,164,180,.10)!important;color:#9fb1bd!important}
     .setup-operational-subline{padding:0 12px 7px!important}
-    @media(max-width:760px){.setup-op-head,.setup-op-row{grid-template-columns:24px 72px 42px minmax(110px,.8fr) 84px minmax(140px,1.1fr);gap:5px}.setup-op-row>em{font-size:7px}}
+    @media(max-width:760px){
+      .setup-table.setup-operational>.setup-op-head,.setup-table.setup-operational>.setup-op-row{grid-template-columns:24px 78px 42px minmax(0,1fr) 92px minmax(0,1fr)!important;column-gap:6px!important}
+      .setup-op-row>em{font-size:7px!important}.setup-op-row>i{font-size:6.5px!important;padding:4px!important}.setup-op-row>small{font-size:7px!important}
+    }
   `;document.head.appendChild(s)}
   async function run(){css();try{const r=await fetch(PATH,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(j?.status!=='CURRENT_CANONICAL_ENGINE')throw new Error('non-canonical setup view');render(j)}catch(e){console.warn('[GMFQ dashboard setups]',e)}}
   window.GMFQ_DASHBOARD_SETUPS_RUN=run;
