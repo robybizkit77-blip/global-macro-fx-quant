@@ -25,8 +25,10 @@ jobs:
           from pathlib import Path
           import re
           root = Path('site/website-v1')
-          tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
-          pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
+          shell_tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
+          shell_pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
+          responsive_tag = '<link rel="stylesheet" href="responsive.css?v=20261017-responsive1">'
+          responsive_pat = re.compile(r'<link rel="stylesheet" href="responsive\.css\?v=[^"]+">')
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
               if '<div class="site">' not in s:
@@ -35,12 +37,18 @@ jobs:
               if p.name == 'index.html':
                   s = s.replace(' <small>ⓘ</small>', '')
                   s = s.replace('<div class="pill-tabs"><b class="active">Oggi</b><b>Questa settimana</b></div>', '')
-              if pat.search(s):
-                  s = pat.sub(tag, s)
+              if responsive_pat.search(s):
+                  s = responsive_pat.sub(responsive_tag, s)
+              elif '</head>' in s:
+                  s = s.replace('</head>', f'  {responsive_tag}\n</head>')
+              else:
+                  raise SystemExit(f'missing </head>: {p}')
+              if shell_pat.search(s):
+                  s = shell_pat.sub(shell_tag, s)
               else:
                   if '</body>' not in s:
                       raise SystemExit(f'missing </body>: {p}')
-                  s = s.replace('</body>', f'{tag}\n</body>')
+                  s = s.replace('</body>', f'{shell_tag}\n</body>')
               p.write_text(s, encoding='utf-8')
           PY
 
@@ -50,7 +58,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Cache-bust functional site shell v3"
+            git commit -m "Wire unified responsive stylesheet"
             git push origin main
           fi
 
@@ -62,8 +70,10 @@ jobs:
           from pathlib import Path
           import re
           root = Path('site/website-v1')
-          tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
-          pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
+          shell_tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
+          shell_pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
+          responsive_tag = '<link rel="stylesheet" href="responsive.css?v=20261017-responsive1">'
+          responsive_pat = re.compile(r'<link rel="stylesheet" href="responsive\.css\?v=[^"]+">')
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
               if '<div class="site">' not in s:
@@ -72,16 +82,22 @@ jobs:
               if p.name == 'index.html':
                   s = s.replace(' <small>ⓘ</small>', '')
                   s = s.replace('<div class="pill-tabs"><b class="active">Oggi</b><b>Questa settimana</b></div>', '')
-              if pat.search(s):
-                  s = pat.sub(tag, s)
+              if responsive_pat.search(s):
+                  s = responsive_pat.sub(responsive_tag, s)
+              elif '</head>' in s:
+                  s = s.replace('</head>', f'  {responsive_tag}\n</head>')
+              else:
+                  raise SystemExit(f'missing </head>: {p}')
+              if shell_pat.search(s):
+                  s = shell_pat.sub(shell_tag, s)
               else:
                   if '</body>' not in s:
                       raise SystemExit(f'missing </body>: {p}')
-                  s = s.replace('</body>', f'{tag}\n</body>')
+                  s = s.replace('</body>', f'{shell_tag}\n</body>')
               p.write_text(s, encoding='utf-8')
           PY
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Cache-bust functional site shell v3"
+            git commit -m "Wire unified responsive stylesheet"
             git push origin gh-pages
           fi
