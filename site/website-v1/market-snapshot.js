@@ -39,11 +39,72 @@
   function startRateIndex(h,period){if(h.length<2)return 0;if(period==='1D')return Math.max(0,h.length-2);const last=new Date(`${h.at(-1).date}T00:00:00Z`);let target;if(period==='YTD')target=new Date(Date.UTC(last.getUTCFullYear(),0,1));else{target=new Date(last);if(period==='1W')target.setUTCDate(target.getUTCDate()-7);if(period==='1M')target.setUTCMonth(target.getUTCMonth()-1);if(period==='3M')target.setUTCMonth(target.getUTCMonth()-3);}const ts=target.toISOString().slice(0,10);let idx=h.findIndex(x=>x.date>=ts);if(idx<0)idx=0;return Math.min(idx,h.length-2);}
   function rateCard(tenor,period){const usd=rates?.USD;if(!usd)return{label:`US ${tenor}Y`,value:'—',change:'—',dir:'flat',values:[0,0],title:'Tassi non disponibili'};const key=tenor===10?'history10':'history2',h=rateHistory(usd,key),asof=usd.date||h.at(-1)?.date||null;if(!fresh(asof,RATES_MAX_AGE_DAYS))return{label:`US ${tenor}Y`,value:'—',change:'—',dir:'flat',values:[0,0],title:`Tassi non aggiornati · dati al ${asof||'—'}`};if(h.length<2)return{label:`US ${tenor}Y`,value:'—',change:'—',dir:'flat',values:[0,0],title:'Storico tassi insufficiente'};const si=startRateIndex(h,period),window=h.slice(si),current=n(usd?.[`${tenor}Y`])??n(usd?.current?.[tenor===10?'y10':'y2'])??window.at(-1)?.value;if(current===null||current===undefined)return{label:`US ${tenor}Y`,value:'—',change:'—',dir:'flat',values:[0,0],title:`Tassi non disponibili · dati al ${asof}`};const first=window[0].value,delta=(current-first)*100;return{label:`US ${tenor}Y`,value:`${current.toFixed(2)}%`,change:`${delta>0?'+':''}${delta.toFixed(1)}bp`,dir:delta>=0?'up':'down',values:sampled(window.map(x=>x.value)),title:`${period} · curva Treasury ufficiale · dati al ${asof}`};}
 
+
+  // Weekly attention proxy: standardized 5-session move, not a macro-catalyst score.
+  // Selection is independent of the visual timeframe tabs.
+  const ALL_PAIRS=CCYS.flatMap((a,i)=>CCYS.slice(i+1).map(b=>a+b));
+  function attention(values){
+    const v=values.filter(Number.isFinite);
+    if(v.length<15)return null;
+    const daily=v.slice(1).map((x,i)=>x-v[i]);
+    const recent=daily.slice(-5).reduce((a,b)=>a+b,0);
+    const base=daily.slice(-65,-5);
+    if(base.length<10)return null;
+    const mu=base.reduce((a,b)=>a+b,0)/base.length;
+    const vol=Math.sqrt(base.reduce((a,b)=>a+(b-mu)**2,0)/base.length);
+    return vol>1e-10?Math.abs(recent-5*mu)/(vol*Math.sqrt(5)):null;
+  }
+  function weeklyCandidates(){
+    const candidates=[];
+    const rows=datedRows(),asof=fxAsOf();
+    if(fresh(asof,FX_MAX_AGE_DAYS)){
+      for(const label of ALL_PAIRS){
+        const values=rows.map(r=>pairValue(r,label)).filter(v=>v!==null&&v>0);
+        const score=attention(values.map(Math.log));
+        if(score===null)continue;
+        const card=pairCard(label,heroPeriod);
+        if(card.value==='—')continue;
+        candidates.push({id:label,kind:'FX',ccys:[label.slice(0,3),label.slice(3,6)],score,card});
+      }
+    }
+    for(const ccy of CCYS){
+      const row=rates?.[ccy];
+      for(const tenor of [2,10]){
+        const h=rateHistory(row,tenor===2?'history2':'history10');
+        const asof=row?.date||h.at(-1)?.date;
+        if(!fresh(asof,RATES_MAX_AGE_DAYS)||h.length<15)continue;
+        // Fail closed for explicitly incompatible historical basis.
+        if(tenor===2&&/NOT_SAME_BASIS|WITHHELD|STALE/i.test(String(row?.history2_quality||'')))continue;
+        const score=attention(h.map(x=>x.value));
+        if(score===null)continue;
+        const start=startRateIndex(h,heroPeriod),window=h.slice(start);
+        const last=h.at(-1).value,delta=(last-window[0].value)*100;
+        candidates.push({id:ccy+tenor,kind:'RATES',ccys:[ccy],score,card:{
+          label:ccy+' '+tenor+'Y',value:last.toFixed(2)+'%',
+          change:(delta>0?'+':'')+delta.toFixed(1)+'bp',
+          dir:delta>=0?'up':'down',values:sampled(window.map(x=>x.value)),
+          title:'Weekly Market Focus · '+ccy+' '+tenor+'Y · dati al '+asof
+        }});
+      }
+    }
+    return candidates.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
+  }
+  function selectWeeklyFocus(){
+    const selected=[],used={};
+    for(const item of weeklyCandidates()){
+      // Avoid single-currency saturation without imposing asset-class quotas.
+      if(item.ccys.some(c=>(used[c]||0)>=3))continue;
+      selected.push(item);
+      item.ccys.forEach(c=>used[c]=(used[c]||0)+1);
+      if(selected.length===8)break;
+    }
+    return selected;
+  }
   function syncHeroTabs(){document.querySelectorAll('.hero-tabs a').forEach(el=>el.classList.toggle('active',el.textContent.trim()===heroPeriod));}
   function syncHierarchyTabs(){document.querySelectorAll('.hierarchy .mini-tabs a').forEach(el=>el.classList.toggle('active',el.textContent.trim()===hierarchyPeriod));}
   function setQuery(key,value,push=true){const u=new URL(location.href);u.searchParams.set(key,value);history[push?'pushState':'replaceState'](null,'',u);}
 
-  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host)return;const cards=[...PAIRS.map(p=>pairCard(p,heroPeriod)),rateCard(2,heroPeriod),rateCard(10,heroPeriod)];rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;syncHeroTabs();document.documentElement.setAttribute('data-market-snapshot',(rates||fx)?'READY':'EMPTY');document.documentElement.setAttribute('data-hero-period',heroPeriod);document.documentElement.setAttribute('data-fx-freshness',fresh(fxAsOf(),FX_MAX_AGE_DAYS)?'FRESH':'WITHHELD');const usdAsOf=rates?.USD?.date||rateHistory(rates?.USD,'history2').at(-1)?.date||null;document.documentElement.setAttribute('data-rates-freshness',fresh(usdAsOf,RATES_MAX_AGE_DAYS)?'FRESH':'WITHHELD');}
+  function renderHero(){const host=document.querySelector('.ticker-strip');if(!host)return;const focus=selectWeeklyFocus();const cards=focus.map(x=>({...x.card,title:x.card.title+' · weekly attention '+x.score.toFixed(2)+'σ'}));rendering=true;host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');rendering=false;syncHeroTabs();document.documentElement.setAttribute('data-market-snapshot',(rates||fx)?'READY':'EMPTY');document.documentElement.setAttribute('data-hero-period',heroPeriod);document.documentElement.setAttribute('data-weekly-focus-count',String(cards.length));document.documentElement.setAttribute('data-fx-freshness',fresh(fxAsOf(),FX_MAX_AGE_DAYS)?'FRESH':'WITHHELD');const usdAsOf=rates?.USD?.date||rateHistory(rates?.USD,'history2').at(-1)?.date||null;document.documentElement.setAttribute('data-rates-freshness',fresh(usdAsOf,RATES_MAX_AGE_DAYS)?'FRESH':'WITHHELD');}
   function currencyStrength(period){const asof=fxAsOf(),rows=datedRows();if(!fresh(asof,FX_MAX_AGE_DAYS)||rows.length<2)return[];const si=startIndex(rows,period),a=rows[si],b=rows.at(-1),raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};});const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
   function renderHierarchy(){const rows=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength(hierarchyPeriod);if(!rows.length)return;if(!data.length){rows.forEach(el=>{const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em');if(label)label.textContent='—';if(bar){bar.className='';bar.style.width='0%';}if(val){val.className='';val.textContent='—';}});syncHierarchyTabs();document.documentElement.setAttribute('data-hierarchy-period',hierarchyPeriod);return;}const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);rows.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}%`;}});const note=document.querySelector('.hierarchy .hierarchy-note');if(note)note.textContent=`Conferma di mercato · fixing ECB al ${fxAsOf()||'—'} · non forza macro`;syncHierarchyTabs();document.documentElement.setAttribute('data-hierarchy-period',hierarchyPeriod);}
   function protectStrip(){const host=document.querySelector('.ticker-strip');if(!host)return;new MutationObserver(()=>{if(!rendering&&host.children.length===0&&(rates||fx))queueMicrotask(renderHero);}).observe(host,{childList:true});}
