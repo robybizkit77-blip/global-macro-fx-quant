@@ -7,8 +7,10 @@ on:
       - '.github/workflows/publish-control-room-market-data-v1.yml'
       - 'live_data/sections/NATIVE_RATES_DATA.json'
       - 'live_data/sections/V250_COT_CHART_DATA.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
   workflow_run:
-    workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1']
+    workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1']
     types: [completed]
   workflow_dispatch:
 
@@ -39,17 +41,44 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          rates_path=Path('live_data/sections/NATIVE_RATES_DATA.json')
-          cot_path=Path('live_data/sections/V250_COT_CHART_DATA.json')
-          assert rates_path.is_file() and rates_path.stat().st_size>1000
-          assert cot_path.is_file() and cot_path.stat().st_size>1000
-          rates=json.loads(rates_path.read_text())
-          cot=json.loads(cot_path.read_text())
-          assert set(rates) >= {'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
-          assert set(cot) >= {'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+
+          paths={
+            'rates': Path('live_data/sections/NATIVE_RATES_DATA.json'),
+            'cot': Path('live_data/sections/V250_COT_CHART_DATA.json'),
+            'setup': Path('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
+            'prices': Path('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+          }
+          for name,p in paths.items():
+              assert p.is_file() and p.stat().st_size > 1000, f'{name} missing or too small'
+
+          rates=json.loads(paths['rates'].read_text())
+          cot=json.loads(paths['cot'].read_text())
+          setup=json.loads(paths['setup'].read_text())
+          prices=json.loads(paths['prices'].read_text())
+
+          g8={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert set(rates) >= g8
+          assert set(cot) >= g8
           assert rates['USD'].get('date')
           assert cot['USD'].get('dates')
-          print('CONTROL_ROOM_MARKET_DATA_SOURCE_PASS', rates['USD'].get('date'), cot['USD']['dates'][-1])
+
+          assert setup.get('schema') == 'GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'
+          assert setup.get('status') == 'CURRENT_CANONICAL_ENGINE'
+          assert setup.get('pair_count') == 28
+          assert len(setup.get('pairs') or {}) == 28
+          assert setup.get('price_audit',{}).get('status') == 'PASS'
+
+          assert prices.get('schema') == 'GMFQ_ECB_G8_PRICE_HISTORY_V1'
+          assert prices.get('status') == 'CURRENT_OFFICIAL_HISTORY'
+          assert isinstance(prices.get('rows'), list) and len(prices['rows']) > 100
+
+          print(
+            'CONTROL_ROOM_MARKET_DATA_SOURCE_PASS',
+            rates['USD'].get('date'),
+            cot['USD']['dates'][-1],
+            setup.get('price_asof'),
+            prices['rows'][-1].get('Date'),
+          )
           PY
 
       - name: Publish exact feed scope to gh-pages with lease
@@ -61,26 +90,39 @@ jobs:
           rm -rf /tmp/gmfq-control-room-data
           git worktree add --detach /tmp/gmfq-control-room-data origin/gh-pages
           mkdir -p /tmp/gmfq-control-room-data/live_data/sections
-          cp live_data/sections/NATIVE_RATES_DATA.json /tmp/gmfq-control-room-data/live_data/sections/NATIVE_RATES_DATA.json
-          cp live_data/sections/V250_COT_CHART_DATA.json /tmp/gmfq-control-room-data/live_data/sections/V250_COT_CHART_DATA.json
+
+          FILES=(
+            live_data/sections/NATIVE_RATES_DATA.json
+            live_data/sections/V250_COT_CHART_DATA.json
+            live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+            live_data/sections/ECB_G8_PRICE_HISTORY.json
+          )
+          for f in "${FILES[@]}"; do
+            cp "$f" "/tmp/gmfq-control-room-data/$f"
+          done
+
           cd /tmp/gmfq-control-room-data
           python - <<'PY'
           import subprocess
           allowed={
             'live_data/sections/NATIVE_RATES_DATA.json',
             'live_data/sections/V250_COT_CHART_DATA.json',
+            'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
+            'live_data/sections/ECB_G8_PRICE_HISTORY.json',
           }
-          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())|set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines()) | set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           unexpected=changed-allowed
           if unexpected:
               raise SystemExit(f'Control Room data scope violation: {sorted(unexpected)}')
-          print('CONTROL_ROOM_MARKET_DATA_SCOPE_PASS',sorted(changed))
+          print('CONTROL_ROOM_MARKET_DATA_SCOPE_PASS', sorted(changed))
           PY
-          git add -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/V250_COT_CHART_DATA.json
+
+          git add -- "${FILES[@]}"
           if git diff --cached --quiet; then
             echo CONTROL_ROOM_MARKET_DATA_ALREADY_CURRENT
             exit 0
           fi
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m "Publish Control Room market data from main ${GITHUB_SHA}"
