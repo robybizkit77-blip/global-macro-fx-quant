@@ -12,8 +12,8 @@ on:
       - '.github/workflows/rates-persistent-daily-v1.yml'
   workflow_dispatch:
   schedule:
-    # Europe/Rome target windows: 07:20, 08:00, 09:00 on working days.
-    # Duplicate UTC entries cover CET/CEST; local gate admits only intended Rome slots.
+    # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
+    # Duplicate UTC entries cover CET/CEST; local gate admits only intended Rome windows.
     - cron: '20 5 * * 1-5'
     - cron: '20 6 * * 1-5'
     - cron: '0 6 * * 1-5'
@@ -42,14 +42,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          allowed='07:20 08:00 09:00'
-          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
-            echo 'should_run=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'should_run=false' >> "$GITHUB_OUTPUT"
+          hh="$(TZ=Europe/Rome date +'%H')"
+          mm="$(TZ=Europe/Rome date +'%M')"
+          minute=$((10#$mm))
+          should_run=false
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
+            should_run=true
+          elif [[ "$hh" == "07" && $minute -ge 20 && $minute -le 39 ]]; then
+            should_run=true
+          elif [[ "$hh" == "08" && $minute -ge 0 && $minute -le 19 ]]; then
+            should_run=true
+          elif [[ "$hh" == "09" && $minute -ge 0 && $minute -le 19 ]]; then
+            should_run=true
           fi
-          echo "event=${{ github.event_name }} rome_time=$hhmm"
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "event=${{ github.event_name }} rome_time=${hh}:${mm} should_run=$should_run"
 
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
