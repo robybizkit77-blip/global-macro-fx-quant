@@ -25,7 +25,7 @@ jobs:
           from pathlib import Path
           import re
           root = Path('site/website-v1')
-          tag = '<script src="site-shell.js?v=20261017-shell2"></script>'
+          tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
           pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
@@ -50,7 +50,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Remove fake dashboard controls"
+            git commit -m "Cache-bust functional site shell v3"
             git push origin main
           fi
 
@@ -62,7 +62,7 @@ jobs:
           from pathlib import Path
           import re
           root = Path('site/website-v1')
-          tag = '<script src="site-shell.js?v=20261017-shell2"></script>'
+          tag = '<script src="site-shell.js?v=20261017-shell3"></script>'
           pat = re.compile(r'<script src="site-shell\.js\?v=[^"]+"></script>')
           for p in sorted(root.glob('*.html')):
               s = p.read_text(encoding='utf-8')
@@ -82,6 +82,6 @@ jobs:
           PY
           git add site/website-v1/*.html
           if ! git diff --cached --quiet; then
-            git commit -m "Remove fake dashboard controls"
+            git commit -m "Cache-bust functional site shell v3"
             git push origin gh-pages
           fi
