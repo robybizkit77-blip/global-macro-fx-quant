@@ -35,7 +35,7 @@
     if(live!==null)return live;
     const native=n(state.rates?.[ccy]?.['2Y']);
     if(native!==null)return native;
-    return n(state.d?.macro?.[ccy]?.rate2y);
+    return null;
   }
 
   function currencyCard(ccy){
