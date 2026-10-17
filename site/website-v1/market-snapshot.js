@@ -2,7 +2,6 @@
   'use strict';
 
   const ROOT='../../live_data/sections/';
-  const D_PATH=ROOT+'D.json';
   const RATES_PATH=ROOT+'NATIVE_RATES_DATA.json';
   const FX_PATH='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/ECB_G8_PRICE_HISTORY.json';
   const PAIRS=['EURUSD','GBPUSD','USDJPY','USDCAD','AUDUSD','NZDUSD'];
@@ -13,7 +12,7 @@
   const HIER_ALLOWED=['1D','1W','1M'];
   const heroPeriod=HERO_ALLOWED.includes(params.get('tf'))?params.get('tf'):'1D';
   const hierarchyPeriod=HIER_ALLOWED.includes(params.get('h'))?params.get('h'):'1D';
-  let d=null,rates=null,fx=null;
+  let rates=null,fx=null;
 
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const n=v=>Number.isFinite(Number(v))?Number(v):null;
@@ -33,9 +32,15 @@
     const ts=target.toISOString().slice(0,10);let idx=rows.findIndex(r=>r[dateKey]>=ts);if(idx<0)idx=0;return Math.min(idx,rows.length-2);
   }
   function pairValue(row,label){const a=label.slice(0,3),b=label.slice(3,6);const av=a==='EUR'?1:n(row?.[a]),bv=b==='EUR'?1:n(row?.[b]);return av&&bv?bv/av:null;}
-  function findPair(label){const wanted=label.replace('/','');return (Array.isArray(d?.pairs)?d.pairs:[]).find(x=>String(x?.pair||'').replace('/','')===wanted)||null;}
-  function fallbackPair(label){const row=findPair(label);if(!row)return null;const last=n(row.last);if(last===null)return null;const key={1W:'ret1w',1M:'ret1m',3M:'ret3m'}[heroPeriod];const ret=n(key?row[key]:null);return{label,value:last>=100?last.toFixed(2):last.toFixed(4),change:ret===null?'—':pct(ret),dir:(ret??0)>=0?'up':'down',values:[0,row.ret1w,row.ret1m,row.ret3m,row.ret6m,row.ret1y].map(n).filter(v=>v!==null),title:`${heroPeriod} · fallback · ${row.price_asof||d?.asOf||'—'}`};}
-  function pairCard(label){const rows=fxRows();if(rows.length<2)return fallbackPair(label);const si=periodStart(rows,heroPeriod),window=rows.slice(si),vals=window.map(r=>pairValue(r,label)).filter(v=>v!==null);if(vals.length<2)return fallbackPair(label);const first=vals[0],last=vals.at(-1),ret=(last/first-1)*100;return{label,value:last>=100?last.toFixed(2):last.toFixed(4),change:pct(ret),dir:ret>=0?'up':'down',values:sampled(vals),title:`${heroPeriod} · ECB fixing · ${rows.at(-1).Date}`};}
+  function withheldPair(label,reason){return{label,value:'WITHHELD',change:'—',dir:'',values:[],withheld:true,title:`${heroPeriod} · ${reason}`};}
+  function pairCard(label){
+    const rows=fxRows();
+    if(rows.length<2)return withheldPair(label,'ECB fixing feed unavailable');
+    const si=periodStart(rows,heroPeriod),window=rows.slice(si),vals=window.map(r=>pairValue(r,label)).filter(v=>v!==null);
+    if(vals.length<2)return withheldPair(label,'ECB fixing history insufficient');
+    const first=vals[0],last=vals.at(-1),ret=(last/first-1)*100;
+    return{label,value:last>=100?last.toFixed(2):last.toFixed(4),change:pct(ret),dir:ret>=0?'up':'down',values:sampled(vals),title:`${heroPeriod} · ECB fixing · ${rows.at(-1).Date}`};
+  }
 
   function rateHistory(series,key){const h=series?.[key];if(Array.isArray(h))return h.map(x=>({date:x?.date,value:n(x?.value)})).filter(x=>x.date&&x.value!==null).sort((a,b)=>String(a.date).localeCompare(String(b.date)));const dates=Array.isArray(h?.dates)?h.dates:[],values=Array.isArray(h?.values)?h.values:[];return dates.map((date,i)=>({date,value:n(values[i])})).filter(x=>x.date&&x.value!==null).sort((a,b)=>String(a.date).localeCompare(String(b.date)));}
   function rateCard(tenor){const usd=rates?.USD;if(!usd)return null;const h=rateHistory(usd,tenor===10?'history10':'history2');if(h.length<2)return null;const si=periodStart(h,heroPeriod,'date'),window=h.slice(si),current=n(usd?.[`${tenor}Y`])??n(usd?.current?.[tenor===10?'y10':'y2'])??window.at(-1)?.value;if(current===null)return null;const delta=(current-window[0].value)*100;return{label:`US ${tenor}Y`,value:`${current.toFixed(2)}%`,change:`${delta>0?'+':''}${delta.toFixed(1)}bp`,dir:delta>=0?'up':'down',values:sampled(window.map(x=>x.value)),title:`${heroPeriod} · Treasury · ${usd.date||h.at(-1).date}`};}
@@ -43,17 +48,19 @@
   function renderHero(){
     const host=document.querySelector('.ticker-strip');if(!host)return;
     const cards=[...PAIRS.map(pairCard),rateCard(2),rateCard(10)].filter(Boolean);
-    if(!cards.length){host.innerHTML='<div class="ticker"><div><small>MARKET DATA</small><b>Unavailable</b><em>—</em></div></div>';return;}
-    host.innerHTML=cards.map(c=>`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');
-    document.documentElement.dataset.marketSnapshot=cards.length===8?'READY':'PARTIAL';
+    if(!cards.length){host.innerHTML='<div class="ticker"><div><small>MARKET DATA</small><b>Unavailable</b><em>—</em></div></div>';document.documentElement.dataset.marketSnapshot='FAIL';return;}
+    host.innerHTML=cards.map(c=>c.withheld
+      ?`<div class="ticker withheld" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>WITHHELD</b><em>—</em></div></div>`
+      :`<div class="ticker" title="${esc(c.title)}"><div><small>${esc(c.label)}</small><b>${esc(c.value)}</b><em class="${c.dir}">${esc(c.change)}</em></div><svg viewBox="0 0 90 44"><polyline class="${c.dir}" points="${sparkPoints(c.values)}"/></svg></div>`).join('');
+    document.documentElement.dataset.marketSnapshot=cards.length===8&&!cards.some(c=>c.withheld)?'READY':'PARTIAL';
   }
 
-  function currencyStrength(){const rows=fxRows();if(rows.length<2)return[];const si=periodStart(rows,hierarchyPeriod),a=rows[si],b=rows.at(-1);const raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};});const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
-  function renderHierarchy(){const els=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength();if(!els.length||!data.length)return;const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);els.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});}
+  function currencyStrength(){const rows=fxRows();if(rows.length<2)return[];const si=periodStart(rows,hierarchyPeriod),a=rows[si],b=rows.at(-1);const raw=CCYS.map(ccy=>{const pa=ccy==='EUR'?1:1/n(a[ccy]),pb=ccy==='EUR'?1:1/n(b[ccy]);return{ccy,r:(pb/pa-1)*100};}).filter(x=>Number.isFinite(x.r));if(raw.length!==CCYS.length)return[];const mean=raw.reduce((s,x)=>s+x.r,0)/raw.length;return raw.map(x=>({...x,score:x.r-mean})).sort((x,y)=>y.score-x.score);}
+  function renderHierarchy(){const els=[...document.querySelectorAll('.hierarchy .rankrow')],data=currencyStrength();if(!els.length)return;if(!data.length){document.documentElement.dataset.currencyHierarchy='WITHHELD';return;}const mx=Math.max(...data.map(x=>Math.abs(x.score)),.01);els.forEach((el,i)=>{const x=data[i];if(!x)return;const label=el.querySelector(':scope > span'),bar=el.querySelector(':scope > i > b'),val=el.querySelector(':scope > em'),cls=x.score>=0?'pos':'neg';if(label)label.textContent=`${FLAGS[x.ccy]} ${x.ccy}`;if(bar){bar.className=cls;bar.style.width=`${Math.max(8,Math.abs(x.score)/mx*90).toFixed(1)}%`;}if(val){val.className=cls;val.textContent=`${x.score>0?'+':''}${x.score.toFixed(2)}`;}});document.documentElement.dataset.currencyHierarchy='READY';}
 
   async function run(){
     try{
-      [d,rates,fx]=await Promise.all([optional(D_PATH),optional(RATES_PATH),optional(FX_PATH)]);
+      [rates,fx]=await Promise.all([optional(RATES_PATH),optional(FX_PATH)]);
       renderHero();renderHierarchy();
     }catch(e){console.warn('[GMFQ market snapshot]',e);document.documentElement.dataset.marketSnapshot='FAIL';}
   }
