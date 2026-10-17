@@ -1,7 +1,7 @@
 /* Unified responsive layer — operational pages only. Desktop layout remains unchanged. */
 @media(max-width:900px){
-  .ranking-intro,.risk-layout,.tool-compare,.macro-main-row,.cot-main-row,.cot-bottom-row,.rates-main-row,.rates-bottom-row,.ois-main-row{grid-template-columns:1fr!important}
-  .top-pairs,.risk-summary,.macro-grid,.cot-grid,.rates-grid,.ois-grid{grid-template-columns:1fr!important}
+  .ranking-intro,.risk-layout,.tool-compare,.macro-main-row,.cot-main-row,.cot-bottom-row,.rates-main-row,.rates-bottom-row,.ois-main-row,.cb-main-row,.cb-bottom-row{grid-template-columns:1fr!important}
+  .top-pairs,.risk-summary,.macro-grid,.cot-grid,.rates-grid,.ois-grid,.cb-grid{grid-template-columns:1fr!important}
   .ranking-meta{border-left:0!important;border-top:1px solid #1a3b50!important;padding:12px 0 0!important}
   .tool-selector{width:100%;margin-top:2px!important}.tool-selector select{min-width:0!important;flex:1}
   .compare-summary{display:block!important}.compare-price{text-align:left!important;margin-top:10px!important}.compare-metrics{grid-template-columns:1fr!important}
@@ -18,11 +18,12 @@
   .chart-legend,.cot-price-legend{min-width:620px!important;height:auto!important;min-height:32px!important;padding-top:6px!important;padding-bottom:6px!important}
   .curve-table,.move-table{min-width:520px!important}.ois-matrix{min-width:430px!important}
   .flow-table{overflow-x:auto!important}.flow-row{min-width:520px!important}
+  .cb-pricing-table,.front-table{overflow-x:auto!important}.pricing-row,.front-row{min-width:520px!important}.meeting-list{overflow-x:auto!important}.meeting-row{min-width:390px!important}
   .extremes-list{padding-left:10px!important;padding-right:10px!important}
   .extreme-row{grid-template-columns:64px 1fr 58px!important}
   .risk-table-head,.risk-event-row{min-width:690px!important}
   .ranking-head,.ranking-row{min-width:690px!important}
-  .ranking-table,.risk-events,.matrix-scroll{-webkit-overflow-scrolling:touch}
+  .ranking-table,.risk-events,.matrix-scroll,.cb-pricing-table,.front-table,.meeting-list{-webkit-overflow-scrolling:touch}
   .ranking-meta{grid-template-columns:1fr!important}.ranking-meta div{border-right:0!important;border-bottom:1px solid rgba(31,67,89,.55)}.ranking-meta div:last-child{border-bottom:0}
   .macro-sector-row{grid-template-columns:1fr!important;gap:4px!important;padding:8px 0!important}
   .macro-release-top{align-items:flex-start}.macro-release-top em{white-space:nowrap}
@@ -30,8 +31,8 @@
   .ois-tools-title{display:block!important}.matrix-tabs{margin-top:8px;width:max-content;max-width:100%}
 }
 @media(max-width:420px){
-  .rate-levels,.cot-main,.macro-scores{gap:4px!important}
-  .rate-levels b,.cot-metric b,.macro-scores b{font-size:10px!important}
+  .rate-levels,.cot-main,.macro-scores,.cb-policy{gap:4px!important}
+  .rate-levels b,.cot-metric b,.macro-scores b,.cb-policy b{font-size:10px!important}
   .top-pair{padding:12px!important}.top-pair h3{font-size:18px!important}
   .compare-summary h2{font-size:20px!important}
   .risk-stat{min-height:78px!important}
