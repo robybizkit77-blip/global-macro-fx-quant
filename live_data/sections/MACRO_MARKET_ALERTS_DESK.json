@@ -1,0 +1,12 @@
+{
+  "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
+  "generated_at_utc": null,
+  "state": "EMPTY",
+  "history": [],
+  "policy": {
+    "source": "CHATGPT_SCHEDULED_DESK_ALERT",
+    "max_history": 100,
+    "deduplicate_by": "event_id",
+    "certification": "DESK_VERIFIED_NOT_GITHUB_CERTIFIED"
+  }
+}
