@@ -48,10 +48,10 @@
   // Stable rendering contract: exactly eight valid cards or the previous eight-card fallback.
   function weeklyFocusCards(){
     const rows=datedRows(),asof=fxAsOf();
-    if(!fresh(asof,FX_MAX_AGE_DAYS)||rows.length<35)return null;
+    const fxReady=fresh(asof,FX_MAX_AGE_DAYS)&&rows.length>=35;
     const labels=CCYS.flatMap((a,i)=>CCYS.slice(i+1).map(b=>a+b));
     const ranked=[];
-    for(const label of labels){
+    for(const label of (fxReady?labels:[])){
       const values=rows.map(row=>pairValue(row,label));
       if(values.some(v=>v===null||v<=0))continue;
       const logs=values.map(v=>Math.log(v));
